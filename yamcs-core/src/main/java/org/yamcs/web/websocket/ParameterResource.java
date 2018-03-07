@@ -208,8 +208,12 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         if (allSubscriptionId != -1) {
             prm.unsubscribeAll(subscriptionId);
         }
+        
         if (subscriptionId != -1) {
             prm.removeRequest(subscriptionId);
+            if(subscriptionId == firstSubscriptionId) {
+                firstSubscriptionId = -1;
+            }
         }
 
         return WebSocketReply.ack(requestId);

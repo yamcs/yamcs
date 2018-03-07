@@ -99,7 +99,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.parseFrom(wsrd.getData());
         assertEquals(1, psr.getInvalidCount());
         assertEquals("/REFMDB/SUBSYS1/InvalidParaName", psr.getInvalid(0).getName());
-       
+
         // generate some TM packets and monitor realtime reception
         for (int i = 0; i < 10; i++) {
             packetGenerator.generate_PKT1_1();
@@ -154,6 +154,47 @@ public class IntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testWsParameterUnsubscription() throws Exception {
+        ParameterSubscriptionRequest.Builder subscr1 = ParameterSubscriptionRequest.newBuilder();
+        subscr1.addId(NamedObjectId.newBuilder().setName( "/REFMDB/SUBSYS1/IntegerPara1_1_6").build());
+        subscr1.addId(NamedObjectId.newBuilder().setName( "/REFMDB/SUBSYS1/IntegerPara1_1_7").build());
+        subscr1.addId(NamedObjectId.newBuilder().setNamespace("MDB:AliasParam").setName( "para6alias").build());
+
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscr1.build());
+        WebSocketReplyData wsrd = wsClient.sendRequest(wsr).get();
+
+        ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.parseFrom(wsrd.getData());
+        int subscrId1 = psr.getSubscriptionId();
+
+
+        packetGenerator.generate_PKT1_1();
+        ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+        checkPvals(3, pdata.getParameterList(), packetGenerator);
+
+        ParameterSubscriptionRequest subscrList = getSubscription(false, false, "/REFMDB/SUBSYS1/IntegerPara1_1_6");
+        wsr = new WebSocketRequest("parameter", "unsubscribe", subscrList);
+        wsClient.sendRequest(wsr).get();
+        packetGenerator.generate_PKT1_1();
+
+        
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        checkPvals(2, pdata.getParameterList(), packetGenerator);
+        
+        
+        wsr = new WebSocketRequest("parameter", "unsubscribeAll",  ParameterSubscriptionRequest.newBuilder().setSubscriptionId(subscrId1).build());
+        wsClient.sendRequest(wsr).get();
+
+        // we subscribe again and should get a different subscription id
+        wsr = new WebSocketRequest("parameter", "subscribe", subscr1.build());
+        wsrd = wsClient.sendRequest(wsr).get();
+
+        psr = ParameterSubscriptionResponse.parseFrom(wsrd.getData());
+        int subscrId2 = psr.getSubscriptionId();
+        assertTrue(subscrId1!=subscrId2);
+    }
+
+    @Test
     public void testRestParameterGet() throws Exception {
         ////// gets parameters from cache via REST - first attempt with one invalid parameter
         ParameterSubscriptionRequest invalidSubscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_7",
@@ -163,7 +204,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         try {
             restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req))
-                    .get();
+            .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
             String err = e.getMessage();
@@ -260,7 +301,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertNotNull(resp);
 
         Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
-                            // immediately avaialble
+        // immediately avaialble
         resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalPara1",
                 HttpMethod.GET, "").get();
         ParameterValue pv = fromJson(resp, ParameterValue.newBuilder()).build();
@@ -276,7 +317,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertNotNull(resp);
 
         Thread.sleep(1000); // the software parameter manager sets the parameter in another thread so it might not be
-                            // immediately avaialble
+        // immediately avaialble
         resp = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/LocalPara2",
                 HttpMethod.GET, "").get();
         ParameterValue pv = fromJson(resp, ParameterValue.newBuilder()).build();
@@ -289,7 +330,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
         wsListener.cmdHistoryDataList.clear();
-        
+
         IssueCommandRequest cmdreq = getCommand(5, "uint32_arg", "1000");
         String resp = doRealtimeRequest("/commands/REFMDB/SUBSYS1/ONE_INT_ARG_TC", HttpMethod.POST, cmdreq);
         assertTrue(resp.contains("binary"));
@@ -306,7 +347,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     public void testValidateCommand() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
-    
+
         ValidateCommandRequest cmdreq = getValidateCommand("/REFMDB/SUBSYS1/CRITICAL_TC1", 10, "p1", "2");
         String resp = doRequest("/commanding/validator", HttpMethod.POST, cmdreq, SchemaRest.ValidateCommandRequest.WRITE);
         ValidateCommandResponse vcr = (fromJson(resp, SchemaRest.ValidateCommandResponse.MERGE)).build();
@@ -315,7 +356,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(10, significance.getSequenceNumber());
         assertEquals(SignificanceLevelType.CRITICAL, significance.getSignificance().getConsequenceLevel());
         assertEquals("this is a critical command, pay attention", significance.getSignificance().getReasonForWarning());
-    
+
     }*/
 
     @Test
@@ -486,42 +527,39 @@ public class IntegrationTest extends AbstractIntegrationTest {
     }
 
     private void checkPvals(List<ParameterValue> pvals, RefMdbPacketGenerator packetProvider) {
+        checkPvals(2, pvals, packetProvider);
+    }
+    private void checkPvals(int expectedNumParams, List<ParameterValue> pvals, RefMdbPacketGenerator packetProvider) {
+
         assertNotNull(pvals);
 
-        assertEquals(2, pvals.size());
+        assertEquals(expectedNumParams, pvals.size());
 
-        org.yamcs.protobuf.Pvalue.ParameterValue p1 = pvals.get(0);
-        org.yamcs.protobuf.Pvalue.ParameterValue p2 = pvals.get(1);
-        if (!"/REFMDB/SUBSYS1/IntegerPara1_1_6".equals(p1.getId().getName())) {
-            // swap the parameters because they may be sent in the reverse order from the cache.
-            // TODO: shouldn't the paramerter cache keep track of the correct order
-            org.yamcs.protobuf.Pvalue.ParameterValue ptmp = p1;
-            p1 = p2;
-            p2 = ptmp;
+        for(ParameterValue p: pvals) {
+            assertEquals(AcquisitionStatus.ACQUIRED, p.getAcquisitionStatus());
+            Value praw = p.getRawValue();
+            assertNotNull(praw);
+            Value peng = p.getEngValue();
+            
+            if ("/REFMDB/SUBSYS1/IntegerPara1_1_6".equals(p.getId().getName())
+                    ||"para6alias".equals(p.getId().getName())) {
+                assertEquals(Type.UINT32, praw.getType());
+                assertEquals(packetProvider.pIntegerPara1_1_6, praw.getUint32Value());
+                
+                assertEquals(Type.UINT32, peng.getType());
+                assertEquals(packetProvider.pIntegerPara1_1_6, peng.getUint32Value());
+
+            } else if ("/REFMDB/SUBSYS1/IntegerPara1_1_7".equals(p.getId().getName())) {
+                assertEquals(Type.UINT32, praw.getType());
+                assertEquals(packetProvider.pIntegerPara1_1_7, praw.getUint32Value());
+
+             
+                assertEquals(Type.UINT32, peng.getType());
+                assertEquals(packetProvider.pIntegerPara1_1_7, peng.getUint32Value());
+            } else {
+                fail("Unkonwn parameter "+p.getId());
+            }
         }
-
-        assertEquals(AcquisitionStatus.ACQUIRED, p1.getAcquisitionStatus());
-        assertEquals(AcquisitionStatus.ACQUIRED, p2.getAcquisitionStatus());
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1.getId().getName());
-        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_7", p2.getId().getName());
-
-        Value p1raw = p1.getRawValue();
-        assertNotNull(p1raw);
-        assertEquals(Type.UINT32, p1raw.getType());
-        assertEquals(packetProvider.pIntegerPara1_1_6, p1raw.getUint32Value());
-
-        Value p1eng = p1.getEngValue();
-        assertEquals(Type.UINT32, p1eng.getType());
-        assertEquals(packetProvider.pIntegerPara1_1_6, p1eng.getUint32Value());
-
-        Value p2raw = p2.getRawValue();
-        assertNotNull(p2raw);
-        assertEquals(Type.UINT32, p2raw.getType());
-        assertEquals(packetProvider.pIntegerPara1_1_7, p2raw.getUint32Value());
-
-        Value p2eng = p2.getEngValue();
-        assertEquals(Type.UINT32, p2eng.getType());
-        assertEquals(packetProvider.pIntegerPara1_1_7, p2eng.getUint32Value());
     }
 
     @Test

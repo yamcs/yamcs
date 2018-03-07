@@ -2,10 +2,8 @@ package org.yamcs.parameter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -50,7 +48,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     //how often to check expiration
     private static long CHECK_EXPIRATION_INTERVAL = 1000;
     final static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
-    
+
     public ParameterWithIdRequestHelper(ParameterRequestManager prm, ParameterWithIdConsumer listener) {
         this.prm = prm;
         this.listener = listener;
@@ -62,19 +60,13 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     public int addRequest(List<NamedObjectId> idList, boolean checkExpiration, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
-        ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
-
         List<Parameter> plist = checkNames(idList);
+        Subscription subscr = new Subscription(checkExpiration);
         for(int i =0; i<idList.size() ; i++) {
-            Parameter p = plist.get(i);
-            checkParameterPrivilege(authToken, p.getQualifiedName());
-            NamedObjectId id = idList.get(i);
-            lm.put(p, id);
+            checkParameterPrivilege(authToken, plist.get(i).getQualifiedName());
+            subscr.put(plist.get(i), idList.get(i));
         }
         int subscriptionId = prm.addRequest(plist, this);
-
-        Subscription subscr = new Subscription(lm, checkExpiration);
-        subscr.checkExpiration = checkExpiration;
         subscriptions.put(subscriptionId, subscr);
 
         return subscriptionId;
@@ -92,11 +84,9 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 Parameter p = plist.get(i);
                 checkParameterPrivilege(authToken, p.getQualifiedName());
                 NamedObjectId id = idList.get(i);
-                if(subscr.containsEntry(p, id)) {
+                if(!subscr.put(p, id)) {
                     log.info("Ignoring duplicate subscription for '{}', id: {}", p.getName(), StringConverter.idToString(id));
-                    continue;
                 }
-                subscr.put(p, id);
             }
         }
         prm.addItemsToRequest(subscriptionId, plist);
@@ -118,7 +108,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         futureRef.set(future);
     }
 
-    
+
     //turn NamedObjectId to Parameter references
     private List<Parameter> checkNames(List<NamedObjectId> plist) throws InvalidIdentification {
         List<Parameter> result = new ArrayList<>();
@@ -149,19 +139,17 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
     public void removeItemsFromRequest(int subscriptionId,   List<NamedObjectId> parameterIds, AuthenticationToken authToken) throws NoPermissionException {
         Subscription subscr = subscriptions.get(subscriptionId);
+
         if(subscr==null) {
             log.warn("remove requested for an invalid subscription id {}", subscriptionId);
             return;
         }
-
         List<Parameter> paramsToRemove = new ArrayList<>();
         synchronized(subscr) {
-            Iterator<Entry<Parameter, NamedObjectId>> it = subscr.params.entries().iterator();
-            while(it.hasNext()) {
-                Entry<Parameter, NamedObjectId> e = it.next();
-                checkParameterPrivilege(authToken, e.getKey().getQualifiedName());
-                if(parameterIds.contains(e.getValue())) {
-                    paramsToRemove.add(e.getKey());
+            for(NamedObjectId id:parameterIds) {
+                Parameter p = subscr.remove(id);
+                if(p!=null) {
+                    paramsToRemove.add(p);
                 }
             }
         }
@@ -182,9 +170,8 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
 
     public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList, AuthenticationToken authToken) throws InvalidIdentification, NoPermissionException {
-        List<NamedObjectId> invalid = new ArrayList<>();
         List<Parameter> params = checkNames(idList);
-        
+
         ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
         for(int i =0; i<idList.size() ; i++) {
             Parameter p = params.get(i);
@@ -209,7 +196,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 plist.add(pvwi);
             }       
         }
-        
+
         return plist;
     }
 
@@ -267,7 +254,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             for(int subscriptionId: subscriptions.keySet()) {
                 Subscription subscr = subscriptions.get(subscriptionId);
                 synchronized(subscr) {
-                    List<NamedObjectId> idList = new ArrayList<>(subscr.params.values());
+                    List<NamedObjectId> idList = subscr.getallIds();
                     List<Parameter> plist;
                     try {
                         plist = checkNames(idList);
@@ -282,24 +269,22 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                         }
                     }
                     assert(idList.size()==plist.size());
-                    ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
+                    Subscription subscr1 = new Subscription(subscr.checkExpiration);
+                    
                     for(int i =0; i<plist.size() ; i++) {
                         Parameter p = plist.get(i);
                         checkParameterPrivilege(authToken, p.getQualifiedName());
                         NamedObjectId id = idList.get(i);
-                        lm.put(p, id);
+                        subscr1.put(p, id);
                     }
                     newPrm.addRequest(subscriptionId, plist, this);
-                    subscr.params = lm;
-                    if(subscr.checkExpiration) { //clear out any parameters that may have an expiration waiting to be triggered
-                        subscr.pvexp = new HashMap<>();
-                    }
+                    subscriptions.put(subscriptionId, subscr1);
                 }
             }
         }
         return invalid;
     }
-    
+
     public boolean hasParameterCache() {
         return prm.hasParameterCache();
     }
@@ -368,8 +353,8 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         List<ParameterValueWithId> expired = new ArrayList<>();
         for(ParameterValue pv: subscription.pvexp.values()) {
             if(pv.getAcquisitionStatus()==AcquisitionStatus.ACQUIRED && pv.isExpired(now)) {
-               
-                
+
+
                 ParameterValue tmp = new ParameterValue(pv); //make a copy because this is shared by other subscribers
                 tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
                 subscription.pvexp.put(pv.getParameter(), tmp);
@@ -394,36 +379,74 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     public void quit() {
-       for(int subscriptionId:subscriptions.keySet()) {
-           prm.removeRequest(subscriptionId);
-       }
+        for(int subscriptionId:subscriptions.keySet()) {
+            prm.removeRequest(subscriptionId);
+        }
     }
 
 
     static class Subscription {
-        ListMultimap<Parameter, NamedObjectId> params;
+        Map<Parameter, List<NamedObjectId>> params = new HashMap<>();
         boolean checkExpiration = false;
         long lastExpirationCheck = -1;
         //contains the parameters that have an expiration time set
         Map<Parameter, ParameterValue> pvexp; 
 
-        public Subscription(ListMultimap<Parameter, NamedObjectId> lm, boolean checkExpiration) {
-            this.params = lm;
+        public Subscription(boolean checkExpiration) {
             this.checkExpiration = checkExpiration;
             if(checkExpiration) {
                 pvexp = new HashMap<>();
             }
         }
 
+        public List<NamedObjectId> getallIds() {
+            List<NamedObjectId> r = new ArrayList<>();
+            for(List<NamedObjectId> l: params.values()) {
+                r.addAll(l);
+            }
+            return r;
+        }
+
+        /**
+         * looks and removes the id from a list and returns the associated parameter if there is no id mapped to it anymore
+         * otherwise return null
+         *  
+         * @param id
+         * @return
+         */
+        public Parameter remove(NamedObjectId id) {
+            Parameter p = null;
+            for(Map.Entry<Parameter, List<NamedObjectId>> me: params.entrySet() ) {
+                List<NamedObjectId> l = me.getValue();
+                if(l.remove(id)) {
+                    if(l.isEmpty()) {
+                        p = me.getKey();
+                    }
+                    break;
+                }
+            }
+            if(p!=null) {
+                params.remove(p);
+            }
+            return p;
+        }
+
 
         public List<NamedObjectId> get(Parameter parameter) {
             return params.get(parameter);
         }
+
         public boolean put(Parameter p, NamedObjectId id) {
-            return params.put(p,  id);
-        }
-        public boolean containsEntry(Parameter p, NamedObjectId id) {
-            return params.containsEntry(p,  id);
+            List<NamedObjectId> l = params.get(p);
+            if(l==null) {
+                l = new ArrayList<>();
+                params.put(p, l);
+            } else if (l.contains(id)) {
+                return false;
+            }
+            l.add(id);
+            
+            return true;
         }
     }
 }
