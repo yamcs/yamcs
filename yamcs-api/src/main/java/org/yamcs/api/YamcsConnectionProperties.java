@@ -72,7 +72,7 @@ public class YamcsConnectionProperties {
 
     public URI webSocketURI() {
         try {
-            return new URI("ws://" + host + ":" + port + "/" + instance + "/_websocket");
+            return new URI("ws://" + host + ":" + port + "/_websocket/" + instance);
         } catch (URISyntaxException e) {
             throw new ConfigurationException("Invalid URL", e);
         }
