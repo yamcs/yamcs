@@ -138,22 +138,21 @@ public class Processor extends AbstractService {
                         "A processor named '" + name + "' already exists in instance " + yamcsInstance);
             }
             if (config != null) {
-                for (String c : config.keySet()) {
+                for (Map.Entry<String, Object> me: config.entrySet()) {
+                    String c = me.getKey();
+                    Object o = me.getValue();
                     if (CONFIG_KEY_ALARM.equals(c)) {
-                        Object o = config.get(c);
                         if (!(o instanceof Map)) {
                             throw new ConfigurationException(CONFIG_KEY_ALARM + " configuration should be a map");
                         }
                         configureAlarms((Map<String, Object>) o);
                     } else if (CONFIG_KEY_PARAMETER_CACHE.equals(c)) {
-                        Object o = config.get(c);
                         if (!(o instanceof Map)) {
                             throw new ConfigurationException(
                                     CONFIG_KEY_PARAMETER_CACHE + " configuration should be a map");
                         }
                         configureParameterCache((Map<String, Object>) o);
                     } else if (CONFIG_KEY_TM_PROCESSOR.equals(c)) {
-                        Object o = config.get(c);
                         if (!(o instanceof Map)) {
                             throw new ConfigurationException(
                                     CONFIG_KEY_TM_PROCESSOR + " configuration should be a map");
@@ -434,9 +433,9 @@ public class Processor extends AbstractService {
      * @return the first registered processor for the given instance
      */
     public static Processor getFirstProcessor(String yamcsInstance) {
-        for (String k : instances.keySet()) {
-            if (k.startsWith(yamcsInstance + ".")) {
-                return instances.get(k);
+        for (Map.Entry<String, Processor> me : instances.entrySet()) {
+            if (me.getKey().startsWith(yamcsInstance + ".")) {
+                return me.getValue();
             }
         }
         return null;

@@ -160,7 +160,7 @@ public class YamcsServer {
         return serverId;
     }
     
-    public static void createGlobalServicesAndInstances() throws Exception {
+    public static void createGlobalServicesAndInstances() throws ConfigurationException, IOException  {
         serverId = deriveServerId();
         
         YConfiguration c = YConfiguration.getConfiguration("yamcs");

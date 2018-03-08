@@ -62,7 +62,7 @@ public class IndexServer extends AbstractService {
             String icn = c.getString("tmIndexer");
             tmIndexer = loadIndexerFromClass(icn, yamcsInstance, readonly);
         } else {
-            tmIndexer = new CccsdsTmIndex(yamcsInstance, readonly);
+            tmIndexer = new CcsdsTmIndex(yamcsInstance, readonly);
         }
        
         tagDb = YarchDatabase.getInstance(yamcsInstance).getTagDb();

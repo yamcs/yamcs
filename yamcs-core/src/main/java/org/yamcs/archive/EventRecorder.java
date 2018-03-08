@@ -19,7 +19,6 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class EventRecorder extends AbstractService {
-    static TupleDefinition eventTpdef;
     public static final String TABLE_NAME = "events";
     final String yamcsInstance;
     
@@ -33,7 +32,6 @@ public class EventRecorder extends AbstractService {
             ydb.execute("create table "+TABLE_NAME+"(gentime timestamp, source enum, seqNum int, body PROTOBUF('org.yamcs.protobuf.Yamcs$Event'), primary key(gentime, source, seqNum)) histogram(source)"
                     + " partition by time(gentime"+XtceTmRecorder.getTimePartitioningSchemaSql()+") table_format=compressed");
         }
-        eventTpdef = ydb.getTable("events").getTupleDefinition();
         
         StreamConfig sc = StreamConfig.getInstance(instance);
         for(StreamConfigEntry sce: sc.getEntries()) {

@@ -23,7 +23,6 @@ import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.LoggingUtils;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.web.HttpException;
@@ -60,7 +59,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  *
  */
 @ThreadSafe
-public class CccsdsTmIndex implements TmIndex {
+public class CcsdsTmIndex implements TmIndex {
 
     final protected Logger log;
 
@@ -77,7 +76,7 @@ public class CccsdsTmIndex implements TmIndex {
      * 
      * @throws IOException
      */
-    public CccsdsTmIndex(String instance, boolean readonly) throws IOException {
+    public CcsdsTmIndex(String instance, boolean readonly) throws IOException {
         log = LoggingUtils.getLogger(this.getClass(), instance);
         this.yamcsInstance = instance;
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -99,7 +98,7 @@ public class CccsdsTmIndex implements TmIndex {
      * 
      * @throws RocksDBException
      */
-    public CccsdsTmIndex(String filename) throws RocksDBException {
+    public CcsdsTmIndex(String filename) throws RocksDBException {
         log = LoggerFactory.getLogger(this.getClass().getName());
         openDb(filename);
     }
@@ -286,7 +285,7 @@ public class CccsdsTmIndex implements TmIndex {
         try {
             deleteRecords(new TimeInterval(start, stop));
         } catch (RocksDBException e) {
-           log.error("Error when deleting records from the ccsdstmindex", e);
+            log.error("Error when deleting records from the ccsdstmindex", e);
         }
     }
 
@@ -325,23 +324,23 @@ public class CccsdsTmIndex implements TmIndex {
     public void printApidDb(short apid, long start, long stop) {
         String formatt = "%-10s  %-30s - %-30s  %12s - %12s";
         System.out.println(String.format(formatt, "apid", "start", "stop", "startseq", "stopseq"));
-        RocksIterator cur = db.newIterator();
-        Record ar;
-        if (apid != -1) {
-            printApidDb(apid, start, stop, cur);
-        } else {
-            apid = 0;
-            while (true) {// loop through apids
-                cur.seek(Record.key(apid, Long.MAX_VALUE, Short.MAX_VALUE));
-                ar = new Record(cur.key(), cur.value());
-                apid = ar.apid();
-                if (apid == Short.MAX_VALUE) {
-                    break;
+        try (RocksIterator cur = db.newIterator()) {
+            Record ar;
+            if (apid != -1) {
+                printApidDb(apid, start, stop, cur);
+            } else {
+                apid = 0;
+                while (true) {// loop through apids
+                    cur.seek(Record.key(apid, Long.MAX_VALUE, Short.MAX_VALUE));
+                    ar = new Record(cur.key(), cur.value());
+                    apid = ar.apid();
+                    if (apid == Short.MAX_VALUE) {
+                        break;
+                    }
+                    printApidDb(ar.apid(), start, stop, cur);
                 }
-                printApidDb(ar.apid(), start, stop, cur);
             }
         }
-        cur.close();
     }
 
     /**
@@ -377,7 +376,7 @@ public class CccsdsTmIndex implements TmIndex {
             System.err.println("File does not exist: " + f);
             System.exit(-1);
         }
-        CccsdsTmIndex index = new CccsdsTmIndex(filename);
+        CcsdsTmIndex index = new CcsdsTmIndex(filename);
         index.printApidDb(apid, start, stop);
     }
 
@@ -586,7 +585,7 @@ public class CccsdsTmIndex implements TmIndex {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
             ydb.execute("create stream " + streamName + " as select * from tm "
-                            + HistogramRebuilder.getWhereCondition(timeColumnName, interval));
+                    + HistogramRebuilder.getWhereCondition(timeColumnName, interval));
         } catch (StreamSqlException | ParseException e) {
             throw new RuntimeException(e);
         }
@@ -600,7 +599,7 @@ public class CccsdsTmIndex implements TmIndex {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                CccsdsTmIndex.this.onTuple(stream, tuple);
+                CcsdsTmIndex.this.onTuple(stream, tuple);
             }
         });
         stream.start();
@@ -609,23 +608,23 @@ public class CccsdsTmIndex implements TmIndex {
     }
 
     private synchronized void deleteRecords(TimeInterval interval) throws RocksDBException {
-       RocksIterator it = db.newIterator();
+        RocksIterator it = db.newIterator();
         try {
-            it.seekToFirst(); //header
+            it.seekToFirst(); // header
             it.next();
-            while(it.isValid()) {
+            while (it.isValid()) {
                 Record r = new Record(it.key(), it.value());
-                if(r.apid==Short.MAX_VALUE) {
+                if (r.apid == Short.MAX_VALUE) {
                     break;
                 }
-                byte[] keyStart = Record.key(r.apid, interval.hasStart()?interval.getStart():0, (short)0);
+                byte[] keyStart = Record.key(r.apid, interval.hasStart() ? interval.getStart() : 0, (short) 0);
                 byte[] keyEnd;
-                if(interval.hasEnd()) {
-                    keyEnd = Record.key(r.apid, interval.getEnd(), (short)0);    
+                if (interval.hasEnd()) {
+                    keyEnd = Record.key(r.apid, interval.getEnd(), (short) 0);
                 } else {
-                    keyEnd = Record.key(r.apid, Long.MAX_VALUE, (short)0);
+                    keyEnd = Record.key(r.apid, Long.MAX_VALUE, (short) 0);
                 }
-                
+
                 it.seek(keyEnd);
                 db.deleteRange(keyStart, keyEnd);
             }
@@ -638,11 +637,11 @@ public class CccsdsTmIndex implements TmIndex {
         @Route(path = "/api/ccsdstmindex/:instance/rebuild", method = { "PUT", "POST" })
         public void rebuildIndex(RestRequest req) throws HttpException {
             checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
-            
+
             TimeInterval interval = req.scanForInterval().asTimeInterval();
             try {
-                rebuild(interval).whenComplete((r,t) -> {
-                    if(t!=null) {
+                rebuild(interval).whenComplete((r, t) -> {
+                    if (t != null) {
                         log.error("Error rebuilding ccsds tm index", t);
                         completeWithError(req, new InternalServerErrorException(t));
                     } else {

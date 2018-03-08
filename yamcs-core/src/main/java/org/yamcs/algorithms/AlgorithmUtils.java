@@ -55,7 +55,7 @@ public class AlgorithmUtils {
                 }
             }
         } else {
-            log.warn(String.format("Cannot find parameter %s to calibrate %d", parameter, raw));
+            log.warn("Cannot find parameter {} to calibrate {}", parameter, raw);
         }
         return null;
     }

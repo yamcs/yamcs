@@ -56,25 +56,24 @@ public class RocksDbCli extends Command {
             List<byte[]> cfl = RocksDB.listColumnFamilies(opt, dbDir);
             List<ColumnFamilyDescriptor> cfdList = new ArrayList<>(cfl.size());
             RdbConfig rdbConfig = RdbConfig.getInstance();
-            
+
             ColumnFamilyOptions cfoptions = rdbConfig.getDefaultColumnFamilyOptions();
-            
+
             cfoptions.setCompactionStyle(CompactionStyle.UNIVERSAL);
             cfoptions.setTargetFileSizeBase(1024L * 1024 * sizeMB);
             for (byte[] b : cfl) {
                 cfdList.add(new ColumnFamilyDescriptor(b, cfoptions));
             }
             List<ColumnFamilyHandle> cfhList = new ArrayList<>(cfl.size());
-            DBOptions dbOptions = new DBOptions();
 
-            RocksDB db = RocksDB.open(dbOptions, dbDir, cfdList, cfhList);
-            for (int i = 0; i < cfhList.size(); i++) {
-                ColumnFamilyHandle cfh = cfhList.get(i);
-                console.println("Compacting Column Family " + YRDB.cfNameToString(cfl.get(i)));
-                db.compactRange(cfh);
+            try (DBOptions dbOptions = new DBOptions();
+                    RocksDB db = RocksDB.open(dbOptions, dbDir, cfdList, cfhList)) {
+                for (int i = 0; i < cfhList.size(); i++) {
+                    ColumnFamilyHandle cfh = cfhList.get(i);
+                    console.println("Compacting Column Family " + YRDB.cfNameToString(cfl.get(i)));
+                    db.compactRange(cfh);
+                }
             }
-            db.close();
-            dbOptions.close();
             cfoptions.close();
             opt.close();
         }

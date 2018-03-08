@@ -7,9 +7,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.archive.CccsdsTmIndex;
+import org.yamcs.archive.CcsdsTmIndex;
 import org.yamcs.archive.Record;
-import org.yamcs.archive.CccsdsTmIndex.CcsdsIndexIterator;
+import org.yamcs.archive.CcsdsTmIndex.CcsdsIndexIterator;
 import org.yamcs.yarch.YarchTestCase;
 
 public class CcsdsTmIndexTest extends YarchTestCase {
@@ -27,26 +27,26 @@ public class CcsdsTmIndexTest extends YarchTestCase {
 
     @Test
     public void testCompare() {
-        assertTrue(CccsdsTmIndex.compare(0L,(short)1,1L,(short)5)<-1);
-        assertTrue(CccsdsTmIndex.compare(1L,(short)5,0L,(short)1)>1);
-        assertTrue(CccsdsTmIndex.compare(0L,(short)1,2L,(short)2)==-1);
-        assertTrue(CccsdsTmIndex.compare(2L,(short)2,0L,(short)1)==1);
-        assertTrue(CccsdsTmIndex.compare(0L,(short)1,0L,(short)5)<-1);
-        assertTrue(CccsdsTmIndex.compare(0L,(short)5,0L,(short)1)>1);
-        assertTrue(CccsdsTmIndex.compare(0L,(short)1,0L,(short)2)==-1);
-        assertTrue(CccsdsTmIndex.compare(0L,(short)2,0L,(short)1)==1);
-        assertTrue(CccsdsTmIndex.compare(0L,(short)0x3FFF,0L,(short)0)==-1);
-        assertTrue(CccsdsTmIndex.compare(0L,(short)0,0L,(short)0x3FFF)==1);
-        assertTrue(CccsdsTmIndex.compare(0L,(short)0x3FEF,0L,(short)5)<-1);
-        assertTrue(CccsdsTmIndex.compare(0L,(short)5,0L,(short)0x3FEF)>1);
-        assertTrue(CccsdsTmIndex.compare(2L,(short)2,2L,(short)2)==0);
+        assertTrue(CcsdsTmIndex.compare(0L,(short)1,1L,(short)5)<-1);
+        assertTrue(CcsdsTmIndex.compare(1L,(short)5,0L,(short)1)>1);
+        assertTrue(CcsdsTmIndex.compare(0L,(short)1,2L,(short)2)==-1);
+        assertTrue(CcsdsTmIndex.compare(2L,(short)2,0L,(short)1)==1);
+        assertTrue(CcsdsTmIndex.compare(0L,(short)1,0L,(short)5)<-1);
+        assertTrue(CcsdsTmIndex.compare(0L,(short)5,0L,(short)1)>1);
+        assertTrue(CcsdsTmIndex.compare(0L,(short)1,0L,(short)2)==-1);
+        assertTrue(CcsdsTmIndex.compare(0L,(short)2,0L,(short)1)==1);
+        assertTrue(CcsdsTmIndex.compare(0L,(short)0x3FFF,0L,(short)0)==-1);
+        assertTrue(CcsdsTmIndex.compare(0L,(short)0,0L,(short)0x3FFF)==1);
+        assertTrue(CcsdsTmIndex.compare(0L,(short)0x3FEF,0L,(short)5)<-1);
+        assertTrue(CcsdsTmIndex.compare(0L,(short)5,0L,(short)0x3FEF)>1);
+        assertTrue(CcsdsTmIndex.compare(2L,(short)2,2L,(short)2)==0);
     }
 
 
 
     @Test
     public void testApidIndex() throws Exception {
-        CccsdsTmIndex tmindex=new CccsdsTmIndex(ydb.getName(), false);
+        CcsdsTmIndex tmindex=new CcsdsTmIndex(ydb.getName(), false);
 
         CcsdsIndexIterator it1=tmindex.new CcsdsIndexIterator((short)-1, -1L, -1L);
         assertNull(it1.getNextRecord());
@@ -97,7 +97,7 @@ public class CcsdsTmIndexTest extends YarchTestCase {
     @Test
     @Ignore
     public void testApidIndexSameTimeAndWraparound() throws Exception {
-        CccsdsTmIndex tmindex=new CccsdsTmIndex(ydb.getName(), false);
+        CcsdsTmIndex tmindex=new CcsdsTmIndex(ydb.getName(), false);
 
         short apid=2000;
 

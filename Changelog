@@ -2,6 +2,7 @@ Version 4.1.1 released 7-Mar-2018
  - added an alternative Parameter Cache that consumes less memory by using array of primitives to store parameter values
  - refurbished yamcs-web
  - support multiple parameter subscriptions via the websocket
+ - serialized XTCEDB use now a filename which is a SHA-1 of the old filename (which is made of the list of individual components of the XtceDB). This avoids problems with too long filenames.
 
 
 Version 4.0.1 released 23-Jan-2018

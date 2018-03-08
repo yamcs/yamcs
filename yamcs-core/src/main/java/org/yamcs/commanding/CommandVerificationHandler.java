@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmManager;
@@ -164,7 +165,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         if(algMgr==null) {
             String msg = "Algorithm manager not configured for this processor, cannot run command verification based on algorithms";
             log.error(msg);
-            throw new RuntimeException(msg);
+            throw new ConfigurationException(msg);
         }
 
         algorithmCtx = algMgr.createContext(preparedCommand.getCmdName());
