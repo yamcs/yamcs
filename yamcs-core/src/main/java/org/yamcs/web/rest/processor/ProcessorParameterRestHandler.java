@@ -85,6 +85,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
                 log.debug("Did not acknowledge alarm {}.{}", seqNum, e.getMessage());
                 throw new BadRequestException(e.getMessage());
             }
+            break;
         default:
             throw new BadRequestException("Unsupported state '" + state + "'");
         }

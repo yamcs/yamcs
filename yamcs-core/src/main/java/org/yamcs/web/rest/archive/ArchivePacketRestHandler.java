@@ -1,14 +1,11 @@
 package org.yamcs.web.rest.archive;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
@@ -28,12 +25,9 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class ArchivePacketRestHandler extends RestHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(ArchivePacketRestHandler.class);
 
     @Route(path = "/api/archive/:instance/packets/:gentime?", method = "GET")
     public void listPackets(RestRequest req) throws HttpException {
@@ -64,28 +58,16 @@ public class ArchivePacketRestHandler extends RestHandler {
 
         if (req.asksFor(MediaType.OCTET_STREAM)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
-            ByteBufOutputStream bufOut = new ByteBufOutputStream(buf);
             RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
-
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
                     TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
-                    try {
-                        pdata.getPacket().writeTo(bufOut);
-                    } catch (IOException e) {
-                        log.warn("ignoring packet", e);
-                        // should improve to somehow throw upwards
-                    }
+                    buf.writeBytes(pdata.getPacket().toByteArray());
                 }
 
                 @Override
                 public void streamClosed(Stream stream) {
-                    try {
-                        bufOut.close();
-                        completeOK(req, MediaType.OCTET_STREAM, buf);
-                    } catch (IOException e) {
-                        completeWithError(req, new InternalServerErrorException(e));
-                    }
+                    completeOK(req, MediaType.OCTET_STREAM, buf);
                 }
             });
         } else {

@@ -492,14 +492,14 @@ public class XtceDbFactory {
     }
 
     private static XtceDb loadSerializedInstance(String filename) throws IOException, ClassNotFoundException {
-        ObjectInputStream in = null;
         log.debug("Loading serialized XTCE DB from: {}", filename);
-        in = new ObjectInputStream(new FileInputStream(filename));
-        XtceDb db = (XtceDb) in.readObject();
-        in.close();
-        log.info("Loaded XTCE DB from {} with {} containers, {} parameters and {} commands",
+       
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            XtceDb db = (XtceDb) in.readObject();
+            log.info("Loaded XTCE DB from {} with {} containers, {} parameters and {} commands",
                 filename, db.getSequenceContainers().size(), db.getParameterNames().size(), db.getMetaCommands().size());
-        return db;
+            return db;
+        }
     }
 
     private static String getFullName(String filename) throws ConfigurationException {
@@ -507,17 +507,12 @@ public class XtceDbFactory {
     }
 
     private static void saveSerializedInstance(LoaderTree loaderTree, XtceDb db, String filename) throws IOException, ConfigurationException {
-        OutputStream os = null;
-        ObjectOutputStream out = null;
-
-        os = new FileOutputStream(getFullName(filename) + ".serialized");
-
-        out = new ObjectOutputStream(os);
-        out.writeObject(db);
-        out.close();
-        FileWriter fw = new FileWriter(getFullName(filename) + ".consistency_date");
-        loaderTree.writeConsistencyDate(fw);
-        fw.close();
+        try (OutputStream os = new FileOutputStream(getFullName(filename) + ".serialized");
+                ObjectOutputStream out =  new ObjectOutputStream(os);
+                FileWriter fw = new FileWriter(getFullName(filename) + ".consistency_date");) {
+            out.writeObject(db);
+            loaderTree.writeConsistencyDate(fw);
+        }
     }
 
     /**

@@ -63,7 +63,9 @@ public class RdbConfig {
         }
         
         env = Env.getDefault();
-        defaultColumnFamilyOptions = new ColumnFamilyOptions().setWriteBufferSize(2*1024*1024);//2MB
+        defaultColumnFamilyOptions = new ColumnFamilyOptions();
+        defaultColumnFamilyOptions.setWriteBufferSize(2*1024*1024);//2MB
+        
         BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
         tableFormatConfig.setBlockSize(32*1024);//32KB
         tableFormatConfig.setBlockCacheSize(8l*1024*1024);//8MB
@@ -74,7 +76,8 @@ public class RdbConfig {
         defaultOptions.setCreateIfMissing(true);
         defaultOptions.setTableFormatConfig(tableFormatConfig);
         
-        defaultDBOptions = new DBOptions().setCreateIfMissing(true);
+        defaultDBOptions = new DBOptions();
+        defaultDBOptions.setCreateIfMissing(true);
     }
     
     /**

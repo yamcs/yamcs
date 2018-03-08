@@ -81,7 +81,8 @@ public class RdbConfig {
         
         defaultColumnFamilyOptions.setTableFormatConfig(tableFormatConfig);
         
-        defaultDBOptions = new DBOptions().setCreateIfMissing(true);
+        defaultDBOptions = new DBOptions();
+        defaultDBOptions.setCreateIfMissing(true);
         
     }
     

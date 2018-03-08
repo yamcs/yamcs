@@ -209,17 +209,16 @@ public class Backup extends Command {
         @Override
         void execute() throws Exception {
             verifyBackupDirectory(backupDir, true);
-            BackupableDBOptions opt = new BackupableDBOptions(backupDir);
-            BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
-            RestoreOptions restoreOpt = new RestoreOptions(true);
-            if (backupId != null) {
-                backupEngine.restoreDbFromBackup(backupId, restoreDir, restoreDir, restoreOpt);
-            } else {
-                backupEngine.restoreDbFromLatestBackup(restoreDir, restoreDir, restoreOpt);
+            try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
+                    BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
+                    RestoreOptions restoreOpt = new RestoreOptions(true);) {
+
+                if (backupId != null) {
+                    backupEngine.restoreDbFromBackup(backupId, restoreDir, restoreDir, restoreOpt);
+                } else {
+                    backupEngine.restoreDbFromLatestBackup(restoreDir, restoreDir, restoreOpt);
+                }
             }
-            backupEngine.close();
-            restoreOpt.close();
-            opt.close();
             console.println("Backup restored successfully to " + restoreDir);
         }
     }
