@@ -47,7 +47,7 @@ public class SingleParameterDataRetrieval {
     private void retrieveValuesFromPartitionSingleGroup(Partition p, Consumer<ParameterValueArray> consumer) throws RocksDBException, IOException {
         int parameterGroupId = spvr.parameterGroupIds[0];
         RocksIterator it = parchive.getIterator(p);
-        boolean retrieveEng = spvr.retrieveRawValues |  spvr.retrieveEngineeringValues;
+        boolean retrieveEng = spvr.retrieveRawValues ||  spvr.retrieveEngineeringValues;
         try {
             PartitionIterator pit = new PartitionIterator(it, spvr.parameterId, parameterGroupId, spvr.start, spvr.stop, spvr.ascending,
                     retrieveEng, spvr.retrieveRawValues, spvr.retrieveParameterStatus);
@@ -75,7 +75,7 @@ public class SingleParameterDataRetrieval {
         try {
 
             PriorityQueue<PartitionIterator> queue = new PriorityQueue<PartitionIterator>(new PartitionIteratorComparator(spvr.ascending));
-            boolean retrieveEng = spvr.retrieveRawValues |  spvr.retrieveEngineeringValues;
+            boolean retrieveEng = spvr.retrieveRawValues ||  spvr.retrieveEngineeringValues;
 
             for(int i =0 ; i<spvr.parameterGroupIds.length; i++) {
                 its[i] = parchive.getIterator(p);

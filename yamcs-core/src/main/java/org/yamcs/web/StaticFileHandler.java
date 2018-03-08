@@ -6,10 +6,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -115,16 +113,8 @@ public class StaticFileHandler extends RouteHandler {
             }
         }
         boolean zeroCopy = webConfig.isZeroCopyEnabled() && ctx.pipeline().get(SslHandler.class) == null; 
-
-        
-        RandomAccessFile raf;
-        try {
-            raf = new RandomAccessFile(file, "r");
-        } catch (FileNotFoundException ignore) {
-            HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
-            return;
-        }
-        long fileLength = raf.length();
+       
+        long fileLength = file.length();
 
         
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
@@ -153,11 +143,11 @@ public class StaticFileHandler extends RouteHandler {
         ChannelFuture sendFileFuture;
         ChannelFuture lastContentFuture;
         if (zeroCopy) {
-            sendFileFuture = ctx.writeAndFlush(new DefaultFileRegion(raf.getChannel(), 0, fileLength), ctx.newProgressivePromise());
+            sendFileFuture = ctx.writeAndFlush(new DefaultFileRegion(file, 0, fileLength), ctx.newProgressivePromise());
             // Write the end marker.
             lastContentFuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
         } else {
-            sendFileFuture = ctx.channel().writeAndFlush(new HttpChunkedInput(new ChunkedFile(raf, 0, fileLength, 8192)),  ctx.newProgressivePromise());
+            sendFileFuture = ctx.channel().writeAndFlush(new HttpChunkedInput(new ChunkedFile(file, 8192)),  ctx.newProgressivePromise());
             lastContentFuture = sendFileFuture;
         }
 

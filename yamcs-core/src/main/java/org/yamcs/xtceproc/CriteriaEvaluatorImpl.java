@@ -19,7 +19,6 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
     private static Logger LOG = LoggerFactory.getLogger(CriteriaEvaluatorImpl.class.getName());
     ParameterValueList params;
 
-
     public CriteriaEvaluatorImpl(ParameterValueList params) {
         this.params = params;
     }
@@ -37,14 +36,14 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
             return lValue.evaluator.evaluate(op, lValue, rValue);
         } else {
             if ((lValue.evaluator == intEvaluator) && (lValue.evaluator == floatEvaluator)) {
-                lValue.value = (double)((long)lValue.value);	
+                lValue.value = (double) ((long) lValue.value);
                 return floatEvaluator.evaluate(op, lValue, rValue);
             } else if ((lValue.evaluator == floatEvaluator) && (lValue.evaluator == intEvaluator)) {
-                rValue.value = (double)((long)rValue.value);	
-                return floatEvaluator.evaluate(op, lValue, rValue);				
+                rValue.value = (double) ((long) rValue.value);
+                return floatEvaluator.evaluate(op, lValue, rValue);
             } else {
-                LOG.error("Comparing values of incompatible types: " 
-                        + lValue.evaluator.getComparedType() 
+                LOG.error("Comparing values of incompatible types: "
+                        + lValue.evaluator.getComparedType()
                         + " vs. " + rValue.evaluator.getComparedType());
             }
         }
@@ -54,51 +53,50 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
 
     private ResolvedValue resolveValue(Object valueRef) {
         if (valueRef instanceof ParameterInstanceRef) {
-            return resolveParameter((ParameterInstanceRef)valueRef);
-        } else if(valueRef instanceof Integer) {			
-            return new ResolvedValue(((Integer)valueRef).longValue(), false, intEvaluator);
-        } else if(valueRef instanceof Long) {
-            return new ResolvedValue((Long)valueRef, false, intEvaluator);
+            return resolveParameter((ParameterInstanceRef) valueRef);
+        } else if (valueRef instanceof Integer) {
+            return new ResolvedValue(((Integer) valueRef).longValue(), false, intEvaluator);
+        } else if (valueRef instanceof Long) {
+            return new ResolvedValue((Long) valueRef, false, intEvaluator);
         } else if (valueRef instanceof Float) {
-            return new ResolvedValue(((Float)valueRef).doubleValue(), false, floatEvaluator);
+            return new ResolvedValue(((Float) valueRef).doubleValue(), false, floatEvaluator);
         } else if (valueRef instanceof Double) {
-            return new ResolvedValue((Double)valueRef, false, floatEvaluator);
+            return new ResolvedValue((Double) valueRef, false, floatEvaluator);
         } else if (valueRef instanceof String) {
-            return new ResolvedValue((String)valueRef, false, stringEvaluator);
+            return new ResolvedValue((String) valueRef, false, stringEvaluator);
         } else if (valueRef instanceof byte[]) {
-            return new ResolvedValue((byte[])valueRef, false, binaryEvaluator);
-        }  else if (valueRef instanceof Boolean) {
-            return new ResolvedValue((Boolean)valueRef, false, booleanEvaluator);
+            return new ResolvedValue((byte[]) valueRef, false, binaryEvaluator);
+        } else if (valueRef instanceof Boolean) {
+            return new ResolvedValue((Boolean) valueRef, false, booleanEvaluator);
         } else {
             LOG.error("Unknown value type '" + valueRef.getClass() + "' while evaluating condition");
             return null;
         }
     }
 
-
     private ResolvedValue resolveParameter(ParameterInstanceRef paramRef) {
         ParameterValue pv = params.getLastInserted((paramRef).getParameter());
-        if(pv==null) { 
+        if (pv == null) {
             return null;
         }
 
         Value v;
-        if(paramRef.useCalibratedValue()) {
-            v = pv.getEngValue(); 
+        if (paramRef.useCalibratedValue()) {
+            v = pv.getEngValue();
         } else {
             v = pv.getRawValue();
         }
         switch (v.getType().getNumber()) {
         case Type.SINT32_VALUE:
-            return new ResolvedValue((long)v.getSint32Value(), false, intEvaluator);
+            return new ResolvedValue((long) v.getSint32Value(), false, intEvaluator);
         case Type.SINT64_VALUE:
             return new ResolvedValue(v.getSint64Value(), false, intEvaluator);
         case Type.UINT32_VALUE:
-            return new ResolvedValue((long)v.getUint32Value() & 0xFFFFFFFFFFFFFFFFL, true, intEvaluator);
+            return new ResolvedValue((long) v.getUint32Value() & 0xFFFFFFFFFFFFFFFFL, true, intEvaluator);
         case Type.UINT64_VALUE:
             return new ResolvedValue(v.getUint64Value(), true, intEvaluator);
         case Type.FLOAT_VALUE:
-            return new ResolvedValue((double)v.getFloatValue(), false, floatEvaluator);
+            return new ResolvedValue((double) v.getFloatValue(), false, floatEvaluator);
         case Type.DOUBLE_VALUE:
             return new ResolvedValue(v.getDoubleValue(), false, floatEvaluator);
         case Type.STRING_VALUE:
@@ -107,17 +105,18 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
             return new ResolvedValue(v.getBinaryValue(), false, binaryEvaluator);
         case Type.BOOLEAN_VALUE:
             return new ResolvedValue(v.getBooleanValue(), false, booleanEvaluator);
-        }        
+        }
 
         return null;
     }
 
     static interface Evaluator {
         String getComparedType();
+
         boolean evaluate(OperatorType op, ResolvedValue lValue, ResolvedValue rValue);
     }
 
-    static class ResolvedValue {		
+    static class ResolvedValue {
         Object value;
         boolean unsigned;
         Evaluator evaluator;
@@ -142,26 +141,26 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
     private static final Evaluator intEvaluator = new Evaluator() {
         @Override
         public boolean evaluate(OperatorType op, ResolvedValue lValue, ResolvedValue rValue) {
-            boolean unsigned = lValue.unsigned &rValue.unsigned;
+            boolean unsigned = lValue.unsigned && rValue.unsigned;
             // FIXME: signed/unsigned comparison should be warned, but frequently seen in 'Parameter op value'
 
-            long lval = (long)lValue.value;
-            long rval = (long)rValue.value;
+            long lval = (long) lValue.value;
+            long rval = (long) rValue.value;
 
-            if(unsigned) {
+            if (unsigned) {
                 switch (op) {
                 case EQUALITY:
                     return (lval == rval);
                 case INEQUALITY:
                     return (lval != rval);
                 case LARGERTHAN:
-                    return UnsignedLongs.compare(lval, rval)>0;
+                    return UnsignedLongs.compare(lval, rval) > 0;
                 case LARGEROREQUALTHAN:
-                    return UnsignedLongs.compare(lval, rval)>=0;
+                    return UnsignedLongs.compare(lval, rval) >= 0;
                 case SMALLERTHAN:
-                    return UnsignedLongs.compare(lval, rval)<0;
+                    return UnsignedLongs.compare(lval, rval) < 0;
                 case SMALLEROREQUALTHAN:
-                    return UnsignedLongs.compare(lval, rval)<=0;
+                    return UnsignedLongs.compare(lval, rval) <= 0;
                 }
             } else {
                 switch (op) {
@@ -186,15 +185,15 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
         @Override
         public String getComparedType() {
             return "Integer";
-        }		
+        }
     };
 
     // Float evaluator
     private static final Evaluator floatEvaluator = new Evaluator() {
         @Override
         public boolean evaluate(OperatorType op, ResolvedValue lValue, ResolvedValue rValue) {
-            double lval = (double)lValue.value;
-            double rval = (double)rValue.value;
+            double lval = (double) lValue.value;
+            double rval = (double) rValue.value;
 
             switch (op) {
             case EQUALITY:
@@ -209,23 +208,22 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
                 return (lval < rval);
             case SMALLEROREQUALTHAN:
                 return (lval <= rval);
-            }	        
-            return false;			
-        }		
+            }
+            return false;
+        }
 
         @Override
         public String getComparedType() {
             return "Float";
-        }		
+        }
     };
-
 
     // String evaluator
     private static final Evaluator stringEvaluator = new Evaluator() {
         @Override
         public boolean evaluate(OperatorType op, ResolvedValue lValue, ResolvedValue rValue) {
-            String lval = (String)lValue.value;
-            String rval = (String)rValue.value;
+            String lval = (String) lValue.value;
+            String rval = (String) rValue.value;
 
             switch (op) {
             case EQUALITY:
@@ -240,7 +238,7 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
                 return (lval.compareTo(rval) < 0);
             case SMALLEROREQUALTHAN:
                 return (lval.compareTo(rval) <= 0);
-            }			
+            }
 
             return false;
         }
@@ -248,7 +246,7 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
         @Override
         public String getComparedType() {
             return "String";
-        }		
+        }
 
     };
 
@@ -256,10 +254,10 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
     private static final Evaluator binaryEvaluator = new Evaluator() {
         @Override
         public boolean evaluate(OperatorType op, ResolvedValue lValue, ResolvedValue rValue) {
-            byte[] lval = (byte[])lValue.value;
-            byte[] rval = (byte[])rValue.value;
+            byte[] lval = (byte[]) lValue.value;
+            byte[] rval = (byte[]) rValue.value;
 
-            Comparator<byte[]> comparator=UnsignedBytes.lexicographicalComparator();
+            Comparator<byte[]> comparator = UnsignedBytes.lexicographicalComparator();
 
             switch (op) {
             case EQUALITY:
@@ -282,22 +280,22 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
         @Override
         public String getComparedType() {
             return "Binary";
-        }		
+        }
 
     };
 
     // Binary evaluator
     private static final Evaluator booleanEvaluator = new Evaluator() {
         @Override
-        public boolean evaluate(OperatorType op, ResolvedValue lValue, ResolvedValue rValue) {			
-            boolean lval = (boolean)lValue.value;
-            boolean rval = (boolean)rValue.value;
+        public boolean evaluate(OperatorType op, ResolvedValue lValue, ResolvedValue rValue) {
+            boolean lval = (boolean) lValue.value;
+            boolean rval = (boolean) rValue.value;
 
             switch (op) {
             case EQUALITY:
-                return lval== rval;
+                return lval == rval;
             case INEQUALITY:
-                return lval!=rval;
+                return lval != rval;
             case LARGERTHAN:
                 return Boolean.compare(lval, rval) > 0;
             case LARGEROREQUALTHAN:
@@ -307,12 +305,12 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
             case SMALLEROREQUALTHAN:
                 return Boolean.compare(lval, rval) <= 0;
             }
-            return false;			
+            return false;
         }
 
         @Override
         public String getComparedType() {
             return "Boolean";
-        }				
+        }
     };
 }
