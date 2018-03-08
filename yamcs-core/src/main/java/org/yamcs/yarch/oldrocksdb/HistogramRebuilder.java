@@ -163,8 +163,9 @@ public class HistogramRebuilder {
                     log.debug("Dropping column family {}", colName);
                     rdb.dropColumnFamily(cfh);
                 } else {
-                    WriteBatch writeBatch = new WriteBatch();
-                    try (RocksIterator it = rdb.getDb().newIterator(cfh)) {
+                    try (WriteBatch writeBatch = new WriteBatch();
+                            RocksIterator it = rdb.getDb().newIterator(cfh);
+                            WriteOptions wo = new WriteOptions()) {
                         it.seek(HistogramSegment.key(kstart, empty));
                         while (it.isValid()) {
                             long k = HistogramSegment.getSstart(it.key());
@@ -174,10 +175,7 @@ public class HistogramRebuilder {
                             writeBatch.remove(cfh, it.key());
                             it.next();
                         }
-                        WriteOptions wo = new WriteOptions();
                         rdb.getDb().write(wo, writeBatch);
-                        wo.close();
-                        writeBatch.close();
                     }
                 }
             }
