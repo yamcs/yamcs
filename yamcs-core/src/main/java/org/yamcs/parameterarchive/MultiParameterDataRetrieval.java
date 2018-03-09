@@ -1,6 +1,7 @@
 package org.yamcs.parameterarchive;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -92,7 +93,7 @@ public class MultiParameterDataRetrieval {
                             + " segmentStart = " + key.segmentStart
                             + " despite having a value segment for parameterId: " + pit.getParameterId();
                     log.error(msg);
-                    throw new RuntimeException(msg);
+                    throw new IOException(msg);
                 }
                 BaseSegment engValueSegment = mpvr.retrieveEngValues ? pit.engValue() : null;
                 ParameterStatusSegment paramStatuSegment = mpvr.retrieveParamStatus ? pit.parameterStatus() : null;

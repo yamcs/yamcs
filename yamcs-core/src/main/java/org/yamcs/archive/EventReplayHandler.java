@@ -1,6 +1,5 @@
 package org.yamcs.archive;
 
-import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
@@ -12,7 +11,7 @@ public class EventReplayHandler implements ReplayHandler {
     ReplayRequest request;
 
     @Override
-    public void setRequest(ReplayRequest newRequest) throws YamcsException {
+    public void setRequest(ReplayRequest newRequest) {
         this.request = newRequest;
     }
 

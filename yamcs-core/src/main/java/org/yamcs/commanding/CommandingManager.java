@@ -92,7 +92,7 @@ public class CommandingManager extends AbstractService {
 
     public void addToCommandHistory(CommandId commandId, String key, String value, AuthenticationToken authToken) throws NoPermissionException {
         if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayModifyCommandHistory.name())) {
-            log.warn("Throwing InsufficientPrivileges for lack of COMMANDING privilege for user "+authToken);
+            log.warn("Throwing InsufficientPrivileges for lack of COMMANDING privilege for user {}", authToken);
             throw new NoPermissionException("User has no privilege to update command history ");
         }
 

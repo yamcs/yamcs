@@ -1,17 +1,12 @@
 package org.yamcs.yarch.streamsql;
 
-import org.yamcs.yarch.InputStream;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.YarchException;
 
 import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.yarch.streamsql.GenericStreamSqlException;
-import org.yamcs.yarch.streamsql.StreamAlreadyExistsException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
+import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 public class CreateInputStreamStatement extends StreamSqlStatement {
     TupleDefinition definition;
@@ -24,23 +19,6 @@ public class CreateInputStreamStatement extends StreamSqlStatement {
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
-        synchronized(dict) {
-            InputStream stream=null;
-            if(dict.streamOrTableExists(streamName)) {
-                throw new StreamAlreadyExistsException(streamName);
-            }
-            try {
-                stream=new InputStream(dict, streamName, definition);
-                dict.addStream(stream);
-                stream.start();
-                return new StreamSqlResult("port",stream.getPort());
-            } catch (YarchException e) {
-                if(stream!=null) {
-                    stream.close();
-                }
-                throw new GenericStreamSqlException("Cannot create input stream: "+e.getMessage());
-            }
-        }
+        throw new StreamSqlException(ErrCode.NOT_IMPLEMENTED, "InputStream not implemented");
     }
 }

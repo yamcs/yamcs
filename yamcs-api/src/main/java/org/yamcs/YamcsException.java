@@ -5,7 +5,7 @@ import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 
 /**
- * Yamcs Exception (can be transported over HornetQ)
+ * Yamcs Exception      
  * 
  * @author nm
  */

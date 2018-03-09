@@ -1460,7 +1460,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
 
 
-        ArgumentType atype=null;
+        ArgumentType atype = null;
         if ("uint".equalsIgnoreCase(engType)) {
             atype = new IntegerArgumentType(name);
             ((IntegerArgumentType)atype).signed = false;
@@ -1656,7 +1656,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         } else if (atype instanceof BooleanArgumentType) {
             ((BooleanArgumentType)atype).setEncoding(encoding);
         } else {
-            throw new RuntimeException("Don't know what to do with "+atype);
+            throw new IllegalStateException("Don't know what to do with "+atype);
         }
         arg.setArgumentType(atype);
     }

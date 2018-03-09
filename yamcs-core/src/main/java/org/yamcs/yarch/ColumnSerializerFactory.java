@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -132,7 +133,7 @@ public class ColumnSerializerFactory {
                 serialize(dos, v);
                 return baos.toByteArray();
             } catch (IOException e) {
-                throw new RuntimeException("cannot serialize in memory?", e);
+                throw new UncheckedIOException("cannot serialize in memory?", e);
             }
            
         }

@@ -1,6 +1,5 @@
 package org.yamcs.yarch.streamsql;
 
-import org.yamcs.yarch.InputStream;
 import org.yamcs.yarch.OutputStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
@@ -37,9 +36,7 @@ public class ShowStreamStatement extends StreamSqlStatement{
 
         if(showPort) {
             final int port;
-            if(s instanceof InputStream) {
-                port=((InputStream)s).getPort();
-            } else if(s instanceof OutputStream) {
+            if(s instanceof OutputStream) {
                 port=((OutputStream)s).getPort();
             } else {
                 throw new NotAStreamException(name);

@@ -214,7 +214,7 @@ public class ReplayService extends AbstractService
             NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
             throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
         } catch (NoPermissionException e) {
-            throw new RuntimeException("Unexpected No permission");
+            throw new IllegalStateException("Unexpected No permission");
         }
 
         XtceTmProcessor tmproc = yprocessor.getTmProcessor();

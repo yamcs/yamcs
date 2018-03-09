@@ -1,6 +1,7 @@
 package org.yamcs.web.rest.archive;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
@@ -272,24 +273,28 @@ public class ArchiveIndexRestHandler extends RestHandler {
         }
 
         @Override
-        public void processData(IndexResult indexResult) throws Exception {
+        public void processData(IndexResult indexResult) {
             if (first) {
                 lastChannelFuture = HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(),
                         req.getHttpRequest(), contentType, null);
-                stats = req.getChannelHandlerContext().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
+                stats = req.getChannelHandlerContext().channel().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
                 first = false;
             }
-            if (unpack) {
-                for (ArchiveRecord rec : indexResult.getRecordsList()) {
-                    bufferArchiveRecord(rec);
+            try {
+                if (unpack) {
+                    for (ArchiveRecord rec : indexResult.getRecordsList()) {
+                        bufferArchiveRecord(rec);
+                    }
+                } else {
+                    bufferIndexResult(indexResult);
                 }
-            } else {
-                bufferIndexResult(indexResult);
-            }
-            if (buf.readableBytes() >= CHUNK_TRESHOLD) {
-                bufOut.close();
-                writeChunk();
-                resetBuffer();
+                if (buf.readableBytes() >= CHUNK_TRESHOLD) {
+                    bufOut.close();
+                    writeChunk();
+                    resetBuffer();
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
         }
 

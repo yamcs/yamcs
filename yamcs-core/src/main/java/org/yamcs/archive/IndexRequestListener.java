@@ -10,7 +10,7 @@ public interface IndexRequestListener {
     /**
      * Process the index chunk. If indexResult is null, the end was reached
      */
-    void processData(IndexResult indexResult) throws Exception;
+    void processData(IndexResult indexResult);
     
     /**
      * Called right after the processing ended, either successfully or through

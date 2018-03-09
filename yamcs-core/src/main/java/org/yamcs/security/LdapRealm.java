@@ -203,7 +203,7 @@ public class LdapRealm implements Realm {
         // Check authentication
         u.setAuthenticated(this.authenticates(authenticationToken));
 
-        log.debug("got user from ldap: " + u);
+        log.debug("got user from ldap: {}", u);
         return u;
     }
 

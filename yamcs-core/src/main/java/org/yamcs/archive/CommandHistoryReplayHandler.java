@@ -27,7 +27,7 @@ public class CommandHistoryReplayHandler implements ReplayHandler {
     }
 
     @Override
-    public void setRequest(ReplayRequest newRequest) throws YamcsException {
+    public void setRequest(ReplayRequest newRequest) {
         this.request = newRequest;
     }
 

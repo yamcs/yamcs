@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsVersion;
@@ -160,7 +161,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 }
             }
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("Could not access @Route annotated method in " + routeHandler.getClass());
+            throw new IllegalArgumentException("Could not access @Route annotated method in " + routeHandler.getClass());
         }
 
         // Sort in a way that increases chances of a good URI match

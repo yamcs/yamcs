@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +66,7 @@ public class RestDownsampler {
 
         Entry<Long, Sample> entry = samplesByTime.floorEntry(time);
         if (entry == null) {
-            log.warn("No interval for value " + value);
+            log.warn("No interval for value {}", value);
             return;
         }
         Sample sample = entry.getValue();
