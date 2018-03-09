@@ -1,33 +1,11 @@
 package org.yamcs.algorithms;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.yamcs.ConfigurationException;
-import org.yamcs.InvalidIdentification;
-import org.yamcs.parameter.ParameterValue;
-import org.yamcs.ProcessorFactory;
-import org.yamcs.RefMdbPacketGenerator;
-import org.yamcs.YConfiguration;
-import org.yamcs.Processor;
-import org.yamcs.ProcessorException;
+import org.junit.*;
+import org.yamcs.*;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -35,6 +13,10 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 public class AlgorithmManagerTest {
     @BeforeClass
@@ -170,28 +152,48 @@ public class AlgorithmManagerTest {
 
         proc.start();
         tmGenerator.generate_PKT1_6(1, 0);
-        assertEquals(1, q.size());
+        assertEquals(6, q.size());
         Event evt = q.poll();
         assertEquals("CustomAlgorithm", evt.getSource());
         assertEquals("/REFMDB/SUBSYS1/script_events", evt.getType());
         assertEquals("low", evt.getMessage());
         assertEquals(EventSeverity.INFO, evt.getSeverity());
+
+        evt = q.poll(); // watch event
+        assertEquals(EventSeverity.WATCH, evt.getSeverity());
+
+        evt = q.poll(); // warning event
+        assertEquals(EventSeverity.WARNING, evt.getSeverity());
+
+        evt = q.poll(); // distress event
+        assertEquals("source", evt.getSource());
+        assertEquals("type", evt.getType());
+        assertEquals("message distress", evt.getMessage());
+        assertEquals(EventSeverity.DISTRESS, evt.getSeverity());
+
+        evt = q.poll(); // critical
+        assertEquals(EventSeverity.CRITICAL, evt.getSeverity());
+
+        evt = q.poll(); // severe
+        assertEquals(EventSeverity.SEVERE, evt.getSeverity());
+
         
         tmGenerator.generate_PKT1_6(7, 0);
-        assertEquals(1, q.size());
+        assertEquals(6, q.size());
         evt = q.poll();
         assertEquals("CustomAlgorithm", evt.getSource());
         assertEquals("/REFMDB/SUBSYS1/script_events", evt.getType());
         assertEquals("med", evt.getMessage());
         assertEquals(EventSeverity.WARNING, evt.getSeverity());
+        q.clear();
         
         tmGenerator.generate_PKT1_6(10, 0);
-        assertEquals(1, q.size());
+        assertEquals(6, q.size());
         evt = q.poll();
         assertEquals("CustomAlgorithm", evt.getSource());
         assertEquals("/REFMDB/SUBSYS1/script_events", evt.getType());
         assertEquals("high", evt.getMessage());
-        assertEquals(EventSeverity.ERROR, evt.getSeverity());
+        assertEquals(EventSeverity.SEVERE, evt.getSeverity());
     }
     
     @Test
