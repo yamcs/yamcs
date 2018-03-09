@@ -390,6 +390,13 @@ public class IntegrationTest extends AbstractIntegrationTest {
         cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.CommandFailed_KEY, cha.getName());
         assertEquals("Transmission constraints check failed", cha.getValue().getStringValue());
+        
+        cmdhist = wsListener.cmdHistoryDataList.poll(1, TimeUnit.SECONDS);
+        assertNotNull(cmdhist);
+        assertEquals(1, cmdhist.getAttrCount());
+        cha = cmdhist.getAttr(0);
+        assertEquals(CommandHistoryPublisher.CommandComplete_KEY, cha.getName());
+        assertEquals("NOK", cha.getValue().getStringValue());
     }
 
     @Test
