@@ -25,6 +25,7 @@ public class AlgorithmUtils {
     private EventProducer eventProducer;
     private final String yamcsInstance;
     private final ProcessorData processorData;
+    private final String defaultSource = "CustomAlgorithm";
 
     //can be null if the algorithms are not running inside a processor
     private final Processor processor;
@@ -32,7 +33,7 @@ public class AlgorithmUtils {
         this.yamcsInstance = yamcsInstance;
         
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
-        eventProducer.setSource("CustomAlgorithm");
+        eventProducer.setSource(defaultSource);
         this.xtcedb = xtcedb;
         this.processorData = processorData;
         this.processor = processor;
@@ -75,7 +76,21 @@ public class AlgorithmUtils {
         
         eventProducer.sendInfo(type, msg);
     }
-    
+
+    public void watch(String msg) {
+        watch(getAlgoName(), msg);
+    }
+
+    public void watch(String type, String msg) {
+        eventProducer.sendWatch(type, msg);
+    }
+
+    public void watch(String source, String type, String msg) {
+        eventProducer.setSource(source);
+        eventProducer.sendWatch(type, msg);
+        eventProducer.setSource(defaultSource);
+    }
+
     public void warning(String msg) {
         warning(getAlgoName(), msg);
     }
@@ -83,14 +98,61 @@ public class AlgorithmUtils {
     public void warning(String type, String msg) {
         eventProducer.sendWarning(type, msg);
     }
-    
+
+    public void warning(String source, String type, String msg) {
+        eventProducer.setSource(source);
+        eventProducer.sendWarning(type, msg);
+        eventProducer.setSource(defaultSource);
+    }
+
+    public void distress(String msg) {
+        distress(getAlgoName(), msg);
+    }
+
+    public void distress(String type, String msg) {
+        eventProducer.sendDistress(type, msg);
+    }
+
+    public void distress(String source, String type, String msg) {
+        eventProducer.setSource(source);
+        eventProducer.sendDistress(type, msg);
+        eventProducer.setSource(defaultSource);
+    }
+
+    public void critical(String msg) {
+        critical(getAlgoName(), msg);
+    }
+
+    public void critical(String type, String msg) {
+        eventProducer.sendCritical(type, msg);
+    }
+
+    public void critical(String source, String type, String msg) {
+        eventProducer.setSource(source);
+        eventProducer.sendCritical(type, msg);
+        eventProducer.setSource(defaultSource);
+    }
+
+    public void severe(String msg) {
+        severe(getAlgoName(), msg);
+    }
+
+    public void severe(String type, String msg) {
+        eventProducer.sendSevere(type, msg);
+    }
+
+    public void severe(String source, String type, String msg) {
+        eventProducer.setSource(source);
+        eventProducer.sendSevere(type, msg);
+        eventProducer.setSource(defaultSource);
+    }
+
+    @Deprecated
     public void error(String msg) {
-        error(getAlgoName(), msg);
+        severe(getAlgoName(), msg);
     }
-    
-    public void error(String type, String msg) {
-        eventProducer.sendError(type, msg);
-    }
+
+
 
     /**
      * returns the processor name if the algorithm is running in a processor or null otherwise

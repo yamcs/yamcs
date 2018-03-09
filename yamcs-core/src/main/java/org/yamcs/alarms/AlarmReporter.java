@@ -1,14 +1,7 @@
 package org.yamcs.alarms;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.util.concurrent.AbstractService;
 import org.yamcs.ConfigurationException;
-import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
@@ -17,14 +10,10 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
-import org.yamcs.xtce.AlarmReportType;
-import org.yamcs.xtce.AlarmType;
-import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.*;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import com.google.common.util.concurrent.AbstractService;
+import java.util.*;
 
 /**
  * Generates realtime alarm events automatically, by subscribing to all relevant
@@ -221,7 +210,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
             case DISTRESS:
             case CRITICAL:
             case SEVERE:
-                eventProducer.sendError(pv.getMonitoringResult().toString(), message);
+                eventProducer.sendSevere(pv.getMonitoringResult().toString(), message);
                 break;
             default:
                 throw new IllegalStateException("Unexpected monitoring result: "+pv.getMonitoringResult());
@@ -238,7 +227,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
         case DISTRESS:
         case CRITICAL:
         case SEVERE:
-            eventProducer.sendError(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
+            eventProducer.sendSevere(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());
             break;
         case IN_LIMITS:
             eventProducer.sendInfo(pv.getMonitoringResult().toString(), "Parameter "+pv.getParameter().getQualifiedName()+" transitioned to state "+pv.getEngValue().getStringValue());

@@ -24,7 +24,7 @@ public class EventCrashHandler implements CrashHandler {
         }
         try {
             sendingError = true;
-            eventProducer.sendError(type, msg);
+            eventProducer.sendSevere(type, msg);
         } catch (Exception e) {
             e.printStackTrace();
         }
