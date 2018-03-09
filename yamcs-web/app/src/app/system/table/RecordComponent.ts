@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Record, Table } from '../../../yamcs-client';
+import { Record, Table } from '@yamcs/client';
 
 @Component({
   selector: 'app-record',

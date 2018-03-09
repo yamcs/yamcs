@@ -1,4 +1,4 @@
-import { ParameterValue, Alias } from '../../../yamcs-client';
+import { ParameterValue, Alias } from '@yamcs/client';
 
 export interface Display {
 

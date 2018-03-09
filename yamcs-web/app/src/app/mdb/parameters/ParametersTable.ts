@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, ViewChild, Input, AfterViewInit } from '@angular/core';
 
-import { Parameter } from '../../../yamcs-client';
+import { Parameter } from '@yamcs/client';
 
 import { MatSort, MatTableDataSource } from '@angular/material';
 import { Observable } from 'rxjs/Observable';

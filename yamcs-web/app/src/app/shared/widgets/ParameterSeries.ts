@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Parameter } from '../../../yamcs-client';
+import { Parameter } from '@yamcs/client';
 
 @Component({
   selector: 'app-parameter-series',

@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Instance } from '../../../yamcs-client';
+import { Instance } from '@yamcs/client';
 import { Observable } from 'rxjs/Observable';
 import { Store } from '@ngrx/store';
 import { selectInstances } from '../store/instance.selectors';

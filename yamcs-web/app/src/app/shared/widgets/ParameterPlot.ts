@@ -1,6 +1,6 @@
 import { Component, ViewChild, AfterViewInit, ElementRef, Input, QueryList, ContentChildren } from '@angular/core';
 import Dygraph from 'dygraphs';
-import { Parameter } from '../../../yamcs-client';
+import { Parameter } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DyDataSource } from './DyDataSource';
 import { DySample } from './DySample';
@@ -70,7 +70,7 @@ export class ParameterPlot implements AfterViewInit {
     instanceClient.getParameterSamples(qname, {
       start: start.toISOString(),
       stop: stop.toISOString(),
-    }).subscribe(samples => {
+    }).then(samples => {
       this.dataSource = new DyDataSource(samples);
       this.initDygraphs(containingDiv, this.dataSource.data);
     });

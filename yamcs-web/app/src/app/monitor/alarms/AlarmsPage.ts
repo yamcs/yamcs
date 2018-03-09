@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 
-import { Alarm, Instance } from '../../../yamcs-client';
+import { Alarm, Instance } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { Observable } from 'rxjs/Observable';

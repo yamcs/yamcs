@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { Stream, Instance } from '../../../yamcs-client';
+import { Stream, Instance } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
@@ -25,7 +25,7 @@ export class StreamsPage implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<Stream>();
 
   constructor(yamcs: YamcsService, private store: Store<State>) {
-    yamcs.getSelectedInstance().getStreams().subscribe(streams => {
+    yamcs.getSelectedInstance().getStreams().then(streams => {
       this.dataSource.data = streams;
     });
   }

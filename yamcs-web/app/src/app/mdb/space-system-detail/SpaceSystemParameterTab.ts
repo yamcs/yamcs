@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Instance, Parameter } from '../../../yamcs-client';
+import { Instance, Parameter } from '@yamcs/client';
 import { Observable } from 'rxjs/Observable';
 import { Store } from '@ngrx/store';
 import { State } from '../../app.reducers';
@@ -14,7 +14,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 export class SpaceSystemParameterTab {
 
   instance$: Observable<Instance>;
-  parameter$: Observable<Parameter>;
+  parameter$: Promise<Parameter>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, store: Store<State>) {
     this.instance$ = store.select(selectCurrentInstance);

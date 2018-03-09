@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { Instance } from '../../../yamcs-client';
+import { Instance } from '@yamcs/client';
 import { Store } from '@ngrx/store';
 import { State } from '../../app.reducers';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';

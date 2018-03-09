@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { Container, Instance } from '../../../yamcs-client';
+import { Container, Instance } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
@@ -15,7 +15,7 @@ import { State } from '../../app.reducers';
 export class ContainersPage {
 
   instance$: Observable<Instance>;
-  containers$: Observable<Container[]>;
+  containers$: Promise<Container[]>;
 
   constructor(yamcs: YamcsService, store: Store<State>) {
     this.instance$ = store.select(selectCurrentInstance);

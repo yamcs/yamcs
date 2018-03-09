@@ -1,5 +1,5 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
-import { ParameterValue } from '../../../yamcs-client';
+import { ParameterValue } from '@yamcs/client';
 
 @Component({
   selector: 'app-expirable',

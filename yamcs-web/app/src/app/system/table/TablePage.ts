@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { Table, Instance } from '../../../yamcs-client';
+import { Table, Instance } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 
@@ -18,13 +18,11 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 export class TablePage implements OnInit {
 
   instance$: Observable<Instance>;
-  table$: Observable<Table>;
+  table$: Promise<Table>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
-    const name = route.snapshot.paramMap.get('name');
-    if (name != null) {
-      this.table$ = yamcs.getSelectedInstance().getTable(name);
-    }
+    const name = route.snapshot.paramMap.get('name')!;
+    this.table$ = yamcs.getSelectedInstance().getTable(name);
   }
 
   ngOnInit() {

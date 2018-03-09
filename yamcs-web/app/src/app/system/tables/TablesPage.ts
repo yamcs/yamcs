@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 
-import { Table, Instance } from '../../../yamcs-client';
+import { Table, Instance } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
@@ -25,7 +25,7 @@ export class TablesPage implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<Table>();
 
   constructor(yamcs: YamcsService, private store: Store<State>) {
-    yamcs.getSelectedInstance().getTables().subscribe(tables => {
+    yamcs.getSelectedInstance().getTables().then(tables => {
       this.dataSource.data = tables;
     });
   }

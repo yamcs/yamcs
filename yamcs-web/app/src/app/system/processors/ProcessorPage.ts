@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Instance, Processor } from '../../../yamcs-client';
+import { Instance, Processor } from '@yamcs/client';
 import { Observable } from 'rxjs/Observable';
 import { ActivatedRoute } from '@angular/router';
 import { State } from '../../app.reducers';
@@ -15,7 +15,7 @@ import { Store } from '@ngrx/store';
 export class ProcessorPage implements OnInit {
 
   instance$: Observable<Instance>;
-  processor$: Observable<Processor>;
+  processor$: Promise<Processor>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
     const name = route.snapshot.paramMap.get('name');

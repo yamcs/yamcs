@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 
-import { Table, Record } from '../../../yamcs-client';
+import { Table, Record } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 import { ActivatedRoute } from '@angular/router';
@@ -15,8 +14,8 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class TableDataTab {
 
-  table$: Observable<Table>;
-  records$: Observable<Record[]>;
+  table$: Promise<Table>;
+  records$: Promise<Record[]>;
 
   selectedRecord$ = new BehaviorSubject<Record | null>(null);
 

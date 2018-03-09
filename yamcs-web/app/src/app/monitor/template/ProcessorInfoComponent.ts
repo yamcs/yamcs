@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Observable } from 'rxjs/Observable';
-import { TimeInfo } from '../../../yamcs-client';
+import { TimeInfo } from '@yamcs/client';
 
 @Component({
   selector: 'app-processor-info',

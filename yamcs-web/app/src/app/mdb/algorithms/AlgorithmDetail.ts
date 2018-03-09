@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import { Algorithm } from '../../../yamcs-client';
+import { Algorithm } from '@yamcs/client';
 
 @Component({
   selector: 'app-algorithm-detail',

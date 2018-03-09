@@ -1,5 +1,5 @@
 import { DataSourceSample } from './DataSourceSample';
-import { AlarmRange } from '../yamcs-client';
+import { AlarmRange } from '@yamcs/client';
 
 export class ComputationSample implements DataSourceSample {
 

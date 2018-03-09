@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { OperatorType } from '../../../yamcs-client';
+import { OperatorType } from '@yamcs/client';
 
 @Pipe({ name: 'operator' })
 export class OperatorPipe implements PipeTransform {

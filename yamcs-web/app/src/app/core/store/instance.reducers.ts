@@ -2,7 +2,7 @@ import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 
 import * as actions from './instance.actions';
 
-import { Instance } from '../../../yamcs-client';
+import { Instance } from '@yamcs/client';
 
 export interface InstanceState extends EntityState<Instance> {
   loading: boolean;

@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit } from '@angular/core';
 
-import { ClientInfo } from '../../../yamcs-client';
+import { ClientInfo } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
@@ -21,7 +21,7 @@ export class ClientsPage implements AfterViewInit {
   private clientsById: { [key: string]: ClientInfo } = {};
 
   constructor(yamcs: YamcsService) {
-    yamcs.getSelectedInstance().getClients().subscribe(clients => {
+    yamcs.getSelectedInstance().getClients().then(clients => {
       for (const client of clients) {
         this.processClientEvent(client);
       }

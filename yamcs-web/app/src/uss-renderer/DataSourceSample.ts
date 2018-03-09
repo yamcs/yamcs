@@ -1,4 +1,4 @@
-import { AlarmRange } from '../yamcs-client';
+import { AlarmRange } from '@yamcs/client';
 
 export interface DataSourceSample {
 

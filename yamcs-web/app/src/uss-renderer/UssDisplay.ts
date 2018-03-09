@@ -16,7 +16,7 @@ import { Color } from './Color';
 import { ResourceResolver } from '../app/monitor/displays/ResourceResolver';
 import { DisplayFrame } from '../app/monitor/displays/DisplayFrame';
 import { ParameterSample } from './ParameterSample';
-import { ParameterValue, Alias } from '../yamcs-client';
+import { ParameterValue, Alias } from '@yamcs/client';
 import { StyleSet } from './StyleSet';
 import { Display } from '../app/monitor/displays/Display';
 

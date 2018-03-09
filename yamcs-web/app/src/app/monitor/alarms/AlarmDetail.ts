@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import { Alarm } from '../../../yamcs-client';
+import { Alarm } from '@yamcs/client';
 
 @Component({
   selector: 'app-alarm-detail',

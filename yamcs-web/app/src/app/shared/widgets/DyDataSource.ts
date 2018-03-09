@@ -1,4 +1,4 @@
-import { Sample } from '../../../yamcs-client/types/monitoring';
+import { Sample } from '@yamcs/client';
 import { DySample } from './DySample';
 
 /**

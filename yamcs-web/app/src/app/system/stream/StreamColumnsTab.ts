@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 
-import { Stream } from '../../../yamcs-client';
+import { Stream } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 
@@ -13,7 +12,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class StreamColumnsTab {
 
-  stream$: Observable<Stream>;
+  stream$: Promise<Stream>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent;

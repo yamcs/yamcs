@@ -1,6 +1,5 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { UserInfo } from '../../../yamcs-client';
-import { Observable } from 'rxjs/Observable';
+import { UserInfo } from '@yamcs/client';
 import { YamcsService } from '../services/YamcsService';
 
 @Component({
@@ -10,7 +9,7 @@ import { YamcsService } from '../services/YamcsService';
 })
 export class ProfilePage {
 
-  user$: Observable<UserInfo>;
+  user$: Promise<UserInfo>;
 
   constructor(yamcs: YamcsService) {
     this.user$ = yamcs.yamcsClient.getUserInfo();

@@ -3,7 +3,7 @@ import { Component, ViewChild, AfterViewInit, ChangeDetectionStrategy, ChangeDet
 import { State } from '../../app.reducers';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
-import { Instance } from '../../../yamcs-client';
+import { Instance } from '@yamcs/client';
 import { selectInstances, selectCurrentInstance } from '../../core/store/instance.selectors';
 import { Router } from '@angular/router';
 

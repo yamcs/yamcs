@@ -1,5 +1,5 @@
 import { Action } from '@ngrx/store';
-import { Instance } from '../../../yamcs-client';
+import { Instance } from '@yamcs/client';
 
 export const LOAD = '[Instances] Load';
 export const LOAD_SUCCESS = '[Instances] Load Success';

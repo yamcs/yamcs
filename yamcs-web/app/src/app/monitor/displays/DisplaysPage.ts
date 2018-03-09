@@ -13,7 +13,7 @@ import { State } from '../../app.reducers';
 import { Store } from '@ngrx/store';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { Observable } from 'rxjs/Observable';
-import { Instance } from '../../../yamcs-client';
+import { Instance } from '@yamcs/client';
 
 @Component({
   templateUrl: './DisplaysPage.html',

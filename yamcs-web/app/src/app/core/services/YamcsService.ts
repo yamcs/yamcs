@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { YamcsClient, InstanceClient } from '../../../yamcs-client';
+import { YamcsClient, InstanceClient } from '@yamcs/client';
 import { HttpClient } from '@angular/common/http';
 
 
@@ -14,7 +14,7 @@ export class YamcsService {
   private selectedInstance: InstanceClient;
 
   constructor(http: HttpClient) {
-    this.yamcsClient = new YamcsClient(http);
+    this.yamcsClient = new YamcsClient();
   }
 
   switchInstance(instance: string) {

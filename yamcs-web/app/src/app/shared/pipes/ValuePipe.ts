@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Value } from '../../../yamcs-client';
+import { Value } from '@yamcs/client';
 import { DateTimePipe } from './DateTimePipe';
 
 @Pipe({ name: 'value' })

@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 
-import { CommandQueue } from '../../../yamcs-client';
+import { CommandQueue } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 
@@ -25,7 +25,7 @@ export class ProcessorTCTab {
 
     // Single shot (websocket also provides an initial update,
     // but only first time we navigate to this page)
-    instanceClient.getCommandQueues(processorName).subscribe(cqueues => {
+    instanceClient.getCommandQueues(processorName).then(cqueues => {
       for (const cqueue of cqueues) {
         this.cqueueByName[cqueue.name] = cqueue;
       }

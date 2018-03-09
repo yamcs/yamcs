@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, AfterViewInit, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { TmStatistics } from '../../../yamcs-client';
+import { TmStatistics } from '@yamcs/client';
 import { MatSort, MatTableDataSource } from '@angular/material';
 
 @Component({

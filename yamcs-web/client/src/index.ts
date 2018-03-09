@@ -27,6 +27,7 @@ export {
   ParameterData,
   ParameterSubscriptionRequest,
   ParameterValue,
+  Sample,
   TimeInfo,
   Value,
 } from './types/monitoring';

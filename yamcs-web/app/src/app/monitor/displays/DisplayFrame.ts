@@ -1,6 +1,6 @@
 import { Layout } from './Layout';
 import { UssDisplay } from '../../../uss-renderer/UssDisplay';
-import { ParameterValue } from '../../../yamcs-client';
+import { ParameterValue } from '@yamcs/client';
 import { Display } from './Display';
 import { OpiDisplay } from '../../../opi-renderer/OpiDisplay';
 

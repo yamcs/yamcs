@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges } from '@angular/core';
-import { DisplayFile, DisplayFolder } from '../../../yamcs-client';
+import { DisplayFile, DisplayFolder } from '@yamcs/client';
 
 @Component({
   selector: 'app-display-navigator',

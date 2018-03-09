@@ -1,10 +1,8 @@
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DataSource } from '@angular/cdk/table';
-import { Alarm } from '../../../yamcs-client';
+import { Alarm } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CollectionViewer } from '@angular/cdk/collections';
-import { finalize, catchError } from 'rxjs/operators';
-import { of } from 'rxjs/observable/of';
 
 export class AlarmsDataSource extends DataSource<Alarm> {
 
@@ -23,15 +21,14 @@ export class AlarmsDataSource extends DataSource<Alarm> {
 
   loadAlarms(processorName: string) {
     this.loading$.next(true);
-    this.yamcs.getSelectedInstance().getActiveAlarms(processorName).pipe(
-      catchError(() => of([])),
-      finalize(() => this.loading$.next(false)),
-    ).subscribe(alarms => {
-      for (const alarm of alarms) {
-        this.processAlarm(alarm);
-      }
-      this.alarms$.next(Object.values(this.alarmsByName));
-    });
+    this.yamcs.getSelectedInstance().getActiveAlarms(processorName)
+      .then(alarms => {
+        this.loading$.next(false)
+        for (const alarm of alarms) {
+          this.processAlarm(alarm);
+        }
+        this.alarms$.next(Object.values(this.alarmsByName));
+      });
 
     this.yamcs.getSelectedInstance().getAlarmUpdates().subscribe(alarm => {
       this.processAlarm(alarm);

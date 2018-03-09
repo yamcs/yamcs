@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit } from '@a
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs/Observable';
 
-import { Instance, SpaceSystem } from '../../../yamcs-client';
+import { Instance, SpaceSystem } from '@yamcs/client';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { State } from '../../app.reducers';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -25,7 +25,7 @@ export class SpaceSystemsPage implements AfterViewInit {
 
   constructor(yamcs: YamcsService, store: Store<State>) {
     this.instance$ = store.select(selectCurrentInstance);
-    yamcs.getSelectedInstance().getSpaceSystems().subscribe(spaceSystems => {
+    yamcs.getSelectedInstance().getSpaceSystems().then(spaceSystems => {
       this.dataSource.data = spaceSystems;
     });
   }

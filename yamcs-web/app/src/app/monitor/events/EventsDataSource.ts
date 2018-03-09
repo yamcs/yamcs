@@ -1,11 +1,9 @@
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { DataSource } from '@angular/cdk/table';
-import { Event } from '../../../yamcs-client';
+import { Event } from '@yamcs/client';
 import { MatPaginator } from '@angular/material';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CollectionViewer } from '@angular/cdk/collections';
-import { finalize, catchError } from 'rxjs/operators';
-import { of } from 'rxjs/observable/of';
 
 export class EventsDataSource extends DataSource<Event> {
 
@@ -26,10 +24,8 @@ export class EventsDataSource extends DataSource<Event> {
       start: start.toISOString(),
       stop: stop.toISOString(),
       limit: 100,
-    }).pipe(
-      catchError(() => of([])),
-      finalize(() => this.loading$.next(false)),
-    ).subscribe(events => {
+    }).then(events => {
+      this.loading$.next(false);
       console.log('got ', events.length);
       this.events$.next(events);
     });

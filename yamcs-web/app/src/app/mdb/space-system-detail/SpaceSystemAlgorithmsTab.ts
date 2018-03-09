@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { Instance, Algorithm } from '../../../yamcs-client';
+import { Instance, Algorithm } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 
@@ -19,7 +19,7 @@ export class SpaceSystemAlgorithmsTab implements OnInit {
   qualifiedName: string;
 
   instance$: Observable<Instance>;
-  algorithms$: Observable<Algorithm[]>;
+  algorithms$: Promise<Algorithm[]>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
     const parent = route.snapshot.parent!;

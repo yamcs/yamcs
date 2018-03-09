@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { Instance, UserInfo } from '../../../yamcs-client';
+import { Instance, UserInfo } from '@yamcs/client';
 import { State } from '../../app.reducers';
 import { Store } from '@ngrx/store';
 import { selectCurrentInstance } from '../store/instance.selectors';
@@ -19,7 +19,7 @@ export class AppComponent {
   title = 'Yamcs';
 
   instance$: Observable<Instance>;
-  user$: Observable<UserInfo>;
+  user$: Promise<UserInfo>;
 
   constructor(yamcs: YamcsService, store: Store<State>, private dialog: MatDialog) {
     this.instance$ = store.select(selectCurrentInstance);

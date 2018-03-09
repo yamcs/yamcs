@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { TmStatistics } from '../../../yamcs-client';
+import { TmStatistics } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 

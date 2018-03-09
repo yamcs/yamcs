@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { MatTableDataSource } from '@angular/material';
-import { Instance } from '../../../yamcs-client';
+import { Instance } from '@yamcs/client';
 import { Observable } from 'rxjs/Observable';
 import { State } from '../../app.reducers';
 import { Store } from '@ngrx/store';

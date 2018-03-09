@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import { Command } from '../../../yamcs-client';
+import { Command } from '@yamcs/client';
 
 @Component({
   selector: 'app-command-detail',

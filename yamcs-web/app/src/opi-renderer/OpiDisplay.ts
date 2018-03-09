@@ -1,7 +1,7 @@
 import { Svg, Rect, Tag, Defs, Pattern } from './tags';
 import { ResourceResolver } from '../app/monitor/displays/ResourceResolver';
 import { DisplayFrame } from '../app/monitor/displays/DisplayFrame';
-import { ParameterValue, Alias } from '../yamcs-client';
+import { ParameterValue, Alias } from '@yamcs/client';
 import { Display } from '../app/monitor/displays/Display';
 
 import * as utils from './utils';

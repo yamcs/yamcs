@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 
-import { Stream } from '../../../yamcs-client';
+import { Stream } from '@yamcs/client';
 
 import * as utils from '../utils';
 
@@ -19,18 +18,13 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class StreamScriptTab {
 
-  stream$: Observable<Stream>;
+  stream$: Promise<Stream>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
-    const parent = route.snapshot.parent;
-    if (parent) {
-      const name = parent.paramMap.get('name');
-      if (name != null) {
-        this.stream$ = yamcs.getSelectedInstance().getStream(name);
-      }
-    }
+    const parent = route.snapshot.parent!;
+    const name = parent.paramMap.get('name')!;
+    this.stream$ = yamcs.getSelectedInstance().getStream(name);
   }
-
 
   formatSQL(sql: string) {
     return utils.formatSQL(sql);

@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild } from '@angular/core';
 
-import { Link, LinkEvent } from '../../../yamcs-client';
+import { Link, LinkEvent } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
@@ -25,7 +25,7 @@ export class LinksPage implements AfterViewInit {
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.
-    this.yamcs.getSelectedInstance().getLinks().subscribe(links => {
+    this.yamcs.getSelectedInstance().getLinks().then(links => {
       for (const link of links) {
         this.linksByName[link.name] = link;
       }
@@ -53,11 +53,11 @@ export class LinksPage implements AfterViewInit {
   tableTrackerFn = (index: number, link: Link) => link.name;
 
   enableLink(name: string) {
-    this.yamcs.getSelectedInstance().enableLink(name).subscribe();
+    this.yamcs.getSelectedInstance().enableLink(name);
   }
 
   disableLink(name: string) {
-    this.yamcs.getSelectedInstance().disableLink(name).subscribe();
+    this.yamcs.getSelectedInstance().disableLink(name);
   }
 
   private processLinkEvent(evt: LinkEvent) {

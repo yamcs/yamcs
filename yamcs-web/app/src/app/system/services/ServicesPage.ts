@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild } from '@angular/core';
 
-import { Service } from '../../../yamcs-client';
+import { Service } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatSort, MatTableDataSource } from '@angular/material';
@@ -28,7 +28,7 @@ export class ServicesPage implements AfterViewInit {
 
   startService(name: string) {
     if (confirm(`Are you sure you want to start service ${name} ?`)) {
-      this.yamcs.getSelectedInstance().startService(name).subscribe(() => {
+      this.yamcs.getSelectedInstance().startService(name).then(() => {
         this.refreshDataSource();
       });
     }
@@ -36,14 +36,14 @@ export class ServicesPage implements AfterViewInit {
 
   stopService(name: string) {
     if (confirm(`Are you sure you want to stop service ${name} ?`)) {
-      this.yamcs.getSelectedInstance().stopService(name).subscribe(() => {
+      this.yamcs.getSelectedInstance().stopService(name).then(() => {
         this.refreshDataSource();
       });
     }
   }
 
   private refreshDataSource() {
-    this.yamcs.getSelectedInstance().getServices().subscribe(services => {
+    this.yamcs.getSelectedInstance().getServices().then(services => {
       this.dataSource.data = services;
     });
   }

@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 
-import { Processor, Instance } from '../../../yamcs-client';
+import { Processor, Instance } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
@@ -26,7 +26,7 @@ export class ProcessorsPage implements OnInit, AfterViewInit {
   private processorsByName: { [key: string]: Processor } = {};
 
   constructor(yamcs: YamcsService, private store: Store<State>) {
-    yamcs.getSelectedInstance().getProcessors().subscribe(processors => {
+    yamcs.getSelectedInstance().getProcessors().then(processors => {
       for (const processor of processors) {
         this.processProcessorEvent(processor);
       }

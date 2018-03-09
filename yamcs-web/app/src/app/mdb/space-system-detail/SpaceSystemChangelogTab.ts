@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { Instance, SpaceSystem } from '../../../yamcs-client';
+import { Instance, SpaceSystem } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 
@@ -16,7 +16,7 @@ export class SpaceSystemChangelogTab {
   qualifiedName: string;
 
   instance$: Observable<Instance>;
-  spaceSystem$: Observable<SpaceSystem>;
+  spaceSystem$: Promise<SpaceSystem>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;

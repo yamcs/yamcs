@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
-import { Instance, Parameter } from '../../../yamcs-client';
+import { Instance, Parameter } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 
@@ -19,7 +19,7 @@ export class SpaceSystemParametersTab implements OnInit {
   qualifiedName: string;
 
   instance$: Observable<Instance>;
-  parameters$: Observable<Parameter[]>;
+  parameters$: Promise<Parameter[]>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
     const parent = route.snapshot.parent!;

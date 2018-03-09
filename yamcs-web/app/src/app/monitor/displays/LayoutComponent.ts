@@ -14,9 +14,8 @@ import { ResourceResolver } from './ResourceResolver';
 import { Layout, LayoutStateListener, LayoutListener } from './Layout';
 import { LayoutState } from './LayoutState';
 import { YamcsService } from '../../core/services/YamcsService';
-import { take } from 'rxjs/operators';
 import { DisplayFrame, Coordinates } from './DisplayFrame';
-import { DisplayFolder } from '../../../yamcs-client';
+import { DisplayFolder } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Store } from '@ngrx/store';
 import { State } from '../../app.reducers';
@@ -52,7 +51,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
     store.select(selectCurrentInstance).subscribe(instance => {
       // TODO should be simpler. yamcs.getSelectedInstance() is not yet updated when this triggers.
       const instanceClient = this.yamcs.yamcsClient.selectInstance(instance.name);
-      instanceClient.getDisplayInfo().subscribe(displayInfo => {
+      instanceClient.getDisplayInfo().then(displayInfo => {
         this.displayInfo$.next(displayInfo);
       });
     });
@@ -164,16 +163,16 @@ class RemoteResourceResolver implements ResourceResolver {
   }
 
   retrieveText(path: string) {
-    return this.yamcsService.yamcsClient.getStaticText(path).pipe(take(1)).toPromise();
+    return this.yamcsService.yamcsClient.getStaticText(path);
   }
 
   retrieveXML(path: string) {
-    return this.yamcsService.yamcsClient.getStaticXML(path).pipe(take(1)).toPromise();
+    return this.yamcsService.yamcsClient.getStaticXML(path);
   }
 
   retrieveXMLDisplayResource(path: string) {
     const instance = this.yamcsService.getSelectedInstance().instance;
     const displayPath = `${instance}/displays/${path}`;
-    return this.yamcsService.yamcsClient.getStaticXML(displayPath).pipe(take(1)).toPromise();
+    return this.yamcsService.yamcsClient.getStaticXML(displayPath);
   }
 }
