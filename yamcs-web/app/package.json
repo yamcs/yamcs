@@ -3,14 +3,10 @@
   "version": "0.0.0",
   "license": "AGPL-3.0",
   "scripts": {
-    "ng": "ng",
     "build": "ng build --output-hashing=all --aot",
     "build-prod": "ng build --output-hashing=all --aot --prod",
     "build:lib": "ng-packagr -p package.json",
-    "test": "ng test",
-    "lint": "ng lint",
-    "watch": "ng build --output-hashing=all -w",
-    "e2e": "ng e2e"
+    "watch": "ng build --output-hashing=all -w"
   },
   "private": true,
   "ngPackage": {
@@ -54,21 +50,9 @@
     "@angular/cli": "1.7.3",
     "@angular/compiler-cli": "^5.2.8",
     "@angular/language-service": "^5.2.8",
-    "@types/jasmine": "^2.8.6",
-    "@types/jasminewd2": "~2.0.2",
     "@types/node": "^9.4.7",
     "codelyzer": "^4.2.1",
-    "jasmine-core": "^3.1.0",
-    "jasmine-spec-reporter": "~4.2.1",
-    "karma": "^2.0.0",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-cli": "~1.0.1",
-    "karma-coverage-istanbul-reporter": "^1.4.2",
-    "karma-jasmine": "~1.1.0",
-    "karma-jasmine-html-reporter": "^0.2.2",
     "ng-packagr": "^2.2.0",
-    "protractor": "^5.3.0",
-    "ts-node": "^5.0.1",
     "tslint": "^5.9.1",
     "typescript": "~2.6.2"
   }
