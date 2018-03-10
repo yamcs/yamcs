@@ -7,10 +7,9 @@ import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 export default {
   input: 'src/index.ts',
   output: [
-    { file: 'dist/yamcs-client.umd.js', name: 'yamcs-client', format: 'umd' },
-    { file: 'dist/yamcs-client.es5.js', format: 'es' },
+    { file: 'dist/yamcs-client.umd.js', name: 'yamcs-client', format: 'umd', sourcemap: true },
+    { file: 'dist/yamcs-client.es5.js', format: 'es', sourcemap: true },
   ],
-  sourcemap: true,
   watch: {
     include: 'src/**',
   },

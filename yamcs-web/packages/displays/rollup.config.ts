@@ -7,10 +7,9 @@ import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 export default {
   input: 'src/index.ts',
   output: [
-    { file: 'dist/displays.umd.js', name: 'opi-renderer', format: 'umd' },
-    { file: 'dist/displays.es5.js', format: 'es' },
+    { file: 'dist/displays.umd.js', name: 'opi-renderer', format: 'umd', sourcemap: true },
+    { file: 'dist/displays.es5.js', format: 'es', sourcemap: true },
   ],
-  sourcemap: true,
   watch: {
     include: 'src/**',
   },
