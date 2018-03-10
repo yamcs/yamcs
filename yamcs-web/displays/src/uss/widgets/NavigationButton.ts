@@ -1,7 +1,7 @@
 import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
-import { G, Rect } from '../tags';
+import { G, Rect } from '../../tags';
 import { Color } from '../Color';
 import { Label } from './Label';
 import { DataSourceBinding } from '../DataSourceBinding';
@@ -23,7 +23,7 @@ export class NavigationButton extends AbstractWidget {
   darkStroke: Color;
 
   commandClass: string;
-  openDisplayCommandOptions: OpenDisplayCommandOptions;
+  private openDisplayCommandOptions: OpenDisplayCommandOptions;
 
   fillColorBinding: DataSourceBinding;
 

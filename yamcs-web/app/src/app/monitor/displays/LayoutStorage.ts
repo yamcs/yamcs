@@ -1,4 +1,4 @@
-import { LayoutState } from './LayoutState';
+import { LayoutState } from '@yamcs/displays';
 
 export type LayoutStorageState = { [key: string]: LayoutState };
 

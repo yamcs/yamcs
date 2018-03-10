@@ -10,15 +10,15 @@ import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
 import { Symbol } from './widgets/Symbol';
 import { AbstractWidget } from './widgets/AbstractWidget';
-import { Svg, Rect, Tag, Defs, Pattern } from './tags';
+import { Svg, Rect, Tag, Defs, Pattern } from '../tags';
 import { Compound } from './widgets/Compound';
 import { Color } from './Color';
-import { ResourceResolver } from '../app/monitor/displays/ResourceResolver';
-import { DisplayFrame } from '../app/monitor/displays/DisplayFrame';
+import { ResourceResolver } from '../ResourceResolver';
+import { DisplayFrame } from '../DisplayFrame';
 import { ParameterSample } from './ParameterSample';
 import { ParameterValue, Alias } from '@yamcs/client';
 import { StyleSet } from './StyleSet';
-import { Display } from '../app/monitor/displays/Display';
+import { Display } from '../Display';
 
 export class UssDisplay implements Display {
 
@@ -69,7 +69,7 @@ export class UssDisplay implements Display {
       const rootEl = new Svg({
         width: this.width,
         height: this.height,
-        'xmlns': 'http://www.w3.org/2000/svg',
+        xmlns: 'http://www.w3.org/2000/svg',
         'xmlns:xlink': 'http://www.w3.org/1999/xlink',
       });
 
@@ -81,7 +81,7 @@ export class UssDisplay implements Display {
         y: 0,
         width: this.width,
         height: this.height,
-        fill: this.bgcolor
+        fill: this.bgcolor,
       }));
 
       if (grid) {
@@ -151,7 +151,7 @@ export class UssDisplay implements Display {
       }
     }
 
-    const widgets = [];
+    const widgets: AbstractWidget[] = [];
     for (const node of elementNodes) {
       const widget = this.createWidget(node);
       if (widget) {
@@ -201,6 +201,7 @@ export class UssDisplay implements Display {
         const widgetClass = utils.parseStringAttribute(node, 'class');
         return this.createWidgetByName(node, widgetClass);
       default:
+        // tslint:disable-next-line:no-console
         console.warn(`Unsupported widget type: ${widgetName}`);
         return;
     }

@@ -1,7 +1,7 @@
 import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
-import { G, Rect, Line, Text } from '../tags';
+import { G, Rect, Line, Text } from '../../tags';
 import { Color } from '../Color';
 import { DataSourceBinding } from '../DataSourceBinding';
 

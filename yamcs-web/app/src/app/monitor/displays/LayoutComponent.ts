@@ -1,4 +1,3 @@
-
 import {
   Component,
   ViewChild,
@@ -10,11 +9,16 @@ import {
   OnInit,
   OnChanges,
 } from '@angular/core';
-import { ResourceResolver } from './ResourceResolver';
-import { Layout, LayoutStateListener, LayoutListener } from './Layout';
-import { LayoutState } from './LayoutState';
+import {
+  Coordinates,
+  DisplayFrame,
+  Layout,
+  LayoutListener,
+  LayoutStateListener,
+  LayoutState,
+  ResourceResolver,
+} from '@yamcs/displays';
 import { YamcsService } from '../../core/services/YamcsService';
-import { DisplayFrame, Coordinates } from './DisplayFrame';
 import { DisplayFolder } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Store } from '@ngrx/store';

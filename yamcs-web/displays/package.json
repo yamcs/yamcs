@@ -1,0 +1,50 @@
+{
+  "name": "@yamcs/displays",
+  "version": "1.0.0",
+  "description": "Display Renderer for yamcs-web",
+  "private": true,
+  "main": "dist/displays.umd.js",
+  "module": "dist/displays.es5.js",
+  "typings": "dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "author": "Space Applications Services",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "clean": "rm -rf dist/",
+    "build": "tsc --module commonjs && rollup -c rollup.config.ts",
+    "watch": "rollup -c rollup.config.ts -w",
+    "pegjs": "cd src/uss/expressions && pegjs --plugin ts-pegjs/src/tspegjs -o parser.ts grammar.pegjs"
+  },
+  "peerDependencies": {
+    "@yamcs/client": "^1.0.0",
+    "dygraphs": "^2.1.0"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^2.8.6",
+    "@types/jasminewd2": "~2.0.2",
+    "@types/node": "^9.4.7",
+    "@types/pegjs": "^0.10.0",
+    "@yamcs/client": "^1.0.0",
+    "dygraphs": "^2.1.0",
+    "jasmine-core": "^3.1.0",
+    "jasmine-spec-reporter": "~4.2.1",
+    "karma": "^2.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-cli": "~1.0.1",
+    "karma-coverage-istanbul-reporter": "^1.4.2",
+    "karma-jasmine": "~1.1.0",
+    "karma-jasmine-html-reporter": "^0.2.2",
+    "pegjs": "^0.10.0",
+    "rollup": "^0.56.3",
+    "rollup-plugin-commonjs": "^9.0.0",
+    "rollup-plugin-node-resolve": "^3.2.0",
+    "rollup-plugin-peer-deps-external": "^2.1.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-typescript2": "^0.12.0",
+    "ts-pegjs": "^0.1.13",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.2"
+  }
+}

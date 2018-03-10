@@ -1,12 +1,12 @@
 import * as ast from './ast';
 import { CompiledFormula } from './CompiledFormula';
 
-const parser = require('./parser.js');
+import { parse } from './parser';
 
 export class FormulaCompiler {
 
   compile(formulaString: string) {
-    const formula = parser.parse(formulaString) as ast.Formula;
+    const formula = parse(formulaString, {}) as ast.Formula;
     // console.log(JSON.stringify(formula, null, 2));
     return new CompiledFormula(formula);
   }

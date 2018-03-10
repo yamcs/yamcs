@@ -1,6 +1,6 @@
 import { AbstractWidget } from './AbstractWidget';
 import * as utils from '../utils';
-import { Image } from '../tags';
+import { Image } from '../../tags';
 import { DataSourceBinding } from '../DataSourceBinding';
 
 export class ExternalImage extends AbstractWidget {

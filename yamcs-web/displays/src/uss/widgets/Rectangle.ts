@@ -1,7 +1,7 @@
 import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
-import { Rect } from '../tags';
+import { Rect } from '../../tags';
 import { DataSourceBinding } from '../DataSourceBinding';
 
 export class Rectangle extends AbstractWidget {

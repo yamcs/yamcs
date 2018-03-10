@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { State } from '../../app.reducers';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LayoutState } from '../displays/LayoutState';
+import { LayoutState } from '@yamcs/displays';
 import { LayoutComponent } from '../displays/LayoutComponent';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { NamedLayout, LayoutStorage } from '../displays/LayoutStorage';

@@ -51,13 +51,13 @@ export class StyleSet {
 
     this.styles = [];
     for (const styleNode of utils.findChildren(root, 'Style')) {
-      const acquisitionRules = [];
+      const acquisitionRules: string[] = [];
       const acquisition = utils.parseStringAttribute(styleNode, 'acquisition');
       for (const rule of acquisition.split(',')) {
         acquisitionRules.push(rule.trim());
       }
 
-      const monitoringRules = [];
+      const monitoringRules: string[] = [];
       const monitoring = utils.parseStringAttribute(styleNode, 'monitoring');
       for (const rule of monitoring.split(',')) {
         monitoringRules.push(rule.trim());

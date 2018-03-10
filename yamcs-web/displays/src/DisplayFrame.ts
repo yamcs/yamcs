@@ -1,8 +1,8 @@
 import { Layout } from './Layout';
-import { UssDisplay } from '../../../uss-renderer/UssDisplay';
-import { ParameterValue } from '@yamcs/client';
+import { UssDisplay } from './uss/UssDisplay';
+import { ParameterValue, Alias } from '@yamcs/client';
 import { Display } from './Display';
-import { OpiDisplay } from '../../../opi-renderer/OpiDisplay';
+import { OpiDisplay } from './opi/OpiDisplay';
 
 export interface Coordinates {
   x: number;
@@ -142,7 +142,7 @@ export class DisplayFrame {
     };
   }
 
-  getParameterIds() {
+  getParameterIds(): Alias[] {
     return this.display.getParameterIds();
   }
 

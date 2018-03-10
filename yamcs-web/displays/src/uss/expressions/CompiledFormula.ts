@@ -159,12 +159,13 @@ export class CompiledFormula {
 
   private executeCallExpression(expression: ast.CallExpression): any {
     const symbol = expression.callee.name;
-    const args = [];
+    const args: any[] = [];
     for (const a of expression.arguments) {
       args.push(this.executeExpression(a));
     }
     switch (symbol) {
       case 'print':
+        // tslint:disable-next-line:no-console
         console.log(...args);
         break;
       case 'parameterValue':

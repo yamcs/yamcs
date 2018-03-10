@@ -1,0 +1,29 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
+  "rules": {
+    "arrow-parens": false,
+    "ban-types": false,
+    "interface-name": [false],
+    "max-classes-per-file": [false],
+    "member-access": false,
+    "member-ordering": [false],
+    "no-empty": false,
+    "no-string-literal": false,
+    "quotemark": [true, "single"],
+    "object-literal-key-quotes": false,
+    "object-literal-sort-keys": false,
+    "ordered-imports": [false],
+    "prefer-for-of": [false],
+    "trailing-comma": [false]
+  },
+  "rulesDirectory": [],
+  "linterOptions": {
+    "exclude": [
+      "src/uss/expressions/parser.ts"
+    ]
+  }
+}

@@ -1,7 +1,6 @@
 import { DataSourceSample } from './DataSourceSample';
 import { AlarmRange, ParameterValue } from '@yamcs/client';
 
-
 export class ParameterSample implements DataSourceSample {
 
   opsName: string;

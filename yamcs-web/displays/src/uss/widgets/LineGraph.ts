@@ -2,7 +2,7 @@ import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
 import { Color } from '../Color';
-import { G, Rect, Text, Circle } from '../tags';
+import { G, Rect, Text, Circle } from '../../tags';
 
 import Dygraph from 'dygraphs';
 import { DataSourceSample } from '../DataSourceSample';

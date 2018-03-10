@@ -4,7 +4,7 @@ const sprintf = require('sprintf-js').sprintf;
 
 
 import { AbstractWidget } from './AbstractWidget';
-import { G, Rect, Text } from '../tags';
+import { G, Rect, Text } from '../../tags';
 import { Color } from '../Color';
 import { DataSourceBinding } from '../DataSourceBinding';
 import { DEFAULT_STYLE } from '../StyleSet';

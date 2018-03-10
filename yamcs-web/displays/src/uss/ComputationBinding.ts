@@ -26,6 +26,7 @@ export class ComputationBinding extends DataSourceBinding {
     try {
       this.engine = compiler.compile(this.expression);
     } catch (err) {
+      // tslint:disable-next-line:no-console
       console.error('Cannot compile expression', err, this.expression);
       return;
     }

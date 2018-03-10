@@ -32,7 +32,7 @@ export function hasChild(parentNode: Node, childNodeName: string) {
  * array.
  */
 export function findChildren(parentNode: Node, childNodeName?: string) {
-  const matchingChildren = [];
+  const matchingChildren: Node[] = [];
   for (let i = 0; i < parentNode.childNodes.length; i++) {
     const child = parentNode.childNodes[i];
     if (child.nodeType !== 3) { // Ignore text or whitespace
@@ -151,55 +151,10 @@ export function parseColorChild(parentNode: Node, childNodeName: string, default
 }
 
 export function parseColorNode(node: Node) {
-  const r = parseFloatChild(node, 'red');
-  const g = parseFloatChild(node, 'green');
-  const b = parseFloatChild(node, 'blue');
-  const a = parseFloatChild(node, 'alpha');
-  return new Color(r, g, b, a);
-}
-
-export function parseFillStyle(node: Node) {
-  const fillStyleNode = findChild(node, 'FillStyle');
-  const pattern = parseStringChild(fillStyleNode, 'Pattern');
-  return {
-    fill: parseColorChild(fillStyleNode, 'Color'),
-    'fill-opacity': (pattern.toLowerCase() === 'solid') ? 1 : 0,
-  };
-}
-
-export function parseDrawStyle(node: Node) {
-  const drawStyleNode = findChild(node, 'DrawStyle');
-  const pattern = parseStringChild(drawStyleNode, 'Pattern');
-  return {
-    stroke: parseColorChild(drawStyleNode, 'Color'),
-    'stroke-opacity': (pattern.toLowerCase() === 'solid') ? 1 : 0,
-    'stroke-width': parseFloatChild(drawStyleNode, 'Width'),
-  };
-}
-
-export function parseTextStyle(node: Node) {
-  const style: { [key: string]: any } = {
-    fill: parseColorChild(node, 'Color').toString(),
-    'font-family': parseStringChild(node, 'Fontname'),
-  };
-
-  // We get a font size in java points (at 72dpi)
-  let fontSize = parseIntChild(node, 'Fontsize');
-  // Best-effort to convert to browser dpi (96dpi on most systems)
-  fontSize = fontSize * (72 / 96);
-  style['font-size'] = `${fontSize}pt`;
-
-  if (parseBooleanChild(node, 'IsBold', false)) {
-    style['font-weight'] = 'bold';
-  }
-  if (parseBooleanChild(node, 'IsItalic', false)) {
-    style['font-style'] = 'italic';
-  }
-  if (parseBooleanChild(node, 'IsUnderlined', false)) {
-    style['text-decoration'] = 'underline';
-  }
-
-  return style;
+  const r = parseIntAttribute(node, 'red');
+  const g = parseIntAttribute(node, 'green');
+  const b = parseIntAttribute(node, 'blue');
+  return new Color(r, g, b);
 }
 
 export function parseStringAttribute(node: Node, attributeName: string) {
@@ -211,6 +166,15 @@ export function parseStringAttribute(node: Node, attributeName: string) {
   }
 }
 
+export function parseIntAttribute(node: Node, attributeName: string) {
+  const attr = node.attributes.getNamedItem(attributeName);
+  if (attr === null) {
+    throw new Error(`No attribute named ${attributeName}`);
+  } else {
+    return parseInt(attr.textContent || '', 10);
+  }
+}
+
 export function parseBooleanAttribute(node: Node, attributeName: string) {
   const attr = node.attributes.getNamedItem(attributeName);
   if (attr === null) {
@@ -218,29 +182,4 @@ export function parseBooleanAttribute(node: Node, attributeName: string) {
   } else {
     return attr.textContent === 'true';
   }
-}
-
-export function getReferencedElement(node: Node) {
-  let e = node;
-
-  const reference = parseStringAttribute(e, 'reference');
-  for (const token of reference.split('/')) {
-    if (token === '..') {
-      if (!e.parentNode) {
-        throw new Error('No such parent');
-      }
-      e = e.parentNode;
-    } else {
-      let idx = 0;
-      const k = token.indexOf('[');
-      let nodeName = token;
-      if (k !== -1) {
-        const idxStr = token.substring(k + 1, token.indexOf(']', k));
-        idx = parseInt(idxStr, 10) - 1;
-        nodeName = token.substring(0, k);
-      }
-      e = findChildren(e, nodeName)[idx];
-    }
-  }
-  return e;
 }

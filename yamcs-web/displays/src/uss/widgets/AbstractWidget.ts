@@ -1,4 +1,4 @@
-import { Tag } from '../tags';
+import { Tag } from '../../tags';
 import * as utils from '../utils';
 import { UssDisplay } from '../UssDisplay';
 import { ParameterBinding } from '../ParameterBinding';

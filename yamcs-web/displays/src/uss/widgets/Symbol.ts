@@ -1,17 +1,17 @@
 import * as utils from '../utils';
 
 import { AbstractWidget } from './AbstractWidget';
-import { Image } from '../tags';
+import { Image } from '../../tags';
 import { DataSourceBinding } from '../DataSourceBinding';
-import { ResourceResolver } from '../../app/monitor/displays/ResourceResolver';
+import { ResourceResolver } from '../../ResourceResolver';
 
 export class Symbol extends AbstractWidget {
 
   libraryName: string;
   symbolName: string;
-  symbol: SymbolDefinition;
+  private symbol: SymbolDefinition;
 
-  libraries: { [key: string]: SymbolLibrary };
+  private libraries: { [key: string]: SymbolLibrary };
   resolver: ResourceResolver;
 
   valueBinding: DataSourceBinding;
@@ -118,7 +118,7 @@ class SymbolLibrary {
   }
 
   toString() {
-    const res = [];
+    const res: SymbolDefinition[] = [];
     for (const key of Object.keys(this.symbols)) {
       res.push(this.symbols[key]);
     }
