@@ -1,5 +1,15 @@
 {
-	"devDependencies": {
-		"lerna": "^2.9.0"
-	}
+  "private": true,
+  "scripts": {
+    "lerna": "lerna",
+    "bootstrap": "lerna bootstrap",
+    "clean": "lerna clean",
+    "build": "lerna run build"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "lerna": "^2.9.0"
+  }
 }

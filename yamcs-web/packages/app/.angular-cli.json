@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "$schema": "../../node_modules/@angular/cli/lib/config/schema.json",
   "project": {
     "name": "yamcs-web"
   },
@@ -21,9 +21,9 @@
         "./styles/material-theme.scss",
         "./styles/styles.css",
         "../../displays/src/uss/font.css",
-        "../node_modules/dygraphs/dist/dygraph.css",
-        "../node_modules/material-design-icons/iconfont/material-icons.css",
-        "../node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
+        "../../../node_modules/dygraphs/dist/dygraph.css",
+        "../../../node_modules/material-design-icons/iconfont/material-icons.css",
+        "../../../node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
       ],
       "scripts": [],
       "environmentSource": "environments/environment.ts",
