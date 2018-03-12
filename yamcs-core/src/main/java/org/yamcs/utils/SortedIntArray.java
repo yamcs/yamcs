@@ -229,7 +229,7 @@ public class SortedIntArray implements Serializable {
     }
 
     public byte[] encodeToVarIntArray() {
-        byte[] buf = new byte[length * 4];
+        byte[] buf = new byte[length * 5];
 
         if (length == 0) {
             return buf;
