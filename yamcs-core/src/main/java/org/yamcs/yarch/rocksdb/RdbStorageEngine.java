@@ -182,7 +182,8 @@ public class RdbStorageEngine implements StorageEngine {
     public synchronized Tablespace createTablespace(String tablespaceName) {
         log.info("Creating tablespace {}", tablespaceName);
         int id = tablespaces.values().stream().mapToInt(t -> t.getId()).max().orElse(-1);
-        Tablespace t = new Tablespace(tablespaceName, (byte) (id + 1));
+        id = (id+1) & 0x7F; //make sure the first bit is always 0
+        Tablespace t = new Tablespace(tablespaceName, (byte) id);
 
         String fn = YarchDatabase.getDataDir() + "/" + tablespaceName + ".tbs";
         try (FileOutputStream fos = new FileOutputStream(fn)) {
