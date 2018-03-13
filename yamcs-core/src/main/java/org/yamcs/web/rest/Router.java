@@ -342,7 +342,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                     e.getMessage());
             RestHandler.sendRestError(req, e.getStatus(), e);
         } else {
-            log.error(String.format("R%d: Reporting internal server error to client", req.getRequestId()), t);
+            log.error("R{}: Reporting internal server error to client", req.getRequestId(), t);
             RestHandler.sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR, t);
         }
     }
