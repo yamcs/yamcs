@@ -1,3 +1,9 @@
+Version 4.1.2 released 14-Mar-2018
+- fixed bug in the parameter archive encoding of large integer numbers
+- fixed the handling of expiration of parameters when the processor is running with a simulated clock
+- Events significance: added the XTCE significance levels for Events produced from the MDB algorithms
+
+
 Version 4.1.1 released 7-Mar-2018
  - added an alternative Parameter Cache that consumes less memory by using array of primitives to store parameter values
  - refurbished yamcs-web
