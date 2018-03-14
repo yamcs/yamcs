@@ -3,7 +3,6 @@ import { Component, ChangeDetectionStrategy, ViewChild, Input, AfterViewInit } f
 import { Parameter } from '@yamcs/client';
 
 import { MatSort, MatTableDataSource } from '@angular/material';
-import { Observable } from 'rxjs/Observable';
 
 @Component({
   selector: 'app-parameters-table',
@@ -16,7 +15,7 @@ export class ParametersTable implements AfterViewInit {
   instance: string;
 
   @Input()
-  parameters$: Observable<Parameter[]>;
+  parameters$: Promise<Parameter[]>;
 
   @Input()
   shortName = false;
@@ -30,8 +29,8 @@ export class ParametersTable implements AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
-    this.parameters$.subscribe(parameters => {
-      this.dataSource.data = parameters || [];
+    this.parameters$.then(parameters => {
+      this.dataSource.data = parameters;
     });
   }
 

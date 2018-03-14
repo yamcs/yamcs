@@ -22,60 +22,65 @@ export default class YamcsClient {
     return new InstanceClient(instance, this);
   }
 
-  getGeneralInfo() {
-    return fetch(this.apiUrl)
-      .then(res => res.json() as Promise<GeneralInfo>);
+  async getGeneralInfo() {
+    const response = await fetch(this.apiUrl);
+    return await response.json() as GeneralInfo;
   }
 
   /**
    * Returns info on the authenticated user
    */
-  getUserInfo() {
-    return fetch(`${this.apiUrl}/user`)
-      .then(res => res.json() as Promise<UserInfo>);
+  async getUserInfo() {
+    const response = await fetch(`${this.apiUrl}/user`);
+    return await response.json() as UserInfo;
   }
 
-  getInstances() {
-    return fetch(`${this.apiUrl}/instances`)
-      .then(res => res.json() as Promise<InstancesWrapper>)
-      .then(wrapper => wrapper.instance)
+  async getInstances() {
+    const response = await fetch(`${this.apiUrl}/instances`);
+    const wrapper = await response.json() as InstancesWrapper;
+    return wrapper.instance;
   }
 
-  getInstance(name: string) {
-    return fetch(`${this.apiUrl}/instances/${name}`)
-      .then(res => res.json() as Promise<Instance>);
+  async getInstance(name: string) {
+    const response = await fetch(`${this.apiUrl}/instances/${name}`);
+    return await response.json() as Instance;
   }
 
-  getServices() {
-    return fetch(`${this.apiUrl}/services/_global`)
-      .then(res => res.json() as Promise<ServicesWrapper>)
-      .then(wrapper => wrapper.service || []);
+  async getServices() {
+    const response = await fetch(`${this.apiUrl}/services/_global`);
+    const wrapper = await response.json() as ServicesWrapper;
+    return wrapper.service || [];
   }
 
-  /*startService(name: string) {
-    return this.http.patch(`${this.apiUrl}/services/_global/service/${name}`, {
+  async startService(name: string) {
+    const body = JSON.stringify({
       state: 'running'
+    })
+    return fetch(`${this.apiUrl}/services/_global/service/${name}`, {
+      body,
+      method: 'PATCH',
     });
   }
 
-  stopService(name: string) {
-    return this.http.patch(`${this.apiUrl}/services/_global/${name}`, {
+  async stopService(name: string) {
+    const body = JSON.stringify({
       state: 'stopped'
+    })
+    return fetch(`${this.apiUrl}/services/_global/service/${name}`, {
+      body,
+      method: 'PATCH',
     });
-  }*/
-
-  getStaticText(path: string) {
-    return fetch(`${this.staticUrl}/${path}`)
-      .then(res => res.text());
   }
 
-  getStaticXML(path: string) {
-    return fetch(`${this.staticUrl}/${path}`)
-      .then(res => res.text())
-      .then(text => {
-        const xmlParser = new DOMParser();
-        const doc = xmlParser.parseFromString(text, 'text/xml');
-        return doc as XMLDocument;
-      });
+  async getStaticText(path: string) {
+    const response = await fetch(`${this.staticUrl}/${path}`);
+    return await response.text()
+  }
+
+  async getStaticXML(path: string) {
+    const response = await fetch(`${this.staticUrl}/${path}`);
+    const text = await response.text();
+    const xmlParser = new DOMParser();
+    return xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
   }
 }

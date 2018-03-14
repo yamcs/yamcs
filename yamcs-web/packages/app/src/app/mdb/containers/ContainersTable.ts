@@ -3,7 +3,6 @@ import { Component, ChangeDetectionStrategy, ViewChild, Input, AfterViewInit } f
 import { Container } from '@yamcs/client';
 
 import { MatSort, MatTableDataSource } from '@angular/material';
-import { Observable } from 'rxjs/Observable';
 
 @Component({
   selector: 'app-containers-table',
@@ -16,7 +15,7 @@ export class ContainersTable implements AfterViewInit {
   instance: string;
 
   @Input()
-  containers$: Observable<Container[]>;
+  containers$: Promise<Container[]>;
 
   @Input()
   shortName = false;
@@ -30,8 +29,8 @@ export class ContainersTable implements AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
-    this.containers$.subscribe(containers => {
-      this.dataSource.data = containers || [];
+    this.containers$.then(containers => {
+      this.dataSource.data = containers;
     });
   }
 

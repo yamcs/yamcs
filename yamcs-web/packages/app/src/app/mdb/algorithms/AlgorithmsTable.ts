@@ -3,7 +3,6 @@ import { Component, ChangeDetectionStrategy, ViewChild, Input, AfterViewInit } f
 import { Algorithm } from '@yamcs/client';
 
 import { MatSort, MatTableDataSource } from '@angular/material';
-import { Observable } from 'rxjs/Observable';
 
 @Component({
   selector: 'app-algorithms-table',
@@ -16,7 +15,7 @@ export class AlgorithmsTable implements AfterViewInit {
   instance: string;
 
   @Input()
-  algorithms$: Observable<Algorithm[]>;
+  algorithms$: Promise<Algorithm[]>;
 
   @Input()
   shortName = false;
@@ -30,8 +29,8 @@ export class AlgorithmsTable implements AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
-    this.algorithms$.subscribe(algorithms => {
-      this.dataSource.data = algorithms || [];
+    this.algorithms$.then(algorithms => {
+      this.dataSource.data = algorithms;
     });
   }
 

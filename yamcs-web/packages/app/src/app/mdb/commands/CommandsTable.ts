@@ -3,7 +3,6 @@ import { Component, ChangeDetectionStrategy, ViewChild, Input, AfterViewInit } f
 import { Command } from '@yamcs/client';
 
 import { MatSort, MatTableDataSource } from '@angular/material';
-import { Observable } from 'rxjs/Observable';
 
 @Component({
   selector: 'app-commands-table',
@@ -16,7 +15,7 @@ export class CommandsTable implements AfterViewInit {
   instance: string;
 
   @Input()
-  commands$: Observable<Command[]>;
+  commands$: Promise<Command[]>;
 
   @Input()
   shortName = false;
@@ -30,8 +29,8 @@ export class CommandsTable implements AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
-    this.commands$.subscribe(commands => {
-      this.dataSource.data = commands || [];
+    this.commands$.then(commands => {
+      this.dataSource.data = commands;
     });
   }
 
