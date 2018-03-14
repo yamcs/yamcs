@@ -1,4 +1,18 @@
 package org.yamcs.parameter;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.InvalidIdentification;
+import org.yamcs.NoPermissionException;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.Privilege;
+import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.Parameter;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,22 +23,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.InvalidIdentification;
-import org.yamcs.NoPermissionException;
-import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
-import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.Parameter;
-
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
 
 /**
  * This sits in front of the ParameterRequestManager and implements subscriptions based on NamedObjectId 
@@ -296,7 +294,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 return pv.getAcquisitionTime();
             }
         }
-        return TimeEncoding.getWallclockTime();
+        return prm.yproc.getCurrentTime();
     }
 
     //adds the pv into plist with all ids subscribed
@@ -319,7 +317,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         for(Map.Entry<Integer,Subscription>me: subscriptions.entrySet()) {
             Subscription subscription = me.getValue();
             synchronized(subscription) {
-                long now = TimeEncoding.getWallclockTime();
+                long now = prm.yproc.getCurrentTime();
                 if((subscription.checkExpiration) && (now-subscription.lastExpirationCheck>CHECK_EXPIRATION_INTERVAL)) {
                     List<ParameterValueWithId> expired = checkExpiration(subscription, now);
                     if(!expired.isEmpty()) {
