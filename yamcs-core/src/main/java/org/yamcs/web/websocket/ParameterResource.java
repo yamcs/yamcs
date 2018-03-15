@@ -3,6 +3,7 @@ package org.yamcs.web.websocket;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +60,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     @Override
     public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
-        
+
         ParameterSubscriptionRequest req;
         req = decoder.decodeMessageData(ctx, ParameterSubscriptionRequest.newBuilder()).build();
         if (req.getIdCount() == 0) { // maybe using old method
@@ -71,7 +72,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             }
         }
         int subscriptionId = getSubscriptionId(req);
-        
+
         switch (ctx.getOperation()) {
         case WSR_SUBSCRIBE:
             return subscribe(subscriptionId, ctx.getRequestId(), req, client.getAuthToken());
@@ -89,14 +90,15 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     }
 
     private int getSubscriptionId(ParameterSubscriptionRequest req) {
-        if(!req.hasSubscriptionId() || req.getSubscriptionId()==0) {
+        if (!req.hasSubscriptionId() || req.getSubscriptionId() == 0) {
             return firstSubscriptionId;
         } else {
-           return req.getSubscriptionId();
+            return req.getSubscriptionId();
         }
     }
 
-    private WebSocketReply subscribe(int subscriptionId, int requestId, ParameterSubscriptionRequest req, AuthenticationToken authToken)
+    private WebSocketReply subscribe(int subscriptionId, int requestId, ParameterSubscriptionRequest req,
+            AuthenticationToken authToken)
             throws WebSocketException {
         List<NamedObjectId> idList = req.getIdList();
         try {
@@ -106,11 +108,12 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     pidrm.addItemsToRequest(subscriptionId, idList, authToken);
                 } else {
                     subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
-                    if(firstSubscriptionId == -1) {
+                    if (firstSubscriptionId == -1) {
                         firstSubscriptionId = subscriptionId;
                     }
                 }
-                ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.newBuilder().setSubscriptionId(subscriptionId)
+                ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.newBuilder()
+                        .setSubscriptionId(subscriptionId)
                         .build();
                 reply.attachData("ParameterSubscriptionResponse", psr);
             } catch (InvalidIdentification e) {
@@ -123,6 +126,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                 } else {
                     if (idList.size() == e.getInvalidParameters().size()) {
                         log.warn("Received subscribe attempt will all-invalid parameters");
+                        idList = Collections.emptyList();
                     } else {
                         Set<NamedObjectId> valid = new HashSet<>(idList);
                         valid.removeAll(e.getInvalidParameters());
@@ -140,11 +144,12 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                         } else {
                             subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
                         }
-                        if(firstSubscriptionId == -1) {
+                        if (firstSubscriptionId == -1) {
                             firstSubscriptionId = subscriptionId;
                         }
                     }
-                    ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.newBuilder().setSubscriptionId(subscriptionId)
+                    ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.newBuilder()
+                            .setSubscriptionId(subscriptionId)
                             .addAllInvalid(e.getInvalidParameters()).build();
                     reply.attachData(ParameterSubscriptionResponse.class.getSimpleName(), psr);
                 }
@@ -173,7 +178,8 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         }
     }
 
-    private WebSocketReply unsubscribe(int subscriptionId, int requestId, NamedObjectList paraList, AuthenticationToken authToken)
+    private WebSocketReply unsubscribe(int subscriptionId, int requestId, NamedObjectList paraList,
+            AuthenticationToken authToken)
             throws WebSocketException {
         if (subscriptionId != -1) {
             try {
@@ -208,10 +214,10 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         if (allSubscriptionId != -1) {
             prm.unsubscribeAll(subscriptionId);
         }
-        
+
         if (subscriptionId != -1) {
             prm.removeRequest(subscriptionId);
-            if(subscriptionId == firstSubscriptionId) {
+            if (subscriptionId == firstSubscriptionId) {
                 firstSubscriptionId = -1;
             }
         }
