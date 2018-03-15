@@ -24,7 +24,9 @@ public class JsonEncoder implements WebSocketEncoder {
             writer.value(WSConstants.MESSAGE_TYPE_REPLY);
             writer.value(reply.getRequestId());
             if(reply.hasData()) {
-                writer.beginObject().name(reply.getDataType());
+                writer.beginObject();
+                writer.name("type").value(reply.getDataType());
+                writer.name("data");
                 String json = JsonFormat.printer().print(reply.getData());
                 writer.jsonValue(json);
                 writer.endObject();
