@@ -10,7 +10,6 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
 import org.yamcs.utils.StringConverter;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 
 import java.lang.ref.WeakReference;
