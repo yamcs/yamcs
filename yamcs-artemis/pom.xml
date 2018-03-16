@@ -27,6 +27,12 @@
       <groupId>org.apache.activemq</groupId>
       <artifactId>artemis-server</artifactId>
       <version>${artemisVersion}</version>
+      <exclusions>
+        <exclusion> <!-- Later version provided by yamcs-core via different artifactId(s) -->
+          <groupId>io.netty</groupId>
+          <artifactId>netty-all</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
