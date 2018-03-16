@@ -6,9 +6,14 @@
     "clean": "lerna clean",
     "build": "lerna run build"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/*"
+    ]
+  },
   "devDependencies": {
     "lerna": "^2.9.0"
   }
