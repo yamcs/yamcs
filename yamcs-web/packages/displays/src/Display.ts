@@ -1,4 +1,4 @@
-import { ParameterValue, Alias } from '@yamcs/client';
+import { ParameterValue, NamedObjectId } from '@yamcs/client';
 
 export interface Display {
 
@@ -8,7 +8,7 @@ export interface Display {
 
   parseAndDraw(id: string): Promise<any>;
   getBackgroundColor(): string;
-  getParameterIds(): Alias[];
+  getParameterIds(): NamedObjectId[];
   getDataSourceState(): { green: boolean, yellow: boolean, red: boolean };
 
   digest(): void;

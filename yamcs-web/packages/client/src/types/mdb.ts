@@ -8,7 +8,7 @@ export interface MissionDatabase {
 export interface NameDescription {
   name: string;
   qualifiedName: string;
-  alias?: Alias[];
+  alias?: NamedObjectId[];
   shortDescription?: string;
   longDescription?: string;
 }
@@ -35,7 +35,6 @@ export interface Parameter extends NameDescription {
   | 'SYSTEM'
   | 'TELEMETERED';
 
-  unitSet?: UnitInfo[];
   type?: ParameterType;
 }
 
@@ -43,14 +42,15 @@ export interface UnitInfo {
   unit: string;
 }
 
-export interface Alias {
-  namespace: string;
+export interface NamedObjectId {
+  namespace?: string;
   name: string;
 }
 
 export interface ParameterType {
   engType: string;
   dataEncoding: DataEncoding;
+  unitSet?: UnitInfo[];
 }
 
 export interface DataEncoding {

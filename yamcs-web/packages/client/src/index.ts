@@ -4,7 +4,6 @@ export { InstanceClient } from './InstanceClient';
 export {
   AlarmRange,
   Algorithm,
-  Alias,
   Command,
   Container,
   GetAlgorithmsOptions,
@@ -12,6 +11,7 @@ export {
   GetContainersOptions,
   GetParametersOptions,
   HistoryInfo,
+  NamedObjectId,
   OperatorType,
   Parameter,
   SpaceSystem,

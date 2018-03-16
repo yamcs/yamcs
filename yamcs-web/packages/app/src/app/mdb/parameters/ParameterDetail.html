@@ -1,20 +1,33 @@
-<dl class="dl-horizontal no-lead">
-  <dt>Parameter</dt>
-  <dd>{{ parameter.qualifiedName }}</dd>
+<div fxLayout="row">
+  <div fxFlex="250px" style="text-align: center">
+    <span *ngIf="parameterValue">
+      <span class="mat-display-1">
+        {{ parameterValue?.engValue | value }}
+        <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
+      </span>
+      <br>
+      <span style="font-size: small">{{ parameterValue?.generationTimeUTC | datetime }}</span>
+    </span>
+    <span *ngIf="!parameterValue">---</span>
+  </div>
+  <div fxFlex="600px">
+    <dl class="dl-horizontal no-lead">
+      <dt>Parameter</dt>
+      <dd>{{ parameter.qualifiedName }}</dd>
 
-  <dt>Alias</dt>
-  <dd>
-    <ng-container *ngFor="let alias of parameter.alias">
-      {{ alias.name }} <small>(namespace: {{ alias.namespace }})</small><br>
-    </ng-container>
-  </dd>
+      <ng-container *ngFor="let alias of parameter.alias">
+        <dt>{{ alias.namespace }}</dt>
+        <dd>{{ alias.name }}</dd>
+      </ng-container>
 
-  <dt>Short Description</dt>
-  <dd>{{ parameter.shortDescription || '-' }}</dd>
+      <dt>Description</dt>
+      <dd>{{ parameter.shortDescription || '-' }}</dd>
 
-  <dt>Long Description</dt>
-  <dd>{{ parameter.longDescription || '-' }}</dd>
-</dl>
+      <dt>Type</dt>
+      <dd>{{ (parameter.type?.engType | titlecase) || '-' }}</dd>
+    </dl>
+  </div>
+</div>
 
 <mat-divider></mat-divider>
 

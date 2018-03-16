@@ -45,6 +45,7 @@ import {
   ParameterSubscriptionRequest,
   Sample,
   TimeInfo,
+  ParameterSubscriptionResponse,
 } from './types/monitoring';
 
 import {
@@ -323,7 +324,7 @@ export class InstanceClient {
     return await response.json() as Parameter;
   }
 
-  getParameterValueUpdates(options: ParameterSubscriptionRequest) {
+  async getParameterValueUpdates(options: ParameterSubscriptionRequest): Promise<ParameterSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getParameterValueUpdates(options);
   }

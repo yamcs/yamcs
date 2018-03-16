@@ -49,16 +49,16 @@
       </ng-container>
 
       <ng-container cdkColumnDef="gentime">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="160px">Generation Time</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="160px">
-          {{ row.generationTimeUTC }}
+        <mat-header-cell *cdkHeaderCellDef fxFlex="200px">Generation Time</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="200px">
+          {{ row.generationTimeUTC | datetime }}
         </mat-cell>
       </ng-container>
 
       <ng-container cdkColumnDef="rectime">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="160px">Reception Time</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="160px">
-          {{ row.receptionTimeUTC }}
+        <mat-header-cell *cdkHeaderCellDef fxFlex="200px">Reception Time</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="200px">
+          {{ row.receptionTimeUTC | datetime }}
         </mat-cell>
       </ng-container>
 

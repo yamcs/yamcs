@@ -1,6 +1,6 @@
 import { Layout } from './Layout';
 import { UssDisplay } from './uss/UssDisplay';
-import { ParameterValue, Alias } from '@yamcs/client';
+import { ParameterValue, NamedObjectId } from '@yamcs/client';
 import { Display } from './Display';
 import { OpiDisplay } from './opi/OpiDisplay';
 
@@ -142,7 +142,7 @@ export class DisplayFrame {
     };
   }
 
-  getParameterIds(): Alias[] {
+  getParameterIds(): NamedObjectId[] {
     return this.display.getParameterIds();
   }
 

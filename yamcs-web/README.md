@@ -8,7 +8,6 @@
 Prepare development environment:
 
     yarn install
-    yarn bootstrap
 
 Build all packages:
 

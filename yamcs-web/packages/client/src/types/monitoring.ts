@@ -1,4 +1,5 @@
-import { Alias, AlarmRange, Parameter } from './mdb';
+import { AlarmRange, Parameter, NamedObjectId } from './mdb';
+import { Observable } from 'rxjs/Observable';
 
 export interface Value {
   type: 'FLOAT'
@@ -57,10 +58,11 @@ export interface TimeInfo {
 
 export interface ParameterData {
   parameter: ParameterValue[];
+  subscriptionId: number;
 }
 
 export interface ParameterValue {
-  id: Alias;
+  id: NamedObjectId;
   rawValue: Value;
   engValue: Value;
   acquisitionTimeUTC: string;
@@ -76,10 +78,17 @@ export interface ParameterValue {
 }
 
 export interface ParameterSubscriptionRequest {
-  id: Alias[];
-  abortOnInvalid: boolean;
-  updateOnExpiration: boolean;
-  sendFromCache: boolean;
+  id: NamedObjectId[];
+  abortOnInvalid?: boolean;
+  updateOnExpiration?: boolean;
+  sendFromCache?: boolean;
+  subscriptionId?: number;
+}
+
+export interface ParameterSubscriptionResponse {
+  subscriptionId: number;
+  invalid: NamedObjectId[];
+  parameterValues$: Observable<ParameterValue[]>;
 }
 
 export interface Sample {

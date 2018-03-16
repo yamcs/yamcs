@@ -8,7 +8,8 @@
 
     <div class="panel-content">
       <app-parameter-detail [instance]="instance"
-                            [parameter]="parameter">
+                            [parameter]="parameter"
+                            [parameterValue]="parameterValue$ | async">
       </app-parameter-detail>
     </div>
   </app-mdb-page>

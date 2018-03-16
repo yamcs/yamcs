@@ -16,7 +16,7 @@ import { Color } from './Color';
 import { ResourceResolver } from '../ResourceResolver';
 import { DisplayFrame } from '../DisplayFrame';
 import { ParameterSample } from './ParameterSample';
-import { ParameterValue, Alias } from '@yamcs/client';
+import { ParameterValue, NamedObjectId } from '@yamcs/client';
 import { StyleSet } from './StyleSet';
 import { Display } from '../Display';
 
@@ -238,7 +238,7 @@ export class UssDisplay implements Display {
   }
 
   getParameterIds() {
-    const ids: Alias[] = [];
+    const ids: NamedObjectId[] = [];
     this.opsNames.forEach(opsName => ids.push({
       namespace: 'MDB:OPS Name',
       name: opsName,

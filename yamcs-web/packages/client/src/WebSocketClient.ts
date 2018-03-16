@@ -1,6 +1,6 @@
 import { SubscriptionModel } from './SubscriptionModel';
 import { webSocket } from 'rxjs/observable/dom/webSocket';
-import { delay, filter, map, retryWhen } from 'rxjs/operators';
+import { delay, filter, map, retryWhen, first } from 'rxjs/operators';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { WebSocketServerMessage } from './types/internal';
 import {
@@ -9,6 +9,7 @@ import {
   ParameterData,
   TimeInfo,
   ParameterSubscriptionRequest,
+  ParameterSubscriptionResponse,
 } from './types/monitoring';
 import {
   ClientInfo,
@@ -24,7 +25,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
-// const MESSAGE_TYPE_REPLY = 2;
+const MESSAGE_TYPE_REPLY = 2;
 const MESSAGE_TYPE_EXCEPTION = 3;
 const MESSAGE_TYPE_DATA = 4;
 
@@ -82,7 +83,7 @@ export class WebSocketClient {
     );
     this.webSocketConnectionSubscription = this.webSocketConnection$.subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
-          console.error('Server reported error: ', msg[3].msg);
+          console.error(`Server error:  ${msg[3].et}`, msg[3].msg);
         }
       },
       (err) => console.log(err),
@@ -200,15 +201,34 @@ export class WebSocketClient {
 
   getParameterValueUpdates(options: ParameterSubscriptionRequest) {
     this.subscriptionModel.parameters = options;
-    this.emit({
+    const requestId = this.emit({
       parameter: 'subscribe',
       data: options,
     });
-    return this.webSocketConnection$.pipe(
-      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-      filter((msg: WebSocketServerMessage) => msg[3].dt === 'PARAMETER'),
-      map(msg => msg[3].data as ParameterData),
-    );
+
+    return new Promise<ParameterSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = msg[3].data as ParameterSubscriptionResponse;
+          response.parameterValues$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'PARAMETER'),
+            map(msg => msg[3].data as ParameterData),
+            filter(pdata => pdata.subscriptionId === response.subscriptionId),
+            map(pdata => pdata.parameter),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
   }
 
   close() {
@@ -220,9 +240,10 @@ export class WebSocketClient {
     this.webSocket.next(JSON.stringify([
       PROTOCOL_VERSION,
       MESSAGE_TYPE_REQUEST,
-      this.requestSequence,
+      ++this.requestSequence,
       payload,
     ]));
+    return this.requestSequence
   }
 
   private registerSubscriptions() {

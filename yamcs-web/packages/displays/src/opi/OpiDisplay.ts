@@ -1,7 +1,7 @@
 import { Svg, Rect, Tag, Defs, Pattern } from '../tags';
 import { ResourceResolver } from '../ResourceResolver';
 import { DisplayFrame } from '../DisplayFrame';
-import { ParameterValue, Alias } from '@yamcs/client';
+import { ParameterValue, NamedObjectId } from '@yamcs/client';
 import { Display } from '../Display';
 
 import * as utils from './utils';
@@ -98,7 +98,7 @@ export class OpiDisplay implements Display {
   }
 
   getParameterIds() {
-    const ids: Alias[] = [];
+    const ids: NamedObjectId[] = [];
     return ids;
   }
 

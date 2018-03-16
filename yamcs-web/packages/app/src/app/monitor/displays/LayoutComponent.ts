@@ -117,8 +117,10 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
         abortOnInvalid: false,
         sendFromCache: true,
         updateOnExpiration: true,
-      }).subscribe(evt => {
-        frame.processParameterValues(evt.parameter);
+      }).then(res => {
+        res.parameterValues$.subscribe(pvals => {
+          frame.processParameterValues(pvals);
+        });
       });
     }
   }
