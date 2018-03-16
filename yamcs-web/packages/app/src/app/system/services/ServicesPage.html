@@ -9,13 +9,13 @@
               matSortDirection="asc"
               matSortDisableClear>
       <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
-        <mat-cell *matCellDef="let service">{{ service.name }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="350px">Name</mat-header-cell>
+        <mat-cell *matCellDef="let service" fxFlex="350px">{{ service.name }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="className">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>Class</mat-header-cell>
-        <mat-cell *matCellDef="let service">{{ service.className }}</mat-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="350px">Class</mat-header-cell>
+        <mat-cell *matCellDef="let service" fxFlex="350px">{{ service.className }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="state">
@@ -46,7 +46,7 @@
 
       <ng-container matColumnDef="actions">
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let service" style="text-align: right">
+        <mat-cell *matCellDef="let service">
           <mat-menu #serviceMenu="matMenu" overlapTrigger="false">
             <button mat-menu-item
                     (click)="startService(service.name)"
