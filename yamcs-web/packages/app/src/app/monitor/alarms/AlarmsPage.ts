@@ -9,6 +9,7 @@ import { State } from '../../app.reducers';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { AlarmsDataSource } from './AlarmsDataSource';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './AlarmsPage.html',
@@ -33,7 +34,8 @@ export class AlarmsPage implements OnInit {
 
   dataSource: AlarmsDataSource;
 
-  constructor(private yamcs: YamcsService, store: Store<State>) {
+  constructor(private yamcs: YamcsService, store: Store<State>, title: Title) {
+    title.setTitle('Alarms - Yamcs');
     this.instance$ = store.select(selectCurrentInstance);
   }
 

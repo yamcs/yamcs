@@ -9,6 +9,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { State } from '../../app.reducers';
 import { Store } from '@ngrx/store';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './TablePage.html',
@@ -20,8 +21,9 @@ export class TablePage implements OnInit {
   instance$: Observable<Instance>;
   table$: Promise<Table>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
+  constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
+    title.setTitle(name + ' - Yamcs');
     this.table$ = yamcs.getSelectedInstance().getTable(name);
   }
 

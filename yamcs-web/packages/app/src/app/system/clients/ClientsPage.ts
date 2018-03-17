@@ -4,6 +4,7 @@ import { ClientInfo } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './ClientsPage.html',
@@ -20,7 +21,8 @@ export class ClientsPage implements AfterViewInit {
 
   private clientsById: { [key: string]: ClientInfo } = {};
 
-  constructor(yamcs: YamcsService) {
+  constructor(yamcs: YamcsService, title: Title) {
+    title.setTitle('Clients - Yamcs');
     yamcs.getSelectedInstance().getClients().then(clients => {
       for (const client of clients) {
         this.processClientEvent(client);

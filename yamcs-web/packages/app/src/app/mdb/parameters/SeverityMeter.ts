@@ -90,26 +90,28 @@ export class SeverityMeter implements AfterViewInit, OnChanges {
     let minLimit;
     let maxLimit;
     const rangeMap = new Map<string, AlarmRange>();
-    for (const range of this.pval.alarmRange) {
-      rangeMap.set(range.level, range);
-      if (range.minInclusive !== undefined) {
-        if (minLimit === undefined || range.minInclusive < minLimit) {
-          minLimit = range.minInclusive;
+    if (this.pval.alarmRange) {
+      for (const range of this.pval.alarmRange) {
+        rangeMap.set(range.level, range);
+        if (range.minInclusive !== undefined) {
+          if (minLimit === undefined || range.minInclusive < minLimit) {
+            minLimit = range.minInclusive;
+          }
         }
-      }
-      if (range.minExclusive !== undefined) {
-        if (minLimit === undefined || range.minExclusive < minLimit) {
-          minLimit = range.minExclusive;
+        if (range.minExclusive !== undefined) {
+          if (minLimit === undefined || range.minExclusive < minLimit) {
+            minLimit = range.minExclusive;
+          }
         }
-      }
-      if (range.maxInclusive !== undefined) {
-        if (maxLimit === undefined || range.maxInclusive > maxLimit) {
-          maxLimit = range.maxInclusive;
+        if (range.maxInclusive !== undefined) {
+          if (maxLimit === undefined || range.maxInclusive > maxLimit) {
+            maxLimit = range.maxInclusive;
+          }
         }
-      }
-      if (range.maxExclusive !== undefined) {
-        if (maxLimit === undefined || range.maxExclusive > maxLimit) {
-          maxLimit = range.maxExclusive;
+        if (range.maxExclusive !== undefined) {
+          if (maxLimit === undefined || range.maxExclusive > maxLimit) {
+            maxLimit = range.maxExclusive;
+          }
         }
       }
     }

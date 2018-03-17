@@ -3,6 +3,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Parameter } from '@yamcs/client';
 import { GeneralInfo } from '@yamcs/client';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './DashboardPage.html',
@@ -17,7 +18,8 @@ export class DashboardPage {
   jvmTotalMemoryParameter$: Promise<Parameter>;
   jvmThreadCountParameter$: Promise<Parameter>;
 
-  constructor(yamcs: YamcsService) {
+  constructor(yamcs: YamcsService, title: Title) {
+    title.setTitle('Dashboard - Yamcs');
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
 
     this.jvmMemoryUsedParameter$ = this.info$.then(info => {

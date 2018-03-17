@@ -8,6 +8,7 @@ import { Observable } from 'rxjs/Observable';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { State } from '../../app.reducers';
 import { Store } from '@ngrx/store';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './ProcessorsPage.html',
@@ -25,7 +26,8 @@ export class ProcessorsPage implements OnInit, AfterViewInit {
 
   private processorsByName: { [key: string]: Processor } = {};
 
-  constructor(yamcs: YamcsService, private store: Store<State>) {
+  constructor(yamcs: YamcsService, private store: Store<State>, title: Title) {
+    title.setTitle('Processors - Yamcs');
     yamcs.getSelectedInstance().getProcessors().then(processors => {
       for (const processor of processors) {
         this.processProcessorEvent(processor);

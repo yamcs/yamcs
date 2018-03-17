@@ -6,6 +6,7 @@ import { Store } from '@ngrx/store';
 import { State } from '../../app.reducers';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { YamcsService } from '../../core/services/YamcsService';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './AlgorithmPage.html',
@@ -16,10 +17,13 @@ export class AlgorithmPage {
   instance$: Observable<Instance>;
   algorithm$: Promise<Algorithm>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, store: Store<State>) {
+  constructor(route: ActivatedRoute, yamcs: YamcsService, store: Store<State>, title: Title) {
     this.instance$ = store.select(selectCurrentInstance);
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
     this.algorithm$ = yamcs.getSelectedInstance().getAlgorithm(qualifiedName);
+    this.algorithm$.then(algorithm => {
+      title.setTitle(algorithm.name + ' - Yamcs');
+    });
   }
 }

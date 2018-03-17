@@ -4,6 +4,7 @@ import { Link, LinkEvent } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './LinksPage.html',
@@ -21,7 +22,8 @@ export class LinksPage implements AfterViewInit {
 
   private linksByName: { [key: string]: Link } = {};
 
-  constructor(private yamcs: YamcsService) {
+  constructor(private yamcs: YamcsService, title: Title) {
+    title.setTitle('Links - Yamcs');
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.

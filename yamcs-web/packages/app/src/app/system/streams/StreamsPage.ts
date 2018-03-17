@@ -8,6 +8,7 @@ import { MatTableDataSource, MatSort } from '@angular/material';
 import { State } from '../../app.reducers';
 import { Store } from '@ngrx/store';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './StreamsPage.html',
@@ -24,7 +25,8 @@ export class StreamsPage implements OnInit, AfterViewInit {
 
   dataSource = new MatTableDataSource<Stream>();
 
-  constructor(yamcs: YamcsService, private store: Store<State>) {
+  constructor(yamcs: YamcsService, private store: Store<State>, title: Title) {
+    title.setTitle('Streams - Yamcs');
     yamcs.getSelectedInstance().getStreams().then(streams => {
       this.dataSource.data = streams;
     });

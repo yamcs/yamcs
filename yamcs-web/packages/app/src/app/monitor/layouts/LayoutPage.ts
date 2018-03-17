@@ -9,6 +9,7 @@ import { LayoutState } from '@yamcs/displays';
 import { LayoutComponent } from '../displays/LayoutComponent';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { NamedLayout, LayoutStorage } from '../displays/LayoutStorage';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './LayoutPage.html',
@@ -24,9 +25,10 @@ export class LayoutPage {
 
   dirty$ = new BehaviorSubject<boolean>(false);
 
-  constructor(route: ActivatedRoute, store: Store<State>, private router: Router) {
+  constructor(route: ActivatedRoute, store: Store<State>, private router: Router, title: Title) {
     this.instance$ = store.select(selectCurrentInstance);
     const layoutName = route.snapshot.paramMap.get('name')!;
+    title.setTitle(layoutName + ' - Yamcs');
 
     this.instance$.subscribe(instance => {
       this.layout = LayoutStorage.getLayout(instance.name, layoutName);

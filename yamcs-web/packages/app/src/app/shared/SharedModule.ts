@@ -139,7 +139,7 @@ const pipes = [
     SelectInstanceDialog,
   ],
   providers: [
-    DateTimePipe, // Needed because ValuePipe uses this pipe too
+    pipes, // Make pipes available in components too
   ]
 })
 export class SharedModule {

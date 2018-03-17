@@ -3,6 +3,7 @@ import { Component, ChangeDetectionStrategy, OnInit, ViewChild, AfterViewInit } 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatPaginator } from '@angular/material';
 import { EventsDataSource } from './EventsDataSource';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './EventsPage.html',
@@ -23,7 +24,8 @@ export class EventsPage implements OnInit, AfterViewInit {
   dataSource: EventsDataSource;
   displayedColumns = ['severity', 'gentime', 'message', 'type', 'source', 'rectime'];
 
-  constructor(private yamcs: YamcsService) {
+  constructor(private yamcs: YamcsService, title: Title) {
+    title.setTitle('Events - Yamcs');
   }
 
   ngOnInit() {

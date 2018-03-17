@@ -8,6 +8,7 @@ import { Observable } from 'rxjs/Observable';
 import { Store } from '@ngrx/store';
 import { State } from '../../app.reducers';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './TablesPage.html',
@@ -24,7 +25,8 @@ export class TablesPage implements OnInit, AfterViewInit {
 
   dataSource = new MatTableDataSource<Table>();
 
-  constructor(yamcs: YamcsService, private store: Store<State>) {
+  constructor(yamcs: YamcsService, private store: Store<State>, title: Title) {
+    title.setTitle('Tables - Yamcs');
     yamcs.getSelectedInstance().getTables().then(tables => {
       this.dataSource.data = tables;
     });

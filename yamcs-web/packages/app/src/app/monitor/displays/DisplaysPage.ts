@@ -14,6 +14,7 @@ import { Store } from '@ngrx/store';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { Observable } from 'rxjs/Observable';
 import { Instance } from '@yamcs/client';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './DisplaysPage.html',
@@ -33,7 +34,8 @@ export class DisplaysPage {
   // State as updated while the component is connected
   updatedState$ = new BehaviorSubject<LayoutState>({ frames: [] });
 
-  constructor(private dialog: MatDialog, store: Store<State>) {
+  constructor(private dialog: MatDialog, store: Store<State>, title: Title) {
+    title.setTitle('Displays - Yamcs');
     this.instance$ = store.select(selectCurrentInstance);
     this.instance$.subscribe(instance => {
       // Attempt to restore state from session storage.

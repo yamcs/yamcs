@@ -7,6 +7,7 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { State } from '../../app.reducers';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './SpaceSystemsPage.html',
@@ -23,7 +24,8 @@ export class SpaceSystemsPage implements AfterViewInit {
 
   instance$: Observable<Instance>;
 
-  constructor(yamcs: YamcsService, store: Store<State>) {
+  constructor(yamcs: YamcsService, store: Store<State>, title: Title) {
+    title.setTitle('Space Systems - Yamcs');
     this.instance$ = store.select(selectCurrentInstance);
     yamcs.getSelectedInstance().getSpaceSystems().then(spaceSystems => {
       this.dataSource.data = spaceSystems;

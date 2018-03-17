@@ -4,6 +4,7 @@ import { Service } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatSort, MatTableDataSource } from '@angular/material';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './ServicesPage.html',
@@ -18,7 +19,8 @@ export class ServicesPage implements AfterViewInit {
 
   dataSource = new MatTableDataSource<Service>();
 
-  constructor(private yamcs: YamcsService) {
+  constructor(private yamcs: YamcsService, title: Title) {
+    title.setTitle('Services - Yamcs');
     this.refreshDataSource();
   }
 

@@ -10,6 +10,7 @@ import { Store } from '@ngrx/store';
 import { State } from '../../app.reducers';
 import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { LocationStrategy } from '@angular/common';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './SpaceSystemPage.html',
@@ -26,11 +27,13 @@ export class SpaceSystemPage implements OnInit {
   constructor(
     route: ActivatedRoute,
     yamcs: YamcsService,
+    title: Title,
     private store: Store<State>,
     private url: LocationStrategy,
   ) {
     this.qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
     this.spaceSystem$ = yamcs.getSelectedInstance().getSpaceSystem(this.qualifiedName);
+    title.setTitle(this.qualifiedName + ' - Yamcs');
   }
 
   ngOnInit() {
