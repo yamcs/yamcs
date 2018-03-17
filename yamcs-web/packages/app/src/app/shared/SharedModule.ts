@@ -51,6 +51,7 @@ import { SelectInstanceDialog } from './template/SelectInstanceDialog';
 import { ParameterSeries } from './widgets/ParameterSeries';
 import { DateTimePipe } from './pipes/DateTimePipe';
 import { Expirable } from './template/Expirable';
+import { AlarmSeverityComponent } from './template/AlarmSeverityComponent';
 import { Dots } from './template/Dots';
 
 const materialModules = [
@@ -91,6 +92,7 @@ const sharedDirectives = [
 ];
 
 const sharedComponents = [
+  AlarmSeverityComponent,
   DetailToolbar,
   Dots,
   EmptyMessage,

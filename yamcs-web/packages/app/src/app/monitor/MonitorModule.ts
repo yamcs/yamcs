@@ -7,7 +7,6 @@ import { EventSeverityComponent } from './events/EventSeverityComponent';
 import { DisplayNavigator } from './displays/DisplayNavigator';
 import { SaveLayoutDialog } from './displays/SaveLayoutDialog';
 import { LayoutComponent } from './displays/LayoutComponent';
-import { AlarmSeverityComponent } from './alarms/AlarmSeverityComponent';
 import { AlarmDetail } from './alarms/AlarmDetail';
 
 const dialogComponents = [
@@ -23,7 +22,6 @@ const dialogComponents = [
     routingComponents,
     dialogComponents,
     AlarmDetail,
-    AlarmSeverityComponent,
     DisplayNavigator,
     EventSeverityComponent,
     LayoutComponent,

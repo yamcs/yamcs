@@ -11,6 +11,7 @@ import { AlgorithmDetail } from './algorithms/AlgorithmDetail';
 import { ParameterDetail } from './parameters/ParameterDetail';
 import { ContainerDetail } from './containers/ContainerDetail';
 import { CommandDetail } from './commands/CommandDetail';
+import { SeverityMeter } from './parameters/SeverityMeter';
 
 @NgModule({
   imports: [
@@ -29,6 +30,7 @@ import { CommandDetail } from './commands/CommandDetail';
     MdbToolbar,
     ParametersTable,
     ParameterDetail,
+    SeverityMeter,
   ]
 })
 export class MdbModule {

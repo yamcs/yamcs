@@ -1,14 +1,19 @@
 <div fxLayout="row">
   <div fxFlex="250px" style="text-align: center">
-    <span *ngIf="parameterValue">
+    <span *ngIf="currentValue">
       <span class="mat-display-1">
-        {{ parameterValue?.engValue | value }}
-        <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
+        <app-expirable [pval]="currentValue">
+          <app-alarm-severity [severity]="currentValue.monitoringResult"></app-alarm-severity>
+          &nbsp;{{ currentValue.engValue | value }}
+          <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
+        </app-expirable>
       </span>
       <br>
-      <span style="font-size: small">{{ parameterValue?.generationTimeUTC | datetime }}</span>
+      <span style="font-size: smaller">{{ currentValue?.generationTimeUTC | datetime }}</span>
+      <br>
+      <app-severity-meter [pval]="currentValue"></app-severity-meter>
     </span>
-    <span *ngIf="!parameterValue">---</span>
+    <span *ngIf="!currentValue">---</span>
   </div>
   <div fxFlex="600px">
     <dl class="dl-horizontal no-lead">
@@ -20,17 +25,35 @@
         <dd>{{ alias.name }}</dd>
       </ng-container>
 
-      <dt>Description</dt>
-      <dd>{{ parameter.shortDescription || '-' }}</dd>
-
       <dt>Type</dt>
       <dd>{{ (parameter.type?.engType | titlecase) || '-' }}</dd>
+
+      <dt>Description</dt>
+      <dd>{{ parameter.shortDescription || '-' }}</dd>
     </dl>
   </div>
 </div>
 
-<mat-divider></mat-divider>
-
-<app-parameter-plot>
-  <app-parameter-series [parameter]="parameter"></app-parameter-series>
-</app-parameter-plot>
+<mat-tab-group>
+  <mat-tab label="Plot">
+    <mat-toolbar>
+      <mat-toolbar-row>
+        <button mat-button>
+          <mat-icon>add_circle_outline</mat-icon>
+          Comparison
+        </button>
+      </mat-toolbar-row>
+    </mat-toolbar>
+    <app-parameter-plot>
+      <app-parameter-series [parameter]="parameter"></app-parameter-series>
+    </app-parameter-plot>
+  </mat-tab>
+  <mat-tab label="Historical Data">
+    <h1>Some more tab content</h1>
+    <p>...</p>
+  </mat-tab>
+  <mat-tab label="Definition">
+      <h1>Some more tab content</h1>
+      <p>...</p>
+    </mat-tab>
+</mat-tab-group>

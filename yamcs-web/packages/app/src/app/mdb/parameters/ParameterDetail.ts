@@ -15,5 +15,5 @@ export class ParameterDetail {
   parameter: Parameter;
 
   @Input()
-  parameterValue: ParameterValue;
+  currentValue: ParameterValue;
 }
