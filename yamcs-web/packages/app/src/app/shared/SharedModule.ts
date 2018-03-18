@@ -53,6 +53,7 @@ import { DateTimePipe } from './pipes/DateTimePipe';
 import { Expirable } from './template/Expirable';
 import { AlarmSeverityComponent } from './template/AlarmSeverityComponent';
 import { Dots } from './template/Dots';
+import { ActionLink } from './template/ActionLink';
 
 const materialModules = [
   CdkTableModule,
@@ -92,6 +93,7 @@ const sharedDirectives = [
 ];
 
 const sharedComponents = [
+  ActionLink,
   AlarmSeverityComponent,
   DetailToolbar,
   Dots,

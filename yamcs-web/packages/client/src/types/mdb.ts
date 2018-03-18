@@ -216,12 +216,3 @@ export interface GetParameterSamplesOptions {
   stop?: string;
   order?: 'asc' | 'desc';
 }
-
-export interface GetEventsOptions {
-  start?: string;
-  stop?: string;
-  pos?: number;
-  limit?: number;
-  order?: 'asc' | 'desc';
-  source?: string[];
-}

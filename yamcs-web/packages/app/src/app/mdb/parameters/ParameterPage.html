@@ -6,11 +6,30 @@
       </a> {{ parameter.qualifiedName }}
     </app-mdb-toolbar>
 
+    <app-parameter-detail [instance]="instance"
+                          [parameter]="parameter"
+                          [currentValue]="parameterValue$ | async">
+    </app-parameter-detail>
+
+    <nav mat-tab-nav-bar>
+      <a mat-tab-link
+          routerLink="plot"
+          routerLinkActive #rla="routerLinkActive"
+          [active]="rla.isActive"
+          [queryParams]="{instance: instance.name}">
+        Plot
+      </a>
+      <a mat-tab-link
+          routerLink="data"
+          routerLinkActive #rlb="routerLinkActive"
+          [active]="rlb.isActive"
+          [queryParams]="{instance: instance.name}">
+        Historical Data
+      </a>
+    </nav>
+
     <div class="panel-content">
-      <app-parameter-detail [instance]="instance"
-                            [parameter]="parameter"
-                            [currentValue]="parameterValue$ | async">
-      </app-parameter-detail>
+      <router-outlet></router-outlet>
     </div>
   </app-mdb-page>
 </ng-container>

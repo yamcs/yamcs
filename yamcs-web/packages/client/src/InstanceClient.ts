@@ -29,7 +29,6 @@ import {
   GetAlgorithmsOptions,
   GetCommandsOptions,
   GetContainersOptions,
-  GetEventsOptions,
   GetParametersOptions,
   MissionDatabase,
   Parameter,
@@ -40,12 +39,16 @@ import {
 import {
   Alarm,
   DisplayFolder,
+  DownloadParameterValuesOptions,
   Event,
+  GetEventsOptions,
+  GetParameterValuesOptions,
   ParameterData,
   ParameterSubscriptionRequest,
+  ParameterSubscriptionResponse,
+  ParameterValue,
   Sample,
   TimeInfo,
-  ParameterSubscriptionResponse,
 } from './types/monitoring';
 
 import {
@@ -322,6 +325,18 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/parameters${qualifiedName}`;
     const response = await fetch(url);
     return await response.json() as Parameter;
+  }
+
+  async getParameterValues(qualifiedName: string, options: GetParameterValuesOptions = {}): Promise<ParameterValue[]> {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameters${qualifiedName}`;
+    const response = await fetch(url + this.queryString(options));
+    const wrapper = await response.json() as ParameterData;
+    return wrapper.parameter || [];
+  }
+
+  getParameterValuesDownloadURL(qualifiedName: string, options: DownloadParameterValuesOptions = {}) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/downloads/parameters${qualifiedName}`;
+    return url + this.queryString(options);
   }
 
   async getParameterValueUpdates(options: ParameterSubscriptionRequest): Promise<ParameterSubscriptionResponse> {

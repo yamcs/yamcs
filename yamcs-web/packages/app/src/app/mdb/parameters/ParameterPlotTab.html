@@ -1,0 +1,13 @@
+<ng-container *ngIf="parameter$ | async as parameter">
+  <mat-toolbar>
+    <mat-toolbar-row>
+      <button mat-button>
+        <mat-icon>add_circle_outline</mat-icon>
+        Comparison
+      </button>
+    </mat-toolbar-row>
+  </mat-toolbar>
+  <app-parameter-plot>
+    <app-parameter-series [parameter]="parameter"></app-parameter-series>
+  </app-parameter-plot>
+</ng-container>

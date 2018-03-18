@@ -12,6 +12,7 @@ import { ParameterDetail } from './parameters/ParameterDetail';
 import { ContainerDetail } from './containers/ContainerDetail';
 import { CommandDetail } from './commands/CommandDetail';
 import { SeverityMeter } from './parameters/SeverityMeter';
+import { ParameterValuesTable } from './parameters/ParameterValuesTable';
 
 @NgModule({
   imports: [
@@ -30,6 +31,7 @@ import { SeverityMeter } from './parameters/SeverityMeter';
     MdbToolbar,
     ParametersTable,
     ParameterDetail,
+    ParameterValuesTable,
     SeverityMeter,
   ]
 })

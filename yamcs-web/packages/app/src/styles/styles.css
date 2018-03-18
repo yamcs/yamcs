@@ -8,6 +8,11 @@ html, body {
   height: 12px !important;
   width: 12px !important;
 }
+.material-icons.icon14 {
+  font-size: 14px !important;
+  height: 14px !important;
+  width: 14px !important;
+}
 .material-icons.icon16 {
   font-size: 16px !important;
   height: 16px !important;
@@ -80,7 +85,7 @@ html, body {
   min-width: 0;
 }
 
-.ya-data-table a {
+.ya-data-table a, .ya-link a, a.ya-link {
   color: #000;
   text-decoration: none;
 }
@@ -89,8 +94,19 @@ html, body {
   text-decoration: underline;
 }
 
-.ya-data-table a:hover {
+.ya-data-table a:hover, .ya-link a:hover, a.ya-link:hover {
   color: #000080;
+  text-decoration: underline;
+}
+
+.ya-link a .material-icons, a.ya-link .material-icons {
+  text-decoration: none !important;
+}
+
+.vmiddle {
+  display: inline-flex;
+  vertical-align: middle;
+  align-items: center;
 }
 
 .dl-horizontal {
@@ -101,6 +117,10 @@ html, body {
 
 .dl-horizontal.no-lead {
   margin-top: 0;
+}
+
+.dl-horizontal.no-trail {
+  margin-bottom: 0;
 }
 
 .dl-horizontal dt {

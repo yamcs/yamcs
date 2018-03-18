@@ -115,3 +115,29 @@ export interface AcknowledgeInfo {
   acknowledgedMessage: string;
   acknowledgeTimeUTC: string;
 }
+
+export interface GetEventsOptions {
+  start?: string;
+  stop?: string;
+  pos?: number;
+  limit?: number;
+  order?: 'asc' | 'desc';
+}
+
+export interface GetParameterValuesOptions {
+  start?: string;
+  stop?: string;
+  pos?: number;
+  limit?: number;
+  norepeat?: boolean;
+  format?: 'csv';
+  order?: 'asc' | 'desc';
+}
+
+export interface DownloadParameterValuesOptions {
+  start?: string;
+  stop?: string;
+  norepeat?: boolean;
+  format?: 'csv';
+  order?: 'asc' | 'desc';
+}
