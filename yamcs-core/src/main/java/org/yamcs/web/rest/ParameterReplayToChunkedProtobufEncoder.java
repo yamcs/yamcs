@@ -20,6 +20,10 @@ import io.netty.buffer.ByteBufOutputStream;
 public class ParameterReplayToChunkedProtobufEncoder extends ParameterReplayToChunkedTransferEncoder {
 
     public ParameterReplayToChunkedProtobufEncoder(RestRequest req) throws HttpException {
+        this(req, null);
+    }
+
+    public ParameterReplayToChunkedProtobufEncoder(RestRequest req, String filename) throws HttpException {
         super(req, req.deriveTargetContentType(), null);
     }
 
@@ -40,5 +44,4 @@ public class ParameterReplayToChunkedProtobufEncoder extends ParameterReplayToCh
             }
         }
     }
-
 }

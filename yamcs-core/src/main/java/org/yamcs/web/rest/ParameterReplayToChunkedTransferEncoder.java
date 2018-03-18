@@ -18,9 +18,9 @@ import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.Channel;
 
 /**
- * Reads a yamcs replay and maps it directly to an output buffer. If that buffer grows larger
- * than the treshold size for one chunk, this will cause a chunk to be written out.
- * Could maybe be replaced by using built-in netty functionality, but would need to investigate.
+ * Reads a yamcs replay and maps it directly to an output buffer. If that buffer grows larger than the treshold size for
+ * one chunk, this will cause a chunk to be written out. Could maybe be replaced by using built-in netty functionality,
+ * but would need to investigate.
  */
 public abstract class ParameterReplayToChunkedTransferEncoder extends RestParameterReplayListener {
 
@@ -30,18 +30,24 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
     private ByteBuf buf;
     protected ByteBufOutputStream bufOut;
 
-
     protected MediaType contentType;
     protected List<NamedObjectId> idList;
     protected boolean failed = false;
     private ChunkedTransferStats stats;
 
-    public ParameterReplayToChunkedTransferEncoder(RestRequest req, MediaType contentType, List<NamedObjectId> idList) throws HttpException {
+    public ParameterReplayToChunkedTransferEncoder(RestRequest req, MediaType contentType, List<NamedObjectId> idList)
+            throws HttpException {
+        this(req, contentType, idList, null);
+    }
+
+    public ParameterReplayToChunkedTransferEncoder(RestRequest req, MediaType contentType, List<NamedObjectId> idList,
+            String filename) throws HttpException {
         super(req);
         this.contentType = contentType;
         this.idList = idList;
         resetBuffer();
-        HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType, null);
+        HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType,
+                filename);
         stats = req.getChannelHandlerContext().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
     }
 
@@ -78,13 +84,14 @@ public abstract class ParameterReplayToChunkedTransferEncoder extends RestParame
         }
     }
 
-    public abstract void processParameterData(List<ParameterValueWithId> params, ByteBufOutputStream bufOut) throws IOException;
+    public abstract void processParameterData(List<ParameterValueWithId> params, ByteBufOutputStream bufOut)
+            throws IOException;
 
     @Override
     public void replayFinished() {
         if (failed) {
             Channel ch = req.getChannelHandlerContext().channel();
-            if(ch.isOpen()) {
+            if (ch.isOpen()) {
                 log.warn("Closing channel because transfer failed");
                 req.getChannelHandlerContext().channel().close();
             }

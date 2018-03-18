@@ -118,6 +118,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
         rr.setParameterRequest(ParameterReplayRequest.newBuilder().addAllNameFilter(ids));
 
+        String filename = "parameter-data";
         if (req.asksFor(MediaType.CSV)) {
             // Added on-demand for CSV (for Protobuf this is always added)
             boolean addRaw = false;
@@ -135,10 +136,11 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                     }
                 }
             }
-            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids, addRaw, addMonitoring);
+            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids, addRaw, addMonitoring,
+                    filename);
             RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
         } else {
-            RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req);
+            RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req, filename);
             RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
         }
     }
@@ -154,6 +156,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
 
+        String filename = requestedId.getName();
         if (req.asksFor(MediaType.CSV)) {
             // Added on-demand for CSV (for Protobuf this is always added)
             boolean addRaw = false;
@@ -172,11 +175,12 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 }
             }
             List<NamedObjectId> idList = Arrays.asList(requestedId);
-            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList, addRaw, addMonitoring);
+            RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList, addRaw, addMonitoring,
+                    filename);
             l.setNoRepeat(noRepeat);
             RestReplays.replay(instance, req.getAuthToken(), rr, l);
         } else {
-            RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req);
+            RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req, filename);
             l.setNoRepeat(noRepeat);
             RestReplays.replay(instance, req.getAuthToken(), rr, l);
         }
@@ -213,13 +217,12 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 }
             });
         } else {
-            RestStreams.stream(instance, sql,
-                    new StreamToChunkedProtobufEncoder<TmPacketData>(req) {
-                        @Override
-                        public TmPacketData mapTuple(Tuple tuple) {
-                            return GPBHelper.tupleToTmPacketData(tuple);
-                        }
-                    });
+            RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req) {
+                @Override
+                public TmPacketData mapTuple(Tuple tuple) {
+                    return GPBHelper.tupleToTmPacketData(tuple);
+                }
+            });
         }
     }
 
