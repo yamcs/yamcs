@@ -47,7 +47,7 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
         this.contentType = contentType;
         resetBuffer();
         HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType,
-                null);
+                filename);
         stats = req.getChannelHandlerContext().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
     }
 

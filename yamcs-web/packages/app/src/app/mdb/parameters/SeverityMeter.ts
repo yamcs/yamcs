@@ -14,7 +14,11 @@ const XMLNS = 'http://www.w3.org/2000/svg';
 @Component({
   selector: 'app-severity-meter',
   template: `
-    <svg #container width="50%" height="4px" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <svg #container
+         width="50%" height="8px"
+         viewBox="0 0 100 100"
+         preserveAspectRatio="none"
+         style="overflow: visible">
     </svg>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -29,7 +33,7 @@ export class SeverityMeter implements AfterViewInit, OnChanges {
   private criticalLowRange: SVGRectElement;
   private criticalHighRange: SVGRectElement;
 
-  private indicator: SVGLineElement;
+  private indicator: SVGPolygonElement;
 
   ngOnChanges() {
     if (this.pval && this.indicator) {
@@ -44,41 +48,32 @@ export class SeverityMeter implements AfterViewInit, OnChanges {
     fullRange.setAttribute('x', '0');
     fullRange.setAttribute('y', '0');
     fullRange.setAttribute('width', '100');
-    fullRange.setAttribute('height', '100');
+    fullRange.setAttribute('height', '50');
     fullRange.setAttribute('shape-rendering', 'crispEdges');
-    fullRange.style.fill = 'green';
-    fullRange.style.opacity = '0.2';
+    fullRange.style.fill = '#00ff00';
     targetEl.appendChild(fullRange);
 
     this.criticalLowRange = document.createElementNS(XMLNS, 'rect');
     this.criticalLowRange.setAttribute('x', '0');
     this.criticalLowRange.setAttribute('y', '0');
     this.criticalLowRange.setAttribute('width', '0');
-    this.criticalLowRange.setAttribute('height', '100');
+    this.criticalLowRange.setAttribute('height', '50');
     this.criticalLowRange.setAttribute('shape-rendering', 'crispEdges');
     this.criticalLowRange.style.fill = 'red';
-    this.criticalLowRange.style.opacity = '0.6';
     targetEl.appendChild(this.criticalLowRange);
 
     this.criticalHighRange = document.createElementNS(XMLNS, 'rect');
     this.criticalHighRange.setAttribute('x', '0');
     this.criticalHighRange.setAttribute('y', '0');
     this.criticalHighRange.setAttribute('width', '0');
-    this.criticalHighRange.setAttribute('height', '100');
+    this.criticalHighRange.setAttribute('height', '50');
     this.criticalHighRange.setAttribute('shape-rendering', 'crispEdges');
     this.criticalHighRange.style.fill = 'red';
-    this.criticalHighRange.style.opacity = '0.6';
     targetEl.appendChild(this.criticalHighRange);
 
-    this.indicator = document.createElementNS(XMLNS, 'line');
-    this.indicator.setAttribute('x1', '-10');
-    this.indicator.setAttribute('y1', '0');
-    this.indicator.setAttribute('x2', '-10');
-    this.indicator.setAttribute('y2', '100');
-    this.indicator.setAttribute('shape-rendering', 'crispEdges');
-    this.indicator.setAttribute('vector-effect', 'non-scaling-stroke');
-    this.indicator.style.stroke = 'black';
-    this.indicator.style.strokeWidth = '2';
+    this.indicator = document.createElementNS(XMLNS, 'polygon');
+    this.indicator.style.fill = 'black';
+    this.indicator.style.visibility = 'hidden';
     targetEl.appendChild(this.indicator);
 
     if (this.pval) {
@@ -119,8 +114,7 @@ export class SeverityMeter implements AfterViewInit, OnChanges {
     // Reset all
     this.criticalHighRange.setAttribute('width', '0');
     this.criticalLowRange.setAttribute('width', '0');
-    this.indicator.setAttribute('x1', '-10');
-    this.indicator.setAttribute('x2', '-10');
+    this.indicator.style.visibility = 'hidden';
 
     if (minLimit !== undefined && maxLimit !== undefined && minLimit !== maxLimit) {
       const meterMin = minLimit - (maxLimit - minLimit) / 5;
@@ -130,28 +124,31 @@ export class SeverityMeter implements AfterViewInit, OnChanges {
       const criticalRange = rangeMap.get('CRITICAL');
       if (criticalRange) {
         if (criticalRange.minInclusive) {
-          this.criticalLowRange.setAttribute('width', String((criticalRange.minInclusive - meterMin) * ratio));
+          const width = (criticalRange.minInclusive - meterMin) * ratio;
+          this.criticalLowRange.setAttribute('width', String(width));
         } else if (criticalRange.minExclusive) {
-          this.criticalLowRange.setAttribute('width', String((criticalRange.minExclusive - meterMin) * ratio));
+          const width = (criticalRange.minExclusive - meterMin) * ratio;
+          this.criticalLowRange.setAttribute('width', String(width));
         }
         if (criticalRange.maxInclusive) {
-          this.criticalHighRange.setAttribute('x', String((criticalRange.maxInclusive - meterMin) * ratio));
-          this.criticalHighRange.setAttribute('width', String((criticalRange.maxInclusive - meterMin) * ratio));
+          const x = (criticalRange.maxInclusive - meterMin) * ratio;
+          this.criticalHighRange.setAttribute('x', String(x));
+          this.criticalHighRange.setAttribute('width', String(100 - x));
         } else if (criticalRange.maxExclusive) {
-          this.criticalHighRange.setAttribute('x', String((criticalRange.maxExclusive - meterMin) * ratio));
-          this.criticalHighRange.setAttribute('width', String((criticalRange.maxExclusive - meterMin) * ratio));
+          const x = (criticalRange.maxExclusive - meterMin) * ratio;
+          this.criticalHighRange.setAttribute('x', String(x));
+          this.criticalHighRange.setAttribute('width', String(100 - x));
         }
       }
 
       const currentValue = this.getNumericValue(this.pval);
       if (currentValue !== undefined) {
         const constrained = Math.min(Math.max(currentValue, meterMin), meterMax);
-        const rescaledValue = (constrained - meterMin) * ratio;
-        this.indicator.setAttribute('x1', String(rescaledValue));
-        this.indicator.setAttribute('x2', String(rescaledValue));
+        const pos = (constrained - meterMin) * ratio;
+        this.indicator.setAttribute('points', `${pos},25 ${pos - 3.5},100 ${pos + 3.5},100`);
+        this.indicator.style.visibility = 'visible';
       } else {
-        this.indicator.setAttribute('x1', String(-10));
-        this.indicator.setAttribute('x2', String(-10));
+        this.indicator.style.visibility = 'hidden';
       }
     }
   }

@@ -18,7 +18,11 @@ import io.netty.buffer.ByteBufOutputStream;
 public abstract class StreamToChunkedProtobufEncoder<T extends Message> extends StreamToChunkedTransferEncoder {
 
     public StreamToChunkedProtobufEncoder(RestRequest req) throws HttpException {
-        super(req, req.deriveTargetContentType());
+        this(req, null);
+    }
+
+    public StreamToChunkedProtobufEncoder(RestRequest req, String filename) throws HttpException {
+        super(req, req.deriveTargetContentType(), filename);
     }
 
     @Override

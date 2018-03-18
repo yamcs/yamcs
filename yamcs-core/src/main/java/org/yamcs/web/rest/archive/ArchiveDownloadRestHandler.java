@@ -208,16 +208,18 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
 
+        String filename = "packets";
         if (req.asksFor(MediaType.OCTET_STREAM)) {
-            RestStreams.stream(instance, sql, new StreamToChunkedTransferEncoder(req, MediaType.OCTET_STREAM) {
-                @Override
-                public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
-                    byte[] raw = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
-                    bufOut.write(raw);
-                }
-            });
+            RestStreams.stream(instance, sql,
+                    new StreamToChunkedTransferEncoder(req, MediaType.OCTET_STREAM, filename) {
+                        @Override
+                        public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
+                            byte[] raw = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
+                            bufOut.write(raw);
+                        }
+                    });
         } else {
-            RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req) {
+            RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, filename) {
                 @Override
                 public TmPacketData mapTuple(Tuple tuple) {
                     return GPBHelper.tupleToTmPacketData(tuple);
@@ -248,7 +250,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
 
-        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req) {
+        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, "commands") {
             @Override
             public CommandHistoryEntry mapTuple(Tuple tuple) {
                 return GPBHelper.tupleToCommandHistoryEntry(tuple);
@@ -290,15 +292,14 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         if (dumpFormat) {
             RestStreams.stream(instance, sql, new TableDumpEncoder(req));
         } else {
-            RestStreams.stream(instance, sql,
-                    new StreamToChunkedProtobufEncoder<TableRecord>(req) {
-                        @Override
-                        public TableRecord mapTuple(Tuple tuple) {
-                            TableRecord.Builder rec = TableRecord.newBuilder();
-                            rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
-                            return rec.build();
-                        }
-                    });
+            RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TableRecord>(req) {
+                @Override
+                public TableRecord mapTuple(Tuple tuple) {
+                    TableRecord.Builder rec = TableRecord.newBuilder();
+                    rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
+                    return rec.build();
+                }
+            });
         }
     }
 
@@ -333,7 +334,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     }
 
     private void transferChunkedCSVEvents(RestRequest req, String instance, String sql) throws HttpException {
-        RestStreams.stream(instance, sql, new StreamToChunkedCSVEncoder(req) {
+        RestStreams.stream(instance, sql, new StreamToChunkedCSVEncoder(req, "events") {
 
             @Override
             public String[] getCSVHeader() {
@@ -349,7 +350,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     }
 
     private void transferChunkedProtobufEvents(RestRequest req, String instance, String sql) throws HttpException {
-        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<Event>(req) {
+        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<Event>(req, "events") {
 
             @Override
             public Event mapTuple(Tuple tuple) {

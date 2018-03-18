@@ -13,12 +13,57 @@
   </app-monitor-toolbar>
 
   <div class="panel-content" *ngIf="dataSource">
-    <div class="spinner-container" *ngIf="dataSource.loading$ | async">
-      <mat-spinner></mat-spinner>
-    </div>
+    <form [formGroup]="filter">
+      <div fxLayout="row" class="filter-bar">
+        <div fxFlex class="vmiddle">
+          <mat-icon class="icon14">access_time</mat-icon>&nbsp;
+          <select formControlName="interval">
+            <option value="PT1H">Last Hour</option>
+            <option value="PT6H">Last 6 Hours</option>
+            <option value="P1D">Last 24 Hours</option>
+            <option value="NO_LIMIT">No Limit</option>
+            <option value="CUSTOM">Custom</option>
+          </select>
 
-    <div class="table-status">
-      Showing events from <b>the last hour</b> ending at <b>{{ stop | datetime }}</b> (Mission Time)
+          <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
+            <input formControlName="customStart" type="datetime" style="width: 160px">
+            <input formControlName="customStop" type="datetime" style="width: 160px">
+            <button (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
+          </ng-container>
+
+          <ng-container *ngIf="filter.value['interval'] !== 'CUSTOM'">
+            <button (click)="jumpToNow()">
+              Jump to now
+            </button>
+          </ng-container>
+
+          &nbsp;&nbsp;
+          <app-dots *ngIf="dataSource.loading$ | async">
+          </app-dots>
+        </div>
+        <div fxFlex style="text-align: right">
+          <app-action-link icon="file_download"
+                          [link]="downloadURL$ | async">Download Data</app-action-link>
+        </div>
+      </div>
+    </form>
+
+    <div class="table-status" [ngSwitch]="appliedInterval">
+      <span *ngSwitchCase="'PT1H'">
+        Showing events from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+      <span *ngSwitchCase="'PT6H'">
+        Showing events from <b>the last 6 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+      <span *ngSwitchCase="'P1D'">
+        Showing events from <b>the last 24 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+      <span *ngSwitchCase="'NO_LIMIT'">
+        Showing events from <b>all time</b>
+      </span>
+      <span *ngSwitchCase="'CUSTOM'">
+        Showing events from <b>{{ validStart | datetime }}</b> to <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
     </div>
 
     <mat-table [dataSource]="dataSource" class="ya-data-table">
@@ -73,11 +118,10 @@
       <mat-row *cdkRowDef="let row; columns: displayedColumns;" [ngClass]="row.severity"></mat-row>
     </mat-table>
 
-    <mat-paginator #paginator
-      [length]="1000"
-      [pageIndex]="pageIndex"
-      [pageSize]="pageSize"
-      [pageSizeOptions]="[25, 50, 100]">
-    </mat-paginator>
+    <mat-toolbar>
+      <span style="flex: 1 1 auto"></span>
+      <button mat-stroked-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
+      <span style="flex: 1 1 auto"></span>
+    </mat-toolbar>
   </div>
 </app-monitor-page>

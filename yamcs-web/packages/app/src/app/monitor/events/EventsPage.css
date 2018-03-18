@@ -1,18 +1,25 @@
-.table-status {
-  height: 16px;
-  background-color: #f2f2f2;
-  font-size: 12px;
-  line-height: 16px;
+.filter-bar {
+  height: 24px;
+  margin-bottom: 12px;
 }
 
-.ERROR mat-cell {
+.table-status {
+  background-color: #f2f2f2;
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  padding-left: 6px;
+  margin-bottom: 12px;
+}
+
+.ERROR mat-cell,
+.DISTRESS mat-cell,
+.CRITICAL mat-cell,
+.SEVERE mat-cell {
   color: red;
 }
 
+.WATCH mat-cell,
 .WARNING mat-cell {
   color: orange;
-}
-
-.spinner-container {
-  text-align: center;
 }

@@ -119,8 +119,17 @@ export interface AcknowledgeInfo {
 export interface GetEventsOptions {
   start?: string;
   stop?: string;
+  source?: string | string[];
   pos?: number;
   limit?: number;
+  order?: 'asc' | 'desc';
+}
+
+export interface DownloadEventsOptions {
+  start?: string;
+  stop?: string;
+  source?: string | string[];
+  format?: 'csv';
   order?: 'asc' | 'desc';
 }
 

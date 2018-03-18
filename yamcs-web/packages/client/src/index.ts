@@ -22,6 +22,7 @@ export {
   Alarm,
   DisplayFile,
   DisplayFolder,
+  DownloadEventsOptions,
   DownloadParameterValuesOptions,
   Event,
   EventSeverity,

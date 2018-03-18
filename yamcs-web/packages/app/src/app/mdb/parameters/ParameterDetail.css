@@ -1,0 +1,9 @@
+.current-value-pane {
+  text-align: center;
+  padding: 12px;
+}
+
+.current-value-pane.has-alarm {
+  background-color: #feeef0;
+  border: 1px solid crimson;
+}

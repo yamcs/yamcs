@@ -29,7 +29,8 @@
   <dd>
     <a *ngIf="container.baseContainer"
        [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
-       [queryParams]="{instance: instance.name}">
+       [queryParams]="{instance: instance.name}"
+       class="ya-link">
       {{ container.baseContainer?.qualifiedName || '-' }}
     </a>
     <span *ngIf="!container.baseContainer">-</span>
@@ -39,7 +40,8 @@
   <dd *ngIf="container.restrictionCriteria">
     <ng-container *ngFor="let criteria of container.restrictionCriteria">
       <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
-         [queryParams]="{instance: instance.name}">
+         [queryParams]="{instance: instance.name}"
+         class="ya-link">
         {{ criteria.parameter.qualifiedName }}
       </a>
       {{ criteria.operator | operator }}
@@ -66,15 +68,15 @@
         <ng-container *ngIf="entry.parameter">
           <td>Parameter</td>
           <td>
-            <a [routerLink]="['/mdb/parameters/', entry.parameter.qualifiedName]"
+            <a [routerLink]="['/mdb/parameters/', entry.parameter!.qualifiedName]"
                [queryParams]="{instance: instance.name}">
-              {{ entry.parameter.qualifiedName }}
+              {{ entry.parameter!.qualifiedName }}
             </a>
           </td>
         </ng-container>
         <ng-container *ngIf="entry.container">
           <td>Container</td>
-          <td>{{ entry.container.qualifiedName }}</td>
+          <td>{{ entry.container!.qualifiedName }}</td>
         </ng-container>
         <td>{{ entry.locationInBits }}</td>
         <td>{{ entry.referenceLocation }}</td>

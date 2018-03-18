@@ -39,6 +39,7 @@ import {
 import {
   Alarm,
   DisplayFolder,
+  DownloadEventsOptions,
   DownloadParameterValuesOptions,
   Event,
   GetEventsOptions,
@@ -86,6 +87,11 @@ export class InstanceClient {
     const response = await fetch(url + this.queryString(options));
     const wrapper = await response.json() as EventsWrapper
     return wrapper.event || [];
+  }
+
+  getEventsDownloadURL(options: DownloadEventsOptions = {}) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/downloads/events`;
+    return url + this.queryString(options);
   }
 
   getEventUpdates() {
