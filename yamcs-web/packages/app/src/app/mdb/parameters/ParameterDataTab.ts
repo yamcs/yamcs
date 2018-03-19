@@ -1,9 +1,10 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { ParameterValue, GetParameterValuesOptions, DownloadParameterValuesOptions } from '@yamcs/client';
+import { GetParameterValuesOptions, DownloadParameterValuesOptions } from '@yamcs/client';
 import { ActivatedRoute } from '@angular/router';
 import { YamcsService } from '../../core/services/YamcsService';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { ParameterDataDataSource } from './ParameterDataDataSource';
 
 const defaultInterval = 'PT1H';
 
@@ -16,8 +17,6 @@ export class ParameterDataTab {
 
   qualifiedName: string;
 
-  pageSize = 100;
-  offscreenRecord: ParameterValue | null = null;
   validStart: Date | null;
   validStop: Date | null;
 
@@ -36,11 +35,12 @@ export class ParameterDataTab {
     ]),
   });
 
-  parameterValues$ = new BehaviorSubject<ParameterValue[]>([]);
+  dataSource: ParameterDataDataSource;
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
   constructor(route: ActivatedRoute, private yamcs: YamcsService) {
     this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
+    this.dataSource = new ParameterDataDataSource(yamcs, this.qualifiedName);
 
     this.validStop = new Date(); // TODO use mission time
     this.validStart = this.subtractDuration(this.validStop, defaultInterval);
@@ -91,9 +91,7 @@ export class ParameterDataTab {
    * Loads the first page of data within validStart and validStop
    */
   loadData() {
-    const options: GetParameterValuesOptions = {
-      limit: this.pageSize + 1, // One extra to detect hasMore
-    };
+    const options: GetParameterValuesOptions = {};
     if (this.validStart) {
       options.start = this.validStart.toISOString();
     }
@@ -112,26 +110,9 @@ export class ParameterDataTab {
     }
 
     const instanceClient = this.yamcs.getSelectedInstance();
-    this.loadPage(options).then(pvals => {
-      this.parameterValues$.next(pvals);
+    this.dataSource.loadParameterValues(options).then(pvals => {
       const downloadURL = instanceClient.getParameterValuesDownloadURL(this.qualifiedName, dlOptions);
       this.downloadURL$.next(downloadURL);
-    });
-  }
-
-  /**
-   * Fetches a page of data and keeps track of one invisible record that will
-   * allow to deterimine if there are further page(s) and which stop date should
-   * be used for the next page (start/stop are inclusive).
-   */
-  private loadPage(options: GetParameterValuesOptions) {
-    return this.yamcs.getSelectedInstance().getParameterValues(this.qualifiedName, options).then(pvals => {
-      if (pvals.length > this.pageSize) {
-        this.offscreenRecord = pvals.splice(pvals.length - 1, 1)[0];
-      } else {
-        this.offscreenRecord = null;
-      }
-      return pvals;
     });
   }
 
@@ -142,21 +123,11 @@ export class ParameterDataTab {
    * practical problems.
    */
   loadMoreData() {
-    if (!this.offscreenRecord) {
-      return;
-    }
-
-    const options: GetParameterValuesOptions = {
-      stop: this.offscreenRecord.generationTimeUTC,
-      limit: this.pageSize + 1, // One extra to detect hasMore
-    };
+    const options: GetParameterValuesOptions = {};
     if (this.validStart) {
       options.start = this.validStart.toISOString();
     }
-    this.loadPage(options).then(pvals => {
-      const combinedPvals = this.parameterValues$.getValue().concat(pvals);
-      this.parameterValues$.next(combinedPvals);
-    });
+    this.dataSource.loadMoreData(options);
   }
 
   private subtractDuration(date: Date, duration: string) {

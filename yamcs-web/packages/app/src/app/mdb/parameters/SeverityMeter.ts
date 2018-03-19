@@ -15,7 +15,7 @@ const XMLNS = 'http://www.w3.org/2000/svg';
   selector: 'app-severity-meter',
   template: `
     <svg #container
-         width="50%" height="8px"
+         width="100%" height="8px"
          viewBox="0 0 100 100"
          preserveAspectRatio="none"
          style="overflow: visible">

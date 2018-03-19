@@ -21,6 +21,10 @@
           Jump to now
         </button>
       </ng-container>
+
+      &nbsp;&nbsp;
+      <app-dots *ngIf="dataSource.loading$ | async">
+      </app-dots>
     </div>
     <div fxFlex style="text-align: right">
       <app-action-link icon="file_download"
@@ -47,10 +51,10 @@
   </span>
 </div>
 
-<app-parameter-values-table [parameterValues$]="parameterValues$"></app-parameter-values-table>
+<app-parameter-values-table [dataSource]="dataSource"></app-parameter-values-table>
 
 <mat-toolbar>
   <span style="flex: 1 1 auto"></span>
-  <button mat-stroked-button [disabled]="!offscreenRecord" (click)="loadMoreData()">Load More</button>
+  <button mat-stroked-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
   <span style="flex: 1 1 auto"></span>
 </mat-toolbar>

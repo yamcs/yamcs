@@ -1,6 +1,6 @@
 <div class="panel-content">
   <div fxLayout="row">
-    <div fxFlex class="current-value-pane has-alar">
+    <div fxFlex="none" class="current-value-pane">
       <span *ngIf="currentValue">
         <span class="mat-display-1">
           <app-expirable [pval]="currentValue" style="white-space: nowrap">
@@ -16,9 +16,9 @@
           <app-severity-meter [pval]="currentValue"></app-severity-meter>
         </ng-container>
       </span>
-      <span *ngIf="!currentValue">---</span>
+      <span *ngIf="!currentValue" style="white-space: nowrap">---</span>
     </div>
-    <div fxFill>
+    <div fxFlex>
       <dl class="dl-horizontal no-lead no-trail">
         <ng-container *ngFor="let alias of parameter.alias">
           <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
