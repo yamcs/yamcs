@@ -58,6 +58,31 @@ export interface DataEncoding {
   littleEndian: boolean;
   sizeInBits: number;
   encoding: string;
+  defaultCalibrator: Calibrator;
+}
+
+export interface Calibrator {
+  type: string;
+  polynomialCalibrator: PolynomialCalibrator;
+  splineCalibrator: SplineCalibrator;
+  javaExpressionCalibrator: JavaExpressionCalibrator;
+}
+
+export interface PolynomialCalibrator {
+  coefficient: number[];
+}
+
+export interface SplineCalibrator {
+  point: SplinePoint[];
+}
+
+export interface SplinePoint {
+  raw: number;
+  calibrated: number;
+}
+
+export interface JavaExpressionCalibrator {
+  formula: string;
 }
 
 export interface Command extends NameDescription {

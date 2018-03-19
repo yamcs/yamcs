@@ -13,6 +13,11 @@ import { ContainerDetail } from './containers/ContainerDetail';
 import { CommandDetail } from './commands/CommandDetail';
 import { SeverityMeter } from './parameters/SeverityMeter';
 import { ParameterValuesTable } from './parameters/ParameterValuesTable';
+import { PolynomialPipe } from './pipes/PolynomialPipe';
+
+const pipes = [
+  PolynomialPipe,
+];
 
 @NgModule({
   imports: [
@@ -20,6 +25,7 @@ import { ParameterValuesTable } from './parameters/ParameterValuesTable';
     MdbRoutingModule,
   ],
   declarations: [
+    pipes,
     routingComponents,
     AlgorithmsTable,
     AlgorithmDetail,

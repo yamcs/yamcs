@@ -13,17 +13,32 @@
 
     <nav mat-tab-nav-bar>
       <a mat-tab-link
-          routerLink="plot"
-          routerLinkActive #rla="routerLinkActive"
-          [active]="rla.isActive"
-          [queryParams]="{instance: instance.name}">
-        Plot
+       routerLink="summary"
+       routerLinkActive #rla="routerLinkActive"
+       [active]="rla.isActive"
+       [queryParams]="{instance: instance.name}">
+        Summary
       </a>
       <a mat-tab-link
-          routerLink="data"
-          routerLinkActive #rlb="routerLinkActive"
-          [active]="rlb.isActive"
-          [queryParams]="{instance: instance.name}">
+         routerLink="plot"
+         routerLinkActive #rlb="routerLinkActive"
+         [active]="rlb.isActive"
+         [queryParams]="{instance: instance.name}">
+        Plot
+      </a>
+      <a *ngIf="parameter.type.engType === 'integer' || parameter.type.engType === 'float'"
+         mat-tab-link
+         routerLink="calibration"
+         routerLinkActive #rlc="routerLinkActive"
+         [active]="rlc.isActive"
+         [queryParams]="{instance: instance.name}">
+        Calibration
+      </a>
+      <a mat-tab-link
+         routerLink="data"
+         routerLinkActive #rld="routerLinkActive"
+         [active]="rld.isActive"
+         [queryParams]="{instance: instance.name}">
         Historical Data
       </a>
     </nav>

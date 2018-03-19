@@ -20,6 +20,10 @@ export class ParameterDataDataSource extends DataSource<ParameterValue> {
     return this.pvals$;
   }
 
+  isEmpty() {
+    return this.pvals$.value.length === 0;
+  }
+
   loadParameterValues(options: GetParameterValuesOptions) {
     this.loading$.next(true);
     return this.loadPage({

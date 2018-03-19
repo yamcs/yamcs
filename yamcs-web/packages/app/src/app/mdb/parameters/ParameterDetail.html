@@ -1,7 +1,7 @@
 <div class="panel-content">
   <div fxLayout="row">
     <div fxFlex="none" class="current-value-pane">
-      <span *ngIf="currentValue">
+      <ng-container *ngIf="currentValue">
         <span class="mat-display-1">
           <app-expirable [pval]="currentValue" style="white-space: nowrap">
             <app-alarm-severity [severity]="currentValue.monitoringResult"></app-alarm-severity>
@@ -10,12 +10,14 @@
           </app-expirable>
         </span>
         <br>
-        <span style="font-size: smaller; white-space: nowrap">{{ currentValue?.generationTimeUTC | datetime }}</span>
-        <ng-container *ngIf="currentValue.alarmRange">
-          <br>
-          <app-severity-meter [pval]="currentValue"></app-severity-meter>
-        </ng-container>
-      </span>
+        <div class="meter-size-constrainer">
+          <span style="font-size: smaller; white-space: nowrap">{{ currentValue?.generationTimeUTC | datetime }}</span>
+          <ng-container *ngIf="currentValue.alarmRange">
+            <br>
+            <app-severity-meter [pval]="currentValue"></app-severity-meter>
+          </ng-container>
+        </div>
+      </ng-container>
       <span *ngIf="!currentValue" style="white-space: nowrap">---</span>
     </div>
     <div fxFlex>

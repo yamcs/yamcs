@@ -53,8 +53,7 @@
 
 <app-parameter-values-table [dataSource]="dataSource"></app-parameter-values-table>
 
-<mat-toolbar>
-  <span style="flex: 1 1 auto"></span>
-  <button mat-stroked-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
-  <span style="flex: 1 1 auto"></span>
-</mat-toolbar>
+<div class="table-footer">
+  <small *ngIf="dataSource.isEmpty()">No records found matching current filter in the selected time range.</small>
+  <button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
+</div>

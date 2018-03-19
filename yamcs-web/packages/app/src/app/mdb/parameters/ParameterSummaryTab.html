@@ -1,0 +1,12 @@
+<ng-container *ngIf="parameter$ | async as parameter">
+  <table yaDataTable *ngIf="parameter.type.engType === 'enumeration'">
+    <tr>
+      <th width="100">Value</th>
+      <th width="100">Label</th>
+    </tr>
+    <tr *ngFor="let enumValue of parameter.type.enumValue">
+      <td>{{ enumValue.value }}</td>
+      <td>{{ enumValue.label }}</td>
+    </tr>
+  </table>
+</ng-container>

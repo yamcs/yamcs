@@ -11,3 +11,10 @@
   padding-left: 6px;
   margin-bottom: 12px;
 }
+
+.table-footer {
+  background-color: #f2f2f2;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+}

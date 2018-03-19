@@ -7,3 +7,9 @@
   background-color: #feeef0;
   border: 1px solid crimson;
 }
+
+.meter-size-constrainer {
+  display: inline-block;
+  width: 160px; /* about as large as the timestamp */
+  position: relative;
+}
