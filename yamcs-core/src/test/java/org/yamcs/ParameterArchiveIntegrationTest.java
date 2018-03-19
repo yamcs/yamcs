@@ -50,8 +50,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testRestRetrieval() throws Exception {
-        // Logger.getLogger("org.yamcs").setLevel(Level.INFO);
-        Logger.getLogger("org.yamcs.parameterarchive").setLevel(Level.ALL);
         generateData("2015-01-02T10:00:00", 2 * 3600);
 
         String resp;
@@ -66,9 +64,13 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00",
                 HttpMethod.GET, "").get();
         pdata = fromJson(resp, ParameterData.newBuilder()).build();
+       
         assertEquals(100, pdata.getParameterCount());
-        engValue = pdata.getParameter(0).getEngValue();
+        pv = pdata.getParameter(0);
+        engValue = pv.getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
+        assertEquals(2850, pv.getExpireMillis());
+        
 
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/samples?start=2015-01-02T11:40:00&stop=2015-01-02T12:00:00",
@@ -97,14 +99,19 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(0.167291805148, s0.getMax(), 1e-5);
         assertEquals(0.167291805148, s0.getAvg(), 1e-5);
 
+        
+        
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00",
                 HttpMethod.GET, "").get();
         pdata = fromJson(resp, ParameterData.newBuilder()).build();
         assertEquals(100, pdata.getParameterCount());
-        engValue = pdata.getParameter(0).getEngValue();
+        pv = pdata.getParameter(0);
+        engValue = pv.getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
-
+        assertEquals(2850, pv.getExpireMillis());
+        
+        
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00&limit=10",
                 HttpMethod.GET, "").get();

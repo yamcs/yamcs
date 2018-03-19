@@ -1,7 +1,6 @@
 package org.yamcs.parameterarchive;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -228,6 +227,12 @@ public class MultiParameterDataRetrieval {
                 }
                 if (ps.getAlarmRangeCount() > 0) {
                     pv.addAlarmRanges(ps.getAlarmRangeList());
+                }
+                if(ps.hasExpireMillis()) {
+                    pv.setExpireMillis(ps.getExpireMillis());
+                }
+                if(ps.hasRangeCondition()) {
+                    pv.setRangeCondition(ps.getRangeCondition());
                 }
             }
 

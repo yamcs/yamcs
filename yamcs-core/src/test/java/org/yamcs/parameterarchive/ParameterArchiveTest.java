@@ -20,8 +20,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.rocksdb.RocksDBException;
+import org.yamcs.parameter.ParameterStatus;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YamcsServer;
+import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
@@ -588,6 +590,34 @@ public class ParameterArchiveTest {
         checkEquals(l7a.get(0), 100, pv1_0, pv2_0);
         checkEquals(l7a.get(1), t2, pv1_3, pv2_1);
 
+    }
+    
+    
+    @Test
+    public void testExpireMillis() throws Exception {
+        long t = TimeEncoding.parse("2018-03-19T10:35:00");
+        ParameterValue pv1_0 = getParameterValue(p1, t, "blala"+t, (int)t);
+        pv1_0.setExpireMillis(1234);
+
+        int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
+                pv1_0.getRawValue().getType());
+
+        int pg1id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id });
+        PGSegment pgSegment1 = new PGSegment(pg1id, SortedTimeSegment.getSegmentId(t), new SortedIntArray(new int[] { p1id }));
+       
+        
+        pgSegment1.addRecord(t, Arrays.asList(pv1_0));
+        
+        pgSegment1.consolidate();
+        parchive.writeToArchive(pgSegment1);
+        
+        
+        // ascending request on empty data
+        List<ParameterValueArray> l0a = retrieveSingleParamSingleGroup(t, t+1, p1id, pg1id, true);
+        Pvalue.ParameterStatus pstatus = l0a.get(0).paramStatus[0];
+        assertTrue(pstatus.hasExpireMillis());
+        assertEquals(1234, pstatus.getExpireMillis());
+        
     }
 
     List<ParameterIdValueList> retrieveMultipleParameters(long start, long stop, int[] parameterIds,

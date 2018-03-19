@@ -44,6 +44,10 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
         if (rc != null) {
             pvfb.setRangeCondition(rc);
         }
+        
+        if(pv.getExpireMills()!=-1) {
+            pvfb.setExpireMillis(pv.getExpireMills());
+        }
 
         addAlarmRange(pvfb, AlarmLevelType.WATCH, pv.getWatchRange());
         addAlarmRange(pvfb, AlarmLevelType.WARNING, pv.getWarningRange());
