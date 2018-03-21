@@ -31,6 +31,7 @@ export {
   DownloadParameterValuesOptions,
   Event,
   EventSeverity,
+  GetAlarmsOptions,
   GetEventsOptions,
   GetParameterSamplesOptions,
   GetParameterValuesOptions,

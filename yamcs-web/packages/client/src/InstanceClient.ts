@@ -41,6 +41,7 @@ import {
   DownloadEventsOptions,
   DownloadParameterValuesOptions,
   Event,
+  GetAlarmsOptions,
   GetEventsOptions,
   GetParameterSamplesOptions,
   GetParameterValuesOptions,
@@ -241,16 +242,16 @@ export class InstanceClient {
     });
   }
 
-  async getActiveAlarms(processorName: string) {
+  async getActiveAlarms(processorName: string, options: GetAlarmsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/alarms`;
-    const response = await fetch(url);
+    const response = await fetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
     return wrapper.alarm || [];
   }
 
-  async getAlarms() {
+  async getAlarms(options: GetAlarmsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/alarms`;
-    const response = await fetch(url);
+    const response = await fetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
     return wrapper.alarm || [];
   }
@@ -260,9 +261,9 @@ export class InstanceClient {
     return this.webSocketClient.getAlarmUpdates();
   }
 
-  async getAlarmsForParameter(qualifiedName: string) {
+  async getAlarmsForParameter(qualifiedName: string, options: GetAlarmsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/alarms${qualifiedName}`;
-    const response = await fetch(url);
+    const response = await fetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
     return await wrapper.alarm || [];
   }

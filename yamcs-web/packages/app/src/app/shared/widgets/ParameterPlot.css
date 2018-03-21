@@ -5,6 +5,11 @@
   border: 1px solid #d3d3d3;
 }
 
+::ng-deep .annotation {
+  background-color: lightpink;
+  color: red !important;
+}
+
 ::ng-deep .dygraph-axis-label {
   color: #aaa;
 }

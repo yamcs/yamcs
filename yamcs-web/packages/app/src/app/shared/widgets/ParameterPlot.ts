@@ -79,17 +79,20 @@ export class ParameterPlot implements AfterViewInit {
         };
       } else {
         const valueRange = this.seriesComponents.first.getStaticValueRange();
-        if (valueRange[0] !== null && this.dataSource.minValue !== undefined) {
-          valueRange[0] = this.dataSource.minValue;
+        const lo = valueRange[0];
+        if (lo !== null && this.dataSource.minValue !== undefined) {
+          valueRange[0] = lo ? Math.min(lo, this.dataSource.minValue) : this.dataSource.minValue;
         }
-        if (valueRange[1] !== null && this.dataSource.maxValue !== undefined) {
-          valueRange[1] = this.dataSource.maxValue;
+        const hi = valueRange[1];
+        if (hi !== null && this.dataSource.maxValue !== undefined) {
+          valueRange[1] = hi ? Math.max(hi, this.dataSource.maxValue) : this.dataSource.maxValue;
         }
         dyOptions.axes = {
           y: { valueRange }
         };
       }
       this.dygraph.updateOptions(dyOptions);
+      this.dygraph.setAnnotations(data.annotations);
     });
 
     this.dataSource.setDateWindow(start, stop);
