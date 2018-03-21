@@ -99,8 +99,9 @@ public class OldArchiveParameterRestHandler extends RestHandler {
 
         long start = req.getQueryParameterAsDate("start", 0);
         long stop = req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime());
+        int intervalCount = req.getQueryParameterAsInt("count", 500);
 
-        RestDownsampler sampler = new RestDownsampler(stop);
+        RestDownsampler sampler = new RestDownsampler(stop, intervalCount);
         ParameterArchive parchive = getParameterArchive(instance);
         ParameterIdDb piddb = parchive.getParameterIdDb();
 
