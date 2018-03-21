@@ -33,7 +33,6 @@ import {
   MissionDatabase,
   Parameter,
   SpaceSystem,
-  GetParameterSamplesOptions,
 } from './types/mdb';
 
 import {
@@ -43,6 +42,7 @@ import {
   DownloadParameterValuesOptions,
   Event,
   GetEventsOptions,
+  GetParameterSamplesOptions,
   GetParameterValuesOptions,
   ParameterData,
   ParameterSubscriptionRequest,

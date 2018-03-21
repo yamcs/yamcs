@@ -23,6 +23,9 @@ import { APP_BASE_HREF } from '@angular/common';
 import { HomePage } from './core/pages/HomePage';
 import { ProfilePage } from './core/pages/ProfilePage';
 
+import Dygraph from 'dygraphs';
+import GridPlugin from './shared/widgets/GridPlugin';
+
 /**
  * The RouterStateSerializer takes the current RouterStateSnapshot
  * and returns any pertinent information needed. The snapshot contains
@@ -97,5 +100,16 @@ export class AppModule {
 
   constructor(store: Store<any>) {
     store.dispatch(new LoadInstancesAction());
+
+    // Install customized GridPlugin in global Dygraph object.
+    Dygraph.Plugins['Grid'] = GridPlugin;
+    Dygraph.PLUGINS = [
+      Dygraph.Plugins['Legend'],
+      Dygraph.Plugins['Axes'],
+      Dygraph.Plugins['Annotations'],
+      Dygraph.Plugins['ChartLabels'],
+      Dygraph.Plugins['Grid'],
+      Dygraph.Plugins['RangeSelector'],
+    ];
   }
 }

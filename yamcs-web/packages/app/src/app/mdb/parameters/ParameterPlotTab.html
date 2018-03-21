@@ -1,13 +1,22 @@
 <ng-container *ngIf="parameter$ | async as parameter">
-  <mat-toolbar>
-    <mat-toolbar-row>
-      <button mat-button>
-        <mat-icon>add_circle_outline</mat-icon>
-        Comparison
-      </button>
-    </mat-toolbar-row>
-  </mat-toolbar>
-  <app-parameter-plot>
-    <app-parameter-series [parameter]="parameter"></app-parameter-series>
+  <div style="height: 24px; line-height: 24px;">
+    <app-action-link icon="add_circle_outline">
+      Comparison
+    </app-action-link>
+    <button (click)="plot.zoomIn()">Zoom In</button>
+    <button (click)="plot.zoomOut()">Zoom Out</button>
+    <button (click)="loadLatest('PT1H')">1h</button>
+    <button (click)="loadLatest('PT5H')">5h</button>
+    <button (click)="loadLatest('P1D')">1d</button>
+    <button (click)="loadLatest('P1W')">1w</button>
+    <button (click)="loadLatest('P1M')">1m</button>
+    <button (click)="loadLatest('P3M')">3m</button>
+    <button (click)="loadLatest('P1Y')">1y</button>
+  </div>
+  <app-parameter-plot #plot
+                      [xGrid]="true"
+                      [dataSource]="dataSource">
+    <app-parameter-series [parameter]="parameter"
+                          [grid]="true"></app-parameter-series>
   </app-parameter-plot>
 </ng-container>

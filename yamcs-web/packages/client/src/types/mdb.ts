@@ -51,6 +51,19 @@ export interface ParameterType {
   engType: string;
   dataEncoding: DataEncoding;
   unitSet?: UnitInfo[];
+  defaultAlarm: AlarmInfo;
+  enumValue: EnumValue[];
+}
+
+export interface AlarmInfo {
+  minViolations: number;
+  staticAlarmRange: AlarmRange[];
+  enumerationAlarm: EnumerationAlarm[];
+}
+
+export interface EnumerationAlarm {
+  level: AlarmLevelType;
+  label: string;
 }
 
 export interface DataEncoding {
@@ -137,8 +150,10 @@ export interface EnumValue {
   label: string;
 }
 
+export type AlarmLevelType = 'NORMAL' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
+
 export interface AlarmRange {
-  level: 'NORMAL' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
+  level: AlarmLevelType;
   minInclusive: number;
   maxInclusive: number;
   minExclusive: number;
@@ -234,10 +249,4 @@ export interface GetCommandsOptions {
   namespace?: string;
   recurse?: boolean;
   q?: string;
-}
-
-export interface GetParameterSamplesOptions {
-  start?: string;
-  stop?: string;
-  order?: 'asc' | 'desc';
 }

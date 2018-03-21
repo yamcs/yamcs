@@ -4,6 +4,7 @@ export { InstanceClient } from './InstanceClient';
 export {
   AlarmRange,
   Algorithm,
+  Calibrator,
   Command,
   Container,
   GetAlgorithmsOptions,
@@ -11,10 +12,14 @@ export {
   GetContainersOptions,
   GetParametersOptions,
   HistoryInfo,
+  JavaExpressionCalibrator,
   NamedObjectId,
   OperatorType,
   Parameter,
+  PolynomialCalibrator,
   SpaceSystem,
+  SplineCalibrator,
+  SplinePoint,
   UnitInfo,
 } from './types/mdb';
 
@@ -27,6 +32,7 @@ export {
   Event,
   EventSeverity,
   GetEventsOptions,
+  GetParameterSamplesOptions,
   GetParameterValuesOptions,
   ParameterData,
   ParameterSubscriptionRequest,

@@ -150,3 +150,10 @@ export interface DownloadParameterValuesOptions {
   format?: 'csv';
   order?: 'asc' | 'desc';
 }
+
+export interface GetParameterSamplesOptions {
+  start?: string;
+  stop?: string;
+  count?: number;
+  order?: 'asc' | 'desc';
+}
