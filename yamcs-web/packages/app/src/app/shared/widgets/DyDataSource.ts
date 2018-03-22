@@ -22,6 +22,8 @@ export class DyDataSource {
 
   private loadOffscreen = true;
 
+  public loading$ = new BehaviorSubject<boolean>(false);
+
   data$ = new BehaviorSubject<DyDataUpdate>({
     samples: [],
     annotations: [],
@@ -43,6 +45,7 @@ export class DyDataSource {
     stop: Date,
     restoreValueRange?: [number, number],
   ) {
+    this.loading$.next(true);
     // Load beyond the visible range to be able to show data
     // when panning.
     let loadStart = start;
@@ -65,6 +68,7 @@ export class DyDataSource {
         stop: loadStop.toISOString(),
       })
     ]).then(results => {
+      this.loading$.next(false);
       const samples = results[0];
       const alarms = results[1];
       this.processSamples(samples, start, stop);
@@ -79,11 +83,12 @@ export class DyDataSource {
   }
 
   connect() {
-
+    return this.data$;
   }
 
   disconnect() {
-
+    this.data$.complete();
+    this.loading$.complete();
   }
 
   private processSamples(samples: Sample[], start: Date, stop: Date) {

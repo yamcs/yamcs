@@ -14,7 +14,6 @@
   right: 0;
   margin: 0 auto;
   text-align: center;
-
 }
 
 .zoom-actions-inner {
@@ -25,4 +24,15 @@
 .zoom-actions .mat-button {
   line-height: inherit;
   min-width: 0;
+}
+
+.no-data-message {
+  position: absolute;
+  top: 50%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  text-align: center;
+  pointer-events: none;
 }

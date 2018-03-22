@@ -1,6 +1,6 @@
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Component, Inject } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, Validators } from '@angular/forms';
 import { subtractDuration } from '../../shared/utils';
 
 @Component({
@@ -9,19 +9,21 @@ import { subtractDuration } from '../../shared/utils';
 })
 export class SelectRangeDialog {
 
-  start = new FormControl();
-  stop = new FormControl();
+  start = new FormControl(null, [
+    Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+  ]);
+  stop = new FormControl(null, [
+    Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+  ]);
 
   constructor(
     private dialogRef: MatDialogRef<SelectRangeDialog>,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     if (this.data.start && this.data.stop) {
-      console.log('hum', this.data.start, this.data.stop);
       this.start.setValue(this.data.start.toISOString());
       this.stop.setValue(this.data.stop.toISOString());
     } else {
-      console.log('err');
       const stop = new Date();
       const start = subtractDuration(stop, 'PT1H');
       this.start.setValue(start.toISOString());

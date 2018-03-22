@@ -66,5 +66,24 @@
         </button>
       </div>
     </div>
+    <ng-container *ngIf="dataSource.data$ | async as data">
+      <ng-container *ngIf="!(dataSource.loading$ | async)">
+        <div class="no-data-message" *ngIf="data.samples.length === 0">
+          <span class="mat-caption" *ngIf="range$ | async as range">
+            There is no data for this chart in
+            <ng-container [ngSwitch]="range">
+              <span *ngSwitchCase="'PT1H'">the last hour</span>
+              <span *ngSwitchCase="'PT6H'">the last 6 hours</span>
+              <span *ngSwitchCase="'P1D'">the last 24 hours</span>
+              <span *ngSwitchCase="'P1W'">the last week</span>
+              <span *ngSwitchCase="'P1M'">the last month</span>
+              <span *ngSwitchCase="'P3M'">the last three months</span>
+              <span *ngSwitchCase="'P1Y'">the last year</span>
+              <span *ngSwitchDefault>the selected range</span>
+            </ng-container>
+          </span>
+        </div>
+      </ng-container>
+    </ng-container>
   </div>
 </ng-container>

@@ -55,7 +55,8 @@
 
     <app-parameter-values-table [dataSource]="dataSource"></app-parameter-values-table>
 
-    <div class="table-footer">
+    <div class="table-footer"
+         *ngIf="!(dataSource.loading$ | async)">
       <small *ngIf="dataSource.isEmpty()">No records found matching current filter in the selected time range.</small>
       <button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
     </div>
