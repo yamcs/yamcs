@@ -1,3 +1,5 @@
+import { Value } from "@yamcs/client";
+
 /**
  * Substracts an ISO 8601 duration string from the given date.
  * Fractions are not currently supported.
@@ -34,4 +36,23 @@ export function subtractDuration(date: Date, isoDuration: string) {
     dt.setUTCSeconds(date.getUTCSeconds() - parseFloat(matchResult[16]));
   }
   return dt;
+}
+
+export function convertValueToNumber(value: Value) {
+  switch (value.type) {
+    case 'FLOAT':
+      return value.floatValue;
+    case 'DOUBLE':
+      return value.doubleValue;
+    case 'UINT32':
+      return value.uint32Value;
+    case 'SINT32':
+      return value.sint32Value;
+    case 'UINT64':
+      return value.uint64Value;
+    case 'SINT64':
+      return value.sint64Value;
+    default:
+      return null; // Assuming not a number
+  }
 }

@@ -1,0 +1,8 @@
+.plot-container {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  position: absolute;
+  top: 48px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}

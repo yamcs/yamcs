@@ -14,6 +14,7 @@ import { CommandDetail } from './commands/CommandDetail';
 import { SeverityMeter } from './parameters/SeverityMeter';
 import { ParameterValuesTable } from './parameters/ParameterValuesTable';
 import { PolynomialPipe } from './pipes/PolynomialPipe';
+import { ParameterCalibration } from './parameters/ParameterCalibration';
 
 const pipes = [
   PolynomialPipe,
@@ -36,6 +37,7 @@ const pipes = [
     MdbPageTemplate,
     MdbToolbar,
     ParametersTable,
+    ParameterCalibration,
     ParameterDetail,
     ParameterValuesTable,
     SeverityMeter,

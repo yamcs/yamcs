@@ -7,6 +7,7 @@ import { subtractDuration } from '../../shared/utils';
 
 @Component({
   templateUrl: './ParameterPlotTab.html',
+  styleUrls: ['./ParameterPlotTab.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterPlotTab {

@@ -14,6 +14,7 @@ import { UnitsPipe } from '../../shared/pipes/UnitsPipe';
 
 @Component({
   templateUrl: './ParameterPage.html',
+  styleUrls: ['./ParameterPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterPage implements OnDestroy {

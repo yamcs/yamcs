@@ -3,6 +3,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Sample, Alarm } from '@yamcs/client';
 import { DyAnnotation } from './DyAnnotation';
+import { convertValueToNumber } from '../utils';
 
 export class DyDataUpdate {
   samples: DySample[];
@@ -122,40 +123,35 @@ export class DyDataSource {
     for (const alarm of alarms) {
       const t = new Date();
       t.setTime(Date.parse(alarm.triggerValue.generationTimeUTC));
-      const closest = this.findClosestSample(t);
-      if (closest && closest[1] !== null) { // Exclude if associated to a gap, these cannot be attached properly
+      const value = convertValueToNumber(alarm.triggerValue.engValue);
+      if (value !== null) {
+        const sample: DySample = [t, [value, value, value]];
+        const idx = this.findInsertPosition(t);
+        this.dySamples.splice(idx, 0, sample);
         this.dyAnnotations.push({
           series: this.qname,
-          x: closest[0].getTime(),
-          shortText: alarm.triggerValue.monitoringResult,
-          text: alarm.triggerValue.generationTimeUTC + ': ' + alarm.triggerValue.engValue.uint32Value + '(associated with  ' + closest[1] + ')',
-          tickHeight: 0,
+          x: t.getTime(),
+          shortText: 'A',
+          text: 'Alarm triggered at ' + alarm.triggerValue.generationTimeUTC,
+          tickHeight: 1,
           cssClass: 'annotation',
-          // tickColor: red,
+          tickColor: 'red',
           // attachAtBottom: true,
         });
       }
     }
   }
 
-  // Assumes samples are sorted
-  private findClosestSample(t: Date) {
+  private findInsertPosition(t: Date) {
     if (!this.dySamples.length) {
-      return null;
-    }
-    if (this.dySamples.length === 1) {
-      return this.dySamples[0];
+      return 0;
     }
 
-    for (let i = 1; i < this.dySamples.length; i++) {
-      const dySample = this.dySamples[i];
-      // As soon as a number bigger than target is found, return the previous or current
-      // number depending on which has smaller difference to the target.
-      if (dySample[0] > t) {
-        const prev = this.dySamples[i - 1];
-        return Math.abs(prev[0].getTime() - t.getTime()) < Math.abs(dySample[0].getTime() - t.getTime()) ? prev : dySample;
+    for (let i = 0; i < this.dySamples.length; i++) {
+      if (this.dySamples[i][0] > t) {
+        return i;
       }
     }
-    return this.dySamples[this.dySamples.length - 1];
+    return this.dySamples.length - 1;
   }
 }

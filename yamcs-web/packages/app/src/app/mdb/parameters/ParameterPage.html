@@ -6,17 +6,12 @@
       </a> {{ parameter.qualifiedName }}
     </app-mdb-toolbar>
 
-    <app-parameter-detail [instance]="instance"
-                          [parameter]="parameter"
-                          [currentValue]="parameterValue$ | async">
-    </app-parameter-detail>
-
     <nav mat-tab-nav-bar>
       <a mat-tab-link
-       routerLink="summary"
-       routerLinkActive #rla="routerLinkActive"
-       [active]="rla.isActive"
-       [queryParams]="{instance: instance.name}">
+         routerLink="summary"
+         routerLinkActive #rla="routerLinkActive"
+         [active]="rla.isActive"
+         [queryParams]="{instance: instance.name}">
         Summary
       </a>
       <a mat-tab-link
@@ -25,14 +20,6 @@
          [active]="rlb.isActive"
          [queryParams]="{instance: instance.name}">
         Plot
-      </a>
-      <a *ngIf="parameter.type.engType === 'integer' || parameter.type.engType === 'float'"
-         mat-tab-link
-         routerLink="calibration"
-         routerLinkActive #rlc="routerLinkActive"
-         [active]="rlc.isActive"
-         [queryParams]="{instance: instance.name}">
-        Calibration
       </a>
       <a mat-tab-link
          routerLink="data"
@@ -43,7 +30,7 @@
       </a>
     </nav>
 
-    <div class="panel-content">
+    <div class="tab-content-wrapper">
       <router-outlet></router-outlet>
     </div>
   </app-mdb-page>

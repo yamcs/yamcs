@@ -27,6 +27,9 @@ export class ParameterPlot implements AfterViewInit {
   @Input()
   xAxisLineWidth = 1;
 
+  @Input()
+  xAxisHeight: number;
+
   /**
    * Thickness of series
    */
@@ -79,16 +82,23 @@ export class ParameterPlot implements AfterViewInit {
         };
       } else {
         const valueRange = this.seriesComponents.first.getStaticValueRange();
-        const lo = valueRange[0];
-        if (lo !== null && this.dataSource.minValue !== undefined) {
-          valueRange[0] = lo ? Math.min(lo, this.dataSource.minValue) : this.dataSource.minValue;
+        let lo = valueRange[0];
+        if (this.dataSource.minValue !== undefined) {
+          lo = (lo !== null) ? Math.min(lo, this.dataSource.minValue) : this.dataSource.minValue;
         }
-        const hi = valueRange[1];
-        if (hi !== null && this.dataSource.maxValue !== undefined) {
-          valueRange[1] = hi ? Math.max(hi, this.dataSource.maxValue) : this.dataSource.maxValue;
+        let hi = valueRange[1];
+        if (this.dataSource.maxValue !== undefined) {
+          hi = (hi !== null) ? Math.max(hi, this.dataSource.maxValue) : this.dataSource.maxValue;
         }
+
+        // Add extra y padding for visual comfort
+        if (lo !== null && hi !== null) {
+          lo = lo - (hi - lo) * 0.1;
+          hi = hi + (hi - lo) * 0.1;
+        }
+
         dyOptions.axes = {
-          y: { valueRange }
+          y: { valueRange: [lo, hi] }
         };
       }
       this.dygraph.updateOptions(dyOptions);
@@ -108,7 +118,8 @@ export class ParameterPlot implements AfterViewInit {
     const alarmRangeMode = this.seriesComponents.first.alarmRanges;
 
     let lastClickedGraph: any = null;
-    this.dygraph = new Dygraph(containingDiv, 'X\n', {
+
+    const dyOptions: {[key: string]: any} = {
       legend: 'always',
       fillGraph: this.fillGraph,
       drawGrid: false,
@@ -117,11 +128,10 @@ export class ParameterPlot implements AfterViewInit {
       customBars: true,
       strokeWidth: this.strokeWidth,
       gridLineColor: '#f2f2f2',
-      axisLineColor: '#d3d3d3',
+      axisLineColor: '#e1e1e1',
       axisLabelFontSize: 11,
       digitsAfterDecimal: 6,
       labels: ['Generation Time', this.parameters[0].qualifiedName],
-      labelsDiv: this.legend.nativeElement,
       rightGap: 0,
       labelsUTC: this.utc,
       series,
@@ -296,7 +306,16 @@ export class ParameterPlot implements AfterViewInit {
         }
         return legend;
       },
-    });
+    };
+
+    if (this.legend) {
+      dyOptions.labelsDiv = this.legend.nativeElement;
+    }
+    if (this.xAxisHeight !== undefined) {
+      dyOptions.xAxisHeight = this.xAxisHeight;
+    }
+
+    this.dygraph = new Dygraph(containingDiv, 'X\n', dyOptions);
 
     const gridPluginInstance = this.dygraph.getPluginInstance_(GridPlugin) as GridPlugin;
     gridPluginInstance.setAlarmZones(alarmZones);

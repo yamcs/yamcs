@@ -24,7 +24,6 @@ import { CommandPage } from './commands/CommandPage';
 import { SpaceSystemCommandTab } from './space-system-detail/SpaceSystemCommandTab';
 import { ParameterPlotTab } from './parameters/ParameterPlotTab';
 import { ParameterDataTab } from './parameters/ParameterDataTab';
-import { ParameterCalibrationTab } from './parameters/ParameterCalibrationTab';
 import { ParameterSummaryTab } from './parameters/ParameterSummaryTab';
 
 const routes = [{
@@ -127,10 +126,6 @@ const routes = [{
         component: ParameterPlotTab,
       },
       {
-        path: 'calibration',
-        component: ParameterCalibrationTab,
-      },
-      {
         path: 'data',
         component: ParameterDataTab,
       }
@@ -154,7 +149,6 @@ export const routingComponents = [
   MdbPage,
   ParametersPage,
   ParameterPage,
-  ParameterCalibrationTab,
   ParameterDataTab,
   ParameterPlotTab,
   ParameterSummaryTab,
