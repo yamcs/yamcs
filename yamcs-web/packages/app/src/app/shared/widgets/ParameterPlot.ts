@@ -321,6 +321,13 @@ export class ParameterPlot implements AfterViewInit {
     gridPluginInstance.setAlarmZones(alarmZones);
   }
 
+  public getDateRange() {
+    if (this.dygraph) {
+      const range = this.dygraph.xAxisRange();
+      return [new Date(range[0]), new Date(range[1])];
+    }
+  }
+
   public zoomIn() {
     this.zoom(0.2);
   }

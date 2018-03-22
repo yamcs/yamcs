@@ -1,0 +1,28 @@
+.text-action {
+  text-decoration: none;
+  display: inline-flex;
+  vertical-align: middle;
+  align-items: center;
+  color: #000;
+  cursor: pointer;
+  padding-left: 6px;
+  padding-right: 6px;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+}
+
+.text-action:hover {
+  color: #000080;
+}
+
+:host.active .text-action {
+  color: #000080;
+}
+
+:host.active .action-content {
+  color: #000080;
+  margin-bottom: -2px;
+  border-bottom: 2px solid #000080;
+}

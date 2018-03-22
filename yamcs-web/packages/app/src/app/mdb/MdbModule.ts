@@ -15,6 +15,7 @@ import { SeverityMeter } from './parameters/SeverityMeter';
 import { ParameterValuesTable } from './parameters/ParameterValuesTable';
 import { PolynomialPipe } from './pipes/PolynomialPipe';
 import { ParameterCalibration } from './parameters/ParameterCalibration';
+import { SelectRangeDialog } from './parameters/SelectRangeDialog';
 
 const pipes = [
   PolynomialPipe,
@@ -40,8 +41,12 @@ const pipes = [
     ParameterCalibration,
     ParameterDetail,
     ParameterValuesTable,
+    SelectRangeDialog,
     SeverityMeter,
-  ]
+  ],
+  entryComponents: [
+    SelectRangeDialog,
+  ],
 })
 export class MdbModule {
 }

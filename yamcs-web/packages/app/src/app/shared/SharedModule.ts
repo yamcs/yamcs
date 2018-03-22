@@ -54,6 +54,7 @@ import { Expirable } from './template/Expirable';
 import { AlarmSeverityComponent } from './template/AlarmSeverityComponent';
 import { Dots } from './template/Dots';
 import { ActionLink } from './template/ActionLink';
+import { TextAction } from './template/TextAction';
 
 const materialModules = [
   CdkTableModule,
@@ -104,6 +105,7 @@ const sharedComponents = [
   SelectInstanceDialog,
   ParameterSeries,
   TabDetailIcon,
+  TextAction,
   ToolbarActions,
 ];
 

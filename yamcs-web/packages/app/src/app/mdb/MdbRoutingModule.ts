@@ -22,7 +22,7 @@ import { SpaceSystemContainerTab } from './space-system-detail/SpaceSystemContai
 import { ContainerPage } from './containers/ContainerPage';
 import { CommandPage } from './commands/CommandPage';
 import { SpaceSystemCommandTab } from './space-system-detail/SpaceSystemCommandTab';
-import { ParameterPlotTab } from './parameters/ParameterPlotTab';
+import { ParameterChartTab } from './parameters/ParameterChartTab';
 import { ParameterDataTab } from './parameters/ParameterDataTab';
 import { ParameterSummaryTab } from './parameters/ParameterSummaryTab';
 
@@ -122,8 +122,8 @@ const routes = [{
         component: ParameterSummaryTab,
       },
       {
-        path: 'plot',
-        component: ParameterPlotTab,
+        path: 'chart',
+        component: ParameterChartTab,
       },
       {
         path: 'data',
@@ -150,7 +150,7 @@ export const routingComponents = [
   ParametersPage,
   ParameterPage,
   ParameterDataTab,
-  ParameterPlotTab,
+  ParameterChartTab,
   ParameterSummaryTab,
   SpaceSystemsPage,
   SpaceSystemPage,
