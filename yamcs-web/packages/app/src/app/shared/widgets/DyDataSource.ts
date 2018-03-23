@@ -20,8 +20,6 @@ export class DyDataUpdate {
  */
 export class DyDataSource {
 
-  private loadOffscreen = true;
-
   public loading$ = new BehaviorSubject<boolean>(false);
 
   data$ = new BehaviorSubject<DyDataUpdate>({
@@ -37,6 +35,8 @@ export class DyDataSource {
   private dySamples: DySample[] = [];
   private dyAnnotations: DyAnnotation[] = [];
 
+  private lastLoadPromise: Promise<any> | null;
+
   constructor(private yamcs: YamcsService, private qname: string) {
   }
 
@@ -48,16 +48,12 @@ export class DyDataSource {
     this.loading$.next(true);
     // Load beyond the visible range to be able to show data
     // when panning.
-    let loadStart = start;
-    let loadStop = stop;
-    if (this.loadOffscreen) {
-      const delta = stop.getTime() - start.getTime();
-      loadStart = new Date(start.getTime() - delta);
-      loadStop = new Date(stop.getTime() + delta);
-    }
+    const delta = stop.getTime() - start.getTime();
+    const loadStart = new Date(start.getTime() - delta);
+    const loadStop = new Date(stop.getTime() + delta);
 
     const instanceClient = this.yamcs.getSelectedInstance();
-    return Promise.all([
+    const loadPromise = Promise.all([
       instanceClient.getParameterSamples(this.qname, {
         start: loadStart.toISOString(),
         stop: loadStop.toISOString(),
@@ -67,23 +63,25 @@ export class DyDataSource {
         start: loadStart.toISOString(),
         stop: loadStop.toISOString(),
       })
-    ]).then(results => {
-      this.loading$.next(false);
-      const samples = results[0];
-      const alarms = results[1];
-      this.processSamples(samples, start, stop);
-      this.spliceAlarmAnnotations(alarms);
+    ]);
+    this.lastLoadPromise = loadPromise;
+    loadPromise.then(results => {
+      // Effectively cancels past requests
+      if (this.lastLoadPromise === loadPromise) {
+        this.loading$.next(false);
+        const samples = results[0];
+        const alarms = results[1];
+        this.processSamples(samples, start, stop);
+        this.spliceAlarmAnnotations(alarms);
 
-      this.data$.next({
-        samples: this.dySamples,
-        annotations: this.dyAnnotations,
-        restoreValueRange,
-      });
+        this.data$.next({
+          samples: this.dySamples,
+          annotations: this.dyAnnotations,
+          restoreValueRange,
+        });
+        this.lastLoadPromise = null;
+      }
     });
-  }
-
-  connect() {
-    return this.data$;
   }
 
   disconnect() {

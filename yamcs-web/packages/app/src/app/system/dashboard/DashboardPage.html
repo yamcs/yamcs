@@ -27,24 +27,28 @@
       <div fxFlex="33.33">
         <mat-card *ngIf="jvmMemoryUsedParameter$ | async as parameter">
           <mat-card-subtitle>JVM Memory Used</mat-card-subtitle>
-          <app-parameter-plot>
-            <app-parameter-series [parameter]="parameter"
-                                  [grid]="true"
-                                  [axisLineWidth]="0">
-            </app-parameter-series>
-          </app-parameter-plot>
+          <div style="height: 300px">
+            <app-parameter-plot [dataSource]="jvmMemoryUsedDataSource">
+              <app-parameter-series [parameter]="parameter"
+                                    [grid]="true"
+                                    [axisLineWidth]="0">
+              </app-parameter-series>
+            </app-parameter-plot>
+          </div>
         </mat-card>
       </div>
 
       <div fxFlex="33.33">
         <mat-card *ngIf="jvmThreadCountParameter$ | async as parameter">
           <mat-card-subtitle>JVM Thread Count</mat-card-subtitle>
-          <app-parameter-plot>
-            <app-parameter-series [parameter]="parameter"
-                                  [grid]="true"
-                                  [axisLineWidth]="0">
-            </app-parameter-series>
-          </app-parameter-plot>
+          <div style="height: 300px">
+            <app-parameter-plot [dataSource]="jvmThreadCountDataSource">
+              <app-parameter-series [parameter]="parameter"
+                                    [grid]="true"
+                                    [axisLineWidth]="0">
+              </app-parameter-series>
+            </app-parameter-plot>
+          </div>
         </mat-card>
       </div>
     </div>

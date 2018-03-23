@@ -4,6 +4,7 @@ import { Parameter } from '@yamcs/client';
 import { DyDataSource } from './DyDataSource';
 import { ParameterSeries } from './ParameterSeries';
 import GridPlugin from './GridPlugin';
+import { subtractDuration } from '../utils';
 
 @Component({
   selector: 'app-parameter-plot',
@@ -36,6 +37,15 @@ export class ParameterPlot implements AfterViewInit {
   @Input()
   strokeWidth = 1;
 
+  @Input()
+  height = '100%';
+
+  @Input()
+  width = '100%';
+
+  @Input()
+  axisBackgroundColor = '#fff';
+
   /**
    * If true display timestamps in UTC, otherwise use browser default
    */
@@ -60,10 +70,6 @@ export class ParameterPlot implements AfterViewInit {
 
     // TODO should have endpoint on rest for multiple parameters sampled together
     this.parameters.push(this.seriesComponents.first.parameter);
-
-    const stop = new Date();
-    const start = new Date();
-    start.setUTCHours(stop.getUTCHours() - 1);
 
     this.initDygraphs(containingDiv);
     this.dataSource.data$.subscribe(data => {
@@ -91,6 +97,12 @@ export class ParameterPlot implements AfterViewInit {
           hi = (hi !== null) ? Math.max(hi, this.dataSource.maxValue) : this.dataSource.maxValue;
         }
 
+        // Prevent identical lo/hi
+        if (lo === hi && lo !== null) {
+          lo = Math.min(lo, 0);
+          hi = Math.max(hi!, 0);
+        }
+
         // Add extra y padding for visual comfort
         if (lo !== null && hi !== null) {
           lo = lo - (hi - lo) * 0.1;
@@ -104,6 +116,14 @@ export class ParameterPlot implements AfterViewInit {
       this.dygraph.updateOptions(dyOptions);
       this.dygraph.setAnnotations(data.annotations);
     });
+
+    const now = new Date(); // TODO use mission time instead
+    const start = subtractDuration(now, 'PT1H');
+
+    // Add some padding to the right
+    const delta = now.getTime() - start.getTime();
+    const stop = new Date();
+    stop.setTime(now.getTime() + 0.1 * delta);
 
     this.dataSource.setDateWindow(start, stop);
   }

@@ -49,6 +49,7 @@
   </div>
   <div class="plot-container">
     <app-parameter-plot #plot
+                        axisBackgroundColor="#fafafa"
                         [xGrid]="true"
                         [xAxisHeight]="24"
                         [dataSource]="dataSource">
@@ -73,11 +74,11 @@
             There is no data for this chart in
             <ng-container [ngSwitch]="range">
               <span *ngSwitchCase="'PT1H'">the last hour</span>
-              <span *ngSwitchCase="'PT6H'">the last 6 hours</span>
+              <span *ngSwitchCase="'PT5H'">the last 5 hours</span>
               <span *ngSwitchCase="'P1D'">the last 24 hours</span>
               <span *ngSwitchCase="'P1W'">the last week</span>
               <span *ngSwitchCase="'P1M'">the last month</span>
-              <span *ngSwitchCase="'P3M'">the last three months</span>
+              <span *ngSwitchCase="'P3M'">the last 3 months</span>
               <span *ngSwitchCase="'P1Y'">the last year</span>
               <span *ngSwitchDefault>the selected range</span>
             </ng-container>

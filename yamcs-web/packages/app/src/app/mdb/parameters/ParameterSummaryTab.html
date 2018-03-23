@@ -8,7 +8,7 @@
                               [currentValue]="parameterValue$ | async">
         </app-parameter-detail>
 
-        <ng-container *ngIf="parameter.type.engType === 'integer' || parameter.type.engType === 'float'">
+        <ng-container *ngIf="parameter.type?.engType === 'integer' || parameter.type?.engType === 'float'">
           <div class="section-divider">
             <mat-divider></mat-divider>
           </div>
@@ -17,18 +17,18 @@
           <app-parameter-calibration [parameter]="parameter"></app-parameter-calibration>
         </ng-container>
 
-        <ng-container *ngIf="parameter.type.engType === 'enumeration'">
+        <ng-container *ngIf="parameter.type?.engType === 'enumeration'">
           <div class="section-divider">
             <mat-divider></mat-divider>
           </div>
 
           <h4>Enumeration</h4>
-          <table yaDataTable *ngIf="parameter.type.engType === 'enumeration'">
+          <table yaDataTable *ngIf="parameter.type?.engType === 'enumeration'">
             <tr>
               <th width="100">Value</th>
               <th width="100">Label</th>
             </tr>
-            <tr *ngFor="let enumValue of parameter.type.enumValue">
+            <tr *ngFor="let enumValue of parameter.type?.enumValue">
               <td>{{ enumValue.value }}</td>
               <td>{{ enumValue.label }}</td>
             </tr>

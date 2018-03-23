@@ -6,9 +6,8 @@
       <mat-icon>refresh</mat-icon>
     </button>
 
-    <button mat-button color="primary" disabled>
-      <mat-icon>filter_list</mat-icon>
-      Filter
+    <button mat-icon-button matTooltip="Start streaming events" color="primary">
+      <mat-icon>play_arrow</mat-icon>
     </button>
   </app-monitor-toolbar>
 
@@ -16,6 +15,8 @@
     <form [formGroup]="filter">
       <div fxLayout="row" class="filter-bar">
         <div fxFlex class="vmiddle">
+          <input placeholder="Filter by text search"
+                 style="width: 300px; margin-right: 10px">
           <mat-icon class="icon14">access_time</mat-icon>&nbsp;
           <select formControlName="interval">
             <option value="PT1H">Last Hour</option>

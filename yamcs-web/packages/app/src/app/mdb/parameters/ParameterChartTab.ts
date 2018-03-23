@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ViewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewChild, OnDestroy } from '@angular/core';
 import { Parameter } from '@yamcs/client';
 import { ActivatedRoute } from '@angular/router';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -14,7 +14,7 @@ import { ParameterPlot } from '../../shared/widgets/ParameterPlot';
   styleUrls: ['./ParameterChartTab.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParameterChartTab {
+export class ParameterChartTab implements OnDestroy {
 
   @ViewChild(ParameterPlot)
   plot: ParameterPlot;
@@ -40,7 +40,13 @@ export class ParameterChartTab {
     this.range$.next(range);
     const now = new Date(); // TODO use mission time instead
     const start = subtractDuration(now, range);
-    this.dataSource.setDateWindow(start, now);
+
+    // Add some padding to the right
+    const delta = now.getTime() - start.getTime();
+    const stop = new Date();
+    stop.setTime(now.getTime() + 0.05 * delta);
+
+    this.dataSource.setDateWindow(start, stop);
   }
 
   chooseRange() {
@@ -63,5 +69,9 @@ export class ParameterChartTab {
         }
       });
     }
+  }
+
+  ngOnDestroy() {
+    this.dataSource.disconnect();
   }
 }

@@ -1,7 +1,7 @@
-<mat-form-field style="width: 100%;">
-  <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
-  <span matPrefix><mat-icon>filter_list</mat-icon></span>
-</mat-form-field>
+<mat-icon>filter_list</mat-icon>
+<input placeholder="Filter Parameters"
+       style="width: 700px"
+       (keyup)="applyFilter($event.target.value)">
 
 <mat-table *ngIf="dataSource"
             class="ya-data-table"
