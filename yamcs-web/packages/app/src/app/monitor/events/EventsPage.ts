@@ -6,12 +6,14 @@ import { Title } from '@angular/platform-browser';
 import { GetEventsOptions, DownloadEventsOptions } from '@yamcs/client';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { rowsAnimation } from './animations';
 
 const defaultInterval = 'PT1H';
 
 @Component({
   templateUrl: './EventsPage.html',
   styleUrls: ['./EventsPage.css'],
+  animations: [rowsAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventsPage {
@@ -79,6 +81,15 @@ export class EventsPage {
       this.validStart = this.subtractDuration(this.validStop, interval);
       this.loadData();
     }
+  }
+
+  startStreaming() {
+    this.filter.get('interval')!.setValue('NO_LIMIT');
+    this.dataSource.startStreaming();
+  }
+
+  stopStreaming() {
+    this.dataSource.stopStreaming();
   }
 
   applyCustomDates() {

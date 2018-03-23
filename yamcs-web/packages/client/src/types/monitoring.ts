@@ -91,6 +91,10 @@ export interface ParameterSubscriptionResponse {
   parameterValues$: Observable<ParameterValue[]>;
 }
 
+export interface EventSubscriptionResponse {
+  event$: Observable<Event>;
+}
+
 export interface Sample {
   time: string;
   avg: number;

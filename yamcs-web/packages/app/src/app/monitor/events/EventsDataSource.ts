@@ -3,6 +3,7 @@ import { DataSource } from '@angular/cdk/table';
 import { Event, GetEventsOptions } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CollectionViewer } from '@angular/cdk/collections';
+import { Subscription } from 'rxjs/Subscription';
 
 export class EventsDataSource extends DataSource<Event> {
 
@@ -11,6 +12,9 @@ export class EventsDataSource extends DataSource<Event> {
 
   events$ = new BehaviorSubject<Event[]>([]);
   public loading$ = new BehaviorSubject<boolean>(false);
+  public streaming$ = new BehaviorSubject<boolean>(false);
+
+  private realtimeSubscription: Subscription;
 
   constructor(private yamcs: YamcsService) {
     super();
@@ -71,8 +75,31 @@ export class EventsDataSource extends DataSource<Event> {
     });
   }
 
+  startStreaming() {
+    this.yamcs.getSelectedInstance().getEventUpdates().then(response => {
+      this.streaming$.next(true);
+      this.realtimeSubscription = response.event$.subscribe(event => {
+        if (!this.loading$.getValue()) {
+          const combinedEvents = [event].concat(this.events$.getValue());
+          this.events$.next(combinedEvents);
+        }
+      });
+    });
+  }
+
+  stopStreaming() {
+    if (this.realtimeSubscription) {
+      this.realtimeSubscription.unsubscribe();
+    }
+    this.streaming$.next(false);
+  }
+
   disconnect(collectionViewer: CollectionViewer) {
+    if (this.realtimeSubscription) {
+      this.realtimeSubscription.unsubscribe();
+    }
     this.events$.complete();
     this.loading$.complete();
+    this.streaming$.complete();
   }
 }

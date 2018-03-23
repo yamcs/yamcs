@@ -12,6 +12,14 @@
   margin-bottom: 12px;
 }
 
+.table-status .message-zone {
+  float: right;
+  height: 24px;
+  line-height: 24px;
+  font-size: 12px;
+  padding-right: 6px;
+}
+
 .ERROR mat-cell,
 .DISTRESS mat-cell,
 .CRITICAL mat-cell,

@@ -2,12 +2,27 @@
   <app-monitor-toolbar>
     Events
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <button mat-icon-button matTooltip="Jump to now" color="primary" (click)="jumpToNow()">
+    <button mat-icon-button
+            matTooltip="Jump to now"
+            color="primary"
+            (click)="jumpToNow()">
       <mat-icon>refresh</mat-icon>
     </button>
 
-    <button mat-icon-button matTooltip="Start streaming events" color="primary">
+    <button *ngIf="!(dataSource.streaming$ | async)"
+            mat-icon-button
+            matTooltip="Start streaming events"
+            color="primary"
+            (click)="startStreaming()">
       <mat-icon>play_arrow</mat-icon>
+    </button>
+
+    <button *ngIf="dataSource.streaming$ | async"
+            mat-icon-button
+            matTooltip="Pause streaming events"
+            color="primary"
+            (click)="stopStreaming()">
+      <mat-icon>pause</mat-icon>
     </button>
   </app-monitor-toolbar>
 
@@ -50,6 +65,12 @@
     </form>
 
     <div class="table-status" [ngSwitch]="appliedInterval">
+      <div class="message-zone">
+        <span *ngIf="dataSource.streaming$ | async">
+          Listening for events
+          <app-dots fontSize="16px" color="#000080"></app-dots>
+        </span>
+      </div>
       <span *ngSwitchCase="'PT1H'">
         Showing events from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
       </span>
@@ -116,7 +137,9 @@
       </ng-container>
 
       <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *cdkRowDef="let row; columns: displayedColumns;" [ngClass]="row.severity"></mat-row>
+      <mat-row *cdkRowDef="let row; columns: displayedColumns;"
+               [@rowsAnimation]=""
+               [ngClass]="row.severity"></mat-row>
     </mat-table>
 
     <mat-toolbar>

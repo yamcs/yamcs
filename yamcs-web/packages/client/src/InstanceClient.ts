@@ -41,6 +41,7 @@ import {
   DownloadEventsOptions,
   DownloadParameterValuesOptions,
   Event,
+  EventSubscriptionResponse,
   GetAlarmsOptions,
   GetEventsOptions,
   GetParameterSamplesOptions,
@@ -95,7 +96,7 @@ export class InstanceClient {
     return url + this.queryString(options);
   }
 
-  getEventUpdates() {
+  async getEventUpdates(): Promise<EventSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getEventUpdates();
   }

@@ -10,6 +10,7 @@ import {
   TimeInfo,
   ParameterSubscriptionRequest,
   ParameterSubscriptionResponse,
+  EventSubscriptionResponse,
 } from './types/monitoring';
 import {
   ClientInfo,
@@ -92,15 +93,30 @@ export class WebSocketClient {
   }
 
   getEventUpdates() {
-    if (!this.subscriptionModel.events) {
-      this.subscriptionModel.events = true;
-      this.emit({ events: 'subscribe' });
-    }
-    return this.webSocketConnection$.pipe(
-      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-      filter((msg: WebSocketServerMessage) => msg[3].dt === 'EVENT'),
-      map(msg => msg[3].data as Event),
-    );
+    this.subscriptionModel.events = true;
+    const requestId = this.emit({ events: 'subscribe' });
+
+    return new Promise<EventSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as EventSubscriptionResponse;
+          response.event$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'EVENT'),
+            map(msg => msg[3].data as Event),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      })
+    });
   }
 
   getTimeUpdates() {
