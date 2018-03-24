@@ -1,9 +1,16 @@
 <ng-container *ngIf="instance$ | async as instance">
   <app-mdb-page *ngIf="container$ | async as container">
     <app-mdb-toolbar>
-      <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
-        <mat-icon>arrow_back</mat-icon>
-      </a> {{ container.qualifiedName }}
+      <ng-container *ngFor="let alias of container.alias">
+        <ng-container *ngIf="container.qualifiedName.startsWith(alias.namespace)">
+          <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'containers']"
+              [queryParams]="{instance: instance.name}"
+              class="ya-link"
+              style="color: #000080; text-decoration: underline">
+            {{ alias.namespace }}
+          </a>/{{ alias.name }}
+        </ng-container>
+      </ng-container>
     </app-mdb-toolbar>
 
     <div class="panel-content">

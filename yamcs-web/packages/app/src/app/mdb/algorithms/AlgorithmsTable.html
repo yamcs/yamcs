@@ -19,7 +19,7 @@
   <ng-container matColumnDef="name">
     <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="400px">Name</mat-header-cell>
     <mat-cell *matCellDef="let algorithm" fxFlex="400px">
-      <a [routerLink]="['./', algorithm.qualifiedName]"
+      <a [routerLink]="['/mdb/algorithms', algorithm.qualifiedName]"
          [queryParams]="{instance: instance.name}">
         {{ shortName ? algorithm.name : algorithm.qualifiedName }}
       </a>

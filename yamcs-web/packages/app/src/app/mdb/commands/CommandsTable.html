@@ -19,7 +19,7 @@
   <ng-container matColumnDef="name">
     <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="400px">Name</mat-header-cell>
     <mat-cell *matCellDef="let command" fxFlex="400px">
-      <a [routerLink]="['./', command.qualifiedName]"
+      <a [routerLink]="['/mdb/commands', command.qualifiedName]"
          [queryParams]="{instance: instance.name}">
         {{ shortName ? command.name : command.qualifiedName }}
       </a>

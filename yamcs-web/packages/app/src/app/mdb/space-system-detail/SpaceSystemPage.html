@@ -1,9 +1,7 @@
 <ng-container *ngIf="instance$ | async as instance">
   <app-mdb-page *ngIf="spaceSystem$ | async as spaceSystem">
     <app-mdb-toolbar>
-      <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
-        <mat-icon>arrow_back</mat-icon>
-      </a> {{ qualifiedName }}
+      {{ qualifiedName }}
     </app-mdb-toolbar>
 
     <nav mat-tab-nav-bar>
@@ -12,7 +10,6 @@
          routerLinkActive #rlb="routerLinkActive"
          [active]="rlb.isActive"
          [queryParams]="{instance: instance.name}">
-        <app-tab-detail-icon *ngIf="isDetailPageOf('parameters')"></app-tab-detail-icon>
         Parameters
       </a>
 
@@ -21,7 +18,6 @@
          routerLinkActive #rlc="routerLinkActive"
          [active]="rlc.isActive"
          [queryParams]="{instance: instance.name}">
-        <app-tab-detail-icon *ngIf="isDetailPageOf('containers')"></app-tab-detail-icon>
         Containers
       </a>
 
@@ -30,7 +26,6 @@
          routerLinkActive #rld="routerLinkActive"
          [active]="rld.isActive"
          [queryParams]="{instance: instance.name}">
-        <app-tab-detail-icon *ngIf="isDetailPageOf('commands')"></app-tab-detail-icon>
         Commands
       </a>
 
@@ -39,7 +34,6 @@
          routerLinkActive #rle="routerLinkActive"
          [active]="rle.isActive"
          [queryParams]="{instance: instance.name}">
-        <app-tab-detail-icon *ngIf="isDetailPageOf('algorithms')"></app-tab-detail-icon>
         Algorithms
       </a>
 

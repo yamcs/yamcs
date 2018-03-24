@@ -3,7 +3,7 @@
     <ng-container *ngIf="currentValue">
       <span class="mat-display-1">
         <app-expirable [pval]="currentValue" style="white-space: nowrap">
-          <app-alarm-severity [severity]="currentValue.monitoringResult"></app-alarm-severity>
+          <app-alarm-level [level]="currentValue.monitoringResult"></app-alarm-level>
           &nbsp;{{ currentValue.engValue | value }}
           <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
         </app-expirable>
