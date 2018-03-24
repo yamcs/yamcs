@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Parameter, Instance, ParameterValue } from '@yamcs/client';
+import { Parameter, Instance, ParameterValue, EnumValue, AlarmRange } from '@yamcs/client';
 import { ActivatedRoute } from '@angular/router';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Observable } from 'rxjs/Observable';
@@ -38,5 +38,39 @@ export class ParameterSummaryTab {
         this.parameterValue$.next(pvals[0]);
       });
     });
+  }
+
+  getDefaultAlarmLevel(parameter: Parameter, enumValue: EnumValue) {
+    if (parameter.type && parameter.type.defaultAlarm) {
+      const alarm = parameter.type.defaultAlarm;
+      if (alarm.enumerationAlarm) {
+        for (const enumAlarm of alarm.enumerationAlarm) {
+          if (enumAlarm.label === enumValue.label) {
+            return enumAlarm.level;
+          }
+        }
+      }
+    }
+  }
+
+  describeRange(range: AlarmRange) {
+    let result = '(-∞';
+    if (range.minInclusive !== undefined) {
+      result = '[' + range.minInclusive;
+    } else if (range.minExclusive !== undefined) {
+      result = '(' + range.minExclusive;
+    }
+
+    result += ', ';
+
+    if (range.maxInclusive !== undefined) {
+      result += range.maxInclusive + ']';
+    } else if (range.maxExclusive !== undefined) {
+      result += range.maxExclusive + ')';
+    } else {
+      result += '+∞)';
+    }
+
+    return result;
   }
 }

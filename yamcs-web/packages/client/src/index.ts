@@ -2,11 +2,13 @@ export { default as YamcsClient } from './YamcsClient';
 export { InstanceClient } from './InstanceClient';
 
 export {
+  AlarmInfo,
   AlarmRange,
   Algorithm,
   Calibrator,
   Command,
   Container,
+  EnumValue,
   GetAlgorithmsOptions,
   GetCommandsOptions,
   GetContainersOptions,

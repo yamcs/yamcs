@@ -15,6 +15,7 @@
 
           <h4>Calibration</h4>
           <app-parameter-calibration [parameter]="parameter"></app-parameter-calibration>
+          <p>&nbsp;</p>
         </ng-container>
 
         <ng-container *ngIf="parameter.type?.engType === 'enumeration'">
@@ -27,12 +28,43 @@
             <tr>
               <th width="100">Value</th>
               <th width="100">Label</th>
+              <th width="200">Alarm Level (default)</th>
             </tr>
             <tr *ngFor="let enumValue of parameter.type?.enumValue">
               <td>{{ enumValue.value }}</td>
               <td>{{ enumValue.label }}</td>
+              <td>
+                <ng-container *ngIf="getDefaultAlarmLevel(parameter, enumValue) as level">
+                  <app-alarm-level [level]="level" [grayscale]="true"></app-alarm-level>
+                  {{ level }}
+                </ng-container>
+                <span *ngIf="!getDefaultAlarmLevel(parameter, enumValue)">-</span>
+              </td>
             </tr>
           </table>
+          <p>&nbsp;</p>
+        </ng-container>
+
+        <ng-container *ngIf="parameter.type?.engType === 'integer' || parameter.type?.engType === 'float'">
+          <div class="section-divider">
+            <mat-divider></mat-divider>
+          </div>
+
+          <h4>Alarm Levels</h4>
+          <table yaDataTable>
+            <tr>
+              <th>Alarm Level (default)</th>
+              <th>Range</th>
+            </tr>
+            <tr *ngFor="let range of parameter.type?.defaultAlarm.staticAlarmRange">
+              <td>
+                <app-alarm-level [level]="range.level" [grayscale]="true"></app-alarm-level>
+                {{ range.level }}
+              </td>
+              <td>{{ describeRange(range) }}</td>
+            </tr>
+          </table>
+          <p>&nbsp;</p>
         </ng-container>
       </ng-container>
     </ng-container>

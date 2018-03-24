@@ -5,7 +5,7 @@
   <ng-container matColumnDef="severity">
     <mat-header-cell *matHeaderCellDef fxFlex="80px">Severity</mat-header-cell>
     <mat-cell *matCellDef="let pval" fxFlex="80px">
-      <app-alarm-severity *ngIf="pval.monitoringResult" [severity]="pval.monitoringResult"></app-alarm-severity>
+      <app-alarm-level *ngIf="pval.monitoringResult" [level]="pval.monitoringResult"></app-alarm-level>
       <span *ngIf="!pval.monitoringResult">-</span>
     </mat-cell>
   </ng-container>

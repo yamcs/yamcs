@@ -51,7 +51,7 @@ import { SelectInstanceDialog } from './template/SelectInstanceDialog';
 import { ParameterSeries } from './widgets/ParameterSeries';
 import { DateTimePipe } from './pipes/DateTimePipe';
 import { Expirable } from './template/Expirable';
-import { AlarmSeverityComponent } from './template/AlarmSeverityComponent';
+import { AlarmLevel } from './template/AlarmLevel';
 import { Dots } from './template/Dots';
 import { ActionLink } from './template/ActionLink';
 import { TextAction } from './template/TextAction';
@@ -96,7 +96,7 @@ const sharedDirectives = [
 
 const sharedComponents = [
   ActionLink,
-  AlarmSeverityComponent,
+  AlarmLevel,
   ColumnChooser,
   DetailToolbar,
   Dots,
