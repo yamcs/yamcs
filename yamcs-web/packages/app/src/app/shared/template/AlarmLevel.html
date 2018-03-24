@@ -1,31 +1,31 @@
 <ng-container [ngSwitch]="level">
-  <img *ngSwitchCase="'IN_LIMITS'"
+  <div *ngSwitchCase="'IN_LIMITS'"
+       class="inlimits"
        matTooltip="In Limits"
-       src="/_static/assets/level0s.png"
-       [class.grayscale]="grayscale">
+       [class.grayscale]="grayscale"></div>
 
-  <img *ngSwitchCase="'WATCH'"
+  <div *ngSwitchCase="'WATCH'"
+       class="watch"
        matTooltip="Watch"
-       src="/_static/assets/level1s.png"
-       [class.grayscale]="grayscale">
+       [class.grayscale]="grayscale"></div>
 
-  <img *ngSwitchCase="'WARNING'"
+  <div *ngSwitchCase="'WARNING'"
+       class="warning"
        matTooltip="Warning"
-       src="/_static/assets/level2s.png"
-       [class.grayscale]="grayscale">
+       [class.grayscale]="grayscale"></div>
 
-  <img *ngSwitchCase="'DISTRESS'"
+  <div *ngSwitchCase="'DISTRESS'"
+       class="distress"
        matTooltip="Distress"
-       src="/_static/assets/level3s.png"
-       [class.grayscale]="grayscale">
+       [class.grayscale]="grayscale"></div>
 
-  <img *ngSwitchCase="'CRITICAL'"
+  <div *ngSwitchCase="'CRITICAL'"
+       class="critical"
        matTooltip="Critical"
-       src="/_static/assets/level4s.png"
-       [class.grayscale]="grayscale">
+       [class.grayscale]="grayscale"></div>
 
-  <img *ngSwitchCase="'SEVERE'"
+  <div *ngSwitchCase="'SEVERE'"
+        class="severe"
         matTooltip="Severe"
-        src="/_static/assets/level5s.png"
-        [class.grayscale]="grayscale">
+        [class.grayscale]="grayscale"></div>
 </ng-container>

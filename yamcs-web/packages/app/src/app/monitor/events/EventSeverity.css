@@ -1,11 +1,11 @@
-.inlimits, .watch, .warning, .distress, .critical, .severe {
+.info, .watch, .warning, .distress, .critical, .severe, .error {
   display: inline-block;
   height: 5px;
   width: 29px;
   position: relative;
 }
 
-.inlimits {
+.info {
   background: url('/assets/level-sprite.png') 0 0;
 }
 
@@ -25,7 +25,7 @@
   background: url('/assets/level-sprite.png') 0 -20px;
 }
 
-.severe {
+.severe, .error {
   background: url('/assets/level-sprite.png') 0 -25px;
 }
 

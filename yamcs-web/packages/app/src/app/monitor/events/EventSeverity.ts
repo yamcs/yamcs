@@ -2,11 +2,15 @@ import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 
 @Component({
   selector: 'app-event-severity',
-  templateUrl: './EventSeverityComponent.html',
+  templateUrl: './EventSeverity.html',
+  styleUrls: ['./EventSeverity.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EventSeverityComponent {
+export class EventSeverity {
 
   @Input()
   severity: string;
+
+  @Input()
+  grayscale = false;
 }
