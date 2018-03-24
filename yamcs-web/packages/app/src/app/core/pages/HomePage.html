@@ -1,13 +1,32 @@
-<ng-container *ngIf="instances$ | async as instances">
-  <h2>Instances:</h2>
-  <ul>
-    <li *ngFor="let instance of instances">
-      <h2>
+<div class="panel-content">
+  <div style="margin-bottom: 12px;">
+    <input placeholder="Filter instances"
+           style="width: 400px"
+           (keyup)="applyFilter($event.target.value)">
+  </div>
+  <mat-table [dataSource]="dataSource"
+             class="ya-data-table"
+             matSort
+             matSortActive="name"
+             matSortDirection="asc"
+             matSortDisableClear>
+
+    <ng-container cdkColumnDef="name">
+      <mat-header-cell *cdkHeaderCellDef mat-sort-header>Instance</mat-header-cell>
+      <mat-cell *cdkCellDef="let row">
         <a routerLink="/monitor"
-           [queryParams]="{instance: instance.name}">
-          {{ instance.name }}
+            [queryParams]="{instance: row.name}">
+          {{ row.name }}
         </a>
-      </h2>
-    </li>
-  </ul>
-</ng-container>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *cdkRowDef="let row; columns: displayedColumns;"></mat-row>
+  </mat-table>
+
+  <mat-paginator [pageSize]="100"
+                 [hidePageSize]="true"
+                 [showFirstLastButtons]="true">
+  </mat-paginator>
+</div>
