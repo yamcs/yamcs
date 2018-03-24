@@ -32,6 +32,11 @@
         <div fxFlex class="vmiddle">
           <input placeholder="Filter by text search"
                  style="width: 300px; margin-right: 10px">
+
+          <app-column-chooser [columns]="columns"
+                              [displayedColumns]="displayedColumns"
+                              (change)="updateColumns($event)"></app-column-chooser>
+
           <mat-icon class="icon14">access_time</mat-icon>&nbsp;
           <select formControlName="interval">
             <option value="PT1H">Last Hour</option>
@@ -130,8 +135,8 @@
       </ng-container>
 
       <ng-container cdkColumnDef="seqNumber">
-        <mat-header-cell *cdkHeaderCellDef>Sequence Number</mat-header-cell>
-        <mat-cell *cdkCellDef="let row">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="100px">Sequence Number</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="100px">
           {{ row.seqNumber }}
         </mat-cell>
       </ng-container>

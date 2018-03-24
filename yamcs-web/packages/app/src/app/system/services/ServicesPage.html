@@ -47,7 +47,7 @@
       <ng-container matColumnDef="actions">
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
         <mat-cell *matCellDef="let service">
-          <mat-menu #serviceMenu="matMenu" overlapTrigger="false">
+          <mat-menu #serviceMenu="matMenu" overlapTrigger="false" class="ya-menu">
             <button mat-menu-item
                     (click)="startService(service.name)"
                     [disabled]="service.state !== 'TERMINATED'">

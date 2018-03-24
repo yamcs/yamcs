@@ -55,6 +55,7 @@ import { AlarmSeverityComponent } from './template/AlarmSeverityComponent';
 import { Dots } from './template/Dots';
 import { ActionLink } from './template/ActionLink';
 import { TextAction } from './template/TextAction';
+import { ColumnChooser } from './template/ColumnChooser';
 
 const materialModules = [
   CdkTableModule,
@@ -96,6 +97,7 @@ const sharedDirectives = [
 const sharedComponents = [
   ActionLink,
   AlarmSeverityComponent,
+  ColumnChooser,
   DetailToolbar,
   Dots,
   EmptyMessage,

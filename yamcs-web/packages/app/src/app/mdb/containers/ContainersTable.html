@@ -1,7 +1,12 @@
-<mat-form-field style="width: 100%;">
-  <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
-  <span matPrefix><mat-icon>filter_list</mat-icon></span>
-</mat-form-field>
+<div style="margin-bottom: 12px">
+  <input placeholder="Filter containers"
+         style="width: 400px"
+         (keyup)="applyFilter($event.target.value)">
+
+  <app-column-chooser [columns]="columns"
+                      [displayedColumns]="displayedColumns"
+                      (change)="updateColumns($event)"></app-column-chooser>
+</div>
 
 <mat-table *ngIf="dataSource"
             class="ya-data-table"
@@ -12,8 +17,8 @@
             matSortDisableClear>
 
   <ng-container matColumnDef="name">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
-    <mat-cell *matCellDef="let container">
+    <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="400px">Name</mat-header-cell>
+    <mat-cell *matCellDef="let container" fxFlex="400px">
       <a [routerLink]="['./', container.qualifiedName]"
          [queryParams]="{instance: instance.name}">
         {{ shortName ? container.name : container.qualifiedName }}
@@ -22,18 +27,18 @@
   </ng-container>
 
   <ng-container matColumnDef="maxInterval">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Max Interval</mat-header-cell>
-    <mat-cell *matCellDef="let container">{{ container.maxInterval || '-' }}</mat-cell>
+    <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="100px">Max Interval</mat-header-cell>
+    <mat-cell *matCellDef="let container" fxFlex="100px">{{ container.maxInterval || '-' }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="sizeInBits">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Size in Bits</mat-header-cell>
-    <mat-cell *matCellDef="let container">{{ container.sizeInBits || '-' }}</mat-cell>
+    <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="100px">Size in Bits</mat-header-cell>
+    <mat-cell *matCellDef="let container" fxFlex="100px">{{ container.sizeInBits || '-' }}</mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="baseContainer">
-    <mat-header-cell *matHeaderCellDef mat-sort-header>Base Container</mat-header-cell>
-    <mat-cell *matCellDef="let container">
+    <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="300px">Base Container</mat-header-cell>
+    <mat-cell *matCellDef="let container" fxFlex="300px">
       <a *ngIf="container.baseContainer"
          [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
          [queryParams]="{instance: instance.name}">
@@ -44,8 +49,8 @@
   </ng-container>
 
   <ng-container matColumnDef="restrictionCriteria">
-    <mat-header-cell *matHeaderCellDef>Restriction Criteria</mat-header-cell>
-    <mat-cell *matCellDef="let container">
+    <mat-header-cell *matHeaderCellDef fxFlex="300px">Restriction Criteria</mat-header-cell>
+    <mat-cell *matCellDef="let container" fxFlex="300px">
       <ng-container *ngFor="let criteria of container.restrictionCriteria">
         <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
            [queryParams]="{instance: instance.name}">
@@ -66,3 +71,8 @@
   <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
   <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
 </mat-table>
+
+<mat-paginator [pageSize]="100"
+               [hidePageSize]="true"
+               [showFirstLastButtons]="true">
+</mat-paginator>

@@ -103,6 +103,21 @@ html, body {
   text-decoration: none !important;
 }
 
+.ya-menu .mat-menu-item {
+  line-height: 24px;
+  height: 24px;
+  font-size: 12px;
+  padding: 0 8px;
+}
+
+.ya-menu .mat-menu-item .material-icons {
+  font-size: 14px !important;
+  height: 14px !important;
+  width: 14px !important;
+  margin-right: 3px;
+  font-weight: 600;
+}
+
 .vmiddle {
   display: inline-flex;
   vertical-align: middle;

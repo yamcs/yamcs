@@ -7,6 +7,8 @@ import { GetEventsOptions, DownloadEventsOptions } from '@yamcs/client';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { rowsAnimation } from './animations';
+import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { subtractDuration } from '../../shared/utils';
 
 const defaultInterval = 'PT1H';
 
@@ -37,7 +39,24 @@ export class EventsPage {
   });
 
   dataSource: EventsDataSource;
-  displayedColumns = ['severity', 'gentime', 'message', 'type', 'source', 'rectime'];
+
+  columns: ColumnInfo[] = [
+    { id: 'severity', label: 'Severity' },
+    { id: 'gentime', label: 'Generation Time', alwaysVisible: true },
+    { id: 'message', label: 'Message', alwaysVisible: true },
+    { id: 'type', label: 'Type' },
+    { id: 'source', label: 'Source' },
+    { id: 'rectime', label: 'Reception Time' },
+    { id: 'seqNumber', label: 'Sequence Number' },
+  ];
+
+  displayedColumns = [
+    'severity',
+    'gentime',
+    'message',
+    'type',
+    'source',
+  ];
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
@@ -46,7 +65,7 @@ export class EventsPage {
     this.dataSource = new EventsDataSource(yamcs);
 
     this.validStop = new Date(); // TODO use mission time
-    this.validStart = this.subtractDuration(this.validStop, defaultInterval);
+    this.validStart = subtractDuration(this.validStop, defaultInterval);
     this.appliedInterval = defaultInterval;
     this.loadData();
 
@@ -63,7 +82,7 @@ export class EventsPage {
         this.loadData();
       } else {
         this.validStop = new Date(); // TODO use mission time
-        this.validStart = this.subtractDuration(this.validStop, nextInterval);
+        this.validStart = subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
       }
@@ -78,7 +97,7 @@ export class EventsPage {
       this.filter.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = new Date(); // TODO use mission time
-      this.validStart = this.subtractDuration(this.validStop, interval);
+      this.validStart = subtractDuration(this.validStop, interval);
       this.loadData();
     }
   }
@@ -137,25 +156,7 @@ export class EventsPage {
     this.dataSource.loadMoreData(options);
   }
 
-  private subtractDuration(date: Date, duration: string) {
-    let result;
-    switch (duration) {
-      case 'PT1H':
-        result = new Date();
-        result.setUTCHours(date.getUTCHours() - 1);
-        return result;
-      case 'PT6H':
-        result = new Date();
-        result.setUTCHours(date.getUTCHours() - 6);
-        return result;
-      case 'P1D':
-        result = new Date();
-        result.setUTCHours(date.getUTCHours() - 24);
-        return result;
-      default:
-        console.error('Unexpected duration ', duration);
-        return date;
-    }
+  updateColumns(displayedColumns: string[]) {
+    this.displayedColumns = displayedColumns;
   }
 }
-

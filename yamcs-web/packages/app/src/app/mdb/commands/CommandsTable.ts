@@ -2,7 +2,8 @@ import { Component, ChangeDetectionStrategy, ViewChild, Input, AfterViewInit } f
 
 import { Command } from '@yamcs/client';
 
-import { MatSort, MatTableDataSource } from '@angular/material';
+import { MatSort, MatTableDataSource, MatPaginator } from '@angular/material';
+import { ColumnInfo } from '../../shared/template/ColumnChooser';
 
 @Component({
   selector: 'app-commands-table',
@@ -23,11 +24,20 @@ export class CommandsTable implements AfterViewInit {
   @ViewChild(MatSort)
   sort: MatSort;
 
+  @ViewChild(MatPaginator)
+  paginator: MatPaginator;
+
   dataSource = new MatTableDataSource<Command>([]);
+
+  columns: ColumnInfo[] = [
+    { id: 'name', label: 'Name', alwaysVisible: true },
+    { id: 'shortDescription', label: 'Description' },
+  ];
 
   displayedColumns = ['name', 'shortDescription'];
 
   ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
     this.commands$.then(commands => {
       this.dataSource.data = commands;
@@ -36,5 +46,9 @@ export class CommandsTable implements AfterViewInit {
 
   applyFilter(value: string) {
     this.dataSource.filter = value.trim().toLowerCase();
+  }
+
+  updateColumns(displayedColumns: string[]) {
+    this.displayedColumns = displayedColumns;
   }
 }
