@@ -47,6 +47,9 @@ export class DisplaysPage {
       } else {
         this.initialState$.next({ frames: [] });
       }
+
+      // Ensure button state is correct on initial load with already open displays
+      this.updatedState$.next(this.initialState$.getValue());
     });
   }
 
