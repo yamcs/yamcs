@@ -1,0 +1,95 @@
+<app-monitor-page *ngIf="instance$ | async as instance">
+  <app-monitor-toolbar>Command History</app-monitor-toolbar>
+
+  <div class="detail">
+    <ng-container *ngIf="selectedEntry$ | async as selectedEntry; else noSelection">
+      <app-detail-toolbar>
+        Command Detail
+      </app-detail-toolbar>
+      <div style="padding: 0 16px">
+        <!--app-alarm-detail [alarm]="selectedAlarm"></app-alarm-detail-->
+      </div>
+    </ng-container>
+    <ng-template #noSelection>
+      <app-detail-toolbar>
+        Select a command
+      </app-detail-toolbar>
+    </ng-template>
+  </div>
+
+  <div class="table-wrapper">
+    <div class="panel-content">
+      <mat-table *ngIf="!dataSource.isEmpty(); else empty"
+                [dataSource]="dataSource"
+                class="ya-data-table"
+                matSort
+                matSortActive="generationTimeUTC"
+                matSortDirection="desc"
+                matSortDisableClear>
+
+        <ng-container matColumnDef="completion">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="32px"></mat-header-cell>
+          <mat-cell *matCellDef="let entry" fxFlex="32px">
+            <ng-container *ngIf="isCompleted(entry)">
+              <mat-icon style="color: green" matTooltip="Completed">
+                check_circle
+              </mat-icon>
+            </ng-container>
+            <ng-container *ngIf="isFailed(entry)">
+              <mat-icon style="color: red" [matTooltip]="getFailedReason(entry)">
+                highlight_off
+              </mat-icon>
+            </ng-container>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="generationTimeUTC">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="200px">Time</mat-header-cell>
+          <mat-cell *matCellDef="let entry" fxFlex="200px">
+            {{ entry.generationTimeUTC | datetime }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="command">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="350px">Command</mat-header-cell>
+          <mat-cell *matCellDef="let entry" fxFlex="350px">
+            {{ getCommandString(entry) || '-' }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="source">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="300px">Src</mat-header-cell>
+          <mat-cell *matCellDef="let entry" fxFlex="300px">
+            {{ getUsername(entry) }}@{{ entry.commandId.origin }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="sourceID">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="70px">Src.ID</mat-header-cell>
+          <mat-cell *matCellDef="let entry" fxFlex="70px">
+            {{ entry.commandId.sequenceNumber || '-' }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="sequenceNumber">
+          <mat-header-cell *matHeaderCellDef mat-sort-header matTooltip="Final Sequence Count" fxFlex="70px">Seq.ID</mat-header-cell>
+          <mat-cell *matCellDef="let entry" fxFlex="70px">
+            {{ getFinalSequenceCount(entry) || '-' }}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"
+                 (click)="selectEntry(row)"
+                 [class.selected]="false">
+        </mat-row>
+      </mat-table>
+
+      <ng-template #empty>
+        <app-empty-message *ngIf="!(dataSource.loading$ | async)">
+          No entries in command history.
+        </app-empty-message>
+      </ng-template>
+    </div>
+  </div>
+</app-monitor-page>

@@ -62,7 +62,7 @@
           <app-dots *ngIf="dataSource.loading$ | async">
           </app-dots>
         </div>
-        <div fxFlex style="text-align: right">
+        <div fxFlex="150px" style="text-align: right">
           <app-action-link icon="file_download"
                           [link]="downloadURL$ | async">Download Data</app-action-link>
         </div>

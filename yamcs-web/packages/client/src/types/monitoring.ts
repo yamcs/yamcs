@@ -103,6 +103,24 @@ export interface Sample {
   n: number;
 }
 
+export interface CommandId {
+  generationTime: number;
+  origin: string;
+  sequenceNumber: number;
+  commandName: string;
+}
+
+export interface CommandHistoryAttribute {
+  name: string;
+  value: Value;
+}
+
+export interface CommandHistoryEntry {
+  commandId: CommandId;
+  generationTimeUTC: string;
+  attr: CommandHistoryAttribute[];
+}
+
 export interface Alarm {
   seqNum: number;
   type: 'ACTIVE' | 'TRIGGERED' | 'SEVERITY_INCREASED' | 'PVAL_UPDATED' | 'ACKNOWLEDGED' | 'CLEARED';
@@ -121,6 +139,14 @@ export interface AcknowledgeInfo {
 }
 
 export interface GetAlarmsOptions {
+  start?: string;
+  stop?: string;
+  pos?: number;
+  limit?: number;
+  order?: 'asc' | 'desc';
+}
+
+export interface GetCommandHistoryOptions {
   start?: string;
   stop?: string;
   pos?: number;

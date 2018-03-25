@@ -27,7 +27,11 @@
                             [queryParams]="{instance: instance.name}">
         Alarms
       </app-sidebar-nav-item>
-      <a mat-list-item>Command History (TODO)</a>
+
+      <app-sidebar-nav-item routerLink="cmdhist"
+                            [queryParams]="{instance: instance.name}">
+        Command History
+      </app-sidebar-nav-item>
     </mat-nav-list>
   </mat-sidenav>
 

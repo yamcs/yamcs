@@ -8,6 +8,7 @@ import {
 
 import {
   ClientInfo,
+  CommandQueue,
   Instance,
   Link,
   Processor,
@@ -15,11 +16,11 @@ import {
   Service,
   Stream,
   Table,
-  CommandQueue,
 } from './system';
 
 import {
   Alarm,
+  CommandHistoryEntry,
   Event,
   Sample,
 } from './monitoring';
@@ -46,6 +47,10 @@ export type WebSocketServerMessage = [
 
 export interface EventsWrapper {
   event: Event[];
+}
+
+export interface CommandHistoryEntryWrapper {
+  entry: CommandHistoryEntry[];
 }
 
 export interface ContainersWrapper {

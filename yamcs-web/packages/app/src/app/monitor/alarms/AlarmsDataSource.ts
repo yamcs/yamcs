@@ -23,7 +23,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
     this.loading$.next(true);
     this.yamcs.getSelectedInstance().getActiveAlarms(processorName)
       .then(alarms => {
-        this.loading$.next(false)
+        this.loading$.next(false);
         for (const alarm of alarms) {
           this.processAlarm(alarm);
         }

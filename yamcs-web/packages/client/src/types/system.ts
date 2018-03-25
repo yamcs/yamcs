@@ -1,4 +1,4 @@
-import { Value } from './monitoring';
+import { CommandId, Value } from './monitoring';
 
 export interface GeneralInfo {
   yamcsVersion: string;
@@ -31,14 +31,14 @@ export interface ClientInfo {
 }
 
 export interface UserInfo {
-login: string;
-clientInfo: ClientInfo[];
-roles: string[];
-tmParaPrivileges: string[];
-tmParaSetPrivileges: string[];
-tmPacketPrivileges: string[];
-tcPrivileges: string[];
-systemPrivileges: string[];
+  login: string;
+  clientInfo: ClientInfo[];
+  roles: string[];
+  tmParaPrivileges: string[];
+  tmParaSetPrivileges: string[];
+  tmPacketPrivileges: string[];
+  tcPrivileges: string[];
+  systemPrivileges: string[];
 }
 
 export interface Service {
@@ -100,7 +100,6 @@ export interface ColumnData {
   value: Value;
 }
 
-
 export interface Statistics {
   instance: string;
   yProcessorName: string;
@@ -139,13 +138,7 @@ export interface CommandQueueEntry {
   cmdId: CommandId;
   source: string;
   binary: string;
-  generationTime: number;
+  username: string;
+  generationTimeUTC: string;
   uuid: string;
-}
-
-export interface CommandId {
-  generationTime: number;
-  origin: string;
-  sequenceNumber: number;
-  commandName: string;
 }

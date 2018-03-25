@@ -9,6 +9,7 @@ import { MonitorToolbar } from './template/MonitorToolbar';
 import { LayoutsPage } from './layouts/LayoutsPage';
 import { LayoutPage } from './layouts/LayoutPage';
 import { AlarmsPage } from './alarms/AlarmsPage';
+import { CommandHistoryPage } from './cmdhist/CommandHistory';
 
 const routes: Routes = [
   {
@@ -25,6 +26,10 @@ const routes: Routes = [
       {
         path: 'alarms',
         component: AlarmsPage,
+      },
+      {
+        path: 'cmdhist',
+        component: CommandHistoryPage,
       },
       {
         path: 'displays',
@@ -55,6 +60,7 @@ export class MonitorRoutingModule { }
 
 export const routingComponents = [
   AlarmsPage,
+  CommandHistoryPage,
   DisplaysPage,
   EventsPage,
   LayoutsPage,

@@ -51,12 +51,12 @@
           </div>
 
           <h4>Alarm Levels</h4>
-          <table yaDataTable>
+          <table yaDataTable *ngIf="parameter.type?.defaultAlarm?.staticAlarmRange as ranges">
             <tr>
               <th>Alarm Level (default)</th>
               <th>Range</th>
             </tr>
-            <tr *ngFor="let range of parameter.type?.defaultAlarm.staticAlarmRange">
+            <tr *ngFor="let range of ranges">
               <td>
                 <app-alarm-level [level]="range.level" [grayscale]="true"></app-alarm-level>
                 {{ range.level }}

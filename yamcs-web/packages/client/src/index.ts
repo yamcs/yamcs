@@ -27,6 +27,9 @@ export {
 
 export {
   Alarm,
+  CommandHistoryEntry,
+  CommandHistoryAttribute,
+  CommandId,
   DisplayFile,
   DisplayFolder,
   DownloadEventsOptions,
@@ -49,7 +52,6 @@ export {
 
 export {
   ClientInfo,
-  CommandId,
   CommandQueueEntry,
   CommandQueueEvent,
   CommandQueue,

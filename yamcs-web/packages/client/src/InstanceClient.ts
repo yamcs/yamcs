@@ -20,6 +20,7 @@ import {
   TablesWrapper,
   ClientsWrapper,
   SamplesWrapper,
+  CommandHistoryEntryWrapper,
 } from './types/internal';
 
 import {
@@ -52,6 +53,8 @@ import {
   ParameterValue,
   Sample,
   TimeInfo,
+  GetCommandHistoryOptions,
+  CommandHistoryEntry,
 } from './types/monitoring';
 
 import {
@@ -160,6 +163,20 @@ export class InstanceClient {
     return this.webSocketClient.getProcessorStatistics().pipe(
       filter(msg => msg.instance === this.instance)
     );
+  }
+
+  async getCommandHistoryEntries(options: GetCommandHistoryOptions = {}): Promise<CommandHistoryEntry[]> {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/commands`;
+    const response = await fetch(url + this.queryString(options));
+    const wrapper = await response.json() as CommandHistoryEntryWrapper;
+    return wrapper.entry;
+  }
+
+  async getCommandHistoryEntriesForParameter(qualifiedName: string, options: GetCommandHistoryOptions = {}): Promise<CommandHistoryEntry[]> {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/commands${qualifiedName}`;
+    const response = await fetch(url + this.queryString(options));
+    const wrapper = await response.json() as CommandHistoryEntryWrapper;
+    return wrapper.entry;
   }
 
   async getCommandQueues(processorName: string) {
