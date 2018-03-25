@@ -17,6 +17,11 @@
     "watch": "rollup -c rollup.config.ts -w",
     "pegjs": "cd src/uss/expressions && pegjs --plugin ts-pegjs/src/tspegjs -o parser.ts grammar.pegjs"
   },
+  "dependencies": {
+    "@yamcs/client": "^1.0.0",
+    "dygraphs": "^2.1.0",
+    "fontfaceobserver": "^2.0.13"
+  },
   "peerDependencies": {
     "@yamcs/client": "^1.0.0",
     "dygraphs": "^2.1.0"
@@ -26,8 +31,6 @@
     "@types/jasminewd2": "~2.0.2",
     "@types/node": "^9.4.7",
     "@types/pegjs": "^0.10.0",
-    "@yamcs/client": "^1.0.0",
-    "dygraphs": "^2.1.0",
     "jasmine-core": "^3.1.0",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "^2.0.0",

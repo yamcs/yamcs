@@ -100,7 +100,7 @@ export class DisplayFrame {
     }
   }
 
-  loadAsync() {
+  async loadAsync() {
     return this.display.parseAndDraw(this.id).then(() => {
       this.container.style.setProperty('background-color', this.display.getBackgroundColor());
       this.setDimension(this.display.width, this.display.height);

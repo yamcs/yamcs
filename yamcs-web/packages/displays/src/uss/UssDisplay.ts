@@ -53,13 +53,26 @@ export class UssDisplay implements Display {
     targetEl.appendChild(this.measurerSvg);
   }
 
-  parseAndDraw(id: string, grid = false) {
+  async parseAndDraw(id: string, grid = false) {
+
+    // Preload the Lucida font so that font metrics are correctly calculated.
+    // Probably can be done without external library in about 5 years from now.
+    // Follow browser support of this spec: https://www.w3.org/TR/css-font-loading-3/
+    const fontFace = 'Lucida Sans Typewriter';
+    try { // Times out after 3 seconds
+      await new FontFaceObserver(fontFace).load();
+      console.log('font loaded');
+    } catch {
+      // tslint:disable-next-line:no-console
+      console.warn(`Failed to load font face '${fontFace}'. Font metric calculations may not be accurate.`);
+    }
+
     return Promise.all([
       this.resourceResolver.retrieveXMLDisplayResource(id),
       this.resourceResolver.retrieveXML('mcs_dqistyle.xml'),
-    ]).then(docs => {
-      this.styleSet = new StyleSet(docs[1]);
-      const displayEl = docs[0].getElementsByTagName('Display')[0];
+    ]).then(results => {
+      this.styleSet = new StyleSet(results[1]);
+      const displayEl = results[0].getElementsByTagName('Display')[0];
 
       this.title = utils.parseStringChild(displayEl, 'Title', 'Untitled');
       this.width = utils.parseFloatChild(displayEl, 'Width');

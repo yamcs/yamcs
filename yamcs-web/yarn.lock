@@ -377,8 +377,8 @@ ansi-align@^2.0.0:
     string-width "^2.0.0"
 
 ansi-escapes@^3.0.0:
-  version "3.0.0"
-  resolved "https://nexus.spaceapplications.com/repository/npm/ansi-escapes/-/ansi-escapes-3.0.0.tgz#ec3e8b4e9f8064fc02c3ac9b65f1c275bda8ef92"
+  version "3.1.0"
+  resolved "https://nexus.spaceapplications.com/repository/npm/ansi-escapes/-/ansi-escapes-3.1.0.tgz#f73207bb81207d75fd6c83f125af26eea378ca30"
 
 ansi-html@0.0.7:
   version "0.0.7"
@@ -1177,8 +1177,8 @@ camelcase@^4.0.0, camelcase@^4.1.0:
   resolved "https://nexus.spaceapplications.com/repository/npm/camelcase/-/camelcase-4.1.0.tgz#d545635be1e33c542649c69173e5de6acfae34dd"
 
 caniuse-lite@^1.0.30000792, caniuse-lite@^1.0.30000805:
-  version "1.0.30000819"
-  resolved "https://nexus.spaceapplications.com/repository/npm/caniuse-lite/-/caniuse-lite-1.0.30000819.tgz#aabee5fd15a080febab6ae5d30c9ea15f4c6d4e2"
+  version "1.0.30000820"
+  resolved "https://nexus.spaceapplications.com/repository/npm/caniuse-lite/-/caniuse-lite-1.0.30000820.tgz#6e36ee75187a2c83d26d6504a1af47cc580324d2"
 
 capture-stack-trace@^1.0.0:
   version "1.0.0"
@@ -2889,6 +2889,10 @@ follow-redirects@1.0.0:
   dependencies:
     debug "^2.2.0"
 
+fontfaceobserver@^2.0.13:
+  version "2.0.13"
+  resolved "https://nexus.spaceapplications.com/repository/npm/fontfaceobserver/-/fontfaceobserver-2.0.13.tgz#47adbb343261eda98cb44db2152196ff124d3221"
+
 for-in@^0.1.3:
   version "0.1.8"
   resolved "https://nexus.spaceapplications.com/repository/npm/for-in/-/for-in-0.1.8.tgz#d8773908e31256109952b1fdb9b3fa867d2775e1"
@@ -3577,8 +3581,8 @@ iconv-lite@0.4.19, iconv-lite@^0.4.17:
   resolved "https://nexus.spaceapplications.com/repository/npm/iconv-lite/-/iconv-lite-0.4.19.tgz#f7468f60135f5e5dad3399c0a81be9a1603a082b"
 
 ieee754@^1.1.4:
-  version "1.1.10"
-  resolved "https://nexus.spaceapplications.com/repository/npm/ieee754/-/ieee754-1.1.10.tgz#719a6f7b026831e64bdb838b0de1bb0029bbf716"
+  version "1.1.11"
+  resolved "https://nexus.spaceapplications.com/repository/npm/ieee754/-/ieee754-1.1.11.tgz#c16384ffe00f5b7835824e67b6f2bd44a5229455"
 
 iferr@^0.1.5:
   version "0.1.5"
@@ -4946,7 +4950,7 @@ mute-stream@0.0.7:
   version "0.0.7"
   resolved "https://nexus.spaceapplications.com/repository/npm/mute-stream/-/mute-stream-0.0.7.tgz#3075ce93bc21b8fab43e1bc4da7e8115ed1e7bab"
 
-nan@^2.3.0, nan@^2.3.2:
+nan@^2.10.0, nan@^2.3.0:
   version "2.10.0"
   resolved "https://nexus.spaceapplications.com/repository/npm/nan/-/nan-2.10.0.tgz#96d0cd610ebd58d4b4de9cc0c6828cda99c7548f"
 
@@ -4990,8 +4994,8 @@ next-tick@1:
   resolved "https://nexus.spaceapplications.com/repository/npm/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
 
 ng-packagr@^2.2.0:
-  version "2.2.0"
-  resolved "https://nexus.spaceapplications.com/repository/npm/ng-packagr/-/ng-packagr-2.2.0.tgz#a66b7d822c40e8aa0dee34e06cca05151c522a3b"
+  version "2.3.0"
+  resolved "https://nexus.spaceapplications.com/repository/npm/ng-packagr/-/ng-packagr-2.3.0.tgz#bae463147e659d8ce4869fbb73875c5de4448186"
   dependencies:
     "@ngtools/json-schema" "^1.1.0"
     autoprefixer "^7.1.1"
@@ -5105,8 +5109,8 @@ node-sass-tilde-importer@^1.0.0:
     find-parent-dir "^0.3.0"
 
 node-sass@^4.5.3, node-sass@^4.7.2:
-  version "4.7.2"
-  resolved "https://nexus.spaceapplications.com/repository/npm/node-sass/-/node-sass-4.7.2.tgz#9366778ba1469eb01438a9e8592f4262bcb6794e"
+  version "4.8.3"
+  resolved "https://nexus.spaceapplications.com/repository/npm/node-sass/-/node-sass-4.8.3.tgz#d077cc20a08ac06f661ca44fb6f19cd2ed41debb"
   dependencies:
     async-foreach "^0.1.3"
     chalk "^1.1.1"
@@ -5120,7 +5124,7 @@ node-sass@^4.5.3, node-sass@^4.7.2:
     lodash.mergewith "^4.6.0"
     meow "^3.7.0"
     mkdirp "^0.5.1"
-    nan "^2.3.2"
+    nan "^2.10.0"
     node-gyp "^3.3.1"
     npmlog "^4.0.0"
     request "~2.79.0"
