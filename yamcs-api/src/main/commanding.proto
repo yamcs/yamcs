@@ -43,6 +43,7 @@ message CommandQueueEntry {
   optional bytes binary = 6;
   optional string username = 7;
   optional int64 generationTime = 8;
+  optional string generationTimeUTC = 10;
   optional string uuid = 9;
 }
 
@@ -82,4 +83,5 @@ message CommandHistoryEntry {
   required CommandId commandId = 1;
   //required string cmdName = 2; //removed because it's part of the CommandId
   repeated CommandHistoryAttribute attr = 3;
+  optional string generationTimeUTC = 4;
 }
