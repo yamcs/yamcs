@@ -14,4 +14,8 @@ export class TextAction {
   @Input()
   @HostBinding('class.active')
   active: boolean;
+
+  @Input()
+  @HostBinding('class.disabled')
+  disabled = false;
 }

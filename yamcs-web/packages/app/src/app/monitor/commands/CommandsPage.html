@@ -1,5 +1,5 @@
 <app-monitor-page *ngIf="instance$ | async as instance">
-  <app-monitor-toolbar>Command History</app-monitor-toolbar>
+  <app-monitor-toolbar>Commands</app-monitor-toolbar>
 
   <div class="detail">
     <ng-container *ngIf="selectedEntry$ | async as selectedEntry; else noSelection">

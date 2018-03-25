@@ -2,7 +2,7 @@
   <div style="padding-left: 12px; padding-right: 12px; padding-top: 12px">
     <div style="height: 24px; line-height: 24px;"
          *ngIf="range$ | async as range">
-      <app-text-action icon="add_circle_outline">
+      <app-text-action icon="add_circle_outline" [disabled]="true">
         Comparison
       </app-text-action>
       <span style="border-right: 1px solid rgba(0, 0, 0, 0.12)"></span>
@@ -70,7 +70,7 @@
     <ng-container *ngIf="dataSource.data$ | async as data">
       <ng-container *ngIf="!(dataSource.loading$ | async)">
         <div class="no-data-message" *ngIf="data.samples.length === 0">
-          <span class="mat-caption" *ngIf="range$ | async as range">
+          <span class="mat-caption" *ngIf="range$ | async as range" style="color: #777;">
             There is no data for this chart in
             <ng-container [ngSwitch]="range">
               <span *ngSwitchCase="'PT1H'">the last hour</span>

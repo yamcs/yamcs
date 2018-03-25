@@ -12,11 +12,11 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Title } from '@angular/platform-browser';
 
 @Component({
-  templateUrl: './CommandHistory.html',
-  styleUrls: ['./CommandHistory.css'],
+  templateUrl: './CommandsPage.html',
+  styleUrls: ['./CommandsPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommandHistoryPage implements OnInit {
+export class CommandsPage implements OnInit {
 
   instance$: Observable<Instance>;
 
@@ -34,7 +34,7 @@ export class CommandHistoryPage implements OnInit {
   dataSource: CommandHistoryDataSource;
 
   constructor(private yamcs: YamcsService, store: Store<State>, title: Title) {
-    title.setTitle('Command History - Yamcs');
+    title.setTitle('Commands - Yamcs');
     this.instance$ = store.select(selectCurrentInstance);
   }
 

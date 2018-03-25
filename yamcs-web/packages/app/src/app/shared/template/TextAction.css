@@ -26,3 +26,12 @@
   margin-bottom: -2px;
   border-bottom: 2px solid #000080;
 }
+
+:host.disabled .text-action {
+  cursor: not-allowed;
+  color: #aaa!important;
+}
+
+:host-disabled .action-content {
+  color: #aaa !important;
+}
