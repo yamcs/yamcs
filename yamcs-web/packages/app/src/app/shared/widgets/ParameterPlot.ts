@@ -32,6 +32,9 @@ export class ParameterPlot implements AfterViewInit {
   @Input()
   xAxisHeight: number;
 
+  @Input()
+  duration = 'PT1H';
+
   /**
    * Thickness of series
    */
@@ -75,6 +78,9 @@ export class ParameterPlot implements AfterViewInit {
 
   private parameters: Parameter[] = [];
 
+  // Flag to prevent from reloading while the user is busy with a pan or zoom operation
+  private disableDataReload = false;
+
   ngAfterViewInit() {
     const containingDiv = this.graphContainer.nativeElement as HTMLDivElement;
 
@@ -83,6 +89,10 @@ export class ParameterPlot implements AfterViewInit {
 
     this.initDygraphs(containingDiv);
     this.dataSource.data$.subscribe(data => {
+      if (this.disableDataReload) {
+        return;
+      }
+
       const dyOptions: { [key: string]: any } = {
         file: data.samples.length ? data.samples : 'X\n',
       };
@@ -92,9 +102,9 @@ export class ParameterPlot implements AfterViewInit {
           this.dataSource.visibleStop.getTime(),
         ];
       }
-      if (data.restoreValueRange) {
+      if (data.valueRange[0] !== null && data.valueRange[1] !== null) {
         dyOptions.axes = {
-          y: { valueRange: data.restoreValueRange }
+          y: { valueRange: data.valueRange }
         };
       } else {
         const valueRange = this.seriesComponents.first.getStaticValueRange();
@@ -128,14 +138,14 @@ export class ParameterPlot implements AfterViewInit {
     });
 
     const now = new Date(); // TODO use mission time instead
-    const start = subtractDuration(now, 'PT1H');
+    const start = subtractDuration(now, this.duration);
 
     // Add some padding to the right
     const delta = now.getTime() - start.getTime();
     const stop = new Date();
     stop.setTime(now.getTime() + 0.1 * delta);
 
-    this.dataSource.setDateWindow(start, stop);
+    this.dataSource.updateWindow(start, stop, [null, null]);
   }
 
   private initDygraphs(containingDiv: HTMLDivElement) {
@@ -191,8 +201,10 @@ export class ParameterPlot implements AfterViewInit {
         },
         mousemove: (event: any, g: any, context: any) => {
           if (context.isPanning) {
+            this.disableDataReload = true;
             Dygraph.movePan(event, g, context);
           } else if (context.isZooming) {
+            this.disableDataReload = true;
             Dygraph.moveZoom(event, g, context);
           }
         },
@@ -208,7 +220,9 @@ export class ParameterPlot implements AfterViewInit {
           const stop = new Date(xAxisRange[1]);
 
           const yAxisRange = g.yAxisRanges()[0];
-          this.dataSource.setDateWindow(start, stop, yAxisRange);
+          this.dataSource.updateWindow(start, stop, yAxisRange);
+
+          this.disableDataReload = false;
         },
         click: (event: any, g: any, context: any) => {
           lastClickedGraph = g;
@@ -238,8 +252,9 @@ export class ParameterPlot implements AfterViewInit {
             const stop = new Date(xAxisRange[1]);
 
             const yAxisRange = g.yAxisRanges()[0];
-            this.dataSource.setDateWindow(start, stop, yAxisRange);
+            this.dataSource.updateWindow(start, stop, yAxisRange);
           }
+          this.disableDataReload = false;
         },
         mousewheel: (event: any, g: any, context: any) => {
           if (lastClickedGraph !== g) {
@@ -386,7 +401,7 @@ export class ParameterPlot implements AfterViewInit {
     const xAxisRange = this.dygraph.xAxisRange();
     const start = new Date(xAxisRange[0]);
     const stop = new Date(xAxisRange[1]);
-    this.dataSource.setDateWindow(start, stop);
+    this.dataSource.updateWindow(start, stop, [null, null]);
   }
 
   /**
@@ -400,7 +415,7 @@ export class ParameterPlot implements AfterViewInit {
     const xAxisRange = this.dygraph.xAxisRange();
     const start = new Date(xAxisRange[0]);
     const stop = new Date(xAxisRange[1]);
-    this.dataSource.setDateWindow(start, stop);
+    this.dataSource.updateWindow(start, stop, [null, null]);
   }
 
   private adjustAxis(axis: any, zoomInPercentage: number, bias: number) {

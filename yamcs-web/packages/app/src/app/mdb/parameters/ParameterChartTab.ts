@@ -33,6 +33,7 @@ export class ParameterChartTab implements OnDestroy {
   ) {
     const qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new DyDataSource(yamcs, qualifiedName);
+    this.dataSource.connectRealtime();
     this.parameter$ = yamcs.getSelectedInstance().getParameter(qualifiedName);
   }
 
@@ -46,7 +47,7 @@ export class ParameterChartTab implements OnDestroy {
     const stop = new Date();
     stop.setTime(now.getTime() + 0.05 * delta);
 
-    this.dataSource.setDateWindow(start, stop);
+    this.dataSource.updateWindow(start, stop, [null, null]);
   }
 
   chooseRange() {
@@ -65,7 +66,7 @@ export class ParameterChartTab implements OnDestroy {
           this.range$.next('CUSTOM');
           this.customStart$.next(result.start);
           this.customStop$.next(result.stop);
-          this.dataSource.setDateWindow(result.start, result.stop);
+          this.dataSource.updateWindow(result.start, result.stop, [null, null]);
         }
       });
     }

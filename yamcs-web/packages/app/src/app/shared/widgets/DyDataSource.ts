@@ -1,16 +1,11 @@
 import { DySample } from './DySample';
 import { YamcsService } from '../../core/services/YamcsService';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Sample, Alarm } from '@yamcs/client';
+import { Sample, Alarm, ParameterValue } from '@yamcs/client';
 import { DyAnnotation } from './DyAnnotation';
 import { convertValueToNumber } from '../utils';
-
-export class DyDataUpdate {
-  samples: DySample[];
-  annotations: DyAnnotation[];
-
-  restoreValueRange?: [number, number];
-}
+import { Subscription } from 'rxjs/Subscription';
+import { PlotBuffer, DyValueRange, PlotData } from './PlotBuffer';
 
 /**
  * Stores sample data for use in a ParameterPlot directly
@@ -22,7 +17,8 @@ export class DyDataSource {
 
   public loading$ = new BehaviorSubject<boolean>(false);
 
-  data$ = new BehaviorSubject<DyDataUpdate>({
+  data$ = new BehaviorSubject<PlotData>({
+    valueRange: [null, null],
     samples: [],
     annotations: [],
   });
@@ -32,18 +28,44 @@ export class DyDataSource {
   visibleStart: Date;
   visibleStop: Date;
 
-  private dySamples: DySample[] = [];
-  private dyAnnotations: DyAnnotation[] = [];
+  private plotBuffer: PlotBuffer;
 
   private lastLoadPromise: Promise<any> | null;
 
+  // Realtime
+  private realtimeSynchronizer: number;
+  private realtimeSubscription: Subscription;
+
   constructor(private yamcs: YamcsService, private qname: string) {
+    this.realtimeSynchronizer = window.setInterval(() => {
+      if (this.plotBuffer.dirty) {
+        const plotData = this.plotBuffer.snapshot();
+        this.data$.next({
+          samples: plotData.samples,
+          annotations: plotData.annotations,
+          valueRange: plotData.valueRange,
+        });
+        this.plotBuffer.dirty = false;
+      }
+    }, 400 /* update rate */);
+
+    this.plotBuffer = new PlotBuffer(() => {
+      this.reloadVisibleRange();
+    });
   }
 
-  setDateWindow(
+  /**
+   * Triggers a new server request for samples.
+   * TODO should pass valueRange somehow
+   */
+  private reloadVisibleRange() {
+    return this.updateWindow(this.visibleStart, this.visibleStop, [null, null]);
+  }
+
+  updateWindow(
     start: Date,
     stop: Date,
-    restoreValueRange?: [number, number],
+    valueRange: DyValueRange,
   ) {
     this.loading$.next(true);
     // Load beyond the visible range to be able to show data
@@ -65,36 +87,54 @@ export class DyDataSource {
       })
     ]);
     this.lastLoadPromise = loadPromise;
-    loadPromise.then(results => {
+    return loadPromise.then(results => {
       // Effectively cancels past requests
       if (this.lastLoadPromise === loadPromise) {
         this.loading$.next(false);
-        const samples = results[0];
-        const alarms = results[1];
-        this.processSamples(samples, start, stop);
-        this.spliceAlarmAnnotations(alarms);
-
-        this.data$.next({
-          samples: this.dySamples,
-          annotations: this.dyAnnotations,
-          restoreValueRange,
-        });
+        this.plotBuffer.reset();
+        const dySamples = this.processSamples(results[0], start, stop);
+        const dyAnnotations = this.spliceAlarmAnnotations(results[1], dySamples);
+        this.plotBuffer.setArchiveData(dySamples, dyAnnotations);
+        this.plotBuffer.setValueRange(valueRange);
         this.lastLoadPromise = null;
       }
+    });
+  }
+
+  connectRealtime() {
+    this.yamcs.getSelectedInstance().getParameterValueUpdates({
+      id: [{ name: this.qname }],
+      sendFromCache: false,
+      subscriptionId: -1,
+      updateOnExpiration: true,
+      abortOnInvalid: true,
+    }).then(response => {
+      this.realtimeSubscription = response.parameterValues$.subscribe(pvals => {
+        const dySample = this.convertParameterValueToSample(pvals[0]);
+        if (dySample) {
+          this.plotBuffer.addRealtimeValue(dySample);
+        }
+      });
     });
   }
 
   disconnect() {
     this.data$.complete();
     this.loading$.complete();
+    if (this.realtimeSubscription) {
+      this.realtimeSubscription.unsubscribe();
+    }
+    if (this.realtimeSynchronizer) {
+      window.clearInterval(this.realtimeSynchronizer);
+    }
   }
 
   private processSamples(samples: Sample[], start: Date, stop: Date) {
+    const dySamples: DySample[] = [];
     this.minValue = undefined;
     this.maxValue = undefined;
     this.visibleStart = start;
     this.visibleStop = stop;
-    this.dySamples.length = 0;
     for (const sample of samples) {
       const t = new Date();
       t.setTime(Date.parse(sample['time']));
@@ -114,24 +154,39 @@ export class DyDataSource {
             this.maxValue = max;
           }
         }
-        this.dySamples.push([t, [min, v, max]]);
+        dySamples.push([t, [min, v, max]]);
       } else {
-        this.dySamples.push([t, null]);
+        dySamples.push([t, null]);
       }
     }
+    return dySamples;
   }
 
-  private spliceAlarmAnnotations(alarms: Alarm[]) {
-    this.dyAnnotations.length = 0;
+  private convertParameterValueToSample(pval: ParameterValue): DySample | null {
+    const value = convertValueToNumber(pval.engValue);
+    if (value !== null) {
+      const t = new Date();
+      t.setTime(Date.parse(pval.generationTimeUTC));
+      if (pval.acquisitionStatus === 'EXPIRED') {
+        return [t, null]; // Display as gap
+      } else if (pval.acquisitionStatus === 'ACQUIRED') {
+        return [t, [value, value, value]];
+      }
+    }
+    return null;
+  }
+
+  private spliceAlarmAnnotations(alarms: Alarm[], dySamples: DySample[]) {
+    const dyAnnotations: DyAnnotation[] = [];
     for (const alarm of alarms) {
       const t = new Date();
       t.setTime(Date.parse(alarm.triggerValue.generationTimeUTC));
       const value = convertValueToNumber(alarm.triggerValue.engValue);
       if (value !== null) {
         const sample: DySample = [t, [value, value, value]];
-        const idx = this.findInsertPosition(t);
-        this.dySamples.splice(idx, 0, sample);
-        this.dyAnnotations.push({
+        const idx = this.findInsertPosition(t, dySamples);
+        dySamples.splice(idx, 0, sample);
+        dyAnnotations.push({
           series: this.qname,
           x: t.getTime(),
           shortText: 'A',
@@ -143,18 +198,19 @@ export class DyDataSource {
         });
       }
     }
+    return dyAnnotations;
   }
 
-  private findInsertPosition(t: Date) {
-    if (!this.dySamples.length) {
+  private findInsertPosition(t: Date, dySamples: DySample[]) {
+    if (!dySamples.length) {
       return 0;
     }
 
-    for (let i = 0; i < this.dySamples.length; i++) {
-      if (this.dySamples[i][0] > t) {
+    for (let i = 0; i < dySamples.length; i++) {
+      if (dySamples[i][0] > t) {
         return i;
       }
     }
-    return this.dySamples.length - 1;
+    return dySamples.length - 1;
   }
 }

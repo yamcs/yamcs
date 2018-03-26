@@ -69,7 +69,7 @@ export interface ParameterValue {
   generationTimeUTC: string;
   expirationTimeUTC: string;
 
-  acquisitionStatus: any;
+  acquisitionStatus: 'ACQUIRED' | 'NOT_RECEIVED' | 'INVALID' | 'EXPIRED';
   processingStatus: boolean;
   monitoringResult: any;
   alarmRange: AlarmRange[];

@@ -49,6 +49,7 @@ export class Layout {
         frame.syncDisplay();
       }
     }, this.updateRate);
+    // TODO? window.clearInterval(this.synchronizer);
   }
 
   createDisplayFrame(id: string, coordinates: Coordinates = { x: 20, y: 20 }) {
