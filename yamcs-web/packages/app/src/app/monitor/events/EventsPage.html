@@ -143,7 +143,7 @@
 
       <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
       <mat-row *cdkRowDef="let row; columns: displayedColumns;"
-               [@rowsAnimation]=""
+               [@rowAnimation]="row.animate"
                [ngClass]="row.severity"></mat-row>
     </mat-table>
 

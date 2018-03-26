@@ -5,7 +5,11 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { CollectionViewer } from '@angular/cdk/collections';
 import { Subscription } from 'rxjs/Subscription';
 
-export class EventsDataSource extends DataSource<Event> {
+interface AnimatableEvent extends Event {
+  animate?: boolean;
+}
+
+export class EventsDataSource extends DataSource<AnimatableEvent> {
 
   pageSize = 100;
   offscreenRecord: Event | null;
@@ -80,6 +84,7 @@ export class EventsDataSource extends DataSource<Event> {
       this.streaming$.next(true);
       this.realtimeSubscription = response.event$.subscribe(event => {
         if (!this.loading$.getValue()) {
+          (event as AnimatableEvent).animate = true;
           const combinedEvents = [event].concat(this.events$.getValue());
           this.events$.next(combinedEvents);
         }

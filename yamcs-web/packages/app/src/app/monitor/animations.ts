@@ -6,8 +6,8 @@ import {
   trigger,
 } from '@angular/animations';
 
-export const rowsAnimation = trigger('rowsAnimation', [
-  transition('void => *', [
+export const rowAnimation = trigger('rowAnimation', [
+  transition('void => true', [
     style({
       height: '*',
       opacity: '0',

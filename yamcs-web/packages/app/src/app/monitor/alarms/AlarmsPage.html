@@ -58,7 +58,7 @@
           <mat-cell *matCellDef="let alarm"
                     fxFlex="150px">
             <app-expirable [pval]="alarm.currentValue">
-              <app-alarm-level [level]="alarm.currentValue.monitoringResult"></app-alarm-level>
+              <app-alarm-level [level]="alarm.currentValue.monitoringResult" [grayscale]="true"></app-alarm-level>
               &nbsp;{{ alarm.currentValue.engValue | value }}
               <span *ngIf="alarm.currentValue.rangeCondition === 'LOW'">&#8595;</span>
               <span *ngIf="alarm.currentValue.rangeCondition === 'HIGH'">&#8593;</span>
@@ -88,8 +88,8 @@
         </ng-container>
 
         <ng-container matColumnDef="violations">
-          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="80px">Violations</mat-header-cell>
-          <mat-cell *matCellDef="let alarm" style="text-align: right" fxFlex="80px">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="70px">Violations</mat-header-cell>
+          <mat-cell *matCellDef="let alarm" style="text-align: right" fxFlex="70px">
             {{ alarm.violations | number }}
           </mat-cell>
         </ng-container>
