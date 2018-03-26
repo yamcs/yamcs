@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit, OnInit, OnDestroy } from '@angular/core';
 
 import { Processor, Instance } from '@yamcs/client';
 
@@ -9,12 +9,13 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { State } from '../../app.reducers';
 import { Store } from '@ngrx/store';
 import { Title } from '@angular/platform-browser';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   templateUrl: './ProcessorsPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProcessorsPage implements OnInit, AfterViewInit {
+export class ProcessorsPage implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild(MatSort)
   sort: MatSort;
@@ -23,6 +24,8 @@ export class ProcessorsPage implements OnInit, AfterViewInit {
 
   instance$: Observable<Instance>;
   dataSource = new MatTableDataSource<Processor>();
+
+  processorSubscription: Subscription;
 
   private processorsByName: { [key: string]: Processor } = {};
 
@@ -34,8 +37,10 @@ export class ProcessorsPage implements OnInit, AfterViewInit {
       }
     });
 
-    yamcs.getSelectedInstance().getProcessorUpdates().subscribe(evt => {
-      this.processProcessorEvent(evt);
+    yamcs.getSelectedInstance().getProcessorUpdates().then(response => {
+      this.processorSubscription = response.processor$.subscribe(processor => {
+        this.processProcessorEvent(processor);
+      });
     });
   }
 
@@ -45,6 +50,12 @@ export class ProcessorsPage implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
+  }
+
+  ngOnDestroy() {
+    if (this.processorSubscription) {
+      this.processorSubscription.unsubscribe();
+    }
   }
 
   private processProcessorEvent(evt: Processor) {

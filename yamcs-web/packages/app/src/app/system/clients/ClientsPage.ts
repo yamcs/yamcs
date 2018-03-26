@@ -1,16 +1,17 @@
-import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 
 import { ClientInfo } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
 import { Title } from '@angular/platform-browser';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   templateUrl: './ClientsPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ClientsPage implements AfterViewInit {
+export class ClientsPage implements AfterViewInit, OnDestroy {
 
   @ViewChild(MatSort)
   sort: MatSort;
@@ -18,6 +19,8 @@ export class ClientsPage implements AfterViewInit {
   displayedColumns = ['id', 'username', 'applicationName', 'processorName', 'loginTime'];
 
   dataSource = new MatTableDataSource<ClientInfo>();
+
+  clientSubscription: Subscription;
 
   private clientsById: { [key: string]: ClientInfo } = {};
 
@@ -29,13 +32,21 @@ export class ClientsPage implements AfterViewInit {
       }
     });
 
-    yamcs.getSelectedInstance().getClientUpdates().subscribe(evt => {
-      this.processClientEvent(evt);
+    yamcs.getSelectedInstance().getClientUpdates().then(response => {
+      this.clientSubscription = response.client$.subscribe(evt => {
+        this.processClientEvent(evt);
+      });
     });
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
+  }
+
+  ngOnDestroy() {
+    if (this.clientSubscription) {
+      this.clientSubscription.unsubscribe();
+    }
   }
 
   private processClientEvent(evt: ClientInfo) {

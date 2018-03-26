@@ -1,4 +1,5 @@
 import { CommandId, Value } from './monitoring';
+import { Observable } from 'rxjs/Observable';
 
 export interface GeneralInfo {
   yamcsVersion: string;
@@ -28,6 +29,10 @@ export interface ClientInfo {
   state: 'CONNECTED' | 'DISCONNECTED';
   currentClient: boolean;
   loginTimeUTC: string;
+}
+
+export interface ClientSubscriptionResponse {
+  client$: Observable<ClientInfo>;
 }
 
 export interface UserInfo {
@@ -70,9 +75,17 @@ export interface Processor {
   state: ServiceState;
 }
 
+export interface ProcessorSubscriptionResponse {
+  processor$: Observable<Processor>;
+}
+
 export interface LinkEvent {
   type: string;
   linkInfo: Link;
+}
+
+export interface LinkSubscriptionResponse {
+  linkEvent$: Observable<LinkEvent>;
 }
 
 export interface Stream {
@@ -107,6 +120,10 @@ export interface Statistics {
   lastUpdatedUTC: string;
 }
 
+export interface StatisticsSubscriptionResponse {
+  statistics$: Observable<Statistics>;
+}
+
 export interface TmStatistics {
   packetName: string;
   receivedPackets: number;
@@ -126,9 +143,17 @@ export interface CommandQueue {
   entry: CommandQueueEntry[];
 }
 
+export interface CommandQueueSubscriptionResponse {
+  commandQueue$: Observable<CommandQueue>;
+}
+
 export interface CommandQueueEvent {
   type: 'COMMAND_ADDED' | 'COMMAND_REJECTED' | 'COMMAND_SENT';
   data: CommandQueueEntry;
+}
+
+export interface CommandQueueEventSubscriptionResponse {
+  commandQueueEvent$: Observable<CommandQueueEvent>;
 }
 
 export interface CommandQueueEntry {

@@ -1,17 +1,18 @@
-import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild, OnDestroy } from '@angular/core';
 
 import { Link, LinkEvent } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
 import { Title } from '@angular/platform-browser';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   templateUrl: './LinksPage.html',
   styleUrls: ['./LinksPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LinksPage implements AfterViewInit {
+export class LinksPage implements AfterViewInit, OnDestroy {
 
   @ViewChild(MatSort)
   sort: MatSort;
@@ -19,6 +20,8 @@ export class LinksPage implements AfterViewInit {
   displayedColumns = ['status', 'name', 'type', 'spec', 'stream', 'dataCount', 'actions'];
 
   dataSource = new MatTableDataSource<Link>();
+
+  linkSubscription: Subscription;
 
   private linksByName: { [key: string]: Link } = {};
 
@@ -34,8 +37,10 @@ export class LinksPage implements AfterViewInit {
       this.dataSource.data = Object.values(this.linksByName);
     });
 
-    this.yamcs.getSelectedInstance().getLinkUpdates().subscribe(evt => {
-      this.processLinkEvent(evt);
+    this.yamcs.getSelectedInstance().getLinkUpdates().then(response => {
+      this.linkSubscription = response.linkEvent$.subscribe(evt => {
+        this.processLinkEvent(evt);
+      });
     });
   }
 
@@ -76,6 +81,12 @@ export class LinksPage implements AfterViewInit {
       default:
         console.error('Unexpected link update of type ' + evt.type);
         break;
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.linkSubscription) {
+      this.linkSubscription.unsubscribe();
     }
   }
 }

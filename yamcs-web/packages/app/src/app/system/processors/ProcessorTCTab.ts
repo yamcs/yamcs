@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 
 import { CommandQueue } from '@yamcs/client';
 
@@ -6,14 +6,16 @@ import { ActivatedRoute } from '@angular/router';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   templateUrl: './ProcessorTCTab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProcessorTCTab {
+export class ProcessorTCTab implements OnDestroy {
 
   cqueues$ = new BehaviorSubject<CommandQueue[]>([]);
+  cqueueSubscription: Subscription;
 
   // Regroup WebSocket updates (which are for 1 queue at a time)
   private cqueueByName: { [key: string]: CommandQueue } = {};
@@ -32,9 +34,11 @@ export class ProcessorTCTab {
       this.emitChange();
     });
 
-    instanceClient.getCommandQueueUpdates(processorName).subscribe(cqueue => {
-      this.cqueueByName[cqueue.name] = cqueue;
-      this.emitChange();
+    instanceClient.getCommandQueueUpdates(processorName).then(response => {
+      this.cqueueSubscription = response.commandQueue$.subscribe(cqueue => {
+        this.cqueueByName[cqueue.name] = cqueue;
+        this.emitChange();
+      });
     });
   }
 
@@ -52,5 +56,11 @@ export class ProcessorTCTab {
 
   private emitChange() {
     this.cqueues$.next(Object.values(this.cqueueByName));
+  }
+
+  ngOnDestroy() {
+    if (this.cqueueSubscription) {
+      this.cqueueSubscription.unsubscribe();
+    }
   }
 }

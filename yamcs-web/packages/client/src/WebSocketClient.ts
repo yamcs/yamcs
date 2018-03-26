@@ -5,20 +5,29 @@ import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { WebSocketServerMessage } from './types/internal';
 import {
   Alarm,
+  AlarmSubscriptionResponse,
   Event,
+  EventSubscriptionResponse,
   ParameterData,
-  TimeInfo,
   ParameterSubscriptionRequest,
   ParameterSubscriptionResponse,
-  EventSubscriptionResponse,
+  TimeInfo,
+  TimeSubscriptionResponse,
 } from './types/monitoring';
 import {
   ClientInfo,
+  ClientSubscriptionResponse,
+  CommandQueueEventSubscriptionResponse,
+  CommandQueueSubscriptionResponse,
   LinkEvent,
+  LinkSubscriptionResponse,
   Processor,
+  ProcessorSubscriptionResponse,
   Statistics,
+  StatisticsSubscriptionResponse,
   CommandQueue,
   CommandQueueEvent,
+  Link,
 } from './types/system';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
@@ -92,7 +101,7 @@ export class WebSocketClient {
     );
   }
 
-  getEventUpdates() {
+  async getEventUpdates() {
     this.subscriptionModel.events = true;
     const requestId = this.emit({ events: 'subscribe' });
 
@@ -119,103 +128,244 @@ export class WebSocketClient {
     });
   }
 
-  getTimeUpdates() {
-    if (!this.subscriptionModel.time) {
-      this.subscriptionModel.time = true;
-      this.emit({ time: 'subscribe' });
-    }
-    return this.webSocketConnection$.pipe(
-      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-      filter((msg: WebSocketServerMessage) => msg[3].dt === 'TIME_INFO'),
-      map(msg => msg[3].data as TimeInfo),
-    );
+  async getTimeUpdates() {
+    this.subscriptionModel.time = true;
+    const requestId = this.emit({ time: 'subscribe' });
+
+    return new Promise<TimeSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as TimeSubscriptionResponse;
+          response.time$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'TIME_INFO'),
+            map(msg => msg[3].data as TimeInfo),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
   }
 
-  getLinkUpdates() {
-    if (!this.subscriptionModel.links) {
-      this.subscriptionModel.links = true;
-      this.emit({ links: 'subscribe' });
-    }
-    return this.webSocketConnection$.pipe(
-      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-      filter((msg: WebSocketServerMessage) => msg[3].dt === 'LINK_EVENT'),
-      map(msg => msg[3].data as LinkEvent),
-    );
+  async getLinkUpdates(instance?: string) {
+    this.subscriptionModel.links = true;
+    const requestId = this.emit({ links: 'subscribe' });
+
+    return new Promise<LinkSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as LinkSubscriptionResponse;
+          response.linkEvent$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'LINK_EVENT'),
+            map(msg => msg[3].data as LinkEvent),
+            filter((linkEvent: LinkEvent) => {
+              return !instance || (instance === linkEvent.linkInfo.instance);
+            }),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
   }
 
-  getAlarmUpdates() {
-    if (!this.subscriptionModel.alarms) {
-      this.subscriptionModel.alarms = true;
-      this.emit({ alarms: 'subscribe' });
-    }
-    return this.webSocketConnection$.pipe(
-      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-      filter((msg: WebSocketServerMessage) => msg[3].dt === 'ALARM_DATA'),
-      map(msg => msg[3].data as Alarm),
-    );
+  async getAlarmUpdates() {
+    this.subscriptionModel.alarms = true;
+    const requestId = this.emit({ alarms: 'subscribe' });
+
+    return new Promise<AlarmSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as AlarmSubscriptionResponse;
+          response.alarm$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'ALARM_DATA'),
+            map(msg => msg[3].data as Alarm),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
   }
 
-  getClientUpdates() {
-    if (!this.subscriptionModel.management) {
-      this.subscriptionModel.management = true;
-      this.emit({ management: 'subscribe' });
-    }
-    return this.webSocketConnection$.pipe(
-      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-      filter((msg: WebSocketServerMessage) => msg[3].dt === 'CLIENT_INFO'),
-      map(msg => msg[3].data as ClientInfo),
-    );
+  async getClientUpdates(instance?: string) {
+    this.subscriptionModel.management = true;
+    const requestId = this.emit({ management: 'subscribe' });
+
+    return new Promise<ClientSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as ClientSubscriptionResponse;
+          response.client$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'CLIENT_INFO'),
+            map(msg => msg[3].data as ClientInfo),
+            filter((clientInfo: ClientInfo) => {
+              return !instance || (instance === clientInfo.instance);
+            }),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
   }
 
-  getProcessorUpdates() {
-    if (!this.subscriptionModel.management) {
-      this.subscriptionModel.management = true;
-      this.emit({ management: 'subscribe' });
-    }
-    return this.webSocketConnection$.pipe(
-      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-      filter((msg: WebSocketServerMessage) => msg[3].dt === 'PROCESSOR_INFO'),
-      map(msg => msg[3].data as Processor),
-    );
+  async getProcessorUpdates(instance?: string) {
+    this.subscriptionModel.management = true;
+    const requestId = this.emit({ management: 'subscribe' });
+
+    return new Promise<ProcessorSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as ProcessorSubscriptionResponse;
+          response.processor$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'PROCESSOR_INFO'),
+            map(msg => msg[3].data as Processor),
+            filter((processor: Processor) => {
+              return !instance || (instance === processor.instance);
+            }),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
   }
 
-  getProcessorStatistics() {
-    if (!this.subscriptionModel.management) {
-      this.subscriptionModel.management = true;
-      this.emit({ management: 'subscribe' });
-    }
-    return this.webSocketConnection$.pipe(
-      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-      filter((msg: WebSocketServerMessage) => msg[3].dt === 'PROCESSING_STATISTICS'),
-      map(msg => msg[3].data as Statistics),
-    );
+  async getProcessorStatistics(instance?: string) {
+    this.subscriptionModel.management = true;
+    const requestId = this.emit({ management: 'subscribe' });
+
+    return new Promise<StatisticsSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as StatisticsSubscriptionResponse;
+          response.statistics$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'PROCESSING_STATISTICS'),
+            map(msg => msg[3].data as Statistics),
+            filter((statistics: Statistics) => {
+              return !instance || (instance === statistics.instance);
+            }),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
   }
 
-  getCommandQueueUpdates() {
-    if (!this.subscriptionModel.commandQueues) {
-      this.subscriptionModel.commandQueues = true;
-      this.emit({ cqueues: 'subscribe' });
-    }
-    return this.webSocketConnection$.pipe(
-      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-      filter((msg: WebSocketServerMessage) => msg[3].dt === 'COMMAND_QUEUE_INFO'),
-      map(msg => msg[3].data as CommandQueue),
-    );
+  async getCommandQueueUpdates(instance?: string, processor?: string) {
+    this.subscriptionModel.commandQueues = true;
+    const requestId = this.emit({ cqueues: 'subscribe' });
+
+    return new Promise<CommandQueueSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as CommandQueueSubscriptionResponse;
+          response.commandQueue$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'COMMAND_QUEUE_INFO'),
+            map(msg => msg[3].data as CommandQueue),
+            filter((commandQueue: CommandQueue) => {
+              return !instance || (instance === commandQueue.instance);
+            }),
+            filter((commandQueue: CommandQueue) => {
+              return !processor || (processor === commandQueue.processorName);
+            }),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
   }
 
-  getCommandQueueEventUpdates() {
-    if (!this.subscriptionModel.commandQueues) {
-      this.subscriptionModel.commandQueues = true;
-      this.emit({ cqueues: 'subscribe' });
-    }
-    return this.webSocketConnection$.pipe(
-      filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
-      filter((msg: WebSocketServerMessage) => msg[3].dt === 'COMMAND_QUEUE_EVENT'),
-      map(msg => msg[3].data as CommandQueueEvent),
-    );
+  async getCommandQueueEventUpdates(instance?: string) {
+    this.subscriptionModel.commandQueues = true;
+    const requestId = this.emit({ cqueues: 'subscribe' });
+
+    return new Promise<CommandQueueEventSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as CommandQueueEventSubscriptionResponse;
+          response.commandQueueEvent$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'COMMAND_QUEUE_EVENT'),
+            map(msg => msg[3].data as CommandQueueEvent),
+            filter((commandQueueEvent: CommandQueueEvent) => {
+              return !instance || (instance === commandQueueEvent.data.instance);
+            }),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
   }
 
-  getParameterValueUpdates(options: ParameterSubscriptionRequest) {
+  async getParameterValueUpdates(options: ParameterSubscriptionRequest) {
     this.subscriptionModel.parameters = options;
     const requestId = this.emit({
       parameter: 'subscribe',

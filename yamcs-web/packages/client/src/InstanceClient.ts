@@ -55,6 +55,8 @@ import {
   TimeInfo,
   GetCommandHistoryOptions,
   CommandHistoryEntry,
+  TimeSubscriptionResponse,
+  AlarmSubscriptionResponse,
 } from './types/monitoring';
 
 import {
@@ -69,6 +71,12 @@ import {
   Stream,
   Table,
   CommandQueue,
+  LinkSubscriptionResponse,
+  ProcessorSubscriptionResponse,
+  StatisticsSubscriptionResponse,
+  CommandQueueEventSubscriptionResponse,
+  ClientSubscriptionResponse,
+  CommandQueueSubscriptionResponse,
 } from './types/system';
 import { Observable } from 'rxjs/Observable';
 
@@ -82,7 +90,7 @@ export class InstanceClient {
     private yamcs: YamcsClient) {
   }
 
-  getTimeUpdates() {
+  async getTimeUpdates(): Promise<TimeSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getTimeUpdates();
   }
@@ -111,11 +119,9 @@ export class InstanceClient {
     return wrapper.link || [];
   }
 
-  getLinkUpdates() {
+  async getLinkUpdates(): Promise<LinkSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getLinkUpdates().pipe(
-      filter(msg => msg.linkInfo.instance === this.instance)
-    );
+    return this.webSocketClient.getLinkUpdates(this.instance);
   }
 
   async enableLink(name: string) {
@@ -151,18 +157,14 @@ export class InstanceClient {
     return await response.json() as Processor;
   }
 
-  getProcessorUpdates() {
+  async getProcessorUpdates(): Promise<ProcessorSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getProcessorUpdates().pipe(
-      filter(msg => msg.instance === this.instance)
-    );
+    return this.webSocketClient.getProcessorUpdates(this.instance)
   }
 
-  getProcessorStatistics() {
+  async getProcessorStatistics(): Promise<StatisticsSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getProcessorStatistics().pipe(
-      filter(msg => msg.instance === this.instance)
-    );
+    return this.webSocketClient.getProcessorStatistics(this.instance);
   }
 
   async getCommandHistoryEntries(options: GetCommandHistoryOptions = {}): Promise<CommandHistoryEntry[]> {
@@ -192,25 +194,14 @@ export class InstanceClient {
     return await response.json() as CommandQueue;
   }
 
-  getCommandQueueUpdates(processorName?: string) {
+  async getCommandQueueUpdates(processorName?: string): Promise<CommandQueueSubscriptionResponse> {
     this.prepareWebSocketClient();
-    const cqueues$ = this.webSocketClient.getCommandQueueUpdates().pipe(
-      filter(msg => msg.instance === this.instance)
-    );
-    if (processorName === undefined) {
-      return cqueues$;
-    } else {
-      return cqueues$.pipe(
-        filter(msg => msg.processorName === processorName)
-      );
-    }
+    return this.webSocketClient.getCommandQueueUpdates(this.instance, processorName);
   }
 
-  getCommandQueueEventUpdates() {
+  async getCommandQueueEventUpdates(): Promise<CommandQueueEventSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getCommandQueueEventUpdates().pipe(
-      filter(msg => msg.data.instance === this.instance)
-    );
+    return this.webSocketClient.getCommandQueueEventUpdates(this.instance);
   }
 
   async getClients() {
@@ -226,11 +217,9 @@ export class InstanceClient {
     return await response.json() as ClientInfo;
   }
 
-  getClientUpdates() {
+  async getClientUpdates(): Promise<ClientSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getClientUpdates().pipe(
-      filter(msg => msg.instance === this.instance)
-    );
+    return this.webSocketClient.getClientUpdates(this.instance);
   }
 
   async getServices() {
@@ -274,7 +263,7 @@ export class InstanceClient {
     return wrapper.alarm || [];
   }
 
-  getAlarmUpdates() {
+  async getAlarmUpdates(): Promise<AlarmSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getAlarmUpdates();
   }

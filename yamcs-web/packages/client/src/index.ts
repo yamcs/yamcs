@@ -27,6 +27,7 @@ export {
 
 export {
   Alarm,
+  AlarmSubscriptionResponse,
   CommandHistoryEntry,
   CommandHistoryAttribute,
   CommandId,
@@ -47,22 +48,29 @@ export {
   ParameterValue,
   Sample,
   TimeInfo,
+  TimeSubscriptionResponse,
   Value,
 } from './types/monitoring';
 
 export {
   ClientInfo,
+  ClientSubscriptionResponse,
+  CommandQueue,
   CommandQueueEntry,
   CommandQueueEvent,
-  CommandQueue,
+  CommandQueueEventSubscriptionResponse,
+  CommandQueueSubscriptionResponse,
   GeneralInfo,
   Instance,
   Link,
   LinkEvent,
+  LinkSubscriptionResponse,
   Processor,
+  ProcessorSubscriptionResponse,
   Record,
   Service,
   Statistics,
+  StatisticsSubscriptionResponse,
   Stream,
   Table,
   TmStatistics,

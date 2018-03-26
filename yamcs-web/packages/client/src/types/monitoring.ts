@@ -95,6 +95,14 @@ export interface EventSubscriptionResponse {
   event$: Observable<Event>;
 }
 
+export interface AlarmSubscriptionResponse {
+  alarm$: Observable<Alarm>;
+}
+
+export interface TimeSubscriptionResponse {
+  time$: Observable<TimeInfo>;
+}
+
 export interface Sample {
   time: string;
   avg: number;
