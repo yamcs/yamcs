@@ -5,6 +5,7 @@ import { DyDataSource } from './DyDataSource';
 import { ParameterSeries } from './ParameterSeries';
 import GridPlugin from './GridPlugin';
 import { subtractDuration } from '../utils';
+import CrosshairPlugin from './CrosshairPlugin';
 
 @Component({
   selector: 'app-parameter-plot',
@@ -46,11 +47,20 @@ export class ParameterPlot implements AfterViewInit {
   @Input()
   axisBackgroundColor = '#fff';
 
+  @Input()
+  axisLineColor = '#e1e1e1';
+
+  @Input()
+  gridLineColor = '#f2f2f2';
+
   /**
    * If true display timestamps in UTC, otherwise use browser default
    */
   @Input()
   utc = true;
+
+  @Input()
+  crosshair: 'horizontal' | 'vertical' | 'both' | 'none' = 'vertical';
 
   @ContentChildren(ParameterSeries)
   seriesComponents: QueryList<ParameterSeries>;
@@ -147,8 +157,8 @@ export class ParameterPlot implements AfterViewInit {
       showRoller: false,
       customBars: true,
       strokeWidth: this.strokeWidth,
-      gridLineColor: '#f2f2f2',
-      axisLineColor: '#e1e1e1',
+      gridLineColor: this.gridLineColor,
+      axisLineColor: this.axisLineColor,
       axisLabelFontSize: 11,
       digitsAfterDecimal: 6,
       labels: ['Generation Time', this.parameters[0].qualifiedName],
@@ -301,7 +311,7 @@ export class ParameterPlot implements AfterViewInit {
 
         ctx.restore();
       },
-      drawHighlightPointCallback: function (
+      drawHighlightPointCallback: (
         g: any,
         seriesName: string,
         ctx: CanvasRenderingContext2D,
@@ -309,15 +319,28 @@ export class ParameterPlot implements AfterViewInit {
         cy: number,
         color: any,
         radius: number,
-      ) {
+      ) => {
+        ctx.clearRect(0, 0, g.width_, g.height_);
+        ctx.strokeStyle = '#e1e1e1';
+
         ctx.beginPath();
+        const canvasx = Math.floor(g.selPoints_[0].canvasx) + 0.5; // crisper rendering
+        if (this.crosshair === 'vertical' || this.crosshair === 'both') {
+          ctx.moveTo(canvasx, 0);
+          ctx.lineTo(canvasx, g.height_);
+        }
+        if (this.crosshair === 'horizontal' || this.crosshair === 'both') {
+          for (const point of g.selPoints_) {
+            const canvasy = Math.floor(point.canvasy) + 0.5; // crisper rendering
+            ctx.moveTo(0, canvasy);
+            ctx.lineTo(g.width_, canvasy);
+          }
+        }
+        ctx.stroke();
+        ctx.closePath();
+
         ctx.arc(cx, cy, radius, 0, 2 * Math.PI, false);
         ctx.fill();
-
-        ctx.fillStyle = '#ccc';
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + 10, cy + 10);
-        /// ctx.stroke();
       },
       legendFormatter: (data: any) => {
         let legend = '';
@@ -326,6 +349,9 @@ export class ParameterPlot implements AfterViewInit {
         }
         return legend;
       },
+      plugins: [
+        new CrosshairPlugin(),
+      ],
     };
 
     if (this.legend) {

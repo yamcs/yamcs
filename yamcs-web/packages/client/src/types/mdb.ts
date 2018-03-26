@@ -49,7 +49,7 @@ export interface NamedObjectId {
 
 export interface ParameterType {
   engType: string;
-  dataEncoding: DataEncoding;
+  dataEncoding?: DataEncoding;
   unitSet?: UnitInfo[];
   defaultAlarm: AlarmInfo;
   enumValue: EnumValue[];
