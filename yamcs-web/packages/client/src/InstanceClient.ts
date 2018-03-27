@@ -171,21 +171,21 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/commands`;
     const response = await fetch(url + this.queryString(options));
     const wrapper = await response.json() as CommandHistoryEntryWrapper;
-    return wrapper.entry;
+    return wrapper.entry || [];
   }
 
   async getCommandHistoryEntriesForParameter(qualifiedName: string, options: GetCommandHistoryOptions = {}): Promise<CommandHistoryEntry[]> {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/commands${qualifiedName}`;
     const response = await fetch(url + this.queryString(options));
     const wrapper = await response.json() as CommandHistoryEntryWrapper;
-    return wrapper.entry;
+    return wrapper.entry || [];
   }
 
   async getCommandQueues(processorName: string) {
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues`;
     const response = await fetch(url);
     const wrapper = await response.json() as CommandQueuesWrapper;
-    return wrapper.queue;
+    return wrapper.queue || [];
   }
 
   async getCommandQueue(processorName: string, queueName: string) {
