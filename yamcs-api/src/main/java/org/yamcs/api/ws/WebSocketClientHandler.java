@@ -6,12 +6,9 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.ws.WebSocketClient.RequestResponsePair;
-import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
 import org.yamcs.protobuf.Web.WebSocketServerMessage;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.NamedObjectList;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -29,6 +26,7 @@ import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
 import io.netty.util.CharsetUtil;
 
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
@@ -65,7 +63,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        log.info("WebSocket Client disconnected!");
+        log.info("WebSocket Client disconnected");
         callback.disconnected();
 
         if (client.isReconnectionEnabled()) {
@@ -79,7 +77,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         Channel ch = ctx.channel();
         if (!handshaker.isHandshakeComplete()) {
             handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-            log.info("WebSocket Client connected!!");
+            log.info("WebSocket Client connected");
             handshakeFuture.setSuccess();
             callback.connected();
             return;
@@ -163,11 +161,20 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("WebSocket exception. Closing channel", cause);
-        if (!handshakeFuture.isDone()) {
-            handshakeFuture.setFailure(cause);
+        if (!client.legacyMode
+                && client.isLegacyURLFallbackEnabled()
+                && client.isReconnectionEnabled() // Functionality depends on channelInactive hook
+                && cause instanceof WebSocketHandshakeException
+                && cause.getMessage().contains("404")) {
+            log.info("WebSocket handshake failed due to 404. Attempting legacy URL");
+            client.legacyMode = true;
+        } else {
+            log.error("WebSocket exception. Closing channel", cause);
+            if (!handshakeFuture.isDone()) {
+                handshakeFuture.setFailure(cause);
+            }
+            ctx.close();
+            callback.connectionFailed(cause);
         }
-        ctx.close();
-        callback.connectionFailed(cause);
     }
 }
