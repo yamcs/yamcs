@@ -1,3 +1,7 @@
+Version 3.4.3  released 28-Mar-2017
+ - fixed the replay not starting at the correct time
+ - change the serialized databae filenames to limit their length
+
 Version 3.4.2  released 12-Feb-2017
  - fixed Artemis data links
  - the parameter select dialog from the Archive Browser will show now also parameters that are not part of containers
