@@ -78,6 +78,19 @@ public class YamcsConnectionProperties {
         }
     }
 
+    @Deprecated
+    public URI webSocketURI(boolean legacyMode) {
+        if (legacyMode) {
+            try {
+                return new URI("ws://" + host + ":" + port + "/" + instance + "/_websocket");
+            } catch (URISyntaxException e) {
+                throw new ConfigurationException("Invalid URL", e);
+            }
+        } else {
+            return webSocketURI();
+        }
+    }
+
     public void load() {
         try {
             Properties p = new Properties();
@@ -88,7 +101,6 @@ public class YamcsConnectionProperties {
                 port = Integer.parseInt(p.getProperty("port"));
             } catch (NumberFormatException e) {
             }
-            ;
 
             instance = p.getProperty("instance");
             if (p.containsKey("username")) {
