@@ -5,6 +5,8 @@ import java.util.BitSet;
 import java.util.List;
 
 import org.yamcs.parameter.Value;
+import org.yamcs.parameter.ValueArray;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.VarIntUtil;
@@ -19,7 +21,7 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
     BitSet bitSet;
     int size;
     
-    private BooleanValueSegment() {
+    public BooleanValueSegment() {
         super(FORMAT_ID_BooleanValueSegment);
     }
     
@@ -79,15 +81,15 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
     }
 
     @Override
-    public boolean[] getRange(int posStart, int posStop, boolean ascending) {
-        boolean[] r = new boolean[posStop-posStart];
+    public ValueArray getRange(int posStart, int posStop, boolean ascending) {
+        ValueArray r = new ValueArray(Type.BOOLEAN, posStop-posStart);
         if(ascending) {
             for(int i = posStart; i<posStop; i++) {
-                r[i-posStart] = bitSet.get(i);
+                r.setValue(i-posStart, bitSet.get(i));
             }
         } else {
             for(int i = posStop; i>posStart; i--) {
-                r[posStop-i] = bitSet.get(i);
+                r.setValue(posStop-i, bitSet.get(i));
             }
         }
         

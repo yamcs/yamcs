@@ -35,13 +35,13 @@ public class ObjectSegmentTest {
         assertEquals(pv.getCriticalRange().getMin(), s.getAlarmRange(0).getMinInclusive(), 1e-10);
         
         //ascending range
-        ParameterStatus[] statusList = (ParameterStatus[]) pss.getRange(0, 1, true);
+        ParameterStatus[] statusList = (ParameterStatus[]) pss.getRangeArray(0, 1, true);
         assertEquals(1, statusList.length);
         assertEquals(s, statusList[0]);
         
         
         //descending range
-        statusList = (ParameterStatus[]) pss.getRange(-1, 0, false);
+        statusList = (ParameterStatus[]) pss.getRangeArray(-1, 0, false);
         assertEquals(1, statusList.length);
         assertEquals(s, statusList[0]);
         
@@ -52,13 +52,13 @@ public class ObjectSegmentTest {
         assertEquals(s, s1);
         
         //ascending range
-        statusList = (ParameterStatus[]) pss.getRange(0, 2, true);
+        statusList = (ParameterStatus[]) pss.getRangeArray(0, 2, true);
         assertEquals(2, statusList.length);
         assertEquals(s, statusList[0]);
         assertEquals(s, statusList[1]);
         
         //descending range
-        statusList = (ParameterStatus[]) pss.getRange(-1, 1, false);
+        statusList = (ParameterStatus[]) pss.getRangeArray(-1, 1, false);
         assertEquals(2, statusList.length);
         assertEquals(s, statusList[1]);
         assertEquals(s, statusList[0]);
@@ -78,60 +78,60 @@ public class ObjectSegmentTest {
         assertEquals(pv.getCriticalRange().getMin(), s2.getAlarmRange(1).getMinInclusive(), 1e-10);
         
         //ascending ranges
-        statusList = (ParameterStatus[]) pss.getRange(0, 3, true);
+        statusList = (ParameterStatus[]) pss.getRangeArray(0, 3, true);
         assertEquals(3, statusList.length);
         assertEquals(s, statusList[0]);
         assertEquals(s, statusList[1]);
         assertEquals(s2, statusList[2]);
         
-        statusList = (ParameterStatus[]) pss.getRange(0, 1, true);
+        statusList = (ParameterStatus[]) pss.getRangeArray(0, 1, true);
         assertEquals(1, statusList.length);
         assertEquals(s, statusList[0]);
         
-        statusList = (ParameterStatus[]) pss.getRange(0, 2, true);
+        statusList = (ParameterStatus[]) pss.getRangeArray(0, 2, true);
         assertEquals(2, statusList.length);
         assertEquals(s, statusList[0]);
         assertEquals(s, statusList[1]);
         
-        statusList = (ParameterStatus[]) pss.getRange(1, 2, true);
+        statusList = (ParameterStatus[]) pss.getRangeArray(1, 2, true);
         assertEquals(1, statusList.length);
         assertEquals(s, statusList[0]);
         
-        statusList = (ParameterStatus[]) pss.getRange(2, 3, true);
+        statusList = (ParameterStatus[]) pss.getRangeArray(2, 3, true);
         assertEquals(1, statusList.length);
         assertEquals(s2, statusList[0]);
         
-        statusList = (ParameterStatus[]) pss.getRange(1, 3, true);
+        statusList = (ParameterStatus[]) pss.getRangeArray(1, 3, true);
         assertEquals(2, statusList.length);
         assertEquals(s, statusList[0]);
         assertEquals(s2, statusList[1]);
         
         
         //descending ranges
-        statusList = (ParameterStatus[]) pss.getRange(-1, 2, false);
+        statusList = (ParameterStatus[]) pss.getRangeArray(-1, 2, false);
         assertEquals(3, statusList.length);
         assertEquals(s2, statusList[0]);
         assertEquals(s, statusList[1]);
         assertEquals(s, statusList[2]);
         
-        statusList = (ParameterStatus[]) pss.getRange(-1, 0, false);
+        statusList = (ParameterStatus[]) pss.getRangeArray(-1, 0, false);
         assertEquals(1, statusList.length);
         assertEquals(s, statusList[0]);
         
-        statusList = (ParameterStatus[]) pss.getRange(-1, 1, false);
+        statusList = (ParameterStatus[]) pss.getRangeArray(-1, 1, false);
         assertEquals(2, statusList.length);
         assertEquals(s, statusList[0]);
         assertEquals(s, statusList[1]);
         
-        statusList = (ParameterStatus[]) pss.getRange(0, 1, false);
+        statusList = (ParameterStatus[]) pss.getRangeArray(0, 1, false);
         assertEquals(1, statusList.length);
         assertEquals(s, statusList[0]);
         
-        statusList = (ParameterStatus[]) pss.getRange(1, 2, false);
+        statusList = (ParameterStatus[]) pss.getRangeArray(1, 2, false);
         assertEquals(1, statusList.length);
         assertEquals(s2, statusList[0]);
         
-        statusList = (ParameterStatus[]) pss.getRange(0, 2, false);
+        statusList = (ParameterStatus[]) pss.getRangeArray(0, 2, false);
         assertEquals(2, statusList.length);
         assertEquals(s2, statusList[0]);
         assertEquals(s, statusList[1]);
@@ -148,7 +148,7 @@ public class ObjectSegmentTest {
         ParameterStatusSegment pss1 = ParameterStatusSegment.parseFrom(bb);
         
         assertEquals(3, pss1.objectList.size());
-        statusList = (ParameterStatus[]) pss1.getRange(0, 3, true);
+        statusList = (ParameterStatus[]) pss1.getRangeArray(0, 3, true);
         assertEquals(3, statusList.length);
         assertEquals(s, statusList[0]);
         assertEquals(s, statusList[1]);
@@ -166,7 +166,7 @@ public class ObjectSegmentTest {
         
         assertTrue(pss1.runLengthEncoded);
         assertEquals(2, pss1.rleObjectList.size());
-        statusList = (ParameterStatus[]) pss1.getRange(0, 3, true);
+        statusList = (ParameterStatus[]) pss1.getRangeArray(0, 3, true);
         assertEquals(3, statusList.length);
         assertEquals(s, statusList[0]);
         assertEquals(s, statusList[1]);
@@ -183,7 +183,7 @@ public class ObjectSegmentTest {
         
         assertFalse(pss1.runLengthEncoded);
         assertEquals(3, pss1.objectList.size());
-        statusList = (ParameterStatus[]) pss1.getRange(0, 3, true);
+        statusList = (ParameterStatus[]) pss1.getRangeArray(0, 3, true);
         assertEquals(3, statusList.length);
         assertEquals(s, statusList[0]);
         assertEquals(s, statusList[1]);
@@ -254,34 +254,34 @@ public class ObjectSegmentTest {
         assertTrue(pss.runLengthEncoded);
         assertEquals(3, pss.rleObjectList.size());
         
-        ParameterStatus[] r = pss.getRange(0, 1, true);
+        ParameterStatus[] r = pss.getRangeArray(0, 1, true);
         checkEquals(r, ps1);
         
         
-        r = pss.getRange(0, 3, true);
+        r = pss.getRangeArray(0, 3, true);
         checkEquals(r, ps1, ps1, ps2);
         
         
-        r = pss.getRange(1, 2, true);
+        r = pss.getRangeArray(1, 2, true);
         checkEquals(r, ps1);
 
         
-        r = pss.getRange(2, 3, true);
+        r = pss.getRangeArray(2, 3, true);
         checkEquals(r, ps2);
         
-        r = pss.getRange(1, 5, true);
+        r = pss.getRangeArray(1, 5, true);
         checkEquals(r, ps1, ps2, ps2, ps2);
     
-        r = pss.getRange(2, 5, true);
+        r = pss.getRangeArray(2, 5, true);
         checkEquals(r, ps2, ps2, ps2);
         
-        r = pss.getRange(5, 9, true);
+        r = pss.getRangeArray(5, 9, true);
         checkEquals(r, ps3, ps3, ps3, ps3);
         
-        r = pss.getRange(8, 9, true);
+        r = pss.getRangeArray(8, 9, true);
         checkEquals(r, ps3);
         
-        r = pss.getRange(0, 9, true);
+        r = pss.getRangeArray(0, 9, true);
         checkEquals(r, ps1, ps1, ps2, ps2, ps2, ps3, ps3, ps3, ps3);
         
     }
@@ -315,40 +315,40 @@ public class ObjectSegmentTest {
         bb.rewind();
         pss = ParameterStatusSegment.parseFrom(bb);
         
-        ParameterStatus[]   r = pss.getRange(-1, 8, false);
+        ParameterStatus[]   r = pss.getRangeArray(-1, 8, false);
         checkEquals(r, ps3, ps3, ps3, ps3, ps2, ps2, ps2, ps1, ps1);
         
-        r = pss.getRange(-1, 0, false);
+        r = pss.getRangeArray(-1, 0, false);
         checkEquals(r, ps1);
         
         
-        r = pss.getRange(-1, 2, false);
+        r = pss.getRangeArray(-1, 2, false);
         checkEquals(r, ps2, ps1, ps1);
         
         
-        r = pss.getRange(0, 1, false);
+        r = pss.getRangeArray(0, 1, false);
         checkEquals(r, ps1);
 
         
-        r = pss.getRange(1, 2, false);
+        r = pss.getRangeArray(1, 2, false);
         checkEquals(r, ps2);
         
-        r = pss.getRange(0, 4, false);
+        r = pss.getRangeArray(0, 4, false);
         checkEquals(r, ps2, ps2, ps2, ps1);
     
-        r = pss.getRange(1, 4, false);
+        r = pss.getRangeArray(1, 4, false);
         checkEquals(r, ps2, ps2, ps2);
         
-        r = pss.getRange(4, 8, false);
+        r = pss.getRangeArray(4, 8, false);
         checkEquals(r, ps3, ps3, ps3, ps3);
         
-        r = pss.getRange(7, 8, false);
+        r = pss.getRangeArray(7, 8, false);
         checkEquals(r, ps3);
         
-        r = pss.getRange(6, 7, false);
+        r = pss.getRangeArray(6, 7, false);
         checkEquals(r, ps3);
         
-        r = pss.getRange(3, 5, false);
+        r = pss.getRangeArray(3, 5, false);
         checkEquals(r, ps3, ps2);
         
     }

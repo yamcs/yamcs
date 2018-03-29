@@ -1,3 +1,8 @@
+Version 4.2.0 released 
+- more web improvements - alarm detail, plots improvement, event downloads...
+- added parameter ranges API
+- allow to filter stream data on protobuf message properties
+
 Version 4.1.2 released 14-Mar-2018
 - fixed bug in the parameter archive encoding of large integer numbers
 - fixed the handling of expiration of parameters when the processor is running with a simulated clock

@@ -1,37 +1,60 @@
 package org.yamcs.parameterarchive;
 
+import org.yamcs.parameter.Value;
+import org.yamcs.parameter.ValueArray;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 
 /**
- * an array of values for one parameter
+ * an array of values for one {@link ParameterId}
+ * 
  * @author nm
  *
  */
 public class ParameterValueArray {
-    final int parameterId;
     final long[] timestamps;
-    //values is an array of primitives
-    final Object engValues;
-    final Object rawValues;
+    // values is an array of primitives
+    final ValueArray engValues;
+    final ValueArray rawValues;
     final ParameterStatus[] paramStatus;
     
-    public ParameterValueArray(int parameterId, long timestamps[], Object values, Object rawValues, ParameterStatus[] paramStatus) {
-        this.parameterId = parameterId;
+    public ParameterValueArray(long timestamps[], ValueArray engValues, ValueArray rawValues, ParameterStatus[] paramStatus) {
         this.timestamps = timestamps;
-        this.engValues = values;
+        this.engValues = engValues;
         this.rawValues = rawValues;
         this.paramStatus = paramStatus;
     }
-    
+
     public long[] getTimestamps() {
         return timestamps;
     }
-    
-    public Object getEngValues() {
+
+    public ValueArray getEngValues() {
         return engValues;
     }
-    
-    public Object getRawValues() {
+
+    public ValueArray getRawValues() {
         return rawValues;
+    }
+
+    public Type getEngType() {
+        return engValues.getType();
+    }
+
+    public ParameterStatus[] getStatuses() {
+        return paramStatus;
+    }
+    
+    /**
+     * Return engineering value of the parameter on position idx
+     * @param idx
+     * @return
+     */
+    Value getEngValue(int idx) {
+        return engValues.getValue(idx);
+    }
+
+    public int size() {
+        return timestamps.length;
     }
 }

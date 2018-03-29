@@ -1,6 +1,7 @@
 package org.yamcs.parameterarchive;
 
 import org.yamcs.parameter.Value;
+import org.yamcs.parameter.ValueArray;
 
 public interface ValueSegment {
     
@@ -17,4 +18,13 @@ public interface ValueSegment {
 
     public abstract int size();
 
+    /**
+     * returns an array containing the values in the range [posStart, posStop) if ascending or [posStop, posStart) if descending
+     *
+     * @param posStart
+     * @param posStop
+     * @param ascending
+     * @return an array containing the values in the specified range
+     */
+    public abstract ValueArray getRange(int posStart, int posStop, boolean ascending) ;
 }

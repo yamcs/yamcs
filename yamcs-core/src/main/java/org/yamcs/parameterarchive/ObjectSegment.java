@@ -333,8 +333,7 @@ public class ObjectSegment<E> extends BaseSegment {
         return rawSize;
     }
 
-    @Override
-    public E[] getRange(int posStart, int posStop, boolean ascending) {
+    public E[] getRangeArray(int posStart, int posStop, boolean ascending) {
         if(posStart>=posStop) throw new IllegalArgumentException("posStart has to be smaller than posStop");
         if(runLengthEncoded) {
             if(ascending) {

@@ -1,5 +1,6 @@
 package org.yamcs.parameter;
 
+import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
@@ -7,7 +8,7 @@ import org.yamcs.utils.DoubleRange;
 
 public class ParameterStatus {
     public static final ParameterStatus NOMINAL = new ParameterStatus();
-    
+
 
     private AcquisitionStatus acquisitionStatus = AcquisitionStatus.ACQUIRED;
     private boolean processingStatus = true;
@@ -20,10 +21,10 @@ public class ParameterStatus {
     private DoubleRange distressRange;
     private DoubleRange criticalRange;
     private DoubleRange severeRange;
-    
+
     //-1 means it's not set.
     private long expireMillis = -1;
-    
+
     public AcquisitionStatus getAcquisitionStatus() {
         return acquisitionStatus;
     }
@@ -91,7 +92,7 @@ public class ParameterStatus {
     public long getExpireMills() {
         return expireMillis;
     }
-    
+
 
     @Override
     public int hashCode() {
@@ -110,8 +111,8 @@ public class ParameterStatus {
         result = prime * result + ((watchRange == null) ? 0 : watchRange.hashCode());
         return result;
     }
-    
-    
+
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -161,4 +162,37 @@ public class ParameterStatus {
         return true;
     }
 
+
+    public org.yamcs.protobuf.Pvalue.ParameterStatus toProtoBuf() {
+        org.yamcs.protobuf.Pvalue.ParameterStatus.Builder b = org.yamcs.protobuf.Pvalue.ParameterStatus.newBuilder();
+        if (acquisitionStatus != null) {
+            b.setAcquisitionStatus(acquisitionStatus);
+        }
+
+        if (monitoringResult != null) {
+            b.setMonitoringResult(monitoringResult);
+        }
+        if (rangeCondition != null) {
+            b.setRangeCondition(rangeCondition);
+        }
+
+        if(expireMillis!=-1) {
+            b.setExpireMillis(expireMillis);
+        }
+
+        addAlarmRange(b, AlarmLevelType.WATCH, watchRange);
+        addAlarmRange(b, AlarmLevelType.WARNING, warningRange);
+        addAlarmRange(b, AlarmLevelType.DISTRESS, distressRange);
+        addAlarmRange(b, AlarmLevelType.CRITICAL, criticalRange);
+        addAlarmRange(b, AlarmLevelType.SEVERE, severeRange);
+        
+        return b.build();
+    }
+    
+    private static void addAlarmRange(org.yamcs.protobuf.Pvalue.ParameterStatus.Builder pvfb, AlarmLevelType level, DoubleRange range) {
+        if (range == null) {
+            return;
+        }
+        pvfb.addAlarmRange(ParameterValue.toGpbAlarmRange(level, range));
+    }
 }

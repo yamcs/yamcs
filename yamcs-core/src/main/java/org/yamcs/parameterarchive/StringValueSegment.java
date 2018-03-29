@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.yamcs.parameter.Value;
+import org.yamcs.parameter.ValueArray;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.ValueUtility;
 
@@ -70,6 +71,11 @@ public class StringValueSegment extends ObjectSegment<String> implements ValueSe
         public byte[] serialize(String s) {
             return s.getBytes(StandardCharsets.UTF_8);
         }
+    }
+    
+    @Override
+    public ValueArray getRange(int posStart, int posStop, boolean ascending) {
+        return new ValueArray(getRangeArray(posStart, posStop, ascending));
     }
 
 }

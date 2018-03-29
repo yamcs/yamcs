@@ -174,6 +174,20 @@ public abstract class AbstractIntegrationTest {
         return builder;
     }
 
+    
+    void generatePkt13(String utcStart, int numPackets) {
+        long t0 = TimeEncoding.parse(utcStart);
+        for (int i = 0; i < numPackets; i++) {
+            packetGenerator.setGenerationTime(t0 + 1000 * i);
+            packetGenerator.generate_PKT1_1();
+            packetGenerator.generate_PKT1_3();
+            
+            // parameters are 10ms later than packets to make sure that we have a predictable order during replay
+            parameterProvider.setGenerationTime(t0 + 1000 * i + 10);
+            parameterProvider.generateParameters(i);
+        }
+    }
+    
     static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
@@ -419,5 +433,7 @@ public abstract class AbstractIntegrationTest {
 
             seqNum++;
         }
+        
+        
     }
 }

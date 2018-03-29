@@ -24,17 +24,14 @@ import org.yamcs.parameterarchive.MultipleParameterValueRequest;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterArchiveV2;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
+import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
-import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdValueList;
-import org.yamcs.parameterarchive.ParameterValueArray;
-import org.yamcs.parameterarchive.SingleParameterDataRetrieval;
-import org.yamcs.parameterarchive.SingleParameterValueRequest;
+import org.yamcs.parameterarchive.ParameterRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.Value;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.ParameterFormatter;
@@ -47,6 +44,7 @@ import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestParameterReplayListener;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
+import org.yamcs.web.rest.archive.ParameterRanger.Range;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -92,7 +90,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
-        Processor realtimeProcessor = getRealtimeProc(instance, req);
 
         /*
          * TODO check commented out, in order to support sampling system parameters which don't have a type
@@ -109,40 +106,15 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
         RestDownsampler sampler = new RestDownsampler(stop, intervalCount);
         ParameterArchiveV2 parchive = getParameterArchive(instance);
-        ParameterIdDb piddb = parchive.getParameterIdDb();
+        ParameterCache pcache = getParameterCache(instance, req);
 
-        ParameterCache pcache = null;
-        if (realtimeProcessor != null) {
-            pcache = realtimeProcessor.getParameterCache();
-        }
-
-        ParameterId[] pids = piddb.get(p.getQualifiedName());
-        if (pids == null) {
-            log.warn("No parameter id found in the parameter archive for {}", p.getQualifiedName());
-            if (pcache != null) {
-                sampleDataFromCache(pcache, p, start, stop, sampler);
-            }
-        } else {
-            ParameterGroupIdDb pgidDb = parchive.getParameterGroupIdDb();
-            for (ParameterId pid : pids) {
-                int parameterId = pid.pid;
-                Value.Type engType = pids[0].engType;
-
-                int[] pgids = pgidDb.getAllGroups(parameterId);
-                if (pgids.length == 0) {
-                    log.error("Found no parameter group for parameter Id {}", parameterId);
-                    continue;
-                }
-                log.info(
-                        "Executing a single parameter value request for time interval [{} - {}] parameterId: {} and parameter groups: {}",
-                        TimeEncoding.toString(start), TimeEncoding.toString(stop), parameterId, Arrays.toString(pgids));
-                SingleParameterValueRequest spvr = new SingleParameterValueRequest(start, stop, parameterId, pgids,
-                        true);
-                sampleDataForParameterId(parchive, engType, spvr, sampler);
-                if (pcache != null) {
-                    sampleDataFromCache(pcache, p, start, stop, sampler);
-                }
-            }
+        ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, false);
+        SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, p, pr);
+        try {
+            spdr.retrieve(sampler);
+        } catch (IOException e) {
+            log.warn("Received exception during parmaeter retrieval ", e);
+            throw new InternalServerErrorException(e.getMessage());
         }
 
         TimeSeries.Builder series = TimeSeries.newBuilder();
@@ -153,83 +125,58 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, series.build());
     }
 
-    private void sampleDataFromCache(ParameterCache pcache, Parameter p, long start, long stop,
-            RestDownsampler sampler) {
-        // grab some data from the realtime processor cache
-        List<org.yamcs.parameter.ParameterValue> pvlist = pcache.getAllValues(p);
-        if (pvlist != null) {
-            int n = pvlist.size();
-            for (int i = n - 1; i >= 0; i--) {
-                org.yamcs.parameter.ParameterValue pv = pvlist.get(i);
-
-                if (pv.getGenerationTime() < start) {
-                    continue;
-                }
-                if (pv.getGenerationTime() > stop) {
-                    break;
-                }
-                if (pv.getGenerationTime() > sampler.lastSampleTime()) {
-                    sampler.process(pv);
-                }
-            }
+    
+    /**
+     * A series is a list of samples that are determined in one-pass while processing a stream result. Final API
+     * unstable.
+     * <p>
+     * If no query parameters are defined, the series covers *all* data.
+     * 
+     * @param req
+     * @throws HttpException
+     */
+    @Route(path = "/api/archive/:instance/parameters/:name*/ranges")
+    public void getParameterRanges(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        if (isOldParameterArchive(instance)) {
+            throw new BadRequestException("Ranges not supported for the old parameter archive");
         }
-    }
 
-    private void sampleDataForParameterId(ParameterArchiveV2 parchive, Value.Type engType,
-            SingleParameterValueRequest spvr, RestDownsampler sampler) throws HttpException {
-        spvr.setRetrieveEngineeringValues(true);
-        spvr.setRetrieveParameterStatus(false);
-        spvr.setRetrieveRawValues(false);
-        SingleParameterDataRetrieval spdr = new SingleParameterDataRetrieval(parchive, spvr);
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+
+        Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
+
+        long start = req.getQueryParameterAsDate("start", 0);
+        long stop = req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime());
+
+        long minGap = req.getQueryParameterAsLong("minGap", 0);
+        long maxGap = req.getQueryParameterAsLong("maxGap", Long.MAX_VALUE);
+       
+        ParameterArchiveV2 parchive = getParameterArchive(instance);
+        ParameterCache pcache = getParameterCache(instance, req);
+       
+        ParameterRanger ranger = new ParameterRanger(minGap, maxGap);
+
+        ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, true);
+        SingleParameterRetriever spdr = new SingleParameterRetriever(parchive, pcache, p, pr);
         try {
-            spdr.retrieve(new Consumer<ParameterValueArray>() {
-                @Override
-                public void accept(ParameterValueArray t) {
-
-                    Object o = t.getEngValues();
-                    long[] timestamps = t.getTimestamps();
-                    int n = timestamps.length;
-                    if (o instanceof float[]) {
-                        float[] values = (float[]) o;
-                        for (int i = 0; i < n; i++) {
-                            sampler.process(timestamps[i], values[i]);
-                        }
-                    } else if (o instanceof double[]) {
-                        double[] values = (double[]) o;
-                        for (int i = 0; i < n; i++) {
-                            sampler.process(timestamps[i], values[i]);
-                        }
-                    } else if (o instanceof long[]) {
-                        long[] values = (long[]) o;
-                        for (int i = 0; i < n; i++) {
-                            if (engType == Type.UINT64) {
-                                sampler.process(timestamps[i], unsignedLongToDouble(values[i]));
-                            } else {
-                                sampler.process(timestamps[i], values[i]);
-                            }
-                        }
-                    } else if (o instanceof int[]) {
-                        int[] values = (int[]) o;
-                        for (int i = 0; i < n; i++) {
-                            if (engType == Type.UINT32) {
-                                sampler.process(timestamps[i], values[i] & 0xFFFFFFFFL);
-                            } else {
-                                sampler.process(timestamps[i], values[i]);
-                            }
-                        }
-                    } else {
-                        log.warn("Unexpected value type {}", o.getClass());
-                    }
-
-                }
-            });
-        } catch (RocksDBException | IOException e) {
+            spdr.retrieve(ranger);
+        } catch (IOException e) {
             log.warn("Received exception during parmaeter retrieval ", e);
             throw new InternalServerErrorException(e.getMessage());
         }
 
+        
+        Ranges.Builder ranges = Ranges.newBuilder();
+        for (Range r : ranger.getRanges()) {
+            ranges.addRange(ArchiveHelper.toGPBRange(r));
+        }
+
+        completeOK(req, ranges.build());
     }
 
+
+    
     private boolean isOldParameterArchive(String instance) throws BadRequestException {
         ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
 
@@ -247,15 +194,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         return (ParameterArchiveV2) parameterArchive.getParchive();
     }
 
-    /** copied from guava */
-    double unsignedLongToDouble(long x) {
-        double d = (double) (x & 0x7fffffffffffffffL);
-        if (x < 0) {
-            d += 0x1.0p63;
-        }
-        return d;
-    }
-
+ 
     @Route(path = "/api/archive/:instance/parameters/:name*")
     public void listParameterHistory(RestRequest req) throws HttpException {
         if (isReplayAsked(req)) {
@@ -299,7 +238,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
             for (ParameterId pid : pids) {
                 int[] pgids = pgidDb.getAllGroups(pid.pid);
                 for (int pgid : pgids) {
-                    if (pid.rawType != null) {
+                    if (pid.getRawType() != null) {
                         retriveRawValues.set(pidArray.size());
                     }
                     pidArray.add(pid.pid);
@@ -457,8 +396,18 @@ public class ArchiveParameterRestHandler extends RestHandler {
             }
         }
     }
+    
+    private static ParameterCache getParameterCache(String instance, RestRequest req) throws NotFoundException {
+        ParameterCache pcache = null;
+        Processor realtimeProcessor = getRealtimeProc(instance, req);
+        if (realtimeProcessor != null) {
+            pcache = realtimeProcessor.getParameterCache();
+        }
+        return pcache;
+    }
 
-    private Processor getRealtimeProc(String instance, RestRequest req) throws NotFoundException {
+
+    private static Processor getRealtimeProc(String instance, RestRequest req) throws NotFoundException {
         String processorName;
         if (req.hasQueryParameter("norealtime")) {
             return null;

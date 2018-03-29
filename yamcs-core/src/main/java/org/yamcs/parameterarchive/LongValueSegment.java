@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.yamcs.parameter.Value;
+import org.yamcs.parameter.ValueArray;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.LongArray;
 import org.yamcs.utils.ValueUtility;
@@ -97,7 +99,7 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     }
 
     @Override
-    public long[] getRange(int posStart, int posStop, boolean ascending) {
+    public ValueArray getRange(int posStart, int posStop, boolean ascending) {
         long[] r = new long[posStop-posStart];
         if(ascending) {
             for(int i = posStart; i<posStop; i++) {
@@ -108,8 +110,11 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
                 r[posStop-i] = values.get(i);
             }
         }
-
-        return r;
+        if(signed) {
+            return new ValueArray(Type.SINT64, r);
+        } else {
+            return new ValueArray(Type.UINT64, r);
+        }
     }
 
     @Override

@@ -41,15 +41,6 @@ public abstract class BaseSegment {
     public abstract int getMaxSerializedSize();
 
 
-    /**
-     * returns an array containing the values in the range [posStart, posStop) if ascending or [posStop, posStart) if descending
-     *
-     * @param posStart
-     * @param posStop
-     * @param ascending
-     * @return an array containing the values in the specified range
-     */
-    public abstract Object getRange(int posStart, int posStop, boolean ascending) ;
 
     public byte getFormatId() {
         return formatId;
@@ -60,9 +51,7 @@ public abstract class BaseSegment {
         case FORMAT_ID_ParameterStatusSegment:
             return ParameterStatusSegment.parseFrom(bb);
         case FORMAT_ID_SortedTimeValueSegment:
-            return SortedTimeSegment.parseFrom(bb, segmentStart);
-        case FORMAT_ID_GenericValueSegment:
-            return GenericValueSegment.parseFrom(bb);
+            return SortedTimeSegment.parseFrom(bb, segmentStart);      
         case FORMAT_ID_IntValueSegment:
             return IntValueSegment.parseFrom(bb);
         case FORMAT_ID_StringValueSegment:

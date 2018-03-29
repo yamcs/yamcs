@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.yamcs.parameter.Value;
+import org.yamcs.parameter.ValueArray;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.DoubleArray;
 import org.yamcs.utils.ValueUtility;
@@ -70,7 +71,7 @@ public class DoubleValueSegment extends BaseSegment implements ValueSegment {
     }
     
     @Override
-    public double[] getRange(int posStart, int posStop, boolean ascending) {
+    public ValueArray getRange(int posStart, int posStop, boolean ascending) {
         double[] r = new double[posStop-posStart];
         if(ascending) {
             for(int i = posStart; i<posStop; i++) {
@@ -82,7 +83,7 @@ public class DoubleValueSegment extends BaseSegment implements ValueSegment {
             }
         }
         
-        return r;
+        return new ValueArray(r);
     }
 
 

@@ -35,8 +35,22 @@ public interface ParameterCache {
      * 
      * The parameter are returned in descending order (newest parameter is returned first)
      * @param p - parameter for which all values are returned
-     * @return
+     * @return all values from the cache for the parameter or null if there is no value cached
      */
     List<ParameterValue> getAllValues(Parameter p);
+
+    /**
+     * Same as above but return all values that have the generation time in the (start, stop] interval
+     * @param p
+     * @param start
+     * @param stop
+     * @return
+     */
+    List<ParameterValue> getAllValues(Parameter p, long start, long stop);
+
+    /**
+     * Remove all the parameters from the cache
+     */
+    void clear();
 
 }

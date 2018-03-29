@@ -226,7 +226,7 @@ public class ParameterArchiveV2 extends AbstractService {
         for (int i = 0; i < consolidated.size(); i++) {
             BaseSegment vs = consolidated.get(i);
             int parameterId = pgs.getParameterId(i);
-            String pname = parameterIdMap.getParameterbyId(parameterId);
+            String pname = parameterIdMap.getParameterFqnById(parameterId);
             if (vs.size() != timeSegment.size()) {
                 throw new IllegalArgumentException(
                         "Trying to write to archive an engineering value segment whose size (" + vs.size()
@@ -417,6 +417,7 @@ public class ParameterArchiveV2 extends AbstractService {
         return tablespace;
     }
 
+    
     public static class Partition extends TimeInterval {   
         final String partitionDir;
         

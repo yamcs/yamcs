@@ -6,13 +6,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
-import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.utils.DecodingException;
-import org.yamcs.utils.DoubleRange;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -30,32 +27,8 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
         if (acq == AcquisitionStatus.ACQUIRED && mr == null) {
             return cache.get(pv.getExpireMills());
         }
-        
-        ParameterStatus.Builder pvfb = ParameterStatus.newBuilder();
 
-        if (acq != null) {
-            pvfb.setAcquisitionStatus(acq);
-        }
-
-        if (mr != null) {
-            pvfb.setMonitoringResult(mr);
-        }
-        RangeCondition rc = pv.getRangeCondition();
-        if (rc != null) {
-            pvfb.setRangeCondition(rc);
-        }
-        
-        if(pv.getExpireMills()!=-1) {
-            pvfb.setExpireMillis(pv.getExpireMills());
-        }
-
-        addAlarmRange(pvfb, AlarmLevelType.WATCH, pv.getWatchRange());
-        addAlarmRange(pvfb, AlarmLevelType.WARNING, pv.getWarningRange());
-        addAlarmRange(pvfb, AlarmLevelType.DISTRESS, pv.getDistressRange());
-        addAlarmRange(pvfb, AlarmLevelType.CRITICAL, pv.getCriticalRange());
-        addAlarmRange(pvfb, AlarmLevelType.SEVERE, pv.getSevereRange());
-
-        ParameterStatus newStatus =  pvfb.build();
+        ParameterStatus newStatus =  pv.getStatus().toProtoBuf();
         
         if(newStatus.equals(prevStatus)) {
             return prevStatus;
@@ -64,12 +37,7 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
 
     }
 
-    private static void addAlarmRange(ParameterStatus.Builder pvfb, AlarmLevelType level, DoubleRange range) {
-        if (range == null) {
-            return;
-        }
-        pvfb.addAlarmRange(ParameterValue.toGpbAlarmRange(level, range));
-    }
+    
 
     public void addParameterValue(int pos, ParameterValue pv) {
         ParameterStatus prevStatus = null;

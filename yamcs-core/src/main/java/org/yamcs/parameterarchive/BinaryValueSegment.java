@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.yamcs.parameter.Value;
+import org.yamcs.parameter.ValueArray;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.ValueUtility;
 
@@ -66,6 +68,8 @@ public class BinaryValueSegment extends ObjectSegment<byte[]> implements ValueSe
         }
     }
 
-
-
+    @Override
+    public ValueArray getRange(int posStart, int posStop, boolean ascending) {
+        return new ValueArray(getRangeArray(posStart, posStop, ascending));
+    }
 }

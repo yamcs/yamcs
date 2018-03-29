@@ -27,7 +27,7 @@ public class DoubleValueSegmentTest {
         assertEquals(ValueUtility.getDoubleValue(2.3), fvs1.getValue(1));
         assertEquals(ValueUtility.getDoubleValue(3), fvs1.getValue(2));
 
-        assertArrayEquals(new double[]{1.2, 2.3,3}, fvs1.getRange(0, 3, true), 1e-10);
-        assertArrayEquals(new double[]{3, 2.3}, fvs1.getRange(0, 2, false), 1e-10);
+        assertArrayEquals(new double[]{1.2, 2.3,3}, fvs1.getRange(0, 3, true).getDoubleArray(), 1e-10);
+        assertArrayEquals(new double[]{3, 2.3}, fvs1.getRange(0, 2, false).getDoubleArray(), 1e-10);
     }
 }

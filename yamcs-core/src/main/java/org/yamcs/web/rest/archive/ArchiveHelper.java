@@ -11,6 +11,7 @@ import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Archive.TableInfo;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
@@ -26,6 +27,7 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
+import org.yamcs.web.rest.archive.ParameterRanger.Range;
 import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.ColumnDefinition;
@@ -199,6 +201,16 @@ public final class ArchiveHelper {
         return b.build();
     }
 
+    final static Ranges.Range toGPBRange(Range r) {
+        Ranges.Range.Builder b = Ranges.Range.newBuilder();
+        b.setTimeStart(TimeEncoding.toString(r.start));
+        b.setTimeStop(TimeEncoding.toString(r.stop));
+        b.setEngValue(ValueUtility.toGbp(r.v));
+        b.setCount(r.count);
+        return b.build();
+    }
+    
+    
     final static String[] EVENT_CSV_HEADER = new String[] { "Source", "Generation Time", "Reception Time", "Event Type",
             "Event Text" };
 

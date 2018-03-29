@@ -5,8 +5,8 @@ import java.util.HashMap;
 import org.rocksdb.RocksDB;
 import org.yamcs.parameterarchive.ParameterArchiveV2;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
+import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
-import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 
@@ -75,7 +75,7 @@ public class ParameterArchiveCli extends Command {
                     console.print(g+": ");
                     SortedIntArray sia = pgid.getParameterGroup(g);
                     for(int a:sia.getArray()) {
-                        console.print(pid.getParameterbyId(a)+ " ");
+                        console.print(pid.getParameterFqnById(a)+ " ");
                     }
                    console.println("");
                 }

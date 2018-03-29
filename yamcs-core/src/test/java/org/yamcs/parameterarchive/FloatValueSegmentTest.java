@@ -30,8 +30,8 @@ public class FloatValueSegmentTest {
         assertEquals(ValueUtility.getFloatValue(2.3f), fvs1.getValue(1));
         assertEquals(ValueUtility.getFloatValue(3f), fvs1.getValue(2));
 
-        assertArrayEquals(new float[]{1.2f, 2.3f,3}, fvs1.getRange(0, 3, true), 1e-10f);
-        assertArrayEquals(new float[]{3, 2.3f}, fvs1.getRange(0, 2, false), 1e-10f);
+        assertArrayEquals(new float[]{1.2f, 2.3f,3}, fvs1.getRange(0, 3, true).getFloatArray(), 1e-10f);
+        assertArrayEquals(new float[]{3, 2.3f}, fvs1.getRange(0, 2, false).getFloatArray(), 1e-10f);
     }
 
 

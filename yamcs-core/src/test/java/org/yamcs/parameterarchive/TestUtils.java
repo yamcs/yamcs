@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
+import org.yamcs.parameter.ValueArray;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueUtility;
@@ -44,41 +45,18 @@ public class TestUtils {
             assertEquals(pv.getGenerationTime(), actualPva.timestamps[i]);
         }
         if(shouldHaveEngValues) {
-            Value v = expectedPvs[0].getEngValue();
-            if(v.getType()==Type.STRING) {
-                assertTrue(actualPva.engValues instanceof String[]);
-                String[] s = (String[]) actualPva.engValues;
-                for(int i=0; i<expectedPvs.length; i++) {
-                    v = expectedPvs[i].getEngValue();
-                    assertEquals(v.getStringValue(), s[i]);
-                }            
-            } else {
-                fail("check for "+v.getType()+" not implemented");
-            }
+            for(int i=0; i<expectedPvs.length; i++) {
+                assertEquals( expectedPvs[i].getEngValue(), actualPva.getEngValues().getValue(i));
+            }   
         } else {
             assertNull(actualPva.engValues);
         }
         if(shouldHaveRawValues) {
-            Value rv = expectedPvs[0].getRawValue();
-            if(rv!=null) {
-                if(rv.getType()==Type.UINT32) {
-                    assertTrue(actualPva.rawValues instanceof int[]);
-                    int[] s = (int[]) actualPva.rawValues;
-                    for(int i=0; i<expectedPvs.length; i++) {
-                        rv = expectedPvs[i].getRawValue();
-                        assertEquals(rv.getUint32Value(), s[i]);
-                    }            
-                } else if(rv.getType()==Type.STRING) {
-                    assertTrue(actualPva.rawValues instanceof String[]);
-                    String[] s = (String[]) actualPva.rawValues;
-                    for(int i=0; i<expectedPvs.length; i++) {
-                        Value v = expectedPvs[i].getRawValue();
-                        assertEquals(v.getStringValue(), s[i]);
-                    }                
-                }else {
-                    fail("check for "+rv.getType()+" not implemented");
+            for(int i=0; i<expectedPvs.length; i++) {
+                if(expectedPvs[i].getRawValue()!=null) {
+                    assertEquals( expectedPvs[i].getRawValue(), actualPva.getRawValues().getValue(i));
                 }
-            }
+            }        
         } else {
             assertNull(actualPva.rawValues);
         }

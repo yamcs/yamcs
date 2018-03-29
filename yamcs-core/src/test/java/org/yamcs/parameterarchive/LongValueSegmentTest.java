@@ -26,8 +26,8 @@ public class LongValueSegmentTest {
         assertEquals(ValueUtility.getUint64Value(2), fvs1.getValue(1));
         assertEquals(ValueUtility.getUint64Value(3), fvs1.getValue(2));
         
-        assertArrayEquals(new long[]{1, 2,3}, fvs1.getRange(0, 3, true));
-        assertArrayEquals(new long[]{3, 2}, fvs1.getRange(0, 2, false));
+        assertArrayEquals(new long[]{1, 2,3}, fvs1.getRange(0, 3, true).getLongArray());
+        assertArrayEquals(new long[]{3, 2}, fvs1.getRange(0, 2, false).getLongArray());
     }
     
     @Test
@@ -45,7 +45,7 @@ public class LongValueSegmentTest {
         assertEquals(ValueUtility.getSint64Value(2), fvs1.getValue(1));
         assertEquals(ValueUtility.getSint64Value(3), fvs1.getValue(2));
         
-        assertArrayEquals(new long[]{1, 2,3}, fvs1.getRange(0, 3, true));
-        assertArrayEquals(new long[]{3, 2}, fvs1.getRange(0, 2, false));
+        assertArrayEquals(new long[]{1, 2,3}, fvs1.getRange(0, 3, true).getLongArray());
+        assertArrayEquals(new long[]{3, 2}, fvs1.getRange(0, 2, false).getLongArray());
     }
 }

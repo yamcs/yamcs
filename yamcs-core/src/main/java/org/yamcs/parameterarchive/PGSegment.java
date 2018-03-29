@@ -86,8 +86,10 @@ public class PGSegment {
             return new LongValueSegment(false);
         case DOUBLE:
             return new DoubleValueSegment();
+        case BOOLEAN:
+            return new BooleanValueSegment();            
        default:
-         return new GenericValueSegment();
+         throw new IllegalStateException("Unknown type "+type);
         }
     }
 

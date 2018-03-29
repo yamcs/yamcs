@@ -6,7 +6,6 @@ import java.util.List;
 import org.rocksdb.RocksDBException;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
-import org.yamcs.parameterarchive.ParameterIdDb.ParameterId;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.Privilege;
 import org.yamcs.web.BadRequestException;

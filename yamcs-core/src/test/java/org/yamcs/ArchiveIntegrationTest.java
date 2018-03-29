@@ -34,7 +34,6 @@ import org.yamcs.protobuf.Table.TableLoadResponse;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.websocket.ParameterResource;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
@@ -62,23 +61,10 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         Logger.getLogger("org.yamcs.yarch").setLevel(Level.SEVERE);
     }
 
-    private void generateData(String utcStart, int numPackets) {
-        long t0 = TimeEncoding.parse(utcStart);
-        for (int i = 0; i < numPackets; i++) {
-            packetGenerator.setGenerationTime(t0 + 1000 * i);
-            packetGenerator.generate_PKT1_1();
-            packetGenerator.generate_PKT1_3();
-
-            // parameters are 10ms later than packets to make sure that we have a predictable order during replay
-            parameterProvider.setGenerationTime(t0 + 1000 * i + 10);
-            parameterProvider.generateParameters(i);
-        }
-    }
-
     @Test
     public void testReplay() throws Exception {
         Long t0 = System.currentTimeMillis();
-        generateData("2015-01-01T10:00:00", 300);
+        generatePkt13("2015-01-01T10:00:00", 300);
 
         restClient.setAcceptMediaType(MediaType.JSON);
         restClient.setSendMediaType(MediaType.JSON);
@@ -172,7 +158,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testIndexWithRestClient() throws Exception {
-        generateData("2015-02-01T10:00:00", 3600);
+        generatePkt13("2015-02-01T10:00:00", 3600);
         List<ArchiveRecord> arlist = new ArrayList<>();
         restClient.setAcceptMediaType(MediaType.PROTOBUF);
         CompletableFuture<Void> f = restClient.doBulkGetRequest(
@@ -200,7 +186,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testParameterHistory() throws Exception {
-        generateData("2015-02-02T10:00:00", 3600);
+        generatePkt13("2015-02-02T10:00:00", 3600);
         String respDl = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=true&limit=3",
                 HttpMethod.GET, "").get();

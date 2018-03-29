@@ -173,7 +173,7 @@ public class ParameterArchiveTest {
         long t2 = SortedTimeSegment.getSegmentEnd(0) + 100;
         PGSegment pgSegment2 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t2),
                 new SortedIntArray(new int[] { p1id }));
-        ParameterValue pv1_2 = getParameterValue(p1, t2, "pv1_2");
+        ParameterValue pv1_2 = getParameterValue(p1, t2, "pv1_2", 30);
         pv1_2.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
 
         pgSegment2.addRecord(t2, Arrays.asList(pv1_2));
@@ -184,7 +184,7 @@ public class ParameterArchiveTest {
         long t3 = TimeEncoding.parse("2017-01-01T00:00:51");
         PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t3),
                 new SortedIntArray(new int[] { p1id }));
-        ParameterValue pv1_3 = getParameterValue(p1, t3, "pv1_3");
+        ParameterValue pv1_3 = getParameterValue(p1, t3, "pv1_3", 45);
         pgSegment3.addRecord(t3, Arrays.asList(pv1_3));
         pgSegment3.consolidate();
         parchive.writeToArchive(pgSegment3);
@@ -270,12 +270,8 @@ public class ParameterArchiveTest {
             boolean retriveParamStatus) throws Exception {
         // ascending request on empty data
         SingleValueConsumer c = new SingleValueConsumer();
-        SingleParameterValueRequest spvr = new SingleParameterValueRequest(start, stop, parameterId, parameterGroupId,
-                ascending);
-        spvr.setRetrieveEngineeringValues(retrieveEngValues);
-        spvr.setRetrieveRawValues(retrieveRawValues);
-        spvr.setRetrieveParameterStatus(retriveParamStatus);
-        SingleParameterDataRetrieval spdr = new SingleParameterDataRetrieval(parchive, spvr);
+        ParameterRequest spvr = new ParameterRequest(start, stop, ascending, retrieveEngValues, retrieveRawValues, retriveParamStatus);
+        SingleParameterArchiveRetrieval spdr = new SingleParameterArchiveRetrieval(parchive, parameterId, new int[] {parameterGroupId}, spvr);
         spdr.retrieve(c);
         return c.list;
     }
@@ -436,13 +432,9 @@ public class ParameterArchiveTest {
     private List<ParameterValueArray> retrieveSingleValueMultigroup(long start, long stop, int parameterId,
             int[] parameterGroupIds, boolean ascending, boolean retrieveEng, boolean retrieveRaw,
             boolean retrieveStatus) throws RocksDBException, DecodingException, IOException {
-        SingleParameterValueRequest spvr = new SingleParameterValueRequest(start, stop, parameterId, parameterGroupIds,
-                ascending);
-        spvr.setRetrieveParameterStatus(retrieveStatus);
-        spvr.setRetrieveEngineeringValues(retrieveEng);
-        spvr.setRetrieveRawValues(retrieveRaw);
+        ParameterRequest spvr = new ParameterRequest(start, stop, ascending, retrieveEng, retrieveRaw, retrieveStatus);
 
-        SingleParameterDataRetrieval spdr = new SingleParameterDataRetrieval(parchive, spvr);
+        SingleParameterArchiveRetrieval spdr = new SingleParameterArchiveRetrieval(parchive, parameterId, parameterGroupIds, spvr);
         SingleValueConsumer svc = new SingleValueConsumer();
         spdr.retrieve(svc);
         return svc.list;

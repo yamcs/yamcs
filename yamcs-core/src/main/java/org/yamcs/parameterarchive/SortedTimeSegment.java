@@ -7,6 +7,8 @@ import me.lemire.integercompression.FastPFOR128;
 import me.lemire.integercompression.IntWrapper;
 
 import org.yamcs.parameter.Value;
+import org.yamcs.parameter.ValueArray;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.ValueUtility;
@@ -19,7 +21,7 @@ import org.yamcs.utils.VarIntUtil;
  * @author nm
  *
  */
-public class SortedTimeSegment extends BaseSegment implements ValueSegment {
+public class SortedTimeSegment extends BaseSegment {
     public static final int NUMBITS_MASK = 22; //2^22 millisecons =~ 70 minutes per segment    
     public static final int TIMESTAMP_MASK = (0xFFFFFFFF>>>(32-NUMBITS_MASK));
     public static final long SEGMENT_MASK = ~TIMESTAMP_MASK;
@@ -271,10 +273,6 @@ public class SortedTimeSegment extends BaseSegment implements ValueSegment {
         return 4*(tsarray.size())+3;
     }
 
-    @Override
-    public Value getValue(int index) {        
-        return ValueUtility.getTimestampValue(getTime(index));
-    }
 
     public long getSegmentEnd() {
         return getSegmentEnd(segmentStart);
@@ -292,17 +290,6 @@ public class SortedTimeSegment extends BaseSegment implements ValueSegment {
             }
         }
         return r;
-    }
-
-    @Override
-    public void add(int pos, Value engValue) {
-        throw new UnsupportedOperationException("add not supported");
-
-    }
-
-    @Override
-    public BaseSegment consolidate() {
-        throw new UnsupportedOperationException("consolidate not supported");
     }
 
     /**

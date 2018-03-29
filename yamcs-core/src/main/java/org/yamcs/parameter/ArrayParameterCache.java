@@ -201,6 +201,11 @@ public class ArrayParameterCache implements ParameterCache {
 
     @Override
     public List<ParameterValue> getAllValues(Parameter pdef) {
+        return getAllValues(pdef, Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
+    @Override
+    public List<ParameterValue> getAllValues(Parameter pdef, long start, long stop) {
         List<ParameterId> pidlist = getParameterIds(pdef);
         List<ParameterValue> result = new ArrayList<>();
         boolean needsSorting = false;
@@ -209,7 +214,7 @@ public class ArrayParameterCache implements ParameterCache {
                 SortedIntArray sia = me.getKey();
                 if (sia.contains(p.id)) {
                     needsSorting = true;
-                    me.getValue().retrieveAll(p, result);
+                    me.getValue().retrieveAll(p, start, stop, result);
                 }
             }
         }
@@ -223,10 +228,13 @@ public class ArrayParameterCache implements ParameterCache {
                 }
             });
         }
+        if(result.isEmpty()) {
+            return null;
+        }
         return result;
     }
-
-
+    
+    
     private List<ParameterId> getParameterIds(List<Parameter> pdefList) {
         List<ParameterId> result = new ArrayList<>();
         for (Parameter pdef : pdefList) {
@@ -497,7 +505,7 @@ public class ArrayParameterCache implements ParameterCache {
             }
         }
 
-        public void retrieveAll(ParameterId p, List<ParameterValue> result) {
+        public void retrieveAll(ParameterId p, long start, long stop, List<ParameterValue> result) {
             lock.readLock().lock();
             try {
                 int col = pids.search(p.id);
@@ -507,7 +515,9 @@ public class ArrayParameterCache implements ParameterCache {
                 int row = _head;
                 do {
                     row = (row - 1) & n;
-                    result.add(getParameterValue(row, col, p));
+                    if(generationTimeColumn[row]>start && generationTimeColumn[row]<=stop) {
+                        result.add(getParameterValue(row, col, p));
+                    }
                 } while (row != _tail);
             } finally {
                 lock.readLock().unlock();
@@ -558,7 +568,7 @@ public class ArrayParameterCache implements ParameterCache {
             case BINARY:
                 return ValueUtility.getBinaryValue((byte[]) (((Object[]) o)[idx]));
             default:
-                throw new IllegalStateException("Unnown type " + type);
+                throw new IllegalStateException("Unnown type " + type); 
             }
         }
 
@@ -728,5 +738,10 @@ public class ArrayParameterCache implements ParameterCache {
                 throw new IllegalArgumentException("Cannot double objects of type " + o.getClass());
             }
         }
+    }
+
+    @Override
+    public void clear() {
+        tables.clear();
     }
 }

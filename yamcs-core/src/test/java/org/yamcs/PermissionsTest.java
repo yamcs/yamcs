@@ -50,7 +50,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
         // testuser is allowed to replay integer parameters but no string parameters
         RestClient restClient1 = getRestClient("testuser", "password");
         // Check that integer parameter replay is ok
-        generateData("2015-03-02T10:00:00", 3600);
+        generatePkt13("2015-03-02T10:00:00", 3600);
         String resource = "/archive/IntegrationTest/parameters";
         resource += "/REFMDB/SUBSYS1/IntegerPara1_1_6";
         resource += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";
@@ -188,14 +188,6 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 .get();
     }
 
-    private void generateData(String utcStart, int numPackets) {
-        long t0 = TimeEncoding.parse(utcStart);
-        for (int i = 0; i < numPackets; i++) {
-            packetGenerator.setGenerationTime(t0 + 1000 * i);
-            packetGenerator.generate_PKT1_1();
-            packetGenerator.generate_PKT1_3();
-        }
-    }
 
     private RestClient getRestClient(String username, String password) {
         YamcsConnectionProperties ycp1 = ycp.clone();

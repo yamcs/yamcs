@@ -5,10 +5,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.parameter.ValueArray;
+import org.yamcs.parameterarchive.ParameterValueArray;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 
 /**
  * One-pass downsampler for time-series data (i.e. numeric archived parameters),
@@ -20,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * This is *NOT* perfect. The range of returned items is not known upfront, so
  * a rough assumption is made based on the first result, and up until validEnd.
  */
-public class RestDownsampler {
+public class RestDownsampler implements Consumer<ParameterValueArray> {
 
     private static final Logger log = LoggerFactory.getLogger(RestDownsampler.class);
     private static final int DEFAULT_INTERVAL_COUNT = 500;
@@ -178,4 +182,65 @@ public class RestDownsampler {
     public long lastSampleTime() {
         return lastSampleTime;
     }
+
+    @Override
+    public void accept(ParameterValueArray t) {
+        
+        ValueArray va = t.getEngValues();
+        long[] timestamps = t.getTimestamps();
+        int n = timestamps.length;
+        Type engType = t.getEngType();
+        
+        switch(engType) {
+        case FLOAT:
+            float[] fv = va.getFloatArray(); 
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], fv[i]);
+            }
+            break;
+        case DOUBLE:
+            double[] dv = va.getDoubleArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], dv[i]);
+            }
+            break;
+        case UINT32:
+            int[] iv = va.getIntArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], iv[i] & 0xFFFFFFFFL);
+            }
+            break;
+        case SINT32:
+            iv = va.getIntArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], iv[i]);
+            }
+            break;
+        case UINT64:
+            long[] lv = va.getLongArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], unsignedLongToDouble(lv[i]));
+            }
+            break;
+        case SINT64:
+            lv = va.getLongArray();
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], lv[i]);
+            }
+            break;
+        default:
+            log.debug("Ignoring value type {}", engType);
+        }
+        
+    }
+    
+    /** copied from guava */
+    double unsignedLongToDouble(long x) {
+        double d = (double) (x & 0x7fffffffffffffffL);
+        if (x < 0) {
+            d += 0x1.0p63;
+        }
+        return d;
+    }
+
 }

@@ -94,10 +94,10 @@ public class MultiParameterDataRetrieval {
                     log.error(msg);
                     throw new IOException(msg);
                 }
-                BaseSegment engValueSegment = mpvr.retrieveEngValues ? pit.engValue() : null;
+                ValueSegment engValueSegment = mpvr.retrieveEngValues ? pit.engValue() : null;
                 ParameterStatusSegment paramStatuSegment = mpvr.retrieveParamStatus ? pit.parameterStatus() : null;
 
-                BaseSegment rawValueSegment = null;
+                ValueSegment rawValueSegment = null;
                 if (pit.retrieveRawValue) {
                     rawValueSegment = pit.rawValue();
                     if (rawValueSegment == null) {

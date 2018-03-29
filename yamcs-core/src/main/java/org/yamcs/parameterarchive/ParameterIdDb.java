@@ -195,7 +195,7 @@ public class ParameterIdDb {
      * 
      * @return parameterFQN or null if there is no parameter with the given id
      */
-    public String getParameterbyId(int parameterId) {
+    public String getParameterFqnById(int parameterId) {
         for(Map.Entry<String, Map<Integer, Integer>> e: p2pidCache.entrySet()) {
             Map<Integer, Integer> m = e.getValue();
             if(m.containsValue(parameterId)) {
@@ -204,25 +204,21 @@ public class ParameterIdDb {
         }
         return null;
     }
-
-
-    public static class ParameterId {
-        public final int pid;
-        public final Type engType;
-        public final Type rawType;
-
-        public ParameterId(int pid, int numericType) {
-            this.pid = pid;
-            this.engType = getEngType(numericType);
-            this.rawType = getRawType(numericType);
+    /**
+     * returns ParameterId based on numeric id
+     * @param parameterId
+     * @return
+     */
+    public ParameterId getParameterId(int pid) {
+        for(Map.Entry<String, Map<Integer, Integer>> e: p2pidCache.entrySet()) {
+            Map<Integer, Integer> m = e.getValue();
+            for(Entry<Integer, Integer> e1: m.entrySet()) {
+                if(e1.getValue()==pid) {
+                    return new ParameterId(e1.getValue(), e1.getKey());
+                }
+            }
         }
-
-        @Override
-        public String toString() {
-            return "ParameterId [pid=" + pid + ", engType=" + engType
-                    + ", rawType=" + rawType + "]";
-        }
+        return null;
     }
-
 
 }

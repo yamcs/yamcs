@@ -112,23 +112,23 @@ public class PartitionIterator {
         return currentKey;
     }
 
-    BaseSegment engValue() {
+    ValueSegment engValue() {
         if (currentEngValueSegment == null) {
             return null;
         }
         try {
-            return (BaseSegment) segmentEncoder.decode(currentEngValueSegment, currentKey.segmentStart);
+            return (ValueSegment) segmentEncoder.decode(currentEngValueSegment, currentKey.segmentStart);
         } catch (DecodingException e) {
             throw new DatabaseCorruptionException(e);
         }
     }
 
-    BaseSegment rawValue() {
+    ValueSegment rawValue() {
         if (currentRawValueSegment == null) {
             return null;
         }
         try {
-            return (BaseSegment) segmentEncoder.decode(currentRawValueSegment, currentKey.segmentStart);
+            return (ValueSegment) segmentEncoder.decode(currentRawValueSegment, currentKey.segmentStart);
         } catch (DecodingException e) {
             throw new DatabaseCorruptionException(e);
         }
