@@ -1,0 +1,112 @@
+<app-monitor-page *ngIf="instance$ | async as instance">
+  <app-monitor-toolbar>Alarms</app-monitor-toolbar>
+
+  <div class="detail">
+    <ng-container *ngIf="selectedAlarm$ | async as selectedAlarm; else noSelection">
+      <app-detail-toolbar>
+        Alarm Detail
+      </app-detail-toolbar>
+      <div style="padding: 0 16px">
+        <app-alarm-detail [alarm]="selectedAlarm"></app-alarm-detail>
+      </div>
+    </ng-container>
+    <ng-template #noSelection>
+      <app-detail-toolbar>
+        Select an alarm
+      </app-detail-toolbar>
+    </ng-template>
+  </div>
+
+  <div class="table-wrapper">
+    <div class="panel-content">
+      <mat-table *ngIf="!dataSource.isEmpty(); else empty"
+                [dataSource]="dataSource"
+                [trackBy]="tableTrackerFn"
+                class="ya-data-table"
+                matSort
+                matSortActive="parameter"
+                matSortDirection="asc"
+                matSortDisableClear>
+
+        <ng-container matColumnDef="parameter">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="350px">Parameter</mat-header-cell>
+          <mat-cell *matCellDef="let alarm" fxFlex="350px">
+            <a [routerLink]="['/mdb/parameters/', alarm.triggerValue.id.name]"
+              [queryParams]="{instance: instance.name}">
+              {{ alarm.triggerValue.id.name }}
+            </a>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="spaceSystem">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="150px">Space System</mat-header-cell>
+          <mat-cell *matCellDef="let alarm" fxFlex="150px">
+            <a [routerLink]="['/mdb/parameters/', alarm.triggerValue.id.name]"
+                [queryParams]="{instance: instance.name}">
+              {{ alarm.triggerValue.id.name }}
+            </a>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="time">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="200px">Time</mat-header-cell>
+          <mat-cell *matCellDef="let alarm" fxFlex="200px">{{ alarm.triggerValue.generationTimeUTC | datetime }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="currentValue">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="150px">Current Value</mat-header-cell>
+          <mat-cell *matCellDef="let alarm"
+                    fxFlex="150px">
+            <app-expirable [pval]="alarm.currentValue">
+              <app-alarm-level [level]="alarm.currentValue.monitoringResult" [grayscale]="true"></app-alarm-level>
+              &nbsp;{{ alarm.currentValue.engValue | value }}
+              <span *ngIf="alarm.currentValue.rangeCondition === 'LOW'">&#8595;</span>
+              <span *ngIf="alarm.currentValue.rangeCondition === 'HIGH'">&#8593;</span>
+            </app-expirable>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="severity">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="70px">Severity</mat-header-cell>
+          <mat-cell *matCellDef="let alarm" fxFlex="70px">
+            <app-alarm-level [level]="alarm.triggerValue.monitoringResult"></app-alarm-level>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="150px">Alarm Type</mat-header-cell>
+          <mat-cell *matCellDef="let alarm" fxFlex="150px">Out of Limits</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="value">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="150px">Value</mat-header-cell>
+          <mat-cell *matCellDef="let alarm" fxFlex="150px" style="color: red">
+            {{ alarm.triggerValue.engValue | value }}
+            <span *ngIf="alarm.triggerValue.rangeCondition === 'LOW'">&#8595;</span>
+            <span *ngIf="alarm.triggerValue.rangeCondition === 'HIGH'">&#8593;</span>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="violations">
+          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="70px">Violations</mat-header-cell>
+          <mat-cell *matCellDef="let alarm" style="text-align: right" fxFlex="70px">
+            {{ alarm.violations | number }}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"
+                 (click)="selectAlarm(row)"
+                 [class.selected]="row.parameter.qualifiedName === (selectedAlarm$ | async)?.parameter.qualifiedName">
+        </mat-row>
+      </mat-table>
+
+      <ng-template #empty>
+        <app-empty-message *ngIf="!(dataSource.loading$ | async)">
+          <mat-icon style="color: green">check_circle</mat-icon>
+          All parameters normal.
+        </app-empty-message>
+      </ng-template>
+    </div>
+  </div>
+</app-monitor-page>

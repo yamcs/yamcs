@@ -7,7 +7,9 @@ services:
     - org.yamcs.archive.EventRecorder
     - org.yamcs.archive.ReplayServer
     - org.yamcs.archive.IndexServer
-    - org.yamcs.parameter.SystemParametersCollector
+    - class: org.yamcs.parameter.SystemParametersCollector
+      args:
+        provideJvmVariables: true
     # create a realtime processor
     - class: org.yamcs.ProcessorCreatorService
       args: 

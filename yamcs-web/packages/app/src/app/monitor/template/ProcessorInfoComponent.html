@@ -1,0 +1,16 @@
+<ng-container *ngIf="connected$ | async; else noConnection">
+  <button mat-button
+          matTooltip="Mission Time (realtime processor)"
+          matTooltipPosition="below"
+          *ngIf="time$ | async as time">
+    <mat-icon>access_time</mat-icon>
+    {{ time.currentTimeUTC | datetime }}
+  </button>
+</ng-container>
+
+<ng-template #noConnection>
+  <button mat-button color="warn">
+    <mat-icon>warning</mat-icon>
+    Attempting Reconnection to Yamcs <app-dots></app-dots>
+  </button>
+</ng-template>

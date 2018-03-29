@@ -1,0 +1,15 @@
+a {
+  text-decoration: none;
+  display: inline-flex;
+  vertical-align: middle;
+  align-items: center;
+  color: #000;
+}
+
+a:hover {
+  color: #000080;
+}
+
+a:hover .link-content {
+  text-decoration: underline;
+}

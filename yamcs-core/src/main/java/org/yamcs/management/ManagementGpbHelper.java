@@ -23,20 +23,24 @@ import com.google.protobuf.ByteString;
 public final class ManagementGpbHelper {
 
     public static Statistics buildStats(Processor processor) {
-        ProcessingStatistics ps=processor.getTmProcessor().getStatistics();
-        Statistics.Builder statsb=Statistics.newBuilder();
-        statsb.setLastUpdated(ps.getLastUpdated());
-        statsb.setLastUpdatedUTC(TimeEncoding.toString(ps.getLastUpdated()));
-        statsb.setInstance(processor.getInstance()).setYProcessorName(processor.getName());
-        Collection<ProcessingStatistics.TmStats> tmstats=ps.stats.values();
-        if(tmstats==null) {
+        ProcessingStatistics ps = processor.getTmProcessor().getStatistics();
+        Statistics.Builder statsb = Statistics.newBuilder()
+                .setLastUpdated(ps.getLastUpdated())
+                .setLastUpdatedUTC(TimeEncoding.toString(ps.getLastUpdated()))
+                .setInstance(processor.getInstance())
+                .setYProcessorName(processor.getName());
+
+        Collection<ProcessingStatistics.TmStats> tmstats = ps.stats.values();
+        if (tmstats == null) {
             return ManagementService.STATS_NULL;
         }
 
-        for(ProcessingStatistics.TmStats t:tmstats) {
-            TmStatistics ts=TmStatistics.newBuilder()
-                    .setPacketName(t.packetName).setLastPacketTime(t.lastPacketTime)
-                    .setLastReceived(t.lastReceived).setReceivedPackets(t.receivedPackets)
+        for (ProcessingStatistics.TmStats t : tmstats) {
+            TmStatistics ts = TmStatistics.newBuilder()
+                    .setPacketName(t.packetName)
+                    .setLastPacketTime(t.lastPacketTime)
+                    .setLastReceived(t.lastReceived)
+                    .setReceivedPackets(t.receivedPackets)
                     .setLastPacketTimeUTC(TimeEncoding.toString(t.lastPacketTime))
                     .setLastReceivedUTC(TimeEncoding.toString(t.lastReceived))
                     .setSubscribedParameterCount(t.subscribedParameterCount).build();
@@ -46,34 +50,43 @@ public final class ManagementGpbHelper {
     }
 
     public static ProcessorInfo toProcessorInfo(Processor yproc) {
-        ProcessorInfo.Builder cib=ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
+        ProcessorInfo.Builder cib = ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
                 .setName(yproc.getName()).setType(yproc.getType())
                 .setCreator(yproc.getCreator())
                 .setHasCommanding(yproc.hasCommanding())
                 .setHasAlarms(yproc.hasAlarmServer())
                 .setState(yproc.getState());
 
-        if(yproc.isReplay()) {
+        if (yproc.isReplay()) {
             cib.setReplayRequest(yproc.getReplayRequest());
             cib.setReplayState(yproc.getReplayState());
-        } 
+        }
         return cib.build();
     }
 
     public static CommandQueueEntry toCommandQueueEntry(CommandQueue q, PreparedCommand pc) {
-        Processor c=q.getChannel();
+        Processor c = q.getChannel();
         return CommandQueueEntry.newBuilder()
-                .setInstance(q.getChannel().getInstance()).setProcessorName(c.getName()).setQueueName(q.getName())
-                .setCmdId(pc.getCommandId()).setSource(pc.getSource()).setBinary(ByteString.copyFrom(pc.getBinary()))
+                .setInstance(q.getChannel().getInstance())
+                .setProcessorName(c.getName())
+                .setQueueName(q.getName())
+                .setCmdId(pc.getCommandId())
+                .setSource(pc.getSource())
+                .setBinary(ByteString.copyFrom(pc.getBinary()))
                 .setUuid(pc.getUUID().toString())
-                .setGenerationTime(pc.getGenerationTime()).setUsername(pc.getUsername()).build();
+                .setGenerationTime(pc.getGenerationTime())
+                .setGenerationTimeUTC(TimeEncoding.toString(pc.getGenerationTime()))
+                .setUsername(pc.getUsername())
+                .build();
     }
 
     public static CommandQueueInfo toCommandQueueInfo(CommandQueue queue, boolean detail) {
-        Processor c=queue.getChannel();
-        CommandQueueInfo.Builder b= CommandQueueInfo.newBuilder()
-                .setInstance(c.getInstance()).setProcessorName(c.getName())
-                .setName(queue.getName()).setState(queue.getState())
+        Processor c = queue.getChannel();
+        CommandQueueInfo.Builder b = CommandQueueInfo.newBuilder()
+                .setInstance(c.getInstance())
+                .setProcessorName(c.getName())
+                .setName(queue.getName())
+                .setState(queue.getState())
                 .setNbRejectedCommands(queue.getNbRejectedCommands())
                 .setNbSentCommands(queue.getNbSentCommands());
 
@@ -89,10 +102,12 @@ public final class ManagementGpbHelper {
         return b.build();
     }
 
-    public static ClientInfo toClientInfo(String instance, String procName, int id, long loginTime, ProcessorClient client) {
+    public static ClientInfo toClientInfo(String instance, String procName, int id, long loginTime,
+            ProcessorClient client) {
         return ClientInfo.newBuilder().setInstance(instance)
                 .setApplicationName(client.getApplicationName())
-                .setProcessorName(procName).setUsername(client.getUsername())
+                .setProcessorName(procName)
+                .setUsername(client.getUsername())
                 .setLoginTime(loginTime)
                 .setLoginTimeUTC(TimeEncoding.toString(loginTime))
                 .setId(id).build();

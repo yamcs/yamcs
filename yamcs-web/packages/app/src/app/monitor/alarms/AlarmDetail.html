@@ -1,0 +1,16 @@
+<app-parameter-plot [dataSource]="plotDataSource">
+  <app-parameter-series [parameter]="alarm.parameter"
+                        [grid]="true"
+                        [axisLineWidth]="0">
+  </app-parameter-series>
+</app-parameter-plot>
+
+<h3>Alarm Trigger</h3>
+{{ alarm.triggerValue.engValue | value }}<br>
+on {{ alarm.triggerValue.generationTimeUTC | datetime }}
+
+<mat-divider></mat-divider>
+
+<h3>Most Severe Level</h3>
+{{ alarm.mostSevereValue.engValue | value }}<br>
+on {{ alarm.mostSevereValue.generationTimeUTC | datetime }}

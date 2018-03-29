@@ -2734,6 +2734,20 @@ public final class Commanding {
     long getGenerationTime();
 
     /**
+     * <code>optional string generationTimeUTC = 10;</code>
+     */
+    boolean hasGenerationTimeUTC();
+    /**
+     * <code>optional string generationTimeUTC = 10;</code>
+     */
+    java.lang.String getGenerationTimeUTC();
+    /**
+     * <code>optional string generationTimeUTC = 10;</code>
+     */
+    com.google.protobuf.ByteString
+        getGenerationTimeUTCBytes();
+
+    /**
      * <code>optional string uuid = 9;</code>
      */
     boolean hasUuid();
@@ -2858,8 +2872,14 @@ public final class Commanding {
             }
             case 74: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000100;
+              bitField0_ |= 0x00000200;
               uuid_ = bs;
+              break;
+            }
+            case 82: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000100;
+              generationTimeUTC_ = bs;
               break;
             }
           }
@@ -3163,13 +3183,55 @@ public final class Commanding {
       return generationTime_;
     }
 
+    public static final int GENERATIONTIMEUTC_FIELD_NUMBER = 10;
+    private java.lang.Object generationTimeUTC_;
+    /**
+     * <code>optional string generationTimeUTC = 10;</code>
+     */
+    public boolean hasGenerationTimeUTC() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>optional string generationTimeUTC = 10;</code>
+     */
+    public java.lang.String getGenerationTimeUTC() {
+      java.lang.Object ref = generationTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          generationTimeUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string generationTimeUTC = 10;</code>
+     */
+    public com.google.protobuf.ByteString
+        getGenerationTimeUTCBytes() {
+      java.lang.Object ref = generationTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        generationTimeUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     public static final int UUID_FIELD_NUMBER = 9;
     private java.lang.Object uuid_;
     /**
      * <code>optional string uuid = 9;</code>
      */
     public boolean hasUuid() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000200) == 0x00000200);
     }
     /**
      * <code>optional string uuid = 9;</code>
@@ -3214,6 +3276,7 @@ public final class Commanding {
       binary_ = com.google.protobuf.ByteString.EMPTY;
       username_ = "";
       generationTime_ = 0L;
+      generationTimeUTC_ = "";
       uuid_ = "";
     }
     private byte memoizedIsInitialized = -1;
@@ -3273,8 +3336,11 @@ public final class Commanding {
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeInt64(8, generationTime_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
         output.writeBytes(9, getUuidBytes());
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeBytes(10, getGenerationTimeUTCBytes());
       }
       getUnknownFields().writeTo(output);
     }
@@ -3317,9 +3383,13 @@ public final class Commanding {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(8, generationTime_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(9, getUuidBytes());
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(10, getGenerationTimeUTCBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3463,8 +3533,10 @@ public final class Commanding {
         bitField0_ = (bitField0_ & ~0x00000040);
         generationTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000080);
-        uuid_ = "";
+        generationTimeUTC_ = "";
         bitField0_ = (bitField0_ & ~0x00000100);
+        uuid_ = "";
+        bitField0_ = (bitField0_ & ~0x00000200);
         return this;
       }
 
@@ -3532,6 +3604,10 @@ public final class Commanding {
         if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
           to_bitField0_ |= 0x00000100;
         }
+        result.generationTimeUTC_ = generationTimeUTC_;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
+        }
         result.uuid_ = uuid_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -3583,8 +3659,13 @@ public final class Commanding {
         if (other.hasGenerationTime()) {
           setGenerationTime(other.getGenerationTime());
         }
-        if (other.hasUuid()) {
+        if (other.hasGenerationTimeUTC()) {
           bitField0_ |= 0x00000100;
+          generationTimeUTC_ = other.generationTimeUTC_;
+          onChanged();
+        }
+        if (other.hasUuid()) {
+          bitField0_ |= 0x00000200;
           uuid_ = other.uuid_;
           onChanged();
         }
@@ -4198,12 +4279,88 @@ public final class Commanding {
         return this;
       }
 
+      private java.lang.Object generationTimeUTC_ = "";
+      /**
+       * <code>optional string generationTimeUTC = 10;</code>
+       */
+      public boolean hasGenerationTimeUTC() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional string generationTimeUTC = 10;</code>
+       */
+      public java.lang.String getGenerationTimeUTC() {
+        java.lang.Object ref = generationTimeUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            generationTimeUTC_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string generationTimeUTC = 10;</code>
+       */
+      public com.google.protobuf.ByteString
+          getGenerationTimeUTCBytes() {
+        java.lang.Object ref = generationTimeUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          generationTimeUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string generationTimeUTC = 10;</code>
+       */
+      public Builder setGenerationTimeUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000100;
+        generationTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string generationTimeUTC = 10;</code>
+       */
+      public Builder clearGenerationTimeUTC() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        generationTimeUTC_ = getDefaultInstance().getGenerationTimeUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string generationTimeUTC = 10;</code>
+       */
+      public Builder setGenerationTimeUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000100;
+        generationTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+
       private java.lang.Object uuid_ = "";
       /**
        * <code>optional string uuid = 9;</code>
        */
       public boolean hasUuid() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       /**
        * <code>optional string uuid = 9;</code>
@@ -4246,7 +4403,7 @@ public final class Commanding {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000100;
+  bitField0_ |= 0x00000200;
         uuid_ = value;
         onChanged();
         return this;
@@ -4255,7 +4412,7 @@ public final class Commanding {
        * <code>optional string uuid = 9;</code>
        */
       public Builder clearUuid() {
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000200);
         uuid_ = getDefaultInstance().getUuid();
         onChanged();
         return this;
@@ -4268,7 +4425,7 @@ public final class Commanding {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000100;
+  bitField0_ |= 0x00000200;
         uuid_ = value;
         onChanged();
         return this;
@@ -7375,6 +7532,20 @@ public final class Commanding {
      */
     org.yamcs.protobuf.Commanding.CommandHistoryAttributeOrBuilder getAttrOrBuilder(
         int index);
+
+    /**
+     * <code>optional string generationTimeUTC = 4;</code>
+     */
+    boolean hasGenerationTimeUTC();
+    /**
+     * <code>optional string generationTimeUTC = 4;</code>
+     */
+    java.lang.String getGenerationTimeUTC();
+    /**
+     * <code>optional string generationTimeUTC = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getGenerationTimeUTCBytes();
   }
   /**
    * Protobuf type {@code commanding.CommandHistoryEntry}
@@ -7447,6 +7618,12 @@ public final class Commanding {
                 mutable_bitField0_ |= 0x00000002;
               }
               attr_.add(input.readMessage(org.yamcs.protobuf.Commanding.CommandHistoryAttribute.PARSER, extensionRegistry));
+              break;
+            }
+            case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              generationTimeUTC_ = bs;
               break;
             }
           }
@@ -7568,9 +7745,52 @@ public final class Commanding {
       return attr_.get(index);
     }
 
+    public static final int GENERATIONTIMEUTC_FIELD_NUMBER = 4;
+    private java.lang.Object generationTimeUTC_;
+    /**
+     * <code>optional string generationTimeUTC = 4;</code>
+     */
+    public boolean hasGenerationTimeUTC() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string generationTimeUTC = 4;</code>
+     */
+    public java.lang.String getGenerationTimeUTC() {
+      java.lang.Object ref = generationTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          generationTimeUTC_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string generationTimeUTC = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getGenerationTimeUTCBytes() {
+      java.lang.Object ref = generationTimeUTC_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        generationTimeUTC_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       commandId_ = org.yamcs.protobuf.Commanding.CommandId.getDefaultInstance();
       attr_ = java.util.Collections.emptyList();
+      generationTimeUTC_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7605,6 +7825,9 @@ public final class Commanding {
       for (int i = 0; i < attr_.size(); i++) {
         output.writeMessage(3, attr_.get(i));
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(4, getGenerationTimeUTCBytes());
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -7621,6 +7844,10 @@ public final class Commanding {
       for (int i = 0; i < attr_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, attr_.get(i));
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getGenerationTimeUTCBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7753,6 +7980,8 @@ public final class Commanding {
         } else {
           attrBuilder_.clear();
         }
+        generationTimeUTC_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -7798,6 +8027,10 @@ public final class Commanding {
         } else {
           result.attr_ = attrBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.generationTimeUTC_ = generationTimeUTC_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7842,6 +8075,11 @@ public final class Commanding {
               attrBuilder_.addAllMessages(other.attr_);
             }
           }
+        }
+        if (other.hasGenerationTimeUTC()) {
+          bitField0_ |= 0x00000004;
+          generationTimeUTC_ = other.generationTimeUTC_;
+          onChanged();
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -8312,6 +8550,82 @@ public final class Commanding {
         return attrBuilder_;
       }
 
+      private java.lang.Object generationTimeUTC_ = "";
+      /**
+       * <code>optional string generationTimeUTC = 4;</code>
+       */
+      public boolean hasGenerationTimeUTC() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string generationTimeUTC = 4;</code>
+       */
+      public java.lang.String getGenerationTimeUTC() {
+        java.lang.Object ref = generationTimeUTC_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            generationTimeUTC_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string generationTimeUTC = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getGenerationTimeUTCBytes() {
+        java.lang.Object ref = generationTimeUTC_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          generationTimeUTC_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string generationTimeUTC = 4;</code>
+       */
+      public Builder setGenerationTimeUTC(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        generationTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string generationTimeUTC = 4;</code>
+       */
+      public Builder clearGenerationTimeUTC() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        generationTimeUTC_ = getDefaultInstance().getGenerationTimeUTC();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string generationTimeUTC = 4;</code>
+       */
+      public Builder setGenerationTimeUTCBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        generationTimeUTC_ = value;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:commanding.CommandHistoryEntry)
     }
 
@@ -8382,29 +8696,31 @@ public final class Commanding {
       "mands\030\005 \002(\005\022\032\n\022nbRejectedCommands\030\006 \002(\005\022" +
       "\034\n\024stateExpirationTimeS\030\007 \001(\005\022,\n\005entry\030\010" +
       " \003(\0132\035.commanding.CommandQueueEntry\022\013\n\003u",
-      "rl\030\t \001(\t\"\315\001\n\021CommandQueueEntry\022\020\n\010instan" +
+      "rl\030\t \001(\t\"\350\001\n\021CommandQueueEntry\022\020\n\010instan" +
       "ce\030\001 \002(\t\022\025\n\rprocessorName\030\002 \002(\t\022\021\n\tqueue" +
       "Name\030\003 \002(\t\022$\n\005cmdId\030\004 \002(\0132\025.commanding.C" +
       "ommandId\022\016\n\006source\030\005 \001(\t\022\016\n\006binary\030\006 \001(\014" +
       "\022\020\n\010username\030\007 \001(\t\022\026\n\016generationTime\030\010 \001" +
-      "(\003\022\014\n\004uuid\030\t \001(\t\"\265\001\n\021CommandQueueEvent\0220" +
-      "\n\004type\030\001 \001(\0162\".commanding.CommandQueueEv" +
-      "ent.Type\022+\n\004data\030\002 \001(\0132\035.commanding.Comm" +
-      "andQueueEntry\"A\n\004Type\022\021\n\rCOMMAND_ADDED\020\001" +
-      "\022\024\n\020COMMAND_REJECTED\020\002\022\020\n\014COMMAND_SENT\020\003",
-      "\"\221\001\n\023CommandQueueRequest\022/\n\tqueueInfo\030\001 " +
-      "\001(\0132\034.commanding.CommandQueueInfo\0221\n\nque" +
-      "ueEntry\030\002 \001(\0132\035.commanding.CommandQueueE" +
-      "ntry\022\026\n\007rebuild\030\003 \001(\010:\005false\"Z\n\023CommandS" +
-      "ignificance\022\026\n\016sequenceNumber\030\001 \001(\005\022+\n\014s" +
-      "ignificance\030\002 \001(\0132\025.mdb.SignificanceInfo" +
-      "\"R\n\027CommandHistoryAttribute\022\014\n\004name\030\001 \001(" +
-      "\t\022\033\n\005value\030\002 \001(\0132\014.yamcs.Value\022\014\n\004time\030\003" +
-      " \001(\003\"r\n\023CommandHistoryEntry\022(\n\tcommandId" +
-      "\030\001 \002(\0132\025.commanding.CommandId\0221\n\004attr\030\003 ",
-      "\003(\0132#.commanding.CommandHistoryAttribute" +
-      "*4\n\nQueueState\022\013\n\007BLOCKED\020\001\022\014\n\010DISABLED\020" +
-      "\002\022\013\n\007ENABLED\020\003B\024\n\022org.yamcs.protobuf"
+      "(\003\022\031\n\021generationTimeUTC\030\n \001(\t\022\014\n\004uuid\030\t " +
+      "\001(\t\"\265\001\n\021CommandQueueEvent\0220\n\004type\030\001 \001(\0162" +
+      "\".commanding.CommandQueueEvent.Type\022+\n\004d" +
+      "ata\030\002 \001(\0132\035.commanding.CommandQueueEntry" +
+      "\"A\n\004Type\022\021\n\rCOMMAND_ADDED\020\001\022\024\n\020COMMAND_R",
+      "EJECTED\020\002\022\020\n\014COMMAND_SENT\020\003\"\221\001\n\023CommandQ" +
+      "ueueRequest\022/\n\tqueueInfo\030\001 \001(\0132\034.command" +
+      "ing.CommandQueueInfo\0221\n\nqueueEntry\030\002 \001(\013" +
+      "2\035.commanding.CommandQueueEntry\022\026\n\007rebui" +
+      "ld\030\003 \001(\010:\005false\"Z\n\023CommandSignificance\022\026" +
+      "\n\016sequenceNumber\030\001 \001(\005\022+\n\014significance\030\002" +
+      " \001(\0132\025.mdb.SignificanceInfo\"R\n\027CommandHi" +
+      "storyAttribute\022\014\n\004name\030\001 \001(\t\022\033\n\005value\030\002 " +
+      "\001(\0132\014.yamcs.Value\022\014\n\004time\030\003 \001(\003\"\215\001\n\023Comm" +
+      "andHistoryEntry\022(\n\tcommandId\030\001 \002(\0132\025.com",
+      "manding.CommandId\0221\n\004attr\030\003 \003(\0132#.comman" +
+      "ding.CommandHistoryAttribute\022\031\n\021generati" +
+      "onTimeUTC\030\004 \001(\t*4\n\nQueueState\022\013\n\007BLOCKED" +
+      "\020\001\022\014\n\010DISABLED\020\002\022\013\n\007ENABLED\020\003B\024\n\022org.yam" +
+      "cs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -8437,7 +8753,7 @@ public final class Commanding {
     internal_static_commanding_CommandQueueEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_commanding_CommandQueueEntry_descriptor,
-        new java.lang.String[] { "Instance", "ProcessorName", "QueueName", "CmdId", "Source", "Binary", "Username", "GenerationTime", "Uuid", });
+        new java.lang.String[] { "Instance", "ProcessorName", "QueueName", "CmdId", "Source", "Binary", "Username", "GenerationTime", "GenerationTimeUTC", "Uuid", });
     internal_static_commanding_CommandQueueEvent_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_commanding_CommandQueueEvent_fieldAccessorTable = new
@@ -8467,7 +8783,7 @@ public final class Commanding {
     internal_static_commanding_CommandHistoryEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_commanding_CommandHistoryEntry_descriptor,
-        new java.lang.String[] { "CommandId", "Attr", });
+        new java.lang.String[] { "CommandId", "Attr", "GenerationTimeUTC", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
     org.yamcs.protobuf.Mdb.getDescriptor();
   }

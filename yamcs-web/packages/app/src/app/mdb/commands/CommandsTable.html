@@ -1,0 +1,41 @@
+<div style="margin-bottom: 12px">
+  <input placeholder="Filter commands"
+          style="width: 400px"
+          (keyup)="applyFilter($event.target.value)">
+
+  <app-column-chooser [columns]="columns"
+                      [displayedColumns]="displayedColumns"
+                      (change)="updateColumns($event)"></app-column-chooser>
+</div>
+
+<mat-table *ngIf="dataSource"
+            class="ya-data-table"
+            [dataSource]="dataSource"
+            matSort
+            matSortActive="qualifiedName"
+            matSortDirection="asc"
+            matSortDisableClear>
+
+  <ng-container matColumnDef="name">
+    <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="400px">Name</mat-header-cell>
+    <mat-cell *matCellDef="let command" fxFlex="400px">
+      <a [routerLink]="['/mdb/commands', command.qualifiedName]"
+         [queryParams]="{instance: instance.name}">
+        {{ shortName ? command.name : command.qualifiedName }}
+      </a>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="shortDescription">
+    <mat-header-cell *matHeaderCellDef mat-sort-header>Description</mat-header-cell>
+    <mat-cell *matCellDef="let command">{{ command.shortDescription || '-' }}</mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>
+
+<mat-paginator [pageSize]="100"
+               [hidePageSize]="true"
+               [showFirstLastButtons]="true">
+</mat-paginator>

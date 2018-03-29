@@ -28,10 +28,9 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/cqueues", method = "GET")
     public void listQueues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        CommandQueueManager mgr = verifyCommandQueueManager(processor);
 
         ListCommandQueuesResponse.Builder response = ListCommandQueuesResponse.newBuilder();
-        ManagementService managementService = ManagementService.getInstance();
-        CommandQueueManager mgr = managementService.getCommandQueueManager(processor);
         mgr.getQueues().forEach(q -> response.addQueue(toCommandQueueInfo(req, q, true)));
         completeOK(req, response.build());
     }

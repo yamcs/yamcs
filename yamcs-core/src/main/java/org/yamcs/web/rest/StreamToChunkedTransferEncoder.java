@@ -18,9 +18,9 @@ import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.Channel;
 
 /**
- * Reads a yamcs stream and maps it directly to an output buffer. If that buffer grows larger
- * than the treshold size for one chunk, this will cause a chunk to be written out.
- * Could maybe be replaced by using built-in netty functionality, but would need to investigate.
+ * Reads a yamcs stream and maps it directly to an output buffer. If that buffer grows larger than the treshold size for
+ * one chunk, this will cause a chunk to be written out. Could maybe be replaced by using built-in netty functionality,
+ * but would need to investigate.
  */
 public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscriber {
 
@@ -37,11 +37,17 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
     private ChunkedTransferStats stats;
 
     public StreamToChunkedTransferEncoder(RestRequest req, MediaType contentType) throws HttpException {
+        this(req, contentType, null);
+    }
+
+    public StreamToChunkedTransferEncoder(RestRequest req, MediaType contentType, String filename)
+            throws HttpException {
         super();
         this.req = req;
         this.contentType = contentType;
         resetBuffer();
-        HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType, null);
+        HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(), req.getHttpRequest(), contentType,
+                filename);
         stats = req.getChannelHandlerContext().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
     }
 
@@ -77,7 +83,7 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
             failed = true;
             stream.close();
             RestHandler.completeWithError(req, new InternalServerErrorException(e));
-        } 
+        }
     }
 
     public abstract void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException;
@@ -86,7 +92,7 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
     public void streamClosed(Stream stream) {
         if (failed) {
             Channel chan = req.getChannelHandlerContext().channel();
-            if(chan.isOpen()) {
+            if (chan.isOpen()) {
                 log.warn("R{}: Closing channel because transfer failed", req.getRequestId());
                 req.getChannelHandlerContext().channel().close();
             }

@@ -18,6 +18,7 @@ import org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope;
 import org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentInfo;
 import org.yamcs.protobuf.Mdb.ArgumentTypeInfo;
+import org.yamcs.protobuf.Mdb.CalibratorInfo;
 import org.yamcs.protobuf.Mdb.CommandContainerInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
@@ -27,13 +28,17 @@ import org.yamcs.protobuf.Mdb.DataEncodingInfo.Type;
 import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.FixedValueInfo;
 import org.yamcs.protobuf.Mdb.InputParameterInfo;
+import org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
+import org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo;
 import org.yamcs.protobuf.Mdb.RepeatInfo;
 import org.yamcs.protobuf.Mdb.SequenceEntryInfo;
 import org.yamcs.protobuf.Mdb.SignificanceInfo;
 import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
+import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
+import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
 import org.yamcs.protobuf.Mdb.TransmissionConstraintInfo;
 import org.yamcs.protobuf.Mdb.UnitInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -76,6 +81,7 @@ import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.MetaCommandContainer;
 import org.yamcs.xtce.NumericAlarm;
@@ -86,11 +92,14 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.Significance;
 import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.SplineCalibrator;
+import org.yamcs.xtce.SplinePoint;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.TransmissionConstraint;
@@ -453,7 +462,7 @@ public class XtceToGpbAssembler {
 
         b.setName(p.getName());
         b.setQualifiedName(p.getQualifiedName());
-        if (!options.contains(Option.NO_LINK)) {
+        if (!options.contains(Option.NO_LINK) && mdbURL != null) {
             b.setUrl(mdbURL + "/parameters" + p.getQualifiedName());
         }
 
@@ -625,7 +634,7 @@ public class XtceToGpbAssembler {
             }
             if (fde.getDefaultCalibrator() != null) {
                 Calibrator calibrator = fde.getDefaultCalibrator();
-                infob.setDefaultCalibrator(calibrator.toString());
+                infob.setDefaultCalibrator(toCalibratorInfo(calibrator));
             }
         } else if (xtceDataEncoding instanceof IntegerDataEncoding) {
             IntegerDataEncoding ide = (IntegerDataEncoding) xtceDataEncoding;
@@ -638,7 +647,7 @@ public class XtceToGpbAssembler {
             }
             if (ide.getDefaultCalibrator() != null) {
                 Calibrator calibrator = ide.getDefaultCalibrator();
-                infob.setDefaultCalibrator(calibrator.toString());
+                infob.setDefaultCalibrator(toCalibratorInfo(calibrator));
             }
         } else if (xtceDataEncoding instanceof StringDataEncoding) {
             infob.setType(Type.STRING);
@@ -678,6 +687,38 @@ public class XtceToGpbAssembler {
 
     public static UnitInfo toUnitInfo(UnitType ut) {
         return UnitInfo.newBuilder().setUnit(ut.getUnit()).build();
+    }
+
+    public static CalibratorInfo toCalibratorInfo(Calibrator calibrator) {
+        CalibratorInfo.Builder calibratorInfob = CalibratorInfo.newBuilder();
+        if (calibrator instanceof PolynomialCalibrator) {
+            calibratorInfob.setType("Polynomial");
+            PolynomialCalibrator polynomialCalibrator = (PolynomialCalibrator) calibrator;
+            PolynomialCalibratorInfo.Builder polyb = PolynomialCalibratorInfo.newBuilder();
+            for (double coefficient : polynomialCalibrator.getCoefficients()) {
+                polyb.addCoefficient(coefficient);
+            }
+            calibratorInfob.setPolynomialCalibrator(polyb);
+        } else if (calibrator instanceof SplineCalibrator) {
+            calibratorInfob.setType("Spline");
+            SplineCalibrator splineCalibrator = (SplineCalibrator) calibrator;
+            SplineCalibratorInfo.Builder splineb = SplineCalibratorInfo.newBuilder();
+            for (SplinePoint point : splineCalibrator.getPoints()) {
+                splineb.addPoint(SplinePointInfo.newBuilder()
+                        .setRaw(point.getRaw())
+                        .setCalibrated(point.getCalibrated()));
+            }
+            calibratorInfob.setSplineCalibrator(splineb);
+        } else if (calibrator instanceof JavaExpressionCalibrator) {
+            calibratorInfob.setType("Java Expression");
+            JavaExpressionCalibrator javaCalibrator = (JavaExpressionCalibrator) calibrator;
+            JavaExpressionCalibratorInfo.Builder javab = JavaExpressionCalibratorInfo.newBuilder();
+            javab.setFormula(javaCalibrator.getFormula());
+            calibratorInfob.setJavaExpressionCalibrator(javab);
+        } else {
+            throw new IllegalArgumentException("Unexpected calibrator type " + calibrator.getClass());
+        }
+        return calibratorInfob.build();
     }
 
     public static AlarmInfo toAlarmInfo(NumericAlarm numericAlarm) {

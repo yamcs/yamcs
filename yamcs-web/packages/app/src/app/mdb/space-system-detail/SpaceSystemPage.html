@@ -1,0 +1,57 @@
+<ng-container *ngIf="instance$ | async as instance">
+  <app-mdb-page *ngIf="spaceSystem$ | async as spaceSystem">
+    <app-mdb-toolbar>
+      {{ qualifiedName }}
+    </app-mdb-toolbar>
+
+    <nav mat-tab-nav-bar>
+      <a mat-tab-link
+         routerLink="parameters"
+         routerLinkActive #rlb="routerLinkActive"
+         [active]="rlb.isActive"
+         [queryParams]="{instance: instance.name}">
+        Parameters
+      </a>
+
+      <a mat-tab-link
+         routerLink="containers"
+         routerLinkActive #rlc="routerLinkActive"
+         [active]="rlc.isActive"
+         [queryParams]="{instance: instance.name}">
+        Containers
+      </a>
+
+      <a mat-tab-link
+         routerLink="commands"
+         routerLinkActive #rld="routerLinkActive"
+         [active]="rld.isActive"
+         [queryParams]="{instance: instance.name}">
+        Commands
+      </a>
+
+      <a mat-tab-link
+         routerLink="algorithms"
+         routerLinkActive #rle="routerLinkActive"
+         [active]="rle.isActive"
+         [queryParams]="{instance: instance.name}">
+        Algorithms
+      </a>
+
+      <a mat-tab-link
+         routerLink="changelog"
+         routerLinkActive #rla="routerLinkActive"
+         [active]="rla.isActive"
+         [queryParams]="{instance: instance.name}">
+        Changelog
+      </a>
+    </nav>
+
+    <div class="tab-content-wrapper">
+      <div class="scrollpane">
+        <div class="panel-content">
+          <router-outlet></router-outlet>
+        </div>
+      </div>
+    </div>
+  </app-mdb-page>
+</ng-container>

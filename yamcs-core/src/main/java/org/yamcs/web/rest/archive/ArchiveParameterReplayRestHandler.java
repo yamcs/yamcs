@@ -82,8 +82,9 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
             rr.setStart(req.getQueryParameterAsDate("start"));
         }
         rr.setStop(req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime()));
+        int intervalCount = req.getQueryParameterAsInt("count", 500);
 
-        RestDownsampler sampler = new RestDownsampler(rr.getStop());
+        RestDownsampler sampler = new RestDownsampler(rr.getStop(), intervalCount);
 
         RestReplays.replay(instance, req.getAuthToken(), rr.build(), new RestReplayListener() {
             @Override

@@ -1,0 +1,16 @@
+<button [matMenuTriggerFor]="colMenu">
+  Columns <mat-icon class="icon12">arrow_drop_down</mat-icon>
+</button>
+
+<mat-menu #colMenu="matMenu" yPosition="below" class="ya-menu" [overlapTrigger]="false">
+  <ng-template matMenuContent>
+    <ng-container *ngFor="let column of columns">
+      <button *ngIf="!column.alwaysVisible"
+              mat-menu-item
+              (click)="toggleColumn(column)">
+        <mat-icon [style.visibility]="isVisible(column) ? 'visible' : 'hidden'">check</mat-icon>
+        {{ column.label }}
+      </button>
+    </ng-container>
+  </ng-template>
+</mat-menu>

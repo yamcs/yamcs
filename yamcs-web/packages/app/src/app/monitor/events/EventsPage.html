@@ -1,0 +1,156 @@
+<app-monitor-page>
+  <app-monitor-toolbar>
+    Events
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-icon-button
+            matTooltip="Jump to now"
+            color="primary"
+            (click)="jumpToNow()">
+      <mat-icon>refresh</mat-icon>
+    </button>
+
+    <button *ngIf="!(dataSource.streaming$ | async)"
+            mat-icon-button
+            matTooltip="Start streaming events"
+            color="primary"
+            (click)="startStreaming()">
+      <mat-icon>play_arrow</mat-icon>
+    </button>
+
+    <button *ngIf="dataSource.streaming$ | async"
+            mat-icon-button
+            matTooltip="Pause streaming events"
+            color="primary"
+            (click)="stopStreaming()">
+      <mat-icon>pause</mat-icon>
+    </button>
+  </app-monitor-toolbar>
+
+  <div class="panel-content" *ngIf="dataSource">
+    <form [formGroup]="filter">
+      <div fxLayout="row" class="filter-bar">
+        <div fxFlex class="vmiddle">
+          <input placeholder="Filter by text search"
+                 style="width: 300px; margin-right: 10px">
+
+          <app-column-chooser [columns]="columns"
+                              [displayedColumns]="displayedColumns"
+                              (change)="updateColumns($event)"></app-column-chooser>
+
+          <mat-icon class="icon14">access_time</mat-icon>&nbsp;
+          <select formControlName="interval">
+            <option value="PT1H">Last Hour</option>
+            <option value="PT6H">Last 6 Hours</option>
+            <option value="P1D">Last 24 Hours</option>
+            <option value="NO_LIMIT">No Limit</option>
+            <option value="CUSTOM">Custom</option>
+          </select>
+
+          <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
+            <input formControlName="customStart" type="datetime" style="width: 160px">
+            <input formControlName="customStop" type="datetime" style="width: 160px">
+            <button (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
+          </ng-container>
+
+          <ng-container *ngIf="filter.value['interval'] !== 'CUSTOM'">
+            <button (click)="jumpToNow()">
+              Jump to now
+            </button>
+          </ng-container>
+
+          &nbsp;&nbsp;
+          <app-dots *ngIf="dataSource.loading$ | async">
+          </app-dots>
+        </div>
+        <div fxFlex="150px" style="text-align: right">
+          <app-action-link icon="file_download"
+                          [link]="downloadURL$ | async">Download Data</app-action-link>
+        </div>
+      </div>
+    </form>
+
+    <div class="table-status" [ngSwitch]="appliedInterval">
+      <div class="message-zone">
+        <span *ngIf="dataSource.streaming$ | async">
+          Listening for events
+          <app-dots fontSize="16px" color="#000080"></app-dots>
+        </span>
+      </div>
+      <span *ngSwitchCase="'PT1H'">
+        Showing events from <b>the last hour</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+      <span *ngSwitchCase="'PT6H'">
+        Showing events from <b>the last 6 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+      <span *ngSwitchCase="'P1D'">
+        Showing events from <b>the last 24 hours</b> ending at <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+      <span *ngSwitchCase="'NO_LIMIT'">
+        Showing events from <b>all time</b>
+      </span>
+      <span *ngSwitchCase="'CUSTOM'">
+        Showing events from <b>{{ validStart | datetime }}</b> to <b>{{ validStop | datetime }}</b> (Mission Time)
+      </span>
+    </div>
+
+    <mat-table [dataSource]="dataSource" class="ya-data-table">
+      <ng-container cdkColumnDef="severity">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="50px"></mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="50px">
+          <app-event-severity [severity]="row.severity"></app-event-severity>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container cdkColumnDef="message">
+        <mat-header-cell *cdkHeaderCellDef>Message</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" style="white-space: pre">{{ row.message }}</mat-cell>
+      </ng-container>
+
+      <ng-container cdkColumnDef="type">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="150px">Type</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="150px">
+          {{ row.type }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container cdkColumnDef="source">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="150px">Source</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="150px">
+          {{ row.source }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container cdkColumnDef="gentime">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="200px">Generation Time</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="200px">
+          {{ row.generationTimeUTC | datetime }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container cdkColumnDef="rectime">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="200px">Reception Time</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="200px">
+          {{ row.receptionTimeUTC | datetime }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container cdkColumnDef="seqNumber">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="100px">Sequence Number</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="100px">
+          {{ row.seqNumber }}
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *cdkRowDef="let row; columns: displayedColumns;"
+               [@rowAnimation]="row.animate"
+               [ngClass]="row.severity"></mat-row>
+    </mat-table>
+
+    <mat-toolbar>
+      <span style="flex: 1 1 auto"></span>
+      <button mat-stroked-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
+      <span style="flex: 1 1 auto"></span>
+    </mat-toolbar>
+  </div>
+</app-monitor-page>

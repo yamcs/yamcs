@@ -1,0 +1,14 @@
+.graph-container {
+  overflow: hidden;
+}
+
+::ng-deep .annotation {
+  background-color: lightpink;
+  color: red !important;
+  opacity: 0.7;
+  border-color: red !important;
+}
+
+::ng-deep .dygraph-axis-label {
+  color: #aaa;
+}

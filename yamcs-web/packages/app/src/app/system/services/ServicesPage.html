@@ -1,0 +1,72 @@
+<app-system-page>
+  <app-system-toolbar>Services</app-system-toolbar>
+
+  <div class="panel-content">
+    <mat-table [dataSource]="dataSource"
+              class="ya-data-table"
+              matSort
+              matSortActive="name"
+              matSortDirection="asc"
+              matSortDisableClear>
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="350px">Name</mat-header-cell>
+        <mat-cell *matCellDef="let service" fxFlex="350px">{{ service.name }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="className">
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="350px">Class</mat-header-cell>
+        <mat-cell *matCellDef="let service" fxFlex="350px">{{ service.className }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="state">
+        <mat-header-cell *matHeaderCellDef fxFlex="32px"></mat-header-cell>
+        <mat-cell *matCellDef="let service" fxFlex="32px">
+          <mat-icon *ngIf="service.state === 'STARTING'"
+                    style="color: lightgreen"
+                    [matTooltip]="service.state">
+            check_circle
+          </mat-icon>
+          <mat-icon *ngIf="service.state === 'RUNNING'"
+                    style="color: green"
+                    [matTooltip]="service.state">
+            check_circle
+          </mat-icon>
+          <mat-icon *ngIf="service.state === 'STOPPING' || service.state === 'FAILED'"
+                    style="color: red"
+                    [matTooltip]="service.state">
+            highlight_off
+          </mat-icon>
+          <mat-icon *ngIf="service.state === 'TERMINATED'"
+                    style="color: lightgrey"
+                    [matTooltip]="service.state">
+            lens
+          </mat-icon>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let service">
+          <mat-menu #serviceMenu="matMenu" overlapTrigger="false" class="ya-menu">
+            <button mat-menu-item
+                    (click)="startService(service.name)"
+                    [disabled]="service.state !== 'TERMINATED'">
+              Start Service
+            </button>
+            <button mat-menu-item
+                    (click)="stopService(service.name)"
+                    [disabled]="service.state !== 'RUNNING'">
+              Stop Service
+            </button>
+          </mat-menu>
+          <button mat-button [matMenuTriggerFor]="serviceMenu">
+            <mat-icon>more_horiz</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </div>
+</app-system-page>

@@ -1,0 +1,42 @@
+<mat-table *ngIf="dataSource"
+           [dataSource]="dataSource"
+           class="ya-data-table"
+           matSort
+           matSortActive="packetName"
+           matSortDirection="asc"
+           matSortDisableClear>
+
+  <ng-container matColumnDef="packetName">
+    <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="300px">Packet Name</mat-header-cell>
+    <mat-cell *matCellDef="let tmstats" fxFlex="300px">
+      {{ tmstats.packetName }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="receivedPackets">
+    <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="70px">Count</mat-header-cell>
+    <mat-cell *matCellDef="let tmstats" fxFlex="70px" style="text-align: right; padding-right: 20px;">
+      {{ tmstats.receivedPackets | number }}
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="lastReceivedUTC">
+    <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="200px">Last Recv'd</mat-header-cell>
+    <mat-cell *matCellDef="let tmstats" fxFlex="200px">{{ tmstats.lastReceivedUTC | datetime }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="lastPacketTimeUTC">
+    <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="200px">Packet Time</mat-header-cell>
+    <mat-cell *matCellDef="let tmstats" fxFlex="200px">{{ tmstats.lastPacketTimeUTC | datetime }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="subscribedParameterCount">
+    <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="70px">Parameters</mat-header-cell>
+    <mat-cell *matCellDef="let tmstats" fxFlex="70px" style="text-align: right;">
+      {{ tmstats.subscribedParameterCount | number }}
+    </mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>

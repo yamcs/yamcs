@@ -1,0 +1,56 @@
+<app-system-page *ngIf="info$ | async as info">
+  <app-system-toolbar>Dashboard</app-system-toolbar>
+
+  <div class="panel-content">
+    <div fxLayout="row" fxLayoutGap="16px">
+      <div fxFlex="33.33" fxFill>
+        <mat-card>
+          <mat-card-subtitle>Server Info</mat-card-subtitle>
+          <mat-list dense>
+            <mat-list-item>
+              <h3 matLine>Yamcs Version</h3>
+              <p matLine>
+                {{ info.yamcsVersion }}
+              </p>
+            </mat-list-item>
+
+            <mat-list-item>
+              <h3 matLine>Server ID</h3>
+              <p matLine>
+                {{ info.serverId }}
+              </p>
+            </mat-list-item>
+          </mat-list>
+        </mat-card>
+      </div>
+
+      <div fxFlex="33.33">
+        <mat-card *ngIf="jvmMemoryUsedParameter$ | async as parameter">
+          <mat-card-subtitle>JVM Memory Used</mat-card-subtitle>
+          <div style="height: 300px">
+            <app-parameter-plot [dataSource]="jvmMemoryUsedDataSource" duration="PT20M">
+              <app-parameter-series [parameter]="parameter"
+                                    [grid]="true"
+                                    [axisLineWidth]="0">
+              </app-parameter-series>
+            </app-parameter-plot>
+          </div>
+        </mat-card>
+      </div>
+
+      <div fxFlex="33.33">
+        <mat-card *ngIf="jvmThreadCountParameter$ | async as parameter">
+          <mat-card-subtitle>JVM Thread Count</mat-card-subtitle>
+          <div style="height: 300px">
+            <app-parameter-plot [dataSource]="jvmThreadCountDataSource" duration="PT20M">
+              <app-parameter-series [parameter]="parameter"
+                                    [grid]="true"
+                                    [axisLineWidth]="0">
+              </app-parameter-series>
+            </app-parameter-plot>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</app-system-page>

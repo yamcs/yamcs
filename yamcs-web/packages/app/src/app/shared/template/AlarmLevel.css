@@ -1,0 +1,35 @@
+.inlimits, .watch, .warning, .distress, .critical, .severe {
+  display: inline-block;
+  height: 5px;
+  width: 29px;
+  position: relative;
+}
+
+.inlimits {
+  background: url('/assets/level-sprite.png') 0 0;
+}
+
+.watch {
+  background: url('/assets/level-sprite.png') 0 -5px;
+}
+
+.warning {
+  background: url('/assets/level-sprite.png') 0 -10px;
+}
+
+.distress {
+  background: url('/assets/level-sprite.png') 0 -15px;
+}
+
+.critical {
+  background: url('/assets/level-sprite.png') 0 -20px;
+}
+
+.severe {
+  background: url('/assets/level-sprite.png') 0 -25px;
+}
+
+.grayscale {
+  filter: grayscale(100%);
+  -webkit-filter: grayscale(100%);
+}

@@ -1,0 +1,15 @@
+.current-value-pane {
+  text-align: center;
+  padding: 12px;
+}
+
+.current-value-pane.has-alarm {
+  background-color: #feeef0;
+  border: 1px solid crimson;
+}
+
+.meter-size-constrainer {
+  display: inline-block;
+  width: 160px; /* about as large as the timestamp */
+  position: relative;
+}

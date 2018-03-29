@@ -1,0 +1,41 @@
+<app-system-page>
+  <app-system-toolbar>Clients</app-system-toolbar>
+
+  <div class="panel-content">
+    <mat-table [dataSource]="dataSource"
+               class="ya-data-table"
+               matSort
+               matSortActive="id"
+               matSortDirection="asc"
+               matSortDisableClear>
+
+      <ng-container matColumnDef="id">
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="100px">Id</mat-header-cell>
+        <mat-cell *matCellDef="let client" fxFlex="100px">{{ client.id }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="username">
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="100px">User</mat-header-cell>
+        <mat-cell *matCellDef="let client" fxFlex="100px">{{ client.username }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="applicationName">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Application</mat-header-cell>
+        <mat-cell *matCellDef="let client">{{ client.applicationName }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="processorName">
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="150px">Processor</mat-header-cell>
+        <mat-cell *matCellDef="let client" fxFlex="150px">{{ client.processorName }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="loginTime">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Login Time</mat-header-cell>
+        <mat-cell *matCellDef="let client">{{ client.loginTimeUTC | datetime }}</mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </div>
+</app-system-page>

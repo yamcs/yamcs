@@ -1,0 +1,37 @@
+<ng-container [ngSwitch]="severity">
+  <div *ngSwitchCase="'INFO'"
+        class="info"
+        matTooltip="Info"
+        [class.grayscale]="grayscale"></div>
+
+  <div *ngSwitchCase="'WATCH'"
+        class="watch"
+        matTooltip="Watch"
+        [class.grayscale]="grayscale"></div>
+
+  <div *ngSwitchCase="'WARNING'"
+        class="warning"
+        matTooltip="Warning"
+        [class.grayscale]="grayscale"></div>
+
+  <div *ngSwitchCase="'DISTRESS'"
+        class="distress"
+        matTooltip="Distress"
+        [class.grayscale]="grayscale"></div>
+
+  <div *ngSwitchCase="'CRITICAL'"
+        class="critical"
+        matTooltip="Critical"
+        [class.grayscale]="grayscale"></div>
+
+  <div *ngSwitchCase="'SEVERE'"
+        class="severe"
+        matTooltip="Severe"
+        [class.grayscale]="grayscale"></div>
+
+  <!-- Old state. Remove in future -->
+  <div *ngSwitchCase="'ERROR'"
+        class="error"
+        matTooltip="Error"
+        [class.grayscale]="grayscale"></div>
+</ng-container>

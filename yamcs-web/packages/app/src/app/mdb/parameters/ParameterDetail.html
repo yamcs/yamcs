@@ -1,0 +1,57 @@
+<div fxLayout="row">
+  <div fxFlex="none" class="current-value-pane">
+    <ng-container *ngIf="currentValue">
+      <span class="mat-display-1">
+        <app-expirable [pval]="currentValue" style="white-space: nowrap">
+          <app-alarm-level [level]="currentValue.monitoringResult"></app-alarm-level>
+          &nbsp;{{ currentValue.engValue | value }}
+          <span *ngIf="parameter.type?.unitSet">{{ parameter.type?.unitSet | units }}</span>
+        </app-expirable>
+      </span>
+      <br>
+      <div class="meter-size-constrainer">
+        <span style="font-size: smaller; white-space: nowrap">{{ currentValue?.generationTimeUTC | datetime }}</span>
+        <ng-container *ngIf="currentValue.alarmRange">
+          <br>
+          <app-severity-meter [pval]="currentValue"></app-severity-meter>
+        </ng-container>
+      </div>
+    </ng-container>
+    <span *ngIf="!currentValue" style="white-space: nowrap">---</span>
+  </div>
+  <div fxFlex>
+    <dl class="dl-horizontal no-lead no-trail">
+      <ng-container *ngFor="let alias of parameter.alias">
+        <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
+          <dt>Parameter</dt>
+          <dd>{{ alias.name }}</dd>
+
+          <dt>Space System</dt>
+          <dd>
+            <a [routerLink]="['/mdb/space-systems/', alias.namespace]"
+                [queryParams]="{instance: instance.name}"
+                class="ya-link">
+              {{ alias.namespace }}
+            </a>
+          </dd>
+        </ng-container>
+      </ng-container>
+
+      <ng-container *ngFor="let alias of parameter.alias">
+        <ng-container *ngIf="!parameter.qualifiedName.startsWith(alias.namespace)">
+          <dt>{{ alias.namespace }}</dt>
+          <dd>{{ alias.name }}</dd>
+        </ng-container>
+      </ng-container>
+
+      <dt>Description</dt>
+      <dd>{{ parameter.shortDescription || '-' }}</dd>
+
+      <dt>Type</dt>
+      <dd>{{ (parameter.type?.engType | titlecase) || '-' }}</dd>
+
+      <dt>Source</dt>
+      <dd>{{ (parameter.dataSource | titlecase) || '-' }}</dd>
+    </dl>
+  </div>
+</div>

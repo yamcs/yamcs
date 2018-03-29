@@ -1,0 +1,48 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "project": {
+    "name": "yamcs-web"
+  },
+  "apps": [
+    {
+      "deployUrl": "/_static/",
+      "root": "src",
+      "outDir": "dist",
+      "assets": [
+        "assets",
+        "favicon.ico"
+      ],
+      "index": "index.html",
+      "main": "main.ts",
+      "polyfills": "polyfills.ts",
+      "tsconfig": "tsconfig.app.json",
+      "prefix": "app",
+      "styles": [
+        "./styles/material-theme.scss",
+        "./styles/styles.css",
+        "../../displays/src/uss/font.css",
+        "../node_modules/dygraphs/dist/dygraph.css",
+        "../node_modules/material-design-icons/iconfont/material-icons.css",
+        "../node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
+      ],
+      "scripts": [
+        "../node_modules/fontfaceobserver/fontfaceobserver.standalone.js"
+      ],
+      "environmentSource": "environments/environment.ts",
+      "environments": {
+        "dev": "environments/environment.ts",
+        "prod": "environments/environment.prod.ts"
+      }
+    }
+  ],
+  "lint": [
+    {
+      "project": "src/tsconfig.app.json",
+      "exclude": "**/node_modules/**"
+    }
+  ],
+  "defaults": {
+    "styleExt": "css",
+    "component": {}
+  }
+}

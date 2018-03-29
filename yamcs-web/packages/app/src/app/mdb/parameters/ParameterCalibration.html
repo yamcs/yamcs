@@ -1,0 +1,26 @@
+<table yaDataTable *ngIf="parameter.type?.dataEncoding?.defaultCalibrator as defaultCalibrator; else noCalibrator">
+  <tr>
+    <th width="100">Calibrator</th>
+    <th width="100">Type</th>
+    <th width="200">Definition</th>
+  </tr>
+  <tr>
+    <td>default</td>
+    <td>{{ defaultCalibrator.type }}</td>
+    <td [ngSwitch]="defaultCalibrator.type">
+      <span *ngSwitchCase="'Polynomial'"
+            [innerHTML]="defaultCalibrator.polynomialCalibrator.coefficient | polynomial">
+      </span>
+      <span *ngSwitchCase="'Spline'">
+        {{ defaultCalibrator.splineCalibrator.point.length }} points
+      </span>
+      <span *ngSwitchCase="'Java Expression'">
+        {{ defaultCalibrator.javaExpressionCalibrator.formula }}
+      </span>
+      <span *ngSwitchDefault>-</span>
+    </td>
+  </tr>
+</table>
+<ng-template #noCalibrator>
+  This parameter does not have a calibrator.
+</ng-template>

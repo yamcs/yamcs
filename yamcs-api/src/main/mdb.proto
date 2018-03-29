@@ -60,12 +60,35 @@ message DataEncodingInfo {
   optional bool littleEndian = 2;
   optional int32 sizeInBits = 3;
   optional string encoding = 4;
-  optional string defaultCalibrator = 5;
+  optional CalibratorInfo defaultCalibrator = 6;
+}
+
+message CalibratorInfo {
+  optional string type = 1;
+  optional PolynomialCalibratorInfo polynomialCalibrator = 2;
+  optional SplineCalibratorInfo splineCalibrator = 3;
+  optional JavaExpressionCalibratorInfo javaExpressionCalibrator = 4;
+}
+
+message PolynomialCalibratorInfo {
+  repeated double coefficient = 1;
+}
+
+message SplineCalibratorInfo {
+  message SplinePointInfo {
+    optional double raw = 1;
+    optional double calibrated = 2;
+  }
+  repeated SplinePointInfo point = 1;
+}
+
+message JavaExpressionCalibratorInfo {
+  optional string formula = 1;
 }
 
 message EnumValue {
-    optional int64 value = 1;
-    optional string label = 2;
+  optional int64 value = 1;
+  optional string label = 2;
 }
 
 message ParameterTypeInfo {
@@ -95,6 +118,7 @@ message ArgumentTypeInfo {
     optional double rangeMin = 6;
     optional double rangeMax = 7;
 }
+
 message ArgumentInfo {
     optional string name = 1;
     optional string description = 2;
@@ -103,7 +127,6 @@ message ArgumentInfo {
     // repeated UnitInfo unitSet = 5;
     optional ArgumentTypeInfo type = 6;
 }
-
 
 message ArgumentAssignmentInfo {
   optional string name = 1;

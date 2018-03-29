@@ -958,6 +958,19 @@ public final class Alarms {
      * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
      */
     org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder getAcknowledgeInfoOrBuilder();
+
+    /**
+     * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+     */
+    boolean hasParameter();
+    /**
+     * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+     */
+    org.yamcs.protobuf.Mdb.ParameterInfo getParameter();
+    /**
+     * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+     */
+    org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder();
   }
   /**
    * Protobuf type {@code alarms.AlarmData}
@@ -1082,6 +1095,19 @@ public final class Alarms {
                 acknowledgeInfo_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000040;
+              break;
+            }
+            case 66: {
+              org.yamcs.protobuf.Mdb.ParameterInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000080) == 0x00000080)) {
+                subBuilder = parameter_.toBuilder();
+              }
+              parameter_ = input.readMessage(org.yamcs.protobuf.Mdb.ParameterInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(parameter_);
+                parameter_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000080;
               break;
             }
           }
@@ -1419,6 +1445,27 @@ public final class Alarms {
       return acknowledgeInfo_;
     }
 
+    public static final int PARAMETER_FIELD_NUMBER = 8;
+    private org.yamcs.protobuf.Mdb.ParameterInfo parameter_;
+    /**
+     * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+     */
+    public boolean hasParameter() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ParameterInfo getParameter() {
+      return parameter_;
+    }
+    /**
+     * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder() {
+      return parameter_;
+    }
+
     private void initFields() {
       seqNum_ = 0;
       type_ = org.yamcs.protobuf.Alarms.AlarmData.Type.ACTIVE;
@@ -1427,6 +1474,7 @@ public final class Alarms {
       currentValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
       violations_ = 0;
       acknowledgeInfo_ = org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance();
+      parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -1448,6 +1496,12 @@ public final class Alarms {
       }
       if (hasCurrentValue()) {
         if (!getCurrentValue().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      if (hasParameter()) {
+        if (!getParameter().isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -1479,6 +1533,9 @@ public final class Alarms {
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         output.writeMessage(7, acknowledgeInfo_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeMessage(8, parameter_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -1516,6 +1573,10 @@ public final class Alarms {
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(7, acknowledgeInfo_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(8, parameter_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1630,6 +1691,7 @@ public final class Alarms {
           getMostSevereValueFieldBuilder();
           getCurrentValueFieldBuilder();
           getAcknowledgeInfoFieldBuilder();
+          getParameterFieldBuilder();
         }
       }
       private static Builder create() {
@@ -1668,6 +1730,12 @@ public final class Alarms {
           acknowledgeInfoBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000040);
+        if (parameterBuilder_ == null) {
+          parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
+        } else {
+          parameterBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
 
@@ -1740,6 +1808,14 @@ public final class Alarms {
         } else {
           result.acknowledgeInfo_ = acknowledgeInfoBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        if (parameterBuilder_ == null) {
+          result.parameter_ = parameter_;
+        } else {
+          result.parameter_ = parameterBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1777,6 +1853,9 @@ public final class Alarms {
         if (other.hasAcknowledgeInfo()) {
           mergeAcknowledgeInfo(other.getAcknowledgeInfo());
         }
+        if (other.hasParameter()) {
+          mergeParameter(other.getParameter());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1796,6 +1875,12 @@ public final class Alarms {
         }
         if (hasCurrentValue()) {
           if (!getCurrentValue().isInitialized()) {
+            
+            return false;
+          }
+        }
+        if (hasParameter()) {
+          if (!getParameter().isInitialized()) {
             
             return false;
           }
@@ -2385,6 +2470,122 @@ public final class Alarms {
         return acknowledgeInfoBuilder_;
       }
 
+      private org.yamcs.protobuf.Mdb.ParameterInfo parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> parameterBuilder_;
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+       */
+      public boolean hasParameter() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfo getParameter() {
+        if (parameterBuilder_ == null) {
+          return parameter_;
+        } else {
+          return parameterBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+       */
+      public Builder setParameter(org.yamcs.protobuf.Mdb.ParameterInfo value) {
+        if (parameterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          parameter_ = value;
+          onChanged();
+        } else {
+          parameterBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000080;
+        return this;
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+       */
+      public Builder setParameter(
+          org.yamcs.protobuf.Mdb.ParameterInfo.Builder builderForValue) {
+        if (parameterBuilder_ == null) {
+          parameter_ = builderForValue.build();
+          onChanged();
+        } else {
+          parameterBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000080;
+        return this;
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+       */
+      public Builder mergeParameter(org.yamcs.protobuf.Mdb.ParameterInfo value) {
+        if (parameterBuilder_ == null) {
+          if (((bitField0_ & 0x00000080) == 0x00000080) &&
+              parameter_ != org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance()) {
+            parameter_ =
+              org.yamcs.protobuf.Mdb.ParameterInfo.newBuilder(parameter_).mergeFrom(value).buildPartial();
+          } else {
+            parameter_ = value;
+          }
+          onChanged();
+        } else {
+          parameterBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000080;
+        return this;
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+       */
+      public Builder clearParameter() {
+        if (parameterBuilder_ == null) {
+          parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
+          onChanged();
+        } else {
+          parameterBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000080);
+        return this;
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfo.Builder getParameterBuilder() {
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return getParameterFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder() {
+        if (parameterBuilder_ != null) {
+          return parameterBuilder_.getMessageOrBuilder();
+        } else {
+          return parameter_;
+        }
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 8;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> 
+          getParameterFieldBuilder() {
+        if (parameterBuilder_ == null) {
+          parameterBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder>(
+                  getParameter(),
+                  getParentForChildren(),
+                  isClean());
+          parameter_ = null;
+        }
+        return parameterBuilder_;
+      }
+
       // @@protoc_insertion_point(builder_scope:alarms.AlarmData)
     }
 
@@ -2415,21 +2616,22 @@ public final class Alarms {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\014alarms.proto\022\006alarms\032\014pvalue.proto\"z\n\017" +
-      "AcknowledgeInfo\022\026\n\016acknowledgedBy\030\001 \001(\t\022" +
-      "\032\n\022acknowledgeMessage\030\002 \001(\t\022\027\n\017acknowled" +
-      "geTime\030\003 \001(\003\022\032\n\022acknowledgeTimeUTC\030\004 \001(\t" +
-      "\"\200\003\n\tAlarmData\022\016\n\006seqNum\030\001 \001(\r\022$\n\004type\030\002" +
-      " \001(\0162\026.alarms.AlarmData.Type\022,\n\014triggerV" +
-      "alue\030\003 \001(\0132\026.pvalue.ParameterValue\022/\n\017mo" +
-      "stSevereValue\030\004 \001(\0132\026.pvalue.ParameterVa" +
-      "lue\022,\n\014currentValue\030\005 \001(\0132\026.pvalue.Param" +
-      "eterValue\022\022\n\nviolations\030\006 \001(\r\0220\n\017acknowl",
-      "edgeInfo\030\007 \001(\0132\027.alarms.AcknowledgeInfo\"" +
-      "j\n\004Type\022\n\n\006ACTIVE\020\001\022\r\n\tTRIGGERED\020\002\022\026\n\022SE" +
-      "VERITY_INCREASED\020\003\022\020\n\014PVAL_UPDATED\020\004\022\020\n\014" +
-      "ACKNOWLEDGED\020\005\022\013\n\007CLEARED\020\006B\024\n\022org.yamcs" +
-      ".protobuf"
+      "\n\014alarms.proto\022\006alarms\032\tmdb.proto\032\014pvalu" +
+      "e.proto\"z\n\017AcknowledgeInfo\022\026\n\016acknowledg" +
+      "edBy\030\001 \001(\t\022\032\n\022acknowledgeMessage\030\002 \001(\t\022\027" +
+      "\n\017acknowledgeTime\030\003 \001(\003\022\032\n\022acknowledgeTi" +
+      "meUTC\030\004 \001(\t\"\247\003\n\tAlarmData\022\016\n\006seqNum\030\001 \001(" +
+      "\r\022$\n\004type\030\002 \001(\0162\026.alarms.AlarmData.Type\022" +
+      ",\n\014triggerValue\030\003 \001(\0132\026.pvalue.Parameter" +
+      "Value\022/\n\017mostSevereValue\030\004 \001(\0132\026.pvalue." +
+      "ParameterValue\022,\n\014currentValue\030\005 \001(\0132\026.p" +
+      "value.ParameterValue\022\022\n\nviolations\030\006 \001(\r",
+      "\0220\n\017acknowledgeInfo\030\007 \001(\0132\027.alarms.Ackno" +
+      "wledgeInfo\022%\n\tparameter\030\010 \001(\0132\022.mdb.Para" +
+      "meterInfo\"j\n\004Type\022\n\n\006ACTIVE\020\001\022\r\n\tTRIGGER" +
+      "ED\020\002\022\026\n\022SEVERITY_INCREASED\020\003\022\020\n\014PVAL_UPD" +
+      "ATED\020\004\022\020\n\014ACKNOWLEDGED\020\005\022\013\n\007CLEARED\020\006B\024\n" +
+      "\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -2442,6 +2644,7 @@ public final class Alarms {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          org.yamcs.protobuf.Mdb.getDescriptor(),
           org.yamcs.protobuf.Pvalue.getDescriptor(),
         }, assigner);
     internal_static_alarms_AcknowledgeInfo_descriptor =
@@ -2455,7 +2658,8 @@ public final class Alarms {
     internal_static_alarms_AlarmData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_alarms_AlarmData_descriptor,
-        new java.lang.String[] { "SeqNum", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "AcknowledgeInfo", });
+        new java.lang.String[] { "SeqNum", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "AcknowledgeInfo", "Parameter", });
+    org.yamcs.protobuf.Mdb.getDescriptor();
     org.yamcs.protobuf.Pvalue.getDescriptor();
   }
 

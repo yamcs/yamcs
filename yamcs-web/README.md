@@ -1,7 +1,14 @@
-# Yamcs Web
+## Prerequisites
 
-Run `npm run build` to build the project once. The build artifacts will be stored `dist/`.
+* yarn
 
-For development you want to use the watch mode:
 
-    npm run watch
+## Build
+
+Prepare development environment:
+
+    yarn install
+
+Build all packages:
+
+    yarn build

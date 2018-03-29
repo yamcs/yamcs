@@ -16,24 +16,30 @@ import org.yamcs.web.HttpException;
 import io.netty.buffer.ByteBufOutputStream;
 
 /**
- * Facilitates working with chunked csv transfer of parameter data.
- * Wrap every ByteBufOutputStream with a ParameterFormatter
+ * Facilitates working with chunked csv transfer of parameter data. Wrap every ByteBufOutputStream with a
+ * ParameterFormatter
  */
 public class ParameterReplayToChunkedCSVEncoder extends ParameterReplayToChunkedTransferEncoder {
-    
+
     private ParameterFormatter formatter;
     private boolean addRaw;
     private boolean addMonitoring;
-    
-    public ParameterReplayToChunkedCSVEncoder(RestRequest req, List<NamedObjectId> idList, boolean addRaw, boolean addMonitoring) throws HttpException {
-        super(req, MediaType.CSV, idList);
+
+    public ParameterReplayToChunkedCSVEncoder(RestRequest req, List<NamedObjectId> idList, boolean addRaw,
+            boolean addMonitoring) throws HttpException {
+        this(req, idList, addRaw, addMonitoring, null);
+    }
+
+    public ParameterReplayToChunkedCSVEncoder(RestRequest req, List<NamedObjectId> idList, boolean addRaw,
+            boolean addMonitoring, String filename) throws HttpException {
+        super(req, MediaType.CSV, idList, filename);
         this.addRaw = addRaw;
         this.addMonitoring = addMonitoring;
 
         resetBuffer();
         formatter.setWriteHeader(true);
     }
-    
+
     @Override
     protected void resetBuffer() {
         super.resetBuffer();
@@ -43,16 +49,16 @@ public class ParameterReplayToChunkedCSVEncoder extends ParameterReplayToChunked
         formatter.setPrintRaw(addRaw);
         formatter.setPrintMonitoring(addMonitoring);
     }
-    
+
     @Override
     public void processParameterData(List<ParameterValueWithId> params, ByteBufOutputStream bufOut) throws IOException {
         List<ParameterValue> pvlist = new ArrayList<>();
-        for(ParameterValueWithId pvalid: params) {
+        for (ParameterValueWithId pvalid : params) {
             pvlist.add(pvalid.toGbpParameterValue());
         }
         formatter.writeParameters(pvlist);
     }
-    
+
     @Override
     protected void closeBufferOutputStream() throws IOException {
         formatter.close();

@@ -1,0 +1,45 @@
+<mat-table *ngIf="dataSource"
+            class="ya-data-table"
+            [dataSource]="dataSource">
+
+  <ng-container matColumnDef="severity">
+    <mat-header-cell *matHeaderCellDef fxFlex="80px">Severity</mat-header-cell>
+    <mat-cell *matCellDef="let pval" fxFlex="80px">
+      <app-alarm-level *ngIf="pval.monitoringResult" [level]="pval.monitoringResult"></app-alarm-level>
+      <span *ngIf="!pval.monitoringResult">-</span>
+    </mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="generationTimeUTC">
+    <mat-header-cell *matHeaderCellDef fxFlex="200px">Generation Time</mat-header-cell>
+    <mat-cell *matCellDef="let pval" fxFlex="200px">{{ (pval.generationTimeUTC | datetime) || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="receptionTimeUTC">
+    <mat-header-cell *matHeaderCellDef fxFlex="200px">Reception Time</mat-header-cell>
+    <mat-cell *matCellDef="let pval" fxFlex="200px">{{ (pval.acquisitionTimeUTC | datetime) || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="rawValue">
+    <mat-header-cell *matHeaderCellDef fxFlex="200px">Raw</mat-header-cell>
+    <mat-cell *matCellDef="let pval" fxFlex="200px">{{ (pval.rawValue | value) || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="engValue">
+    <mat-header-cell *matHeaderCellDef fxFlex="200px">Eng</mat-header-cell>
+    <mat-cell *matCellDef="let pval" fxFlex="200px">{{ (pval.engValue | value) || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="rangeCondition">
+    <mat-header-cell *matHeaderCellDef fxFlex="150px">Range Condition</mat-header-cell>
+    <mat-cell *matCellDef="let pval" fxFlex="150px">{{ pval.rangeCondition || '-' }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="acquisitionStatus">
+    <mat-header-cell *matHeaderCellDef fxFlex="150px">Acquisition Status</mat-header-cell>
+    <mat-cell *matCellDef="let pval" fxFlex="150px">{{ pval.acquisitionStatus || '-' }}</mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>
