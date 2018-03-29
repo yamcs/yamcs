@@ -34,6 +34,7 @@ import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.IntArray;
+import org.yamcs.utils.MutableLong;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
@@ -330,10 +331,10 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
             @Override
             public void accept(ParameterIdValueList pidvList) {
-                lastParameterTime.l = pidvList.getValues().get(0).getGenerationTime();
+                lastParameterTime.setLong(pidvList.getValues().get(0).getGenerationTime());
                 if (first && !mpvr.isAscending() && (pcache != null)) { // retrieve data from cache first
                     first = false;
-                    sendFromCache(p, id, pcache, false, lastParameterTime.l, mpvr.getStop(), replayListener);
+                    sendFromCache(p, id, pcache, false, lastParameterTime.getLong(), mpvr.getStop(), replayListener);
                 }
                 ParameterValue pv = pidvList.getValues().get(0);
                 replayListener.update(new ParameterValueWithId(pv, id));
@@ -348,10 +349,10 @@ public class ArchiveParameterRestHandler extends RestHandler {
         // now add some data from cache
         if (pcache != null) {
             if (mpvr.isAscending()) {
-                long start = (lastParameterTime.l == TimeEncoding.INVALID_INSTANT) ? mpvr.getStart() - 1
-                        : lastParameterTime.l;
+                long start = (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) ? mpvr.getStart() - 1
+                        : lastParameterTime.getLong();
                 sendFromCache(p, id, pcache, true, start, mpvr.getStop(), replayListener);
-            } else if (lastParameterTime.l == TimeEncoding.INVALID_INSTANT) { // no data retrieved from archive, but
+            } else if (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) { // no data retrieved from archive, but
                                                                               // maybe there is still something in the
                                                                               // cache to send
                 sendFromCache(p, id, pcache, false, mpvr.getStart(), mpvr.getStop(), replayListener);
@@ -435,14 +436,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         } else {
             throw new BadRequestException(
                     "Bad value for parameter 'source'; valid values are: 'ParameterArchive' or 'replay'");
-        }
-    }
-
-    private class MutableLong {
-        long l;
-
-        public MutableLong(long l) {
-            this.l = l;
         }
     }
 }
