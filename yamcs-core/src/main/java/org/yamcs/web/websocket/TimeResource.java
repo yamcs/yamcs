@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,10 @@ public class TimeResource extends AbstractWebSocketResource {
     private static final Logger log = LoggerFactory.getLogger(TimeResource.class);
     public static final String RESOURCE_NAME = "time";
     public static final String OP_subscribe = "subscribe";
+    public static final String OP_unsubscribe = "unsubscribe";
     private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+
+    private AtomicBoolean subscribed = new AtomicBoolean(false);
 
     private ScheduledFuture<?> future = null;
 
@@ -30,6 +34,9 @@ public class TimeResource extends AbstractWebSocketResource {
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return processSubscribeRequest(ctx, decoder);
+        case OP_unsubscribe:
+            doUnsubscribe();
+            return WebSocketReply.ack(ctx.getRequestId());
         default:
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
         }
@@ -37,25 +44,32 @@ public class TimeResource extends AbstractWebSocketResource {
 
     private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
-        future = timer.scheduleAtFixedRate(() -> {
-            try {
-                long currentTime = processor.getCurrentTime();
-                TimeInfo ti = TimeInfo.newBuilder()
-                        .setCurrentTime(currentTime)
-                        .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
-                        .build();
-                wsHandler.sendData(ProtoDataType.TIME_INFO, ti);
-            } catch (IOException e) {
-                log.debug("Could not send time info data", e);
-            }
-        }, 1, 1, TimeUnit.SECONDS);
+        if (!subscribed.getAndSet(true)) {
+            future = timer.scheduleAtFixedRate(() -> {
+                try {
+                    long currentTime = processor.getCurrentTime();
+                    TimeInfo ti = TimeInfo.newBuilder()
+                            .setCurrentTime(currentTime)
+                            .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
+                            .build();
+                    wsHandler.sendData(ProtoDataType.TIME_INFO, ti);
+                } catch (IOException e) {
+                    log.debug("Could not send time info data", e);
+                }
+            }, 1, 1, TimeUnit.SECONDS);
+        }
         return WebSocketReply.ack(ctx.getRequestId());
+    }
+
+    private void doUnsubscribe() {
+        if (future != null) {
+            future.cancel(false);
+        }
+        subscribed.set(false);
     }
 
     @Override
     public void quit() {
-        if (future != null) {
-            future.cancel(false);
-        }
+        doUnsubscribe();
     }
 }
