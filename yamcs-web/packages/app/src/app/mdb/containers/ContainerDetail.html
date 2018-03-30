@@ -1,13 +1,26 @@
 <dl class="dl-horizontal no-lead">
-  <dt>Container</dt>
-  <dd>{{ container.qualifiedName }}</dd>
+  <ng-container *ngFor="let alias of container.alias">
+    <ng-container *ngIf="container.qualifiedName.startsWith(alias.namespace)">
+      <dt>Container</dt>
+      <dd>{{ alias.name }}</dd>
 
-  <dt>Alias</dt>
-  <dd>
-    <ng-container *ngFor="let alias of container.alias">
-      {{ alias.name }} <small>(namespace: {{ alias.namespace }})</small><br>
+      <dt>Space System</dt>
+      <dd>
+        <a [routerLink]="['/mdb/space-systems/', alias.namespace]"
+            [queryParams]="{instance: instance.name}"
+            class="ya-link">
+          {{ alias.namespace }}
+        </a>
+      </dd>
     </ng-container>
-  </dd>
+  </ng-container>
+
+  <ng-container *ngFor="let alias of container.alias">
+    <ng-container *ngIf="!container.qualifiedName.startsWith(alias.namespace)">
+      <dt>{{ alias.namespace }}</dt>
+      <dd>{{ alias.name }}</dd>
+    </ng-container>
+  </ng-container>
 
   <dt>Short Description</dt>
   <dd>{{ container.shortDescription || '-' }}</dd>

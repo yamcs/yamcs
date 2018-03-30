@@ -38,7 +38,7 @@ export class DyDataSource {
 
   constructor(private yamcs: YamcsService, private qname: string) {
     this.realtimeSynchronizer = window.setInterval(() => {
-      if (this.plotBuffer.dirty) {
+      if (this.plotBuffer.dirty && !this.loading$.getValue()) {
         const plotData = this.plotBuffer.snapshot();
         this.data$.next({
           samples: plotData.samples,
@@ -168,6 +168,9 @@ export class DyDataSource {
       const t = new Date();
       t.setTime(Date.parse(pval.generationTimeUTC));
       if (pval.acquisitionStatus === 'EXPIRED') {
+        // We get the last received timestamp.
+        // Consider gap to be just after that
+        t.setTime(t.getTime() + 1);
         return [t, null]; // Display as gap
       } else if (pval.acquisitionStatus === 'ACQUIRED') {
         return [t, [value, value, value]];

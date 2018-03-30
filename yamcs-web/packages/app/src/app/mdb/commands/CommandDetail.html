@@ -1,13 +1,26 @@
 <dl class="dl-horizontal no-lead">
-  <dt>Command</dt>
-  <dd>{{ command.qualifiedName }}</dd>
+  <ng-container *ngFor="let alias of command.alias">
+    <ng-container *ngIf="command.qualifiedName.startsWith(alias.namespace)">
+      <dt>Command</dt>
+      <dd>{{ alias.name }}</dd>
 
-  <dt>Alias</dt>
-  <dd>
-    <ng-container *ngFor="let alias of command.alias">
-      {{ alias.name }} <small>(namespace: {{ alias.namespace }})</small><br>
+      <dt>Space System</dt>
+      <dd>
+        <a [routerLink]="['/mdb/space-systems/', alias.namespace]"
+            [queryParams]="{instance: instance.name}"
+            class="ya-link">
+          {{ alias.namespace }}
+        </a>
+      </dd>
     </ng-container>
-  </dd>
+  </ng-container>
+
+  <ng-container *ngFor="let alias of command.alias">
+    <ng-container *ngIf="!command.qualifiedName.startsWith(alias.namespace)">
+      <dt>{{ alias.namespace }}</dt>
+      <dd>{{ alias.name }}</dd>
+    </ng-container>
+  </ng-container>
 
   <dt>Short Description</dt>
   <dd>{{ command.shortDescription || '-' }}</dd>
@@ -49,7 +62,7 @@
       <tr *ngFor="let argument of command.argument">
         <td>{{ argument.name || '-' }}</td>
         <td>{{ argument.description || '-' }}</td>
-        <td>{{ argument.type || '-' }}</td>
+        <td>{{ argument.type?.engType || '-' }}</td>
         <td>{{ argument.initialValue || '-'}}</td>
       </tr>
     </table>
@@ -71,6 +84,8 @@
         <td>
           <ng-container *ngFor="let comparison of constraint.comparison">
             {{ comparison.parameter.qualifiedName }}
+            {{ comparison.operator | operator }}
+            {{ comparison.value }}
           </ng-container>
         </td>
         <td>{{ constraint.timeout || '-' }}</td>

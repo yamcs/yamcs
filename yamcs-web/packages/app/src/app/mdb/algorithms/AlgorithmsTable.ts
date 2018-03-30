@@ -36,7 +36,7 @@ export class AlgorithmsTable implements AfterViewInit {
     { id: 'shortDescription', label: 'Description' },
   ];
 
-  displayedColumns = ['name', 'language', 'scope', 'shortDescription'];
+  displayedColumns = ['name', 'language', 'scope'];
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;

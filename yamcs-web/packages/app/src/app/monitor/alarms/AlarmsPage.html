@@ -103,8 +103,11 @@
 
       <ng-template #empty>
         <app-empty-message *ngIf="!(dataSource.loading$ | async)">
-          <mat-icon style="color: green">check_circle</mat-icon>
-          All parameters normal.
+          <div class="vmiddle">
+            <mat-icon style="color: green">check_circle</mat-icon>
+            &nbsp;
+            All parameters normal.
+          </div>
         </app-empty-message>
       </ng-template>
     </div>
