@@ -17,7 +17,7 @@ export class AlgorithmPage {
     this.instance = yamcs.getInstance();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    this.algorithm$ = yamcs.getSelectedInstance().getAlgorithm(qualifiedName);
+    this.algorithm$ = yamcs.getInstanceClient().getAlgorithm(qualifiedName);
     this.algorithm$.then(algorithm => {
       title.setTitle(algorithm.name + ' - Yamcs');
     });

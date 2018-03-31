@@ -21,7 +21,7 @@ export class SpaceSystemPage {
 
   constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     this.qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    this.spaceSystem$ = yamcs.getSelectedInstance().getSpaceSystem(this.qualifiedName);
+    this.spaceSystem$ = yamcs.getInstanceClient().getSpaceSystem(this.qualifiedName);
     title.setTitle(this.qualifiedName + ' - Yamcs');
     this.instance = yamcs.getInstance();
   }

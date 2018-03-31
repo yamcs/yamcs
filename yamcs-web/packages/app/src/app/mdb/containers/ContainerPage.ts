@@ -17,7 +17,7 @@ export class ContainerPage {
     this.instance = yamcs.getInstance();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    this.container$ = yamcs.getSelectedInstance().getContainer(qualifiedName);
+    this.container$ = yamcs.getInstanceClient().getContainer(qualifiedName);
     this.container$.then(container => {
       title.setTitle(container.name + ' - Yamcs');
     });

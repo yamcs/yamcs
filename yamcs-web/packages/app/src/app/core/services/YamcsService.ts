@@ -34,11 +34,17 @@ export class YamcsService {
     return this.selectedInstance;
   }
 
+  /**
+   * Returns the currently active instance (if any).
+   */
   getInstance() {
     return this.instance$.getValue()!;
   }
 
-  getSelectedInstance() {
+  /**
+   * Returns the InstanceClient for the currently active instance (if any).
+   */
+  getInstanceClient() {
     return this.selectedInstance;
   }
 }

@@ -27,13 +27,13 @@ export class ProcessorsPage implements AfterViewInit, OnDestroy {
 
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Processors - Yamcs');
-    yamcs.getSelectedInstance().getProcessors().then(processors => {
+    yamcs.getInstanceClient().getProcessors().then(processors => {
       for (const processor of processors) {
         this.processProcessorEvent(processor);
       }
     });
 
-    yamcs.getSelectedInstance().getProcessorUpdates().then(response => {
+    yamcs.getInstanceClient().getProcessorUpdates().then(response => {
       this.processorSubscription = response.processor$.subscribe(processor => {
         this.processProcessorEvent(processor);
       });

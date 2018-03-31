@@ -19,6 +19,6 @@ export class SpaceSystemChangelogTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     this.qualifiedName = parent.paramMap.get('qualifiedName')!;
-    this.spaceSystem$ = yamcs.getSelectedInstance().getSpaceSystem(this.qualifiedName);
+    this.spaceSystem$ = yamcs.getInstanceClient().getSpaceSystem(this.qualifiedName);
   }
 }

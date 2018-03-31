@@ -74,7 +74,7 @@ export class DyDataSource {
     const loadStart = new Date(start.getTime() - delta);
     const loadStop = new Date(stop.getTime() + delta);
 
-    const instanceClient = this.yamcs.getSelectedInstance();
+    const instanceClient = this.yamcs.getInstanceClient();
     const loadPromise = Promise.all([
       instanceClient.getParameterSamples(this.qname, {
         start: loadStart.toISOString(),
@@ -102,7 +102,7 @@ export class DyDataSource {
   }
 
   connectRealtime() {
-    this.yamcs.getSelectedInstance().getParameterValueUpdates({
+    this.yamcs.getInstanceClient().getParameterValueUpdates({
       id: [{ name: this.qname }],
       sendFromCache: false,
       subscriptionId: -1,

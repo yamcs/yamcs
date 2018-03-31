@@ -50,7 +50,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
 
   constructor(private yamcs: YamcsService) {
     const instance = this.yamcs.getInstance();
-    // TODO should be simpler. yamcs.getSelectedInstance() is not yet updated when this triggers.
+    // TODO should be simpler. yamcs.getInstanceClient() is not yet updated when this triggers.
     const instanceClient = this.yamcs.yamcsClient.selectInstance(instance.name);
     instanceClient.getDisplayInfo().then(displayInfo => {
       this.displayInfo$.next(displayInfo);
@@ -108,7 +108,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   onDisplayFrameOpen(frame: DisplayFrame) {
     const ids = frame.getParameterIds();
     if (ids.length) {
-      this.yamcs.getSelectedInstance().getParameterValueUpdates({
+      this.yamcs.getInstanceClient().getParameterValueUpdates({
         id: ids,
         abortOnInvalid: false,
         sendFromCache: true,
@@ -173,7 +173,7 @@ class RemoteResourceResolver implements ResourceResolver {
   }
 
   retrieveXMLDisplayResource(path: string) {
-    const instance = this.yamcsService.getSelectedInstance().instance;
+    const instance = this.yamcsService.getInstanceClient().instance;
     const displayPath = `${instance}/displays/${path}`;
     return this.yamcsService.yamcsClient.getStaticXML(displayPath);
   }

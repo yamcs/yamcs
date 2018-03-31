@@ -20,7 +20,7 @@ export class SpaceSystemCommandsTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     this.qualifiedName = parent.paramMap.get('qualifiedName')!;
-    this.commands$ = yamcs.getSelectedInstance().getCommands({
+    this.commands$ = yamcs.getInstanceClient().getCommands({
       namespace: this.qualifiedName
     });
     this.instance = yamcs.getInstance();

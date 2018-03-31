@@ -17,6 +17,6 @@ export class TableColumnsTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     const name = parent.paramMap.get('name')!;
-    this.table$ = yamcs.getSelectedInstance().getTable(name);
+    this.table$ = yamcs.getInstanceClient().getTable(name);
   }
 }

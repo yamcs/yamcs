@@ -109,7 +109,7 @@ export class ParameterDataTab {
       dlOptions.stop = this.validStop.toISOString();
     }
 
-    const instanceClient = this.yamcs.getSelectedInstance();
+    const instanceClient = this.yamcs.getInstanceClient();
     this.dataSource.loadParameterValues(options).then(pvals => {
       const downloadURL = instanceClient.getParameterValuesDownloadURL(this.qualifiedName, dlOptions);
       this.downloadURL$.next(downloadURL);

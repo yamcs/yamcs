@@ -20,7 +20,7 @@ export class SpaceSystemAlgorithmsTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     this.qualifiedName = parent.paramMap.get('qualifiedName')!;
-    this.algorithms$ = yamcs.getSelectedInstance().getAlgorithms({
+    this.algorithms$ = yamcs.getInstanceClient().getAlgorithms({
       namespace: this.qualifiedName
     });
     this.instance = yamcs.getInstance();

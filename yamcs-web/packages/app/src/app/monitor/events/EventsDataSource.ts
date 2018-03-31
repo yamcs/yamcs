@@ -49,7 +49,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
    * be used for the next page (start/stop are inclusive).
    */
   private loadPage(options: GetEventsOptions) {
-    return this.yamcs.getSelectedInstance().getEvents(options).then(events => {
+    return this.yamcs.getInstanceClient().getEvents(options).then(events => {
       if (events.length > this.pageSize) {
         this.offscreenRecord = events.splice(events.length - 1, 1)[0];
       } else {
@@ -80,7 +80,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   }
 
   startStreaming() {
-    this.yamcs.getSelectedInstance().getEventUpdates().then(response => {
+    this.yamcs.getInstanceClient().getEventUpdates().then(response => {
       this.streaming$.next(true);
       this.realtimeSubscription = response.event$.subscribe(event => {
         if (!this.loading$.getValue()) {

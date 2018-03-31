@@ -17,7 +17,7 @@ export class CommandPage {
     this.instance = yamcs.getInstance();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    this.command$ = yamcs.getSelectedInstance().getCommand(qualifiedName);
+    this.command$ = yamcs.getInstanceClient().getCommand(qualifiedName);
     this.command$.then(command => {
       title.setTitle(command.name + ' - Yamcs');
     });

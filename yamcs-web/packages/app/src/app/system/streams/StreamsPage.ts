@@ -23,7 +23,7 @@ export class StreamsPage implements AfterViewInit {
 
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Streams - Yamcs');
-    yamcs.getSelectedInstance().getStreams().then(streams => {
+    yamcs.getInstanceClient().getStreams().then(streams => {
       this.dataSource.data = streams;
     });
     this.instance = yamcs.getInstance();

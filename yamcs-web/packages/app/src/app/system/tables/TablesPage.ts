@@ -23,7 +23,7 @@ export class TablesPage implements AfterViewInit {
 
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Tables - Yamcs');
-    yamcs.getSelectedInstance().getTables().then(tables => {
+    yamcs.getInstanceClient().getTables().then(tables => {
       this.dataSource.data = tables;
     });
     this.instance = yamcs.getInstance();

@@ -23,7 +23,7 @@ export class SpaceSystemsPage implements AfterViewInit {
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Space Systems - Yamcs');
     this.instance = yamcs.getInstance();
-    yamcs.getSelectedInstance().getSpaceSystems().then(spaceSystems => {
+    yamcs.getInstanceClient().getSpaceSystems().then(spaceSystems => {
       this.dataSource.data = spaceSystems;
     });
   }

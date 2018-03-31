@@ -140,7 +140,7 @@ export class EventsPage {
       dlOptions.stop = this.validStop.toISOString();
     }
 
-    const instanceClient = this.yamcs.getSelectedInstance();
+    const instanceClient = this.yamcs.getInstanceClient();
     this.dataSource.loadEvents(options).then(events => {
       const downloadURL = instanceClient.getEventsDownloadURL(dlOptions);
       this.downloadURL$.next(downloadURL);

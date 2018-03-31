@@ -17,7 +17,7 @@ export class ProcessorPage {
   constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
     title.setTitle(name + ' - Yamcs');
-    this.processor$ = yamcs.getSelectedInstance().getProcessor(name);
+    this.processor$ = yamcs.getInstanceClient().getProcessor(name);
     this.instance = yamcs.getInstance();
   }
 }

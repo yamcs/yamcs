@@ -31,12 +31,12 @@ export class ParameterPage implements OnDestroy {
     this.instance = yamcs.getInstance();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    yamcs.getSelectedInstance().getParameter(qualifiedName).then(parameter => {
+    yamcs.getInstanceClient().getParameter(qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
       this.updateTitle();
     });
 
-    yamcs.getSelectedInstance().getParameterValueUpdates({
+    yamcs.getInstanceClient().getParameterValueUpdates({
       id: [{ name: qualifiedName }],
       abortOnInvalid: false,
       sendFromCache: true,

@@ -30,14 +30,14 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.
-    this.yamcs.getSelectedInstance().getLinks().then(links => {
+    this.yamcs.getInstanceClient().getLinks().then(links => {
       for (const link of links) {
         this.linksByName[link.name] = link;
       }
       this.dataSource.data = Object.values(this.linksByName);
     });
 
-    this.yamcs.getSelectedInstance().getLinkUpdates().then(response => {
+    this.yamcs.getInstanceClient().getLinkUpdates().then(response => {
       this.linkSubscription = response.linkEvent$.subscribe(evt => {
         this.processLinkEvent(evt);
       });
@@ -60,11 +60,11 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   tableTrackerFn = (index: number, link: Link) => link.name;
 
   enableLink(name: string) {
-    this.yamcs.getSelectedInstance().enableLink(name);
+    this.yamcs.getInstanceClient().enableLink(name);
   }
 
   disableLink(name: string) {
-    this.yamcs.getSelectedInstance().disableLink(name);
+    this.yamcs.getInstanceClient().disableLink(name);
   }
 
   private processLinkEvent(evt: LinkEvent) {
