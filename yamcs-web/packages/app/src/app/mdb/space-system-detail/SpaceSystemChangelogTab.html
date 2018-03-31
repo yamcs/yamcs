@@ -1,18 +1,45 @@
 <ng-container *ngIf="spaceSystem$ | async as spaceSystem">
-  <table yaDataTable *ngIf="spaceSystem.history; else empty">
-    <tr>
-      <th>Version</th>
-      <th>Date</th>
-      <th>Message</th>
-      <th>Author</th>
-    </tr>
-    <tr *ngFor="let history of spaceSystem.history">
-      <td>{{ history.version }}</td>
-      <td width="1" style="white-space: nowrap">{{ history.date }}</td>
-      <td style="white-space: pre">{{ history.message }}</td>
-      <td>{{ history.author }}</td>
-    </tr>
-  </table>
+  <ng-container *ngIf="spaceSystem.history; else empty">
+    <div style="margin-bottom: 12px">
+      <input placeholder="Filter changelog"
+            style="width: 400px"
+            (keyup)="applyFilter($event.target.value)">
+    </div>
+
+    <mat-table [dataSource]="historyDataSource" class="ya-data-table">
+      <ng-container cdkColumnDef="version">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="100px">Version</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="100px">
+          {{ row.version || '-' }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container cdkColumnDef="date">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="150px">Date</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="150px">
+          {{ row.date || '-' }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container cdkColumnDef="message">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="400px">Message</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="400px">
+          {{ row.message || '-' }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container cdkColumnDef="author">
+        <mat-header-cell *cdkHeaderCellDef fxFlex="100px">Author</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" fxFlex="100px">
+          {{ row.author || '-' }}
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *cdkRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </ng-container>
+
   <ng-template #empty>
     <app-empty-message>
       Empty changelog.

@@ -55,8 +55,7 @@
       <a [routerLink]="['/mdb/parameters/', criteria.parameter.qualifiedName]"
          [queryParams]="{instance: instance.name}"
          class="ya-link">
-        {{ criteria.parameter.qualifiedName }}
-      </a>
+        {{ criteria.parameter.qualifiedName }}</a>
       {{ criteria.operator | operator }}
       {{ criteria.value }}
       <br>
