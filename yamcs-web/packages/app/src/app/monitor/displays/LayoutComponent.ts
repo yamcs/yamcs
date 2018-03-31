@@ -49,10 +49,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   private layout: Layout;
 
   constructor(private yamcs: YamcsService) {
-    const instance = this.yamcs.getInstance();
-    // TODO should be simpler. yamcs.getInstanceClient() is not yet updated when this triggers.
-    const instanceClient = this.yamcs.yamcsClient.selectInstance(instance.name);
-    instanceClient.getDisplayInfo().then(displayInfo => {
+    this.yamcs.getInstanceClient().getDisplayInfo().then(displayInfo => {
       this.displayInfo$.next(displayInfo);
     });
     this.resourceResolver = new RemoteResourceResolver(yamcs);

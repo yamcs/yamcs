@@ -30,7 +30,7 @@ export class YamcsService {
     }
 
     this.instance$.next(instance);
-    this.selectedInstance = this.yamcsClient.selectInstance(instance.name);
+    this.selectedInstance = this.yamcsClient.createInstanceClient(instance.name);
     return this.selectedInstance;
   }
 
