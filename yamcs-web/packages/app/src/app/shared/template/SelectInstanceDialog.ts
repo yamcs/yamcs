@@ -27,12 +27,16 @@ export class SelectInstanceDialog implements AfterViewInit {
 
   ngAfterViewInit() {
     const instance = this.yamcs.getInstance();
-    this.selectionList.options.forEach(option => {
-      if (option.value === instance.name) {
-        option.selected = true;
-      }
+
+    this.instances$.then(instances => {
+      this.changeDetector.detectChanges();
+      this.selectionList.options.forEach(option => {
+        if (option.value === instance.name) {
+          option.selected = true;
+        }
+      });
+      this.changeDetector.detectChanges();
     });
-    this.changeDetector.detectChanges();
 
     this.selectionList.selectionChange.subscribe((change: MatSelectionListChange) => {
       this.selectionList.deselectAll();

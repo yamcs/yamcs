@@ -1,5 +1,5 @@
 import { Svg, Rect, Tag, Defs, Pattern } from '../tags';
-import { ResourceResolver } from '../ResourceResolver';
+import { DisplayCommunicator } from '../DisplayCommunicator';
 import { DisplayFrame } from '../DisplayFrame';
 import { ParameterValue, NamedObjectId } from '@yamcs/client';
 import { Display } from '../Display';
@@ -19,7 +19,7 @@ export class OpiDisplay implements Display {
   constructor(
     readonly frame: DisplayFrame,
     private targetEl: HTMLDivElement,
-    readonly resourceResolver: ResourceResolver,
+    readonly displayCommunicator: DisplayCommunicator,
   ) {
     this.container = document.createElement('div');
     this.container.setAttribute('style', 'position: relative');
@@ -27,7 +27,7 @@ export class OpiDisplay implements Display {
   }
 
   parseAndDraw(id: string, grid = false) {
-    return this.resourceResolver.retrieveXMLDisplayResource(id).then(doc => {
+    return this.displayCommunicator.retrieveXMLDisplayResource(id).then(doc => {
       const displayEl = doc.getElementsByTagName('display')[0];
 
       this.title = utils.parseStringChild(displayEl, 'name', 'Untitled');

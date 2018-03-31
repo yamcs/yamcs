@@ -3,7 +3,7 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { Image } from '../../tags';
 import { DataSourceBinding } from '../DataSourceBinding';
-import { ResourceResolver } from '../../ResourceResolver';
+import { DisplayCommunicator } from '../../DisplayCommunicator';
 
 export class Symbol extends AbstractWidget {
 
@@ -12,7 +12,7 @@ export class Symbol extends AbstractWidget {
   private symbol: SymbolDefinition;
 
   private libraries: { [key: string]: SymbolLibrary };
-  resolver: ResourceResolver;
+  displayCommunicator: DisplayCommunicator;
 
   valueBinding: DataSourceBinding;
 
@@ -23,7 +23,7 @@ export class Symbol extends AbstractWidget {
     this.libraries = {};
     this.libraryName = utils.parseStringChild(this.node, 'LibraryName');
     this.symbolName = utils.parseStringChild(this.node, 'SymbolName');
-    this.resolver = this.display.resourceResolver;
+    this.displayCommunicator = this.display.displayCommunicator;
 
     return new Image({
       id: this.id,
@@ -40,7 +40,7 @@ export class Symbol extends AbstractWidget {
     const lib = new SymbolLibrary();
     this.libraries[libraryName] = lib;
 
-    return this.resolver.retrieveXML(`symlib/${libraryName}.xml`).then(doc => {
+    return this.displayCommunicator.retrieveXML(`symlib/${libraryName}.xml`).then(doc => {
       lib.parse(doc);
     });
   }
@@ -57,7 +57,7 @@ export class Symbol extends AbstractWidget {
           console.warn(`Cannot find symbol ${this.symbolName} in library ${this.libraryName}`);
         } else {
           this.symbol = symbol;
-          const href = this.resolver.resolvePath(`symlib/images/${symbol.defaultImage}`);
+          const href = this.displayCommunicator.resolvePath(`symlib/images/${symbol.defaultImage}`);
           this.symbolEl.setAttribute('href', href);
         }
       });
@@ -78,7 +78,7 @@ export class Symbol extends AbstractWidget {
     if (this.valueBinding && this.valueBinding.sample) {
       const value = this.valueBinding.value;
       const file = this.symbol.states[value] || this.symbol.defaultImage;
-      this.symbolEl.setAttribute('href', this.resolver.resolvePath(`symlib/images/${file}`));
+      this.symbolEl.setAttribute('href', this.displayCommunicator.resolvePath(`symlib/images/${file}`));
     }
   }
 }

@@ -11,16 +11,18 @@ import {
 } from '@angular/core';
 import {
   Coordinates,
+  DisplayCommunicator,
   DisplayFrame,
   Layout,
   LayoutListener,
   LayoutStateListener,
   LayoutState,
-  ResourceResolver,
 } from '@yamcs/displays';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DisplayFolder } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { MyDisplayCommunicator } from './MyDisplayCommunicator';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-layout-component',
@@ -45,14 +47,14 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   showNavigator$: BehaviorSubject<boolean>;
   displayInfo$ = new BehaviorSubject<DisplayFolder | null>(null);
 
-  private resourceResolver: ResourceResolver;
+  private displayCommunicator: DisplayCommunicator;
   private layout: Layout;
 
-  constructor(private yamcs: YamcsService) {
+  constructor(private yamcs: YamcsService, router: Router) {
     this.yamcs.getInstanceClient().getDisplayInfo().then(displayInfo => {
       this.displayInfo$.next(displayInfo);
     });
-    this.resourceResolver = new RemoteResourceResolver(yamcs);
+    this.displayCommunicator = new MyDisplayCommunicator(yamcs, router);
   }
 
   ngOnInit() {
@@ -67,7 +69,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
       targetEl.innerHTML = '';
     }
 
-    this.layout = new Layout(targetEl, this.resourceResolver);
+    this.layout = new Layout(targetEl, this.displayCommunicator);
     this.layout.layoutListeners.add(this);
     if (this.layoutState) {
       this.restoreState(this.layoutState).then(() => {
@@ -145,33 +147,5 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
 
   toggleNavigator() {
     this.showNavigator$.next(!this.showNavigator$.getValue());
-  }
-}
-
-/**
- * Resolves resources by fetching them from the server as
- * a static file.
- */
-class RemoteResourceResolver implements ResourceResolver {
-
-  constructor(private yamcsService: YamcsService) {
-  }
-
-  resolvePath(path: string) {
-    return `${this.yamcsService.yamcsClient.staticUrl}/${path}`;
-  }
-
-  retrieveText(path: string) {
-    return this.yamcsService.yamcsClient.getStaticText(path);
-  }
-
-  retrieveXML(path: string) {
-    return this.yamcsService.yamcsClient.getStaticXML(path);
-  }
-
-  retrieveXMLDisplayResource(path: string) {
-    const instance = this.yamcsService.getInstanceClient().instance;
-    const displayPath = `${instance}/displays/${path}`;
-    return this.yamcsService.yamcsClient.getStaticXML(displayPath);
   }
 }

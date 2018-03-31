@@ -35,6 +35,7 @@ import {
   MissionDatabase,
   Parameter,
   SpaceSystem,
+  NamedObjectId,
 } from './types/mdb';
 
 import {
@@ -342,6 +343,18 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/parameters${qualifiedName}`;
     const response = await fetch(url).then(this.verifyStatus);
     return await response.json() as Parameter;
+  }
+
+  async getParameterById(id: NamedObjectId) {
+    let url = `${this.yamcs.apiUrl}/mdb/${this.instance}/parameters`;
+    if (id.namespace) {
+      url += '/' + encodeURIComponent(id.namespace);
+      url += '/' + encodeURIComponent(id.name);
+      const response = await fetch(url).then(this.verifyStatus);
+      return await response.json() as Parameter;
+    } else {
+      return this.getParameter(id.name);
+    }
   }
 
   async getParameterValues(qualifiedName: string, options: GetParameterValuesOptions = {}) {

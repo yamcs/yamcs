@@ -13,12 +13,12 @@ import { AbstractWidget } from './widgets/AbstractWidget';
 import { Svg, Rect, Tag, Defs, Pattern } from '../tags';
 import { Compound } from './widgets/Compound';
 import { Color } from './Color';
-import { ResourceResolver } from '../ResourceResolver';
 import { DisplayFrame } from '../DisplayFrame';
 import { ParameterSample } from './ParameterSample';
 import { ParameterValue, NamedObjectId } from '@yamcs/client';
 import { StyleSet } from './StyleSet';
 import { Display } from '../Display';
+import { DisplayCommunicator } from '../DisplayCommunicator';
 
 export class UssDisplay implements Display {
 
@@ -39,7 +39,7 @@ export class UssDisplay implements Display {
   constructor(
     readonly frame: DisplayFrame,
     private targetEl: HTMLDivElement,
-    readonly resourceResolver: ResourceResolver,
+    readonly displayCommunicator: DisplayCommunicator,
   ) {
     this.container = document.createElement('div');
     this.container.setAttribute('style', 'position: relative');
@@ -61,15 +61,14 @@ export class UssDisplay implements Display {
     const fontFace = 'Lucida Sans Typewriter';
     try { // Times out after 3 seconds
       await new FontFaceObserver(fontFace).load();
-      console.log('font loaded');
     } catch {
       // tslint:disable-next-line:no-console
       console.warn(`Failed to load font face '${fontFace}'. Font metric calculations may not be accurate.`);
     }
 
     return Promise.all([
-      this.resourceResolver.retrieveXMLDisplayResource(id),
-      this.resourceResolver.retrieveXML('mcs_dqistyle.xml'),
+      this.displayCommunicator.retrieveXMLDisplayResource(id),
+      this.displayCommunicator.retrieveXML('mcs_dqistyle.xml'),
     ]).then(results => {
       this.styleSet = new StyleSet(results[1]);
       const displayEl = results[0].getElementsByTagName('Display')[0];

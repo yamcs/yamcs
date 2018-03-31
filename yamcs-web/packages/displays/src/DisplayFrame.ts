@@ -92,9 +92,9 @@ export class DisplayFrame {
     this.targetEl.appendChild(this.container);
 
     if (id.toLowerCase().endsWith('uss')) {
-      this.display = new UssDisplay(this, this.frameContent, this.layout.resourceResolver);
+      this.display = new UssDisplay(this, this.frameContent, this.layout.displayCommunicator);
     } else if (id.toLowerCase().endsWith('opi')) {
-      this.display = new OpiDisplay(this, this.frameContent, this.layout.resourceResolver);
+      this.display = new OpiDisplay(this, this.frameContent, this.layout.displayCommunicator);
     } else {
       alert('No viewer for file ' + id);
     }
