@@ -111,6 +111,13 @@ export interface Sample {
   n: number;
 }
 
+export interface Range {
+  timeStart: string;
+  timeStop: string;
+  engValue: Value;
+  count: number;
+}
+
 export interface CommandId {
   generationTime: number;
   origin: string;
@@ -202,4 +209,11 @@ export interface GetParameterSamplesOptions {
   stop?: string;
   count?: number;
   order?: 'asc' | 'desc';
+}
+
+export interface GetParameterRangesOptions {
+  start?: string;
+  stop?: string;
+  minGap?: number;
+  maxGap?: number;
 }

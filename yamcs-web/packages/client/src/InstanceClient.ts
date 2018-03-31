@@ -13,6 +13,7 @@ import {
   LinksWrapper,
   ParametersWrapper,
   ProcessorsWrapper,
+  RangesWrapper,
   RecordsWrapper,
   ServicesWrapper,
   SpaceSystemsWrapper,
@@ -45,12 +46,14 @@ import {
   EventSubscriptionResponse,
   GetAlarmsOptions,
   GetEventsOptions,
+  GetParameterRangesOptions,
   GetParameterSamplesOptions,
   GetParameterValuesOptions,
   ParameterData,
   ParameterSubscriptionRequest,
   ParameterSubscriptionResponse,
   ParameterValue,
+  Range,
   Sample,
   TimeInfo,
   GetCommandHistoryOptions,
@@ -363,6 +366,13 @@ export class InstanceClient {
     const response = await fetch(url + this.queryString(options));
     const wrapper = await response.json() as SamplesWrapper;
     return wrapper.sample || [];
+  }
+
+  async getParameterRanges(qualifiedName: string, options: GetParameterRangesOptions = {}) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameters${qualifiedName}/ranges`;
+    const response = await fetch(url + this.queryString(options));
+    const wrapper = await response.json() as RangesWrapper;
+    return wrapper.range || [];
   }
 
   async getCommands(options: GetCommandsOptions = {}) {
