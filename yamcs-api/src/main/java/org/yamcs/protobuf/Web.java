@@ -11001,6 +11001,514 @@ public final class Web {
     // @@protoc_insertion_point(class_scope:web.ParameterSubscriptionResponse)
   }
 
+  public interface TimeSubscriptionResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.TimeSubscriptionResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+     */
+    boolean hasTimeInfo();
+    /**
+     * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+     */
+    org.yamcs.protobuf.Yamcs.TimeInfo getTimeInfo();
+    /**
+     * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+     */
+    org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder getTimeInfoOrBuilder();
+  }
+  /**
+   * Protobuf type {@code web.TimeSubscriptionResponse}
+   */
+  public static final class TimeSubscriptionResponse extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:web.TimeSubscriptionResponse)
+      TimeSubscriptionResponseOrBuilder {
+    // Use TimeSubscriptionResponse.newBuilder() to construct.
+    private TimeSubscriptionResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private TimeSubscriptionResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final TimeSubscriptionResponse defaultInstance;
+    public static TimeSubscriptionResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public TimeSubscriptionResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private TimeSubscriptionResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              org.yamcs.protobuf.Yamcs.TimeInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = timeInfo_.toBuilder();
+              }
+              timeInfo_ = input.readMessage(org.yamcs.protobuf.Yamcs.TimeInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(timeInfo_);
+                timeInfo_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Web.internal_static_web_TimeSubscriptionResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Web.internal_static_web_TimeSubscriptionResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Web.TimeSubscriptionResponse.class, org.yamcs.protobuf.Web.TimeSubscriptionResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<TimeSubscriptionResponse> PARSER =
+        new com.google.protobuf.AbstractParser<TimeSubscriptionResponse>() {
+      public TimeSubscriptionResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new TimeSubscriptionResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TimeSubscriptionResponse> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int TIMEINFO_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.Yamcs.TimeInfo timeInfo_;
+    /**
+     * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+     */
+    public boolean hasTimeInfo() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.TimeInfo getTimeInfo() {
+      return timeInfo_;
+    }
+    /**
+     * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder getTimeInfoOrBuilder() {
+      return timeInfo_;
+    }
+
+    private void initFields() {
+      timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, timeInfo_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, timeInfo_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.TimeSubscriptionResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code web.TimeSubscriptionResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.TimeSubscriptionResponse)
+        org.yamcs.protobuf.Web.TimeSubscriptionResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Web.internal_static_web_TimeSubscriptionResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Web.internal_static_web_TimeSubscriptionResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Web.TimeSubscriptionResponse.class, org.yamcs.protobuf.Web.TimeSubscriptionResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Web.TimeSubscriptionResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getTimeInfoFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (timeInfoBuilder_ == null) {
+          timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
+        } else {
+          timeInfoBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Web.internal_static_web_TimeSubscriptionResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Web.TimeSubscriptionResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Web.TimeSubscriptionResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Web.TimeSubscriptionResponse build() {
+        org.yamcs.protobuf.Web.TimeSubscriptionResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Web.TimeSubscriptionResponse buildPartial() {
+        org.yamcs.protobuf.Web.TimeSubscriptionResponse result = new org.yamcs.protobuf.Web.TimeSubscriptionResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (timeInfoBuilder_ == null) {
+          result.timeInfo_ = timeInfo_;
+        } else {
+          result.timeInfo_ = timeInfoBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Web.TimeSubscriptionResponse) {
+          return mergeFrom((org.yamcs.protobuf.Web.TimeSubscriptionResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Web.TimeSubscriptionResponse other) {
+        if (other == org.yamcs.protobuf.Web.TimeSubscriptionResponse.getDefaultInstance()) return this;
+        if (other.hasTimeInfo()) {
+          mergeTimeInfo(other.getTimeInfo());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Web.TimeSubscriptionResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Web.TimeSubscriptionResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private org.yamcs.protobuf.Yamcs.TimeInfo timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder> timeInfoBuilder_;
+      /**
+       * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+       */
+      public boolean hasTimeInfo() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.TimeInfo getTimeInfo() {
+        if (timeInfoBuilder_ == null) {
+          return timeInfo_;
+        } else {
+          return timeInfoBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+       */
+      public Builder setTimeInfo(org.yamcs.protobuf.Yamcs.TimeInfo value) {
+        if (timeInfoBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          timeInfo_ = value;
+          onChanged();
+        } else {
+          timeInfoBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+       */
+      public Builder setTimeInfo(
+          org.yamcs.protobuf.Yamcs.TimeInfo.Builder builderForValue) {
+        if (timeInfoBuilder_ == null) {
+          timeInfo_ = builderForValue.build();
+          onChanged();
+        } else {
+          timeInfoBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+       */
+      public Builder mergeTimeInfo(org.yamcs.protobuf.Yamcs.TimeInfo value) {
+        if (timeInfoBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              timeInfo_ != org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance()) {
+            timeInfo_ =
+              org.yamcs.protobuf.Yamcs.TimeInfo.newBuilder(timeInfo_).mergeFrom(value).buildPartial();
+          } else {
+            timeInfo_ = value;
+          }
+          onChanged();
+        } else {
+          timeInfoBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+       */
+      public Builder clearTimeInfo() {
+        if (timeInfoBuilder_ == null) {
+          timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
+          onChanged();
+        } else {
+          timeInfoBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.TimeInfo.Builder getTimeInfoBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getTimeInfoFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder getTimeInfoOrBuilder() {
+        if (timeInfoBuilder_ != null) {
+          return timeInfoBuilder_.getMessageOrBuilder();
+        } else {
+          return timeInfo_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder> 
+          getTimeInfoFieldBuilder() {
+        if (timeInfoBuilder_ == null) {
+          timeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder>(
+                  getTimeInfo(),
+                  getParentForChildren(),
+                  isClean());
+          timeInfo_ = null;
+        }
+        return timeInfoBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:web.TimeSubscriptionResponse)
+    }
+
+    static {
+      defaultInstance = new TimeSubscriptionResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:web.TimeSubscriptionResponse)
+  }
+
   public interface ConnectionInfoOrBuilder extends
       // @@protoc_insertion_point(interface_extends:web.ConnectionInfo)
       com.google.protobuf.MessageOrBuilder {
@@ -11854,6 +12362,11 @@ public final class Web {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_web_TimeSubscriptionResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_web_TimeSubscriptionResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ConnectionInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -11917,11 +12430,12 @@ public final class Web {
       "\003(\0132\024.yamcs.NamedObjectIdB\002\030\001\"^\n\035Paramet" +
       "erSubscriptionResponse\022%\n\007invalid\030\002 \003(\0132" +
       "\024.yamcs.NamedObjectId\022\026\n\016subscriptionId\030",
-      "\003 \001(\005\"\207\001\n\016ConnectionInfo\022\020\n\010clientId\030\001 \001" +
-      "(\005\0220\n\010instance\030\002 \001(\0132\036.yamcsManagement.Y" +
-      "amcsInstance\0221\n\tprocessor\030\003 \001(\0132\036.yamcsM" +
-      "anagement.ProcessorInfoB\024\n\022org.yamcs.pro" +
-      "tobuf"
+      "\003 \001(\005\"=\n\030TimeSubscriptionResponse\022!\n\010tim" +
+      "eInfo\030\001 \001(\0132\017.yamcs.TimeInfo\"\207\001\n\016Connect" +
+      "ionInfo\022\020\n\010clientId\030\001 \001(\005\0220\n\010instance\030\002 " +
+      "\001(\0132\036.yamcsManagement.YamcsInstance\0221\n\tp" +
+      "rocessor\030\003 \001(\0132\036.yamcsManagement.Process" +
+      "orInfoB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -11995,8 +12509,14 @@ public final class Web {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_ParameterSubscriptionResponse_descriptor,
         new java.lang.String[] { "Invalid", "SubscriptionId", });
-    internal_static_web_ConnectionInfo_descriptor =
+    internal_static_web_TimeSubscriptionResponse_descriptor =
       getDescriptor().getMessageTypes().get(6);
+    internal_static_web_TimeSubscriptionResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_TimeSubscriptionResponse_descriptor,
+        new java.lang.String[] { "TimeInfo", });
+    internal_static_web_ConnectionInfo_descriptor =
+      getDescriptor().getMessageTypes().get(7);
     internal_static_web_ConnectionInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_ConnectionInfo_descriptor,

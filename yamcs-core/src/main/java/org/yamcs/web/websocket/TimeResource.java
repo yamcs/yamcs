@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Web.TimeSubscriptionResponse;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.utils.TimeEncoding;
@@ -58,7 +59,26 @@ public class TimeResource extends AbstractWebSocketResource {
                 }
             }, 1, 1, TimeUnit.SECONDS);
         }
-        return WebSocketReply.ack(ctx.getRequestId());
+
+        WebSocketReply reply = new WebSocketReply(ctx.getRequestId());
+
+        // Already send actual time in response, for client convenience.
+        long currentTime = processor.getCurrentTime();
+        TimeInfo ti = TimeInfo.newBuilder()
+                .setCurrentTime(currentTime)
+                .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
+                .build();
+        TimeSubscriptionResponse response = TimeSubscriptionResponse.newBuilder()
+                .setTimeInfo(ti)
+                .build();
+        reply.attachData(TimeResource.class.getSimpleName(), response);
+
+        try {
+            wsHandler.sendReply(reply);
+        } catch (IOException e) {
+            log.error("Exception while sending reply", e);
+        }
+        return null;
     }
 
     private void doUnsubscribe() {
