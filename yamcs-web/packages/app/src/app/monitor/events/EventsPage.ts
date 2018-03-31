@@ -64,7 +64,7 @@ export class EventsPage {
     title.setTitle('Events - Yamcs');
     this.dataSource = new EventsDataSource(yamcs);
 
-    this.validStop = new Date(); // TODO use mission time
+    this.validStop = yamcs.getMissionTime();
     this.validStart = subtractDuration(this.validStop, defaultInterval);
     this.appliedInterval = defaultInterval;
     this.loadData();
@@ -81,7 +81,7 @@ export class EventsPage {
         this.appliedInterval = nextInterval;
         this.loadData();
       } else {
-        this.validStop = new Date(); // TODO use mission time
+        this.validStop = yamcs.getMissionTime();
         this.validStart = subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
@@ -96,7 +96,7 @@ export class EventsPage {
       // to the default interval is more in line with the wording 'jump to now'.
       this.filter.get('interval')!.setValue(defaultInterval);
     } else {
-      this.validStop = new Date(); // TODO use mission time
+      this.validStop = this.yamcs.getMissionTime();
       this.validStart = subtractDuration(this.validStop, interval);
       this.loadData();
     }

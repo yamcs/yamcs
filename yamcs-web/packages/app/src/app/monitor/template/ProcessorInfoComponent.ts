@@ -16,23 +16,24 @@ import { Subscription } from 'rxjs/Subscription';
 })
 export class ProcessorInfoComponent implements OnDestroy {
 
-  time$ = new BehaviorSubject<TimeInfo | null>(null);
-  timeSubscription: Subscription;
+  timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
+  timeInfoSubscription: Subscription;
 
   connected$: Observable<boolean>;
 
   constructor(private yamcs: YamcsService) {
     this.yamcs.getInstanceClient().getTimeUpdates().then(response => {
-      this.timeSubscription = response.time$.subscribe(time => {
-        this.time$.next(time);
+      this.timeInfo$.next(response.timeInfo);
+      this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
+        this.timeInfo$.next(timeInfo);
       });
     });
     this.connected$ = this.yamcs.getInstanceClient().connected$;
   }
 
   ngOnDestroy() {
-    if (this.timeSubscription) {
-      this.timeSubscription.unsubscribe();
+    if (this.timeInfoSubscription) {
+      this.timeInfoSubscription.unsubscribe();
     }
   }
 }

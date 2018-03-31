@@ -13,8 +13,9 @@ export class InstanceExistsGuard implements CanActivate {
 
     return new Promise<boolean>((resolve, reject) => {
       this.yamcsService.yamcsClient.getInstance(instanceId).then(instance => {
-        this.yamcsService.switchInstance(instance);
-        resolve(true);
+        this.yamcsService.switchInstance(instance)
+          .then(() => resolve(true))
+          .catch(() => resolve(false));
       }).catch(err => {
         this.router.navigate(['/404'], {
           // Would prefer the attempted URL stays in the browser address bar

@@ -100,7 +100,10 @@ export interface AlarmSubscriptionResponse {
 }
 
 export interface TimeSubscriptionResponse {
-  time$: Observable<TimeInfo>;
+  /**
+   * Current Mission Time
+   */
+  timeInfo: TimeInfo;
 
   /**
    * Observable for monitoring Mission Time updates

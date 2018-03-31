@@ -42,7 +42,7 @@ export class ParameterDataTab {
     this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new ParameterDataDataSource(yamcs, this.qualifiedName);
 
-    this.validStop = new Date(); // TODO use mission time
+    this.validStop = yamcs.getMissionTime()
     this.validStart = this.subtractDuration(this.validStop, defaultInterval);
     this.appliedInterval = defaultInterval;
     this.loadData();
@@ -59,7 +59,7 @@ export class ParameterDataTab {
         this.appliedInterval = nextInterval;
         this.loadData();
       } else {
-        this.validStop = new Date(); // TODO use mission time
+        this.validStop = yamcs.getMissionTime();
         this.validStart = this.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();
@@ -74,7 +74,7 @@ export class ParameterDataTab {
       // to the default interval is more in line with the wording 'jump to now'.
       this.filter.get('interval')!.setValue(defaultInterval);
     } else {
-      this.validStop = new Date(); // TODO use mission time
+      this.validStop = this.yamcs.getMissionTime();
       this.validStart = this.subtractDuration(this.validStop, interval);
       this.loadData();
     }

@@ -56,6 +56,9 @@ export class ParameterPlot implements AfterViewInit {
   @Input()
   gridLineColor = '#f2f2f2';
 
+  @Input()
+  stop = new Date();
+
   /**
    * If true display timestamps in UTC, otherwise use browser default
    */
@@ -137,13 +140,15 @@ export class ParameterPlot implements AfterViewInit {
       this.dygraph.setAnnotations(data.annotations);
     });
 
-    const now = new Date(); // TODO use mission time instead
-    const start = subtractDuration(now, this.duration);
+    /*
+     * Trigger initial load
+     */
+    const stop = this.stop;
+    const start = subtractDuration(stop, this.duration);
 
     // Add some padding to the right
-    const delta = now.getTime() - start.getTime();
-    const stop = new Date();
-    stop.setTime(now.getTime() + 0.1 * delta);
+    const delta = stop.getTime() - start.getTime();
+    stop.setTime(stop.getTime() + 0.1 * delta);
 
     this.dataSource.updateWindow(start, stop, [null, null]);
   }

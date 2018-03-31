@@ -52,7 +52,8 @@
                         axisBackgroundColor="#fafafa"
                         [xGrid]="true"
                         [xAxisHeight]="24"
-                        [dataSource]="dataSource">
+                        [dataSource]="dataSource"
+                        [stop]="missionTime">
       <app-parameter-series [parameter]="parameter"
                             [grid]="true"></app-parameter-series>
     </app-parameter-plot>

@@ -139,8 +139,8 @@ export class WebSocketClient {
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
-          response.time$ = this.webSocketConnection$.pipe(
           const response = msg[3].data as TimeSubscriptionResponse;
+          response.timeInfo$ = this.webSocketConnection$.pipe(
             filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
             filter((msg: WebSocketServerMessage) => msg[3].dt === 'TIME_INFO'),
             map(msg => msg[3].data as TimeInfo),
