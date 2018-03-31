@@ -15,13 +15,9 @@ import { ContainersPage } from './containers/ContainersPage';
 import { SpaceSystemContainersTab } from './space-system-detail/SpaceSystemContainersTab';
 import { SpaceSystemCommandsTab } from './space-system-detail/SpaceSystemCommandsTab';
 import { AlgorithmPage } from './algorithms/AlgorithmPage';
-import { SpaceSystemAlgorithmTab } from './space-system-detail/SpaceSystemAlgorithmTab';
-import { SpaceSystemParameterTab } from './space-system-detail/SpaceSystemParameterTab';
 import { ParameterPage } from './parameters/ParameterPage';
-import { SpaceSystemContainerTab } from './space-system-detail/SpaceSystemContainerTab';
 import { ContainerPage } from './containers/ContainerPage';
 import { CommandPage } from './commands/CommandPage';
-import { SpaceSystemCommandTab } from './space-system-detail/SpaceSystemCommandTab';
 import { ParameterChartTab } from './parameters/ParameterChartTab';
 import { ParameterDataTab } from './parameters/ParameterDataTab';
 import { ParameterSummaryTab } from './parameters/ParameterSummaryTab';
@@ -50,36 +46,19 @@ const routes = [{
           redirectTo: 'parameters'
         }, {
           path: 'algorithms',
-          pathMatch: 'full',
           component: SpaceSystemAlgorithmsTab,
         }, {
-          path: 'algorithms/:qualifiedName',
-          component: SpaceSystemAlgorithmTab,
-        }, {
           path: 'changelog',
-          pathMatch: 'full',
           component: SpaceSystemChangelogTab,
         }, {
           path: 'commands',
-          pathMatch: 'full',
           component: SpaceSystemCommandsTab,
         }, {
-          path: 'commands/:qualifiedName',
-          component: SpaceSystemCommandTab,
-        }, {
           path: 'containers',
-          pathMatch: 'full',
           component: SpaceSystemContainersTab,
         }, {
-          path: 'containers/:qualifiedName',
-          component: SpaceSystemContainerTab,
-        }, {
           path: 'parameters',
-          pathMatch: 'full',
           component: SpaceSystemParametersTab,
-        }, {
-          path: 'parameters/:qualifiedName',
-          component: SpaceSystemParameterTab,
         }]
       }
     ]
@@ -155,12 +134,8 @@ export const routingComponents = [
   SpaceSystemsPage,
   SpaceSystemPage,
   SpaceSystemAlgorithmsTab,
-  SpaceSystemAlgorithmTab,
   SpaceSystemChangelogTab,
   SpaceSystemCommandsTab,
-  SpaceSystemCommandTab,
   SpaceSystemContainersTab,
-  SpaceSystemContainerTab,
   SpaceSystemParametersTab,
-  SpaceSystemParameterTab,
 ];

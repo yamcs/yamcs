@@ -1,8 +1,10 @@
 <mat-toolbar color="primary">
   <mat-toolbar-row style="background-color: black">
-    <a mat-button routerLink="/">
-      Yamcs
-    </a>
+    <div class="vmiddle" style="display: inline-block; width: 184px; text-align: center">
+      <a routerLink="/">
+        <img src="/_static/assets/yamcs-bw-24.png" style="margin-top: 12px; margin-right: 16px">
+      </a>
+    </div>
     <button mat-button *ngIf="instance$ | async as instance" (click)="openInstanceDialog()">
       <span class="selected-instance">{{ instance.name }}</span>
       <mat-icon>arrow_drop_down</mat-icon>

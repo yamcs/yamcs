@@ -1,10 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Instance } from '@yamcs/client';
-import { Observable } from 'rxjs/Observable';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Title } from '@angular/platform-browser';
 
@@ -14,11 +10,11 @@ import { Title } from '@angular/platform-browser';
 })
 export class AlgorithmPage {
 
-  instance$: Observable<Instance>;
+  instance: Instance;
   algorithm$: Promise<Algorithm>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, store: Store<State>, title: Title) {
-    this.instance$ = store.select(selectCurrentInstance);
+  constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
+    this.instance = yamcs.getInstance();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
     this.algorithm$ = yamcs.getSelectedInstance().getAlgorithm(qualifiedName);

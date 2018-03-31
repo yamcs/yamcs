@@ -21,9 +21,6 @@ import {
 import { YamcsService } from '../../core/services/YamcsService';
 import { DisplayFolder } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
   selector: 'app-layout-component',
@@ -51,13 +48,12 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   private resourceResolver: ResourceResolver;
   private layout: Layout;
 
-  constructor(private yamcs: YamcsService, store: Store<State>) {
-    store.select(selectCurrentInstance).subscribe(instance => {
-      // TODO should be simpler. yamcs.getSelectedInstance() is not yet updated when this triggers.
-      const instanceClient = this.yamcs.yamcsClient.selectInstance(instance.name);
-      instanceClient.getDisplayInfo().then(displayInfo => {
-        this.displayInfo$.next(displayInfo);
-      });
+  constructor(private yamcs: YamcsService) {
+    const instance = this.yamcs.getInstance();
+    // TODO should be simpler. yamcs.getSelectedInstance() is not yet updated when this triggers.
+    const instanceClient = this.yamcs.yamcsClient.selectInstance(instance.name);
+    instanceClient.getDisplayInfo().then(displayInfo => {
+      this.displayInfo$.next(displayInfo);
     });
     this.resourceResolver = new RemoteResourceResolver(yamcs);
   }

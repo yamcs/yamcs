@@ -1,6 +1,6 @@
 <ng-container *ngIf="containers$ | async as containers">
   <app-containers-table *ngIf="containers.length; else empty"
-                      [instance]="instance$ | async"
+                      [instance]="instance"
                       [containers$]="containers$"
                       [shortName]="true">
   </app-containers-table>

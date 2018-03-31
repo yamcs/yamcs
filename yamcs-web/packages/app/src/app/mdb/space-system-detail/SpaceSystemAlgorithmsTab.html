@@ -1,6 +1,6 @@
 <ng-container *ngIf="algorithms$ | async as algorithms">
   <app-algorithms-table *ngIf="algorithms.length; else empty"
-                        [instance]="instance$ | async"
+                        [instance]="instance"
                         [algorithms$]="algorithms$"
                         [shortName]="true">
   </app-algorithms-table>

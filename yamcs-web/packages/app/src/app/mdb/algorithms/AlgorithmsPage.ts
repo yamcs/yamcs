@@ -1,12 +1,8 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 
 import { Algorithm, Instance } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { Title } from '@angular/platform-browser';
 
 @Component({
@@ -15,12 +11,12 @@ import { Title } from '@angular/platform-browser';
 })
 export class AlgorithmsPage {
 
-  instance$: Observable<Instance>;
+  instance: Instance;
   algorithms$: Promise<Algorithm[]>;
 
-  constructor(yamcs: YamcsService, store: Store<State>, title: Title) {
+  constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Algorithms - Yamcs');
-    this.instance$ = store.select(selectCurrentInstance);
+    this.instance = yamcs.getInstance();
     this.algorithms$ = yamcs.getSelectedInstance().getAlgorithms();
   }
 }

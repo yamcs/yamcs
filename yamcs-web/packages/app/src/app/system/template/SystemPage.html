@@ -7,7 +7,7 @@
       </mat-toolbar-row>
     </mat-toolbar>
 
-    <mat-nav-list dense *ngIf="instance$ | async as instance">
+    <mat-nav-list dense>
       <app-sidebar-nav-item routerLink="dashboard"
                             [queryParams]="{instance: instance.name}">
         Dashboard

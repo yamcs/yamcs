@@ -44,7 +44,6 @@ export class ContainersTable implements AfterViewInit {
     'sizeInBits',
     'baseContainer',
     'restrictionCriteria',
-    'shortDescription',
   ];
 
   ngAfterViewInit() {

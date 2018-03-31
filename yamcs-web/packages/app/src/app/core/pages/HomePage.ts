@@ -1,11 +1,8 @@
 import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit } from '@angular/core';
 import { Instance } from '@yamcs/client';
-import { Observable } from 'rxjs/Observable';
-import { Store } from '@ngrx/store';
-import { selectInstances } from '../store/instance.selectors';
-import { State } from '../../app.reducers';
 import { Title } from '@angular/platform-browser';
 import { MatTableDataSource, MatSort, MatPaginator } from '@angular/material';
+import { YamcsService } from '../services/YamcsService';
 
 @Component({
   templateUrl: './HomePage.html',
@@ -19,7 +16,7 @@ export class HomePage implements AfterViewInit {
   @ViewChild(MatPaginator)
   paginator: MatPaginator;
 
-  instances$: Observable<Instance[]>;
+  instances$: Promise<Instance[]>;
 
   dataSource = new MatTableDataSource<Instance>([]);
 
@@ -27,9 +24,12 @@ export class HomePage implements AfterViewInit {
     'name',
   ];
 
-  constructor(private store: Store<State>, title: Title) {
+  constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Yamcs');
-    this.instances$ = store.select(selectInstances);
+    this.instances$ = yamcs.yamcsClient.getInstances();
+    this.instances$.then(instances => {
+      this.dataSource.data = instances;
+    });
 
     this.dataSource.filterPredicate = (instance, filter) => {
       return instance.name.toLowerCase().indexOf(filter) >= 0;
@@ -39,9 +39,6 @@ export class HomePage implements AfterViewInit {
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
-    this.store.select(selectInstances).subscribe(instances => {
-      this.dataSource.data = instances;
-    });
   }
 
   applyFilter(value: string) {

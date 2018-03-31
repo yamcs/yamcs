@@ -34,7 +34,9 @@ export class CommandsTable implements AfterViewInit {
     { id: 'shortDescription', label: 'Description' },
   ];
 
-  displayedColumns = ['name', 'shortDescription'];
+  displayedColumns = [
+    'name',
+  ];
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;

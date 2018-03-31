@@ -23,9 +23,6 @@
     "noImplicitAny": true,
     // "strictFunctionTypes": true, // TS2.6+
 
-    // When false, problematic with ngrx
-    "noStrictGenericChecks": true,
-
     // This mainly to detect unused imports
     // (tslint has terrible support for this)
     "noUnusedLocals": true,

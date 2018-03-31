@@ -1,10 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Instance, Parameter, ParameterValue } from '@yamcs/client';
-import { Observable } from 'rxjs/Observable';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { YamcsService } from '../../core/services/YamcsService';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Subscription } from 'rxjs/Subscription';
@@ -19,7 +15,7 @@ import { UnitsPipe } from '../../shared/pipes/UnitsPipe';
 })
 export class ParameterPage implements OnDestroy {
 
-  instance$: Observable<Instance>;
+  instance: Instance;
   parameter$ = new BehaviorSubject<Parameter | null>(null);
 
   parameterValue$ = new BehaviorSubject<ParameterValue | null>(null);
@@ -28,12 +24,11 @@ export class ParameterPage implements OnDestroy {
   constructor(
     route: ActivatedRoute,
     yamcs: YamcsService,
-    store: Store<State>,
     private title: Title,
     private valuePipe: ValuePipe,
     private unitsPipe: UnitsPipe,
   ) {
-    this.instance$ = store.select(selectCurrentInstance);
+    this.instance = yamcs.getInstance();
 
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
     yamcs.getSelectedInstance().getParameter(qualifiedName).then(parameter => {
