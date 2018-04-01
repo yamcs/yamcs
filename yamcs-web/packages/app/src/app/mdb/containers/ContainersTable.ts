@@ -4,6 +4,7 @@ import { Container } from '@yamcs/client';
 
 import { MatSort, MatTableDataSource, MatPaginator } from '@angular/material';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
 
 @Component({
   selector: 'app-containers-table',
@@ -46,6 +47,13 @@ export class ContainersTable implements AfterViewInit {
     'restrictionCriteria',
   ];
 
+  constructor(private preferenceStore: PreferenceStore) {
+    const cols = preferenceStore.getVisibleColumns('containers');
+    if (cols.length) {
+      this.displayedColumns = cols;
+    }
+  }
+
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
@@ -60,5 +68,6 @@ export class ContainersTable implements AfterViewInit {
 
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
+    this.preferenceStore.setVisibleColumns('containers', displayedColumns);
   }
 }

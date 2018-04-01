@@ -19,4 +19,17 @@ export class PreferenceStore {
     this.darkMode$.next(darkMode);
     localStorage.setItem('yamcs.darkMode', String(darkMode));
   }
+
+  public setVisibleColumns(source: string, columns: string[]) {
+    localStorage.setItem(`yamcs.${source}.cols`, JSON.stringify(columns));
+  }
+
+  public getVisibleColumns(source: string) {
+    const item = localStorage.getItem(`yamcs.${source}.cols`);
+    if (item) {
+      return JSON.parse(item) as string[];
+    } else {
+      return [];
+    }
+  }
 }

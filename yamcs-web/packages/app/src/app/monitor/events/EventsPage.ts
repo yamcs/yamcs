@@ -9,6 +9,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { subtractDuration } from '../../shared/utils';
 import { rowAnimation } from '../animations';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
 
 const defaultInterval = 'PT1H';
 
@@ -60,8 +61,18 @@ export class EventsPage {
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  constructor(private yamcs: YamcsService, title: Title) {
+  constructor(
+    private yamcs: YamcsService,
+    private preferenceStore: PreferenceStore,
+    title: Title,
+  ) {
     title.setTitle('Events - Yamcs');
+
+    const cols = preferenceStore.getVisibleColumns('events');
+    if (cols.length) {
+      this.displayedColumns = cols;
+    }
+
     this.dataSource = new EventsDataSource(yamcs);
 
     this.validStop = yamcs.getMissionTime();
@@ -158,5 +169,6 @@ export class EventsPage {
 
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
+    this.preferenceStore.setVisibleColumns('events', displayedColumns);
   }
 }
