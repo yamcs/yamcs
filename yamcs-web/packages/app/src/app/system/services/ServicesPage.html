@@ -27,17 +27,17 @@
             check_circle
           </mat-icon>
           <mat-icon *ngIf="service.state === 'RUNNING'"
-                    style="color: green"
+                    class="success"
                     [matTooltip]="service.state">
             check_circle
           </mat-icon>
           <mat-icon *ngIf="service.state === 'STOPPING' || service.state === 'FAILED'"
-                    style="color: red"
+                    class="alert"
                     [matTooltip]="service.state">
             highlight_off
           </mat-icon>
           <mat-icon *ngIf="service.state === 'TERMINATED'"
-                    style="color: lightgrey"
+                    class="down"
                     [matTooltip]="service.state">
             lens
           </mat-icon>

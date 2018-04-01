@@ -49,11 +49,13 @@
           <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
             <input formControlName="customStart" type="datetime" style="width: 160px">
             <input formControlName="customStop" type="datetime" style="width: 160px">
-            <button (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</button>
+            <button (click)="applyCustomDates()"
+                    class="ya-button"
+                    [disabled]="filter.invalid">Apply</button>
           </ng-container>
 
           <ng-container *ngIf="filter.value['interval'] !== 'CUSTOM'">
-            <button (click)="jumpToNow()">
+            <button class="ya-button" (click)="jumpToNow()">
               Jump to now
             </button>
           </ng-container>
@@ -73,7 +75,7 @@
       <div class="message-zone">
         <span *ngIf="dataSource.streaming$ | async">
           Listening for events
-          <app-dots fontSize="16px" color="#000080"></app-dots>
+          <app-dots fontSize="16px" color="#1b61b9"></app-dots>
         </span>
       </div>
       <span *ngSwitchCase="'PT1H'">
@@ -149,7 +151,9 @@
 
     <mat-toolbar>
       <span style="flex: 1 1 auto"></span>
-      <button mat-stroked-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load More</button>
+      <button [disabled]="!dataSource.hasMore()"
+              class="ya-button"
+              (click)="loadMoreData()">Load More</button>
       <span style="flex: 1 1 auto"></span>
     </mat-toolbar>
   </div>

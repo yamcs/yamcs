@@ -8,7 +8,7 @@ mat-sidenav {
   width: 200px;
 }
 
-.data-detail {
+.detail {
   background-color: #fafafa;
   float: right;
   height: 100%;
@@ -22,7 +22,7 @@ mat-sidenav {
   white-space: nowrap;
 }
 
-.data-table-wrapper tr.selected td {
+:not(.dark-theme) .data-table-wrapper tr.selected td {
   background: #ffffd6 !important;
 }
 

@@ -9,6 +9,7 @@ import { AppRoutingModule } from './AppRoutingModule';
 
 import { NotFoundPage } from './core/pages/NotFoundPage';
 import { YamcsService } from './core/services/YamcsService';
+import { PreferenceStore } from './core/services/PreferenceStore';
 import { APP_BASE_HREF } from '@angular/common';
 import { HomePage } from './core/pages/HomePage';
 import { ProfilePage } from './core/pages/ProfilePage';
@@ -32,6 +33,7 @@ import GridPlugin from './shared/widgets/GridPlugin';
     MdbModule,
   ],
   providers: [
+    PreferenceStore,
     YamcsService,
     {
       provide: APP_BASE_HREF,

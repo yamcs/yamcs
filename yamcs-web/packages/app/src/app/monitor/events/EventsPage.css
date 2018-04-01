@@ -19,15 +19,3 @@
   font-size: 12px;
   padding-right: 6px;
 }
-
-.ERROR mat-cell,
-.DISTRESS mat-cell,
-.CRITICAL mat-cell,
-.SEVERE mat-cell {
-  color: red;
-}
-
-.WATCH mat-cell,
-.WARNING mat-cell {
-  color: orange;
-}

@@ -47,7 +47,7 @@ export class DyDataSource {
         });
         this.plotBuffer.dirty = false;
       }
-    }, 400 /* update rate */);
+    }, 1000 /* update rate */);
 
     this.plotBuffer = new PlotBuffer(() => {
       this.reloadVisibleRange();

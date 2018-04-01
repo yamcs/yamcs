@@ -86,7 +86,7 @@ html, body {
 }
 
 .ya-data-table a, .ya-link a, a.ya-link {
-  color: #000;
+  color: #1b61b9;
   text-decoration: none;
 }
 
@@ -95,12 +95,16 @@ html, body {
 }
 
 .ya-data-table a:hover, .ya-link a:hover, a.ya-link:hover {
-  color: #000080;
+  /*color: #1b61b9;*/
   text-decoration: underline;
 }
 
 .ya-link a .material-icons, a.ya-link .material-icons {
   text-decoration: none !important;
+}
+
+a.ya-link.ya-header-link {
+  color: inherit;
 }
 
 .ya-menu .mat-menu-item {
@@ -155,4 +159,20 @@ html, body {
 
 .dl-horizontal dd:after {
   clear: both;
+}
+
+.down {
+  color: lightgrey;
+}
+
+.success {
+  color: green;
+}
+
+.warning, .WATCH mat-cell, .WARNING mat-cell {
+  color: orange !important;
+}
+
+.alert, .ERROR mat-cell, .DISTRESS mat-cell, .CRITICAL mat-cell, .SEVERE mat-cell {
+  color: red !important;
 }

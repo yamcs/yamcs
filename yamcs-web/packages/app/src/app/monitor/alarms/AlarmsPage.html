@@ -80,7 +80,7 @@
 
         <ng-container matColumnDef="value">
           <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="150px">Value</mat-header-cell>
-          <mat-cell *matCellDef="let alarm" fxFlex="150px" style="color: red">
+          <mat-cell *matCellDef="let alarm" fxFlex="150px" class="alert">
             {{ alarm.triggerValue.engValue | value }}
             <span *ngIf="alarm.triggerValue.rangeCondition === 'LOW'">&#8595;</span>
             <span *ngIf="alarm.triggerValue.rangeCondition === 'HIGH'">&#8593;</span>
@@ -104,7 +104,7 @@
       <ng-template #empty>
         <app-empty-message *ngIf="!(dataSource.loading$ | async)">
           <div class="vmiddle">
-            <mat-icon style="color: green">check_circle</mat-icon>
+            <mat-icon class="success">check_circle</mat-icon>
             &nbsp;
             All parameters normal.
           </div>

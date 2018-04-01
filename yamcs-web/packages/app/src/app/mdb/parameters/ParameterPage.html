@@ -4,8 +4,7 @@
       <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
         <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'parameters']"
             [queryParams]="{instance: instance.name}"
-            class="ya-link"
-            style="color: #000080">
+            class="ya-link ya-header-link">
           {{ alias.namespace }}
         </a>/{{ alias.name }}
       </ng-container>

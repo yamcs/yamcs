@@ -5,6 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
+import { OverlayModule } from '@angular/cdk/overlay';
 import { CdkTableModule } from '@angular/cdk/table';
 import {
   MatButtonModule,
@@ -58,6 +59,7 @@ import { TextAction } from './template/TextAction';
 import { ColumnChooser } from './template/ColumnChooser';
 
 const materialModules = [
+  OverlayModule,
   CdkTableModule,
   FlexLayoutModule,
   MatButtonModule,

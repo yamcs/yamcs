@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, ElementRef, Input, QueryList, ContentChildren } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, ElementRef, Input, QueryList, ContentChildren, OnDestroy } from '@angular/core';
 import Dygraph from 'dygraphs';
 import { Parameter } from '@yamcs/client';
 import { DyDataSource } from './DyDataSource';
@@ -6,13 +6,15 @@ import { ParameterSeries } from './ParameterSeries';
 import GridPlugin from './GridPlugin';
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-parameter-plot',
   templateUrl: './ParameterPlot.html',
   styleUrls: ['./ParameterPlot.css'],
 })
-export class ParameterPlot implements AfterViewInit {
+export class ParameterPlot implements AfterViewInit, OnDestroy {
 
   @Input()
   dataSource: DyDataSource;
@@ -47,14 +49,27 @@ export class ParameterPlot implements AfterViewInit {
   @Input()
   width = '100%';
 
-  @Input()
-  axisBackgroundColor = '#fff';
+  lightColors = {
+    axisBackgroundColor: '#fafafa',
+    axisLineColor: '#e1e1e1',
+    gridLineColor: '#f2f2f2',
+    plotAreaBackgroundColor: '#fff',
+    highlightColor: '#e1e1e1',
+  };
 
-  @Input()
-  axisLineColor = '#e1e1e1';
+  darkColors = {
+    axisBackgroundColor: '#191919',
+    axisLineColor: '#2e2e2e',
+    gridLineColor: '#212121',
+    plotAreaBackgroundColor: '#111',
+    highlightColor: '#2e2e2e',
+  };
 
-  @Input()
-  gridLineColor = '#f2f2f2';
+  axisBackgroundColor = this.lightColors.axisBackgroundColor;
+  axisLineColor = this.lightColors.axisLineColor;
+  gridLineColor = this.lightColors.gridLineColor;
+  plotAreaBackgroundColor = this.lightColors.plotAreaBackgroundColor;
+  highlightColor = this.lightColors.highlightColor;
 
   @Input()
   stop = new Date();
@@ -83,6 +98,14 @@ export class ParameterPlot implements AfterViewInit {
 
   // Flag to prevent from reloading while the user is busy with a pan or zoom operation
   private disableDataReload = false;
+
+  private darkModeSubscription: Subscription;
+
+  constructor(private preferenceStore: PreferenceStore) {
+    this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
+      this.applyTheme(darkMode);
+    });
+  }
 
   ngAfterViewInit() {
     const containingDiv = this.graphContainer.nativeElement as HTMLDivElement;
@@ -151,12 +174,13 @@ export class ParameterPlot implements AfterViewInit {
     stop.setTime(stop.getTime() + 0.1 * delta);
 
     this.dataSource.updateWindow(start, stop, [null, null]);
+    this.applyTheme(this.preferenceStore.isDarkMode());
   }
 
   private initDygraphs(containingDiv: HTMLDivElement) {
     const series: { [key: string]: any } = {};
     series[this.parameters[0].qualifiedName] = {
-      color: '#000080',
+      color: '#1b61b9',
     };
 
     const alarmZones = this.seriesComponents.first.staticAlarmZones;
@@ -285,7 +309,7 @@ export class ParameterPlot implements AfterViewInit {
         ctx.save();
 
         ctx.globalAlpha = 1;
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = this.plotAreaBackgroundColor;
         ctx.fillRect(area.x, area.y, area.w, area.h);
 
         // Colorize plot area
@@ -341,7 +365,8 @@ export class ParameterPlot implements AfterViewInit {
         radius: number,
       ) => {
         ctx.clearRect(0, 0, g.width_, g.height_);
-        ctx.strokeStyle = '#e1e1e1';
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = this.highlightColor;
 
         ctx.beginPath();
         const canvasx = Math.floor(g.selPoints_[0].canvasx) + 0.5; // crisper rendering
@@ -385,6 +410,36 @@ export class ParameterPlot implements AfterViewInit {
 
     const gridPluginInstance = this.dygraph.getPluginInstance_(GridPlugin) as GridPlugin;
     gridPluginInstance.setAlarmZones(alarmZones);
+  }
+
+  private applyTheme(dark: boolean) {
+    // Update model
+    if (dark) {
+      this.axisBackgroundColor = this.darkColors.axisBackgroundColor;
+      this.axisLineColor = this.darkColors.axisLineColor;
+      this.gridLineColor = this.darkColors.gridLineColor;
+      this.plotAreaBackgroundColor = this.darkColors.plotAreaBackgroundColor;
+      this.highlightColor = this.darkColors.highlightColor;
+    } else {
+      this.axisBackgroundColor = this.lightColors.axisBackgroundColor;
+      this.axisLineColor = this.lightColors.axisLineColor;
+      this.gridLineColor = this.lightColors.gridLineColor;
+      this.plotAreaBackgroundColor = this.lightColors.plotAreaBackgroundColor;
+      this.highlightColor = this.lightColors.highlightColor;
+    }
+
+    // Apply model
+    if (this.dygraph) {
+      this.dygraph.updateOptions({
+        axisLineColor: this.axisLineColor,
+        gridLineColor: this.gridLineColor,
+      });
+    }
+
+    if (this.graphContainer) {
+      const container = this.graphContainer.nativeElement as HTMLDivElement;
+      container.style.backgroundColor = this.axisBackgroundColor;
+    }
   }
 
   public getDateRange() {
@@ -445,5 +500,11 @@ export class ParameterPlot implements AfterViewInit {
 
     // Percentage from the left.
     return w === 0 ? 0 : (x / w);
+  }
+
+  ngOnDestroy() {
+    if (this.darkModeSubscription) {
+      this.darkModeSubscription.unsubscribe();
+    }
   }
 }
