@@ -19,12 +19,12 @@
   },
   "dependencies": {
     "@yamcs/client": "^1.0.0",
-    "dygraphs": "^2.1.0",
-    "fontfaceobserver": "^2.0.13"
+    "dygraphs": "^2.1.0"
   },
   "peerDependencies": {
     "@yamcs/client": "^1.0.0",
-    "dygraphs": "^2.1.0"
+    "dygraphs": "^2.1.0",
+    "fontfaceobserver": "^2.0.13"
   },
   "devDependencies": {
     "@types/jasmine": "^2.8.6",

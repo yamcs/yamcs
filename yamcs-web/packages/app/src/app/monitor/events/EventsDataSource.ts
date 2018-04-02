@@ -5,7 +5,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { CollectionViewer } from '@angular/cdk/collections';
 import { Subscription } from 'rxjs/Subscription';
 
-interface AnimatableEvent extends Event {
+export interface AnimatableEvent extends Event {
   animate?: boolean;
 }
 

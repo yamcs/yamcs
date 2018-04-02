@@ -3,6 +3,26 @@
  * The 'dark-theme' class is activated via AppComponent.
  */
 
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #666;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+::-webkit-scrollbar-corner { 
+  background: #111;
+}
+
 .homepage {
   background-color: #111;
 }
@@ -183,6 +203,11 @@ p.mat-line,
   color: #888 !important;
 }
 
+.disabled .text-action,
+.disabled .action-content {
+  color: #2e2e2e !important;
+}
+
 .mat-button[disabled],
 .mat-icon-button[disabled],
 .mat-stroked-button[disabled] {
@@ -224,5 +249,13 @@ p.mat-line,
 .code {
   background-color: #191919 !important;
   border-color: #2e2e2e !important;
+  color: #888 !important;
+}
+
+.indicator {
+  fill: #888 !important;
+}
+
+.collapse-sidebar .mat-icon-button {
   color: #888 !important;
 }

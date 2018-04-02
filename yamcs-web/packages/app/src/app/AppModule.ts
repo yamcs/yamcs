@@ -14,9 +14,6 @@ import { APP_BASE_HREF } from '@angular/common';
 import { HomePage } from './core/pages/HomePage';
 import { ProfilePage } from './core/pages/ProfilePage';
 
-import Dygraph from 'dygraphs';
-import GridPlugin from './shared/widgets/GridPlugin';
-
 @NgModule({
   declarations: [
     AppComponent,
@@ -43,17 +40,4 @@ import GridPlugin from './shared/widgets/GridPlugin';
   bootstrap: [ AppComponent ]
 })
 export class AppModule {
-
-  constructor() {
-    // Install customized GridPlugin in global Dygraph object.
-    Dygraph.Plugins['Grid'] = GridPlugin;
-    Dygraph.PLUGINS = [
-      Dygraph.Plugins['Legend'],
-      Dygraph.Plugins['Axes'],
-      Dygraph.Plugins['Annotations'],
-      Dygraph.Plugins['ChartLabels'],
-      Dygraph.Plugins['Grid'],
-      Dygraph.Plugins['RangeSelector'],
-    ];
-  }
 }

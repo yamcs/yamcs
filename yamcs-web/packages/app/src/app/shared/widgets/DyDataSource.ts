@@ -79,7 +79,7 @@ export class DyDataSource {
       instanceClient.getParameterSamples(this.qname, {
         start: loadStart.toISOString(),
         stop: loadStop.toISOString(),
-        count: 3000,
+        count: 2000,
       }),
       instanceClient.getAlarmsForParameter(this.qname, {
         start: loadStart.toISOString(),

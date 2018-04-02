@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 
-import { Table, Record } from '@yamcs/client';
+import { Table, Record, Value } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 import { ActivatedRoute } from '@angular/router';
@@ -26,7 +26,7 @@ export class TableDataTab {
     this.records$ = yamcs.getInstanceClient().getTableData(name);
   }
 
-  getColumnValue(record: Record, columnName: string) {
+  getColumnValue(record: Record, columnName: string): Value | null {
     for (const column of record.column) {
       if (column.name === columnName) {
         return column.value;

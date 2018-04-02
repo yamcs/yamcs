@@ -8,7 +8,9 @@
       </app-parameters-table>
     </div>
     <ng-template #empty>
-      The Mission Database for <i>{{ instance.name }}</i> does not define any parameters.
+      <div class="panel-content">
+        The Mission Database for <i>{{ instance.name }}</i> does not define any parameters.
+      </div>
     </ng-template>
   </ng-container>
 </app-mdb-page>

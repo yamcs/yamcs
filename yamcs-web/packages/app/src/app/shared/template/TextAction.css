@@ -29,9 +29,12 @@
 
 :host.disabled .text-action {
   cursor: not-allowed;
-  color: #aaa!important;
 }
 
-:host-disabled .action-content {
-  color: #aaa !important;
+:host.disabled .text-action {
+  color: #aaa;
+}
+
+:host.disabled .action-content {
+  color: #aaa;
 }

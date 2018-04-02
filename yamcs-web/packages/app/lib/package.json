@@ -1,14 +1,20 @@
 {
-  "name": "yamcs-web",
+  "name": "@yamcs/ng-lib",
   "version": "1.0.0",
   "license": "AGPL-3.0",
-  "scripts": {
-    "build": "ng build --output-hashing=all --aot --prod",
-    "build:lib": "ng-packagr -p lib/package.json",
-    "watch": "ng build --output-hashing=all -w"
-  },
   "private": true,
-  "dependencies": {
+  "ngPackage": {
+    "$schema": "./node_modules/ng-packagr/ng-package.schema.json",
+    "dest": "dist",
+    "lib": {
+      "entryFile": "../src/lib.ts",
+      "languageLevel": ["dom", "es2017"],
+      "umdModuleIds": {
+        "dygraphs": "Dygraph"
+      }
+    }
+  },
+  "peerDependencies": {
     "@angular/animations": "^5.2.8",
     "@angular/cdk": "^5.2.4",
     "@angular/common": "^5.2.8",
@@ -34,15 +40,5 @@
     "web-animations-js": "^2.3.1",
     "whatwg-fetch": "^2.0.3",
     "zone.js": "^0.8.20"
-  },
-  "devDependencies": {
-    "@angular/cli": "1.7.3",
-    "@angular/compiler-cli": "^5.2.8",
-    "@angular/language-service": "^5.2.8",
-    "@types/node": "^9.4.7",
-    "codelyzer": "^4.2.1",
-    "ng-packagr": "^2.2.0",
-    "tslint": "^5.9.1",
-    "typescript": "~2.6.2"
   }
 }

@@ -8,7 +8,9 @@
       </app-algorithms-table>
     </div>
     <ng-template #empty>
-      The Mission Database for <i>{{ instance.name }}</i> does not define any algorithms.
+      <div class="panel-content">
+        The Mission Database for <i>{{ instance.name }}</i> does not define any algorithms.
+      </div>
     </ng-template>
   </ng-container>
 </app-mdb-page>

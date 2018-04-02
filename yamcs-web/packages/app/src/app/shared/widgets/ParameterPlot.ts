@@ -406,6 +406,17 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
       dyOptions.xAxisHeight = this.xAxisHeight;
     }
 
+    // Install customized GridPlugin in global Dygraph object.
+    Dygraph.Plugins['Grid'] = GridPlugin;
+    Dygraph.PLUGINS = [
+      Dygraph.Plugins['Legend'],
+      Dygraph.Plugins['Axes'],
+      Dygraph.Plugins['Annotations'],
+      Dygraph.Plugins['ChartLabels'],
+      Dygraph.Plugins['Grid'],
+      Dygraph.Plugins['RangeSelector'],
+    ];
+
     this.dygraph = new Dygraph(containingDiv, 'X\n', dyOptions);
 
     const gridPluginInstance = this.dygraph.getPluginInstance_(GridPlugin) as GridPlugin;
