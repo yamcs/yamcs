@@ -20,7 +20,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsVersion;
@@ -228,8 +227,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 }
             } else {
                 ctx.pipeline().addLast(new HttpContentCompressor());
-                ctx.pipeline().addLast(new ChunkedWriteHandler());
-
+                
                 // this will cause the channelRead0 to be called as soon as the request is complete
                 // it will also reject requests whose body is greater than the MAX_BODY_SIZE)
                 ctx.pipeline().addLast(new HttpObjectAggregator(MAX_BODY_SIZE));
@@ -479,5 +477,11 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             builders.values().forEach(b -> responseb.addRoute(b));
             completeOK(req, responseb.build());
         }
+    }
+    
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.error("Will close channel due to exception", cause);
+        ctx.close();
     }
 }

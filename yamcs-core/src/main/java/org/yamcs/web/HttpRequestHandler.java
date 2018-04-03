@@ -52,6 +52,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
@@ -59,11 +60,14 @@ import io.netty.util.ReferenceCountUtil;
 /**
  * Handles handshakes and messages.
  *
- * We have following different request types - static requests - sent to the fileRequestHandler - do no go higher in the
- * netty pipeline - websocket requests - the pipeline is modified to add the websocket handshaker. - load data requests
- * - the pipeline is modified by the respective route handler - standard API calls (the vast majority) - the
- * HttpObjectAgreggator is added upstream to collect (and limit) all data from the http request in one object.
- *
+ * We have following different request types
+ * <ul>
+ * <li>static requests - sent to the fileRequestHandler - do no go higher in the netty pipeline</li>
+ * <li>websocket requests - the pipeline is modified to add the websocket handshaker.</li>
+ * <li>load data requests - the pipeline is modified by the respective route handler</li>
+ * <li>standard API calls (the vast majority) - the HttpObjectAgreggator is added upstream to collect
+ * (and limit) all data from the http request in one object.</li>
+ * </ul>
  * Because we support multiple http requests on one connection (keep-alive), we have to clean the pipeline when the
  * request type changes
  */
@@ -291,9 +295,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         int txSize = body.readableBytes();
         HttpUtil.setContentLength(response, txSize);
-        return
 
-        sendResponse(ctx, req, response, autoCloseOnError);
+        return sendResponse(ctx, req, response, autoCloseOnError);
     }
 
     public static ChannelFuture sendPlainTextError(ChannelHandlerContext ctx, HttpRequest req,
@@ -347,6 +350,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType,
             String filename) {
         log.info("{} {} {} 200 starting chunked transfer", ctx.channel().id().asShortText(), req.method(), req.uri());
+        ctx.pipeline().addLast(new ChunkedWriteHandler());
         ctx.channel().attr(CTX_CHUNK_STATS).set(new ChunkedTransferStats(req.method(), req.uri()));
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
@@ -378,7 +382,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         }
         return writeFuture;
     }
-
+    
     public static class ChunkedTransferStats {
         public int totalBytes = 0;
         public int chunkCount = 0;
