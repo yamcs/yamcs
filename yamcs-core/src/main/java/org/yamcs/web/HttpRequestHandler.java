@@ -90,6 +90,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static final FullHttpResponse BAD_REQUEST = new DefaultFullHttpResponse(
             HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST,
             Unpooled.EMPTY_BUFFER);
+    public static final String HANDLER_NAME_COMPRESSOR = "hndl_compressor";
+    public static final String HANDLER_NAME_CHUNKED_WRITER = "hndl_chunked_writer";
+    
+    
     static {
         HttpUtil.setContentLength(BAD_REQUEST, 0);
     }
@@ -350,7 +354,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType,
             String filename) {
         log.info("{} {} {} 200 starting chunked transfer", ctx.channel().id().asShortText(), req.method(), req.uri());
-        ctx.pipeline().addLast(new ChunkedWriteHandler());
+        ctx.pipeline().addBefore(HANDLER_NAME_COMPRESSOR, HANDLER_NAME_CHUNKED_WRITER, new ChunkedWriteHandler());
         ctx.channel().attr(CTX_CHUNK_STATS).set(new ChunkedTransferStats(req.method(), req.uri()));
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);

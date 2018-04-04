@@ -113,7 +113,6 @@ public class StaticFileHandler extends RouteHandler {
             }
         }
         boolean zeroCopy = webConfig.isZeroCopyEnabled() && ctx.pipeline().get(SslHandler.class) == null; 
-       
         long fileLength = file.length();
 
         
@@ -124,14 +123,14 @@ public class StaticFileHandler extends RouteHandler {
         if (HttpUtil.isKeepAlive(req)) {
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         }
-        
-        
+
         if(zeroCopy) {
             HttpUtil.setContentLength(response, fileLength);
         } else {
+            //chunked HTTP is required for compression to work because we don't know the size of the compressed file.
             HttpUtil.setTransferEncodingChunked(response, true);
-            ctx.pipeline().addLast(new HttpContentCompressor());
-            ctx.pipeline().addLast(new ChunkedWriteHandler());
+            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_CHUNKED_WRITER, new ChunkedWriteHandler());
+            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
             //propagate the request to the new handlers in the pipeline that need to configure themselves
             ctx.fireChannelRead(req);
         }

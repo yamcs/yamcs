@@ -226,7 +226,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                     HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
                 }
             } else {
-                ctx.pipeline().addLast(new HttpContentCompressor());
+                ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
                 
                 // this will cause the channelRead0 to be called as soon as the request is complete
                 // it will also reject requests whose body is greater than the MAX_BODY_SIZE)
