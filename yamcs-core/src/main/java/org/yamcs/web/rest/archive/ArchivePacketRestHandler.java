@@ -11,6 +11,7 @@ import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.protobuf.Rest.ListPacketsResponse;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
+import org.yamcs.security.Privilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
@@ -42,7 +43,12 @@ public class ArchivePacketRestHandler extends RestHandler {
                 nameSet.add(name.trim());
             }
         }
-
+        if(!nameSet.isEmpty()) {
+            verifyAuthorization(req.getAuthToken(), Privilege.Type.TM_PACKET, nameSet);
+        } else if(Privilege.getInstance().isEnabled()) {
+            nameSet.addAll(Privilege.getInstance().getTmPacketNames(instance, req.getAuthToken()));
+        }
+        
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
@@ -52,7 +58,7 @@ public class ArchivePacketRestHandler extends RestHandler {
             sqlb.where("gentime = ?",req.getDateRouteParam("gentime"));
         }
         if (!nameSet.isEmpty()) {
-            sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
+            sqlb.whereColIn("pname",nameSet);
         }
         sqlb.descend(req.asksDescending(true));
 
@@ -85,7 +91,6 @@ public class ArchivePacketRestHandler extends RestHandler {
                     completeOK(req, responseb.build());
                 }
             });
-
         }
     }
 
@@ -103,7 +108,9 @@ public class ArchivePacketRestHandler extends RestHandler {
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
                 TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
-                packets.add(pdata);
+                if(authorised(req, Privilege.Type.TM_PACKET, pdata.getId().getName())) {
+                    packets.add(pdata);
+                }
             }
 
             @Override

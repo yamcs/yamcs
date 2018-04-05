@@ -3,6 +3,7 @@ package org.yamcs.web.rest.mdb;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Rest.ListCommandInfoResponse;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.security.Privilege.Type;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
@@ -21,6 +22,8 @@ public class MDBCommandRestHandler extends RestHandler {
     @Route(path = "/api/mdb/:instance/commands", method = "GET")
     @Route(path = "/api/mdb/:instance/commands/:name*", method = "GET")
     public void getCommand(RestRequest req) throws HttpException {
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
+        
         if (req.hasRouteParam("name")) {
             getCommandInfo(req);
         } else {
@@ -33,7 +36,8 @@ public class MDBCommandRestHandler extends RestHandler {
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
-
+     
+        
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL, req.getOptions());
         completeOK(req, cinfo);

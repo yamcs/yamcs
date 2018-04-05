@@ -2,6 +2,7 @@ package org.yamcs.web.rest.mdb;
 
 import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Rest.ListContainerInfoResponse;
+import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -19,6 +20,8 @@ public class MDBContainerRestHandler extends RestHandler {
     @Route(path = "/api/mdb/:instance/containers", method = "GET")
     @Route(path = "/api/mdb/:instance/containers/:name*", method = "GET")
     public void getContainer(RestRequest req) throws HttpException {
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
+        
         if (req.hasRouteParam("name")) {
             getContainerInfo(req);
         } else {

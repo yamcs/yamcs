@@ -179,11 +179,6 @@ public class ArchiveTableRestHandler extends RestHandler {
         pipeline.addLast("loader", new TableLoader(table, req, inputStream));
     }
 
-    private void verifyAuthorization(AuthenticationToken authToken, SystemPrivilege p) throws ForbiddenException {
-        if (!Privilege.getInstance().hasPrivilege1(authToken, p)) {
-            throw new ForbiddenException("Need " + p + " privilege for this operation");
-        }
-    }
 
     static class TableLoader extends SimpleChannelInboundHandler<Row> {
         private static final Logger log = LoggerFactory.getLogger(TableLoader.class);

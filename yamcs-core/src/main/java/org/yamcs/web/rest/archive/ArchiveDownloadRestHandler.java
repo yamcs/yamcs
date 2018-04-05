@@ -25,6 +25,7 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.security.Privilege.Type;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.web.BadRequestException;
@@ -196,6 +197,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 nameSet.add(name.trim());
             }
         }
+        
+        verifyAuthorization(req.getAuthToken(), Privilege.Type.TM_PACKET, nameSet);
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -240,6 +243,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         }
 
+        verifyAuthorization(req.getAuthToken(), Privilege.Type.CMD_HISTORY, nameSet);
+        
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
@@ -263,7 +268,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     public void downloadTableData(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadTables);
+        
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
 
         boolean dumpFormat = req.hasQueryParameter("format")
@@ -308,7 +314,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     public void downloadEvents(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         ArchiveEventRestHandler.verifyEventArchiveSupport(instance);
-
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadEvents);
+        
         Set<String> sourceSet = new HashSet<>();
         for (String names : req.getQueryParameterList("source", Collections.emptyList())) {
             for (String name : names.split(",")) {

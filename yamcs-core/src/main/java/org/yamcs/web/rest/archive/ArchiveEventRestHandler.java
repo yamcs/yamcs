@@ -18,6 +18,7 @@ import org.yamcs.api.MediaType;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.protobuf.Rest.ListEventsResponse;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
@@ -56,6 +57,8 @@ public class ArchiveEventRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         verifyEventArchiveSupport(instance);
 
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadEvents);
+        
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
 
@@ -90,7 +93,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
         sqlb.descend(req.asksDescending(true));
         String sql = sqlb.toString();
-        System.out.println("sql: "+sql);
+
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)));
@@ -149,6 +152,9 @@ public class ArchiveEventRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/events", method = "POST")
     public void postEvent(RestRequest req) throws HttpException {
 
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayWriteEvents);
+        
+        
         // get event from request
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         Event event = req.bodyAsMessage(Event.newBuilder()).build();

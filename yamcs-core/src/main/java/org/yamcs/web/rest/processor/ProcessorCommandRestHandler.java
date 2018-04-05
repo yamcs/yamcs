@@ -35,6 +35,7 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yaml.snakeyaml.util.UriEncoder;
 
 import com.google.protobuf.ByteString;
+import org.yamcs.security.Privilege;
 
 /**
  * Processes command requests
@@ -51,6 +52,8 @@ public class ProcessorCommandRestHandler extends RestHandler {
         String requestCommandName = UriEncoder.decode(req.getRouteParam("name"));
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         MetaCommand cmd = verifyCommand(req, mdb, requestCommandName);
+        
+        verifyAuthorization(req.getAuthToken(), Privilege.Type.TC, cmd.getQualifiedName());
 
         String origin = "";
         int sequenceNumber = 0;

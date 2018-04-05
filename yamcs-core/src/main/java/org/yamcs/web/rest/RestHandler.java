@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,9 @@ import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -279,6 +282,13 @@ public abstract class RestHandler extends RouteHandler {
     protected static Stream verifyStream(RestRequest req, YarchDatabaseInstance ydb, String streamName)
             throws NotFoundException {
         Stream stream = ydb.getStream(streamName);
+        
+        if (stream != null && !authorised(req, Privilege.Type.STREAM, streamName)) {
+            log.warn("Stream {} found, but withheld due to insufficient privileges. Returning 404 instead",
+                    streamName);
+            stream = null;
+        }
+        
         if (stream == null) {
             throw new NotFoundException(req,
                     "No stream named '" + streamName + "' (instance: '" + ydb.getName() + "')");
@@ -313,12 +323,6 @@ public abstract class RestHandler extends RouteHandler {
             // Maybe some non-xtce namespace like MDB:OPS Name
             id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
             cmd = mdb.getMetaCommand(id);
-        }
-
-        if (cmd != null && !authorised(req, Privilege.Type.TC, cmd.getQualifiedName())) {
-            log.warn("Command {} found, but withheld due to insufficient privileges. Returning 404 instead",
-                    StringConverter.idToString(id));
-            cmd = null;
         }
 
         if (cmd == null) {
@@ -425,4 +429,26 @@ public abstract class RestHandler extends RouteHandler {
             throw new ForbiddenException("Need " + priv + " privilege for this operation");
         }
     }
+    
+    protected void verifyAuthorization(AuthenticationToken authToken, SystemPrivilege p) throws ForbiddenException {
+        if (!Privilege.getInstance().hasPrivilege1(authToken, p)) {
+            throw new ForbiddenException("Need " + p + " privilege for this operation");
+        }
+    }
+    
+    protected static void verifyAuthorization(AuthenticationToken authToken, Privilege.Type type, Collection<String> names) throws ForbiddenException {
+        for(String n: names) {
+            if(!Privilege.getInstance().hasPrivilege1(authToken, type, n)) {
+                throw new ForbiddenException("No "+type+" authorization for '"+n+"'");
+            };
+        }
+    };
+
+    protected static void verifyAuthorization(AuthenticationToken authToken, Privilege.Type type, String...names) throws ForbiddenException {
+        for(String n: names) {
+            if(!Privilege.getInstance().hasPrivilege1(authToken, type, n)) {
+                throw new ForbiddenException("No "+type+" authorization for '"+n+"'");
+            };
+        }
+    };
 }

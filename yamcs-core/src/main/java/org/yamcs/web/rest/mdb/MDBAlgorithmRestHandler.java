@@ -2,6 +2,7 @@ package org.yamcs.web.rest.mdb;
 
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Rest.ListAlgorithmInfoResponse;
+import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -19,6 +20,8 @@ public class MDBAlgorithmRestHandler extends RestHandler {
     @Route(path = "/api/mdb/:instance/algorithms", method = "GET")
     @Route(path = "/api/mdb/:instance/algorithms/:name*", method = "GET")
     public void getAlgorithm(RestRequest req) throws HttpException {
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
+        
         if (req.hasRouteParam("name")) {
             getAlgorithmInfo(req);
         } else {

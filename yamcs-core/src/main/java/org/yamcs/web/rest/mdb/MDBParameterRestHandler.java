@@ -12,6 +12,7 @@ import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse.GetParameterInfoResp
 import org.yamcs.protobuf.Rest.ListParameterInfoResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.security.Privilege.Type;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
@@ -31,6 +32,8 @@ public class MDBParameterRestHandler extends RestHandler {
 
     @Route(path = "/api/mdb/:instance/parameters/bulk", method = { "GET", "POST" }, priority = true)
     public void getBulkParameterInfo(RestRequest req) throws HttpException {
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
+        
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
