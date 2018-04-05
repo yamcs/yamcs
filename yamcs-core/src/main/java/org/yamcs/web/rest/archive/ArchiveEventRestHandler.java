@@ -49,6 +49,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
     private Map<String, EventProducer> eventProducerMap = new HashMap<>();
     private ExtensionRegistry gpbExtensionRegistry;
+ 
 
     @Route(path = "/api/archive/:instance/events", method = "GET")
     public void listEvents(RestRequest req) throws HttpException {
@@ -65,17 +66,31 @@ public class ArchiveEventRestHandler extends RestHandler {
             }
         }
 
+        Set<String> severitySet = new HashSet<>();
+        for (String names : req.getQueryParameterList("severity", Collections.emptyList())) {
+            for (String name : names.split(",")) {
+                severitySet.add(name);
+            }
+        }
+
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (!sourceSet.isEmpty()) {
-            sqlb.where("source in ('" + String.join("','", sourceSet) + "')");
+            sqlb.whereColIn("source", sourceSet);
         }
+        if (!severitySet.isEmpty()) {
+            sqlb.whereColIn("body.severity", severitySet);
+        }
+        if (req.hasQueryParameter("filter")) {
+            sqlb.where("body.message like ?", "%" + req.getQueryParameter("filter") + "%");
+        }
+
         sqlb.descend(req.asksDescending(true));
         String sql = sqlb.toString();
-
+        System.out.println("sql: "+sql);
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)));
@@ -86,7 +101,7 @@ public class ArchiveEventRestHandler extends RestHandler {
                 throw new InternalServerErrorException(e);
             }
 
-            RestStreams.stream(instance, sql, new RestStreamSubscriber(pos, limit) {
+            RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
                     try {
@@ -106,7 +121,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
         } else {
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-            RestStreams.stream(instance, sql, new RestStreamSubscriber(pos, limit) {
+            RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {

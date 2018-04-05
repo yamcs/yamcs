@@ -1,5 +1,6 @@
 package org.yamcs.web.rest.archive;
 
+
 import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
@@ -33,19 +34,19 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("triggerTime"));
         }
+        
         if (req.hasRouteParam("parameter")) {
             XtceDb mdb = XtceDbFactory.getInstance(instance);
             Parameter p = verifyParameter(req, mdb, req.getRouteParam("parameter"));
-            sqlb.where("parameter = '" + p.getQualifiedName() + "'");
+            sqlb.where("parameter = ?", p.getQualifiedName());
         }
         /*
          * if (req.hasRouteParam("triggerTime")) { sqlb.where("triggerTime = " + req.getDateRouteParam("triggerTime"));
          * }
          */
         sqlb.descend(req.asksDescending(true));
-
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
-        RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {

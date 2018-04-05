@@ -1,6 +1,7 @@
 package org.yamcs.web.rest;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class SqlBuilder {
@@ -10,12 +11,14 @@ public class SqlBuilder {
     private List<String> conditions;
     private Boolean descend;
     
+    private List<Object> queryArgs = new ArrayList<>();
+    
     public SqlBuilder(String table) {
         this.table = table;
     }
     
     /**
-     * Additive! Calling multiple times will add extra select expressions to the alread specified list.
+     * Additive! Calling multiple times will add extra select expressions to the already specified list.
      */
     public SqlBuilder select(String... exprs) {
         if (selectExpressions == null) {
@@ -30,13 +33,36 @@ public class SqlBuilder {
     /**
      * Additive! Calling multiple times will add extra conditions to the already specified list.
      */
-    public SqlBuilder where(String... whereCondition) {
+    public SqlBuilder where(String whereCondition, Object...args) {
         if (conditions == null) {
-            conditions = new ArrayList<>(whereCondition.length);
+            conditions = new ArrayList<>(2);
         }
-        for (String cond : whereCondition) {
-            conditions.add(cond);
+        conditions.add(whereCondition);
+        for(Object o:args) {
+            queryArgs.add(o);
         }
+        return this;
+    }
+    
+    public SqlBuilder whereColIn(String colName, Collection<?> values) {
+        if (conditions == null) {
+            conditions = new ArrayList<>(2);
+        }
+        StringBuilder cond = new StringBuilder();
+        cond.append(colName).append(" IN (");
+        boolean first = true;
+        for(Object o:values) {
+            if(first) {
+                first = false;
+            } else {
+                cond.append(", ");
+            }
+            cond.append("?");
+            queryArgs.add(o);
+        }
+        cond.append(")");
+        conditions.add(cond.toString());
+        
         return this;
     }
     
@@ -73,4 +99,10 @@ public class SqlBuilder {
         }
         return buf.toString();
     }
+
+    public List<Object> getQueryArguments() {
+        return queryArgs;
+    }
+
+    
 }

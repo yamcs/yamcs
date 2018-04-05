@@ -336,9 +336,10 @@ public class YarchDatabaseInstance {
         return YarchDatabase.getHome() + "/" + instanceName;
     }
 
-    public StreamSqlResult execute(String query) throws StreamSqlException, ParseException {
+    public StreamSqlResult execute(String query, Object... args) throws StreamSqlException, ParseException {
         ExecutionContext context = new ExecutionContext(instanceName);
         StreamSqlParser parser = new StreamSqlParser(new java.io.StringReader(query));
+        parser.setArgs(args);
         try {
             StreamSqlStatement s = parser.OneStatement();
             return s.execute(context);

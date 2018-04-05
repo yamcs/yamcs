@@ -36,12 +36,12 @@ public class ArchiveCommandRestHandler extends RestHandler {
         if (req.hasRouteParam("name")) {
             XtceDb mdb = XtceDbFactory.getInstance(instance);
             MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
-            sqlb.where("cmdName = '" + cmd.getQualifiedName() + "'");
+            sqlb.where("cmdName = ?", cmd.getQualifiedName());
         }
         sqlb.descend(req.asksDescending(true));
 
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
-        RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {

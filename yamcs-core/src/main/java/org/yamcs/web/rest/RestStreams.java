@@ -1,5 +1,7 @@
 package org.yamcs.web.rest;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -18,6 +20,9 @@ public class RestStreams {
     
     
     public static void stream(String instance, String selectSql, RestStreamSubscriber s) throws HttpException {
+        stream(instance, selectSql, Collections.EMPTY_LIST, s);
+    }
+    public static void stream(String instance, String selectSql, List<Object> args, RestStreamSubscriber s) throws HttpException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         
         String streamName = "rest_archive" + streamCounter.incrementAndGet();
@@ -30,7 +35,7 @@ public class RestStreams {
         
         log.debug("Executing: {}", sql);
         try {
-            ydb.execute(sql);
+            ydb.execute(sql, args.toArray());
         } catch (StreamSqlException | ParseException e) {
             throw new InternalServerErrorException(e);
         }
@@ -41,5 +46,4 @@ public class RestStreams {
         stream.start();
         return;
     }
-    
 }

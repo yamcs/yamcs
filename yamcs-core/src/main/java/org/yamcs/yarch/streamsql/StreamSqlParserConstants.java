@@ -234,6 +234,8 @@ public interface StreamSqlParserConstants {
   int SPECIAL_CHARS = 115;
   /** RegularExpression Id. */
   int S_DOUBLE_QUOTED_IDENTIFIER = 116;
+  /** RegularExpression Id. */
+  int S_QMARK = 117;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -357,6 +359,7 @@ public interface StreamSqlParserConstants {
     "<LETTER>",
     "<SPECIAL_CHARS>",
     "<S_DOUBLE_QUOTED_IDENTIFIER>",
+    "\"?\"",
     "\"(\"",
     "\")\"",
     "\",\"",

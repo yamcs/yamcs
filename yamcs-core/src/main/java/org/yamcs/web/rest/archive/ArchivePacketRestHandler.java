@@ -49,7 +49,7 @@ public class ArchivePacketRestHandler extends RestHandler {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (req.hasRouteParam("gentime")) {
-            sqlb.where("gentime = " + req.getDateRouteParam("gentime"));
+            sqlb.where("gentime = ?",req.getDateRouteParam("gentime"));
         }
         if (!nameSet.isEmpty()) {
             sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
@@ -58,7 +58,7 @@ public class ArchivePacketRestHandler extends RestHandler {
 
         if (req.asksFor(MediaType.OCTET_STREAM)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
-            RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+            RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
                     TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
@@ -72,7 +72,7 @@ public class ArchivePacketRestHandler extends RestHandler {
             });
         } else {
             ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
-            RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(pos, limit) {
+            RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
 
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
@@ -96,10 +96,10 @@ public class ArchivePacketRestHandler extends RestHandler {
         int seqNum = req.getIntegerRouteParam("seqnum");
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
-                .where("gentime = " + gentime, "seqNum = " + seqNum);
+                .where("gentime = ?",  gentime).where("seqNum = ?", seqNum);
 
         List<TmPacketData> packets = new ArrayList<>();
-        RestStreams.stream(instance, sqlb.toString(), new RestStreamSubscriber(0, 2) {
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(0, 2) {
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
                 TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);

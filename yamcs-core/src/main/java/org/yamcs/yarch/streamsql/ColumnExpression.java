@@ -13,7 +13,6 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
-import com.google.protobuf.Field;
 
 /**
  * Represents a column in a query, for example x and y below:

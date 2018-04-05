@@ -203,14 +203,14 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (!nameSet.isEmpty()) {
-            sqlb.where("pname in ('" + String.join("','", nameSet) + "')");
+            sqlb.whereColIn("pname",nameSet);
         }
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
 
         String filename = "packets";
         if (req.asksFor(MediaType.OCTET_STREAM)) {
-            RestStreams.stream(instance, sql,
+            RestStreams.stream(instance, sql, sqlb.getQueryArguments(),
                     new StreamToChunkedTransferEncoder(req, MediaType.OCTET_STREAM, filename) {
                         @Override
                         public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
@@ -219,7 +219,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                         }
                     });
         } else {
-            RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<TmPacketData>(req, filename) {
+            RestStreams.stream(instance, sql, sqlb.getQueryArguments(),
+                    new StreamToChunkedProtobufEncoder<TmPacketData>(req, filename) {
                 @Override
                 public TmPacketData mapTuple(Tuple tuple) {
                     return GPBHelper.tupleToTmPacketData(tuple);
@@ -245,12 +246,12 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (!nameSet.isEmpty()) {
-            sqlb.where("cmdName in ('" + String.join("','", nameSet) + "')");
+            sqlb.whereColIn("cmdName", nameSet);
         }
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
 
-        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, "commands") {
+        RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, "commands") {
             @Override
             public CommandHistoryEntry mapTuple(Tuple tuple) {
                 return GPBHelper.tupleToCommandHistoryEntry(tuple);
@@ -321,20 +322,20 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (!sourceSet.isEmpty()) {
-            sqlb.where("source in ('" + String.join("','", sourceSet) + "')");
+            sqlb.whereColIn("source", sourceSet);
         }
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
 
         if (req.asksFor(MediaType.CSV)) {
-            transferChunkedCSVEvents(req, instance, sql);
+            transferChunkedCSVEvents(req, instance, sql, sqlb.getQueryArguments());
         } else {
-            transferChunkedProtobufEvents(req, instance, sql);
+            transferChunkedProtobufEvents(req, instance, sql, sqlb.getQueryArguments());
         }
     }
 
-    private void transferChunkedCSVEvents(RestRequest req, String instance, String sql) throws HttpException {
-        RestStreams.stream(instance, sql, new StreamToChunkedCSVEncoder(req, "events") {
+    private void transferChunkedCSVEvents(RestRequest req, String instance, String sql, List<Object> sqlArgs) throws HttpException {
+        RestStreams.stream(instance, sql, sqlArgs, new StreamToChunkedCSVEncoder(req, "events") {
 
             @Override
             public String[] getCSVHeader() {
@@ -349,8 +350,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         });
     }
 
-    private void transferChunkedProtobufEvents(RestRequest req, String instance, String sql) throws HttpException {
-        RestStreams.stream(instance, sql, new StreamToChunkedProtobufEncoder<Event>(req, "events") {
+    private void transferChunkedProtobufEvents(RestRequest req, String instance, String sql, List<Object> sqlArgs) throws HttpException {
+        RestStreams.stream(instance, sql, sqlArgs, new StreamToChunkedProtobufEncoder<Event>(req, "events") {
 
             @Override
             public Event mapTuple(Tuple tuple) {

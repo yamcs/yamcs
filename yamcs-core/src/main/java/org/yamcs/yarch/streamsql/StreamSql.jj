@@ -29,6 +29,8 @@ import org.yamcs.yarch.TableDefinition.PartitionStorage;
 public class StreamSqlParser {
 
     private String lastObjectReference = null;
+    private Object[] args = new Object[0];
+    int argCount = 0;
 
     private String getNonEscapedString(String s) {
 	    return s.substring(1,s.length()-1).replace("''","'"); //remove the quote (') from beginning and from end and then replace double quote with single quote
@@ -36,6 +38,26 @@ public class StreamSqlParser {
     
     protected boolean seeTYPE() {
         return "TYPE".equalsIgnoreCase(getToken(1).image);
+    }
+    
+   public void setArgs(Object[] args) {
+        this.args = args;
+    }
+    
+    Object nextArg() throws StreamSqlException {
+        if(argCount>=args.length) {
+            throw new StreamSqlException(StreamSqlException.ErrCode.WRONG_ARG_COUNT); 
+        }
+        return args[argCount++];
+    }
+    
+    String nextArgAsString() throws StreamSqlException {
+        Object o = nextArg();
+        if(o instanceof String) {
+            return (String) o;
+        } else {
+            throw new StreamSqlException(StreamSqlException.ErrCode.BAD_ARG_TYPE, "Expected String, got "+o.getClass()); 
+        }
     }
 
 }
@@ -186,6 +208,7 @@ TOKEN:
   | < #LETTER: ["a"-"z", "A"-"Z"] >
   | < #SPECIAL_CHARS: "$" | "_" | "#" | ".">
   | < S_DOUBLE_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" >
+  | < S_QMARK: "?" >
 }
 
 DataType BasicDataTypeDefinition():
@@ -253,7 +276,7 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     }
 }
 
-CreateInputStreamStatement CreateInputStreamStatement(): {
+CreateInputStreamStatement CreateInputStreamStatement() throws StreamSqlException: {
     TupleDefinition tupleDefinition;
     String streamName;
 } {
@@ -287,7 +310,7 @@ CreateTableStatement CreateTableStatement() throws StreamSqlException: {
     }
 }
 
-void TableOption(CreateTableStatement cts): {
+void TableOption(CreateTableStatement cts) throws StreamSqlException: {
    String columnName, datadir, engine;
    PartitioningSpec pspec;
    PartitionStorage pstorage;
@@ -305,14 +328,14 @@ void TableOption(CreateTableStatement cts): {
    <K_PARTITION_STORAGE> "=" pstorage=PartitionStorage() {cts.setPartitionStorage(pstorage);}
 }
 
-PartitionStorage PartitionStorage(): {
+PartitionStorage PartitionStorage() throws StreamSqlException: {
 } {
    <K_IN_KEY> {return PartitionStorage.IN_KEY;}
    |
    <K_COLUMN_FAMILY> {return PartitionStorage.COLUMN_FAMILY;}
 }
 
-PartitioningSpec PartitioningSpec(): {
+PartitioningSpec PartitioningSpec() throws StreamSqlException: {
     PartitioningSpec pspec;
     String cname1, cname2;
     Token timePartSchema = null;
@@ -333,7 +356,7 @@ PartitioningSpec PartitioningSpec(): {
     }
 }
 
-CreateOutputStreamStatement CreateOutputStreamStatement(): {
+CreateOutputStreamStatement CreateOutputStreamStatement() throws StreamSqlException: {
     String name;
     StreamExpression expression;
 } {
@@ -343,7 +366,7 @@ CreateOutputStreamStatement CreateOutputStreamStatement(): {
     }
 }
 
-CreateStreamStatement CreateStreamStatement(): {
+CreateStreamStatement CreateStreamStatement() throws StreamSqlException: {
     String name;
     StreamExpression expression;
     TupleDefinition tupleDefinition;
@@ -362,7 +385,7 @@ CreateStreamStatement CreateStreamStatement(): {
 
 }
 
-SpeedLimitStreamExpression SpeedLimitStreamExpression(): {
+SpeedLimitStreamExpression SpeedLimitStreamExpression() throws StreamSqlException: {
     StreamExpression expression;
     SpeedSpec speedSpec=null;
     boolean follow=true; 
@@ -378,7 +401,7 @@ SpeedLimitStreamExpression SpeedLimitStreamExpression(): {
 }
 
 
-CloseStreamStatement CloseStreamStatement(): {
+CloseStreamStatement CloseStreamStatement() throws StreamSqlException: {
     String name;
 } {
     <K_CLOSE> <K_STREAM> name=ObjectName()
@@ -387,7 +410,7 @@ CloseStreamStatement CloseStreamStatement(): {
     }
 }
 
-DropTableStatement DropTableStatement(): {
+DropTableStatement DropTableStatement() throws StreamSqlException: {
     boolean ifExists=false;
     String name;
 } {
@@ -398,7 +421,7 @@ DropTableStatement DropTableStatement(): {
 }
 
 
-ShowStreamsStatement ShowStreamsStatement(): {
+ShowStreamsStatement ShowStreamsStatement() throws StreamSqlException: {
 } {
     <K_SHOW> <K_STREAMS> 
     {
@@ -406,7 +429,7 @@ ShowStreamsStatement ShowStreamsStatement(): {
     }
 }
 
-ShowTablesStatement ShowTablesStatement(): {
+ShowTablesStatement ShowTablesStatement() throws StreamSqlException: {
 } {
     <K_SHOW> <K_TABLES> 
     {
@@ -414,7 +437,7 @@ ShowTablesStatement ShowTablesStatement(): {
     }
 }
 
-ShowStreamStatement ShowStreamStatement(): {
+ShowStreamStatement ShowStreamStatement() throws StreamSqlException: {
     boolean showPort=false;
     String name;
 } {
@@ -424,7 +447,7 @@ ShowStreamStatement ShowStreamStatement(): {
     }
 }
 
-StreamExpression StreamExpression():  {
+StreamExpression StreamExpression() throws StreamSqlException:  {
     StreamExpression expression;
 } {
    (expression=SelectStatement()
@@ -438,24 +461,24 @@ StreamExpression StreamExpression():  {
 
 
 
-void IntoClause():{
+void IntoClause() throws StreamSqlException:{
 } {
     "INTO" ObjectName()
 }
 
 
-void ColumnValues(): {
+void ColumnValues() throws StreamSqlException: {
 } {
     ColumnValue() ("," ColumnValue())*
   | "(" ObjectName() ("," ObjectName())* ")" "=" "(" SelectStatement() ")"
 }
 
-void ColumnValue(): {
+void ColumnValue() throws StreamSqlException: {
 } {
     ObjectName() "=" Expression()
 }
 
-InsertStatement InsertStatement(): {
+InsertStatement InsertStatement() throws StreamSqlException: {
     String name;
     StreamExpression expression;
 } {
@@ -465,7 +488,7 @@ InsertStatement InsertStatement(): {
     }
 }
 
-InsertStatement UpsertStatement(): {
+InsertStatement UpsertStatement() throws StreamSqlException: {
     String name;
     StreamExpression expression;
 } {
@@ -475,7 +498,7 @@ InsertStatement UpsertStatement(): {
     }
 }
 
-InsertStatement InsertAppendStatement(): {
+InsertStatement InsertAppendStatement() throws StreamSqlException: {
     String name;
     StreamExpression expression;
 } {
@@ -485,7 +508,7 @@ InsertStatement InsertAppendStatement(): {
     }
 }
 
-InsertStatement UpsertAppendStatement(): {
+InsertStatement UpsertAppendStatement() throws StreamSqlException: {
     String name;
     StreamExpression expression;
 } {
@@ -495,7 +518,7 @@ InsertStatement UpsertAppendStatement(): {
     }
 }
 
-MergeExpression MergeExpression(): {
+MergeExpression MergeExpression() throws StreamSqlException: {
     MergeExpression mergeExpr=new MergeExpression();
     TupleSourceExpression tsrc;
     String name;
@@ -513,7 +536,7 @@ MergeExpression MergeExpression(): {
     }
 }
 
-DeleteStatement DeleteStatement(): {
+DeleteStatement DeleteStatement() throws StreamSqlException: {
     String tableName;
     Expression expression=null;
 } {
@@ -523,7 +546,7 @@ DeleteStatement DeleteStatement(): {
     }
 }
 
-SpeedSpec SpeedSpec(): {
+SpeedSpec SpeedSpec() throws StreamSqlException: {
   String columnName;
   BigDecimal bd;
   float x=1;
@@ -536,7 +559,7 @@ SpeedSpec SpeedSpec(): {
 
 // Expression and it's childs
 
-Expression Expression(): {
+Expression Expression() throws StreamSqlException: {
     Expression expr;
     Expression retExpr;
 } {
@@ -547,7 +570,7 @@ Expression Expression(): {
     }
 }
 
-Expression AndExpression(): {
+Expression AndExpression() throws StreamSqlException: {
     Expression expr;
     ArrayList<Expression> list=new ArrayList<Expression>();
 } {
@@ -559,7 +582,7 @@ Expression AndExpression(): {
     }
 }
 
-Expression UnaryLogicalExpression(): {
+Expression UnaryLogicalExpression() throws StreamSqlException: {
     boolean notset=false;
     Expression expr;
 } {
@@ -570,7 +593,7 @@ Expression UnaryLogicalExpression(): {
     }
 }
 
-Expression RelationalExpression(): {
+Expression RelationalExpression() throws StreamSqlException: {
     Expression retExpr, expr;
     RelOp relOp;
     List<Expression> list;
@@ -592,7 +615,7 @@ Expression RelationalExpression(): {
     }
 }
 
-List<Expression> ExpressionList(): {
+List<Expression> ExpressionList() throws StreamSqlException: {
     List<Expression> list=new ArrayList<Expression>();
     Expression expr;
 } {
@@ -602,7 +625,7 @@ List<Expression> ExpressionList(): {
     }
 }
 
-List<Expression> InClause(): {
+List<Expression> InClause() throws StreamSqlException: {
     List<Expression> list;
 } {
     "IN" "(" list=ExpressionList()")"
@@ -611,30 +634,33 @@ List<Expression> InClause(): {
     }
 }
 
-void BetweenClause(): {
+void BetweenClause() throws StreamSqlException: {
 } {
     ["NOT"] "BETWEEN" SimpleExpression() "AND" SimpleExpression()
 }
 
 
-LikeClause LikeClause():{
+LikeClause LikeClause() throws StreamSqlException:{
   LikeClause likeClause = new LikeClause();
   String pattern;
 } {
     ["NOT" {likeClause.setNegation(true);}]
-     "LIKE" <S_STRING> {likeClause.setPattern(getNonEscapedString(token.image));}
-     {
+    "LIKE" (<S_STRING> {likeClause.setPattern(getNonEscapedString(token.image));}
+    | <S_QMARK> {likeClause.setPattern(nextArgAsString());}
+    )    
+    {
        return likeClause;
-     }
+    }
+
 }
 
-void IsNullClause():{
+void IsNullClause() throws StreamSqlException:{
 } {
     "IS" ["NOT"] "NULL"
 }
 
 
-Expression SimpleExpression(): {
+Expression SimpleExpression() throws StreamSqlException: {
     Expression expr;
     AddOp addOp;
     List<Expression>exprs=new ArrayList<Expression>();
@@ -653,7 +679,7 @@ Expression SimpleExpression(): {
 
 
 
-Expression MultiplicativeExpression(): {
+Expression MultiplicativeExpression() throws StreamSqlException: {
     Expression expr;
     MultOp multOp;
     List<Expression>exprs=new ArrayList<Expression>();
@@ -670,7 +696,7 @@ Expression MultiplicativeExpression(): {
     }
 }
 
-Expression ExponentExpression(): {
+Expression ExponentExpression() throws StreamSqlException: {
     Expression retExpr,expr;
 } {
     expr=UnaryExpression() {retExpr=expr;} 
@@ -680,7 +706,7 @@ Expression ExponentExpression(): {
     }
 }
 
-Expression UnaryExpression(): {
+Expression UnaryExpression() throws StreamSqlException: {
     Expression expr;
     boolean negative=false;
 } {
@@ -699,7 +725,7 @@ Expression UnaryExpression(): {
 }
 
 
-Expression PrimaryExpression(): {
+Expression PrimaryExpression() throws StreamSqlException: {
     String name;
     Expression expr;
 } {
@@ -712,6 +738,7 @@ Expression PrimaryExpression(): {
       }
   | <S_FLOAT> {return new ValueExpression(Double.valueOf(token.image));}
   | <S_STRING> {return new ValueExpression(getNonEscapedString(token.image));}
+  | <S_QMARK> {return new ValueExpression(nextArg());}
   | LOOKAHEAD(ObjectName() "(") expr=FunctionCall() {return expr;}
   | name=ObjectName() {return new ColumnExpression(name);}
 }
@@ -720,22 +747,22 @@ Expression PrimaryExpression(): {
 /* ---------------- General Productions --------------------- */
 
 
-String ObjectName():
+String ObjectName() throws StreamSqlException:
 {}
 {
     <S_IDENTIFIER>        {return token.image;}
-  | <S_DOUBLE_QUOTED_IDENTIFIER> {String s1 = token.image; return s1.substring(1, s1.length() - 1);}
+  | <S_DOUBLE_QUOTED_IDENTIFIER> {String s1 = token.image; return s1.substring(1, s1.length() - 1);}  
 }
 
 
-AddOp AddOp(): {
+AddOp AddOp()  throws StreamSqlException: {
 } {
     "+" {return AddOp.PLUS;}
   | "-" {return AddOp.MINUS;}
   | "||" {return AddOp.STRING_PLUS;}
 }
 
-MultOp MultOp(): {
+MultOp MultOp() throws StreamSqlException: {
 } {
     "*" {return MultOp.MULT;}
   | "/" {return MultOp.DIV;}
@@ -743,7 +770,7 @@ MultOp MultOp(): {
 }
 
 
-RelOp RelOp(): {
+RelOp RelOp() throws StreamSqlException: {
 } {
     "=" {return RelOp.EQUAL;}
   | "!" "=" {return RelOp.NOT_EQUAL;}
@@ -754,12 +781,12 @@ RelOp RelOp(): {
   | "<" {return RelOp.LESS;}
 }
 
-void Arguments(): {
+void Arguments() throws StreamSqlException: {
 } {
     Argument() ("," Argument())*
 }
 
-void Argument(): {
+void Argument() throws StreamSqlException: {
 } {
     [LOOKAHEAD(2) <S_IDENTIFIER> "=>"] Expression()
 }
@@ -768,7 +795,7 @@ void Argument(): {
 
 /* ----------- SQL productions start here ----------------- */
 
-SelectExpression SelectStatement(): {
+SelectExpression SelectStatement() throws StreamSqlException: {
     SelectExpression expression;
     boolean ascending;
 } {
@@ -779,7 +806,7 @@ SelectExpression SelectStatement(): {
     }
 }
 
-SelectExpression Select():
+SelectExpression Select() throws StreamSqlException:
 {
     List<SelectItem> selectList;
     TupleSourceExpression tsrc;
@@ -799,7 +826,7 @@ SelectExpression Select():
 
 
 /* Checks for whatever follows  SELECT */
-List<SelectItem> SelectList(): {
+List<SelectItem> SelectList() throws StreamSqlException: {
     List<SelectItem> selectList = new ArrayList<SelectItem>();
     SelectItem selectItem;
 } {
@@ -808,7 +835,7 @@ List<SelectItem> SelectList(): {
    {return selectList;} 
 }
 
-SelectItem SelectItem(): {
+SelectItem SelectItem() throws StreamSqlException: {
     String name;
     Expression expr;
     SelectItem selectItem;
@@ -824,7 +851,7 @@ SelectItem SelectItem(): {
 }
 
 
-WindowSpecification WindowSpecification(): {
+WindowSpecification WindowSpecification() throws StreamSqlException: {
     String name,field;
     WindowSpecification wspec;
     BigDecimal size, advance;
@@ -840,7 +867,7 @@ WindowSpecification WindowSpecification(): {
   {return wspec;}
 }
 
-TupleSourceExpression TupleSourceExpression(): {
+TupleSourceExpression TupleSourceExpression() throws StreamSqlException: {
     TupleSourceExpression tsrc;
     StreamExpression expr;
     String name, histoColumn;
@@ -857,7 +884,7 @@ TupleSourceExpression TupleSourceExpression(): {
     }
 }
 
-TupleDefinition TupleDefinition(): {
+TupleDefinition TupleDefinition() throws StreamSqlException: {
     String columnName;
     TupleDefinition tupleDefinition=new TupleDefinition();
     DataType columnType;
@@ -872,7 +899,7 @@ TupleDefinition TupleDefinition(): {
 }
 
 
-boolean OrderClause(): {
+boolean OrderClause() throws StreamSqlException: {
    boolean ascending=true;
 } {
     <K_ORDER>
@@ -883,7 +910,7 @@ boolean OrderClause(): {
 }
 
 
-Expression FunctionCall(): {
+Expression FunctionCall() throws StreamSqlException: {
    String name;
    List<Expression> args=null;
    boolean star=false;
@@ -897,7 +924,7 @@ Expression FunctionCall(): {
     }
 }
 
-List<Expression> FunctionArgumentList(): {
+List<Expression> FunctionArgumentList() throws StreamSqlException: {
   List<Expression> args=new ArrayList<Expression>();
   Expression expr;
 } {
@@ -907,7 +934,7 @@ List<Expression> FunctionArgumentList(): {
  { return args; }
 }
 
-BigDecimal NumericConstant() : {
+BigDecimal NumericConstant()  throws StreamSqlException: {
 } {
  (<S_INTEGER> | <S_FLOAT>) {return new BigDecimal(token.image);}
 }

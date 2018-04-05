@@ -72,8 +72,9 @@ public abstract class YarchTestCase {
         ydb = YarchDatabase.getInstance(instance);
     }
 
-    protected StreamSqlResult execute(String cmd) throws StreamSqlException, ParseException {
-        return ydb.execute(cmd);
+   
+    protected StreamSqlResult execute(String cmd, Object...args) throws StreamSqlException, ParseException {
+        return ydb.execute(cmd, args);
     }
 
     protected List<Tuple> fetchAllFromTable(String tableName) throws Exception {

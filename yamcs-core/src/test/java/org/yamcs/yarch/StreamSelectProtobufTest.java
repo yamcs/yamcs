@@ -68,7 +68,7 @@ public class StreamSelectProtobufTest extends YarchTestCase {
     @Test
     public void test1() throws Exception {
         createFeeder1();
-        res = execute("create stream stream_out1 as select event from stream_in where event.seqNumber >= 3");
+        res = execute("create stream stream_out1 as select event from stream_in where event.seqNumber >= ?", 3);
         
         List<Tuple> tlist = fetchAll("stream_out1");
         
@@ -105,7 +105,7 @@ public class StreamSelectProtobufTest extends YarchTestCase {
     @Test
     public void test4() throws Exception {
         createFeeder1();
-        res = execute("create stream stream_out1 as select event from stream_in where event.severity in ('WARNING') and event.message like '%7%'");
+        res = execute("create stream stream_out1 as select event from stream_in where event.severity in (?) and event.message LIKE ? ", "WARNING", "%7%");
         
         List<Tuple> tlist = fetchAll("stream_out1");
         
