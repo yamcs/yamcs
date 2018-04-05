@@ -36,6 +36,7 @@ import org.yaml.snakeyaml.util.UriEncoder;
 
 import com.google.protobuf.ByteString;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.Privilege.SystemPrivilege;
 
 /**
  * Processes command requests
@@ -44,6 +45,9 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/commands/:name*", method = "POST")
     public void issueCommand(RestRequest req) throws HttpException {
+        
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayCommand);
+        
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");

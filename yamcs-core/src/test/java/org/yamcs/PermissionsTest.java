@@ -26,7 +26,6 @@ import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.UsernamePasswordToken;
-import org.yamcs.utils.TimeEncoding;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -100,7 +99,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                     HttpMethod.POST, toJson(cmdreq)).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getCause().getMessage().contains("No such command"));
+            assertTrue(e.getCause().getMessage().contains("No TC authorization"));
         }
 
     }

@@ -89,10 +89,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
                 .addClientId(cinfo.getId())
                 .setName("testReplay")
-                .setStart("2015-01-01T10:01:00")
-                .setStop("2015-01-01T10:05:00")
-                .addPacketname("*")
-                .addPpgroup("IntegrationTest")
+                .setType("Archive")
+                .setConfig("{\"utcStart\": \"2015-01-01T10:01:00\", \"utcStop\": \"2015-01-01T10:05:00\"}")
                 .build();
 
         restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(prequest)).get();
