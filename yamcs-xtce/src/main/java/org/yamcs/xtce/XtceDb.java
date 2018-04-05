@@ -475,6 +475,9 @@ public class XtceDb implements Serializable {
     public void addParameter(Parameter p, boolean createSpaceSystem) {
         rwLock.writeLock().lock();
         try {
+            if(parameters.containsKey(p.getQualifiedName())) {
+                throw new IllegalArgumentException("There is already a parameter with qualified name '"+p.getQualifiedName()+"'");
+            }
             String ssname = p.getSubsystemName();
             SpaceSystem ss = spaceSystems.get(ssname);
             if(ss==null) {
@@ -680,7 +683,7 @@ public class XtceDb implements Serializable {
                 if(p.getAliasSet()!=null) {
                     namespaces = ", aliases: "+ p.getAliasSet();
                 }
-                out.println(p.getQualifiedName()+", datasource: "+p.getDataSource()+ namespaces);
+                out.println(p.getQualifiedName()+", datasource: "+p.getDataSource()+ namespaces+" type: "+p.getParameterType());
             }
         }
     }
