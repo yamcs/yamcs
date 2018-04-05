@@ -4,7 +4,6 @@ import { YamcsService } from '../services/YamcsService';
 import { MatDialog } from '@angular/material';
 import { SelectInstanceDialog } from '../../shared/template/SelectInstanceDialog';
 import { Observable } from 'rxjs/Observable';
-import { OverlayContainer } from '@angular/cdk/overlay';
 import { PreferenceStore } from '../services/PreferenceStore';
 
 @Component({
@@ -29,7 +28,6 @@ export class AppComponent {
     yamcs: YamcsService,
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
-    private overlayContainer: OverlayContainer,
   ) {
     this.instance$ = yamcs.instance$;
     this.user$ = yamcs.yamcsClient.getUserInfo();
@@ -55,15 +53,13 @@ export class AppComponent {
     }
   }
 
-  private disableDarkMode() {
-    this.overlayContainer.getContainerElement().classList.remove('dark-theme');
-    this.componentCssClass = '';
-    this.preferenceStore.setDarkMode(false);
+  private enableDarkMode() {
+    document.body.classList.add('dark-theme');
+    this.preferenceStore.setDarkMode(true);
   }
 
-  private enableDarkMode() {
-    this.overlayContainer.getContainerElement().classList.add('dark-theme');
-    this.componentCssClass = 'dark-theme';
-    this.preferenceStore.setDarkMode(true);
+  private disableDarkMode() {
+    document.body.classList.remove('dark-theme');
+    this.preferenceStore.setDarkMode(false);
   }
 }

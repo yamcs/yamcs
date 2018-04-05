@@ -8,18 +8,10 @@ mat-toolbar-row {
   min-height: 48px;
 }
 
-.dark-theme mat-toolbar-row {
-  background-color: red !important;
-}
-
 .logo-wrapper {
   display: inline-block;
   width: 184px;
   text-align: center;
-}
-
-.dark-theme .logo-wrapper {
-  background-color: cyan;
 }
 
 .app-bar {

@@ -57,6 +57,7 @@ import { Dots } from './template/Dots';
 import { ActionLink } from './template/ActionLink';
 import { TextAction } from './template/TextAction';
 import { ColumnChooser } from './template/ColumnChooser';
+import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 
 const materialModules = [
   OverlayModule,
@@ -115,6 +116,7 @@ const sharedComponents = [
 
 const pipes = [
   DateTimePipe,
+  FormatBytesPipe,
   OperatorPipe,
   UnitsPipe,
   ValuePipe,

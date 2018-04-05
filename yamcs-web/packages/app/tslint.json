@@ -119,7 +119,7 @@
       "check-type"
     ],
     "directive-selector": [
-      true,
+      false,
       "attribute",
       "app",
       "camelCase"

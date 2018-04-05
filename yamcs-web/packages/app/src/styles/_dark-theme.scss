@@ -5,6 +5,7 @@
 
 ::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -19,12 +20,8 @@
   background: #555;
 }
 
-::-webkit-scrollbar-corner { 
+::-webkit-scrollbar-corner {
   background: #111;
-}
-
-.homepage {
-  background-color: #111;
 }
 
 .mat-paginator {
