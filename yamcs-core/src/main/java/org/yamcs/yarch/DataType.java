@@ -15,15 +15,15 @@ import org.yamcs.parameter.ParameterValue;
  *
  */
 public class DataType {
-
     private static final long serialVersionUID = 201101181144L;
     
-    public enum _type {BYTE, SHORT, INT, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST}
+    public enum _type {BYTE, SHORT, INT, LONG, DOUBLE, TIMESTAMP, STRING, BINARY, BOOLEAN, ENUM, PROTOBUF, PARAMETER_VALUE, TUPLE, LIST}
     public final _type val;
     
     public static final DataType BYTE = new DataType(_type.BYTE);
     public static final DataType SHORT = new DataType(_type.SHORT);
     public static final DataType INT = new DataType(_type.INT);
+    public static final DataType LONG = new DataType(_type.LONG);
     public static final DataType DOUBLE = new DataType(_type.DOUBLE);
     public static final DataType STRING = new DataType(_type.STRING);
     public static final DataType BINARY = new DataType(_type.BINARY);
@@ -88,6 +88,9 @@ public class DataType {
         if("ENUM".equals(name)) {
             return ENUM;
         }
+        if("LONG".equals(name)) {
+            return LONG;
+        }
         
         if("PARAMETER_VALUE".equals(name)){
             return PARAMETER_VALUE;
@@ -113,6 +116,7 @@ public class DataType {
       case DOUBLE:
       case SHORT:
       case STRING:
+      case LONG:
       return capitalized(val.toString());
       case BINARY:
          return "byte[]";
@@ -124,8 +128,9 @@ public class DataType {
           return "Integer";
       case PARAMETER_VALUE:
           return "ParameterValue";
+      default:
+          throw new IllegalStateException("no java type available for "+this);
       }
-      return null;
     }
 
     public String primitiveJavaType() {
@@ -135,6 +140,7 @@ public class DataType {
         case DOUBLE:
         case SHORT:
         case INT:
+        case LONG:
         return val.toString().toLowerCase();
         case TIMESTAMP:
             return "long";
@@ -176,7 +182,7 @@ public class DataType {
         } else if(v instanceof Double) {
             return DOUBLE;
         } else if(v instanceof Long) {
-            return TIMESTAMP;
+            return LONG;
         } else if(v instanceof String) {
             return STRING;
         } else if(v instanceof byte[]) {
@@ -233,6 +239,7 @@ public class DataType {
                 return n.shortValue();
             case INT:
                 return n.intValue();
+            case LONG:
             case TIMESTAMP:
                 return n.longValue();
             case STRING:
@@ -250,6 +257,7 @@ public class DataType {
                 return Short.decode(s);
             case INT:
                 return Integer.decode(s);
+            case LONG:
             case TIMESTAMP:
                 return Long.decode(s);
             case ENUM:
@@ -278,6 +286,7 @@ public class DataType {
         case BYTE:
         case DOUBLE:
         case INT:
+        case LONG:
         case SHORT:
         case TIMESTAMP:
             return true;

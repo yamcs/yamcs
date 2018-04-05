@@ -184,7 +184,7 @@ TOKEN:
 {
     < S_IDENTIFIER: (<LETTER>)+ (<DIGIT> | <LETTER> |<SPECIAL_CHARS>)* >
   | < #LETTER: ["a"-"z", "A"-"Z"] >
-  | < #SPECIAL_CHARS: "$" | "_" | "#">
+  | < #SPECIAL_CHARS: "$" | "_" | "#" | ".">
   | < S_DOUBLE_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" >
 }
 
