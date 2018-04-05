@@ -69,7 +69,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.AttributeKey;
 
 /**
@@ -160,7 +159,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 }
             }
         } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException("Could not access @Route annotated method in " + routeHandler.getClass());
+            throw new IllegalArgumentException(
+                    "Could not access @Route annotated method in " + routeHandler.getClass());
         }
 
         // Sort in a way that increases chances of a good URI match
@@ -227,7 +227,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 }
             } else {
                 ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
-                
+
                 // this will cause the channelRead0 to be called as soon as the request is complete
                 // it will also reject requests whose body is greater than the MAX_BODY_SIZE)
                 ctx.pipeline().addLast(new HttpObjectAggregator(MAX_BODY_SIZE));
@@ -478,7 +478,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             completeOK(req, responseb.build());
         }
     }
-    
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         log.error("Will close channel due to exception", cause);
