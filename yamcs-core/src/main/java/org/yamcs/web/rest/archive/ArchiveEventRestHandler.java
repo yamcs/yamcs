@@ -3,6 +3,7 @@ package org.yamcs.web.rest.archive;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,7 +51,6 @@ public class ArchiveEventRestHandler extends RestHandler {
 
     private Map<String, EventProducer> eventProducerMap = new HashMap<>();
     private ExtensionRegistry gpbExtensionRegistry;
- 
 
     @Route(path = "/api/archive/:instance/events", method = "GET")
     public void listEvents(RestRequest req) throws HttpException {
@@ -58,21 +58,15 @@ public class ArchiveEventRestHandler extends RestHandler {
         verifyEventArchiveSupport(instance);
 
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadEvents);
-        
+
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
+        String severity = req.getQueryParameter("severity", "INFO");
 
         Set<String> sourceSet = new HashSet<>();
         for (String names : req.getQueryParameterList("source", Collections.emptyList())) {
             for (String name : names.split(",")) {
                 sourceSet.add(name);
-            }
-        }
-
-        Set<String> severitySet = new HashSet<>();
-        for (String names : req.getQueryParameterList("severity", Collections.emptyList())) {
-            for (String name : names.split(",")) {
-                severitySet.add(name);
             }
         }
 
@@ -84,8 +78,26 @@ public class ArchiveEventRestHandler extends RestHandler {
         if (!sourceSet.isEmpty()) {
             sqlb.whereColIn("source", sourceSet);
         }
-        if (!severitySet.isEmpty()) {
-            sqlb.whereColIn("body.severity", severitySet);
+        switch (severity) {
+        case "INFO":
+            break;
+        case "WATCH":
+            sqlb.where("body.severity != 'INFO'");
+            break;
+        case "WARNING":
+            sqlb.whereColIn("body.severity", Arrays.asList("WARNING", "DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
+            break;
+        case "DISTRESS":
+            sqlb.whereColIn("body.severity", Arrays.asList("DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
+            break;
+        case "CRITICAL":
+            sqlb.whereColIn("body.severity", Arrays.asList("CRITICAL", "SEVERE", "ERROR"));
+            break;
+        case "SEVERE":
+            sqlb.whereColIn("body.severity", Arrays.asList("SEVERE", "ERROR"));
+            break;
+        default:
+            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
         }
         if (req.hasQueryParameter("filter")) {
             sqlb.where("body.message like ?", "%" + req.getQueryParameter("filter") + "%");
@@ -153,8 +165,7 @@ public class ArchiveEventRestHandler extends RestHandler {
     public void postEvent(RestRequest req) throws HttpException {
 
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayWriteEvents);
-        
-        
+
         // get event from request
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         Event event = req.bodyAsMessage(Event.newBuilder()).build();

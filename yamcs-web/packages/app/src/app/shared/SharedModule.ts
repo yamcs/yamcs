@@ -58,6 +58,7 @@ import { ActionLink } from './template/ActionLink';
 import { TextAction } from './template/TextAction';
 import { ColumnChooser } from './template/ColumnChooser';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
+import { Select } from './template/Select';
 
 const materialModules = [
   OverlayModule,
@@ -109,6 +110,7 @@ const sharedComponents = [
   ParameterPlot,
   SelectInstanceDialog,
   ParameterSeries,
+  Select,
   TabDetailIcon,
   TextAction,
   ToolbarActions,

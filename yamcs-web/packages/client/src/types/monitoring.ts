@@ -180,6 +180,8 @@ export interface GetCommandHistoryOptions {
 export interface GetEventsOptions {
   start?: string;
   stop?: string;
+  filter?: string;
+  severity?: EventSeverity;
   source?: string | string[];
   pos?: number;
   limit?: number;
@@ -189,6 +191,8 @@ export interface GetEventsOptions {
 export interface DownloadEventsOptions {
   start?: string;
   stop?: string;
+  filter?: string;
+  severity?: EventSeverity;
   source?: string | string[];
   format?: 'csv';
   order?: 'asc' | 'desc';

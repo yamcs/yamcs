@@ -3,6 +3,14 @@
  * The 'dark-theme' class is activated via AppComponent.
  */
 
+::placeholder {
+  color: #444;
+  opacity: 1;
+}
+:-ms-input-placeholder {
+  color: #ececec;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -195,7 +203,7 @@ a.action-link,
 p.mat-line,
 .mat-button.mat-primary,
 .mat-icon-button.mat-primary,
-.mat-stroked-button.mat-primary,
+.mat-stroked-button,
 .text-action {
   color: #888 !important;
 }
@@ -203,6 +211,10 @@ p.mat-line,
 .disabled .text-action,
 .disabled .action-content {
   color: #2e2e2e !important;
+}
+
+.ya-button[disabled] {
+  color: #444 !important;
 }
 
 .mat-button[disabled],
@@ -255,4 +267,8 @@ p.mat-line,
 
 .collapse-sidebar .mat-icon-button {
   color: #888 !important;
+}
+
+.dot1, .dot2, .dot3 {
+  color: rgba(255, 255, 255, 0.7);
 }

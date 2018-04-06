@@ -9,7 +9,7 @@ import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 export class Dots {
 
   @Input()
-  color = 'black';
+  color: string;
 
   @Input()
   fontSize = '20px';

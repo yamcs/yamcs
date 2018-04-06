@@ -30,5 +30,10 @@
     "typeRoots": [
       "node_modules/@types"
     ]
-  }
+  },
+  "exclude": [
+     // Used by ng-packagr only
+    "**/lib.ts",
+    "**/lib/dist"
+  ]
 }

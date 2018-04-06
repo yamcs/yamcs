@@ -30,30 +30,28 @@
     <form [formGroup]="filter">
       <div fxLayout="row" class="filter-bar">
         <div fxFlex class="vmiddle">
-          <input placeholder="Filter by text search"
-                 style="width: 300px; margin-right: 10px">
-
+          <input formControlName="textSearch"
+                 placeholder="Filter by text search"
+                 style="width: 300px">
+          &nbsp;&nbsp;
+          <app-select [options]="severityOptions" (change)="updateSeverity($event)"></app-select>
+          &nbsp;&nbsp;
           <app-column-chooser [columns]="columns"
                               [displayedColumns]="displayedColumns"
                               (change)="updateColumns($event)"></app-column-chooser>
-
-          <mat-icon class="icon14">access_time</mat-icon>&nbsp;
-          <select formControlName="interval">
-            <option value="PT1H">Last Hour</option>
-            <option value="PT6H">Last 6 Hours</option>
-            <option value="P1D">Last 24 Hours</option>
-            <option value="NO_LIMIT">No Limit</option>
-            <option value="CUSTOM">Custom</option>
-          </select>
-
+          &nbsp;&nbsp;
+          <app-select [options]="intervalOptions"
+                      icon="access_time"
+                      (change)="updateInterval($event)"></app-select>
+          &nbsp;&nbsp;
           <ng-container *ngIf="filter.value['interval'] === 'CUSTOM'">
             <input formControlName="customStart" type="datetime" style="width: 160px">
             <input formControlName="customStop" type="datetime" style="width: 160px">
+            &nbsp;&nbsp;
             <button (click)="applyCustomDates()"
                     class="ya-button"
                     [disabled]="filter.invalid">Apply</button>
           </ng-container>
-
           <ng-container *ngIf="filter.value['interval'] !== 'CUSTOM'">
             <button class="ya-button" (click)="jumpToNow()">
               Jump to now
