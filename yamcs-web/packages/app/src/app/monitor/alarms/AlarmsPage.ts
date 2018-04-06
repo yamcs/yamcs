@@ -3,10 +3,6 @@ import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Alarm, Instance } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
-import { Observable } from 'rxjs/Observable';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { AlarmsDataSource } from './AlarmsDataSource';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Title } from '@angular/platform-browser';
@@ -18,7 +14,7 @@ import { Title } from '@angular/platform-browser';
 })
 export class AlarmsPage implements OnInit {
 
-  instance$: Observable<Instance>;
+  instance: Instance;
 
   selectedAlarm$ = new BehaviorSubject<Alarm | null>(null);
 
@@ -34,9 +30,9 @@ export class AlarmsPage implements OnInit {
 
   dataSource: AlarmsDataSource;
 
-  constructor(private yamcs: YamcsService, store: Store<State>, title: Title) {
+  constructor(private yamcs: YamcsService, title: Title) {
     title.setTitle('Alarms - Yamcs');
-    this.instance$ = store.select(selectCurrentInstance);
+    this.instance = this.yamcs.getInstance();
   }
 
   // Used in table trackBy to prevent continuous row recreation

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Record, Table } from '@yamcs/client';
+import { Record, Table, Value } from '@yamcs/client';
 
 @Component({
   selector: 'app-record',
@@ -14,7 +14,7 @@ export class RecordComponent {
   @Input()
   record: Record;
 
-  getColumnValue(record: Record, columnName: string) {
+  getColumnValue(record: Record, columnName: string): Value | null {
     for (const column of record.column) {
       if (column.name === columnName) {
         return column.value;

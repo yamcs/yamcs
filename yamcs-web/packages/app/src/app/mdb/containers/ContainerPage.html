@@ -1,22 +1,19 @@
-<ng-container *ngIf="instance$ | async as instance">
-  <app-mdb-page *ngIf="container$ | async as container">
-    <app-mdb-toolbar>
-      <ng-container *ngFor="let alias of container.alias">
-        <ng-container *ngIf="container.qualifiedName.startsWith(alias.namespace)">
-          <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'containers']"
-              [queryParams]="{instance: instance.name}"
-              class="ya-link"
-              style="color: #000080; text-decoration: underline">
-            {{ alias.namespace }}
-          </a>/{{ alias.name }}
-        </ng-container>
+<app-mdb-page *ngIf="container$ | async as container">
+  <app-mdb-toolbar>
+    <ng-container *ngFor="let alias of container.alias">
+      <ng-container *ngIf="container.qualifiedName.startsWith(alias.namespace)">
+        <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'containers']"
+            [queryParams]="{instance: instance.name}"
+            class="ya-link ya-header-link">
+          {{ alias.namespace }}
+        </a>/{{ alias.name }}
       </ng-container>
-    </app-mdb-toolbar>
+    </ng-container>
+  </app-mdb-toolbar>
 
-    <div class="panel-content">
-      <app-container-detail [instance]="instance"
-                            [container]="container">
-      </app-container-detail>
-    </div>
-  </app-mdb-page>
-</ng-container>
+  <div class="panel-content">
+    <app-container-detail [instance]="instance"
+                          [container]="container">
+    </app-container-detail>
+  </div>
+</app-mdb-page>

@@ -10,6 +10,7 @@ import { LayoutsPage } from './layouts/LayoutsPage';
 import { LayoutPage } from './layouts/LayoutPage';
 import { AlarmsPage } from './alarms/AlarmsPage';
 import { CommandsPage } from './commands/CommandsPage';
+import { ExtensionPage } from './ext/ExtensionPage';
 
 const routes: Routes = [
   {
@@ -47,6 +48,10 @@ const routes: Routes = [
       {
         path: 'layouts/:name',
         component: LayoutPage,
+      },
+      {
+        path: 'ext/:name',
+        component: ExtensionPage,
       }
     ]
   }
@@ -63,6 +68,7 @@ export const routingComponents = [
   CommandsPage,
   DisplaysPage,
   EventsPage,
+  ExtensionPage,
   LayoutsPage,
   LayoutPage,
   MonitorPage,

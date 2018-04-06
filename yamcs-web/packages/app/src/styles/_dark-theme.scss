@@ -1,0 +1,274 @@
+/*
+ * Patches the default theming via global styles.
+ * The 'dark-theme' class is activated via AppComponent.
+ */
+
+::placeholder {
+  color: #444;
+  opacity: 1;
+}
+:-ms-input-placeholder {
+  color: #ececec;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #666;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+::-webkit-scrollbar-corner {
+  background: #111;
+}
+
+.mat-paginator {
+  background-color: #111 !important;
+}
+
+.mat-tab-group.mat-primary .mat-ink-bar,
+.mat-tab-nav-bar.mat-primary .mat-ink-bar {
+  background-color: #1b61b9 !important;
+}
+
+.mat-sidenav {
+  background-color: #1c1c1c;
+  border-color: #2e2e2e;
+}
+
+.mat-toolbar {
+  background-color: #111;
+  border-color: #2e2e2e;
+  color: #fff;
+}
+
+.mat-button {
+  background: transparent;
+}
+
+.mat-toolbar.module-title {
+  background-color: #1c1c1c;
+}
+
+a.mat-list-item.link-active {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+a.mat-list-item.link-active .hl {
+  opacity: 0;
+}
+
+a.mat-list-item {
+  color: rgba(255, 255, 255, 0.882353) !important;
+}
+
+.mat-drawer-container {
+  background-color: #111 !important;
+}
+
+dl.dl-horizontal dt {
+  color: white;
+}
+
+dl.dl-horizontal dd {
+  color: #888;
+}
+
+mat-table {
+  background-color: transparent !important;
+}
+
+.ya-data-table a {
+  color: white;
+}
+
+.ya-data-table mat-row:hover {
+  background: #000;
+}
+
+.ya-data-table th,
+.ya-data-table td,
+.ya-data-table mat-row {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+.mat-header-cell {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.mat-card {
+  background-color: #191919;
+}
+
+.ya-data-table td,
+.ya-data-table mat-cell {
+  color: #888;
+}
+
+.ya-data-table th,
+.ya-data-table header-cell {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.detail {
+  background-color: #191919 !important;
+  border-color: #2e2e2e !important;
+}
+
+.detail-toolbar {
+  background-color: #191919 !important;
+}
+
+input {
+  background-color: #171717;
+  border: 1px solid #2e2e2e;
+  color: rgba(255, 255, 255, 0.882353);
+  outline: none;
+  height: 19px;
+  padding-left: 3px;
+}
+
+input:focus {
+  border-color: #1b61b9;
+}
+
+button.ya-button {
+  background-color: #232323;
+  border: 1px solid #2e2e2e;
+  color: #717171;
+  outline: none;
+  padding-top: 2px;
+  padding-right: 6px;
+  padding-bottom: 3px;
+  padding-left: 6px;
+  margin: 0;
+}
+
+.app-bar {
+  background-color: #232323 !important;
+}
+
+.inlimits,
+.info,
+.watch,
+.warning,
+.distress,
+.critical,
+.severe,
+.error {
+  background-position-x: -29px !important;
+}
+
+.zoom-actions-inner {
+  background-color: #232323 !important;
+}
+
+.plot-top-actions {
+  color: #888;
+}
+
+.plot-container {
+  border-color: #2e2e2e !important;
+}
+
+.separator {
+  border-color: #2e2e2e !important;
+}
+
+.dygraph-legend {
+  background-color: #111;
+}
+
+.table-status, .table-footer {
+  background-color: #232323 !important;
+  color: #888 !important;
+}
+
+.display-navigator tr:hover td {
+  background: #000 !important;
+}
+
+.block,
+a.action-link,
+p.mat-line,
+.mat-button.mat-primary,
+.mat-icon-button.mat-primary,
+.mat-stroked-button,
+.text-action {
+  color: #888 !important;
+}
+
+.disabled .text-action,
+.disabled .action-content {
+  color: #2e2e2e !important;
+}
+
+.ya-button[disabled] {
+  color: #444 !important;
+}
+
+.mat-button[disabled],
+.mat-icon-button[disabled],
+.mat-stroked-button[disabled] {
+  color: #2e2e2e !important;
+}
+
+.success {
+  color: #5dfc71;
+}
+
+.down {
+  color: #2e2e2e;
+}
+
+.warning, .WATCH mat-cell, .WARNING mat-cell {
+  color: #fbe122;
+}
+
+.alert, .ERROR mat-cell .DISTRESS mat-cell, .CRITICAL mat-cell, .SEVERE mat-cell {
+  color: #ff2355 !important;
+}
+
+.data-table-wrapper tr:hover td {
+  background: #191919 !important;
+}
+
+.data-table-wrapper tr.selected td {
+  background: #1c1c1c !important;
+}
+
+.sql {
+  color: #888;
+
+  .dtype {
+    color: #ff2355;
+  }
+}
+
+.code {
+  background-color: #191919 !important;
+  border-color: #2e2e2e !important;
+  color: #888 !important;
+}
+
+.indicator {
+  fill: #888 !important;
+}
+
+.collapse-sidebar .mat-icon-button {
+  color: #888 !important;
+}
+
+.dot1, .dot2, .dot3 {
+  color: rgba(255, 255, 255, 0.7);
+}

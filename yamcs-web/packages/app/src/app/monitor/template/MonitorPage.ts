@@ -1,9 +1,8 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { Observable } from 'rxjs/Observable';
+import { Component, ChangeDetectionStrategy, OnInit, ViewChild, ComponentFactoryResolver } from '@angular/core';
 import { Instance } from '@yamcs/client';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
+import { YamcsService } from '../../core/services/YamcsService';
+import { ExtensionRegistry } from '../../core/services/ExtensionRegistry';
+import { MonitorSidebarItemHost } from '../ext/MonitorSidebarItemHost';
 
 @Component({
   templateUrl: './MonitorPage.html',
@@ -12,12 +11,25 @@ import { selectCurrentInstance } from '../../core/store/instance.selectors';
 })
 export class MonitorPage implements OnInit {
 
-  instance$: Observable<Instance>;
+  @ViewChild(MonitorSidebarItemHost)
+  extensionHost: MonitorSidebarItemHost;
 
-  constructor(private store: Store<State>) {
+  instance: Instance;
+
+  constructor(
+    yamcs: YamcsService,
+    private extensionRegistry: ExtensionRegistry,
+    private componentFactoryResolver: ComponentFactoryResolver,
+  ) {
+    this.instance = yamcs.getInstance();
   }
 
   ngOnInit() {
-    this.instance$ = this.store.select(selectCurrentInstance);
+    // Add extra items from extensions.
+    for (const item of this.extensionRegistry.getMonitorSidebarItems()) {
+      const componentFactory = this.componentFactoryResolver.resolveComponentFactory(item);
+      const viewContainerRef = this.extensionHost.viewContainerRef;
+      viewContainerRef.createComponent(componentFactory);
+    }
   }
 }

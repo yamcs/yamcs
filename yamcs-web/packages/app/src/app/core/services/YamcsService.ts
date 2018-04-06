@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { YamcsClient, InstanceClient } from '@yamcs/client';
-import { HttpClient } from '@angular/common/http';
+import { YamcsClient, InstanceClient, Instance, TimeInfo } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Subscription } from 'rxjs/Subscription';
 
 
 /**
@@ -10,27 +11,64 @@ import { HttpClient } from '@angular/common/http';
 @Injectable()
 export class YamcsService {
 
-  readonly yamcsClient: YamcsClient;
+  readonly yamcsClient = new YamcsClient();
+  readonly instance$ = new BehaviorSubject<Instance | null>(null);
+
   private selectedInstance: InstanceClient;
 
-  constructor(http: HttpClient) {
-    this.yamcsClient = new YamcsClient();
-  }
+  private timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
+  private timeInfoSubscription: Subscription;
 
-  switchInstance(instance: string) {
-    if (this.selectedInstance) {
-      if (this.selectedInstance.instance === instance) {
-        return this.selectedInstance;
-      } else {
-        this.selectedInstance.closeConnection();
+  /**
+   * Prepares a (new) instance.
+   */
+  switchInstance(instance: Instance) {
+    return new Promise<void>((resolve, reject) => {
+      if (this.selectedInstance) {
+        if (this.selectedInstance.instance === instance.name) {
+          resolve();
+          return;
+        } else {
+          this.timeInfo$.next(null);
+          this.timeInfoSubscription.unsubscribe();
+          this.selectedInstance.closeConnection();
+        }
       }
-    }
 
-    this.selectedInstance = this.yamcsClient.selectInstance(instance);
+      this.instance$.next(instance);
+      this.selectedInstance = this.yamcsClient.createInstanceClient(instance.name);
+
+      // Listen to time updates, so that we can easily provide actual mission time to components
+      this.selectedInstance.getTimeUpdates().then(response => {
+        this.timeInfo$.next(response.timeInfo);
+        this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
+          this.timeInfo$.next(timeInfo);
+        });
+        resolve();
+      }).catch(err => {
+        reject(err);
+      });
+    });
+  }
+
+  /**
+   * Returns the currently active instance (if any).
+   */
+  getInstance() {
+    return this.instance$.getValue()!;
+  }
+
+  /**
+   * Returns the InstanceClient for the currently active instance (if any).
+   */
+  getInstanceClient() {
     return this.selectedInstance;
   }
 
-  getSelectedInstance() {
-    return this.selectedInstance;
+  /**
+   * Returns latest mission time for the currently active instance (if any).
+   */
+  getMissionTime() {
+    return new Date(Date.parse(this.timeInfo$.getValue()!.currentTimeUTC));
   }
 }

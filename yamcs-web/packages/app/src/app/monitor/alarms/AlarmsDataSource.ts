@@ -24,7 +24,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
 
   loadAlarms(processorName: string) {
     this.loading$.next(true);
-    this.yamcs.getSelectedInstance().getActiveAlarms(processorName)
+    this.yamcs.getInstanceClient().getActiveAlarms(processorName)
       .then(alarms => {
         this.loading$.next(false);
         for (const alarm of alarms) {
@@ -33,7 +33,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
         this.alarms$.next(Object.values(this.alarmsByName));
       });
 
-    this.yamcs.getSelectedInstance().getAlarmUpdates().then(response => {
+    this.yamcs.getInstanceClient().getAlarmUpdates().then(response => {
       this.alarmSubscription = response.alarm$.subscribe(alarm => {
         this.processAlarm(alarm);
         this.alarms$.next(Object.values(this.alarmsByName));

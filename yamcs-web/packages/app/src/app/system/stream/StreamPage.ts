@@ -1,14 +1,10 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { Stream, Instance } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 
 import { YamcsService } from '../../core/services/YamcsService';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { Title } from '@angular/platform-browser';
 
 @Component({
@@ -16,18 +12,15 @@ import { Title } from '@angular/platform-browser';
   styleUrls: ['./StreamPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StreamPage implements OnInit {
+export class StreamPage {
 
-  instance$: Observable<Instance>;
+  instance: Instance;
   stream$: Promise<Stream>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>, title: Title) {
+  constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
     title.setTitle(name + ' - Yamcs');
-    this.stream$ = yamcs.getSelectedInstance().getStream(name);
-  }
-
-  ngOnInit() {
-    this.instance$ = this.store.select(selectCurrentInstance);
+    this.stream$ = yamcs.getInstanceClient().getStream(name);
+    this.instance = yamcs.getInstance();
   }
 }

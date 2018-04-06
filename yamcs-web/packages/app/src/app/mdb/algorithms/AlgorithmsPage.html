@@ -1,4 +1,4 @@
-<app-mdb-page *ngIf="instance$ | async as instance">
+<app-mdb-page>
   <app-mdb-toolbar>Algorithms</app-mdb-toolbar>
 
   <ng-container *ngIf="algorithms$ | async as algorithms">
@@ -8,9 +8,9 @@
       </app-algorithms-table>
     </div>
     <ng-template #empty>
-      <app-empty-message>
+      <div class="panel-content">
         The Mission Database for <i>{{ instance.name }}</i> does not define any algorithms.
-      </app-empty-message>
+      </div>
     </ng-template>
   </ng-container>
 </app-mdb-page>

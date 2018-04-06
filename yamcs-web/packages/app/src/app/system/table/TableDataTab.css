@@ -4,11 +4,7 @@
   height: 100%;
 }
 
-mat-sidenav {
-  width: 200px;
-}
-
-.data-detail {
+.detail {
   background-color: #fafafa;
   float: right;
   height: 100%;

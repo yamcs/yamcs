@@ -31,21 +31,21 @@ export class DashboardPage implements OnDestroy {
       const jvmMemoryUsedId = `/yamcs/${info.serverId}/jvmMemoryUsed`;
       this.jvmMemoryUsedDataSource = new DyDataSource(yamcs, jvmMemoryUsedId);
       this.jvmMemoryUsedDataSource.connectRealtime();
-      return yamcs.getSelectedInstance().getParameter(jvmMemoryUsedId);
+      return yamcs.getInstanceClient().getParameter(jvmMemoryUsedId);
     });
 
     this.jvmTotalMemoryParameter$ = this.info$.then(info => {
       const jvmTotalMemoryId = `/yamcs/${info.serverId}/jvmTotalMemory`;
       this.jvmTotalMemoryDataSource = new DyDataSource(yamcs, jvmTotalMemoryId);
       this.jvmTotalMemoryDataSource.connectRealtime();
-      return yamcs.getSelectedInstance().getParameter(jvmTotalMemoryId);
+      return yamcs.getInstanceClient().getParameter(jvmTotalMemoryId);
     });
 
     this.jvmThreadCountParameter$ = this.info$.then(info => {
       const jvmThreadCountId = `/yamcs/${info.serverId}/jvmThreadCount`;
       this.jvmThreadCountDataSource = new DyDataSource(yamcs, jvmThreadCountId);
       this.jvmThreadCountDataSource.connectRealtime();
-      return yamcs.getSelectedInstance().getParameter(jvmThreadCountId);
+      return yamcs.getInstanceClient().getParameter(jvmThreadCountId);
     });
   }
 

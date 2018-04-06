@@ -1,11 +1,13 @@
 <h2 mat-dialog-title>Select Instance</h2>
 
-<mat-dialog-content *ngIf="instances$ | async as instances">
+<mat-dialog-content>
   <mat-selection-list #selectionList>
-    <mat-list-option *ngFor="let instance of instances"
-                     [value]="instance.name">
-      {{ instance.name }}
-    </mat-list-option>
+    <ng-container *ngIf="instances$ | async as instances">
+      <mat-list-option *ngFor="let instance of instances"
+                       [value]="instance.name">
+        {{ instance.name }}
+      </mat-list-option>
+    </ng-container>
   </mat-selection-list>
   <p>&nbsp;</p>
 </mat-dialog-content>

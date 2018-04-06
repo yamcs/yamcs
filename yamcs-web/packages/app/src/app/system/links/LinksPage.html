@@ -22,17 +22,17 @@
         <mat-header-cell *matHeaderCellDef fxFlex="32px"></mat-header-cell>
         <mat-cell *matCellDef="let link" fxFlex="32px">
           <mat-icon *ngIf="link.status === 'OK'"
-                    style="color: green"
+                    class="success"
                     [matTooltip]="link.status">
             check_circle
           </mat-icon>
           <mat-icon *ngIf="link.status === 'UNAVAIL'"
-                    style="color: red"
+                    class="alert"
                     [matTooltip]="link.status">
             highlight_off
           </mat-icon>
           <mat-icon *ngIf="link.status === 'DISABLED'"
-                    style="color: lightgrey"
+                    class="down"
                     [matTooltip]="link.status">
             lens
           </mat-icon>
@@ -71,7 +71,7 @@
             Enable
           </button>
           <button mat-stroked-button
-                  color="warn"
+                  class="alert"
                   (click)="disableLink(link.name)"
                   *ngIf="link.status !== 'DISABLED'">
             Disable

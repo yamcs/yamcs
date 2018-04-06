@@ -1,13 +1,11 @@
 <ng-container *ngIf="algorithms$ | async as algorithms">
   <app-algorithms-table *ngIf="algorithms.length; else empty"
-                        [instance]="instance$ | async"
+                        [instance]="instance"
                         [algorithms$]="algorithms$"
                         [shortName]="true">
   </app-algorithms-table>
 
   <ng-template #empty>
-    <app-empty-message>
-      The space system {{ qualifiedName }} does not define any algorithms.
-    </app-empty-message>
+    The space system {{ qualifiedName }} does not define any algorithms.
   </ng-template>
 </ng-container>

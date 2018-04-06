@@ -72,6 +72,7 @@ export class SeverityMeter implements AfterViewInit, OnChanges {
     targetEl.appendChild(this.criticalHighRange);
 
     this.indicator = document.createElementNS(XMLNS, 'polygon');
+    this.indicator.classList.add('indicator');
     this.indicator.style.fill = 'black';
     this.indicator.style.visibility = 'hidden';
     targetEl.appendChild(this.indicator);

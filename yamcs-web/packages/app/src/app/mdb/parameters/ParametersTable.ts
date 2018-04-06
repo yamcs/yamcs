@@ -4,6 +4,7 @@ import { Parameter } from '@yamcs/client';
 
 import { MatSort, MatTableDataSource, MatPaginator } from '@angular/material';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
 
 @Component({
   selector: 'app-parameters-table',
@@ -44,6 +45,13 @@ export class ParametersTable implements AfterViewInit {
     'dataSource',
   ];
 
+  constructor(private preferenceStore: PreferenceStore) {
+    const cols = preferenceStore.getVisibleColumns('parameters');
+    if (cols.length) {
+      this.displayedColumns = cols;
+    }
+  }
+
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
@@ -58,5 +66,6 @@ export class ParametersTable implements AfterViewInit {
 
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
+    this.preferenceStore.setVisibleColumns('parameters', displayedColumns);
   }
 }

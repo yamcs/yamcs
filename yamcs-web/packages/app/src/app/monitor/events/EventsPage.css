@@ -1,6 +1,6 @@
 .filter-bar {
   height: 24px;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 
 .table-status {
@@ -9,7 +9,7 @@
   line-height: 24px;
   font-size: 12px;
   padding-left: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 
 .table-status .message-zone {
@@ -18,16 +18,4 @@
   line-height: 24px;
   font-size: 12px;
   padding-right: 6px;
-}
-
-.ERROR mat-cell,
-.DISTRESS mat-cell,
-.CRITICAL mat-cell,
-.SEVERE mat-cell {
-  color: red;
-}
-
-.WATCH mat-cell,
-.WARNING mat-cell {
-  color: orange;
 }

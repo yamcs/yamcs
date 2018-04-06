@@ -4,6 +4,7 @@ import { Algorithm } from '@yamcs/client';
 
 import { MatSort, MatTableDataSource, MatPaginator } from '@angular/material';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
 
 @Component({
   selector: 'app-algorithms-table',
@@ -36,7 +37,14 @@ export class AlgorithmsTable implements AfterViewInit {
     { id: 'shortDescription', label: 'Description' },
   ];
 
-  displayedColumns = ['name', 'language', 'scope', 'shortDescription'];
+  displayedColumns = ['name', 'language', 'scope'];
+
+  constructor(private preferenceStore: PreferenceStore) {
+    const cols = preferenceStore.getVisibleColumns('algorithms');
+    if (cols.length) {
+      this.displayedColumns = cols;
+    }
+  }
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
@@ -52,5 +60,6 @@ export class AlgorithmsTable implements AfterViewInit {
 
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
+    this.preferenceStore.setVisibleColumns('algorithms', displayedColumns);
   }
 }

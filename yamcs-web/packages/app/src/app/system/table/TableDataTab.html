@@ -1,5 +1,5 @@
 <ng-container *ngIf="table$ | async as table">
-  <div class="data-detail">
+  <div class="detail">
     <ng-container *ngIf="selectedRecord$ | async as selectedRecord; else noSelection">
       <app-detail-toolbar>
         Record

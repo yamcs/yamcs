@@ -15,6 +15,7 @@
   animation-duration: 1.4s;
   animation-iteration-count: infinite;
   animation-fill-mode: both;
+  color: blue;
 }
 .dot2 {
   animation-delay: 500ms;

@@ -1,13 +1,13 @@
 <mat-sidenav-container class="mat-typography">
   <mat-sidenav mode="side" opened="true">
-    <mat-toolbar>
+    <mat-toolbar class="module-title">
       <mat-toolbar-row>
         <mat-icon class="icon32" style="margin-right: 16px">dashboard</mat-icon>
         Monitor
       </mat-toolbar-row>
     </mat-toolbar>
 
-    <mat-nav-list dense *ngIf="instance$ | async as instance">
+    <mat-nav-list dense>
       <app-sidebar-nav-item routerLink="displays"
                             [queryParams]="{instance: instance.name}">
         Displays
@@ -32,6 +32,8 @@
                             [queryParams]="{instance: instance.name}">
         Commands
       </app-sidebar-nav-item>
+
+      <ng-template monitor-sidebar-item-host></ng-template>
     </mat-nav-list>
   </mat-sidenav>
 

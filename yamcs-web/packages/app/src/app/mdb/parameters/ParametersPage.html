@@ -1,4 +1,4 @@
-<app-mdb-page *ngIf="instance$ | async as instance">
+<app-mdb-page>
   <app-mdb-toolbar>Parameters</app-mdb-toolbar>
 
   <ng-container *ngIf="parameters$ | async as parameters">
@@ -8,9 +8,9 @@
       </app-parameters-table>
     </div>
     <ng-template #empty>
-      <app-empty-message>
+      <div class="panel-content">
         The Mission Database for <i>{{ instance.name }}</i> does not define any parameters.
-      </app-empty-message>
+      </div>
     </ng-template>
   </ng-container>
 </app-mdb-page>

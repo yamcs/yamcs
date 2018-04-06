@@ -1,13 +1,26 @@
 <dl class="dl-horizontal no-lead">
-  <dt>Algorithm</dt>
-  <dd>{{ algorithm.qualifiedName }}</dd>
+  <ng-container *ngFor="let alias of algorithm.alias">
+    <ng-container *ngIf="algorithm.qualifiedName.startsWith(alias.namespace)">
+      <dt>Algorithm</dt>
+      <dd>{{ alias.name }}</dd>
 
-  <dt>Alias</dt>
-  <dd>
-    <ng-container *ngFor="let alias of algorithm.alias">
-      {{ alias.name }} <small>(namespace: {{ alias.namespace }})</small><br>
+      <dt>Space System</dt>
+      <dd>
+        <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'algorithms']"
+           [queryParams]="{instance: instance.name}"
+           class="ya-link">
+          {{ alias.namespace }}
+        </a>
+      </dd>
     </ng-container>
-  </dd>
+  </ng-container>
+
+  <ng-container *ngFor="let alias of algorithm.alias">
+    <ng-container *ngIf="!algorithm.qualifiedName.startsWith(alias.namespace)">
+      <dt>{{ alias.namespace }}</dt>
+      <dd>{{ alias.name }}</dd>
+    </ng-container>
+  </ng-container>
 
   <dt>Short Description</dt>
   <dd>{{ algorithm.shortDescription || '-' }}</dd>
@@ -27,7 +40,7 @@
 
   <dt>Text</dt>
   <dd>
-    <code>{{ (algorithm.text || '-').trim() }}</code>
+    <code class="code">{{ (algorithm.text || '-').trim() }}</code>
   </dd>
 </dl>
 
@@ -46,7 +59,8 @@
       <tr *ngFor="let inputParameter of algorithm.inputParameter">
         <td>{{ inputParameter.inputName }}</td>
         <td>
-          <a [routerLink]="['/mdb/parameters/', inputParameter.parameter.qualifiedName]">
+          <a [routerLink]="['/mdb/parameters/', inputParameter.parameter.qualifiedName]"
+             [queryParams]="{instance: instance.name}">
             {{ inputParameter.parameter.qualifiedName }}
           </a>
         </td>
@@ -76,7 +90,8 @@
       <tr *ngFor="let outputParameter of algorithm.outputParameter">
         <td>{{ outputParameter.outputName }}</td>
         <td>
-          <a [routerLink]="['/mdb/parameters/', outputParameter.parameter.qualifiedName]">
+          <a [routerLink]="['/mdb/parameters/', outputParameter.parameter.qualifiedName]"
+             [queryParams]="{instance: instance.name}">
             {{ outputParameter.parameter.qualifiedName }}
           </a>
         </td>
@@ -99,7 +114,8 @@
       <tr *ngFor="let trigger of algorithm.onParameterUpdate">
         <td>OnParameterUpdate</td>
         <td>
-          <a [routerLink]="['/mdb/parameters/', trigger.qualifiedName]">
+          <a [routerLink]="['/mdb/parameters/', trigger.qualifiedName]"
+             [queryParams]="{instance: instance.name}">
             {{ trigger.qualifiedName }}
           </a>
         </td>

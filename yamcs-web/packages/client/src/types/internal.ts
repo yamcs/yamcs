@@ -22,6 +22,7 @@ import {
   Alarm,
   CommandHistoryEntry,
   Event,
+  Range,
   Sample,
 } from './monitoring';
 
@@ -115,4 +116,8 @@ export interface RecordsWrapper {
 
 export interface SamplesWrapper {
   sample: Sample[];
+}
+
+export interface RangesWrapper {
+  range: Range[];
 }

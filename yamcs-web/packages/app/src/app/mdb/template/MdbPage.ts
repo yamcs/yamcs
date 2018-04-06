@@ -1,23 +1,17 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { Observable } from 'rxjs/Observable';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Instance } from '@yamcs/client';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './MdbPage.html',
   styleUrls: ['./MdbPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MdbPage implements OnInit {
+export class MdbPage {
 
-  instance$: Observable<Instance>;
+  instance: Instance;
 
-  constructor(private store: Store<State>) {
-  }
-
-  ngOnInit() {
-    this.instance$ = this.store.select(selectCurrentInstance);
+  constructor(yamcs: YamcsService) {
+    this.instance = yamcs.getInstance();
   }
 }

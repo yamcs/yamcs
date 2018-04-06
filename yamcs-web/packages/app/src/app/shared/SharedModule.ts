@@ -5,6 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
+import { OverlayModule } from '@angular/cdk/overlay';
 import { CdkTableModule } from '@angular/cdk/table';
 import {
   MatButtonModule,
@@ -56,8 +57,11 @@ import { Dots } from './template/Dots';
 import { ActionLink } from './template/ActionLink';
 import { TextAction } from './template/TextAction';
 import { ColumnChooser } from './template/ColumnChooser';
+import { FormatBytesPipe } from './pipes/FormatBytesPipe';
+import { Select } from './template/Select';
 
 const materialModules = [
+  OverlayModule,
   CdkTableModule,
   FlexLayoutModule,
   MatButtonModule,
@@ -106,6 +110,7 @@ const sharedComponents = [
   ParameterPlot,
   SelectInstanceDialog,
   ParameterSeries,
+  Select,
   TabDetailIcon,
   TextAction,
   ToolbarActions,
@@ -113,6 +118,7 @@ const sharedComponents = [
 
 const pipes = [
   DateTimePipe,
+  FormatBytesPipe,
   OperatorPipe,
   UnitsPipe,
   ValuePipe,

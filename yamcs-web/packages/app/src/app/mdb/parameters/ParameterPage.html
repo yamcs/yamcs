@@ -1,44 +1,41 @@
-<ng-container *ngIf="instance$ | async as instance">
-  <app-mdb-page *ngIf="parameter$ | async as parameter">
-    <app-mdb-toolbar>
-      <ng-container *ngFor="let alias of parameter.alias">
-        <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
-          <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'parameters']"
-              [queryParams]="{instance: instance.name}"
-              class="ya-link"
-              style="color: #000080; text-decoration: underline">
-            {{ alias.namespace }}
-          </a>/{{ alias.name }}
-        </ng-container>
+<app-mdb-page *ngIf="parameter$ | async as parameter">
+  <app-mdb-toolbar>
+    <ng-container *ngFor="let alias of parameter.alias">
+      <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
+        <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'parameters']"
+            [queryParams]="{instance: instance.name}"
+            class="ya-link ya-header-link">
+          {{ alias.namespace }}
+        </a>/{{ alias.name }}
       </ng-container>
-    </app-mdb-toolbar>
+    </ng-container>
+  </app-mdb-toolbar>
 
-    <nav mat-tab-nav-bar>
-      <a mat-tab-link
-         routerLink="summary"
-         routerLinkActive #rla="routerLinkActive"
-         [active]="rla.isActive"
-         [queryParams]="{instance: instance.name}">
-        Summary
-      </a>
-      <a mat-tab-link
-         routerLink="chart"
-         routerLinkActive #rlb="routerLinkActive"
-         [active]="rlb.isActive"
-         [queryParams]="{instance: instance.name}">
-        Chart
-      </a>
-      <a mat-tab-link
-         routerLink="data"
-         routerLinkActive #rld="routerLinkActive"
-         [active]="rld.isActive"
-         [queryParams]="{instance: instance.name}">
-        Historical Data
-      </a>
-    </nav>
+  <nav mat-tab-nav-bar>
+    <a mat-tab-link
+        routerLink="summary"
+        routerLinkActive #rla="routerLinkActive"
+        [active]="rla.isActive"
+        [queryParams]="{instance: instance.name}">
+      Summary
+    </a>
+    <a mat-tab-link
+        routerLink="chart"
+        routerLinkActive #rlb="routerLinkActive"
+        [active]="rlb.isActive"
+        [queryParams]="{instance: instance.name}">
+      Chart
+    </a>
+    <a mat-tab-link
+        routerLink="data"
+        routerLinkActive #rld="routerLinkActive"
+        [active]="rld.isActive"
+        [queryParams]="{instance: instance.name}">
+      Historical Data
+    </a>
+  </nav>
 
-    <div class="tab-content-wrapper">
-      <router-outlet></router-outlet>
-    </div>
-  </app-mdb-page>
-</ng-container>
+  <div class="tab-content-wrapper">
+    <router-outlet></router-outlet>
+  </div>
+</app-mdb-page>

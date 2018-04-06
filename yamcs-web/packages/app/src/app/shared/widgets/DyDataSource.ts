@@ -38,7 +38,7 @@ export class DyDataSource {
 
   constructor(private yamcs: YamcsService, private qname: string) {
     this.realtimeSynchronizer = window.setInterval(() => {
-      if (this.plotBuffer.dirty) {
+      if (this.plotBuffer.dirty && !this.loading$.getValue()) {
         const plotData = this.plotBuffer.snapshot();
         this.data$.next({
           samples: plotData.samples,
@@ -47,7 +47,7 @@ export class DyDataSource {
         });
         this.plotBuffer.dirty = false;
       }
-    }, 400 /* update rate */);
+    }, 1000 /* update rate */);
 
     this.plotBuffer = new PlotBuffer(() => {
       this.reloadVisibleRange();
@@ -74,12 +74,12 @@ export class DyDataSource {
     const loadStart = new Date(start.getTime() - delta);
     const loadStop = new Date(stop.getTime() + delta);
 
-    const instanceClient = this.yamcs.getSelectedInstance();
+    const instanceClient = this.yamcs.getInstanceClient();
     const loadPromise = Promise.all([
       instanceClient.getParameterSamples(this.qname, {
         start: loadStart.toISOString(),
         stop: loadStop.toISOString(),
-        count: 3000,
+        count: 2000,
       }),
       instanceClient.getAlarmsForParameter(this.qname, {
         start: loadStart.toISOString(),
@@ -102,7 +102,7 @@ export class DyDataSource {
   }
 
   connectRealtime() {
-    this.yamcs.getSelectedInstance().getParameterValueUpdates({
+    this.yamcs.getInstanceClient().getParameterValueUpdates({
       id: [{ name: this.qname }],
       sendFromCache: false,
       subscriptionId: -1,
@@ -168,6 +168,9 @@ export class DyDataSource {
       const t = new Date();
       t.setTime(Date.parse(pval.generationTimeUTC));
       if (pval.acquisitionStatus === 'EXPIRED') {
+        // We get the last received timestamp.
+        // Consider gap to be just after that
+        t.setTime(t.getTime() + 1);
         return [t, null]; // Display as gap
       } else if (pval.acquisitionStatus === 'ACQUIRED') {
         return [t, [value, value, value]];

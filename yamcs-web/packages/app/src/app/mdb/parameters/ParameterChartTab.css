@@ -36,3 +36,12 @@
   text-align: center;
   pointer-events: none;
 }
+
+.plot-top-actions {
+  height: 24px;
+  line-height: 24px;
+}
+
+.separator {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+}

@@ -1,39 +1,32 @@
-import { Component, ChangeDetectionStrategy, OnInit, AfterViewInit, ViewChild } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild } from '@angular/core';
 
 import { Stream, Instance } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
-import { State } from '../../app.reducers';
-import { Store } from '@ngrx/store';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { Title } from '@angular/platform-browser';
 
 @Component({
   templateUrl: './StreamsPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StreamsPage implements OnInit, AfterViewInit {
+export class StreamsPage implements AfterViewInit {
 
   @ViewChild(MatSort)
   sort: MatSort;
 
-  instance$: Observable<Instance>;
+  instance: Instance;
 
   displayedColumns = ['name'];
 
   dataSource = new MatTableDataSource<Stream>();
 
-  constructor(yamcs: YamcsService, private store: Store<State>, title: Title) {
+  constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Streams - Yamcs');
-    yamcs.getSelectedInstance().getStreams().then(streams => {
+    yamcs.getInstanceClient().getStreams().then(streams => {
       this.dataSource.data = streams;
     });
-  }
-
-  ngOnInit() {
-    this.instance$ = this.store.select(selectCurrentInstance);
+    this.instance = yamcs.getInstance();
   }
 
   ngAfterViewInit() {

@@ -1,11 +1,10 @@
 <ng-container *ngIf="parameter$ | async as parameter">
   <div style="padding-left: 12px; padding-right: 12px; padding-top: 12px">
-    <div style="height: 24px; line-height: 24px;"
-         *ngIf="range$ | async as range">
+    <div class="plot-top-actions" *ngIf="range$ | async as range">
       <app-text-action icon="add_circle_outline" [disabled]="true">
         Comparison
       </app-text-action>
-      <span style="border-right: 1px solid rgba(0, 0, 0, 0.12)"></span>
+      <span class="separator"></span>
       <app-text-action (click)="chooseRange()" icon="date_range"
                        [active]="range === 'CUSTOM'">
         <span *ngIf="range !== 'CUSTOM'">Date Range</span>
@@ -19,40 +18,44 @@
       </app-text-action>
       <app-text-action (click)="loadLatest('PT1H')"
                        [active]="range === 'PT1H'">
-        1h
+        1 hour
       </app-text-action>
-      <app-text-action (click)="loadLatest('PT5H')"
-                       [active]="range === 'PT5H'">
-        5h
+      <app-text-action (click)="loadLatest('PT6H')"
+                       [active]="range === 'PT6H'">
+        6 hours
+      </app-text-action>
+      <app-text-action (click)="loadLatest('PT12H')"
+                       [active]="range === 'PT12H'">
+        12 hours
       </app-text-action>
       <app-text-action (click)="loadLatest('P1D')"
                        [active]="range === 'P1D'">
-        1d
+        1 day
+      </app-text-action>
+      <app-text-action (click)="loadLatest('P2D')"
+                       [active]="range === 'P2D'">
+        2 days
       </app-text-action>
       <app-text-action (click)="loadLatest('P1W')"
                        [active]="range === 'P1W'">
-        1w
+        7 days
+      </app-text-action>
+      <app-text-action (click)="loadLatest('P2W')"
+                       [active]="range === 'P2W'">
+        14 days
       </app-text-action>
       <app-text-action (click)="loadLatest('P1M')"
                        [active]="range === 'P1M'">
-        1m
-      </app-text-action>
-      <app-text-action (click)="loadLatest('P3M')"
-                       [active]="range === 'P3M'">
-        3m
-      </app-text-action>
-      <app-text-action (click)="loadLatest('P1Y')"
-                       [active]="range === 'P1Y'">
-        1y
+        30 days
       </app-text-action>
     </div>
   </div>
   <div class="plot-container">
     <app-parameter-plot #plot
-                        axisBackgroundColor="#fafafa"
                         [xGrid]="true"
                         [xAxisHeight]="24"
-                        [dataSource]="dataSource">
+                        [dataSource]="dataSource"
+                        [stop]="missionTime">
       <app-parameter-series [parameter]="parameter"
                             [grid]="true"></app-parameter-series>
     </app-parameter-plot>
@@ -61,7 +64,7 @@
         <button mat-button (click)="plot.zoomIn()">
           <mat-icon>add</mat-icon>
         </button>
-        <span style="border-right: 1px solid rgba(0, 0, 0, 0.12)"></span>
+        <span class="separator"></span>
         <button mat-button (click)="plot.zoomOut()">
           <mat-icon>remove</mat-icon>
         </button>

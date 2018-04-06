@@ -1,5 +1,5 @@
 export { Display } from './Display';
 export { DisplayFrame, Coordinates } from './DisplayFrame';
-export { Layout, LayoutStateListener, LayoutListener } from './Layout'
+export { Layout, LayoutStateListener, LayoutListener } from './Layout';
 export { LayoutState } from './LayoutState';
-export { ResourceResolver } from './ResourceResolver'
+export { DisplayCommunicator } from './DisplayCommunicator';

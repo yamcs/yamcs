@@ -4,7 +4,7 @@ const sprintf = require('sprintf-js').sprintf;
 
 
 import { AbstractWidget } from './AbstractWidget';
-import { G, Rect, Text } from '../../tags';
+import { G, Rect, Text, Tag } from '../../tags';
 import { Color } from '../Color';
 import { DataSourceBinding } from '../DataSourceBinding';
 import { DEFAULT_STYLE } from '../StyleSet';
@@ -54,6 +54,8 @@ export class Field extends AbstractWidget {
   overrideDqi: boolean;
   showIndicators: boolean;
   colSize: number;
+
+  private opsName: string;
 
   private xBinding: DataSourceBinding;
   private yBinding: DataSourceBinding;
@@ -143,20 +145,14 @@ export class Field extends AbstractWidget {
       rect.setAttribute('fill-opacity', '1');
     }
 
-    const rectParent = g;
-    /*for (const binding of this.parameterBindings) {
+    for (const binding of this.parameterBindings) {
       if (binding.dynamicProperty === 'VALUE' && binding.opsName) {
-        const yamcsInstance = 'dev'; // TODO window.location.pathname.match(/\/([^\/]*)\/?/)[1];
-        const a = new Tag('a', {
-          cursor: 'pointer',
-          'xlink:href': `/${yamcsInstance}/mdb/MDB:OPS Name/${binding.opsName}`,
-        });
-        g.addChild(a);
-        rectParent = a;
+        this.opsName = binding.opsName;
+        rect.setAttribute('cursor', 'pointer');
         break;
       }
-    }*/
-    rectParent.addChild(rect);
+    }
+    g.addChild(rect);
 
     let textWidth = boxWidth;
     if (this.showIndicators) {
@@ -227,6 +223,13 @@ export class Field extends AbstractWidget {
     this.fieldBackgroundEl = this.svg.getElementById(`${this.id}-bg`);
     this.fieldIndicatorEl = this.svg.getElementById(`${this.id}-ind`);
     this.fieldTextEl = this.svg.getElementById(this.id);
+
+    this.fieldEl.addEventListener('click', () => {
+      this.display.displayCommunicator.triggerParameterAction({
+        namespace: 'MDB:OPS Name',
+        name: this.opsName,
+      });
+    });
   }
 
   registerBinding(binding: DataSourceBinding) {

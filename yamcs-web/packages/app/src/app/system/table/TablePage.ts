@@ -1,14 +1,10 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { Table, Instance } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 
 import { YamcsService } from '../../core/services/YamcsService';
-import { State } from '../../app.reducers';
-import { Store } from '@ngrx/store';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { Title } from '@angular/platform-browser';
 
 @Component({
@@ -16,18 +12,15 @@ import { Title } from '@angular/platform-browser';
   styleUrls: ['./TablePage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TablePage implements OnInit {
+export class TablePage {
 
-  instance$: Observable<Instance>;
+  instance: Instance;
   table$: Promise<Table>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>, title: Title) {
+  constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
     title.setTitle(name + ' - Yamcs');
-    this.table$ = yamcs.getSelectedInstance().getTable(name);
-  }
-
-  ngOnInit() {
-    this.instance$ = this.store.select(selectCurrentInstance);
+    this.table$ = yamcs.getInstanceClient().getTable(name);
+    this.instance = yamcs.getInstance();
   }
 }
