@@ -18,6 +18,9 @@ export * from './app/core/pages/ProfilePage';
 
 export * from './app/core/services/YamcsService';
 export * from './app/core/services/PreferenceStore';
+export * from './app/core/services/ExtensionRegistry';
+
+export * from './app/core/services/PageContent';
 
 export {
   GridPlugin

@@ -42,7 +42,7 @@ export class ParameterDataTab {
     this.qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new ParameterDataDataSource(yamcs, this.qualifiedName);
 
-    this.validStop = yamcs.getMissionTime()
+    this.validStop = yamcs.getMissionTime();
     this.validStart = this.subtractDuration(this.validStop, defaultInterval);
     this.appliedInterval = defaultInterval;
     this.loadData();

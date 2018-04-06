@@ -52,7 +52,7 @@ cp -a contrib/sysvinit/* %{buildroot}/etc/init.d/
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
 %if %{_buildweb}
-cp -a yamcs-web/dist/* %{buildroot}/%{prefix}/lib/yamcs-web/
+cp -a yamcs-web/packages/app/dist/* %{buildroot}/%{prefix}/lib/yamcs-web/
 %endif
 
 

@@ -5,14 +5,15 @@ import { APP_BASE_HREF } from '@angular/common';
 
 import { AppComponent } from './core/pages/AppComponent';
 import { SharedModule } from './shared/SharedModule';
-import { MdbModule } from './mdb/MdbModule';
 import { AppRoutingModule } from './AppRoutingModule';
 
 import { NotFoundPage } from './core/pages/NotFoundPage';
+import { ExtensionRegistry } from './core/services/ExtensionRegistry';
 import { PreferenceStore } from './core/services/PreferenceStore';
 import { YamcsService } from './core/services/YamcsService';
 import { HomePage } from './core/pages/HomePage';
 import { ProfilePage } from './core/pages/ProfilePage';
+import { MdbModule } from './mdb/MdbModule';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { ProfilePage } from './core/pages/ProfilePage';
     MdbModule,
   ],
   providers: [
+    ExtensionRegistry,
     PreferenceStore,
     YamcsService,
     {
