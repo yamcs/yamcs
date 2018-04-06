@@ -13,7 +13,6 @@ import { PreferenceStore } from './core/services/PreferenceStore';
 import { YamcsService } from './core/services/YamcsService';
 import { HomePage } from './core/pages/HomePage';
 import { ProfilePage } from './core/pages/ProfilePage';
-import { MdbModule } from './mdb/MdbModule';
 
 @NgModule({
   declarations: [
@@ -28,7 +27,6 @@ import { MdbModule } from './mdb/MdbModule';
 
     AppRoutingModule, // Keep in front of modules that contribute child routing
     SharedModule,
-    MdbModule,
   ],
   providers: [
     ExtensionRegistry,
@@ -38,6 +36,12 @@ import { MdbModule } from './mdb/MdbModule';
       provide: APP_BASE_HREF,
       useValue: '/',
     }
+  ],
+  exports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    AppRoutingModule,
+    SharedModule,
   ],
   bootstrap: [ AppComponent ]
 })

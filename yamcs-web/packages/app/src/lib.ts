@@ -22,6 +22,8 @@ export * from './app/core/services/ExtensionRegistry';
 
 export * from './app/core/services/PageContent';
 
+export * from './app/core/pages/AppComponent';
+
 export {
   GridPlugin
 };
