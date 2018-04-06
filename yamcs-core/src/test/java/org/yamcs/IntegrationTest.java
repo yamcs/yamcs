@@ -155,7 +155,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testWsParameterUnsubscription() throws Exception {
-        ParameterSubscriptionRequest.Builder subscr1 = ParameterSubscriptionRequest.newBuilder();
+        ParameterSubscriptionRequest.Builder subscr1 = ParameterSubscriptionRequest.newBuilder().setSendFromCache(false);
         subscr1.addId(NamedObjectId.newBuilder().setName( "/REFMDB/SUBSYS1/IntegerPara1_1_6").build());
         subscr1.addId(NamedObjectId.newBuilder().setName( "/REFMDB/SUBSYS1/IntegerPara1_1_7").build());
         subscr1.addId(NamedObjectId.newBuilder().setNamespace("MDB:AliasParam").setName( "para6alias").build());
