@@ -3,10 +3,6 @@ import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { Instance, CommandHistoryEntry } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
-import { Observable } from 'rxjs/Observable';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Title } from '@angular/platform-browser';
@@ -18,7 +14,7 @@ import { Title } from '@angular/platform-browser';
 })
 export class CommandsPage implements OnInit {
 
-  instance$: Observable<Instance>;
+  instance: Instance;
 
   selectedEntry$ = new BehaviorSubject<CommandHistoryEntry | null>(null);
 
@@ -33,9 +29,9 @@ export class CommandsPage implements OnInit {
 
   dataSource: CommandHistoryDataSource;
 
-  constructor(private yamcs: YamcsService, store: Store<State>, title: Title) {
+  constructor(private yamcs: YamcsService, title: Title) {
     title.setTitle('Commands - Yamcs');
-    this.instance$ = store.select(selectCurrentInstance);
+    this.instance = yamcs.getInstance();
   }
 
   // Used in table trackBy to prevent continuous row recreation

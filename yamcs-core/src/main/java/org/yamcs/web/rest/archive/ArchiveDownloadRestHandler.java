@@ -197,7 +197,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                 nameSet.add(name.trim());
             }
         }
-        
+
         verifyAuthorization(req.getAuthToken(), Privilege.Type.TM_PACKET, nameSet);
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
@@ -206,7 +206,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (!nameSet.isEmpty()) {
-            sqlb.whereColIn("pname",nameSet);
+            sqlb.whereColIn("pname", nameSet);
         }
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
@@ -224,11 +224,11 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         } else {
             RestStreams.stream(instance, sql, sqlb.getQueryArguments(),
                     new StreamToChunkedProtobufEncoder<TmPacketData>(req, filename) {
-                @Override
-                public TmPacketData mapTuple(Tuple tuple) {
-                    return GPBHelper.tupleToTmPacketData(tuple);
-                }
-            });
+                        @Override
+                        public TmPacketData mapTuple(Tuple tuple) {
+                            return GPBHelper.tupleToTmPacketData(tuple);
+                        }
+                    });
         }
     }
 
@@ -244,7 +244,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
 
         verifyAuthorization(req.getAuthToken(), Privilege.Type.CMD_HISTORY, nameSet);
-        
+
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
@@ -256,12 +256,13 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
 
-        RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, "commands") {
-            @Override
-            public CommandHistoryEntry mapTuple(Tuple tuple) {
-                return GPBHelper.tupleToCommandHistoryEntry(tuple);
-            }
-        });
+        RestStreams.stream(instance, sql, sqlb.getQueryArguments(),
+                new StreamToChunkedProtobufEncoder<CommandHistoryEntry>(req, "commands") {
+                    @Override
+                    public CommandHistoryEntry mapTuple(Tuple tuple) {
+                        return GPBHelper.tupleToCommandHistoryEntry(tuple);
+                    }
+                });
     }
 
     @Route(path = "/api/archive/:instance/downloads/tables/:name", method = "GET")
@@ -269,7 +270,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadTables);
-        
+
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
 
         boolean dumpFormat = req.hasQueryParameter("format")
@@ -315,13 +316,15 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         ArchiveEventRestHandler.verifyEventArchiveSupport(instance);
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadEvents);
-        
+
         Set<String> sourceSet = new HashSet<>();
         for (String names : req.getQueryParameterList("source", Collections.emptyList())) {
             for (String name : names.split(",")) {
                 sourceSet.add(name);
             }
         }
+
+        String severity = req.getQueryParameter("severity", "INFO");
 
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -331,6 +334,31 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         if (!sourceSet.isEmpty()) {
             sqlb.whereColIn("source", sourceSet);
         }
+        switch (severity) {
+        case "INFO":
+            break;
+        case "WATCH":
+            sqlb.where("body.severity != 'INFO'");
+            break;
+        case "WARNING":
+            sqlb.whereColIn("body.severity", Arrays.asList("WARNING", "DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
+            break;
+        case "DISTRESS":
+            sqlb.whereColIn("body.severity", Arrays.asList("DISTRESS", "CRITICAL", "SEVERE", "ERROR"));
+            break;
+        case "CRITICAL":
+            sqlb.whereColIn("body.severity", Arrays.asList("CRITICAL", "SEVERE", "ERROR"));
+            break;
+        case "SEVERE":
+            sqlb.whereColIn("body.severity", Arrays.asList("SEVERE", "ERROR"));
+            break;
+        default:
+            sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
+        }
+        if (req.hasQueryParameter("filter")) {
+            sqlb.where("body.message like ?", "%" + req.getQueryParameter("filter") + "%");
+        }
+
         sqlb.descend(req.asksDescending(false));
         String sql = sqlb.toString();
 
@@ -341,7 +369,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         }
     }
 
-    private void transferChunkedCSVEvents(RestRequest req, String instance, String sql, List<Object> sqlArgs) throws HttpException {
+    private void transferChunkedCSVEvents(RestRequest req, String instance, String sql, List<Object> sqlArgs)
+            throws HttpException {
         RestStreams.stream(instance, sql, sqlArgs, new StreamToChunkedCSVEncoder(req, "events") {
 
             @Override
@@ -357,7 +386,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         });
     }
 
-    private void transferChunkedProtobufEvents(RestRequest req, String instance, String sql, List<Object> sqlArgs) throws HttpException {
+    private void transferChunkedProtobufEvents(RestRequest req, String instance, String sql, List<Object> sqlArgs)
+            throws HttpException {
         RestStreams.stream(instance, sql, sqlArgs, new StreamToChunkedProtobufEncoder<Event>(req, "events") {
 
             @Override

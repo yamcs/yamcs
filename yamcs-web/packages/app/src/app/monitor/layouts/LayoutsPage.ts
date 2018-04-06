@@ -2,12 +2,9 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { MatTableDataSource } from '@angular/material';
 import { Instance } from '@yamcs/client';
-import { Observable } from 'rxjs/Observable';
-import { State } from '../../app.reducers';
-import { Store } from '@ngrx/store';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { NamedLayout, LayoutStorage } from '../displays/LayoutStorage';
 import { Title } from '@angular/platform-browser';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './LayoutsPage.html',
@@ -15,17 +12,16 @@ import { Title } from '@angular/platform-browser';
 })
 export class LayoutsPage {
 
-  instance$: Observable<Instance>;
+  instance: Instance;
 
   displayedColumns = ['name'];
   dataSource = new MatTableDataSource<NamedLayout>([]);
 
-  constructor(store: Store<State>, title: Title) {
+  constructor(title: Title, yamcs: YamcsService) {
     title.setTitle('Layouts - Yamcs');
-    this.instance$ = store.select(selectCurrentInstance);
-    this.instance$.subscribe(instance => {
-      const layouts = LayoutStorage.getLayouts(instance.name);
-      this.dataSource.data = layouts;
-    });
+    this.instance = yamcs.getInstance();
+
+    const layouts = LayoutStorage.getLayouts(this.instance.name);
+    this.dataSource.data = layouts;
   }
 }

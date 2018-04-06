@@ -4,6 +4,7 @@ import { Command } from '@yamcs/client';
 
 import { MatSort, MatTableDataSource, MatPaginator } from '@angular/material';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
 
 @Component({
   selector: 'app-commands-table',
@@ -34,7 +35,16 @@ export class CommandsTable implements AfterViewInit {
     { id: 'shortDescription', label: 'Description' },
   ];
 
-  displayedColumns = ['name', 'shortDescription'];
+  displayedColumns = [
+    'name',
+  ];
+
+  constructor(private preferenceStore: PreferenceStore) {
+    const cols = preferenceStore.getVisibleColumns('commands');
+    if (cols.length) {
+      this.displayedColumns = cols;
+    }
+  }
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
@@ -50,5 +60,6 @@ export class CommandsTable implements AfterViewInit {
 
   updateColumns(displayedColumns: string[]) {
     this.displayedColumns = displayedColumns;
+    this.preferenceStore.setVisibleColumns('commands', displayedColumns);
   }
 }

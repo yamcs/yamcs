@@ -21,31 +21,28 @@ export class ParameterChartTab implements OnDestroy {
 
   parameter$: Promise<Parameter>;
   dataSource: DyDataSource;
+  missionTime: Date;
 
   range$ = new BehaviorSubject<string>('PT1H');
   customStart$ = new BehaviorSubject<Date | null>(null);
   customStop$ = new BehaviorSubject<Date | null>(null);
 
-  constructor(
-    route: ActivatedRoute,
-    yamcs: YamcsService,
-    private dialog: MatDialog,
-  ) {
+  constructor(route: ActivatedRoute, private yamcs: YamcsService, private dialog: MatDialog) {
+    this.missionTime = yamcs.getMissionTime();
     const qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
     this.dataSource = new DyDataSource(yamcs, qualifiedName);
     this.dataSource.connectRealtime();
-    this.parameter$ = yamcs.getSelectedInstance().getParameter(qualifiedName);
+    this.parameter$ = yamcs.getInstanceClient().getParameter(qualifiedName);
   }
 
   loadLatest(range: string) {
     this.range$.next(range);
-    const now = new Date(); // TODO use mission time instead
-    const start = subtractDuration(now, range);
+    const stop = this.yamcs.getMissionTime();
+    const start = subtractDuration(stop, range);
 
     // Add some padding to the right
-    const delta = now.getTime() - start.getTime();
-    const stop = new Date();
-    stop.setTime(now.getTime() + 0.05 * delta);
+    const delta = stop.getTime() - start.getTime();
+    stop.setTime(stop.getTime() + 0.05 * delta);
 
     this.dataSource.updateWindow(start, stop, [null, null]);
   }

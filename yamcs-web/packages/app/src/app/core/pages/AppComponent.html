@@ -1,8 +1,10 @@
 <mat-toolbar color="primary">
-  <mat-toolbar-row style="background-color: black">
-    <a mat-button routerLink="/">
-      Yamcs
-    </a>
+  <mat-toolbar-row class="app-bar">
+    <div class="vmiddle" class="logo-wrapper">
+      <a routerLink="/">
+        <img src="/_static/assets/yamcs-bw-30.png" style="margin-top: 12px; margin-right: 16px">
+      </a>
+    </div>
     <button mat-button *ngIf="instance$ | async as instance" (click)="openInstanceDialog()">
       <span class="selected-instance">{{ instance.name }}</span>
       <mat-icon>arrow_drop_down</mat-icon>
@@ -24,9 +26,11 @@
     </ng-container>
 
     <mat-menu #appMenu="matMenu" overlapTrigger="false">
-      <button mat-menu-item disabled>
+      <button mat-menu-item (click)="toggleDarkTheme()">
         <mat-icon style="transform: rotate(180deg)">brightness_3</mat-icon>
-        Dark Mode
+        Dark Mode:
+        <span *ngIf="darkMode$ | async">On</span>
+        <span *ngIf="!(darkMode$ | async)">Off</span>
       </button>
     </mat-menu>
     <button mat-icon-button [matMenuTriggerFor]="appMenu">

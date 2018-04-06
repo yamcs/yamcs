@@ -123,7 +123,9 @@ message ParameterSubscriptionResponse {
   optional int32 subscriptionId = 3;
 }
 
-
+message TimeSubscriptionResponse {
+  optional yamcs.TimeInfo timeInfo = 1;
+}
 
 //sent via the websocket with information about connected client
 message ConnectionInfo {

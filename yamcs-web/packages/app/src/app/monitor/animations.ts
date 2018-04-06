@@ -1,4 +1,5 @@
 import {
+  AnimationTriggerMetadata,
   animate,
   sequence,
   style,
@@ -6,7 +7,7 @@ import {
   trigger,
 } from '@angular/animations';
 
-export const rowAnimation = trigger('rowAnimation', [
+export const rowAnimation: AnimationTriggerMetadata = trigger('rowAnimation', [
   transition('void => true', [
     style({
       height: '*',

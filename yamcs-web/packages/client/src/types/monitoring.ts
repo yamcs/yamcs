@@ -100,7 +100,15 @@ export interface AlarmSubscriptionResponse {
 }
 
 export interface TimeSubscriptionResponse {
-  time$: Observable<TimeInfo>;
+  /**
+   * Current Mission Time
+   */
+  timeInfo: TimeInfo;
+
+  /**
+   * Observable for monitoring Mission Time updates
+   */
+  timeInfo$: Observable<TimeInfo>;
 }
 
 export interface Sample {
@@ -109,6 +117,13 @@ export interface Sample {
   min: number;
   max: number;
   n: number;
+}
+
+export interface Range {
+  timeStart: string;
+  timeStop: string;
+  engValue: Value;
+  count: number;
 }
 
 export interface CommandId {
@@ -165,6 +180,8 @@ export interface GetCommandHistoryOptions {
 export interface GetEventsOptions {
   start?: string;
   stop?: string;
+  filter?: string;
+  severity?: EventSeverity;
   source?: string | string[];
   pos?: number;
   limit?: number;
@@ -174,6 +191,8 @@ export interface GetEventsOptions {
 export interface DownloadEventsOptions {
   start?: string;
   stop?: string;
+  filter?: string;
+  severity?: EventSeverity;
   source?: string | string[];
   format?: 'csv';
   order?: 'asc' | 'desc';
@@ -202,4 +221,11 @@ export interface GetParameterSamplesOptions {
   stop?: string;
   count?: number;
   order?: 'asc' | 'desc';
+}
+
+export interface GetParameterRangesOptions {
+  start?: string;
+  stop?: string;
+  minGap?: number;
+  maxGap?: number;
 }

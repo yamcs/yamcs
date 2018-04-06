@@ -11,19 +11,18 @@ import {
 } from '@angular/core';
 import {
   Coordinates,
+  DisplayCommunicator,
   DisplayFrame,
   Layout,
   LayoutListener,
   LayoutStateListener,
   LayoutState,
-  ResourceResolver,
 } from '@yamcs/displays';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DisplayFolder } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
+import { MyDisplayCommunicator } from './MyDisplayCommunicator';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-layout-component',
@@ -48,18 +47,14 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   showNavigator$: BehaviorSubject<boolean>;
   displayInfo$ = new BehaviorSubject<DisplayFolder | null>(null);
 
-  private resourceResolver: ResourceResolver;
+  private displayCommunicator: DisplayCommunicator;
   private layout: Layout;
 
-  constructor(private yamcs: YamcsService, store: Store<State>) {
-    store.select(selectCurrentInstance).subscribe(instance => {
-      // TODO should be simpler. yamcs.getSelectedInstance() is not yet updated when this triggers.
-      const instanceClient = this.yamcs.yamcsClient.selectInstance(instance.name);
-      instanceClient.getDisplayInfo().then(displayInfo => {
-        this.displayInfo$.next(displayInfo);
-      });
+  constructor(private yamcs: YamcsService, router: Router) {
+    this.yamcs.getInstanceClient().getDisplayInfo().then(displayInfo => {
+      this.displayInfo$.next(displayInfo);
     });
-    this.resourceResolver = new RemoteResourceResolver(yamcs);
+    this.displayCommunicator = new MyDisplayCommunicator(yamcs, router);
   }
 
   ngOnInit() {
@@ -74,7 +69,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
       targetEl.innerHTML = '';
     }
 
-    this.layout = new Layout(targetEl, this.resourceResolver);
+    this.layout = new Layout(targetEl, this.displayCommunicator);
     this.layout.layoutListeners.add(this);
     if (this.layoutState) {
       this.restoreState(this.layoutState).then(() => {
@@ -112,7 +107,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   onDisplayFrameOpen(frame: DisplayFrame) {
     const ids = frame.getParameterIds();
     if (ids.length) {
-      this.yamcs.getSelectedInstance().getParameterValueUpdates({
+      this.yamcs.getInstanceClient().getParameterValueUpdates({
         id: ids,
         abortOnInvalid: false,
         sendFromCache: true,
@@ -152,33 +147,5 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
 
   toggleNavigator() {
     this.showNavigator$.next(!this.showNavigator$.getValue());
-  }
-}
-
-/**
- * Resolves resources by fetching them from the server as
- * a static file.
- */
-class RemoteResourceResolver implements ResourceResolver {
-
-  constructor(private yamcsService: YamcsService) {
-  }
-
-  resolvePath(path: string) {
-    return `${this.yamcsService.yamcsClient.staticUrl}/${path}`;
-  }
-
-  retrieveText(path: string) {
-    return this.yamcsService.yamcsClient.getStaticText(path);
-  }
-
-  retrieveXML(path: string) {
-    return this.yamcsService.yamcsClient.getStaticXML(path);
-  }
-
-  retrieveXMLDisplayResource(path: string) {
-    const instance = this.yamcsService.getSelectedInstance().instance;
-    const displayPath = `${instance}/displays/${path}`;
-    return this.yamcsService.yamcsClient.getStaticXML(displayPath);
   }
 }

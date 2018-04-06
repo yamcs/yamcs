@@ -7,3 +7,13 @@ mat-toolbar-row {
 .mat-toolbar-multiple-rows {
   min-height: 48px;
 }
+
+.logo-wrapper {
+  display: inline-block;
+  width: 184px;
+  text-align: center;
+}
+
+.app-bar {
+  background-color: black;
+}

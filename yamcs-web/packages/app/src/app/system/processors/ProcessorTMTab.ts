@@ -22,7 +22,7 @@ export class ProcessorTMTab implements OnDestroy {
     const parent = route.snapshot.parent!;
     const name = parent.paramMap.get('name')!;
 
-    yamcs.getSelectedInstance().getProcessorStatistics().then(response => {
+    yamcs.getInstanceClient().getProcessorStatistics().then(response => {
       response.statistics$.pipe(
         filter(stats => stats.yProcessorName === name),
         map(stats => stats.tmstats || []),

@@ -40,6 +40,7 @@ YAMCS_HOME=`cd "$PRG_DIR"; pwd`
 mkdir -p $TARGET/etc
 mkdir -p $TARGET/bin
 mkdir -p $TARGET/mdb
+mkdir -p $TARGET/web
 
 rm -rf $TARGET/lib
 mkdir -p $TARGET/lib/ext

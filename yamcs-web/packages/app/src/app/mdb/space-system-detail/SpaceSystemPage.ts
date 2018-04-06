@@ -1,14 +1,10 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { Instance, SpaceSystem } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 
 import { YamcsService } from '../../core/services/YamcsService';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 import { Title } from '@angular/platform-browser';
 
 @Component({
@@ -16,25 +12,17 @@ import { Title } from '@angular/platform-browser';
   styleUrls: ['./SpaceSystemPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SpaceSystemPage implements OnInit {
+export class SpaceSystemPage {
 
   qualifiedName: string;
 
-  instance$: Observable<Instance>;
+  instance: Instance;
   spaceSystem$: Promise<SpaceSystem>;
 
-  constructor(
-    route: ActivatedRoute,
-    yamcs: YamcsService,
-    title: Title,
-    private store: Store<State>,
-  ) {
+  constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     this.qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    this.spaceSystem$ = yamcs.getSelectedInstance().getSpaceSystem(this.qualifiedName);
+    this.spaceSystem$ = yamcs.getInstanceClient().getSpaceSystem(this.qualifiedName);
     title.setTitle(this.qualifiedName + ' - Yamcs');
-  }
-
-  ngOnInit() {
-    this.instance$ = this.store.select(selectCurrentInstance);
+    this.instance = yamcs.getInstance();
   }
 }

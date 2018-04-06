@@ -1,6 +1,6 @@
 import { DisplayFrame, Coordinates } from './DisplayFrame';
 import { LayoutState, FrameState } from './LayoutState';
-import { ResourceResolver } from './ResourceResolver';
+import { DisplayCommunicator } from './DisplayCommunicator';
 
 export interface LayoutListener {
 
@@ -35,7 +35,7 @@ export class Layout {
 
   constructor(
     private targetEl: HTMLDivElement,
-    readonly resourceResolver: ResourceResolver,
+    readonly displayCommunicator: DisplayCommunicator,
   ) {
     this.scrollPane = document.createElement('div');
     this.scrollPane.style.setProperty('position', 'absolute');

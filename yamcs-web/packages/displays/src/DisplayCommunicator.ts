@@ -1,4 +1,8 @@
-export interface ResourceResolver {
+import { NamedObjectId } from '@yamcs/client';
+
+export interface DisplayCommunicator {
+
+  triggerParameterAction(id: NamedObjectId): void;
 
   resolvePath(path: string): string;
 

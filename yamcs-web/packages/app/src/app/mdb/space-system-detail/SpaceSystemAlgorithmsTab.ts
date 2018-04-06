@@ -1,35 +1,28 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { Instance, Algorithm } from '@yamcs/client';
 
 import { ActivatedRoute } from '@angular/router';
 
 import { YamcsService } from '../../core/services/YamcsService';
-import { Store } from '@ngrx/store';
-import { State } from '../../app.reducers';
-import { selectCurrentInstance } from '../../core/store/instance.selectors';
 
 @Component({
   templateUrl: './SpaceSystemAlgorithmsTab.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SpaceSystemAlgorithmsTab implements OnInit {
+export class SpaceSystemAlgorithmsTab {
 
   qualifiedName: string;
 
-  instance$: Observable<Instance>;
+  instance: Instance;
   algorithms$: Promise<Algorithm[]>;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, private store: Store<State>) {
+  constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     this.qualifiedName = parent.paramMap.get('qualifiedName')!;
-    this.algorithms$ = yamcs.getSelectedInstance().getAlgorithms({
+    this.algorithms$ = yamcs.getInstanceClient().getAlgorithms({
       namespace: this.qualifiedName
     });
-  }
-
-  ngOnInit() {
-    this.instance$ = this.store.select(selectCurrentInstance);
+    this.instance = yamcs.getInstance();
   }
 }
