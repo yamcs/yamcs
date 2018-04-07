@@ -1,0 +1,86 @@
+<div class="panel-content" *ngIf="table$ | async as table">
+  <h3>Key</h3>
+  <table yaDataTable>
+    <tr>
+      <th width="200">Column</th>
+      <th>Type</th>
+    </tr>
+    <tr *ngFor="let column of table.keyColumn">
+      <td style="white-space: nowrap">{{ column.name }}</td>
+      <td>
+        <ng-container *ngIf="column.type === 'ENUM'">
+          <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{ column.type }}</span>
+        </ng-container>
+        <ng-container *ngIf="column.type !== 'ENUM'">
+          {{ column.type }}
+        </ng-container>
+      </td>
+    </tr>
+  </table>
+
+  <p>&nbsp;</p>
+
+  <h3>Value</h3>
+  <table yaDataTable>
+    <tr>
+      <th width="200">Column</th>
+      <th>Type</th>
+    </tr>
+    <tr *ngFor="let column of table.valueColumn">
+      <td style="white-space: nowrap">{{ column.name }}</td>
+      <td>
+        <ng-container *ngIf="column.type === 'ENUM'">
+          <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{ column.type }}</span>
+        </ng-container>
+        <ng-container *ngIf="column.type !== 'ENUM'">
+          {{ column.type }}
+        </ng-container>
+      </td>
+    </tr>
+  </table>
+
+  <p>&nbsp;</p>
+
+  <h3>Options</h3>
+  <table yaDataTable>
+    <tr>
+      <th class="lcolumn" width="200">Format version</th>
+      <td>{{ table.formatVersion }}</td>
+    </tr>
+    <tr>
+      <th class="lcolumn">Storage engine</th>
+      <td>{{ table.storageEngine }}</td>
+    </tr>
+    <tr>
+      <th class="lcolumn">Tablespace</th>
+      <td>{{ table.tablespace || '-' }}</td>
+    </tr>
+    <tr>
+      <th class="lcolumn">Compressed</th>
+      <td>{{ table.compressed ? 'yes' : 'no' }}</td>
+    </tr>
+    <tr>
+      <th class="lcolumn">Histogram</th>
+      <td>
+        <ng-container *ngIf="table.histogramColumn">
+          <ng-container *ngFor="let col of table.histogramColumn; let last = last">
+            {{ col }}<span *ngIf="!last">, </span>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="!table.histogramColumn">-</ng-container>
+      </td>
+    </tr>
+    <tr>
+      <th class="lcolumn">Partition by</th>
+      <td>{{ (table.partitioningInfo?.type | lowercase) || '-' }}</td>
+    </tr>
+    <tr *ngIf="table.partitioningInfo?.timeColumn">
+      <th class="lcolumn">Time partition column</th>
+      <td>{{ table.partitioningInfo?.timeColumn }}('{{ table.partitioningInfo?.timePartitionSchema }}')</td>
+    </tr>
+    <tr *ngIf="table.partitioningInfo?.valueColumn">
+      <th class="lcolumn">Value partition column</th>
+      <td>{{ table.partitioningInfo?.valueColumn }}</td>
+    </tr>
+  </table>
+</div>

@@ -8,6 +8,11 @@ import { HexComponent } from './table/HexComponent';
 import { TmStatsTable } from './processors/TmStatsTable';
 import { QueuedCommandsTable } from './processors/QueuedCommandsTable';
 import { CommandQueuesTable } from './processors/CommandQueuesTable';
+import { ShowEnumDialog } from './table/ShowEnumDialog';
+
+const dialogComponents = [
+  ShowEnumDialog,
+];
 
 @NgModule({
   imports: [
@@ -16,6 +21,7 @@ import { CommandQueuesTable } from './processors/CommandQueuesTable';
   ],
   declarations: [
     routingComponents,
+    dialogComponents,
     CommandQueuesTable,
     HexComponent,
     QueuedCommandsTable,
@@ -23,6 +29,9 @@ import { CommandQueuesTable } from './processors/CommandQueuesTable';
     SystemPageTemplate,
     SystemToolbar,
     TmStatsTable,
+  ],
+  entryComponents: [
+    dialogComponents,
   ]
 })
 export class SystemModule {

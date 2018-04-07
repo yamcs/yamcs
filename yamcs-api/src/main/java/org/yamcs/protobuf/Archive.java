@@ -2940,6 +2940,30 @@ public final class Archive {
      */
     com.google.protobuf.ByteString
         getTypeBytes();
+
+    /**
+     * <code>repeated .archive.EnumValue enumValue = 3;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Archive.EnumValue> 
+        getEnumValueList();
+    /**
+     * <code>repeated .archive.EnumValue enumValue = 3;</code>
+     */
+    org.yamcs.protobuf.Archive.EnumValue getEnumValue(int index);
+    /**
+     * <code>repeated .archive.EnumValue enumValue = 3;</code>
+     */
+    int getEnumValueCount();
+    /**
+     * <code>repeated .archive.EnumValue enumValue = 3;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Archive.EnumValueOrBuilder> 
+        getEnumValueOrBuilderList();
+    /**
+     * <code>repeated .archive.EnumValue enumValue = 3;</code>
+     */
+    org.yamcs.protobuf.Archive.EnumValueOrBuilder getEnumValueOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code archive.ColumnInfo}
@@ -3005,6 +3029,14 @@ public final class Archive {
               type_ = bs;
               break;
             }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                enumValue_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.EnumValue>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              enumValue_.add(input.readMessage(org.yamcs.protobuf.Archive.EnumValue.PARSER, extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -3013,6 +3045,9 @@ public final class Archive {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e.getMessage()).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          enumValue_ = java.util.Collections.unmodifiableList(enumValue_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -3129,9 +3164,45 @@ public final class Archive {
       }
     }
 
+    public static final int ENUMVALUE_FIELD_NUMBER = 3;
+    private java.util.List<org.yamcs.protobuf.Archive.EnumValue> enumValue_;
+    /**
+     * <code>repeated .archive.EnumValue enumValue = 3;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Archive.EnumValue> getEnumValueList() {
+      return enumValue_;
+    }
+    /**
+     * <code>repeated .archive.EnumValue enumValue = 3;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Archive.EnumValueOrBuilder> 
+        getEnumValueOrBuilderList() {
+      return enumValue_;
+    }
+    /**
+     * <code>repeated .archive.EnumValue enumValue = 3;</code>
+     */
+    public int getEnumValueCount() {
+      return enumValue_.size();
+    }
+    /**
+     * <code>repeated .archive.EnumValue enumValue = 3;</code>
+     */
+    public org.yamcs.protobuf.Archive.EnumValue getEnumValue(int index) {
+      return enumValue_.get(index);
+    }
+    /**
+     * <code>repeated .archive.EnumValue enumValue = 3;</code>
+     */
+    public org.yamcs.protobuf.Archive.EnumValueOrBuilder getEnumValueOrBuilder(
+        int index) {
+      return enumValue_.get(index);
+    }
+
     private void initFields() {
       name_ = "";
       type_ = "";
+      enumValue_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3152,6 +3223,9 @@ public final class Archive {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBytes(2, getTypeBytes());
       }
+      for (int i = 0; i < enumValue_.size(); i++) {
+        output.writeMessage(3, enumValue_.get(i));
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -3168,6 +3242,10 @@ public final class Archive {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, getTypeBytes());
+      }
+      for (int i = 0; i < enumValue_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, enumValue_.get(i));
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3278,6 +3356,7 @@ public final class Archive {
       }
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getEnumValueFieldBuilder();
         }
       }
       private static Builder create() {
@@ -3290,6 +3369,12 @@ public final class Archive {
         bitField0_ = (bitField0_ & ~0x00000001);
         type_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
+        if (enumValueBuilder_ == null) {
+          enumValue_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+        } else {
+          enumValueBuilder_.clear();
+        }
         return this;
       }
 
@@ -3326,6 +3411,15 @@ public final class Archive {
           to_bitField0_ |= 0x00000002;
         }
         result.type_ = type_;
+        if (enumValueBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            enumValue_ = java.util.Collections.unmodifiableList(enumValue_);
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.enumValue_ = enumValue_;
+        } else {
+          result.enumValue_ = enumValueBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3351,6 +3445,32 @@ public final class Archive {
           bitField0_ |= 0x00000002;
           type_ = other.type_;
           onChanged();
+        }
+        if (enumValueBuilder_ == null) {
+          if (!other.enumValue_.isEmpty()) {
+            if (enumValue_.isEmpty()) {
+              enumValue_ = other.enumValue_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+            } else {
+              ensureEnumValueIsMutable();
+              enumValue_.addAll(other.enumValue_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.enumValue_.isEmpty()) {
+            if (enumValueBuilder_.isEmpty()) {
+              enumValueBuilder_.dispose();
+              enumValueBuilder_ = null;
+              enumValue_ = other.enumValue_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+              enumValueBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getEnumValueFieldBuilder() : null;
+            } else {
+              enumValueBuilder_.addAllMessages(other.enumValue_);
+            }
+          }
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -3531,6 +3651,246 @@ public final class Archive {
         return this;
       }
 
+      private java.util.List<org.yamcs.protobuf.Archive.EnumValue> enumValue_ =
+        java.util.Collections.emptyList();
+      private void ensureEnumValueIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          enumValue_ = new java.util.ArrayList<org.yamcs.protobuf.Archive.EnumValue>(enumValue_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.EnumValue, org.yamcs.protobuf.Archive.EnumValue.Builder, org.yamcs.protobuf.Archive.EnumValueOrBuilder> enumValueBuilder_;
+
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.EnumValue> getEnumValueList() {
+        if (enumValueBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(enumValue_);
+        } else {
+          return enumValueBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public int getEnumValueCount() {
+        if (enumValueBuilder_ == null) {
+          return enumValue_.size();
+        } else {
+          return enumValueBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public org.yamcs.protobuf.Archive.EnumValue getEnumValue(int index) {
+        if (enumValueBuilder_ == null) {
+          return enumValue_.get(index);
+        } else {
+          return enumValueBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public Builder setEnumValue(
+          int index, org.yamcs.protobuf.Archive.EnumValue value) {
+        if (enumValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureEnumValueIsMutable();
+          enumValue_.set(index, value);
+          onChanged();
+        } else {
+          enumValueBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public Builder setEnumValue(
+          int index, org.yamcs.protobuf.Archive.EnumValue.Builder builderForValue) {
+        if (enumValueBuilder_ == null) {
+          ensureEnumValueIsMutable();
+          enumValue_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          enumValueBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public Builder addEnumValue(org.yamcs.protobuf.Archive.EnumValue value) {
+        if (enumValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureEnumValueIsMutable();
+          enumValue_.add(value);
+          onChanged();
+        } else {
+          enumValueBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public Builder addEnumValue(
+          int index, org.yamcs.protobuf.Archive.EnumValue value) {
+        if (enumValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureEnumValueIsMutable();
+          enumValue_.add(index, value);
+          onChanged();
+        } else {
+          enumValueBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public Builder addEnumValue(
+          org.yamcs.protobuf.Archive.EnumValue.Builder builderForValue) {
+        if (enumValueBuilder_ == null) {
+          ensureEnumValueIsMutable();
+          enumValue_.add(builderForValue.build());
+          onChanged();
+        } else {
+          enumValueBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public Builder addEnumValue(
+          int index, org.yamcs.protobuf.Archive.EnumValue.Builder builderForValue) {
+        if (enumValueBuilder_ == null) {
+          ensureEnumValueIsMutable();
+          enumValue_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          enumValueBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public Builder addAllEnumValue(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Archive.EnumValue> values) {
+        if (enumValueBuilder_ == null) {
+          ensureEnumValueIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, enumValue_);
+          onChanged();
+        } else {
+          enumValueBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public Builder clearEnumValue() {
+        if (enumValueBuilder_ == null) {
+          enumValue_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
+        } else {
+          enumValueBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public Builder removeEnumValue(int index) {
+        if (enumValueBuilder_ == null) {
+          ensureEnumValueIsMutable();
+          enumValue_.remove(index);
+          onChanged();
+        } else {
+          enumValueBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public org.yamcs.protobuf.Archive.EnumValue.Builder getEnumValueBuilder(
+          int index) {
+        return getEnumValueFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public org.yamcs.protobuf.Archive.EnumValueOrBuilder getEnumValueOrBuilder(
+          int index) {
+        if (enumValueBuilder_ == null) {
+          return enumValue_.get(index);  } else {
+          return enumValueBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Archive.EnumValueOrBuilder> 
+           getEnumValueOrBuilderList() {
+        if (enumValueBuilder_ != null) {
+          return enumValueBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(enumValue_);
+        }
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public org.yamcs.protobuf.Archive.EnumValue.Builder addEnumValueBuilder() {
+        return getEnumValueFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Archive.EnumValue.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public org.yamcs.protobuf.Archive.EnumValue.Builder addEnumValueBuilder(
+          int index) {
+        return getEnumValueFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Archive.EnumValue.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .archive.EnumValue enumValue = 3;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Archive.EnumValue.Builder> 
+           getEnumValueBuilderList() {
+        return getEnumValueFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.yamcs.protobuf.Archive.EnumValue, org.yamcs.protobuf.Archive.EnumValue.Builder, org.yamcs.protobuf.Archive.EnumValueOrBuilder> 
+          getEnumValueFieldBuilder() {
+        if (enumValueBuilder_ == null) {
+          enumValueBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.yamcs.protobuf.Archive.EnumValue, org.yamcs.protobuf.Archive.EnumValue.Builder, org.yamcs.protobuf.Archive.EnumValueOrBuilder>(
+                  enumValue_,
+                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  getParentForChildren(),
+                  isClean());
+          enumValue_ = null;
+        }
+        return enumValueBuilder_;
+      }
+
       // @@protoc_insertion_point(builder_scope:archive.ColumnInfo)
     }
 
@@ -3540,6 +3900,560 @@ public final class Archive {
     }
 
     // @@protoc_insertion_point(class_scope:archive.ColumnInfo)
+  }
+
+  public interface EnumValueOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:archive.EnumValue)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional int32 value = 1;</code>
+     */
+    boolean hasValue();
+    /**
+     * <code>optional int32 value = 1;</code>
+     */
+    int getValue();
+
+    /**
+     * <code>optional string label = 2;</code>
+     */
+    boolean hasLabel();
+    /**
+     * <code>optional string label = 2;</code>
+     */
+    java.lang.String getLabel();
+    /**
+     * <code>optional string label = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getLabelBytes();
+  }
+  /**
+   * Protobuf type {@code archive.EnumValue}
+   */
+  public static final class EnumValue extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:archive.EnumValue)
+      EnumValueOrBuilder {
+    // Use EnumValue.newBuilder() to construct.
+    private EnumValue(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private EnumValue(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final EnumValue defaultInstance;
+    public static EnumValue getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public EnumValue getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private EnumValue(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              value_ = input.readInt32();
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              label_ = bs;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_EnumValue_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_EnumValue_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.EnumValue.class, org.yamcs.protobuf.Archive.EnumValue.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<EnumValue> PARSER =
+        new com.google.protobuf.AbstractParser<EnumValue>() {
+      public EnumValue parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new EnumValue(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<EnumValue> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int VALUE_FIELD_NUMBER = 1;
+    private int value_;
+    /**
+     * <code>optional int32 value = 1;</code>
+     */
+    public boolean hasValue() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional int32 value = 1;</code>
+     */
+    public int getValue() {
+      return value_;
+    }
+
+    public static final int LABEL_FIELD_NUMBER = 2;
+    private java.lang.Object label_;
+    /**
+     * <code>optional string label = 2;</code>
+     */
+    public boolean hasLabel() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string label = 2;</code>
+     */
+    public java.lang.String getLabel() {
+      java.lang.Object ref = label_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          label_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string label = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getLabelBytes() {
+      java.lang.Object ref = label_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        label_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      value_ = 0;
+      label_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt32(1, value_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getLabelBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, value_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getLabelBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Archive.EnumValue parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.EnumValue parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.EnumValue parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.EnumValue parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.EnumValue parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.EnumValue parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.EnumValue parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.EnumValue parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.EnumValue parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.EnumValue parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.EnumValue prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code archive.EnumValue}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:archive.EnumValue)
+        org.yamcs.protobuf.Archive.EnumValueOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_EnumValue_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_EnumValue_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.EnumValue.class, org.yamcs.protobuf.Archive.EnumValue.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.EnumValue.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        value_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        label_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_EnumValue_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.EnumValue getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.EnumValue.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.EnumValue build() {
+        org.yamcs.protobuf.Archive.EnumValue result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.EnumValue buildPartial() {
+        org.yamcs.protobuf.Archive.EnumValue result = new org.yamcs.protobuf.Archive.EnumValue(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.value_ = value_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.label_ = label_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.EnumValue) {
+          return mergeFrom((org.yamcs.protobuf.Archive.EnumValue)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.EnumValue other) {
+        if (other == org.yamcs.protobuf.Archive.EnumValue.getDefaultInstance()) return this;
+        if (other.hasValue()) {
+          setValue(other.getValue());
+        }
+        if (other.hasLabel()) {
+          bitField0_ |= 0x00000002;
+          label_ = other.label_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.EnumValue parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.EnumValue) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private int value_ ;
+      /**
+       * <code>optional int32 value = 1;</code>
+       */
+      public boolean hasValue() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional int32 value = 1;</code>
+       */
+      public int getValue() {
+        return value_;
+      }
+      /**
+       * <code>optional int32 value = 1;</code>
+       */
+      public Builder setValue(int value) {
+        bitField0_ |= 0x00000001;
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 value = 1;</code>
+       */
+      public Builder clearValue() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        value_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object label_ = "";
+      /**
+       * <code>optional string label = 2;</code>
+       */
+      public boolean hasLabel() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string label = 2;</code>
+       */
+      public java.lang.String getLabel() {
+        java.lang.Object ref = label_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            label_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string label = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getLabelBytes() {
+        java.lang.Object ref = label_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          label_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string label = 2;</code>
+       */
+      public Builder setLabel(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        label_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string label = 2;</code>
+       */
+      public Builder clearLabel() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        label_ = getDefaultInstance().getLabel();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string label = 2;</code>
+       */
+      public Builder setLabelBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        label_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:archive.EnumValue)
+    }
+
+    static {
+      defaultInstance = new EnumValue(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:archive.EnumValue)
   }
 
   public interface TableInfoOrBuilder extends
@@ -3621,6 +4535,84 @@ public final class Archive {
      */
     com.google.protobuf.ByteString
         getScriptBytes();
+
+    /**
+     * <code>repeated string histogramColumn = 5;</code>
+     */
+    com.google.protobuf.ProtocolStringList
+        getHistogramColumnList();
+    /**
+     * <code>repeated string histogramColumn = 5;</code>
+     */
+    int getHistogramColumnCount();
+    /**
+     * <code>repeated string histogramColumn = 5;</code>
+     */
+    java.lang.String getHistogramColumn(int index);
+    /**
+     * <code>repeated string histogramColumn = 5;</code>
+     */
+    com.google.protobuf.ByteString
+        getHistogramColumnBytes(int index);
+
+    /**
+     * <code>optional string storageEngine = 6;</code>
+     */
+    boolean hasStorageEngine();
+    /**
+     * <code>optional string storageEngine = 6;</code>
+     */
+    java.lang.String getStorageEngine();
+    /**
+     * <code>optional string storageEngine = 6;</code>
+     */
+    com.google.protobuf.ByteString
+        getStorageEngineBytes();
+
+    /**
+     * <code>optional int32 formatVersion = 7;</code>
+     */
+    boolean hasFormatVersion();
+    /**
+     * <code>optional int32 formatVersion = 7;</code>
+     */
+    int getFormatVersion();
+
+    /**
+     * <code>optional string tablespace = 8;</code>
+     */
+    boolean hasTablespace();
+    /**
+     * <code>optional string tablespace = 8;</code>
+     */
+    java.lang.String getTablespace();
+    /**
+     * <code>optional string tablespace = 8;</code>
+     */
+    com.google.protobuf.ByteString
+        getTablespaceBytes();
+
+    /**
+     * <code>optional bool compressed = 9;</code>
+     */
+    boolean hasCompressed();
+    /**
+     * <code>optional bool compressed = 9;</code>
+     */
+    boolean getCompressed();
+
+    /**
+     * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+     */
+    boolean hasPartitioningInfo();
+    /**
+     * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+     */
+    org.yamcs.protobuf.Archive.PartitioningInfo getPartitioningInfo();
+    /**
+     * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+     */
+    org.yamcs.protobuf.Archive.PartitioningInfoOrBuilder getPartitioningInfoOrBuilder();
   }
   /**
    * Protobuf type {@code archive.TableInfo}
@@ -3702,6 +4694,50 @@ public final class Archive {
               script_ = bs;
               break;
             }
+            case 42: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+                histogramColumn_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000010;
+              }
+              histogramColumn_.add(bs);
+              break;
+            }
+            case 50: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000004;
+              storageEngine_ = bs;
+              break;
+            }
+            case 56: {
+              bitField0_ |= 0x00000008;
+              formatVersion_ = input.readInt32();
+              break;
+            }
+            case 66: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000010;
+              tablespace_ = bs;
+              break;
+            }
+            case 72: {
+              bitField0_ |= 0x00000020;
+              compressed_ = input.readBool();
+              break;
+            }
+            case 82: {
+              org.yamcs.protobuf.Archive.PartitioningInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000040) == 0x00000040)) {
+                subBuilder = partitioningInfo_.toBuilder();
+              }
+              partitioningInfo_ = input.readMessage(org.yamcs.protobuf.Archive.PartitioningInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(partitioningInfo_);
+                partitioningInfo_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000040;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -3715,6 +4751,9 @@ public final class Archive {
         }
         if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
           valueColumn_ = java.util.Collections.unmodifiableList(valueColumn_);
+        }
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+          histogramColumn_ = histogramColumn_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -3902,11 +4941,181 @@ public final class Archive {
       }
     }
 
+    public static final int HISTOGRAMCOLUMN_FIELD_NUMBER = 5;
+    private com.google.protobuf.LazyStringList histogramColumn_;
+    /**
+     * <code>repeated string histogramColumn = 5;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getHistogramColumnList() {
+      return histogramColumn_;
+    }
+    /**
+     * <code>repeated string histogramColumn = 5;</code>
+     */
+    public int getHistogramColumnCount() {
+      return histogramColumn_.size();
+    }
+    /**
+     * <code>repeated string histogramColumn = 5;</code>
+     */
+    public java.lang.String getHistogramColumn(int index) {
+      return histogramColumn_.get(index);
+    }
+    /**
+     * <code>repeated string histogramColumn = 5;</code>
+     */
+    public com.google.protobuf.ByteString
+        getHistogramColumnBytes(int index) {
+      return histogramColumn_.getByteString(index);
+    }
+
+    public static final int STORAGEENGINE_FIELD_NUMBER = 6;
+    private java.lang.Object storageEngine_;
+    /**
+     * <code>optional string storageEngine = 6;</code>
+     */
+    public boolean hasStorageEngine() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string storageEngine = 6;</code>
+     */
+    public java.lang.String getStorageEngine() {
+      java.lang.Object ref = storageEngine_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          storageEngine_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string storageEngine = 6;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStorageEngineBytes() {
+      java.lang.Object ref = storageEngine_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        storageEngine_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int FORMATVERSION_FIELD_NUMBER = 7;
+    private int formatVersion_;
+    /**
+     * <code>optional int32 formatVersion = 7;</code>
+     */
+    public boolean hasFormatVersion() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional int32 formatVersion = 7;</code>
+     */
+    public int getFormatVersion() {
+      return formatVersion_;
+    }
+
+    public static final int TABLESPACE_FIELD_NUMBER = 8;
+    private java.lang.Object tablespace_;
+    /**
+     * <code>optional string tablespace = 8;</code>
+     */
+    public boolean hasTablespace() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional string tablespace = 8;</code>
+     */
+    public java.lang.String getTablespace() {
+      java.lang.Object ref = tablespace_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          tablespace_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string tablespace = 8;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTablespaceBytes() {
+      java.lang.Object ref = tablespace_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        tablespace_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int COMPRESSED_FIELD_NUMBER = 9;
+    private boolean compressed_;
+    /**
+     * <code>optional bool compressed = 9;</code>
+     */
+    public boolean hasCompressed() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional bool compressed = 9;</code>
+     */
+    public boolean getCompressed() {
+      return compressed_;
+    }
+
+    public static final int PARTITIONINGINFO_FIELD_NUMBER = 10;
+    private org.yamcs.protobuf.Archive.PartitioningInfo partitioningInfo_;
+    /**
+     * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+     */
+    public boolean hasPartitioningInfo() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+     */
+    public org.yamcs.protobuf.Archive.PartitioningInfo getPartitioningInfo() {
+      return partitioningInfo_;
+    }
+    /**
+     * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+     */
+    public org.yamcs.protobuf.Archive.PartitioningInfoOrBuilder getPartitioningInfoOrBuilder() {
+      return partitioningInfo_;
+    }
+
     private void initFields() {
       name_ = "";
       keyColumn_ = java.util.Collections.emptyList();
       valueColumn_ = java.util.Collections.emptyList();
       script_ = "";
+      histogramColumn_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      storageEngine_ = "";
+      formatVersion_ = 0;
+      tablespace_ = "";
+      compressed_ = false;
+      partitioningInfo_ = org.yamcs.protobuf.Archive.PartitioningInfo.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3933,6 +5142,24 @@ public final class Archive {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBytes(4, getScriptBytes());
       }
+      for (int i = 0; i < histogramColumn_.size(); i++) {
+        output.writeBytes(5, histogramColumn_.getByteString(i));
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(6, getStorageEngineBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt32(7, formatVersion_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBytes(8, getTablespaceBytes());
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeBool(9, compressed_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeMessage(10, partitioningInfo_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -3957,6 +5184,35 @@ public final class Archive {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(4, getScriptBytes());
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < histogramColumn_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(histogramColumn_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getHistogramColumnList().size();
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(6, getStorageEngineBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(7, formatVersion_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8, getTablespaceBytes());
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(9, compressed_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(10, partitioningInfo_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4069,6 +5325,7 @@ public final class Archive {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getKeyColumnFieldBuilder();
           getValueColumnFieldBuilder();
+          getPartitioningInfoFieldBuilder();
         }
       }
       private static Builder create() {
@@ -4093,6 +5350,22 @@ public final class Archive {
         }
         script_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
+        histogramColumn_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        storageEngine_ = "";
+        bitField0_ = (bitField0_ & ~0x00000020);
+        formatVersion_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000040);
+        tablespace_ = "";
+        bitField0_ = (bitField0_ & ~0x00000080);
+        compressed_ = false;
+        bitField0_ = (bitField0_ & ~0x00000100);
+        if (partitioningInfoBuilder_ == null) {
+          partitioningInfo_ = org.yamcs.protobuf.Archive.PartitioningInfo.getDefaultInstance();
+        } else {
+          partitioningInfoBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000200);
         return this;
       }
 
@@ -4147,6 +5420,35 @@ public final class Archive {
           to_bitField0_ |= 0x00000002;
         }
         result.script_ = script_;
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          histogramColumn_ = histogramColumn_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000010);
+        }
+        result.histogramColumn_ = histogramColumn_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.storageEngine_ = storageEngine_;
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.formatVersion_ = formatVersion_;
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.tablespace_ = tablespace_;
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.compressed_ = compressed_;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        if (partitioningInfoBuilder_ == null) {
+          result.partitioningInfo_ = partitioningInfo_;
+        } else {
+          result.partitioningInfo_ = partitioningInfoBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4224,6 +5526,35 @@ public final class Archive {
           bitField0_ |= 0x00000008;
           script_ = other.script_;
           onChanged();
+        }
+        if (!other.histogramColumn_.isEmpty()) {
+          if (histogramColumn_.isEmpty()) {
+            histogramColumn_ = other.histogramColumn_;
+            bitField0_ = (bitField0_ & ~0x00000010);
+          } else {
+            ensureHistogramColumnIsMutable();
+            histogramColumn_.addAll(other.histogramColumn_);
+          }
+          onChanged();
+        }
+        if (other.hasStorageEngine()) {
+          bitField0_ |= 0x00000020;
+          storageEngine_ = other.storageEngine_;
+          onChanged();
+        }
+        if (other.hasFormatVersion()) {
+          setFormatVersion(other.getFormatVersion());
+        }
+        if (other.hasTablespace()) {
+          bitField0_ |= 0x00000080;
+          tablespace_ = other.tablespace_;
+          onChanged();
+        }
+        if (other.hasCompressed()) {
+          setCompressed(other.getCompressed());
+        }
+        if (other.hasPartitioningInfo()) {
+          mergePartitioningInfo(other.getPartitioningInfo());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -4884,6 +6215,431 @@ public final class Archive {
         return this;
       }
 
+      private com.google.protobuf.LazyStringList histogramColumn_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureHistogramColumnIsMutable() {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          histogramColumn_ = new com.google.protobuf.LazyStringArrayList(histogramColumn_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+      /**
+       * <code>repeated string histogramColumn = 5;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getHistogramColumnList() {
+        return histogramColumn_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string histogramColumn = 5;</code>
+       */
+      public int getHistogramColumnCount() {
+        return histogramColumn_.size();
+      }
+      /**
+       * <code>repeated string histogramColumn = 5;</code>
+       */
+      public java.lang.String getHistogramColumn(int index) {
+        return histogramColumn_.get(index);
+      }
+      /**
+       * <code>repeated string histogramColumn = 5;</code>
+       */
+      public com.google.protobuf.ByteString
+          getHistogramColumnBytes(int index) {
+        return histogramColumn_.getByteString(index);
+      }
+      /**
+       * <code>repeated string histogramColumn = 5;</code>
+       */
+      public Builder setHistogramColumn(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureHistogramColumnIsMutable();
+        histogramColumn_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string histogramColumn = 5;</code>
+       */
+      public Builder addHistogramColumn(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureHistogramColumnIsMutable();
+        histogramColumn_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string histogramColumn = 5;</code>
+       */
+      public Builder addAllHistogramColumn(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureHistogramColumnIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, histogramColumn_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string histogramColumn = 5;</code>
+       */
+      public Builder clearHistogramColumn() {
+        histogramColumn_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string histogramColumn = 5;</code>
+       */
+      public Builder addHistogramColumnBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureHistogramColumnIsMutable();
+        histogramColumn_.add(value);
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object storageEngine_ = "";
+      /**
+       * <code>optional string storageEngine = 6;</code>
+       */
+      public boolean hasStorageEngine() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional string storageEngine = 6;</code>
+       */
+      public java.lang.String getStorageEngine() {
+        java.lang.Object ref = storageEngine_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            storageEngine_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string storageEngine = 6;</code>
+       */
+      public com.google.protobuf.ByteString
+          getStorageEngineBytes() {
+        java.lang.Object ref = storageEngine_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          storageEngine_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string storageEngine = 6;</code>
+       */
+      public Builder setStorageEngine(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+        storageEngine_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string storageEngine = 6;</code>
+       */
+      public Builder clearStorageEngine() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        storageEngine_ = getDefaultInstance().getStorageEngine();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string storageEngine = 6;</code>
+       */
+      public Builder setStorageEngineBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000020;
+        storageEngine_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int formatVersion_ ;
+      /**
+       * <code>optional int32 formatVersion = 7;</code>
+       */
+      public boolean hasFormatVersion() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional int32 formatVersion = 7;</code>
+       */
+      public int getFormatVersion() {
+        return formatVersion_;
+      }
+      /**
+       * <code>optional int32 formatVersion = 7;</code>
+       */
+      public Builder setFormatVersion(int value) {
+        bitField0_ |= 0x00000040;
+        formatVersion_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 formatVersion = 7;</code>
+       */
+      public Builder clearFormatVersion() {
+        bitField0_ = (bitField0_ & ~0x00000040);
+        formatVersion_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object tablespace_ = "";
+      /**
+       * <code>optional string tablespace = 8;</code>
+       */
+      public boolean hasTablespace() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional string tablespace = 8;</code>
+       */
+      public java.lang.String getTablespace() {
+        java.lang.Object ref = tablespace_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            tablespace_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string tablespace = 8;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTablespaceBytes() {
+        java.lang.Object ref = tablespace_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          tablespace_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string tablespace = 8;</code>
+       */
+      public Builder setTablespace(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        tablespace_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string tablespace = 8;</code>
+       */
+      public Builder clearTablespace() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        tablespace_ = getDefaultInstance().getTablespace();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string tablespace = 8;</code>
+       */
+      public Builder setTablespaceBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000080;
+        tablespace_ = value;
+        onChanged();
+        return this;
+      }
+
+      private boolean compressed_ ;
+      /**
+       * <code>optional bool compressed = 9;</code>
+       */
+      public boolean hasCompressed() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional bool compressed = 9;</code>
+       */
+      public boolean getCompressed() {
+        return compressed_;
+      }
+      /**
+       * <code>optional bool compressed = 9;</code>
+       */
+      public Builder setCompressed(boolean value) {
+        bitField0_ |= 0x00000100;
+        compressed_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool compressed = 9;</code>
+       */
+      public Builder clearCompressed() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        compressed_ = false;
+        onChanged();
+        return this;
+      }
+
+      private org.yamcs.protobuf.Archive.PartitioningInfo partitioningInfo_ = org.yamcs.protobuf.Archive.PartitioningInfo.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Archive.PartitioningInfo, org.yamcs.protobuf.Archive.PartitioningInfo.Builder, org.yamcs.protobuf.Archive.PartitioningInfoOrBuilder> partitioningInfoBuilder_;
+      /**
+       * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+       */
+      public boolean hasPartitioningInfo() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+       */
+      public org.yamcs.protobuf.Archive.PartitioningInfo getPartitioningInfo() {
+        if (partitioningInfoBuilder_ == null) {
+          return partitioningInfo_;
+        } else {
+          return partitioningInfoBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+       */
+      public Builder setPartitioningInfo(org.yamcs.protobuf.Archive.PartitioningInfo value) {
+        if (partitioningInfoBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          partitioningInfo_ = value;
+          onChanged();
+        } else {
+          partitioningInfoBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+       */
+      public Builder setPartitioningInfo(
+          org.yamcs.protobuf.Archive.PartitioningInfo.Builder builderForValue) {
+        if (partitioningInfoBuilder_ == null) {
+          partitioningInfo_ = builderForValue.build();
+          onChanged();
+        } else {
+          partitioningInfoBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+       */
+      public Builder mergePartitioningInfo(org.yamcs.protobuf.Archive.PartitioningInfo value) {
+        if (partitioningInfoBuilder_ == null) {
+          if (((bitField0_ & 0x00000200) == 0x00000200) &&
+              partitioningInfo_ != org.yamcs.protobuf.Archive.PartitioningInfo.getDefaultInstance()) {
+            partitioningInfo_ =
+              org.yamcs.protobuf.Archive.PartitioningInfo.newBuilder(partitioningInfo_).mergeFrom(value).buildPartial();
+          } else {
+            partitioningInfo_ = value;
+          }
+          onChanged();
+        } else {
+          partitioningInfoBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000200;
+        return this;
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+       */
+      public Builder clearPartitioningInfo() {
+        if (partitioningInfoBuilder_ == null) {
+          partitioningInfo_ = org.yamcs.protobuf.Archive.PartitioningInfo.getDefaultInstance();
+          onChanged();
+        } else {
+          partitioningInfoBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000200);
+        return this;
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+       */
+      public org.yamcs.protobuf.Archive.PartitioningInfo.Builder getPartitioningInfoBuilder() {
+        bitField0_ |= 0x00000200;
+        onChanged();
+        return getPartitioningInfoFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+       */
+      public org.yamcs.protobuf.Archive.PartitioningInfoOrBuilder getPartitioningInfoOrBuilder() {
+        if (partitioningInfoBuilder_ != null) {
+          return partitioningInfoBuilder_.getMessageOrBuilder();
+        } else {
+          return partitioningInfo_;
+        }
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo partitioningInfo = 10;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.Archive.PartitioningInfo, org.yamcs.protobuf.Archive.PartitioningInfo.Builder, org.yamcs.protobuf.Archive.PartitioningInfoOrBuilder> 
+          getPartitioningInfoFieldBuilder() {
+        if (partitioningInfoBuilder_ == null) {
+          partitioningInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.Archive.PartitioningInfo, org.yamcs.protobuf.Archive.PartitioningInfo.Builder, org.yamcs.protobuf.Archive.PartitioningInfoOrBuilder>(
+                  getPartitioningInfo(),
+                  getParentForChildren(),
+                  isClean());
+          partitioningInfo_ = null;
+        }
+        return partitioningInfoBuilder_;
+      }
+
       // @@protoc_insertion_point(builder_scope:archive.TableInfo)
     }
 
@@ -4893,6 +6649,1131 @@ public final class Archive {
     }
 
     // @@protoc_insertion_point(class_scope:archive.TableInfo)
+  }
+
+  public interface PartitioningInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:archive.PartitioningInfo)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .archive.PartitioningInfo.PartitioningType type = 1;</code>
+     */
+    boolean hasType();
+    /**
+     * <code>optional .archive.PartitioningInfo.PartitioningType type = 1;</code>
+     */
+    org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType getType();
+
+    /**
+     * <code>optional string timeColumn = 2;</code>
+     */
+    boolean hasTimeColumn();
+    /**
+     * <code>optional string timeColumn = 2;</code>
+     */
+    java.lang.String getTimeColumn();
+    /**
+     * <code>optional string timeColumn = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getTimeColumnBytes();
+
+    /**
+     * <code>optional string timePartitionSchema = 3;</code>
+     */
+    boolean hasTimePartitionSchema();
+    /**
+     * <code>optional string timePartitionSchema = 3;</code>
+     */
+    java.lang.String getTimePartitionSchema();
+    /**
+     * <code>optional string timePartitionSchema = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getTimePartitionSchemaBytes();
+
+    /**
+     * <code>optional string valueColumn = 4;</code>
+     */
+    boolean hasValueColumn();
+    /**
+     * <code>optional string valueColumn = 4;</code>
+     */
+    java.lang.String getValueColumn();
+    /**
+     * <code>optional string valueColumn = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getValueColumnBytes();
+
+    /**
+     * <code>optional string valueColumnType = 5;</code>
+     */
+    boolean hasValueColumnType();
+    /**
+     * <code>optional string valueColumnType = 5;</code>
+     */
+    java.lang.String getValueColumnType();
+    /**
+     * <code>optional string valueColumnType = 5;</code>
+     */
+    com.google.protobuf.ByteString
+        getValueColumnTypeBytes();
+  }
+  /**
+   * Protobuf type {@code archive.PartitioningInfo}
+   */
+  public static final class PartitioningInfo extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:archive.PartitioningInfo)
+      PartitioningInfoOrBuilder {
+    // Use PartitioningInfo.newBuilder() to construct.
+    private PartitioningInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private PartitioningInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final PartitioningInfo defaultInstance;
+    public static PartitioningInfo getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public PartitioningInfo getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private PartitioningInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType value = org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                type_ = value;
+              }
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              timeColumn_ = bs;
+              break;
+            }
+            case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000004;
+              timePartitionSchema_ = bs;
+              break;
+            }
+            case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000008;
+              valueColumn_ = bs;
+              break;
+            }
+            case 42: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000010;
+              valueColumnType_ = bs;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_PartitioningInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_PartitioningInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.PartitioningInfo.class, org.yamcs.protobuf.Archive.PartitioningInfo.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<PartitioningInfo> PARSER =
+        new com.google.protobuf.AbstractParser<PartitioningInfo>() {
+      public PartitioningInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new PartitioningInfo(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<PartitioningInfo> getParserForType() {
+      return PARSER;
+    }
+
+    /**
+     * Protobuf enum {@code archive.PartitioningInfo.PartitioningType}
+     */
+    public enum PartitioningType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>TIME = 1;</code>
+       */
+      TIME(0, 1),
+      /**
+       * <code>VALUE = 2;</code>
+       */
+      VALUE(1, 2),
+      /**
+       * <code>TIME_AND_VALUE = 3;</code>
+       */
+      TIME_AND_VALUE(2, 3),
+      ;
+
+      /**
+       * <code>TIME = 1;</code>
+       */
+      public static final int TIME_VALUE = 1;
+      /**
+       * <code>VALUE = 2;</code>
+       */
+      public static final int VALUE_VALUE = 2;
+      /**
+       * <code>TIME_AND_VALUE = 3;</code>
+       */
+      public static final int TIME_AND_VALUE_VALUE = 3;
+
+
+      public final int getNumber() { return value; }
+
+      public static PartitioningType valueOf(int value) {
+        switch (value) {
+          case 1: return TIME;
+          case 2: return VALUE;
+          case 3: return TIME_AND_VALUE;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<PartitioningType>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static com.google.protobuf.Internal.EnumLiteMap<PartitioningType>
+          internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<PartitioningType>() {
+              public PartitioningType findValueByNumber(int number) {
+                return PartitioningType.valueOf(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(index);
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.PartitioningInfo.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final PartitioningType[] VALUES = values();
+
+      public static PartitioningType valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int index;
+      private final int value;
+
+      private PartitioningType(int index, int value) {
+        this.index = index;
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:archive.PartitioningInfo.PartitioningType)
+    }
+
+    private int bitField0_;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType type_;
+    /**
+     * <code>optional .archive.PartitioningInfo.PartitioningType type = 1;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .archive.PartitioningInfo.PartitioningType type = 1;</code>
+     */
+    public org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType getType() {
+      return type_;
+    }
+
+    public static final int TIMECOLUMN_FIELD_NUMBER = 2;
+    private java.lang.Object timeColumn_;
+    /**
+     * <code>optional string timeColumn = 2;</code>
+     */
+    public boolean hasTimeColumn() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string timeColumn = 2;</code>
+     */
+    public java.lang.String getTimeColumn() {
+      java.lang.Object ref = timeColumn_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          timeColumn_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string timeColumn = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTimeColumnBytes() {
+      java.lang.Object ref = timeColumn_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        timeColumn_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int TIMEPARTITIONSCHEMA_FIELD_NUMBER = 3;
+    private java.lang.Object timePartitionSchema_;
+    /**
+     * <code>optional string timePartitionSchema = 3;</code>
+     */
+    public boolean hasTimePartitionSchema() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string timePartitionSchema = 3;</code>
+     */
+    public java.lang.String getTimePartitionSchema() {
+      java.lang.Object ref = timePartitionSchema_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          timePartitionSchema_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string timePartitionSchema = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTimePartitionSchemaBytes() {
+      java.lang.Object ref = timePartitionSchema_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        timePartitionSchema_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int VALUECOLUMN_FIELD_NUMBER = 4;
+    private java.lang.Object valueColumn_;
+    /**
+     * <code>optional string valueColumn = 4;</code>
+     */
+    public boolean hasValueColumn() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string valueColumn = 4;</code>
+     */
+    public java.lang.String getValueColumn() {
+      java.lang.Object ref = valueColumn_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          valueColumn_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string valueColumn = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getValueColumnBytes() {
+      java.lang.Object ref = valueColumn_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        valueColumn_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int VALUECOLUMNTYPE_FIELD_NUMBER = 5;
+    private java.lang.Object valueColumnType_;
+    /**
+     * <code>optional string valueColumnType = 5;</code>
+     */
+    public boolean hasValueColumnType() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional string valueColumnType = 5;</code>
+     */
+    public java.lang.String getValueColumnType() {
+      java.lang.Object ref = valueColumnType_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          valueColumnType_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string valueColumnType = 5;</code>
+     */
+    public com.google.protobuf.ByteString
+        getValueColumnTypeBytes() {
+      java.lang.Object ref = valueColumnType_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        valueColumnType_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      type_ = org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType.TIME;
+      timeColumn_ = "";
+      timePartitionSchema_ = "";
+      valueColumn_ = "";
+      valueColumnType_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, type_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getTimeColumnBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getTimePartitionSchemaBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getValueColumnBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBytes(5, getValueColumnTypeBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, type_.getNumber());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getTimeColumnBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getTimePartitionSchemaBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getValueColumnBytes());
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(5, getValueColumnTypeBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Archive.PartitioningInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.PartitioningInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.PartitioningInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.PartitioningInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.PartitioningInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.PartitioningInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.PartitioningInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.PartitioningInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.PartitioningInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.PartitioningInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.PartitioningInfo prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code archive.PartitioningInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:archive.PartitioningInfo)
+        org.yamcs.protobuf.Archive.PartitioningInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_PartitioningInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_PartitioningInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.PartitioningInfo.class, org.yamcs.protobuf.Archive.PartitioningInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.PartitioningInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        type_ = org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType.TIME;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        timeColumn_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        timePartitionSchema_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        valueColumn_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
+        valueColumnType_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_PartitioningInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.PartitioningInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.PartitioningInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.PartitioningInfo build() {
+        org.yamcs.protobuf.Archive.PartitioningInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.PartitioningInfo buildPartial() {
+        org.yamcs.protobuf.Archive.PartitioningInfo result = new org.yamcs.protobuf.Archive.PartitioningInfo(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.timeColumn_ = timeColumn_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.timePartitionSchema_ = timePartitionSchema_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.valueColumn_ = valueColumn_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.valueColumnType_ = valueColumnType_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.PartitioningInfo) {
+          return mergeFrom((org.yamcs.protobuf.Archive.PartitioningInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.PartitioningInfo other) {
+        if (other == org.yamcs.protobuf.Archive.PartitioningInfo.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        if (other.hasTimeColumn()) {
+          bitField0_ |= 0x00000002;
+          timeColumn_ = other.timeColumn_;
+          onChanged();
+        }
+        if (other.hasTimePartitionSchema()) {
+          bitField0_ |= 0x00000004;
+          timePartitionSchema_ = other.timePartitionSchema_;
+          onChanged();
+        }
+        if (other.hasValueColumn()) {
+          bitField0_ |= 0x00000008;
+          valueColumn_ = other.valueColumn_;
+          onChanged();
+        }
+        if (other.hasValueColumnType()) {
+          bitField0_ |= 0x00000010;
+          valueColumnType_ = other.valueColumnType_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.PartitioningInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.PartitioningInfo) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType type_ = org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType.TIME;
+      /**
+       * <code>optional .archive.PartitioningInfo.PartitioningType type = 1;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo.PartitioningType type = 1;</code>
+       */
+      public org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType getType() {
+        return type_;
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo.PartitioningType type = 1;</code>
+       */
+      public Builder setType(org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .archive.PartitioningInfo.PartitioningType type = 1;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType.TIME;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object timeColumn_ = "";
+      /**
+       * <code>optional string timeColumn = 2;</code>
+       */
+      public boolean hasTimeColumn() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string timeColumn = 2;</code>
+       */
+      public java.lang.String getTimeColumn() {
+        java.lang.Object ref = timeColumn_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            timeColumn_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string timeColumn = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTimeColumnBytes() {
+        java.lang.Object ref = timeColumn_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          timeColumn_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string timeColumn = 2;</code>
+       */
+      public Builder setTimeColumn(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        timeColumn_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string timeColumn = 2;</code>
+       */
+      public Builder clearTimeColumn() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        timeColumn_ = getDefaultInstance().getTimeColumn();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string timeColumn = 2;</code>
+       */
+      public Builder setTimeColumnBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        timeColumn_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object timePartitionSchema_ = "";
+      /**
+       * <code>optional string timePartitionSchema = 3;</code>
+       */
+      public boolean hasTimePartitionSchema() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string timePartitionSchema = 3;</code>
+       */
+      public java.lang.String getTimePartitionSchema() {
+        java.lang.Object ref = timePartitionSchema_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            timePartitionSchema_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string timePartitionSchema = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTimePartitionSchemaBytes() {
+        java.lang.Object ref = timePartitionSchema_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          timePartitionSchema_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string timePartitionSchema = 3;</code>
+       */
+      public Builder setTimePartitionSchema(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        timePartitionSchema_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string timePartitionSchema = 3;</code>
+       */
+      public Builder clearTimePartitionSchema() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        timePartitionSchema_ = getDefaultInstance().getTimePartitionSchema();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string timePartitionSchema = 3;</code>
+       */
+      public Builder setTimePartitionSchemaBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        timePartitionSchema_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object valueColumn_ = "";
+      /**
+       * <code>optional string valueColumn = 4;</code>
+       */
+      public boolean hasValueColumn() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string valueColumn = 4;</code>
+       */
+      public java.lang.String getValueColumn() {
+        java.lang.Object ref = valueColumn_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            valueColumn_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string valueColumn = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getValueColumnBytes() {
+        java.lang.Object ref = valueColumn_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          valueColumn_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string valueColumn = 4;</code>
+       */
+      public Builder setValueColumn(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        valueColumn_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string valueColumn = 4;</code>
+       */
+      public Builder clearValueColumn() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        valueColumn_ = getDefaultInstance().getValueColumn();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string valueColumn = 4;</code>
+       */
+      public Builder setValueColumnBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        valueColumn_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object valueColumnType_ = "";
+      /**
+       * <code>optional string valueColumnType = 5;</code>
+       */
+      public boolean hasValueColumnType() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional string valueColumnType = 5;</code>
+       */
+      public java.lang.String getValueColumnType() {
+        java.lang.Object ref = valueColumnType_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            valueColumnType_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string valueColumnType = 5;</code>
+       */
+      public com.google.protobuf.ByteString
+          getValueColumnTypeBytes() {
+        java.lang.Object ref = valueColumnType_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          valueColumnType_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string valueColumnType = 5;</code>
+       */
+      public Builder setValueColumnType(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        valueColumnType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string valueColumnType = 5;</code>
+       */
+      public Builder clearValueColumnType() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        valueColumnType_ = getDefaultInstance().getValueColumnType();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string valueColumnType = 5;</code>
+       */
+      public Builder setValueColumnTypeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        valueColumnType_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:archive.PartitioningInfo)
+    }
+
+    static {
+      defaultInstance = new PartitioningInfo(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:archive.PartitioningInfo)
   }
 
   public interface StreamInfoOrBuilder extends
@@ -5914,10 +8795,20 @@ public final class Archive {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_ColumnInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_EnumValue_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_EnumValue_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_TableInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_TableInfo_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_PartitioningInfo_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_PartitioningInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_StreamInfo_descriptor;
   private static
@@ -5938,14 +8829,26 @@ public final class Archive {
       " \001(\t\022#\n\006column\030\002 \003(\0132\023.archive.ColumnDat" +
       "a\"o\n\tTableData\022.\n\006record\030\001 \003(\0132\036.archive" +
       ".TableData.TableRecord\0322\n\013TableRecord\022#\n" +
-      "\006column\030\001 \003(\0132\023.archive.ColumnData\"(\n\nCo" +
-      "lumnInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\"{\n\t" +
-      "TableInfo\022\014\n\004name\030\001 \001(\t\022&\n\tkeyColumn\030\002 \003" +
-      "(\0132\023.archive.ColumnInfo\022(\n\013valueColumn\030\003",
-      " \003(\0132\023.archive.ColumnInfo\022\016\n\006script\030\004 \001(" +
-      "\t\"O\n\nStreamInfo\022\014\n\004name\030\001 \001(\t\022#\n\006column\030" +
-      "\002 \003(\0132\023.archive.ColumnInfo\022\016\n\006script\030\003 \001" +
-      "(\tB\024\n\022org.yamcs.protobuf"
+      "\006column\030\001 \003(\0132\023.archive.ColumnData\"O\n\nCo" +
+      "lumnInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004type\030\002 \001(\t\022%\n\t" +
+      "enumValue\030\003 \003(\0132\022.archive.EnumValue\")\n\tE" +
+      "numValue\022\r\n\005value\030\001 \001(\005\022\r\n\005label\030\002 \001(\t\"\237",
+      "\002\n\tTableInfo\022\014\n\004name\030\001 \001(\t\022&\n\tkeyColumn\030" +
+      "\002 \003(\0132\023.archive.ColumnInfo\022(\n\013valueColum" +
+      "n\030\003 \003(\0132\023.archive.ColumnInfo\022\016\n\006script\030\004" +
+      " \001(\t\022\027\n\017histogramColumn\030\005 \003(\t\022\025\n\rstorage" +
+      "Engine\030\006 \001(\t\022\025\n\rformatVersion\030\007 \001(\005\022\022\n\nt" +
+      "ablespace\030\010 \001(\t\022\022\n\ncompressed\030\t \001(\010\0223\n\020p" +
+      "artitioningInfo\030\n \001(\0132\031.archive.Partitio" +
+      "ningInfo\"\350\001\n\020PartitioningInfo\0228\n\004type\030\001 " +
+      "\001(\0162*.archive.PartitioningInfo.Partition" +
+      "ingType\022\022\n\ntimeColumn\030\002 \001(\t\022\033\n\023timeParti",
+      "tionSchema\030\003 \001(\t\022\023\n\013valueColumn\030\004 \001(\t\022\027\n" +
+      "\017valueColumnType\030\005 \001(\t\";\n\020PartitioningTy" +
+      "pe\022\010\n\004TIME\020\001\022\t\n\005VALUE\020\002\022\022\n\016TIME_AND_VALU" +
+      "E\020\003\"O\n\nStreamInfo\022\014\n\004name\030\001 \001(\t\022#\n\006colum" +
+      "n\030\002 \003(\0132\023.archive.ColumnInfo\022\016\n\006script\030\003" +
+      " \001(\tB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -5989,15 +8892,27 @@ public final class Archive {
     internal_static_archive_ColumnInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_archive_ColumnInfo_descriptor,
-        new java.lang.String[] { "Name", "Type", });
-    internal_static_archive_TableInfo_descriptor =
+        new java.lang.String[] { "Name", "Type", "EnumValue", });
+    internal_static_archive_EnumValue_descriptor =
       getDescriptor().getMessageTypes().get(4);
+    internal_static_archive_EnumValue_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_EnumValue_descriptor,
+        new java.lang.String[] { "Value", "Label", });
+    internal_static_archive_TableInfo_descriptor =
+      getDescriptor().getMessageTypes().get(5);
     internal_static_archive_TableInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_archive_TableInfo_descriptor,
-        new java.lang.String[] { "Name", "KeyColumn", "ValueColumn", "Script", });
+        new java.lang.String[] { "Name", "KeyColumn", "ValueColumn", "Script", "HistogramColumn", "StorageEngine", "FormatVersion", "Tablespace", "Compressed", "PartitioningInfo", });
+    internal_static_archive_PartitioningInfo_descriptor =
+      getDescriptor().getMessageTypes().get(6);
+    internal_static_archive_PartitioningInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_PartitioningInfo_descriptor,
+        new java.lang.String[] { "Type", "TimeColumn", "TimePartitionSchema", "ValueColumn", "ValueColumnType", });
     internal_static_archive_StreamInfo_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(7);
     internal_static_archive_StreamInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_archive_StreamInfo_descriptor,

@@ -1,11 +1,16 @@
 package org.yamcs.web.rest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.UserInfo;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpException;
 
@@ -25,12 +30,12 @@ public class UserRestHandler extends RestHandler {
         } else {
             userInfob = UserInfo.newBuilder();
             userInfob.setLogin(user.getPrincipalName());
-            userInfob.addAllRoles(Arrays.asList(user.getRoles()));
-            userInfob.addAllTmParaPrivileges(user.getTmParaPrivileges());
-            userInfob.addAllTmParaSetPrivileges(user.getTmParaSetPrivileges());
-            userInfob.addAllTmPacketPrivileges(user.getTmPacketPrivileges());
-            userInfob.addAllTcPrivileges(user.getTcPrivileges());
-            userInfob.addAllSystemPrivileges(user.getSystemPrivileges());
+            userInfob.addAllRoles(asSortedList(user.getRoles()));
+            userInfob.addAllTmParaPrivileges(asSortedList(user.getTmParaPrivileges()));
+            userInfob.addAllTmParaSetPrivileges(asSortedList(user.getTmParaSetPrivileges()));
+            userInfob.addAllTmPacketPrivileges(asSortedList(user.getTmPacketPrivileges()));
+            userInfob.addAllTcPrivileges(asSortedList(user.getTcPrivileges()));
+            userInfob.addAllSystemPrivileges(asSortedList(user.getSystemPrivileges()));
         }
 
         for (ClientInfo ci : ManagementService.getInstance().getClientInfo(userInfob.getLogin())) {
@@ -48,9 +53,23 @@ public class UserRestHandler extends RestHandler {
         userInfob.addTmParaSetPrivileges(".*");
         userInfob.addTmPacketPrivileges(".*");
         userInfob.addTcPrivileges(".*");
-        for (Privilege.SystemPrivilege sp : Privilege.SystemPrivilege.values()) {
-            userInfob.addSystemPrivileges(sp.name());
+
+        List<String> systemPrivileges = new ArrayList<>();
+        for (SystemPrivilege sp : SystemPrivilege.values()) {
+            systemPrivileges.add(sp.toString());
         }
+        userInfob.addAllSystemPrivileges(asSortedList(systemPrivileges));
         return userInfob;
+    }
+
+    private static List<String> asSortedList(String[] unsorted) {
+        Arrays.sort(unsorted);
+        return Arrays.asList(unsorted);
+    }
+
+    private static List<String> asSortedList(Collection<String> unsorted) {
+        List<String> sorted = new ArrayList<>(unsorted);
+        Collections.sort(sorted);
+        return sorted;
     }
 }

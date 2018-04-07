@@ -55,6 +55,7 @@ export {
 export {
   ClientInfo,
   ClientSubscriptionResponse,
+  Column,
   CommandQueue,
   CommandQueueEntry,
   CommandQueueEvent,

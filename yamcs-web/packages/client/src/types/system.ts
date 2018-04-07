@@ -96,12 +96,32 @@ export interface Stream {
 export interface Column {
   name: string;
   type: string;
+  enumValue: SQLEnumValue[];
+}
+
+export interface SQLEnumValue {
+  value: number;
+  label: string;
 }
 
 export interface Table {
   name: string;
   keyColumn: Column[];
   valueColumn: Column[];
+  histogramColumn?: string[];
+  storageEngine: string;
+  formatVersion: number;
+  tablespace?: string;
+  compressed: boolean;
+  partitioningInfo?: PartitioningInfo;
+}
+
+export interface PartitioningInfo {
+  type: 'TIME' | 'VALUE' | 'TIME_AND_VALUE';
+  timeColumn: string;
+  timePartitionSchema: string;
+  valueColumn: string;
+  valueColumnType: string;
 }
 
 export interface Record {

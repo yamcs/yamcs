@@ -29,6 +29,10 @@ import { Component, ChangeDetectionStrategy, ViewEncapsulation, HostBinding } fr
       border-bottom: 1px solid rgba(0, 0, 0, 0.156863);
     }
 
+    .ya-data-table th.lcolumn {
+      border-bottom: 1.1px solid rgba(0, 0, 0, .08);
+    }
+
     .ya-data-table td {
       color: rgba(0, 0, 0, .654);
       padding: 7px 0 8px 8px;

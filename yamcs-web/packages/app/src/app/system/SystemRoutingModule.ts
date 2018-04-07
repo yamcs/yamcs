@@ -12,7 +12,7 @@ import { ServicesPage } from './services/ServicesPage';
 import { LinksPage } from './links/LinksPage';
 import { ClientsPage } from './clients/ClientsPage';
 import { DashboardPage } from './dashboard/DashboardPage';
-import { TableColumnsTab } from './table/TableColumnsTab';
+import { TableInfoTab } from './table/TableInfoTab';
 import { TableDataTab } from './table/TableDataTab';
 import { TableScriptTab } from './table/TableScriptTab';
 import { StreamColumnsTab } from './stream/StreamColumnsTab';
@@ -72,10 +72,10 @@ const routes = [
         children: [
           {
             path: '',
-            redirectTo: 'columns',
+            redirectTo: 'info',
           }, {
-            path: 'columns',
-            component: TableColumnsTab,
+            path: 'info',
+            component: TableInfoTab,
           }, {
             path: 'data',
             component: TableDataTab,
@@ -136,7 +136,7 @@ export const routingComponents = [
   SystemPage,
   TablesPage,
   TablePage,
-  TableColumnsTab,
+  TableInfoTab,
   TableDataTab,
   TableScriptTab,
 ];
