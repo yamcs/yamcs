@@ -65,8 +65,8 @@ import io.netty.util.ReferenceCountUtil;
  * <li>static requests - sent to the fileRequestHandler - do no go higher in the netty pipeline</li>
  * <li>websocket requests - the pipeline is modified to add the websocket handshaker.</li>
  * <li>load data requests - the pipeline is modified by the respective route handler</li>
- * <li>standard API calls (the vast majority) - the HttpObjectAgreggator is added upstream to collect
- * (and limit) all data from the http request in one object.</li>
+ * <li>standard API calls (the vast majority) - the HttpObjectAgreggator is added upstream to collect (and limit) all
+ * data from the http request in one object.</li>
  * </ul>
  * Because we support multiple http requests on one connection (keep-alive), we have to clean the pipeline when the
  * request type changes
@@ -92,8 +92,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             Unpooled.EMPTY_BUFFER);
     public static final String HANDLER_NAME_COMPRESSOR = "hndl_compressor";
     public static final String HANDLER_NAME_CHUNKED_WRITER = "hndl_chunked_writer";
-    
-    
+
     static {
         HttpUtil.setContentLength(BAD_REQUEST, 0);
     }
@@ -140,47 +139,52 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private void processRequest(ChannelHandlerContext ctx, HttpRequest req) {
         // We have this also on info level coupled with the HTTP response status
-        // code,
-        // but this is on debug for an earlier reporting while debugging issues
+        // code, but this is on debug for an earlier reporting while debugging issues
         log.debug("{} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri());
 
-        Privilege priv = Privilege.getInstance();
-
-        if (priv.isEnabled()) {
-            ctx.channel().attr(CTX_AUTH_TOKEN).set(null);
-
-            CompletableFuture<AuthenticationToken> cf = priv.authenticateHttp(ctx, req);
-            try {
-                // TODO: make this non-blocking
-                // but pay attention that as soon as we return the method to netty,
-                // it will immediately call the pipeline with the next http message (for example with an
-                // EmptyLastHttpContent)
-                // and those have to be queued somehow while the authentication is being performed
-                // One can use this to make sure no data is read from the client while the authentication is going on:
-                // ctx.channel().config().setAutoRead(false);
-                // cf.whenComplete((...) -> {ctx.channel().config().setAutoRead(true)})
-                // however this doesn't prevent the EmptyLastHttpContent to come through
-                // because that one is generated from the first GET request in case no body or small body is present
-
-                AuthenticationToken authToken = cf.get(5000, TimeUnit.MILLISECONDS);
-
-                ctx.channel().attr(CTX_AUTH_TOKEN).set(authToken);
-
-                handleRequest(authToken, ctx, req);
-            } catch (Exception e) {
-                Throwable t = ExceptionUtil.unwind(e);
-                if (t instanceof AuthenticationPendingException) {
-                    return;
-                } else {
-                    sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-                }
-            }
+        if (isAuthorised(ctx, req)) {
+            handleRequest(ctx, req);
         } else {
-            handleRequest(null, ctx, req);
+            sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
         }
     }
 
-    private void handleRequest(AuthenticationToken authToken, ChannelHandlerContext ctx, HttpRequest req) {
+    private boolean isAuthorised(ChannelHandlerContext ctx, HttpRequest req) throws AuthenticationPendingException {
+        Privilege priv = Privilege.getInstance();
+        if (!priv.isEnabled()) {
+            return true;
+        }
+
+        ctx.channel().attr(CTX_AUTH_TOKEN).set(null);
+
+        CompletableFuture<AuthenticationToken> cf = priv.authenticateHttp(ctx, req);
+        try {
+            // TODO: make this non-blocking
+            // but pay attention that as soon as we return the method to netty,
+            // it will immediately call the pipeline with the next http message (for example with an
+            // EmptyLastHttpContent)
+            // and those have to be queued somehow while the authentication is being performed
+            // One can use this to make sure no data is read from the client while the authentication is going on:
+            // ctx.channel().config().setAutoRead(false);
+            // cf.whenComplete((...) -> {ctx.channel().config().setAutoRead(true)})
+            // however this doesn't prevent the EmptyLastHttpContent to come through
+            // because that one is generated from the first GET request in case no body or small body is present
+
+            AuthenticationToken authToken = cf.get(5000, TimeUnit.MILLISECONDS);
+
+            ctx.channel().attr(CTX_AUTH_TOKEN).set(authToken);
+            return true;
+        } catch (Exception e) {
+            Throwable t = ExceptionUtil.unwind(e);
+            if (t instanceof AuthenticationPendingException) {
+                throw (AuthenticationPendingException) t;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    private void handleRequest(ChannelHandlerContext ctx, HttpRequest req) {
         try {
             cleanPipeline(ctx.pipeline());
             // Decode URI, to correctly ignore query strings in path handling
@@ -203,7 +207,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                     return;
                 }
                 if (YamcsServer.hasInstance(path[2])) {
-                    prepareChannelForWebSocketUpgrade(ctx, req, path[2], authToken);
+                    prepareChannelForWebSocketUpgrade(ctx, req, path[2]);
                 } else {
                     sendPlainTextError(ctx, req, NOT_FOUND);
                 }
@@ -213,7 +217,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                     if (YamcsServer.hasInstance(path[1])) {
                         log.warn(String.format("Deprecated url request for /%s/%s. Migrate to /%s/%s instead.",
                                 path[1], path[2], path[2], path[1]));
-                        prepareChannelForWebSocketUpgrade(ctx, req, path[1], authToken);
+                        prepareChannelForWebSocketUpgrade(ctx, req, path[1]);
                     } else {
                         sendPlainTextError(ctx, req, NOT_FOUND);
                     }
@@ -235,8 +239,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
      * @param ctx
      *            context for this channel handler
      */
-    private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance,
-            AuthenticationToken authToken) {
+    private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance) {
         contentExpected = true;
         ctx.pipeline().addLast(new HttpObjectAggregator(65536));
 
@@ -247,7 +250,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);
-        originalRequestInfo.setAuthenticationToken(authToken);
+        originalRequestInfo.setAuthenticationToken(ctx.channel().attr(CTX_AUTH_TOKEN).get());
         ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo));
 
         // Effectively trigger websocket-handler (will attempt handshake)
@@ -386,7 +389,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         }
         return writeFuture;
     }
-    
+
     public static class ChunkedTransferStats {
         public int totalBytes = 0;
         public int chunkCount = 0;
