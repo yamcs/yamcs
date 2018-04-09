@@ -17,7 +17,7 @@ incomingDir: /storage/yamcs-incoming
 #serverId: yamcs1
 
 webConfig:
-   #where to find the web directory with ccs, js etc
+   #where to find the web directory with css, js etc
    # the displays are also loaded from <webRoot>/<instance>/displays/ directory
    # This may be a list to indicate multiple webroot locations
    webRoot:
@@ -30,13 +30,25 @@ webConfig:
    # Indicates whether zero-copy can be used to optimize non-ssl static file serving
    # Leave this true unless you encounter a specific deployment issue (e.g. some docker hosts)
    zeroCopyEnabled: true
+   
+   # JSON Web Token properties for login via access tokens
+   jwt:
+     enabled: true
+     
+     # How long tokens last (in milliseconds)
+     ttl: 10000
+
+     # Server secret used to validate integrity of incoming JWT tokens.
+     # Do not expose this secret to clients. Clients should in general not
+     # need to validate the JWT token.
+     secret: "changeme"
 
    # Configure Cross—origin Resource Sharing for the REST API.
    # This facilitates use of the API in remote ajax applications.
    # Note that as per W3C spec the exact allowed origin MUST be defined if credentials are to be passed.
    # Our current recommendation is to NOT enable CORS on a Yamcs deployment requiring authenticated access
    # unless both the origin and Yamcs are backed by the same authentication mechanism.
-   # In the future we should support oauth2 to cover other use cases.
+   # Consider using JWT instead of CORS.
    cors:
       enabled: true
       allowOrigin: "*"

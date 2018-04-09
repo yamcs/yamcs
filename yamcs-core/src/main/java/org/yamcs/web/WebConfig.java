@@ -33,6 +33,10 @@ public class WebConfig {
     // remote web applications.
     private CorsConfig corsConfig;
 
+    private boolean jwtEnabled = false;
+    private String jwtSecret;
+    private long jwtTimeToLive;
+
     private List<GpbExtension> gpbExtensions = new ArrayList<>(0);
 
     // used for the websockets write buffer:
@@ -121,6 +125,15 @@ public class WebConfig {
                     HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
+        if (yconf.containsKey("webConfig", "jwt")) {
+            Map<String, Object> jwtProps = yconf.getMap("webConfig", "jwt");
+            jwtEnabled = YConfiguration.getBoolean(jwtProps, "enabled");
+            jwtSecret = YConfiguration.getString(jwtProps, "secret");
+            jwtTimeToLive = YConfiguration.getLong(jwtProps, "ttl");
+            if (jwtEnabled && "changeme".equals(jwtSecret)) {
+                log.warn("JWT server secret in yamcs.yaml has not been changed from its default value");
+            }
+        }
         if (yconf.containsKey("webConfig", "webSocket")) {
             Map<String, Object> ws = yconf.getMap("webConfig", "webSocket");
             if (ws.containsKey("writeBufferWaterMark")) {
@@ -169,6 +182,18 @@ public class WebConfig {
 
     public CorsConfig getCorsConfig() {
         return corsConfig;
+    }
+
+    public boolean isJwtEnabled() {
+        return jwtEnabled;
+    }
+
+    public String getJwtSecret() {
+        return jwtSecret;
+    }
+
+    public long getJwtTimeToLive() {
+        return jwtTimeToLive;
     }
 
     public int getWebSocketConnectionCloseNumDroppedMsg() {

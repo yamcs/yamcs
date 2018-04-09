@@ -2,15 +2,19 @@
 # if enabled is set to false, the connection to realm is not even
 # attempted and hasPrivilege method always returns true
 #
-# if enabled is set to true, you need to enable security of hornetQ and ensure
-# the hornetQ roles are assigned to user in the chosen realm.
-enabled: false
+# When using Artemis with enabled set to true, you need to enable security
+# of Artemis and ensure the Artemis roles are assigned to user in the
+# chosen realm.
+enabled: true
 
 # The name of the default user when privileges are not enabled
 defaultUser: admin
 
-#one of: LdapRealm, YamlRealm
-realm: org.yamcs.security.YamlRealm
+authModule:
+    class: org.yamcs.security.BasicAuthModule
+    #one of: LdapRealm, YamlRealm
+    config:
+        realm: org.yamcs.security.YamlRealm
 
 #maximum number of CIS sessions clients are allowed
 maxNoSessions: 10

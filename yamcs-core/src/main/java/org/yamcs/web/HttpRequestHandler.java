@@ -7,6 +7,8 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -14,9 +16,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
+import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationPendingException;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.BasicAuthModule;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.Realm;
+import org.yamcs.security.User;
+import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
@@ -100,9 +107,16 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     WebConfig webConfig;
 
+    private Realm realm;
+
     public HttpRequestHandler(Router apiRouter, WebConfig webConfig) {
         this.apiRouter = apiRouter;
         this.webConfig = webConfig;
+
+        AuthModule authModule = Privilege.getInstance().getAuthModule();
+        if (authModule instanceof BasicAuthModule) { // hmmm...
+            realm = ((BasicAuthModule) authModule).getRealm();
+        }
     }
 
     @Override
@@ -142,53 +156,91 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         // code, but this is on debug for an earlier reporting while debugging issues
         log.debug("{} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri());
 
-        if (isAuthorised(ctx, req)) {
-            handleRequest(ctx, req);
+        // Decode URI, to correctly ignore query strings in path handling
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
+
+        if (webConfig.isJwtEnabled() && qsDecoder.path().equals("/api/token")) {
+            handleJWTRequest(ctx, req);
         } else {
-            sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-        }
-    }
-
-    private boolean isAuthorised(ChannelHandlerContext ctx, HttpRequest req) throws AuthenticationPendingException {
-        Privilege priv = Privilege.getInstance();
-        if (!priv.isEnabled()) {
-            return true;
-        }
-
-        ctx.channel().attr(CTX_AUTH_TOKEN).set(null);
-
-        CompletableFuture<AuthenticationToken> cf = priv.authenticateHttp(ctx, req);
-        try {
-            // TODO: make this non-blocking
-            // but pay attention that as soon as we return the method to netty,
-            // it will immediately call the pipeline with the next http message (for example with an
-            // EmptyLastHttpContent)
-            // and those have to be queued somehow while the authentication is being performed
-            // One can use this to make sure no data is read from the client while the authentication is going on:
-            // ctx.channel().config().setAutoRead(false);
-            // cf.whenComplete((...) -> {ctx.channel().config().setAutoRead(true)})
-            // however this doesn't prevent the EmptyLastHttpContent to come through
-            // because that one is generated from the first GET request in case no body or small body is present
-
-            AuthenticationToken authToken = cf.get(5000, TimeUnit.MILLISECONDS);
-
+            AuthenticationToken authToken = findAuthenticationToken(ctx, req);
             ctx.channel().attr(CTX_AUTH_TOKEN).set(authToken);
-            return true;
-        } catch (Exception e) {
-            Throwable t = ExceptionUtil.unwind(e);
-            if (t instanceof AuthenticationPendingException) {
-                throw (AuthenticationPendingException) t;
+            if (isAuthenticated(ctx)) {
+                handleRequest(ctx, req, qsDecoder);
             } else {
-                return false;
+                sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
             }
         }
     }
 
-    private void handleRequest(ChannelHandlerContext ctx, HttpRequest req) {
+    private AuthenticationToken findAuthenticationToken(ChannelHandlerContext ctx, HttpRequest req) {
+        Privilege priv = Privilege.getInstance();
+        if (priv.isEnabled()) {
+            CompletableFuture<AuthenticationToken> cf = priv.authenticateHttp(ctx, req);
+            try {
+                // TODO: make this non-blocking
+                // but pay attention that as soon as we return the method to netty,
+                // it will immediately call the pipeline with the next http message (for example with an
+                // EmptyLastHttpContent)
+                // and those have to be queued somehow while the authentication is being performed
+                // One can use this to make sure no data is read from the client while the authentication is going on:
+                // ctx.channel().config().setAutoRead(false);
+                // cf.whenComplete((...) -> {ctx.channel().config().setAutoRead(true)})
+                // however this doesn't prevent the EmptyLastHttpContent to come through
+                // because that one is generated from the first GET request in case no body or small body is present
+
+                return cf.get(5000, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                Throwable t = ExceptionUtil.unwind(e);
+                if (t instanceof AuthenticationPendingException) {
+                    throw (AuthenticationPendingException) t;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isAuthenticated(ChannelHandlerContext ctx) {
+        Privilege priv = Privilege.getInstance();
+        return !priv.isEnabled() || ctx.channel().attr(CTX_AUTH_TOKEN) != null;
+    }
+
+    private void handleJWTRequest(ChannelHandlerContext ctx, HttpRequest req) {
+        String username = req.headers().get("X-Username");
+        String pw = req.headers().get("X-Password");
+        if (username == null || pw == null) {
+            sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
+            return;
+        }
+
+        AuthenticationToken authToken = new UsernamePasswordToken(username, pw);
+        if (realm == null || !realm.authenticates(authToken)) {
+            sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+            return;
+        }
+
+        User user = Privilege.getInstance().getUser(authToken);
+        if (user == null) {
+            sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+            return;
+        }
+
+        try {
+            String jwt = JWT.generateHS256Token(user, webConfig.getJwtSecret(), webConfig.getJwtTimeToLive());
+            ByteBuf body = Unpooled.copiedBuffer(jwt + "\r\n", CharsetUtil.UTF_8);
+            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/jwt");
+            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
+            sendResponse(ctx, req, response, true);
+        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+            sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void handleRequest(ChannelHandlerContext ctx, HttpRequest req, QueryStringDecoder qsDecoder) {
         try {
             cleanPipeline(ctx.pipeline());
-            // Decode URI, to correctly ignore query strings in path handling
-            QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
+
             String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
             switch (path[1]) {
             case STATIC_PATH:
