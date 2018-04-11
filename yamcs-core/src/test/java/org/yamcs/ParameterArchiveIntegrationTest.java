@@ -201,10 +201,10 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(7200, r0.getCount());
         
         assertEquals("2018-01-01T10:00:00.000Z", r0.getTimeStart());
-        assertEquals("2018-01-01T11:59:59.000Z", r0.getTimeStop());
+        assertEquals("2018-01-01T12:00:01.850Z", r0.getTimeStop()); //last parameter time plus expiration 
         
         Range r1 = vals.getRange(1);
-        assertEquals(3600, r0.getCount());
+        assertEquals(3600, r1.getCount());
         assertEquals("2018-01-01T13:00:00.000Z", r1.getTimeStart());
         assertEquals("2018-01-01T13:59:59.000Z", r1.getTimeStop());
         
