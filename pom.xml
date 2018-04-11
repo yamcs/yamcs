@@ -80,6 +80,7 @@
           <useReleaseProfile>false</useReleaseProfile>
           <releaseProfiles>yamcs-release</releaseProfiles>
           <pushChanges>false</pushChanges>
+          <localCheckout>true</localCheckout>
           <goals>deploy</goals>
         </configuration>
       </plugin>
