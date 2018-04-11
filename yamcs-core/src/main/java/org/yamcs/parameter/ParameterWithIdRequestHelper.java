@@ -4,6 +4,7 @@ import com.google.common.collect.ListMultimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.InvalidIdentification;
+import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -73,7 +74,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         Subscription subscr = subscriptions.get(subscriptionId);
         if(subscr==null) {
             log.warn("add item requested for an invalid subscription id {}", subscriptionId);
-            return;
+            throw new InvalidRequestIdentification("Invalid subcription id", subscriptionId);
         }
         List<Parameter> plist = checkNames(idList);
         synchronized(subscr) {
@@ -126,7 +127,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
 
     public void removeRequest(int subscriptionId) {
-        if(!subscriptions.containsKey(subscriptionId)) {
+        if(subscriptions.remove(subscriptionId)==null) {
             log.warn("remove requested for an invalid subscription id {}", subscriptionId);
             return;
         }
@@ -424,6 +425,9 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             }
             if(p!=null) {
                 params.remove(p);
+                if(pvexp!=null) {
+                    pvexp.remove(p);
+                }
             }
             return p;
         }
