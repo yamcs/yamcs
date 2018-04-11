@@ -26,9 +26,7 @@ import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.ParameterSink;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -211,9 +209,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
                 break;
 
             // process step offset
-            int stepOffset = ps.getStepOffset() == null ? 0
-                    : ps
-                            .getStepOffset();
+            int stepOffset = ps.getStepOffset() == null ? 0 : ps.getStepOffset();
             processVoidStep(stepOffset);
             simutationStep += stepOffset;
 
@@ -293,14 +289,11 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             // compute value
             Value engValue = getValue(sParameter.getValueType(), sParameter.getValue());
             Value rawValue = getValue(sParameter.getRawValueType(), sParameter.getRawValue());
-            
-            System.out.println("engValue: "+engValue+" rawValue: "+rawValue);
+
             // create generationTime and acquisitionTime
-            long acquisitionTime = simulationStartTime.getTime()
-                    + simutationStep * simulationStepLengthMs;
+            long acquisitionTime = simulationStartTime.getTime() + simutationStep * simulationStepLengthMs;
             long generationTime = acquisitionTime
-                    - (sParameter.getAquisitionStep() - sParameter
-                            .getGenerationStep()) * simulationStepLengthMs;
+                    - (sParameter.getAquisitionStep() - sParameter.getGenerationStep()) * simulationStepLengthMs;
 
             // convert time to 'instant'
             acquisitionTime = TimeEncoding.fromUnixTime(acquisitionTime);
@@ -308,22 +301,20 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
 
             // get monitoring result
             String monitoringResult = sParameter.getMonitoringResult();
-            
+
             ParameterValue pv = createPv(sParameter.getSpaceSystem(),
                     sParameter.getParaName(), generationTime, acquisitionTime,
                     engValue, rawValue, monitoringResult);
-            
-            System.out.println("here pv:"+ pv);
+
             if (pv != null)
                 pvs.add(pv);
         }
 
         datacount += stepParameters.size();
-        System.out.println("sending parameters: "+groupName);
         ppListener.updateParameters(TimeEncoding.getWallclockTime(), groupName, (int) datacount, pvs);
 
-        Long nextStepDate = simulationRealStartTime.getTime() + simulationStepLengthMs * simutationStep;
-        Long delayBeforeNextStep = nextStepDate - new Date().getTime();
+        long nextStepDate = simulationRealStartTime.getTime() + simulationStepLengthMs * simutationStep;
+        long delayBeforeNextStep = nextStepDate - new Date().getTime();
         try {
             if (delayBeforeNextStep > 0)
                 Thread.sleep(delayBeforeNextStep);
@@ -333,17 +324,17 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     }
 
     private Value getValue(String valueType, BigDecimal value) {
-        if(valueType==null) {
+        if (valueType == null) {
             return null;
         }
-        
+
         if (valueType.equals("random")) {
             return ValueUtility.getFloatValue(rand.nextFloat());
-        } else if("uint32".equals(valueType)){
+        } else if ("uint32".equals(valueType)) {
             return ValueUtility.getUint32Value(value.intValue());
-        } else { //compatibility with old code that was always using floats
+        } else { // compatibility with old code that was always using floats
             return ValueUtility.getFloatValue(value.floatValue());
-        } 
+        }
 
     }
 
@@ -370,11 +361,11 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
                 log.warn("Unable to get parameter " + parameterFqn + " from xtceDb.");
                 param = new Parameter(parameterFqn);
             }
-            
+
         } else {
             param = new Parameter(parameterFqn);
         }
-        
+
         // create parameter value
         ParameterValue pv = new ParameterValue(param);
         pv.setEngineeringValue(engValue);
