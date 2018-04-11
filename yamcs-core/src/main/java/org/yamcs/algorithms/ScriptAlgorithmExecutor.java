@@ -13,6 +13,7 @@ import javax.script.ScriptException;
 import org.codehaus.janino.SimpleCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.EventProducer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SInt32Value;
 import org.yamcs.parameter.SInt64Value;
@@ -66,12 +67,14 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             .synchronizedMap(new HashMap<String, Class<ValueBinding>>());
     ParameterTypeProcessor parameterTypeProcessor;
     final String functionName;
-
-    public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, Invocable invocable,  String functionName, AlgorithmExecutionContext execCtx) {
+    final EventProducer eventProducer;
+    
+    public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, Invocable invocable,  String functionName, AlgorithmExecutionContext execCtx, EventProducer eventProducer) {
         super(algorithmDef, execCtx);
         this.parameterTypeProcessor = new ParameterTypeProcessor(execCtx.getProcessorData());
         this.functionName = functionName;
         this.invocable = invocable;
+        this.eventProducer = eventProducer;
         
         functionArgs = new Object[algorithmDef.getInputSet().size() + algorithmDef.getOutputSet().size()];
         int position = 0;
@@ -144,10 +147,9 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             return outputValues;
         } catch (ScriptException | NoSuchMethodException e) {
             log.warn("Error while executing algorithm: " + e.getMessage(), e);
+            eventProducer.sendWarning(EventProducer.TYPE_ALGO_RUN, "Error while executing algorithm: "+e.getMessage());
             return Collections.emptyList();
         }
-
-        
     }
 
     private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding) {

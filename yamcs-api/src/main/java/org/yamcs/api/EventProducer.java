@@ -50,4 +50,8 @@ public interface EventProducer {
      * Closes the connection to the server; the producer is unusable after this is called
      */
     public void close();
+    
+    
+    static final public String TYPE_ALGO_COMPILE = "ALGO_COMPILE"; 
+    static final public String TYPE_ALGO_RUN = "ALGO_RUN"; 
 }
