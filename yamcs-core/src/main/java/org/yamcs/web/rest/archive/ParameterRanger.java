@@ -43,7 +43,6 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
     
     @Override
     public void accept(ParameterValueArray pva) {
-        
         if (ranges.size() >= MAX_RANGES) {
             log.warn("Maximum number of ranges reached, ignoring further data.", ranges.size());
             return;
@@ -59,7 +58,8 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
             ranges.add(curRange);
             curRange = null;
         }
-
+        
+        
         for (int i = 0; i < n; i++) {
             Value v = va.getValue(i);
             ParameterStatus status = statuses[i];
@@ -68,7 +68,15 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
             if (curRange == null) {
                 curRange = new Range(timestamp, v);
             } else {
-                if (!v.equals(prevValue) || dataInterruption(prevTimestamp, timestamp, prevStatus)) {
+                long stop  = checkDataInterruption(prevTimestamp, timestamp, prevStatus);
+                if(stop != Long.MIN_VALUE) {
+                    curRange.stop = stop;
+                    
+                    ranges.add(curRange);
+                    curRange = new Range(timestamp, v);
+                } else if (!v.equals(prevValue)) {
+                    curRange.stop = timestamp;
+                    
                     ranges.add(curRange);
                     curRange = new Range(timestamp, v);
                 } else {
@@ -82,21 +90,22 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
         }
     }
 
-    private boolean dataInterruption(long prevTimestamp, long timestamp, ParameterStatus prevStatus) {
+    //check for data interruption and return Long.MIN_VALUE if not or the timestamp when the value was last valid if yes
+    private long checkDataInterruption(long prevTimestamp, long timestamp, ParameterStatus prevStatus) {
         long delta = timestamp - prevTimestamp;
 
         if (delta < minGap) {
-            return false;
+            return Long.MIN_VALUE;
         }
 
         if (prevStatus.hasExpireMillis() && delta > prevStatus.getExpireMillis()) {
-            return true;
+            return prevTimestamp+prevStatus.getExpireMillis();
         }
         
-        if(delta>maxGap) {
-            return true;
+        if(delta > maxGap) {
+            return prevTimestamp+maxGap;
         }
-        return false;
+        return Long.MIN_VALUE;
     }
 
     public static class Range {
