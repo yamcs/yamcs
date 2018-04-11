@@ -174,6 +174,8 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         r0 = vals.getRange(0);
         assertEquals(1199, r0.getCount());
         assertEquals(0.167291805148, r0.getEngValue().getFloatValue(), 1e-5);
+        assertEquals("2018-01-01T11:40:01.000Z", r0.getTimeStart());
+        assertEquals("2018-01-01T11:59:59.000Z", r0.getTimeStop());
 
         buildParameterArchive("2018-01-01T10:00:00", "2018-01-02T11:00:00");
         
@@ -197,9 +199,14 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(2, vals.getRangeCount());
         r0 = vals.getRange(0);
         assertEquals(7200, r0.getCount());
-        r0 = vals.getRange(1);
-        assertEquals(3600, r0.getCount());
         
+        assertEquals("2018-01-01T10:00:00.000Z", r0.getTimeStart());
+        assertEquals("2018-01-01T11:59:59.000Z", r0.getTimeStop());
+        
+        Range r1 = vals.getRange(1);
+        assertEquals(3600, r0.getCount());
+        assertEquals("2018-01-01T13:00:00.000Z", r1.getTimeStart());
+        assertEquals("2018-01-01T13:59:59.000Z", r1.getTimeStop());
         
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/ranges?start=2018-01-01T10:00:00&stop=2018-01-02T11:00:00&minGap=3601001",
