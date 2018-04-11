@@ -18,6 +18,8 @@ import org.yamcs.web.HttpRequestInfo;
 import org.yamcs.web.HttpServer;
 import org.yamcs.web.WebConfig;
 
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.Message;
 
 import io.netty.buffer.ByteBuf;
@@ -138,17 +140,19 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
                     if (log.isTraceEnabled()) {
                         log.debug("Websocket data: {}", frame);
                     }
-                    WebSocketDecodeContext msg = decoder.decodeMessage(binary);
-                    AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
-                    if (resource != null) {
-                        WebSocketReply reply = resource.processRequest(msg, decoder);
-                        if (reply != null) {
-                            sendReply(reply);
+                        WebSocketDecodeContext msg = decoder.decodeMessage(binary);
+
+                        AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
+                        if (resource != null) {
+                            WebSocketReply reply = resource.processRequest(msg, decoder);
+                            if (reply != null) {
+                                sendReply(reply);
+                            }
+                        } else {
+                            throw new WebSocketException(msg.getRequestId(),
+                                    "Invalid message (unsupported resource: '" + msg.getResource() + "')");
                         }
-                    } else {
-                        throw new WebSocketException(msg.getRequestId(),
-                                "Invalid message (unsupported resource: '" + msg.getResource() + "')");
-                    }
+                    
                 }
             } catch (WebSocketException e) {
                 log.debug("Returning nominal exception back to the client: {}", e.getMessage());
