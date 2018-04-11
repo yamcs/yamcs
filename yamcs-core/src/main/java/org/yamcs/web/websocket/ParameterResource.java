@@ -167,10 +167,10 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             log.warn("got invalid identification: {}", e.getMessage());
             throw new WebSocketException(requestId, "internal error: " + e.toString(), e);
         } catch (InvalidRequestIdentification e) {
-            log.error("got invalid subscription id", e);
-            throw new WebSocketException(requestId, "internal error: " + e.toString(), e);
+            log.warn("got invalid subscription id for {}", subscriptionId);
+            throw new WebSocketException(requestId, "invalid subscription id "+e.getSubscriptionId());
         } catch (NoPermissionException e) {
-            log.error("no permission for parameters: {}", e.getMessage());
+            log.warn("no permission for parameters: {}", e.getMessage());
             throw new WebSocketException(requestId, "internal error: " + e.toString(), e);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
@@ -216,7 +216,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         }
 
         if (subscriptionId != -1) {
-            prm.removeRequest(subscriptionId);
+            pidrm.removeRequest(subscriptionId);
             if (subscriptionId == firstSubscriptionId) {
                 firstSubscriptionId = -1;
             }
