@@ -1,8 +1,6 @@
 import * as utils from '../utils';
 
-const sprintf = require('sprintf-js').sprintf;
-
-
+import { sprintf } from './sprintf';
 import { AbstractWidget } from './AbstractWidget';
 import { G, Rect, Text, Tag } from '../../tags';
 import { Color } from '../Color';
