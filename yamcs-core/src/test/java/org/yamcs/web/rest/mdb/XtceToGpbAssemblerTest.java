@@ -1,37 +1,31 @@
 package org.yamcs.web.rest.mdb;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.protobuf.Mdb;
-import org.yamcs.web.rest.RestRequest;
+import org.yamcs.protobuf.Mdb.CommandInfo;
+import org.yamcs.web.rest.mdb.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 /**
  * Created by msc on 05.04.16.
  */
 public class XtceToGpbAssemblerTest {
 
     @Test
-    public void toCommandInfo_float_test() throws  Exception
-    {
+    public void toCommandInfo_float_test() throws Exception {
         // Arrange
-        XtceToGpbAssembler target = new XtceToGpbAssembler();
-        Set<RestRequest.Option> optionSet=new HashSet<>();
-
         YConfiguration.setup("refmdb");
         XtceDbFactory.reset();
         XtceDb db = XtceDbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
 
         // Act
-        Mdb.CommandInfo commandInfo = target.toCommandInfo(cmd1, "url", XtceToGpbAssembler.DetailLevel.FULL, optionSet);
+        CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, "url", DetailLevel.FULL, false);
 
         // Assert
         assertEquals("FLOAT_ARG_TC", commandInfo.getName());
@@ -42,19 +36,15 @@ public class XtceToGpbAssemblerTest {
     }
 
     @Test
-    public void toCommandInfo_int_test() throws  Exception
-    {
+    public void toCommandInfo_int_test() throws Exception {
         // Arrange
-        XtceToGpbAssembler target = new XtceToGpbAssembler();
-        Set<RestRequest.Option> optionSet=new HashSet<>();
-
         YConfiguration.setup("refmdb");
         XtceDbFactory.reset();
         XtceDb db = XtceDbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
 
         // Act
-        Mdb.CommandInfo commandInfo = target.toCommandInfo(cmd1, "url", XtceToGpbAssembler.DetailLevel.FULL, optionSet);
+        CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, "url", DetailLevel.FULL, false);
 
         // Assert
         assertEquals("CCSDS_TC", commandInfo.getName());
@@ -65,19 +55,15 @@ public class XtceToGpbAssemblerTest {
     }
 
     @Test
-    public void toCommandInfo_calib_test() throws  Exception
-    {
+    public void toCommandInfo_calib_test() throws Exception {
         // Arrange
-        XtceToGpbAssembler target = new XtceToGpbAssembler();
-        Set<RestRequest.Option> optionSet=new HashSet<>();
-
         YConfiguration.setup("refmdb");
         XtceDbFactory.reset();
         XtceDb db = XtceDbFactory.getInstance("refmdb");
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
 
         // Act
-        Mdb.CommandInfo commandInfo = target.toCommandInfo(cmd1, "url", XtceToGpbAssembler.DetailLevel.FULL, optionSet);
+        CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, "url", DetailLevel.FULL, false);
 
         // Assert
         assertEquals("CALIB_TC", commandInfo.getName());
@@ -86,6 +72,4 @@ public class XtceToGpbAssemblerTest {
         assertEquals("value2", commandInfo.getArgument(3).getType().getEnumValue(2).getLabel());
         assertTrue("should not have a range set", !commandInfo.getArgument(0).getType().hasRangeMin());
     }
-
-
 }

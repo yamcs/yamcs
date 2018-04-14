@@ -21,7 +21,7 @@ public class MDBContainerRestHandler extends RestHandler {
     @Route(path = "/api/mdb/:instance/containers/:name*", method = "GET")
     public void getContainer(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
-        
+
         if (req.hasRouteParam("name")) {
             getContainerInfo(req);
         } else {
@@ -36,7 +36,8 @@ public class MDBContainerRestHandler extends RestHandler {
         SequenceContainer c = verifyContainer(req, mdb, req.getRouteParam("name"));
 
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL, req.getOptions());
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
+        ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL, addLinks);
         completeOK(req, cinfo);
     }
 
@@ -52,6 +53,7 @@ public class MDBContainerRestHandler extends RestHandler {
 
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         ListContainerInfoResponse.Builder responseb = ListContainerInfoResponse.newBuilder();
         if (req.hasQueryParameter("namespace")) {
@@ -64,7 +66,7 @@ public class MDBContainerRestHandler extends RestHandler {
                 String alias = c.getAlias(namespace);
                 if (alias != null || (recurse && c.getQualifiedName().startsWith(namespace))) {
                     responseb.addContainer(
-                            XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                            XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, addLinks));
                 }
             }
         } else { // List all
@@ -72,7 +74,7 @@ public class MDBContainerRestHandler extends RestHandler {
                 if (matcher != null && !matcher.matches(c))
                     continue;
                 responseb.addContainer(
-                        XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                        XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, addLinks));
             }
         }
 

@@ -23,7 +23,7 @@ public class MDBCommandRestHandler extends RestHandler {
     @Route(path = "/api/mdb/:instance/commands/:name*", method = "GET")
     public void getCommand(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
-        
+
         if (req.hasRouteParam("name")) {
             getCommandInfo(req);
         } else {
@@ -36,10 +36,10 @@ public class MDBCommandRestHandler extends RestHandler {
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
-     
-        
+
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL, req.getOptions());
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
+        CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL, addLinks);
         completeOK(req, cinfo);
     }
 
@@ -55,6 +55,7 @@ public class MDBCommandRestHandler extends RestHandler {
 
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         ListCommandInfoResponse.Builder responseb = ListCommandInfoResponse.newBuilder();
         if (req.hasQueryParameter("namespace")) {
@@ -70,7 +71,7 @@ public class MDBCommandRestHandler extends RestHandler {
                 String alias = cmd.getAlias(namespace);
                 if (alias != null || (recurse && cmd.getQualifiedName().startsWith(namespace))) {
                     responseb.addCommand(
-                            XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                            XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, addLinks));
                 }
             }
         } else { // List all
@@ -78,7 +79,7 @@ public class MDBCommandRestHandler extends RestHandler {
                 if (matcher != null && !matcher.matches(cmd))
                     continue;
                 responseb.addCommand(
-                        XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                        XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, addLinks));
             }
         }
 

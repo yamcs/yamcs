@@ -6,7 +6,6 @@ import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.mdb.XtceToGpbAssembler;
 import org.yamcs.web.rest.processor.ProcessorRestHandler;
 import org.yamcs.xtce.SpaceSystem;
@@ -18,7 +17,7 @@ public class YamcsToGpbAssembler {
     public static MissionDatabase toMissionDatabase(RestRequest req, String instance, XtceDb mdb) {
         YamcsInstance yamcsInstance = YamcsServer.getYamcsInstance(instance);
         MissionDatabase.Builder b = MissionDatabase.newBuilder(yamcsInstance.getMissionDatabase());
-        if (!req.getOptions().contains(Option.NO_LINK)) {
+        if (req.getQueryParameterAsBoolean("links", false)) {
             String apiUrl = req.getApiURL();
             b.setUrl(apiUrl + "/mdb/" + instance);
             b.setParametersUrl(b.getUrl() + "/parameters{/namespace}{/name}");
@@ -43,7 +42,7 @@ public class YamcsToGpbAssembler {
             instanceb.setMissionDatabase(YamcsToGpbAssembler.toMissionDatabase(req, yamcsInstance.getName(), mdb));
         }
 
-        if (!req.getOptions().contains(Option.NO_LINK)) {
+        if (req.getQueryParameterAsBoolean("links", false)) {
             String apiUrl = req.getApiURL();
             String instanceUrl = apiUrl + "/instances/" + instanceb.getName();
             instanceb.setUrl(instanceUrl);

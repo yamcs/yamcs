@@ -21,7 +21,6 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.Route;
 
 public class ProcessorCommandQueueRestHandler extends RestHandler {
@@ -29,7 +28,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/cqueues", method = "GET")
     public void listQueues(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlCommandQueue);
-        
+
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
 
@@ -41,7 +40,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = "GET")
     public void getQueue(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlCommandQueue);
-        
+
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
@@ -53,7 +52,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = { "PATCH", "PUT", "POST" })
     public void editQueue(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlCommandQueue);
-        
+
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
@@ -90,7 +89,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name/entries", method = "GET")
     public void listQueueEntries(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlCommandQueue);
-        
+
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         CommandQueue queue = verifyCommandQueue(req, mgr, req.getRouteParam("name"));
@@ -107,7 +106,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
             "POST" })
     public void editQueueEntry(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlCommandQueue);
-        
+
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
         UUID entryId = UUID.fromString(req.getRouteParam("uuid"));
@@ -157,7 +156,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
                 b.addEntry(qEntry);
             }
         }
-        if (!req.getOptions().contains(Option.NO_LINK)) {
+        if (req.getQueryParameterAsBoolean("links", false)) {
             b.setUrl(req.getApiURL() + "/processors/" + queue.getChannel().getInstance()
                     + "/" + queue.getChannel().getName() + "/cqueues/" + queue.getName());
         }

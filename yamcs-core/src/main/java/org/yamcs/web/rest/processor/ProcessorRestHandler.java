@@ -33,7 +33,6 @@ import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.Route;
 
 public class ProcessorRestHandler extends RestHandler {
@@ -71,7 +70,7 @@ public class ProcessorRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
     public void editProcessor(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlProcessor);
-        
+
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot update a non-replay processor");
@@ -226,7 +225,6 @@ public class ProcessorRestHandler extends RestHandler {
         }
     }
 
-  
     private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds,
             AuthenticationToken authToken) throws ForbiddenException {
         String username = Privilege.getUsername(authToken);
@@ -275,7 +273,7 @@ public class ProcessorRestHandler extends RestHandler {
 
         String instance = processor.getInstance();
         String name = processor.getName();
-        if (!req.getOptions().contains(Option.NO_LINK)) {
+        if (req.getQueryParameterAsBoolean("links", false)) {
             String apiURL = req.getApiURL();
             b.setUrl(apiURL + "/processors/" + instance + "/" + name);
             b.setClientsUrl(apiURL + "/processors/" + instance + "/" + name + "/clients");

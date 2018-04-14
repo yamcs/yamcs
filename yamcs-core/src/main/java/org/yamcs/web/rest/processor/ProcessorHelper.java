@@ -1,8 +1,5 @@
 package org.yamcs.web.rest.processor;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;
@@ -10,7 +7,6 @@ import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.mdb.XtceToGpbAssembler;
 import org.yamcs.web.rest.mdb.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.xtce.Parameter;
@@ -46,8 +42,7 @@ public class ProcessorHelper {
             alarmb.setAcknowledgeInfo(acknowledgeb.build());
         }
 
-        Set<Option> options = Collections.emptySet();
-        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(parameter, null, DetailLevel.SUMMARY, options);
+        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(parameter, null, DetailLevel.SUMMARY, false);
         alarmb.setParameter(pinfo);
 
         return alarmb.build();
