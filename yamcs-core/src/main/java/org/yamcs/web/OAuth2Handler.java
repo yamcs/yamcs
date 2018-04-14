@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Web.AccessTokenResponse;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.BasicAuthModule;
+import org.yamcs.security.DefaultAuthModule;
 import org.yamcs.security.JWT;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.Realm;
@@ -51,8 +51,8 @@ public class OAuth2Handler extends SimpleChannelInboundHandler<FullHttpRequest> 
     public OAuth2Handler() {
         webConfig = WebConfig.getInstance();
         AuthModule authModule = Privilege.getInstance().getAuthModule();
-        if (authModule instanceof BasicAuthModule) { // hmmm...
-            realm = ((BasicAuthModule) authModule).getRealm();
+        if (authModule instanceof DefaultAuthModule) { // hmmm...
+            realm = ((DefaultAuthModule) authModule).getRealm();
         }
     }
 

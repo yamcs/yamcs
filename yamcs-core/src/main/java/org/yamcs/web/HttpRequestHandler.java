@@ -302,7 +302,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 body.writeCharSequence(responseMsg.toString(), StandardCharsets.UTF_8);
             } else { // JSON by default
                 contentType = MediaType.JSON;
-                String str = JsonFormat.printer().print(responseMsg);
+                String str = JsonFormat.printer().preservingProtoFieldNames().print(responseMsg);
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
                 body.writeBytes(NEWLINE_BYTES); // For curl comfort
             }

@@ -7,13 +7,13 @@ enabled: false
 defaultUser: admin
 
 authModule:
-    class: org.yamcs.security.BasicAuthModule
+    class: org.yamcs.security.DefaultAuthModule
     #one of: LdapRealm, YamlRealm
     config:
         realm: org.yamcs.security.YamlRealm
 
 
-#ldap configuration of LDapRealm is specified above 
+#ldap configuration of LdapRealm is specified above 
 ldaphost:        host
 userPath:        "ou=People,o=usoc"
 rolePath:        "ou=Roles, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
