@@ -39,7 +39,7 @@ if [ "$JMX" = 1 ]; then
 fi
 
 # run the program
-exec "$_RUNJAVA" $JAVA_OPTS $JMX_OPTS\
+exec "$_RUNJAVA" $MODULE_OPTS $JAVA_OPTS $JMX_OPTS\
     -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/\
     -Djxl.nowarnings=true \
     -Djava.util.logging.config.file=$YAMCS_HOME/etc/logging.yamcs-server.properties \
