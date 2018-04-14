@@ -43,6 +43,7 @@ public class User {
 
     /**
      * Constructor
+     * 
      * @param authenticationToken
      */
     public User(AuthenticationToken authenticationToken) {
@@ -51,37 +52,37 @@ public class User {
 
     /**
      * Getters
-     * @return 
+     * 
+     * @return
      */
     public AuthenticationToken getAuthenticationToken() {
         return authenticationToken;
     }
-    
+
     public String getPrincipalName() {
         Object principal = authenticationToken.getPrincipal();
-        return principal != null? principal.toString() : null;
+        return principal != null ? principal.toString() : null;
     }
-
 
     /**
      *
      * @return the roles of the calling user
      */
     public String[] getRoles() {
-        if(roles == null)
+        if (roles == null)
             return new String[0];
         return roles.toArray(new String[roles.size()]);
     }
 
-    public boolean hasRole(String role ) {
-        if(this.roles==null) return false;
-        return (this.roles.contains( role ) );
+    public boolean hasRole(String role) {
+        if (this.roles == null)
+            return false;
+        return (this.roles.contains(role));
     }
-
 
     public boolean hasPrivilege(Privilege.Type type, String privilege) {
         Set<String> priv = null;
-        if(privilege == null)
+        if (privilege == null)
             return true;
         switch (type) {
         case TM_PARAMETER:
@@ -108,27 +109,14 @@ public class User {
         return false;
     }
 
-
-
-
-
     @Override
     public String toString() {
         return "User:" + authenticationToken.getPrincipal().toString()
-                + "\n authenticated: " + authenticated
                 + "\n roles: " + roles + "\n   tm parameter privileges:"
                 + tmParaPrivileges + "\n   tm parameter set privileges:"
                 + tmParaSetPrivileges + "\n   tm packet privileges:"
                 + tmPacketPrivileges + "\n   tc privileges:" + tcPrivileges
                 + "\n   system privileges:" + systemPrivileges
                 + "\n   lastUpdated:" + new Date(lastUpdated);
-    }
-
-    public boolean isAuthenticated() {
-        return authenticated;
-    }
-
-    public void setAuthenticated(boolean authenticated) {
-        this.authenticated = authenticated;
     }
 }
