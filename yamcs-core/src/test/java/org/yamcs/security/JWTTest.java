@@ -1,4 +1,4 @@
-package org.yamcs.web;
+package org.yamcs.security;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -7,9 +7,10 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 import org.junit.Test;
+import org.yamcs.security.JWT;
+import org.yamcs.security.JWT.JWTDecodeException;
 import org.yamcs.security.User;
 import org.yamcs.security.UsernamePasswordToken;
-import org.yamcs.web.JWT.JWTDecodeException;
 
 import com.google.gson.JsonObject;
 

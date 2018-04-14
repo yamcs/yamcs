@@ -13,11 +13,16 @@ import { PreferenceStore } from './core/services/PreferenceStore';
 import { YamcsService } from './core/services/YamcsService';
 import { HomePage } from './core/pages/HomePage';
 import { ProfilePage } from './core/pages/ProfilePage';
+import { LoginPage } from './core/pages/LoginPage';
+import { AuthService } from './core/services/AuthService';
+import { ForbiddenPage } from './core/pages/ForbiddenPage';
 
 @NgModule({
   declarations: [
     AppComponent,
+    ForbiddenPage,
     HomePage,
+    LoginPage,
     NotFoundPage,
     ProfilePage,
   ],
@@ -29,6 +34,7 @@ import { ProfilePage } from './core/pages/ProfilePage';
     SharedModule,
   ],
   providers: [
+    AuthService,
     ExtensionRegistry,
     PreferenceStore,
     YamcsService,

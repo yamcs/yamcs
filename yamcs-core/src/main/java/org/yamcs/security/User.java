@@ -1,6 +1,7 @@
 package org.yamcs.security;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -8,18 +9,30 @@ import java.util.Set;
  */
 public class User {
 
-    AuthenticationToken authenticationToken;
-    long lastUpdated;
+    private AuthenticationToken authToken;
+    private Date lastUpdated;
 
-    boolean authenticated = false;
-    boolean rolesAndPriviledgesLoaded = false;
+    private Set<String> roles = new HashSet<>();
+    private Set<String> tmParaPrivileges = new HashSet<>();
+    private Set<String> tmParaSetPrivileges = new HashSet<>();
+    private Set<String> tmPacketPrivileges = new HashSet<>();
+    private Set<String> tcPrivileges = new HashSet<>();
+    private Set<String> streamPrivileges = new HashSet<>();
+    private Set<String> cmdHistoryPrivileges = new HashSet<>();
+    private Set<String> systemPrivileges = new HashSet<>();
 
-    Set<String> roles;
-    Set<String> tmParaPrivileges;
-    Set<String> tmParaSetPrivileges;
-    Set<String> tmPacketPrivileges;
-    Set<String> tcPrivileges;
-    Set<String> systemPrivileges;
+    public User(AuthenticationToken authToken) {
+        this.authToken = authToken;
+        lastUpdated = new Date();
+    }
+
+    public Date getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void addRole(String role) {
+        roles.add(role);
+    }
 
     public Set<String> getTmParaPrivileges() {
         return tmParaPrivileges;
@@ -37,35 +50,56 @@ public class User {
         return tcPrivileges;
     }
 
+    public Set<String> getStreamPrivileges() {
+        return streamPrivileges;
+    }
+
+    public Set<String> getCmdHistoryPrivileges() {
+        return cmdHistoryPrivileges;
+    }
+
     public Set<String> getSystemPrivileges() {
         return systemPrivileges;
     }
 
-    /**
-     * Constructor
-     * 
-     * @param authenticationToken
-     */
-    public User(AuthenticationToken authenticationToken) {
-        this.authenticationToken = authenticationToken;
+    public void addTmParaPrivilege(String privilege) {
+        tmParaPrivileges.add(privilege);
     }
 
-    /**
-     * Getters
-     * 
-     * @return
-     */
+    public void addTmParaSetPrivilege(String privilege) {
+        tmParaSetPrivileges.add(privilege);
+    }
+
+    public void addTmPacketPrivilege(String privilege) {
+        tmPacketPrivileges.add(privilege);
+    }
+
+    public void addTcPrivilege(String privilege) {
+        tcPrivileges.add(privilege);
+    }
+
+    public void addStreamPrivilege(String privilege) {
+        streamPrivileges.add(privilege);
+    }
+
+    public void addCmdHistoryPrivilege(String privilege) {
+        cmdHistoryPrivileges.add(privilege);
+    }
+
+    public void addSystemPrivilege(String privilege) {
+        systemPrivileges.add(privilege);
+    }
+
     public AuthenticationToken getAuthenticationToken() {
-        return authenticationToken;
+        return authToken;
     }
 
     public String getPrincipalName() {
-        Object principal = authenticationToken.getPrincipal();
+        Object principal = authToken.getPrincipal();
         return principal != null ? principal.toString() : null;
     }
 
     /**
-     *
      * @return the roles of the calling user
      */
     public String[] getRoles() {
@@ -99,24 +133,34 @@ public class User {
             break;
         case SYSTEM:
             priv = this.systemPrivileges;
+            break;
+        case STREAM:
+            priv = this.streamPrivileges;
+            break;
+        case CMD_HISTORY:
+            priv = this.cmdHistoryPrivileges;
+            break;
         }
-        if (priv == null)
+        if (priv == null) {
             return false;
+        }
         for (String p : priv) {
-            if (privilege.matches(p))
+            if (privilege.matches(p)) {
                 return true;
+            }
         }
         return false;
     }
 
     @Override
     public String toString() {
-        return "User:" + authenticationToken.getPrincipal().toString()
-                + "\n roles: " + roles + "\n   tm parameter privileges:"
-                + tmParaPrivileges + "\n   tm parameter set privileges:"
-                + tmParaSetPrivileges + "\n   tm packet privileges:"
-                + tmPacketPrivileges + "\n   tc privileges:" + tcPrivileges
+        return "User: " + authToken.getPrincipal().toString()
+                + "\n roles: " + roles
+                + "\n   tm parameter privileges:" + tmParaPrivileges
+                + "\n   tm parameter set privileges:" + tmParaSetPrivileges
+                + "\n   tm packet privileges:" + tmPacketPrivileges
+                + "\n   tc privileges:" + tcPrivileges
                 + "\n   system privileges:" + systemPrivileges
-                + "\n   lastUpdated:" + new Date(lastUpdated);
+                + "\n   lastUpdated:" + lastUpdated;
     }
 }

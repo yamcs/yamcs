@@ -120,6 +120,8 @@ message UserInfo {
   repeated string tmPacketPrivileges = 6;
   repeated string tcPrivileges = 7;
   repeated string systemPrivileges = 8;
+  repeated string streamPrivileges = 9;
+  repeated string cmdHistoryPrivileges = 10;
 }
 
 message TmStatistics {

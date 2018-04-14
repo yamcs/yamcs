@@ -33,9 +33,9 @@ public class WebConfig {
     // remote web applications.
     private CorsConfig corsConfig;
 
-    private boolean jwtEnabled = false;
+    private boolean oauth2Enabled = false;
     private String jwtSecret;
-    private long jwtTimeToLive;
+    private int jwtTimeToLive;
 
     private List<GpbExtension> gpbExtensions = new ArrayList<>(0);
 
@@ -125,13 +125,13 @@ public class WebConfig {
                     HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
-        if (yconf.containsKey("webConfig", "jwt")) {
-            Map<String, Object> jwtProps = yconf.getMap("webConfig", "jwt");
-            jwtEnabled = YConfiguration.getBoolean(jwtProps, "enabled");
-            jwtSecret = YConfiguration.getString(jwtProps, "secret");
-            jwtTimeToLive = YConfiguration.getLong(jwtProps, "ttl");
-            if (jwtEnabled && "changeme".equals(jwtSecret)) {
-                log.warn("JWT server secret in yamcs.yaml has not been changed from its default value");
+        if (yconf.containsKey("webConfig", "oauth2")) {
+            Map<String, Object> oauth2Props = yconf.getMap("webConfig", "oauth2");
+            oauth2Enabled = YConfiguration.getBoolean(oauth2Props, "enabled");
+            jwtSecret = YConfiguration.getString(oauth2Props, "secret");
+            jwtTimeToLive = YConfiguration.getInt(oauth2Props, "ttl");
+            if (oauth2Enabled && "changeme".equals(jwtSecret)) {
+                log.warn("OAuth2 server secret in yamcs.yaml has not been changed from its default value");
             }
         }
         if (yconf.containsKey("webConfig", "webSocket")) {
@@ -184,15 +184,15 @@ public class WebConfig {
         return corsConfig;
     }
 
-    public boolean isJwtEnabled() {
-        return jwtEnabled;
+    public boolean isOAuth2Enabled() {
+        return oauth2Enabled;
     }
 
     public String getJwtSecret() {
         return jwtSecret;
     }
 
-    public long getJwtTimeToLive() {
+    public int getJwtTimeToLive() {
         return jwtTimeToLive;
     }
 

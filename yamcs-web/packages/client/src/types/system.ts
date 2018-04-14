@@ -1,6 +1,13 @@
 import { CommandId, Value } from './monitoring';
 import { Observable } from 'rxjs/Observable';
 
+export interface AccessTokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  user: UserInfo;
+}
+
 export interface GeneralInfo {
   yamcsVersion: string;
   serverId: string;
@@ -44,6 +51,8 @@ export interface UserInfo {
   tmPacketPrivileges: string[];
   tcPrivileges: string[];
   systemPrivileges: string[];
+  streamPrivileges: string[];
+  cmdHistoryPrivileges: string[];
 }
 
 export interface Service {

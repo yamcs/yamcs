@@ -1,0 +1,27 @@
+<div class="mat-typography panel-content">
+  <div style="width: 100%; text-align: center">
+    <div style="display: inline-block; width: 500px; padding-top: 50px">
+      <mat-card>
+        <form [formGroup]="formGroup" (keyup.enter)="doLogin()">
+          <table>
+            <tr>
+              <td>Username</td>
+              <td><input type="text" formControlName="username" autofocus></td>
+            </tr>
+            <tr>
+              <td>Password</td>
+              <td><input type="password" formControlName="password"></td>
+            </tr>
+          </table>
+        </form>
+        <mat-card-actions align="end">
+          <span *ngIf="errorMessage$ | async as errorMessage" class="vmiddle error-message">
+            <mat-icon class="icon18">error</mat-icon>&nbsp;&nbsp;{{ errorMessage }}
+          </span>
+          <div fxFlex></div>
+          <button mat-raised-button (click)="doLogin()">Login</button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>

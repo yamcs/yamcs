@@ -18,7 +18,8 @@
         Layouts
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-item routerLink="events"
+      <app-sidebar-nav-item *ngIf="showEventsItem()"
+                            routerLink="events"
                             [queryParams]="{instance: instance.name}">
         Events
       </app-sidebar-nav-item>

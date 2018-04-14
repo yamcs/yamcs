@@ -21,11 +21,15 @@ import { ProcessorsPage } from './processors/ProcessorsPage';
 import { ProcessorPage } from './processors/ProcessorPage';
 import { ProcessorTCTab } from './processors/ProcessorTCTab';
 import { ProcessorTMTab } from './processors/ProcessorTMTab';
+import { AuthGuard } from '../core/guards/AuthGuard';
+import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
+import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
 
 const routes = [
   {
     path: '',
-    canActivate: [InstanceExistsGuard],
+    canActivate: [AuthGuard, InstanceExistsGuard],
+    canActivateChild: [AuthGuard],
     component: SystemPage,
     children: [
       {
@@ -65,10 +69,13 @@ const routes = [
         path: 'tables',
         pathMatch: 'full',
         component: TablesPage,
+        canActivate: [MayReadTablesGuard],
       },
       {
         path: 'tables/:name',
         component: TablePage,
+        canActivate: [MayReadTablesGuard],
+        canActivateChild: [MayReadTablesGuard],
         children: [
           {
             path: '',
@@ -109,6 +116,7 @@ const routes = [
       {
         path: 'services',
         component: ServicesPage,
+        canActivate: [MayControlServicesGuard],
       },
     ]
   }

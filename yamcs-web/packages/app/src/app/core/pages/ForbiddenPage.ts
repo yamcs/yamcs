@@ -2,10 +2,10 @@ import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
-  templateUrl: './NotFoundPage.html',
+  templateUrl: './ForbiddenPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NotFoundPage implements OnInit {
+export class ForbiddenPage implements OnInit {
 
   page: string | null;
 

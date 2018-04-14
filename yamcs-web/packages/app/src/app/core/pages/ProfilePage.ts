@@ -1,7 +1,8 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { UserInfo } from '@yamcs/client';
-import { YamcsService } from '../services/YamcsService';
 import { Title } from '@angular/platform-browser';
+import { AuthService } from '../services/AuthService';
+import { Observable } from 'rxjs/Observable';
 
 @Component({
   templateUrl: './ProfilePage.html',
@@ -10,10 +11,10 @@ import { Title } from '@angular/platform-browser';
 })
 export class ProfilePage {
 
-  user$: Promise<UserInfo>;
+  user$: Observable<UserInfo | null>;
 
-  constructor(yamcs: YamcsService, title: Title) {
+  constructor(authService: AuthService, title: Title) {
     title.setTitle('Profile - Yamcs');
-    this.user$ = yamcs.yamcsClient.getUserInfo();
+    this.user$ = authService.userInfo$;
   }
 }

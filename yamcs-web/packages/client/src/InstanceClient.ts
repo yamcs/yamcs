@@ -101,7 +101,7 @@ export class InstanceClient {
 
   async getEvents(options: GetEventsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/events`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as EventsWrapper
     return wrapper.event || [];
   }
@@ -118,7 +118,7 @@ export class InstanceClient {
 
   async getLinks() {
     const url = `${this.yamcs.apiUrl}/links/${this.instance}`
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as LinksWrapper;
     return wrapper.link || [];
   }
@@ -132,32 +132,32 @@ export class InstanceClient {
     const body = JSON.stringify({
       state: 'enabled',
     })
-    return fetch(`${this.yamcs.apiUrl}/links/${this.instance}/${name}`, {
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/links/${this.instance}/${name}`, {
       body,
       method: 'PATCH',
-    }).then(this.verifyStatus);
+    });
   }
 
   async disableLink(name: string) {
     const body = JSON.stringify({
       state: 'disabled',
     })
-    return fetch(`${this.yamcs.apiUrl}/links/${this.instance}/${name}`, {
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/links/${this.instance}/${name}`, {
       body,
       method: 'PATCH',
-    }).then(this.verifyStatus);
+    });
   }
 
   async getProcessors() {
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as ProcessorsWrapper;
     return wrapper.processor || [];
   }
 
   async getProcessor(name: string) {
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${name}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as Processor;
   }
 
@@ -173,28 +173,28 @@ export class InstanceClient {
 
   async getCommandHistoryEntries(options: GetCommandHistoryOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/commands`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as CommandHistoryEntryWrapper;
     return wrapper.entry || [];
   }
 
   async getCommandHistoryEntriesForParameter(qualifiedName: string, options: GetCommandHistoryOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/commands${qualifiedName}`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as CommandHistoryEntryWrapper;
     return wrapper.entry || [];
   }
 
   async getCommandQueues(processorName: string) {
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as CommandQueuesWrapper;
     return wrapper.queue || [];
   }
 
   async getCommandQueue(processorName: string, queueName: string) {
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues/${queueName}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as CommandQueue;
   }
 
@@ -210,14 +210,14 @@ export class InstanceClient {
 
   async getClients() {
     const url = `${this.yamcs.apiUrl}/instances/${this.instance}/clients`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as ClientsWrapper;
     return wrapper.client || [];
   }
 
   async getClient(id: number) {
     const url = `${this.yamcs.apiUrl}/clients/${id}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as ClientInfo;
   }
 
@@ -228,7 +228,7 @@ export class InstanceClient {
 
   async getServices() {
     const url = `${this.yamcs.apiUrl}/services/${this.instance}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as ServicesWrapper;
     return wrapper.service || [];
   }
@@ -237,32 +237,32 @@ export class InstanceClient {
     const body = JSON.stringify({
       state: 'running'
     })
-    return fetch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
       body,
       method: 'PATCH',
-    }).then(this.verifyStatus);
+    });
   }
 
   async stopService(name: string) {
     const body = JSON.stringify({
       state: 'stopped'
     })
-    return fetch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
       body,
       method: 'PATCH',
-    }).then(this.verifyStatus);
+    });
   }
 
   async getActiveAlarms(processorName: string, options: GetAlarmsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/alarms`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
     return wrapper.alarm || [];
   }
 
   async getAlarms(options: GetAlarmsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/alarms`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
     return wrapper.alarm || [];
   }
@@ -274,74 +274,74 @@ export class InstanceClient {
 
   async getAlarmsForParameter(qualifiedName: string, options: GetAlarmsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/alarms${qualifiedName}`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
     return await wrapper.alarm || [];
   }
 
   async getStreams() {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/streams`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as StreamsWrapper;
     return await wrapper.stream || [];
   }
 
   async getStream(name: string) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/streams/${name}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as Stream;
   }
 
   async getTables() {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/tables`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as TablesWrapper;
     return wrapper.table || [];
   }
 
   async getTable(name: string) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/tables/${name}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as Table;
   }
 
   async getTableData(name: string) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/tables/${name}/data`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as RecordsWrapper;
     return wrapper.record || [];
   }
 
   async getRootSpaceSystems() {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as SpaceSystemsWrapper;
     return wrapper.spaceSystem || [];
   }
 
   async getSpaceSystems() {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/space-systems`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as SpaceSystemsWrapper;
     return wrapper.spaceSystem || [];
   }
 
   async getSpaceSystem(qualifiedName: string) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/space-systems${qualifiedName}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as SpaceSystem;
   }
 
   async getParameters(options: GetParametersOptions = {}) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/parameters`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as ParametersWrapper;
     return wrapper.parameter || [];
   }
 
   async getParameter(qualifiedName: string) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/parameters${qualifiedName}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as Parameter;
   }
 
@@ -350,7 +350,7 @@ export class InstanceClient {
     if (id.namespace) {
       url += '/' + encodeURIComponent(id.namespace);
       url += '/' + encodeURIComponent(id.name);
-      const response = await fetch(url).then(this.verifyStatus);
+      const response = await this.yamcs.doFetch(url);
       return await response.json() as Parameter;
     } else {
       return this.getParameter(id.name);
@@ -359,7 +359,7 @@ export class InstanceClient {
 
   async getParameterValues(qualifiedName: string, options: GetParameterValuesOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameters${qualifiedName}`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as ParameterData;
     return wrapper.parameter || [];
   }
@@ -376,60 +376,60 @@ export class InstanceClient {
 
   async getParameterSamples(qualifiedName: string, options: GetParameterSamplesOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameters${qualifiedName}/samples`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as SamplesWrapper;
     return wrapper.sample || [];
   }
 
   async getParameterRanges(qualifiedName: string, options: GetParameterRangesOptions = {}) {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameters${qualifiedName}/ranges`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as RangesWrapper;
     return wrapper.range || [];
   }
 
   async getCommands(options: GetCommandsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/commands`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as CommandsWrapper;
     return wrapper.command || []
   }
 
   async getCommand(qualifiedName: string) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/commands${qualifiedName}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as Command;
   }
 
   async getContainers(options: GetContainersOptions = {}) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/containers`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as ContainersWrapper;
     return wrapper.container || [];
   }
 
   async getContainer(qualifiedName: string) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/containers${qualifiedName}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as Container;
   }
 
   async getAlgorithms(options: GetAlgorithmsOptions = {}) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/algorithms`;
-    const response = await fetch(url + this.queryString(options)).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as AlgorithmsWrapper;
     return wrapper.algorithm || [];
   }
 
   async getAlgorithm(qualifiedName: string) {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/algorithms${qualifiedName}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as Algorithm;
   }
 
   async getDisplayInfo() {
     const url = `${this.yamcs.apiUrl}/displays/${this.instance}`;
-    const response = await fetch(url).then(this.verifyStatus)
+    const response = await this.yamcs.doFetch(url);
     return await response.json() as DisplayFolder;
   }
 
@@ -438,7 +438,7 @@ export class InstanceClient {
    */
   async getDisplay(path: string) {
     const url = `${this.yamcs.staticUrl}/${this.instance}/displays${path}`;
-    const response = await fetch(url).then(this.verifyStatus);
+    const response = await this.yamcs.doFetch(url);
     return await response.text();
   }
 
@@ -460,15 +460,5 @@ export class InstanceClient {
       .map(k => `${k}=${options[k]}`)
       .join('&');
     return qs === '' ? qs : '?' + qs;
-  }
-
-
-  // Make non 2xx responses available to clients via 'catch' instead of 'then'.
-  private verifyStatus(response: Response) {
-    if (response.status >= 200 && response.status < 300) {
-      return Promise.resolve(response)
-    } else {
-      return Promise.reject(new Error(response.statusText))
-    }
   }
 }

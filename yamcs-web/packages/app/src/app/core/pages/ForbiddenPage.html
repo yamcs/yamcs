@@ -1,13 +1,11 @@
 <div class="panel-content mat-typography">
-  <h2>404: Not Found</h2>
+  <h2>403: Forbidden</h2>
   <p>
-    It looks like
+    You do not have sufficient privileges to access
     <ng-container *ngIf="page">
-      the page
       <a [href]="page" class="ya-link">{{ page }}</a>
     </ng-container>
     <ng-container *ngIf="!page">this page</ng-container>
-    doesn't exist yet.
   </p>
   <a routerLink="/" class="ya-link">Go to homepage</a>
 </div>

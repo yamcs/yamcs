@@ -7,8 +7,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -16,14 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationPendingException;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.BasicAuthModule;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Realm;
-import org.yamcs.security.User;
-import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
@@ -46,6 +39,7 @@ import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMessage;
@@ -92,6 +86,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static final Object CONTENT_FINISHED_EVENT = new Object();
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
     private Router apiRouter;
+    private OAuth2Handler oauth2Handler = new OAuth2Handler();
     private boolean contentExpected = false;
 
     private static final FullHttpResponse BAD_REQUEST = new DefaultFullHttpResponse(
@@ -107,16 +102,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     WebConfig webConfig;
 
-    private Realm realm;
-
     public HttpRequestHandler(Router apiRouter, WebConfig webConfig) {
         this.apiRouter = apiRouter;
         this.webConfig = webConfig;
-
-        AuthModule authModule = Privilege.getInstance().getAuthModule();
-        if (authModule instanceof BasicAuthModule) { // hmmm...
-            realm = ((BasicAuthModule) authModule).getRealm();
-        }
     }
 
     @Override
@@ -156,23 +144,20 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         // code, but this is on debug for an earlier reporting while debugging issues
         log.debug("{} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri());
 
-        // Decode URI, to correctly ignore query strings in path handling
-        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
-
-        if (webConfig.isJwtEnabled() && qsDecoder.path().equals("/api/token")) {
-            handleJWTRequest(ctx, req);
-        } else {
-            AuthenticationToken authToken = findAuthenticationToken(ctx, req);
-            ctx.channel().attr(CTX_AUTH_TOKEN).set(authToken);
-            if (isAuthenticated(ctx)) {
-                handleRequest(ctx, req, qsDecoder);
-            } else {
-                sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-            }
+        try {
+            handleRequest(ctx, req);
+        } catch (IOException e) {
+            log.warn("Exception while handling http request", e);
+            sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        } catch (UnauthorizedException e) {
+            sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED, e.getMessage());
+        } catch (AuthenticationPendingException e) {
+            // Ignore
         }
     }
 
-    private AuthenticationToken findAuthenticationToken(ChannelHandlerContext ctx, HttpRequest req) {
+    private void verifyAuthenticationToken(ChannelHandlerContext ctx, HttpRequest req)
+            throws AuthenticationPendingException, UnauthorizedException {
         Privilege priv = Privilege.getInstance();
         if (priv.isEnabled()) {
             CompletableFuture<AuthenticationToken> cf = priv.authenticateHttp(ctx, req);
@@ -188,100 +173,75 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 // however this doesn't prevent the EmptyLastHttpContent to come through
                 // because that one is generated from the first GET request in case no body or small body is present
 
-                return cf.get(5000, TimeUnit.MILLISECONDS);
+                AuthenticationToken authToken = cf.get(5000, TimeUnit.MILLISECONDS);
+                ctx.channel().attr(CTX_AUTH_TOKEN).set(authToken);
             } catch (Exception e) {
                 Throwable t = ExceptionUtil.unwind(e);
                 if (t instanceof AuthenticationPendingException) {
                     throw (AuthenticationPendingException) t;
+                } else {
+                    throw new UnauthorizedException(t.getMessage());
                 }
             }
         }
-
-        return null;
     }
 
-    private boolean isAuthenticated(ChannelHandlerContext ctx) {
-        Privilege priv = Privilege.getInstance();
-        return !priv.isEnabled() || ctx.channel().attr(CTX_AUTH_TOKEN) != null;
-    }
+    private void handleRequest(ChannelHandlerContext ctx, HttpRequest req)
+            throws AuthenticationPendingException, IOException, UnauthorizedException {
+        cleanPipeline(ctx.pipeline());
 
-    private void handleJWTRequest(ChannelHandlerContext ctx, HttpRequest req) {
-        String username = req.headers().get("X-Username");
-        String pw = req.headers().get("X-Password");
-        if (username == null || pw == null) {
-            sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
+        // Decode URI, to correctly ignore query strings in path handling
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
+
+        if (webConfig.isOAuth2Enabled() && qsDecoder.path().equals("/api/token")) {
+            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
+            ctx.pipeline().addLast(new HttpObjectAggregator(65536));
+            ctx.pipeline().addLast(oauth2Handler);
+            ctx.fireChannelRead(req);
+            contentExpected = true;
             return;
         }
 
-        AuthenticationToken authToken = new UsernamePasswordToken(username, pw);
-        if (realm == null || !realm.authenticates(authToken)) {
-            sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-            return;
-        }
-
-        User user = Privilege.getInstance().getUser(authToken);
-        if (user == null) {
-            sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-            return;
-        }
-
-        try {
-            String jwt = JWT.generateHS256Token(user, webConfig.getJwtSecret(), webConfig.getJwtTimeToLive());
-            ByteBuf body = Unpooled.copiedBuffer(jwt + "\r\n", CharsetUtil.UTF_8);
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, body);
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/jwt");
-            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, body.readableBytes());
-            sendResponse(ctx, req, response, true);
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private void handleRequest(ChannelHandlerContext ctx, HttpRequest req, QueryStringDecoder qsDecoder) {
-        try {
-            cleanPipeline(ctx.pipeline());
-
-            String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
-            switch (path[1]) {
-            case STATIC_PATH:
-                if (path.length == 2) { // do not accept "/_static/" (i.e. directory listing) requests
-                    sendPlainTextError(ctx, req, FORBIDDEN);
-                    return;
-                }
-                fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
+        String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
+        switch (path[1]) {
+        case STATIC_PATH:
+            if (path.length == 2) { // do not accept "/_static/" (i.e. directory listing) requests
+                sendPlainTextError(ctx, req, FORBIDDEN);
                 return;
-            case API_PATH:
-                contentExpected = apiRouter.scheduleExecution(ctx, req, qsDecoder);
+            }
+            fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
+            return;
+        case API_PATH:
+            verifyAuthenticationToken(ctx, req);
+            contentExpected = apiRouter.scheduleExecution(ctx, req, qsDecoder);
+            return;
+        case WebSocketFrameHandler.WEBSOCKET_PATH:
+            verifyAuthenticationToken(ctx, req);
+            if (path.length == 2) { // An instance should be specified
+                sendPlainTextError(ctx, req, FORBIDDEN);
                 return;
-            case WebSocketFrameHandler.WEBSOCKET_PATH:
-                if (path.length == 2) { // An instance should be specified
-                    sendPlainTextError(ctx, req, FORBIDDEN);
-                    return;
-                }
-                if (YamcsServer.hasInstance(path[2])) {
-                    prepareChannelForWebSocketUpgrade(ctx, req, path[2]);
+            }
+            if (YamcsServer.hasInstance(path[2])) {
+                prepareChannelForWebSocketUpgrade(ctx, req, path[2]);
+            } else {
+                sendPlainTextError(ctx, req, NOT_FOUND);
+            }
+            return;
+        default:
+            if (path.length >= 3 && WebSocketFrameHandler.WEBSOCKET_PATH.equals(path[2])) {
+                verifyAuthenticationToken(ctx, req);
+                if (YamcsServer.hasInstance(path[1])) {
+                    log.warn(String.format("Deprecated url request for /%s/%s. Migrate to /%s/%s instead.",
+                            path[1], path[2], path[2], path[1]));
+                    prepareChannelForWebSocketUpgrade(ctx, req, path[1]);
                 } else {
                     sendPlainTextError(ctx, req, NOT_FOUND);
                 }
-                return;
-            default:
-                if (path.length >= 3 && WebSocketFrameHandler.WEBSOCKET_PATH.equals(path[2])) {
-                    if (YamcsServer.hasInstance(path[1])) {
-                        log.warn(String.format("Deprecated url request for /%s/%s. Migrate to /%s/%s instead.",
-                                path[1], path[2], path[2], path[1]));
-                        prepareChannelForWebSocketUpgrade(ctx, req, path[1]);
-                    } else {
-                        sendPlainTextError(ctx, req, NOT_FOUND);
-                    }
-                } else {
-                    // Everything else is handled by angular's router
-                    // (enables deep linking in html5 mode)
-                    fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
-                }
+            } else {
+                // Everything else is handled by angular's router
+                // (enables deep linking in html5 mode)
+                fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
             }
-        } catch (IOException e) {
-            log.warn("Exception while handling http request", e);
-            sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -344,7 +304,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 contentType = MediaType.JSON;
                 String str = JsonFormat.printer().print(responseMsg);
                 body.writeCharSequence(str, StandardCharsets.UTF_8);
-                // body.writeBytes(NEWLINE_BYTES); // For curl comfort
+                body.writeBytes(NEWLINE_BYTES); // For curl comfort
             }
         } catch (IOException e) {
             return sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.toString());

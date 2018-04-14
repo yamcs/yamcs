@@ -10,7 +10,6 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.UserInfo;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpException;
 
@@ -22,7 +21,11 @@ public class UserRestHandler extends RestHandler {
     @Route(path = "/api/user", method = "GET")
     public void getUser(RestRequest req) throws HttpException {
         User user = Privilege.getInstance().getUser(req.getAuthToken());
+        UserInfo userInfo = toUserInfo(user, true);
+        completeOK(req, userInfo);
+    }
 
+    public static UserInfo toUserInfo(User user, boolean addClientInfo) {
         UserInfo.Builder userInfob;
         if (user == null) {
             userInfob = buildFullyPrivilegedUser();
@@ -36,29 +39,28 @@ public class UserRestHandler extends RestHandler {
             userInfob.addAllTmPacketPrivileges(asSortedList(user.getTmPacketPrivileges()));
             userInfob.addAllTcPrivileges(asSortedList(user.getTcPrivileges()));
             userInfob.addAllSystemPrivileges(asSortedList(user.getSystemPrivileges()));
+            userInfob.addAllStreamPrivileges(asSortedList(user.getStreamPrivileges()));
+            userInfob.addAllCmdHistoryPrivileges(asSortedList(user.getCmdHistoryPrivileges()));
         }
 
         for (ClientInfo ci : ManagementService.getInstance().getClientInfo(userInfob.getLogin())) {
             userInfob.addClientInfo(ci);
         }
 
-        UserInfo info = userInfob.build();
-        completeOK(req, info);
+        return userInfob.build();
     }
 
-    private UserInfo.Builder buildFullyPrivilegedUser() {
+    private static UserInfo.Builder buildFullyPrivilegedUser() {
         UserInfo.Builder userInfob = UserInfo.newBuilder();
-        userInfob.addRoles("admin");
+        // userInfob.addRoles("admin");
         userInfob.addTmParaPrivileges(".*");
         userInfob.addTmParaSetPrivileges(".*");
         userInfob.addTmPacketPrivileges(".*");
         userInfob.addTcPrivileges(".*");
-
-        List<String> systemPrivileges = new ArrayList<>();
-        for (SystemPrivilege sp : SystemPrivilege.values()) {
-            systemPrivileges.add(sp.toString());
-        }
-        userInfob.addAllSystemPrivileges(asSortedList(systemPrivileges));
+        userInfob.addTcPrivileges(".*");
+        userInfob.addSystemPrivileges(".*");
+        userInfob.addStreamPrivileges(".*");
+        userInfob.addCmdHistoryPrivileges(".*");
         return userInfob;
     }
 

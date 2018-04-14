@@ -7,19 +7,9 @@ import java.util.Arrays;
  */
 public class UsernamePasswordToken implements AuthenticationToken {
 
-    /**
-     * The username, password
-     */
     private String username;
     private char[] password;
 
-
-    /**
-     * Constructors
-     *
-     * @param username
-     * @param password
-     */
     public UsernamePasswordToken(final String username, final char[] password) {
         this.username = username;
         this.password = password;
@@ -29,9 +19,6 @@ public class UsernamePasswordToken implements AuthenticationToken {
         this(username, password != null ? password.toCharArray() : null);
     }
 
-    /**
-     * getter/setter
-     */
     public String getUsername() {
         return username;
     }
@@ -45,7 +32,8 @@ public class UsernamePasswordToken implements AuthenticationToken {
     }
 
     public String getPasswordS() {
-        if(password == null) return null;
+        if (password == null)
+            return null;
         return new String(password);
     }
 
@@ -56,7 +44,6 @@ public class UsernamePasswordToken implements AuthenticationToken {
     public void setPassword(String password) {
         this.password = password != null ? password.toCharArray() : null;
     }
-
 
     @Override
     public Object getPrincipal() {
@@ -72,13 +59,17 @@ public class UsernamePasswordToken implements AuthenticationToken {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         UsernamePasswordToken that = (UsernamePasswordToken) o;
 
-        if (!Arrays.equals(password, that.password)) return false;
-        if (username != null ? !username.equals(that.username) : that.username != null) return false;
+        if (!Arrays.equals(password, that.password))
+            return false;
+        if (username != null ? !username.equals(that.username) : that.username != null)
+            return false;
 
         return true;
     }

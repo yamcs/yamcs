@@ -1,10 +1,14 @@
-import { Component, ChangeDetectionStrategy, HostBinding } from '@angular/core';
+import { Component, ChangeDetectionStrategy, HostBinding, OnDestroy } from '@angular/core';
 import { Instance, UserInfo } from '@yamcs/client';
 import { YamcsService } from '../services/YamcsService';
 import { MatDialog } from '@angular/material';
 import { SelectInstanceDialog } from '../../shared/template/SelectInstanceDialog';
 import { Observable } from 'rxjs/Observable';
 import { PreferenceStore } from '../services/PreferenceStore';
+import { AuthService } from '../services/AuthService';
+import { Router } from '@angular/router';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +16,7 @@ import { PreferenceStore } from '../services/PreferenceStore';
   styleUrls: ['./AppComponent.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
 
   @HostBinding('class')
   componentCssClass: string;
@@ -20,17 +24,26 @@ export class AppComponent {
   title = 'Yamcs';
 
   instance$: Observable<Instance | null>;
-  user$: Promise<UserInfo>;
+  user$: Observable<UserInfo | null>;
 
   darkMode$: Observable<boolean>;
+  showMdbItem$ = new BehaviorSubject<boolean>(false);
+
+  userSubscription: Subscription;
 
   constructor(
     yamcs: YamcsService,
+    private router: Router,
+    private authService: AuthService,
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
   ) {
     this.instance$ = yamcs.instance$;
-    this.user$ = yamcs.yamcsClient.getUserInfo();
+    this.user$ = authService.userInfo$;
+
+    this.userSubscription = this.user$.subscribe(user => {
+      this.showMdbItem$.next(authService.hasSystemPrivilege('MayGetMissionDatabase'));
+    });
 
     this.darkMode$ = preferenceStore.darkMode$;
     if (preferenceStore.isDarkMode()) {
@@ -53,6 +66,11 @@ export class AppComponent {
     }
   }
 
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['login']);
+  }
+
   private enableDarkMode() {
     document.body.classList.add('dark-theme');
     this.preferenceStore.setDarkMode(true);
@@ -61,5 +79,11 @@ export class AppComponent {
   private disableDarkMode() {
     document.body.classList.remove('dark-theme');
     this.preferenceStore.setDarkMode(false);
+  }
+
+  ngOnDestroy() {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
   }
 }

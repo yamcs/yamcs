@@ -8,8 +8,10 @@
 
     <dt>Roles</dt>
     <dd>
-      <ng-container *ngFor="let role of user.roles">
-        {{ role }}
+      <ng-container *ngIf="user.roles; else dash">
+        <ng-container *ngFor="let role of user.roles">
+          {{ role }}
+        </ng-container>
       </ng-container>
     </dd>
   </dl>
@@ -23,40 +25,70 @@
         <tr>
           <th>tmParaPrivileges</th>
           <td>
-            <ng-container *ngFor="let privilege of user.tmParaPrivileges">
-              {{ privilege }}<br>
+            <ng-container *ngIf="user.tmParaPrivileges; else dash">
+              <ng-container *ngFor="let privilege of user.tmParaPrivileges">
+                {{ privilege }}<br>
+              </ng-container>
             </ng-container>
           </td>
         </tr>
         <tr>
           <th>tmParaSetPrivileges</th>
           <td>
-            <ng-container *ngFor="let privilege of user.tmParaSetPrivileges">
-              {{ privilege }}<br>
+            <ng-container *ngIf="user.tmParaSetPrivileges; else dash">
+              <ng-container *ngFor="let privilege of user.tmParaSetPrivileges">
+                {{ privilege }}<br>
+              </ng-container>
             </ng-container>
           </td>
         </tr>
         <tr>
           <th>tmPacketPrivileges</th>
           <td>
-            <ng-container *ngFor="let privilege of user.tmPacketPrivileges">
-              {{ privilege }}<br>
+            <ng-container *ngIf="user.tmPacketPrivileges; else dash">
+              <ng-container *ngFor="let privilege of user.tmPacketPrivileges">
+                {{ privilege }}<br>
+              </ng-container>
             </ng-container>
           </td>
         </tr>
         <tr>
           <th>tcPrivileges</th>
           <td>
-            <ng-container *ngFor="let privilege of user.tcPrivileges">
-              {{ privilege }}<br>
+            <ng-container *ngIf="user.tcPrivileges; else dash">
+              <ng-container *ngFor="let privilege of user.tcPrivileges">
+                {{ privilege }}<br>
+              </ng-container>
             </ng-container>
           </td>
         </tr>
         <tr>
           <th>systemPrivileges</th>
           <td>
-            <ng-container *ngFor="let privilege of user.systemPrivileges">
-              {{ privilege }}<br>
+            <ng-container *ngIf="user.systemPrivileges; else dash">
+              <ng-container *ngFor="let privilege of user.systemPrivileges">
+                {{ privilege }}<br>
+              </ng-container>
+            </ng-container>
+          </td>
+        </tr>
+        <tr>
+          <th>streamPrivileges</th>
+          <td>
+            <ng-container *ngIf="user.streamPrivileges; else dash">
+              <ng-container *ngFor="let privilege of user.streamPrivileges">
+                {{ privilege }}<br>
+              </ng-container>
+            </ng-container>
+          </td>
+        </tr>
+        <tr>
+          <th>cmdHistoryPrivileges</th>
+          <td>
+            <ng-container *ngIf="user.cmdHistoryPrivileges; else dash">
+              <ng-container *ngFor="let privilege of user.cmdHistoryPrivileges">
+                {{ privilege }}<br>
+              </ng-container>
             </ng-container>
           </td>
         </tr>
@@ -64,3 +96,5 @@
     </dd>
   </dl>
 </div>
+
+<ng-template #dash>-</ng-template>

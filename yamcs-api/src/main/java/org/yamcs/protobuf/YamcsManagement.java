@@ -13504,6 +13504,44 @@ public final class YamcsManagement {
      */
     com.google.protobuf.ByteString
         getSystemPrivilegesBytes(int index);
+
+    /**
+     * <code>repeated string streamPrivileges = 9;</code>
+     */
+    com.google.protobuf.ProtocolStringList
+        getStreamPrivilegesList();
+    /**
+     * <code>repeated string streamPrivileges = 9;</code>
+     */
+    int getStreamPrivilegesCount();
+    /**
+     * <code>repeated string streamPrivileges = 9;</code>
+     */
+    java.lang.String getStreamPrivileges(int index);
+    /**
+     * <code>repeated string streamPrivileges = 9;</code>
+     */
+    com.google.protobuf.ByteString
+        getStreamPrivilegesBytes(int index);
+
+    /**
+     * <code>repeated string cmdHistoryPrivileges = 10;</code>
+     */
+    com.google.protobuf.ProtocolStringList
+        getCmdHistoryPrivilegesList();
+    /**
+     * <code>repeated string cmdHistoryPrivileges = 10;</code>
+     */
+    int getCmdHistoryPrivilegesCount();
+    /**
+     * <code>repeated string cmdHistoryPrivileges = 10;</code>
+     */
+    java.lang.String getCmdHistoryPrivileges(int index);
+    /**
+     * <code>repeated string cmdHistoryPrivileges = 10;</code>
+     */
+    com.google.protobuf.ByteString
+        getCmdHistoryPrivilegesBytes(int index);
   }
   /**
    * Protobuf type {@code yamcsManagement.UserInfo}
@@ -13625,6 +13663,24 @@ public final class YamcsManagement {
               systemPrivileges_.add(bs);
               break;
             }
+            case 74: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
+                streamPrivileges_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000100;
+              }
+              streamPrivileges_.add(bs);
+              break;
+            }
+            case 82: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
+                cmdHistoryPrivileges_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000200;
+              }
+              cmdHistoryPrivileges_.add(bs);
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -13653,6 +13709,12 @@ public final class YamcsManagement {
         }
         if (((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
           systemPrivileges_ = systemPrivileges_.getUnmodifiableView();
+        }
+        if (((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
+          streamPrivileges_ = streamPrivileges_.getUnmodifiableView();
+        }
+        if (((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
+          cmdHistoryPrivileges_ = cmdHistoryPrivileges_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -13937,6 +13999,64 @@ public final class YamcsManagement {
       return systemPrivileges_.getByteString(index);
     }
 
+    public static final int STREAMPRIVILEGES_FIELD_NUMBER = 9;
+    private com.google.protobuf.LazyStringList streamPrivileges_;
+    /**
+     * <code>repeated string streamPrivileges = 9;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getStreamPrivilegesList() {
+      return streamPrivileges_;
+    }
+    /**
+     * <code>repeated string streamPrivileges = 9;</code>
+     */
+    public int getStreamPrivilegesCount() {
+      return streamPrivileges_.size();
+    }
+    /**
+     * <code>repeated string streamPrivileges = 9;</code>
+     */
+    public java.lang.String getStreamPrivileges(int index) {
+      return streamPrivileges_.get(index);
+    }
+    /**
+     * <code>repeated string streamPrivileges = 9;</code>
+     */
+    public com.google.protobuf.ByteString
+        getStreamPrivilegesBytes(int index) {
+      return streamPrivileges_.getByteString(index);
+    }
+
+    public static final int CMDHISTORYPRIVILEGES_FIELD_NUMBER = 10;
+    private com.google.protobuf.LazyStringList cmdHistoryPrivileges_;
+    /**
+     * <code>repeated string cmdHistoryPrivileges = 10;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getCmdHistoryPrivilegesList() {
+      return cmdHistoryPrivileges_;
+    }
+    /**
+     * <code>repeated string cmdHistoryPrivileges = 10;</code>
+     */
+    public int getCmdHistoryPrivilegesCount() {
+      return cmdHistoryPrivileges_.size();
+    }
+    /**
+     * <code>repeated string cmdHistoryPrivileges = 10;</code>
+     */
+    public java.lang.String getCmdHistoryPrivileges(int index) {
+      return cmdHistoryPrivileges_.get(index);
+    }
+    /**
+     * <code>repeated string cmdHistoryPrivileges = 10;</code>
+     */
+    public com.google.protobuf.ByteString
+        getCmdHistoryPrivilegesBytes(int index) {
+      return cmdHistoryPrivileges_.getByteString(index);
+    }
+
     private void initFields() {
       login_ = "";
       clientInfo_ = java.util.Collections.emptyList();
@@ -13946,6 +14066,8 @@ public final class YamcsManagement {
       tmPacketPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       tcPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      streamPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      cmdHistoryPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -13989,6 +14111,12 @@ public final class YamcsManagement {
       }
       for (int i = 0; i < systemPrivileges_.size(); i++) {
         output.writeBytes(8, systemPrivileges_.getByteString(i));
+      }
+      for (int i = 0; i < streamPrivileges_.size(); i++) {
+        output.writeBytes(9, streamPrivileges_.getByteString(i));
+      }
+      for (int i = 0; i < cmdHistoryPrivileges_.size(); i++) {
+        output.writeBytes(10, cmdHistoryPrivileges_.getByteString(i));
       }
       getUnknownFields().writeTo(output);
     }
@@ -14060,6 +14188,24 @@ public final class YamcsManagement {
         }
         size += dataSize;
         size += 1 * getSystemPrivilegesList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < streamPrivileges_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(streamPrivileges_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getStreamPrivilegesList().size();
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < cmdHistoryPrivileges_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(cmdHistoryPrivileges_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getCmdHistoryPrivilegesList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -14199,6 +14345,10 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000040);
         systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000080);
+        streamPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000100);
+        cmdHistoryPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000200);
         return this;
       }
 
@@ -14270,6 +14420,16 @@ public final class YamcsManagement {
           bitField0_ = (bitField0_ & ~0x00000080);
         }
         result.systemPrivileges_ = systemPrivileges_;
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
+          streamPrivileges_ = streamPrivileges_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000100);
+        }
+        result.streamPrivileges_ = streamPrivileges_;
+        if (((bitField0_ & 0x00000200) == 0x00000200)) {
+          cmdHistoryPrivileges_ = cmdHistoryPrivileges_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000200);
+        }
+        result.cmdHistoryPrivileges_ = cmdHistoryPrivileges_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -14374,6 +14534,26 @@ public final class YamcsManagement {
           } else {
             ensureSystemPrivilegesIsMutable();
             systemPrivileges_.addAll(other.systemPrivileges_);
+          }
+          onChanged();
+        }
+        if (!other.streamPrivileges_.isEmpty()) {
+          if (streamPrivileges_.isEmpty()) {
+            streamPrivileges_ = other.streamPrivileges_;
+            bitField0_ = (bitField0_ & ~0x00000100);
+          } else {
+            ensureStreamPrivilegesIsMutable();
+            streamPrivileges_.addAll(other.streamPrivileges_);
+          }
+          onChanged();
+        }
+        if (!other.cmdHistoryPrivileges_.isEmpty()) {
+          if (cmdHistoryPrivileges_.isEmpty()) {
+            cmdHistoryPrivileges_ = other.cmdHistoryPrivileges_;
+            bitField0_ = (bitField0_ & ~0x00000200);
+          } else {
+            ensureCmdHistoryPrivilegesIsMutable();
+            cmdHistoryPrivileges_.addAll(other.cmdHistoryPrivileges_);
           }
           onChanged();
         }
@@ -15280,6 +15460,192 @@ public final class YamcsManagement {
   }
   ensureSystemPrivilegesIsMutable();
         systemPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.LazyStringList streamPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureStreamPrivilegesIsMutable() {
+        if (!((bitField0_ & 0x00000100) == 0x00000100)) {
+          streamPrivileges_ = new com.google.protobuf.LazyStringArrayList(streamPrivileges_);
+          bitField0_ |= 0x00000100;
+         }
+      }
+      /**
+       * <code>repeated string streamPrivileges = 9;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getStreamPrivilegesList() {
+        return streamPrivileges_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string streamPrivileges = 9;</code>
+       */
+      public int getStreamPrivilegesCount() {
+        return streamPrivileges_.size();
+      }
+      /**
+       * <code>repeated string streamPrivileges = 9;</code>
+       */
+      public java.lang.String getStreamPrivileges(int index) {
+        return streamPrivileges_.get(index);
+      }
+      /**
+       * <code>repeated string streamPrivileges = 9;</code>
+       */
+      public com.google.protobuf.ByteString
+          getStreamPrivilegesBytes(int index) {
+        return streamPrivileges_.getByteString(index);
+      }
+      /**
+       * <code>repeated string streamPrivileges = 9;</code>
+       */
+      public Builder setStreamPrivileges(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureStreamPrivilegesIsMutable();
+        streamPrivileges_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string streamPrivileges = 9;</code>
+       */
+      public Builder addStreamPrivileges(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureStreamPrivilegesIsMutable();
+        streamPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string streamPrivileges = 9;</code>
+       */
+      public Builder addAllStreamPrivileges(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureStreamPrivilegesIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, streamPrivileges_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string streamPrivileges = 9;</code>
+       */
+      public Builder clearStreamPrivileges() {
+        streamPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000100);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string streamPrivileges = 9;</code>
+       */
+      public Builder addStreamPrivilegesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureStreamPrivilegesIsMutable();
+        streamPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.LazyStringList cmdHistoryPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureCmdHistoryPrivilegesIsMutable() {
+        if (!((bitField0_ & 0x00000200) == 0x00000200)) {
+          cmdHistoryPrivileges_ = new com.google.protobuf.LazyStringArrayList(cmdHistoryPrivileges_);
+          bitField0_ |= 0x00000200;
+         }
+      }
+      /**
+       * <code>repeated string cmdHistoryPrivileges = 10;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getCmdHistoryPrivilegesList() {
+        return cmdHistoryPrivileges_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string cmdHistoryPrivileges = 10;</code>
+       */
+      public int getCmdHistoryPrivilegesCount() {
+        return cmdHistoryPrivileges_.size();
+      }
+      /**
+       * <code>repeated string cmdHistoryPrivileges = 10;</code>
+       */
+      public java.lang.String getCmdHistoryPrivileges(int index) {
+        return cmdHistoryPrivileges_.get(index);
+      }
+      /**
+       * <code>repeated string cmdHistoryPrivileges = 10;</code>
+       */
+      public com.google.protobuf.ByteString
+          getCmdHistoryPrivilegesBytes(int index) {
+        return cmdHistoryPrivileges_.getByteString(index);
+      }
+      /**
+       * <code>repeated string cmdHistoryPrivileges = 10;</code>
+       */
+      public Builder setCmdHistoryPrivileges(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureCmdHistoryPrivilegesIsMutable();
+        cmdHistoryPrivileges_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string cmdHistoryPrivileges = 10;</code>
+       */
+      public Builder addCmdHistoryPrivileges(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureCmdHistoryPrivilegesIsMutable();
+        cmdHistoryPrivileges_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string cmdHistoryPrivileges = 10;</code>
+       */
+      public Builder addAllCmdHistoryPrivileges(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureCmdHistoryPrivilegesIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, cmdHistoryPrivileges_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string cmdHistoryPrivileges = 10;</code>
+       */
+      public Builder clearCmdHistoryPrivileges() {
+        cmdHistoryPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000200);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string cmdHistoryPrivileges = 10;</code>
+       */
+      public Builder addCmdHistoryPrivilegesBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureCmdHistoryPrivilegesIsMutable();
+        cmdHistoryPrivileges_.add(value);
         onChanged();
         return this;
       }
@@ -24222,49 +24588,50 @@ public final class YamcsManagement {
       "o.ClientState\022\025\n\rcurrentClient\030\007 \001(\010\022\021\n\t" +
       "loginTime\030\010 \001(\003\022\024\n\014loginTimeUTC\030\t \001(\t\".\n" +
       "\013ClientState\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNEC" +
-      "TED\020\001\"\334\001\n\010UserInfo\022\r\n\005login\030\001 \001(\t\022/\n\ncli" +
+      "TED\020\001\"\224\002\n\010UserInfo\022\r\n\005login\030\001 \001(\t\022/\n\ncli" +
       "entInfo\030\002 \003(\0132\033.yamcsManagement.ClientIn" +
       "fo\022\r\n\005roles\030\003 \003(\t\022\030\n\020tmParaPrivileges\030\004 " +
       "\003(\t\022\033\n\023tmParaSetPrivileges\030\005 \003(\t\022\032\n\022tmPa",
       "cketPrivileges\030\006 \003(\t\022\024\n\014tcPrivileges\030\007 \003" +
-      "(\t\022\030\n\020systemPrivileges\030\010 \003(\t\"\277\001\n\014TmStati" +
-      "stics\022\022\n\npacketName\030\001 \002(\t\022\027\n\017receivedPac" +
-      "kets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n\017last" +
-      "ReceivedUTC\030\010 \001(\t\022\026\n\016lastPacketTime\030\004 \001(" +
-      "\003\022\031\n\021lastPacketTimeUTC\030\007 \001(\t\022 \n\030subscrib" +
-      "edParameterCount\030\006 \001(\005\"\223\001\n\nStatistics\022\020\n" +
-      "\010instance\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t\022" +
-      ".\n\007tmstats\030\003 \003(\0132\035.yamcsManagement.TmSta" +
-      "tistics\022\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016lastUpda",
-      "tedUTC\030\005 \001(\t\"\274\002\n\032ProcessorManagementRequ" +
-      "est\022H\n\toperation\030\001 \001(\01625.yamcsManagement" +
-      ".ProcessorManagementRequest.Operation\022\020\n" +
-      "\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type\030\004 " +
-      "\001(\t\022\016\n\006config\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\031\n" +
-      "\npersistent\030\007 \001(\010:\005false\022,\n\nreplaySpec\030\010" +
-      " \001(\0132\024.yamcs.ReplayRequestB\002\030\001\";\n\tOperat" +
-      "ion\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNECT_TO_" +
-      "PROCESSOR\020\001\"\355\001\n\020ProcessorRequest\022>\n\toper" +
-      "ation\030\001 \001(\0162+.yamcsManagement.ProcessorR",
-      "equest.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004na" +
-      "me\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013replaySpee" +
-      "d\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\tOperation" +
-      "\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020\n\014CHA" +
-      "NGE_SPEED\020\005\"\243\001\n\010LinkInfo\022\020\n\010instance\030\001 \002" +
-      "(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004" +
-      " \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016" +
-      "\n\006status\030\007 \001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016det" +
-      "ailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent\022-\n\004type\030" +
-      "\001 \001(\0162\037.yamcsManagement.LinkEvent.Type\022+",
-      "\n\010linkInfo\030\002 \001(\0132\031.yamcsManagement.LinkI" +
-      "nfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014UNREGISTE" +
-      "RED\020\002\022\013\n\007UPDATED\020\003\"n\n\013ServiceInfo\022\020\n\010ins" +
-      "tance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005state\030\003 \001(\016" +
-      "2\035.yamcsManagement.ServiceState\022\021\n\tclass" +
-      "Name\030\004 \001(\t*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010S" +
-      "TARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\n" +
-      "TERMINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.pr" +
-      "otobuf"
+      "(\t\022\030\n\020systemPrivileges\030\010 \003(\t\022\030\n\020streamPr" +
+      "ivileges\030\t \003(\t\022\034\n\024cmdHistoryPrivileges\030\n" +
+      " \003(\t\"\277\001\n\014TmStatistics\022\022\n\npacketName\030\001 \002(" +
+      "\t\022\027\n\017receivedPackets\030\002 \001(\003\022\024\n\014lastReceiv" +
+      "ed\030\003 \001(\003\022\027\n\017lastReceivedUTC\030\010 \001(\t\022\026\n\016las" +
+      "tPacketTime\030\004 \001(\003\022\031\n\021lastPacketTimeUTC\030\007" +
+      " \001(\t\022 \n\030subscribedParameterCount\030\006 \001(\005\"\223" +
+      "\001\n\nStatistics\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProc" +
+      "essorName\030\002 \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.yamcs",
+      "Management.TmStatistics\022\023\n\013lastUpdated\030\004" +
+      " \001(\003\022\026\n\016lastUpdatedUTC\030\005 \001(\t\"\274\002\n\032Process" +
+      "orManagementRequest\022H\n\toperation\030\001 \001(\01625" +
+      ".yamcsManagement.ProcessorManagementRequ" +
+      "est.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030" +
+      "\003 \001(\t\022\014\n\004type\030\004 \001(\t\022\016\n\006config\030\005 \001(\t\022\020\n\010c" +
+      "lientId\030\006 \003(\005\022\031\n\npersistent\030\007 \001(\010:\005false" +
+      "\022,\n\nreplaySpec\030\010 \001(\0132\024.yamcs.ReplayReque" +
+      "stB\002\030\001\";\n\tOperation\022\024\n\020CREATE_PROCESSOR\020" +
+      "\000\022\030\n\024CONNECT_TO_PROCESSOR\020\001\"\355\001\n\020Processo",
+      "rRequest\022>\n\toperation\030\001 \001(\0162+.yamcsManag" +
+      "ement.ProcessorRequest.Operation\022\020\n\010inst" +
+      "ance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001" +
+      "(\003\022\'\n\013replaySpeed\030\005 \001(\0132\022.yamcs.ReplaySp" +
+      "eed\">\n\tOperation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022" +
+      "\010\n\004SEEK\020\004\022\020\n\014CHANGE_SPEED\020\005\"\243\001\n\010LinkInfo" +
+      "\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type" +
+      "\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010" +
+      "disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCo" +
+      "unt\030\010 \001(\003\022\026\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLi",
+      "nkEvent\022-\n\004type\030\001 \001(\0162\037.yamcsManagement." +
+      "LinkEvent.Type\022+\n\010linkInfo\030\002 \001(\0132\031.yamcs" +
+      "Management.LinkInfo\"5\n\004Type\022\016\n\nREGISTERE" +
+      "D\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"n\n\013Se" +
+      "rviceInfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(" +
+      "\t\022,\n\005state\030\003 \001(\0162\035.yamcsManagement.Servi" +
+      "ceState\022\021\n\tclassName\030\004 \001(\t*\\\n\014ServiceSta" +
+      "te\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING\020\002\022\014" +
+      "\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAILED\020\005" +
+      "B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -24332,7 +24699,7 @@ public final class YamcsManagement {
     internal_static_yamcsManagement_UserInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_yamcsManagement_UserInfo_descriptor,
-        new java.lang.String[] { "Login", "ClientInfo", "Roles", "TmParaPrivileges", "TmParaSetPrivileges", "TmPacketPrivileges", "TcPrivileges", "SystemPrivileges", });
+        new java.lang.String[] { "Login", "ClientInfo", "Roles", "TmParaPrivileges", "TmParaSetPrivileges", "TmPacketPrivileges", "TcPrivileges", "SystemPrivileges", "StreamPrivileges", "CmdHistoryPrivileges", });
     internal_static_yamcsManagement_TmStatistics_descriptor =
       getDescriptor().getMessageTypes().get(9);
     internal_static_yamcsManagement_TmStatistics_fieldAccessorTable = new

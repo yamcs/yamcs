@@ -17,7 +17,7 @@ public interface Realm {
      * @param authenticationToken
      * @return
      */
-    public boolean authenticates(AuthenticationToken authenticationToken);
+    public boolean authenticate(AuthenticationToken authenticationToken);
 
     /**
      * loadUser, load the roles and privileges of the user

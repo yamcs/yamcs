@@ -1,5 +1,7 @@
 export { default as YamcsClient } from './YamcsClient';
 export { InstanceClient } from './InstanceClient';
+export { RequestListener } from './RequestListener';
+export { HttpError } from './HttpError';
 
 export {
   AlarmInfo,
@@ -53,6 +55,7 @@ export {
 } from './types/monitoring';
 
 export {
+  AccessTokenResponse,
   ClientInfo,
   ClientSubscriptionResponse,
   Column,

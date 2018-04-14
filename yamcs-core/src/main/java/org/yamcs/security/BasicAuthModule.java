@@ -2,10 +2,9 @@ package org.yamcs.security;
 
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
@@ -20,16 +19,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
+import org.yamcs.security.JWT.JWTDecodeException;
 import org.yamcs.security.Privilege.Type;
 import org.yamcs.web.BadRequestException;
-import org.yamcs.web.InternalServerErrorException;
-import org.yamcs.web.JWT;
-import org.yamcs.web.JWT.JWTDecodeException;
-import org.yamcs.web.UnauthorizedException;
 import org.yamcs.web.WebConfig;
 import org.yamcs.web.rest.RestRequest;
-
-import com.google.gson.JsonObject;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -38,9 +32,12 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.util.CharsetUtil;
 
 /**
@@ -89,7 +86,6 @@ public class BasicAuthModule implements AuthModule {
     }
 
     /**
-     *
      * @return the roles of the calling user
      */
     @Override
@@ -104,19 +100,21 @@ public class BasicAuthModule implements AuthModule {
 
     @Override
     public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) {
-        if (!req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
-            sendUnauthorized(ctx, req, "No " + HttpHeaderNames.AUTHORIZATION + " header present");
-            return completedExceptionally(new AuthenticationPendingException());
-        }
-
-        String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
-        if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
-            return handleBasicAuth(ctx, req);
-        } else if (webConfig.isJwtEnabled() && authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
-            return handleJWT(ctx, req);
+        if (req.headers().contains(HttpHeaderNames.AUTHORIZATION)) {
+            String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
+            if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
+                return handleBasicAuth(ctx, req);
+            } else if (webConfig.isOAuth2Enabled() && authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
+                return handleBearerAuth(ctx, req);
+            } else {
+                return completedExceptionally(
+                        new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'"));
+            }
+        } else if (req.headers().contains(HttpHeaderNames.COOKIE)) {
+            return handleCookie(ctx, req);
         } else {
-            return completedExceptionally(
-                    new BadRequestException("Unsupported Authorization header '" + authorizationHeader + "'"));
+            sendUnauthorized(ctx, req, "Missing 'Authorization' or 'Cookie' header");
+            return completedExceptionally(new AuthenticationPendingException());
         }
     }
 
@@ -137,45 +135,53 @@ public class BasicAuthModule implements AuthModule {
                     new BadRequestException("Malformed username/password (Not separated by colon?)"));
         }
         AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1]);
-        if (!realm.authenticates(token)) {
-            sendUnauthorized(ctx, req, "the realm could not authenticate the provided token");
+        if (!realm.authenticate(token)) {
+            sendUnauthorized(ctx, req, "Could not authenticate token against realm");
             return completedExceptionally(new AuthenticationPendingException());
         }
 
         return CompletableFuture.completedFuture(token);
     }
 
-    private CompletableFuture<AuthenticationToken> handleJWT(ChannelHandlerContext ctx, HttpRequest req) {
+    private CompletableFuture<AuthenticationToken> handleBearerAuth(ChannelHandlerContext ctx, HttpRequest req) {
         String header = req.headers().get(HttpHeaderNames.AUTHORIZATION);
-        String bearerToken = header.substring(AUTH_TYPE_BEARER.length());
+        String jwt = header.substring(AUTH_TYPE_BEARER.length());
+        return handleAccessToken(ctx, req, jwt);
+    }
 
-        JsonObject payload;
+    private CompletableFuture<AuthenticationToken> handleCookie(ChannelHandlerContext ctx, HttpRequest req) {
+        HttpHeaders headers = req.headers();
+        String jwt = null;
+        Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(headers.get(HttpHeaderNames.COOKIE));
+        for (Cookie c : cookies) {
+            if ("access_token".equalsIgnoreCase(c.name())) {
+                jwt = c.value();
+                break;
+            }
+        }
+
+        if (jwt == null) {
+            sendUnauthorized(ctx, req, "Missing 'Authorization' or 'Cookie' header");
+            return completedExceptionally(new AuthenticationPendingException());
+        }
+
+        return handleAccessToken(ctx, req, jwt);
+    }
+
+    private CompletableFuture<AuthenticationToken> handleAccessToken(ChannelHandlerContext ctx, HttpRequest req,
+            String jwt) {
         try {
-            payload = JWT.decode(bearerToken, WebConfig.getInstance().getJwtSecret());
+            AuthenticationToken token = new AccessToken(jwt);
+            if (!realm.authenticate(token)) {
+                sendUnauthorized(ctx, req, "Could not authenticate token against realm");
+                return completedExceptionally(new AuthenticationPendingException());
+            }
+
+            return CompletableFuture.completedFuture(token);
         } catch (JWTDecodeException e) {
-            return completedExceptionally(new BadRequestException(e));
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            return completedExceptionally(new InternalServerErrorException(e));
+            sendUnauthorized(ctx, req, "Failed to decode JWT: " + e.getMessage());
+            return completedExceptionally(new AuthenticationPendingException());
         }
-
-        long ttl = webConfig.getJwtTimeToLive();
-        if (ttl >= 0) {
-            long expMillis = payload.get("exp").getAsLong();
-            if (expMillis < System.currentTimeMillis()) {
-                return completedExceptionally(new UnauthorizedException("Expired Token"));
-            }
-        }
-
-        String username = payload.get("sub").getAsString();
-        AuthenticationToken token = new AuthenticationToken() {
-
-            @Override
-            public Object getPrincipal() {
-                return username;
-            }
-        };
-
-        return CompletableFuture.completedFuture(token);
     }
 
     static private CompletableFuture<AuthenticationToken> completedExceptionally(Exception e) {
@@ -187,25 +193,23 @@ public class BasicAuthModule implements AuthModule {
     @Override
     public User getUser(final AuthenticationToken authenticationToken) {
         while (true) {
-            if (authenticationToken == null)
+            if (authenticationToken == null) {
                 return null;
+            }
             Future<User> f = cache.get(authenticationToken);
             if (f == null) {
-                Callable<User> eval = new Callable<User>() {
-                    @Override
-                    public User call() {
-                        try {
-                            // check the realm support the type of provided token
-                            if (!realm.supports(authenticationToken)) {
-                                log.error("Realm {} does not support authentication token of type {}", realmName,
-                                        authenticationToken.getClass());
-                                return null;
-                            }
-                            return realm.loadUser(authenticationToken);
-                        } catch (Exception e) {
-                            log.error("Unable to load user from realm {}", realmName, e);
-                            return new User(authenticationToken);
+                Callable<User> eval = () -> {
+                    try {
+                        // check the realm support the type of provided token
+                        if (!realm.supports(authenticationToken)) {
+                            log.error("Realm {} does not support authentication token of type {}", realmName,
+                                    authenticationToken.getClass());
+                            return null;
                         }
+                        return realm.loadUser(authenticationToken);
+                    } catch (Exception e) {
+                        log.error("Unable to load user from realm {}", realmName, e);
+                        return new User(authenticationToken);
                     }
                 };
                 FutureTask<User> ft = new FutureTask<>(eval);
@@ -217,15 +221,17 @@ public class BasicAuthModule implements AuthModule {
             }
             try {
                 User u = f.get();
-                if ((System.currentTimeMillis() - u.lastUpdated) < PRIV_CACHE_TIME)
+                if ((System.currentTimeMillis() - u.getLastUpdated().getTime()) < PRIV_CACHE_TIME) {
                     return u;
+                }
                 cache.remove(authenticationToken, f); // too old
             } catch (CancellationException e) {
                 cache.remove(authenticationToken, f);
             } catch (ExecutionException e) {
                 cache.remove(authenticationToken, f); // we don't cache exceptions
-                if (e.getCause() instanceof RuntimeException)
+                if (e.getCause() instanceof RuntimeException) {
                     throw (RuntimeException) e.getCause();
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return null;

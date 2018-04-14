@@ -22,21 +22,28 @@ import io.netty.handler.codec.http.HttpRequest;
 /**
  * Implements privileges loaded and short-term cached from realm.
  *
- * Extending classes provide concrete method to identify the user, which this
- * class then uses to load privileges. This class also provides methods to
- * extract a username from a supplied certificate.
+ * Extending classes provide concrete method to identify the user, which this class then uses to load privileges. This
+ * class also provides methods to extract a username from a supplied certificate.
  *
- * Requests are usually made in short bursts, so privileges loaded from realm
- * are cached for a short period to reduce load on the realm service and retain
- * responsiveness.
+ * Requests are usually made in short bursts, so privileges loaded from realm are cached for a short period to reduce
+ * load on the realm service and retain responsiveness.
  *
  * @author nm
  */
 public class Privilege {
 
     public enum SystemPrivilege {
-        MayControlProcessor, MayModifyCommandHistory, MayControlCommandQueue, MayCommand, MayGetMissionDatabase, MayControlArchiving, 
-        MayControlServices, MayReadEvents, MayWriteEvents, MayWriteTables, MayReadTables
+        MayControlProcessor,
+        MayModifyCommandHistory,
+        MayControlCommandQueue,
+        MayCommand,
+        MayGetMissionDatabase,
+        MayControlArchiving,
+        MayControlServices,
+        MayReadEvents,
+        MayWriteEvents,
+        MayWriteTables,
+        MayReadTables
     }
 
     private static String authModuleName;
@@ -104,13 +111,11 @@ public class Privilege {
     }
 
     /**
-     * loads the configuration of the privilege. If privileges.enabled is not
-     * set to false in the privileges.properties, then load the privileges from
-     * the LDAP.
+     * loads the configuration of the privilege. If privileges.enabled is not set to false in the privileges.properties,
+     * then load the privileges from the LDAP.
      *
      * @throws ConfigurationException
-     *             when the privileges.enabled is not set to false and the ldap
-     *             parammeters are not present
+     *             when the privileges.enabled is not set to false and the ldap parammeters are not present
      */
     protected Privilege() throws ConfigurationException {
     }
@@ -269,8 +274,7 @@ public class Privilege {
      * @param authToken
      * @param namespace
      *            If null defaults to "MDB:OPS Name"
-     * @return A collection of TM packet names in the specified namespace for
-     *         which the user has privileges.
+     * @return A collection of TM packet names in the specified namespace for which the user has privileges.
      * @throws ConfigurationException
      * @throws InvalidAuthenticationToken
      */
@@ -298,8 +302,7 @@ public class Privilege {
      * @param authToken
      * @param namespace
      *            If null defaults to "MDB:OPS Name"
-     * @return A collection of TM packet names in the specified namespace for
-     *         which the user has privileges.
+     * @return A collection of TM packet names in the specified namespace for which the user has privileges.
      * @throws ConfigurationException
      * @throws InvalidAuthenticationToken
      */
@@ -334,8 +337,7 @@ public class Privilege {
      * @param authToken
      * @param namespace
      *            If null defaults to "MDB:OPS Name"
-     * @return A collection of TM parameter names in the specified namespace for
-     *         which the user has privileges.
+     * @return A collection of TM parameter names in the specified namespace for which the user has privileges.
      * @throws ConfigurationException
      * @throws InvalidAuthenticationToken
      */

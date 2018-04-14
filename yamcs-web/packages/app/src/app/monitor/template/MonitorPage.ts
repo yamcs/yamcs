@@ -3,6 +3,7 @@ import { Instance } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ExtensionRegistry } from '../../core/services/ExtensionRegistry';
 import { MonitorSidebarItemHost } from '../ext/MonitorSidebarItemHost';
+import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './MonitorPage.html',
@@ -18,6 +19,7 @@ export class MonitorPage implements OnInit {
 
   constructor(
     yamcs: YamcsService,
+    private authService: AuthService,
     private extensionRegistry: ExtensionRegistry,
     private componentFactoryResolver: ComponentFactoryResolver,
   ) {
@@ -31,5 +33,9 @@ export class MonitorPage implements OnInit {
       const viewContainerRef = this.extensionHost.viewContainerRef;
       viewContainerRef.createComponent(componentFactory);
     }
+  }
+
+  showEventsItem() {
+    return this.authService.hasSystemPrivilege('MayReadEvents');
   }
 }

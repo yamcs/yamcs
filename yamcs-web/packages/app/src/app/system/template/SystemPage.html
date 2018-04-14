@@ -18,7 +18,8 @@
         Links
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-item routerLink="services"
+      <app-sidebar-nav-item *ngIf="showServicesItem()"
+                            routerLink="services"
                             [queryParams]="{instance: instance.name}">
         Services
       </app-sidebar-nav-item>
@@ -33,7 +34,8 @@
         Clients
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-item routerLink="tables"
+      <app-sidebar-nav-item *ngIf="showTablesItem()"
+                            routerLink="tables"
                             [queryParams]="{instance: instance.name}">
         Tables
       </app-sidebar-nav-item>

@@ -1,4 +1,4 @@
-package org.yamcs.web;
+package org.yamcs.security;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -8,9 +8,6 @@ import java.util.Base64;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.yamcs.security.User;
-import org.yamcs.security.UsernamePasswordToken;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -27,9 +24,9 @@ public class JWT {
     /**
      * Generates an unsigned JSON Web Token.
      */
-    public static String generateUnsignedToken(User user, long expirationMillis) {
+    public static String generateUnsignedToken(User user, int ttl) {
         String joseHeader = NO_ALG_HEADER;
-        String payload = generatePayload(user, expirationMillis);
+        String payload = generatePayload(user, ttl);
         return joseHeader + "." + payload + ".";
     }
 
@@ -37,26 +34,26 @@ public class JWT {
      * Generates a signed JSON Web Token appended with a signature which can be used to validate the JWT by whoever
      * knows the specified secret.
      */
-    public static String generateHS256Token(User user, String secret, long expirationMillis)
+    public static String generateHS256Token(User user, String secret, int ttl)
             throws InvalidKeyException, NoSuchAlgorithmException {
         String joseHeader = HS256_HEADER;
-        String payload = generatePayload(user, expirationMillis);
+        String payload = generatePayload(user, ttl);
         String unsignedToken = joseHeader + "." + payload; // Without trailing period
 
         String signature = hmacSha256(secret, unsignedToken);
         return joseHeader + "." + payload + "." + signature;
     }
 
-    private static String generatePayload(User user, long expirationMillis) {
+    private static String generatePayload(User user, int ttl) {
         JsonObject claims = new JsonObject();
 
         // Standard JWT props (aka Registered Claims)
         claims.addProperty("iss", "Yamcs"); // Issuer of the JWT token
         claims.addProperty("sub", user.getPrincipalName()); // Subject
-        long now = System.currentTimeMillis();
+        long now = System.currentTimeMillis() / 1000;
         claims.addProperty("iat", now); // Issued at (Time at issuer)
-        if (expirationMillis >= 0) {
-            claims.addProperty("exp", expirationMillis); // Expires at (Time at issuer)
+        if (ttl >= 0) {
+            claims.addProperty("exp", now + ttl); // Expires at (Time at issuer)
         }
 
         return Base64.getUrlEncoder().withoutPadding()
@@ -92,9 +89,15 @@ public class JWT {
     public static JsonObject decode(String token, String secret)
             throws JWTDecodeException, InvalidKeyException, NoSuchAlgorithmException {
         String parts[] = token.split("\\.");
+        if (parts.length < 2) {
+            throw new JWTDecodeException("JWT should consist of three sections separated by dots");
+        }
 
         String unsignedToken = parts[0] + "." + parts[1];
         byte[] expectedSignature = hmacSha256(secret, unsignedToken).getBytes();
+        if (parts.length < 3) {
+            throw new JWTDecodeException("Signature missing");
+        }
         byte[] actualSignature = parts[2].getBytes();
         if (!Arrays.equals(expectedSignature, actualSignature)) {
             throw new JWTDecodeException("Invalid signature");
@@ -126,13 +129,5 @@ public class JWT {
         public JWTDecodeException(String message, Throwable e) {
             super(message, e);
         }
-    }
-
-    public static void main(String... args) throws InvalidKeyException, NoSuchAlgorithmException, JWTDecodeException {
-        String swt = generateHS256Token(new User(new UsernamePasswordToken("user", "")), "secret", 2000L);
-        System.out.println("SWT: " + swt);
-
-        JsonObject obj = decode(swt, "secret");
-        System.out.println(obj);
     }
 }
