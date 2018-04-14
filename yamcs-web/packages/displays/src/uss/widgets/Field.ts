@@ -97,9 +97,10 @@ export class Field extends AbstractWidget {
     this.colSize = Math.floor(fm.width);
 
     // FIXME In firefox the colSize is not correctly calculated
-    // So force to 6 based on the most common font style.
-    if (this.colSize === 8 && fontFamily === 'Lucida Sans Typewriter') {
-      this.colSize = 6;
+    if (navigator.userAgent.indexOf('Firefox') > 0) {
+      if (fontFamily === 'Lucida Sans Typewriter') {
+        this.colSize = this.colSize - 2;
+      }
     }
 
     if (utils.hasChild(this.node, 'Unit') && utils.parseBooleanChild(this.node, 'ShowUnit')) {
