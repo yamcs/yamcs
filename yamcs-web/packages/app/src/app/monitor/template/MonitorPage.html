@@ -34,7 +34,11 @@
         Commands
       </app-sidebar-nav-item>
 
-      <ng-template monitor-sidebar-item-host></ng-template>
+      <app-sidebar-nav-item *ngFor="let extraItem of extraItems"
+                            [routerLink]="extraItem.routerLink"
+                            [queryParams]="{instance: instance.name}">
+        {{ extraItem.label }}
+      </app-sidebar-nav-item>
     </mat-nav-list>
   </mat-sidenav>
 

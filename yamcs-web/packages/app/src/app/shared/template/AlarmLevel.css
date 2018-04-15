@@ -6,27 +6,27 @@
 }
 
 .inlimits {
-  background: url('/assets/level-sprite.png') 0 0;
+  background: url('/_static/assets/level-sprite.png') 0 0;
 }
 
 .watch {
-  background: url('/assets/level-sprite.png') 0 -5px;
+  background: url('/_static/assets/level-sprite.png') 0 -5px;
 }
 
 .warning {
-  background: url('/assets/level-sprite.png') 0 -10px;
+  background: url('/_static/assets/level-sprite.png') 0 -10px;
 }
 
 .distress {
-  background: url('/assets/level-sprite.png') 0 -15px;
+  background: url('/_static/assets/level-sprite.png') 0 -15px;
 }
 
 .critical {
-  background: url('/assets/level-sprite.png') 0 -20px;
+  background: url('/_static/assets/level-sprite.png') 0 -20px;
 }
 
 .severe {
-  background: url('/assets/level-sprite.png') 0 -25px;
+  background: url('/_static/assets/level-sprite.png') 0 -25px;
 }
 
 .grayscale {

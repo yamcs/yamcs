@@ -16,6 +16,7 @@ import { ProfilePage } from './core/pages/ProfilePage';
 import { LoginPage } from './core/pages/LoginPage';
 import { AuthService } from './core/services/AuthService';
 import { ForbiddenPage } from './core/pages/ForbiddenPage';
+import { APP_CONFIG } from './core/config/AppConfig';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,11 @@ import { ForbiddenPage } from './core/pages/ForbiddenPage';
     {
       provide: APP_BASE_HREF,
       useValue: '/',
-    }
+    },
+    {
+      provide: APP_CONFIG,
+      useValue: {},
+    },
   ],
   exports: [
     BrowserModule,

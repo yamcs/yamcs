@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { EventsDataSource } from './EventsDataSource';
@@ -12,6 +12,7 @@ import { rowAnimation } from '../animations';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { debounceTime } from 'rxjs/operators';
 import { Option } from '../../shared/template/Select';
+import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../../core/config/AppConfig';
 
 const defaultInterval = 'PT1H';
 
@@ -55,6 +56,11 @@ export class EventsPage {
     { id: 'seqNumber', label: 'Sequence Number' },
   ];
 
+  /**
+   * Columns specific to a site
+   */
+  extraColumns: ExtraColumnInfo[] = [];
+
   displayedColumns = [
     'severity',
     'gentime',
@@ -90,9 +96,27 @@ export class EventsPage {
   constructor(
     private yamcs: YamcsService,
     private preferenceStore: PreferenceStore,
+    @Inject(APP_CONFIG) appConfig: AppConfig,
     title: Title,
   ) {
     title.setTitle('Events - Yamcs');
+
+    // Consider site-specific configuration
+    if (appConfig.events) {
+      const eventConfig = appConfig.events;
+      this.extraColumns = eventConfig.extraColumns || [];
+      for (const extraColumn of this.extraColumns) {
+        for (let i = 0; i < this.columns.length; i++) {
+          if (this.columns[i].id === extraColumn.after) {
+            this.columns.splice(i + 1, 0, extraColumn);
+            break;
+          }
+        }
+      }
+      if (eventConfig.displayedColumns) {
+        this.displayedColumns = eventConfig.displayedColumns;
+      }
+    }
 
     const cols = preferenceStore.getVisibleColumns('events');
     if (cols.length) {
