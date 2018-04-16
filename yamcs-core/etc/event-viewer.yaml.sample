@@ -3,9 +3,6 @@
 # File in .wav format is required.
 #soundfile: /absolute/path/to/sound/file.wav
 
-# Path to [ACES-EXCEL-DB] spreadsheet
-#aces.spreadsheet: /absolute/path/to/aces/spreadsheet.xls
-
 #linkstatus:
 #	- name: /yamcs/<host>/tm_realtime/linkStatus
 #	  okicon: upLinkActive.gif

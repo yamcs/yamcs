@@ -12,7 +12,6 @@ authModule:
     config:
         realm: org.yamcs.security.YamlRealm
 
-
 #ldap configuration of LdapRealm is specified above 
 ldaphost:        host
 userPath:        "ou=People,o=usoc"
@@ -21,6 +20,3 @@ systemPath:      "ou=System, ou=yamcs, ou=Applications, ou=Operation, ou=Columbu
 tmParameterPath: "ou=TM_PARAMETER, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
 tmPacketPath:    "ou=TM_PACKET, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
 tcPath:          "ou=TC, ou=yamcs, ou=Applications, ou=Operation, ou=Columbus,ou=Projects,o=usoc"
-
-# yaml file, if using YamlRealm
-yamlRealmFilename:  credentials.yaml

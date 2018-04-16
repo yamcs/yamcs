@@ -7,13 +7,7 @@ enabled: true
 defaultUser: admin
 
 authModule:
-    class: org.yamcs.security.DefaultAuthModule
-    #one of: LdapRealm, YamlRealm
-    config:
-        realm: org.yamcs.security.YamlRealm
-
-#maximum number of CIS sessions clients are allowed
-maxNoSessions: 10
-
-# yaml file, if using YamlRealm
-yamlRealmFilename:  credentials.yaml
+  class: org.yamcs.security.DefaultAuthModule
+  #one of: LdapRealm, YamlRealm
+  config:
+    realm: org.yamcs.security.YamlRealm

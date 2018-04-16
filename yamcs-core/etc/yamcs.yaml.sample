@@ -38,7 +38,7 @@ rdbConfig:
               blockSize: 64 #KB
               noBlockCache: true
               
-# Secret key unique to particular Yamcs installation.
+# Secret key unique to a particular Yamcs installation.
 # This is used to provide cryptographic signing.
 secretKey: "changeme"
 

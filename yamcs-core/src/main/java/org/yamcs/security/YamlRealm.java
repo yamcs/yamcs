@@ -22,12 +22,11 @@ public class YamlRealm implements Realm {
     private static final String STREAM_PRIVILEGES = "stream_privileges";
     private static final String CMD_HISTORY_PRIVILEGES = "cmd_history_privileges";
 
-    private String configFileName;
+    private boolean hashedPasswords;
 
     public YamlRealm() {
-        YConfiguration privConf = YConfiguration.getConfiguration("privileges");
-        configFileName = privConf.getString("yamlRealmFilename");
-        configFileName = configFileName.substring(0, configFileName.length() - 5); // remove the .yaml
+        YConfiguration yconf = YConfiguration.getConfiguration("credentials");
+        hashedPasswords = yconf.getBoolean("passwordsHash");
     }
 
     @Override
@@ -54,13 +53,10 @@ public class YamlRealm implements Realm {
             return false;
         }
 
-        YConfiguration conf = YConfiguration.getConfiguration(configFileName);
-        boolean hashedPassword = conf.getBoolean("passwordsHash");
-
         List<String> userDef = findUserDefinition(authToken.getUsername());
         if (userDef != null) {
             String password = userDef.get(0);
-            if (hashedPassword) {
+            if (hashedPasswords) {
                 try {
                     return PasswordHash.validatePassword(authToken.getPasswordS(), password);
                 } catch (Exception e) {
@@ -81,7 +77,7 @@ public class YamlRealm implements Realm {
     }
 
     private List<String> findUserDefinition(String username) {
-        YConfiguration conf = YConfiguration.getConfiguration(configFileName, true);
+        YConfiguration conf = YConfiguration.getConfiguration("credentials", true);
         try {
             return conf.getList("users", username);
         } catch (ConfigurationException e) {
@@ -93,7 +89,7 @@ public class YamlRealm implements Realm {
     public User loadUser(AuthenticationToken authToken) {
         User user = new User(authToken);
 
-        YConfiguration conf = YConfiguration.getConfiguration(configFileName, true);
+        YConfiguration conf = YConfiguration.getConfiguration("credentials", true);
         List<String> userDef = conf.getList("users", user.getPrincipalName());
 
         for (int i = 1; i < userDef.size(); i++) {
