@@ -30,7 +30,8 @@ public class ProcessorHelper {
             AcknowledgeInfo.Builder acknowledgeb = AcknowledgeInfo.newBuilder();
             String username = activeAlarm.usernameThatAcknowledged;
             if (username == null) {
-                username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : Privilege.getDefaultUser();
+                username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged"
+                        : Privilege.getInstance().getDefaultUser();
             }
 
             acknowledgeb.setAcknowledgedBy(username);

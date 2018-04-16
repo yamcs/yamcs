@@ -29,7 +29,7 @@ public class UserRestHandler extends RestHandler {
         UserInfo.Builder userInfob;
         if (user == null) {
             userInfob = buildFullyPrivilegedUser();
-            userInfob.setLogin(Privilege.getDefaultUser());
+            userInfob.setLogin(Privilege.getInstance().getDefaultUser());
         } else {
             userInfob = UserInfo.newBuilder();
             userInfob.setLogin(user.getPrincipalName());

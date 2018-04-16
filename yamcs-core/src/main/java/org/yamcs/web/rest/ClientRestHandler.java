@@ -91,7 +91,7 @@ public class ClientRestHandler extends RestHandler {
 
     private void verifyPermission(Processor processor, int clientId, AuthenticationToken authToken)
             throws HttpException {
-        String username = Privilege.getUsername(authToken);
+        String username = Privilege.getInstance().getUsername(authToken);
         if (Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
             // MayControlProcesor can do whatever they want
             return;

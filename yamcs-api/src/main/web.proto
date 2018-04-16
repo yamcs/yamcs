@@ -134,6 +134,10 @@ message ConnectionInfo {
   optional yamcsManagement.ProcessorInfo processor = 3;
 }
 
+message AuthInfo {
+  optional bool requireAuthentication = 1;
+}
+
 // Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework
 message AccessTokenResponse {
   optional string access_token = 1;

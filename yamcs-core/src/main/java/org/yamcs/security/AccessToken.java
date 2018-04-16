@@ -4,7 +4,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 import org.yamcs.security.JWT.JWTDecodeException;
-import org.yamcs.web.WebConfig;
 
 import com.google.gson.JsonObject;
 
@@ -15,9 +14,9 @@ public class AccessToken implements AuthenticationToken {
 
     private JsonObject claims;
 
-    public AccessToken(String jwt) throws JWTDecodeException {
+    public AccessToken(String jwt, String secretKey) throws JWTDecodeException {
         try {
-            this.claims = JWT.decode(jwt, WebConfig.getInstance().getJwtSecret());
+            this.claims = JWT.decode(jwt, secretKey);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new AssertionError(e);
         }

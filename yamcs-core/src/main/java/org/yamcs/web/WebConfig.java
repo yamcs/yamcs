@@ -33,10 +33,6 @@ public class WebConfig {
     // remote web applications.
     private CorsConfig corsConfig;
 
-    private boolean oauth2Enabled = false;
-    private String jwtSecret;
-    private int jwtTimeToLive;
-
     private List<GpbExtension> gpbExtensions = new ArrayList<>(0);
 
     // used for the websockets write buffer:
@@ -125,15 +121,6 @@ public class WebConfig {
                     HttpHeaderNames.AUTHORIZATION, HttpHeaderNames.ORIGIN);
             corsConfig = corsb.build();
         }
-        if (yconf.containsKey("webConfig", "oauth2")) {
-            Map<String, Object> oauth2Props = yconf.getMap("webConfig", "oauth2");
-            oauth2Enabled = YConfiguration.getBoolean(oauth2Props, "enabled");
-            jwtSecret = YConfiguration.getString(oauth2Props, "secret");
-            jwtTimeToLive = YConfiguration.getInt(oauth2Props, "ttl");
-            if (oauth2Enabled && "changeme".equals(jwtSecret)) {
-                log.warn("OAuth2 server secret in yamcs.yaml has not been changed from its default value");
-            }
-        }
         if (yconf.containsKey("webConfig", "webSocket")) {
             Map<String, Object> ws = yconf.getMap("webConfig", "webSocket");
             if (ws.containsKey("writeBufferWaterMark")) {
@@ -182,18 +169,6 @@ public class WebConfig {
 
     public CorsConfig getCorsConfig() {
         return corsConfig;
-    }
-
-    public boolean isOAuth2Enabled() {
-        return oauth2Enabled;
-    }
-
-    public String getJwtSecret() {
-        return jwtSecret;
-    }
-
-    public int getJwtTimeToLive() {
-        return jwtTimeToLive;
     }
 
     public int getWebSocketConnectionCloseNumDroppedMsg() {

@@ -17,6 +17,7 @@ const TOKEN_CHECK_INTERVAL = 10000;
 @Injectable()
 export class AuthService implements OnDestroy {
 
+  public authRequired$ = new BehaviorSubject<boolean | null>(null);
   public userInfo$ = new BehaviorSubject<UserInfo | null>(null);
 
   // Indicates when the access_token is due to expire
@@ -41,6 +42,10 @@ export class AuthService implements OnDestroy {
         }
       }
     }, TOKEN_CHECK_INTERVAL);
+
+    yamcsService.yamcsClient.getAuthInfo().then(authInfo => {
+      this.authRequired$.next(authInfo.requireAuthentication);
+    });
   }
 
   isAccessTokenAvailable() {

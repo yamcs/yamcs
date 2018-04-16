@@ -22,6 +22,7 @@ import com.google.common.util.concurrent.AbstractService;
 
 /**
  * Responsible for parsing and tc packet composition.
+ * 
  * @author nm
  *
  */
@@ -30,15 +31,17 @@ public class CommandingManager extends AbstractService {
     private Processor processor;
     private CommandQueueManager commandQueueManager;
     final MetaCommandProcessor metaCommandProcessor;
-    
+
     /**
      * Keeps a reference to the channel and creates the queue manager
+     * 
      * @param proc
      */
     public CommandingManager(Processor proc) {
         this.processor = proc;
         this.commandQueueManager = new CommandQueueManager(this);
-        ManagementService.getInstance().registerCommandQueueManager(proc.getInstance(), proc.getName(), commandQueueManager);
+        ManagementService.getInstance().registerCommandQueueManager(proc.getInstance(), proc.getName(),
+                commandQueueManager);
         metaCommandProcessor = new MetaCommandProcessor(proc.getProcessorData());
     }
 
@@ -46,35 +49,33 @@ public class CommandingManager extends AbstractService {
         return commandQueueManager;
     }
 
-
     /**
-     * pc is a command whose source is included.
-     * parse the source populate the binary part and the definition.
+     * pc is a command whose source is included. parse the source populate the binary part and the definition.
      */
-    public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList, String origin, int seq, AuthenticationToken authToken) throws ErrorInCommand, NoPermissionException, YamcsException {
+    public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList, String origin,
+            int seq, AuthenticationToken authToken) throws ErrorInCommand, NoPermissionException, YamcsException {
         log.debug("building command {} with arguments {}", mc.getName(), argAssignmentList);
 
-        if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.Type.TC, mc.getName())) {
+        if (!Privilege.getInstance().hasPrivilege1(authToken, Privilege.Type.TC, mc.getName())) {
             throw new NoPermissionException("User has no privilege on command " + mc.getName());
         }
-        if(origin == null)
+        if (origin == null)
             origin = "anonymous";
 
-        
         CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, argAssignmentList);
 
-        CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin).setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();
+        CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin)
+                .setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();
         PreparedCommand pc = new PreparedCommand(cmdId);
         pc.setMetaCommand(mc);
         pc.setBinary(cbr.getCmdPacket());
         pc.setArgAssignment(cbr.getArgs());
-        
-        
+
         String username;
-        if (authToken !=null && authToken.getPrincipal() != null) {
+        if (authToken != null && authToken.getPrincipal() != null) {
             username = authToken.getPrincipal().toString();
         } else {
-            username = Privilege.getDefaultUser();
+            username = Privilege.getInstance().getDefaultUser();
         }
         pc.setUsername(username);
 
@@ -83,15 +84,18 @@ public class CommandingManager extends AbstractService {
 
     /**
      * @return the queue that the command was sent to
-     * @throws InvalidAuthenticationToken 
+     * @throws InvalidAuthenticationToken
      */
-    public CommandQueue sendCommand(AuthenticationToken authToken, PreparedCommand pc) throws InvalidAuthenticationToken {
+    public CommandQueue sendCommand(AuthenticationToken authToken, PreparedCommand pc)
+            throws InvalidAuthenticationToken {
         log.debug("sendCommand commandSource={}", pc.getSource());
         return commandQueueManager.addCommand(authToken, pc);
     }
 
-    public void addToCommandHistory(CommandId commandId, String key, String value, AuthenticationToken authToken) throws NoPermissionException {
-        if(!Privilege.getInstance().hasPrivilege1(authToken, Privilege.Type.SYSTEM, Privilege.SystemPrivilege.MayModifyCommandHistory.name())) {
+    public void addToCommandHistory(CommandId commandId, String key, String value, AuthenticationToken authToken)
+            throws NoPermissionException {
+        if (!Privilege.getInstance().hasPrivilege1(authToken, Privilege.Type.SYSTEM,
+                Privilege.SystemPrivilege.MayModifyCommandHistory.name())) {
             log.warn("Throwing InsufficientPrivileges for lack of COMMANDING privilege for user {}", authToken);
             throw new NoPermissionException("User has no privilege to update command history ");
         }
@@ -112,7 +116,8 @@ public class CommandingManager extends AbstractService {
 
     @Override
     protected void doStop() {
-        ManagementService.getInstance().unregisterCommandQueueManager(processor.getInstance(), processor.getName(), commandQueueManager);
+        ManagementService.getInstance().unregisterCommandQueueManager(processor.getInstance(), processor.getName(),
+                commandQueueManager);
         commandQueueManager.stopAsync();
         notifyStopped();
     }

@@ -76,6 +76,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private static final String STATIC_PATH = "_static";
     private static final String API_PATH = "api";
+    private static final String AUTH_PATH = "auth";
 
     public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey
             .valueOf("chunkedTransferStats");
@@ -86,7 +87,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static final Object CONTENT_FINISHED_EVENT = new Object();
     private static StaticFileHandler fileRequestHandler = new StaticFileHandler();
     private Router apiRouter;
-    private OAuth2Handler oauth2Handler = new OAuth2Handler();
+    private AuthHandler authHandler = new AuthHandler();
     private boolean contentExpected = false;
 
     private static final FullHttpResponse BAD_REQUEST = new DefaultFullHttpResponse(
@@ -192,16 +193,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         // Decode URI, to correctly ignore query strings in path handling
         QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
-
-        if (webConfig.isOAuth2Enabled() && qsDecoder.path().equals("/api/token")) {
-            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
-            ctx.pipeline().addLast(new HttpObjectAggregator(65536));
-            ctx.pipeline().addLast(oauth2Handler);
-            ctx.fireChannelRead(req);
-            contentExpected = true;
-            return;
-        }
-
         String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
         switch (path[1]) {
         case STATIC_PATH:
@@ -210,6 +201,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
             fileRequestHandler.handleStaticFileRequest(ctx, req, path[2]);
+            return;
+        case AUTH_PATH:
+            ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
+            ctx.pipeline().addLast(new HttpObjectAggregator(65536));
+            ctx.pipeline().addLast(authHandler);
+            ctx.fireChannelRead(req);
+            contentExpected = true;
             return;
         case API_PATH:
             verifyAuthenticationToken(ctx, req);

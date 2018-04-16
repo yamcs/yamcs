@@ -37,6 +37,10 @@ rdbConfig:
           tableFormatConfig:
               blockSize: 64 #KB
               noBlockCache: true
+              
+# Secret key unique to particular Yamcs installation.
+# This is used to provide cryptographic signing.
+secretKey: "changeme"
 
 webConfig:
    #where to find the web directory with ccs, js etc
@@ -52,18 +56,6 @@ webConfig:
    # Indicates whether zero-copy can be used to optimize non-ssl static file serving
    # Leave this true unless you encounter a specific deployment issue (e.g. some docker hosts)
    zeroCopyEnabled: true
-
-   # OAuth2 properties for token-based API access
-   oauth2:
-     enabled: true
-
-     # How long tokens last (in seconds)
-     ttl: 500
-
-     # Server secret used to validate integrity of incoming JWT tokens.
-     # Do not expose this secret to clients. Clients should in general not
-     # need to validate the issued token.
-     secret: "changeme"
 
    # Configure Cross—origin Resource Sharing for the REST API.
    # This facilitates use of the API in remote ajax applications.

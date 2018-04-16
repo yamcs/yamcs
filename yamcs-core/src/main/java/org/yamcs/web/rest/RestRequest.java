@@ -158,7 +158,7 @@ public class RestRequest {
      * authenticated.
      */
     public String getUsername() {
-        return Privilege.getUsername(token);
+        return Privilege.getInstance().getUsername(token);
     }
 
     public AuthenticationToken getAuthToken() {

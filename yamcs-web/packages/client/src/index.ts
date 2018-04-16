@@ -56,6 +56,7 @@ export {
 
 export {
   AccessTokenResponse,
+  AuthInfo,
   ClientInfo,
   ClientSubscriptionResponse,
   Column,

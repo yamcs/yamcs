@@ -1,5 +1,8 @@
 package org.yamcs.web;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -9,7 +12,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Web.AccessTokenResponse;
+import org.yamcs.protobuf.Web.AuthInfo;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.DefaultAuthModule;
@@ -24,7 +29,9 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
@@ -34,30 +41,64 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
  * Adds servers-side support for OAuth 2 authorization flows for obtaining limited access to API functionality. The
  * resource server is assumed to be the same server as the authentication server.
  * <p>
- * Currently only these flows are supported:
+ * Currently only one flow is supported:
  * <dl>
  * <dt>Resource Owner Password Credentials</dt>
  * <dd>User credentials are directly exchanged for access tokens.</dd>
  * </dl>
  */
 @Sharable
-public class OAuth2Handler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static final Logger log = LoggerFactory.getLogger(OAuth2Handler.class);
+    private static final Logger log = LoggerFactory.getLogger(AuthHandler.class);
 
-    private WebConfig webConfig;
     private Realm realm;
+    private String secretKey;
 
-    public OAuth2Handler() {
-        webConfig = WebConfig.getInstance();
+    public AuthHandler() {
         AuthModule authModule = Privilege.getInstance().getAuthModule();
         if (authModule instanceof DefaultAuthModule) { // hmmm...
             realm = ((DefaultAuthModule) authModule).getRealm();
         }
+
+        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+        this.secretKey = yconf.getString("secretKey");
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+        QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
+        switch (qsDecoder.path()) {
+        case "/auth":
+            handleAuthInfoRequest(ctx, req);
+            break;
+        case "/auth/token":
+            handleTokenRequest(ctx, req);
+            break;
+        default:
+            HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
+        }
+    }
+
+    /**
+     * Provides general auth information. This path is not secured because it's primary intended use is exactly to
+     * determine whether Yamcs is secured or not (e.g. in order to detect if a login screen should be shown to the
+     * user).
+     */
+    private void handleAuthInfoRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+        if (req.method() == HttpMethod.GET) {
+            AuthInfo.Builder responseb = AuthInfo.newBuilder();
+            responseb.setRequireAuthentication(Privilege.getInstance().isEnabled());
+            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, responseb.build(), true);
+        } else {
+            HttpRequestHandler.sendPlainTextError(ctx, req, METHOD_NOT_ALLOWED);
+        }
+    }
+
+    /**
+     * Issues time-limited access tokens based on provided password credentials.
+     */
+    private void handleTokenRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         AuthenticationToken authToken = null;
         if ("application/x-www-form-urlencoded".equals(req.headers().get("Content-Type"))) {
             HttpPostRequestDecoder formDecoder = new HttpPostRequestDecoder(req);
@@ -120,12 +161,13 @@ public class OAuth2Handler extends SimpleChannelInboundHandler<FullHttpRequest> 
         }
 
         try {
-            String jwt = JWT.generateHS256Token(user, webConfig.getJwtSecret(), webConfig.getJwtTimeToLive());
+            int ttl = 500; // in seconds
+            String jwt = JWT.generateHS256Token(user, secretKey, ttl);
 
             AccessTokenResponse.Builder responseb = AccessTokenResponse.newBuilder();
             responseb.setTokenType("bearer");
             responseb.setAccessToken(jwt);
-            responseb.setExpiresIn(webConfig.getJwtTimeToLive());
+            responseb.setExpiresIn(ttl);
             responseb.setUser(UserRestHandler.toUserInfo(user, false));
             HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, responseb.build(), true);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {

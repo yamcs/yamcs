@@ -4,6 +4,7 @@ import {
 } from './types/internal';
 
 import {
+  AuthInfo,
   GeneralInfo,
   Instance,
   Service,
@@ -20,6 +21,7 @@ export default class YamcsClient {
 
   readonly baseUrl = '';
   readonly apiUrl = `${this.baseUrl}/api`;
+  readonly authUrl = `${this.baseUrl}/auth`;
   readonly staticUrl = `${this.baseUrl}/_static`;
 
   public accessToken?: string;
@@ -28,6 +30,15 @@ export default class YamcsClient {
 
   createInstanceClient(instance: string) {
     return new InstanceClient(instance, this);
+  }
+
+  /**
+   * Returns general auth information. This request
+   * does not itself require authenticated access.
+   */
+  async getAuthInfo() {
+    const response = await this.doFetch(`${this.authUrl}`);
+    return await response.json() as AuthInfo;
   }
 
   /**
@@ -43,7 +54,7 @@ export default class YamcsClient {
     body += `&username=${encodeURIComponent(username)}`;
     body += `&password=${encodeURIComponent(password)}`;
 
-    const response = await fetch(`${this.apiUrl}/token`, {
+    const response = await fetch(`${this.authUrl}/token`, {
       method: 'POST',
       headers,
       body,

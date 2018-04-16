@@ -1,6 +1,10 @@
 import { CommandId, Value } from './monitoring';
 import { Observable } from 'rxjs/Observable';
 
+export interface AuthInfo {
+  requireAuthentication: boolean;
+}
+
 export interface AccessTokenResponse {
   access_token: string;
   token_type: string;

@@ -22,7 +22,6 @@ import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.security.JWT.JWTDecodeException;
 import org.yamcs.security.Privilege.Type;
 import org.yamcs.web.BadRequestException;
-import org.yamcs.web.WebConfig;
 import org.yamcs.web.rest.RestRequest;
 
 import io.netty.buffer.ByteBuf;
@@ -59,17 +58,18 @@ public class DefaultAuthModule implements AuthModule {
 
     private final Realm realm;
     private String realmName;
+    private String secretKey;
     // time to cache a user entry
     static final int PRIV_CACHE_TIME = 30 * 1000;
     // time to cache a certificate to username mapping
     private final ConcurrentHashMap<AuthenticationToken, Future<User>> cache = new ConcurrentHashMap<>();
 
-    private WebConfig webConfig;
-
     public DefaultAuthModule(Map<String, Object> config) {
         String realmClass = YConfiguration.getString(config, "realm");
         realm = loadRealm(realmClass);
-        webConfig = WebConfig.getInstance();
+
+        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+        secretKey = yconf.getString("secretKey");
     }
 
     public Realm getRealm() {
@@ -78,15 +78,14 @@ public class DefaultAuthModule implements AuthModule {
 
     private Realm loadRealm(String realmClass) throws ConfigurationException {
         // load the specified class;
-        Realm r;
+        Realm realm;
         try {
-            r = (Realm) Realm.class.getClassLoader()
-                    .loadClass(realmClass).newInstance();
-            realmName = r.getClass().getSimpleName();
+            realm = (Realm) Realm.class.getClassLoader().loadClass(realmClass).newInstance();
+            realmName = realm.getClass().getSimpleName();
         } catch (Exception e) {
             throw new ConfigurationException("Unable to load the realm class: " + realmClass, e);
         }
-        return r;
+        return realm;
     }
 
     /**
@@ -108,7 +107,7 @@ public class DefaultAuthModule implements AuthModule {
             String authorizationHeader = req.headers().get(HttpHeaderNames.AUTHORIZATION);
             if (authorizationHeader.startsWith(AUTH_TYPE_BASIC)) { // Exact case only
                 return handleBasicAuth(ctx, req);
-            } else if (webConfig.isOAuth2Enabled() && authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
+            } else if (authorizationHeader.startsWith(AUTH_TYPE_BEARER)) {
                 return handleBearerAuth(ctx, req);
             } else {
                 return completedExceptionally(
@@ -175,7 +174,7 @@ public class DefaultAuthModule implements AuthModule {
     private CompletableFuture<AuthenticationToken> handleAccessToken(ChannelHandlerContext ctx, HttpRequest req,
             String jwt) {
         try {
-            AuthenticationToken token = new AccessToken(jwt);
+            AuthenticationToken token = new AccessToken(jwt, secretKey);
             if (!realm.authenticate(token)) {
                 sendUnauthorized(ctx, req, "Could not authenticate token against realm");
                 return completedExceptionally(new AuthenticationPendingException());
@@ -284,10 +283,11 @@ public class DefaultAuthModule implements AuthModule {
             buf = Unpooled.copiedBuffer(HttpResponseStatus.UNAUTHORIZED.toString() + "\r\n", CharsetUtil.UTF_8);
         }
         HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.UNAUTHORIZED, buf);
-        res.headers().set(HttpHeaderNames.WWW_AUTHENTICATE, "Basic realm=\"" + Privilege.getAuthModuleName() + "\"");
+        res.headers().set(HttpHeaderNames.WWW_AUTHENTICATE,
+                "Basic realm=\"" + Privilege.getInstance().getAuthModuleName() + "\"");
 
         log.warn("{} {} {} [realm=\"{}\"]: {}", request.method(), request.uri(), res.status().code(),
-                Privilege.getAuthModuleName(), reason);
+                Privilege.getInstance().getAuthModuleName(), reason);
         return ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
     }
 }

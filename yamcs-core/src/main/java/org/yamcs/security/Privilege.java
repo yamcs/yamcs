@@ -3,7 +3,6 @@ package org.yamcs.security;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
@@ -32,6 +31,16 @@ import io.netty.handler.codec.http.HttpRequest;
  */
 public class Privilege {
 
+    public enum Type {
+        SYSTEM,
+        TC,
+        TM_PACKET,
+        TM_PARAMETER,
+        TM_PARAMETER_SET,
+        STREAM,
+        CMD_HISTORY
+    }
+
     public enum SystemPrivilege {
         MayControlProcessor,
         MayModifyCommandHistory,
@@ -46,25 +55,18 @@ public class Privilege {
         MayReadTables
     }
 
-    private static String authModuleName;
-    public static boolean usePrivileges = true;
-    private static String defaultUser; // Only if !usePrivileges. Could eventually replace usePrivileges i guess
+    private static final Logger log = LoggerFactory.getLogger(Privilege.class);
+    private static Privilege instance;
 
-    private static AuthModule authModule;
-    static final Hashtable<String, String> contextEnv = new Hashtable<>();
+    private String authModuleName;
+    private boolean usePrivileges = true;
+    private String defaultUser; // Only if !usePrivileges. Could eventually replace usePrivileges i guess
 
-    public static int maxNoSessions;
-    public static Privilege instance;
-    static Logger log = LoggerFactory.getLogger(Privilege.class);
+    private AuthModule authModule;
 
-    public enum Type {
-        SYSTEM, TC, TM_PACKET, TM_PARAMETER, TM_PARAMETER_SET, STREAM, CMD_HISTORY
-    }
+    private int maxNoSessions;
 
-    /**
-     * Load configuration once only.
-     */
-    static {
+    private Privilege() {
         defaultUser = "admin";
         maxNoSessions = 10;
         usePrivileges = false;
@@ -79,7 +81,6 @@ public class Privilege {
                 if (usePrivileges) {
                     authModule = YObjectLoader.loadObject(conf.getMap("authModule"));
                     authModuleName = authModule.getClass().getName();
-
                 } else {
                     if (conf.containsKey("defaultUser")) {
                         String defaultUserString = conf.getString("defaultUser");
@@ -110,21 +111,10 @@ public class Privilege {
         return authModule.getRoles(authenticationToken);
     }
 
-    /**
-     * loads the configuration of the privilege. If privileges.enabled is not set to false in the privileges.properties,
-     * then load the privileges from the LDAP.
-     *
-     * @throws ConfigurationException
-     *             when the privileges.enabled is not set to false and the ldap parammeters are not present
-     */
-    protected Privilege() throws ConfigurationException {
-    }
-
     public static synchronized Privilege getInstance() {
-        if (instance == null)
-            instance = new Privilege() {
-            };
-
+        if (instance == null) {
+            instance = new Privilege();
+        }
         return instance;
     }
 
@@ -253,7 +243,7 @@ public class Privilege {
         }
     }
 
-    public static String getAuthModuleName() {
+    public String getAuthModuleName() {
         return authModuleName;
     }
 
@@ -262,7 +252,7 @@ public class Privilege {
      * 
      * @return default username
      */
-    public static String getDefaultUser() {
+    public String getDefaultUser() {
         return defaultUser;
     }
 
@@ -363,7 +353,7 @@ public class Privilege {
         return maxNoSessions;
     }
 
-    public static String getUsername(AuthenticationToken authToken) {
+    public String getUsername(AuthenticationToken authToken) {
         if (!usePrivileges) {
             return defaultUser;
         }

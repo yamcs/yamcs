@@ -227,7 +227,7 @@ public class ProcessorRestHandler extends RestHandler {
 
     private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds,
             AuthenticationToken authToken) throws ForbiddenException {
-        String username = Privilege.getUsername(authToken);
+        String username = Privilege.getInstance().getUsername(authToken);
         if (!Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
             if (persistent) {
                 log.warn("User {} is not allowed to create persistent processors", username);
