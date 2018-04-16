@@ -7,7 +7,7 @@ import org.yamcs.protobuf.Rest.EditLinkRequest;
 import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;

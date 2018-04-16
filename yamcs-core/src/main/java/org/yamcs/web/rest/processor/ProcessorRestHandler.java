@@ -26,7 +26,7 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -228,7 +228,7 @@ public class ProcessorRestHandler extends RestHandler {
     private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds,
             AuthenticationToken authToken) throws ForbiddenException {
         String username = Privilege.getInstance().getUsername(authToken);
-        if (!Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
+        if (!Privilege.getInstance().hasPrivilege1(authToken, SystemPrivilege.MayControlProcessor)) {
             if (persistent) {
                 log.warn("User {} is not allowed to create persistent processors", username);
                 throw new ForbiddenException("No permission to create persistent processors");

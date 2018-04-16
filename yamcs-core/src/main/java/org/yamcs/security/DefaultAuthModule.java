@@ -20,7 +20,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.security.JWT.JWTDecodeException;
-import org.yamcs.security.Privilege.Type;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.rest.RestRequest;
 
@@ -254,7 +253,7 @@ public class DefaultAuthModule implements AuthModule {
      * @return true if the privilege is known and the current user has it.
      */
     @Override
-    public boolean hasPrivilege(final AuthenticationToken authenticationToken, Type type, String privilege) {
+    public boolean hasPrivilege(final AuthenticationToken authenticationToken, PrivilegeType type, String privilege) {
         User user = getUser(authenticationToken);
         if (user == null) {
             return false;

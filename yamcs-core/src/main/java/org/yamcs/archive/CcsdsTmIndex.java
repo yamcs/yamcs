@@ -19,7 +19,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.LoggingUtils;
@@ -43,17 +43,16 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Completeness index of CCSDS telemetry. There is one rocksdb table:
+ * 
+ * <pre>
  * key: apid[2bytes], start time[8 bytes], start seq count[2 bytes]
  * value: end time[8bytes], end seq count[2 bytes], num packets [4 bytes]
+ * </pre>
  * 
- * 
- * FIXME: because the sequence count wraps around, there is a bug in case packets with the same
- * timestamp and wrapped around sequence counts are received
- * - see testApidIndexSameTimeAndWraparound for failing test.
- * the old TokyoCabinet based indexer didn't use the sequence count as part of the key but allowed multiple records with
- * the same key.
- * To replicate this in RocksDB, one would need
- * to have the RocksDB entries composed of all records with the same startime
+ * FIXME: because the sequence count wraps around, there is a bug in case packets with the same timestamp and wrapped
+ * around sequence counts are received - see testApidIndexSameTimeAndWraparound for failing test. the old TokyoCabinet
+ * based indexer didn't use the sequence count as part of the key but allowed multiple records with the same key. To
+ * replicate this in RocksDB, one would need to have the RocksDB entries composed of all records with the same startime
  * 
  * @author nm
  *
@@ -197,13 +196,14 @@ public class CcsdsTmIndex implements TmIndex {
     }
 
     /**
-     * compare the packet with the record.
-     * returns:
-     * <-1 packet fits at the right and is not attached
-     * -1 packet fits at the right and is attached
-     * 0 packet fits inside
-     * 1 packet fits at the left and is attached
-     * >1 packet fits at the right and is not attached
+     * compare the packet with the record. returns:
+     * <ul>
+     * <li>&lt;-1 packet fits at the right and is not attached
+     * <li>-1 packet fits at the right and is attached
+     * <li>0 packet fits inside
+     * <li>1 packet fits at the left and is attached
+     * <li>&gt;1 packet fits at the right and is not attached
+     * </ul>
      */
     private static int compare(short apid, long time, short seq, Record ar) {
         short arapid = ar.apid();
@@ -570,7 +570,7 @@ public class CcsdsTmIndex implements TmIndex {
             log.info("{} Rebuilding ccsds tm index", yamcsInstance);
         }
 
-        CompletableFuture<Void> cf = new CompletableFuture<Void>();
+        CompletableFuture<Void> cf = new CompletableFuture<>();
 
         try {
             deleteRecords(interval);

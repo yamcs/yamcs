@@ -8,7 +8,7 @@ import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;

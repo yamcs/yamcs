@@ -3,8 +3,8 @@ package org.yamcs.web.rest.mdb;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Rest.ListCommandInfoResponse;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
-import org.yamcs.security.Privilege.Type;
+import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -63,7 +63,7 @@ public class MDBCommandRestHandler extends RestHandler {
 
             Privilege privilege = Privilege.getInstance();
             for (MetaCommand cmd : mdb.getMetaCommands()) {
-                if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TC, cmd.getQualifiedName()))
+                if (!privilege.hasPrivilege1(req.getAuthToken(), PrivilegeType.TC, cmd.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(cmd))
                     continue;

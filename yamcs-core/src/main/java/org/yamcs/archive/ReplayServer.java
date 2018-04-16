@@ -19,6 +19,7 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.PrivilegeType;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -89,7 +90,7 @@ public class ReplayServer extends AbstractService {
             if (replayRequest.hasParameterRequest()) {
                 List<NamedObjectId> invalidParameters = new ArrayList<>();
                 for (NamedObjectId noi : replayRequest.getParameterRequest().getNameFilterList()) {
-                    if (!priv.hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, noi.getName())) {
+                    if (!priv.hasPrivilege(authToken, PrivilegeType.TM_PARAMETER, noi.getName())) {
                         invalidParameters.add(noi);
                     }
                 }

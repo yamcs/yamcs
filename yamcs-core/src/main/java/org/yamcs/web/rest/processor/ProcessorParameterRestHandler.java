@@ -28,6 +28,7 @@ import org.yamcs.protobuf.Rest.EditAlarmRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.PrivilegeType;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -120,7 +121,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         for (SetParameterValueRequest r : request.getRequestList()) {
             try {
                 String parameterName = prm.getParameter(r.getId()).getQualifiedName();
-                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER_SET,
+                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER_SET,
                         parameterName)) {
                     throw new ForbiddenException(
                             "User " + req.getAuthToken() + " has no 'set' permission for parameter "
@@ -155,7 +156,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
 
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER,
+        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
                 p.getQualifiedName())) {
             log.warn("Parameter Info for {} not authorized for token {}", p.getQualifiedName(), req.getAuthToken());
             throw new BadRequestException("Invalid parameter name specified");

@@ -2,7 +2,7 @@ package org.yamcs.web.rest.mdb;
 
 import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Rest.ListContainerInfoResponse;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -60,8 +60,9 @@ public class MDBContainerRestHandler extends RestHandler {
             String namespace = req.getQueryParameter("namespace");
 
             for (SequenceContainer c : mdb.getSequenceContainers()) {
-                if (matcher != null && !matcher.matches(c))
+                if (matcher != null && !matcher.matches(c)) {
                     continue;
+                }
 
                 String alias = c.getAlias(namespace);
                 if (alias != null || (recurse && c.getQualifiedName().startsWith(namespace))) {
@@ -71,8 +72,9 @@ public class MDBContainerRestHandler extends RestHandler {
             }
         } else { // List all
             for (SequenceContainer c : mdb.getSequenceContainers()) {
-                if (matcher != null && !matcher.matches(c))
+                if (matcher != null && !matcher.matches(c)) {
                     continue;
+                }
                 responseb.addContainer(
                         XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, addLinks));
             }

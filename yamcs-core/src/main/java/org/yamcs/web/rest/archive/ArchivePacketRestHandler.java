@@ -12,6 +12,7 @@ import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.protobuf.Rest.ListPacketsResponse;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.PrivilegeType;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
@@ -43,54 +44,56 @@ public class ArchivePacketRestHandler extends RestHandler {
                 nameSet.add(name.trim());
             }
         }
-        if(!nameSet.isEmpty()) {
-            verifyAuthorization(req.getAuthToken(), Privilege.Type.TM_PACKET, nameSet);
-        } else if(Privilege.getInstance().isEnabled()) {
+        if (!nameSet.isEmpty()) {
+            verifyAuthorization(req.getAuthToken(), PrivilegeType.TM_PACKET, nameSet);
+        } else if (Privilege.getInstance().isEnabled()) {
             nameSet.addAll(Privilege.getInstance().getTmPacketNames(instance, req.getAuthToken()));
         }
-        
+
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("gentime"));
         }
         if (req.hasRouteParam("gentime")) {
-            sqlb.where("gentime = ?",req.getDateRouteParam("gentime"));
+            sqlb.where("gentime = ?", req.getDateRouteParam("gentime"));
         }
         if (!nameSet.isEmpty()) {
-            sqlb.whereColIn("pname",nameSet);
+            sqlb.whereColIn("pname", nameSet);
         }
         sqlb.descend(req.asksDescending(true));
 
         if (req.asksFor(MediaType.OCTET_STREAM)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
-            RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
-                @Override
-                public void processTuple(Stream stream, Tuple tuple) {
-                    TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
-                    buf.writeBytes(pdata.getPacket().toByteArray());
-                }
+            RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(),
+                    new RestStreamSubscriber(pos, limit) {
+                        @Override
+                        public void processTuple(Stream stream, Tuple tuple) {
+                            TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
+                            buf.writeBytes(pdata.getPacket().toByteArray());
+                        }
 
-                @Override
-                public void streamClosed(Stream stream) {
-                    completeOK(req, MediaType.OCTET_STREAM, buf);
-                }
-            });
+                        @Override
+                        public void streamClosed(Stream stream) {
+                            completeOK(req, MediaType.OCTET_STREAM, buf);
+                        }
+                    });
         } else {
             ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
-            RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
+            RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(),
+                    new RestStreamSubscriber(pos, limit) {
 
-                @Override
-                public void processTuple(Stream stream, Tuple tuple) {
-                    TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
-                    responseb.addPacket(pdata);
-                }
+                        @Override
+                        public void processTuple(Stream stream, Tuple tuple) {
+                            TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
+                            responseb.addPacket(pdata);
+                        }
 
-                @Override
-                public void streamClosed(Stream stream) {
-                    completeOK(req, responseb.build());
-                }
-            });
+                        @Override
+                        public void streamClosed(Stream stream) {
+                            completeOK(req, responseb.build());
+                        }
+                    });
         }
     }
 
@@ -101,14 +104,14 @@ public class ArchivePacketRestHandler extends RestHandler {
         int seqNum = req.getIntegerRouteParam("seqnum");
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
-                .where("gentime = ?",  gentime).where("seqNum = ?", seqNum);
+                .where("gentime = ?", gentime).where("seqNum = ?", seqNum);
 
         List<TmPacketData> packets = new ArrayList<>();
         RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(0, 2) {
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
                 TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
-                if(authorised(req, Privilege.Type.TM_PACKET, pdata.getId().getName())) {
+                if (authorised(req, PrivilegeType.TM_PACKET, pdata.getId().getName())) {
                     packets.add(pdata);
                 }
             }

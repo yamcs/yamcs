@@ -31,37 +31,12 @@ import io.netty.handler.codec.http.HttpRequest;
  */
 public class Privilege {
 
-    public enum Type {
-        CMD_HISTORY,
-        STREAM,
-        SYSTEM,
-        TC,
-        TM_PACKET,
-        TM_PARAMETER,
-        TM_PARAMETER_SET,
-    }
-
-    public enum SystemPrivilege {
-        MayControlProcessor,
-        MayModifyCommandHistory,
-        MayControlCommandQueue,
-        MayCommand,
-        MayGetMissionDatabase,
-        MayControlArchiving,
-        MayControlLinks,
-        MayControlServices,
-        MayReadEvents,
-        MayWriteEvents,
-        MayWriteTables,
-        MayReadTables,
-    }
-
     private static final Logger log = LoggerFactory.getLogger(Privilege.class);
     private static Privilege instance;
 
     private String authModuleName;
-    private boolean usePrivileges = true;
-    private String defaultUser; // Only if !usePrivileges. Could eventually replace usePrivileges i guess
+    private boolean usePrivileges;
+    private String defaultUser; // Only if !usePrivileges
 
     private AuthModule authModule;
 
@@ -166,7 +141,7 @@ public class Privilege {
      * @return true if the privilege is known and the current user has it.
      * @throws InvalidAuthenticationToken
      */
-    public boolean hasPrivilege(final AuthenticationToken authenticationToken, Type type, String privilege)
+    public boolean hasPrivilege(final AuthenticationToken authenticationToken, PrivilegeType type, String privilege)
             throws InvalidAuthenticationToken {
         if (!usePrivileges) {
             return true;
@@ -195,7 +170,7 @@ public class Privilege {
      * @param privilege
      * @return true if the user has the system privilege
      */
-    public boolean hasPrivilege1(final AuthenticationToken authenticationToken, Type type, String privilege) {
+    public boolean hasPrivilege1(final AuthenticationToken authenticationToken, PrivilegeType type, String privilege) {
         if (!usePrivileges) {
             return true;
         }
@@ -226,7 +201,7 @@ public class Privilege {
             return true;
         }
 
-        return hasPrivilege(authenticationToken, Type.SYSTEM, privilege.name());
+        return hasPrivilege(authenticationToken, PrivilegeType.SYSTEM, privilege.name());
     }
 
     /**
@@ -277,7 +252,7 @@ public class Privilege {
         Collection<String> tl = getTmPacketNames(XtceDbFactory.getInstance(yamcsInstance), namespace);
         ArrayList<String> l = new ArrayList<>();
         for (String name : tl) {
-            if (!hasPrivilege(authToken, Privilege.Type.TM_PACKET, name)) {
+            if (!hasPrivilege(authToken, PrivilegeType.TM_PACKET, name)) {
                 continue;
             }
             l.add(name);
@@ -302,7 +277,7 @@ public class Privilege {
         XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         ArrayList<String> tl = new ArrayList<>();
         for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
-            if (hasPrivilege1(authToken, Privilege.Type.TM_PACKET, sc.getQualifiedName())) {
+            if (hasPrivilege1(authToken, PrivilegeType.TM_PACKET, sc.getQualifiedName())) {
                 tl.add(sc.getQualifiedName());
             }
         }
@@ -340,9 +315,9 @@ public class Privilege {
         XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         ArrayList<String> l = new ArrayList<>();
         for (String name : xtcedb.getParameterNames()) {
-            if (!hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, name)) {
+            if (!hasPrivilege(authToken, PrivilegeType.TM_PARAMETER, name)) {
                 log.trace("User '{}' does not have privilege '{}' for parameter '{}'", authToken,
-                        Privilege.Type.TM_PARAMETER, name);
+                        PrivilegeType.TM_PARAMETER, name);
                 continue;
             }
             l.add(xtcedb.getParameter(name).getAlias(namespace));

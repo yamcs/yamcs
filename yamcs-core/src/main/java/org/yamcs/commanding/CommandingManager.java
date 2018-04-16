@@ -13,6 +13,8 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtceproc.MetaCommandProcessor;
@@ -56,7 +58,7 @@ public class CommandingManager extends AbstractService {
             int seq, AuthenticationToken authToken) throws ErrorInCommand, NoPermissionException, YamcsException {
         log.debug("building command {} with arguments {}", mc.getName(), argAssignmentList);
 
-        if (!Privilege.getInstance().hasPrivilege1(authToken, Privilege.Type.TC, mc.getName())) {
+        if (!Privilege.getInstance().hasPrivilege1(authToken, PrivilegeType.TC, mc.getName())) {
             throw new NoPermissionException("User has no privilege on command " + mc.getName());
         }
         if (origin == null)
@@ -94,8 +96,8 @@ public class CommandingManager extends AbstractService {
 
     public void addToCommandHistory(CommandId commandId, String key, String value, AuthenticationToken authToken)
             throws NoPermissionException {
-        if (!Privilege.getInstance().hasPrivilege1(authToken, Privilege.Type.SYSTEM,
-                Privilege.SystemPrivilege.MayModifyCommandHistory.name())) {
+        if (!Privilege.getInstance().hasPrivilege1(authToken, PrivilegeType.SYSTEM,
+                SystemPrivilege.MayModifyCommandHistory.name())) {
             log.warn("Throwing InsufficientPrivileges for lack of COMMANDING privilege for user {}", authToken);
             throw new NoPermissionException("User has no privilege to update command history ");
         }

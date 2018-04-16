@@ -1,6 +1,7 @@
 package org.yamcs;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -13,7 +14,7 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.InvalidAuthenticationToken;
-import org.yamcs.security.Privilege.Type;
+import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpServer;
 
@@ -26,10 +27,10 @@ public class AuthModuleTest {
     public static void beforeClass() throws Exception {
         YConfiguration.setup("AuthModuleTest");
         new HttpServer().startServer();
-        
+
         YamcsServer.setupYamcsServer();
     }
-    
+
     @Test
     public void test1() throws Exception {
         YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9190, "AuthModuleTest");
@@ -41,16 +42,15 @@ public class AuthModuleTest {
         assertEquals(1, ys.getInstanceCount());
         assertEquals("AuthModuleTest", ys.getInstance(0).getName());
     }
-    
-    
+
     public static class MyAuthModule implements AuthModule {
 
         @Override
         public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) {
             CompletableFuture<AuthenticationToken> cf = new CompletableFuture<>();
-            
-            //simulate that it takes one second to login to an external server
-            new Thread(() ->{
+
+            // simulate that it takes one second to login to an external server
+            new Thread(() -> {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -58,7 +58,7 @@ public class AuthModuleTest {
                 }
                 cf.complete(new MyAuthToken());
             }).start();
-            
+
             return cf;
         }
 
@@ -73,7 +73,8 @@ public class AuthModuleTest {
         }
 
         @Override
-        public boolean hasPrivilege(AuthenticationToken authenticationToken, Type type, String privilege) throws InvalidAuthenticationToken {
+        public boolean hasPrivilege(AuthenticationToken authenticationToken, PrivilegeType type, String privilege)
+                throws InvalidAuthenticationToken {
             return false;
         }
 
@@ -81,15 +82,13 @@ public class AuthModuleTest {
         public User getUser(AuthenticationToken authToken) {
             return null;
         }
-        
     }
-    
+
     static class MyAuthToken implements AuthenticationToken {
 
         @Override
         public Object getPrincipal() {
             return "cuckoo";
         }
-        
     }
 }

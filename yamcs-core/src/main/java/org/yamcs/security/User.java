@@ -114,7 +114,7 @@ public class User {
         return (this.roles.contains(role));
     }
 
-    public boolean hasPrivilege(Privilege.Type type, String privilege) {
+    public boolean hasPrivilege(PrivilegeType type, String privilege) {
         Set<String> priv = null;
         if (privilege == null)
             return true;

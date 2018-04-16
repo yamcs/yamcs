@@ -15,7 +15,7 @@ import org.yamcs.protobuf.Rest.EditCommandQueueEntryRequest;
 import org.yamcs.protobuf.Rest.EditCommandQueueRequest;
 import org.yamcs.protobuf.Rest.ListCommandQueueEntries;
 import org.yamcs.protobuf.Rest.ListCommandQueuesResponse;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;

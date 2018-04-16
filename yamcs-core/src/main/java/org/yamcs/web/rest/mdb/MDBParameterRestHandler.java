@@ -12,8 +12,8 @@ import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse.GetParameterInfoResp
 import org.yamcs.protobuf.Rest.ListParameterInfoResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
-import org.yamcs.security.Privilege.Type;
+import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
@@ -45,7 +45,7 @@ public class MDBParameterRestHandler extends RestHandler {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
-            if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER,
+            if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
                     p.getQualifiedName())) {
                 log.warn("Not providing information about parameter {} because no privileges exists",
                         p.getQualifiedName());
@@ -118,7 +118,7 @@ public class MDBParameterRestHandler extends RestHandler {
 
             Privilege privilege = Privilege.getInstance();
             for (Parameter p : mdb.getParameters()) {
-                if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
+                if (!privilege.hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
                     continue;
                 }
                 if (matcher != null && !matcher.matches(p)) {

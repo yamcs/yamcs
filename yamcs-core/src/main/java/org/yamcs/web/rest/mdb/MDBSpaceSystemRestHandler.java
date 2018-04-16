@@ -2,7 +2,7 @@ package org.yamcs.web.rest.mdb;
 
 import org.yamcs.protobuf.Rest.ListSpaceSystemInfoResponse;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -28,7 +28,7 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
 
     private void getSpaceSystemInfo(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
-        
+
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
