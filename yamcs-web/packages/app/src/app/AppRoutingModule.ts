@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes, PreloadAllModules } from '@angular/router';
 import { NotFoundPage } from './core/pages/NotFoundPage';
 import { HomePage } from './core/pages/HomePage';
 import { ProfilePage } from './core/pages/ProfilePage';
@@ -65,7 +65,8 @@ const routes: Routes = [
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-      onSameUrlNavigation: 'reload'  // See MonitorPage.ts for documentation
+      onSameUrlNavigation: 'reload',  // See MonitorPage.ts for documentation
+      preloadingStrategy: PreloadAllModules,
     }),
   ],
   exports: [ RouterModule ],
