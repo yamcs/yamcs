@@ -21,9 +21,9 @@ export class ParameterSummaryTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     this.instance = yamcs.getInstance();
     const qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
-    this.parameter$ = yamcs.getInstanceClient().getParameter(qualifiedName);
+    this.parameter$ = yamcs.getInstanceClient()!.getParameter(qualifiedName);
 
-    yamcs.getInstanceClient().getParameterValueUpdates({
+    yamcs.getInstanceClient()!.getParameterValueUpdates({
       id: [{ name: qualifiedName }],
       abortOnInvalid: false,
       sendFromCache: true,

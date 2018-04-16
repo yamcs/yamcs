@@ -20,7 +20,7 @@ export class StreamPage {
   constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
     const name = route.snapshot.paramMap.get('name')!;
     title.setTitle(name + ' - Yamcs');
-    this.stream$ = yamcs.getInstanceClient().getStream(name);
+    this.stream$ = yamcs.getInstanceClient()!.getStream(name);
     this.instance = yamcs.getInstance();
   }
 }

@@ -1,6 +1,7 @@
 package org.yamcs.security;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Created by msc on 05/05/15.
@@ -11,12 +12,13 @@ public class UsernamePasswordToken implements AuthenticationToken {
     private char[] password;
 
     public UsernamePasswordToken(final String username, final char[] password) {
-        this.username = username;
+        this.username = Objects.requireNonNull(username);
         this.password = password;
     }
 
     public UsernamePasswordToken(final String username, final String password) {
-        this(username, password != null ? password.toCharArray() : null);
+        this.username = Objects.requireNonNull(username);
+        this.password = password != null ? password.toCharArray() : null;
     }
 
     public String getUsername() {
@@ -52,9 +54,7 @@ public class UsernamePasswordToken implements AuthenticationToken {
 
     @Override
     public String toString() {
-        String repr = (username != null ? username : "null");
-        repr += (password != null ? "/*****" : "/null");
-        return repr;
+        return username;
     }
 
     @Override

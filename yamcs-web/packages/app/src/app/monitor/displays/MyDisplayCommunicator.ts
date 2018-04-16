@@ -14,7 +14,7 @@ export class MyDisplayCommunicator implements DisplayCommunicator {
 
   triggerParameterAction(id: NamedObjectId) {
     // Convert alias to qualified named before navigation
-    this.yamcs.getInstanceClient().getParameterById(id).then(parameter => {
+    this.yamcs.getInstanceClient()!.getParameterById(id).then(parameter => {
       this.router.navigate(['/mdb/parameters', parameter.qualifiedName], {
         queryParams: { instance: this.yamcs.getInstance().name }
       });
@@ -34,7 +34,7 @@ export class MyDisplayCommunicator implements DisplayCommunicator {
   }
 
   retrieveXMLDisplayResource(path: string) {
-    const instance = this.yamcs.getInstanceClient().instance;
+    const instance = this.yamcs.getInstanceClient()!.instance;
     const displayPath = `${instance}/displays/${path}`;
     return this.yamcs.yamcsClient.getStaticXML(displayPath);
   }

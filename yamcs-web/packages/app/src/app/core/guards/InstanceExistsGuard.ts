@@ -13,7 +13,7 @@ export class InstanceExistsGuard implements CanActivate {
 
     return new Promise<boolean>((resolve, reject) => {
       this.yamcsService.yamcsClient.getInstance(instanceId).then(instance => {
-        this.yamcsService.switchInstance(instance)
+        this.yamcsService.selectInstance(instance)
           .then(() => resolve(true))
           .catch(() => resolve(false));
       }).catch(err => {

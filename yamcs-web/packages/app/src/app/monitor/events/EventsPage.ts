@@ -222,7 +222,7 @@ export class EventsPage {
       dlOptions.filter = this.textSearch;
     }
 
-    const instanceClient = this.yamcs.getInstanceClient();
+    const instanceClient = this.yamcs.getInstanceClient()!;
     this.dataSource.loadEvents(options).then(events => {
       const downloadURL = instanceClient.getEventsDownloadURL(dlOptions);
       this.downloadURL$.next(downloadURL);

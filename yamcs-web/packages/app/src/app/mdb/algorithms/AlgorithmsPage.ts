@@ -17,6 +17,6 @@ export class AlgorithmsPage {
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Algorithms - Yamcs');
     this.instance = yamcs.getInstance();
-    this.algorithms$ = yamcs.getInstanceClient().getAlgorithms();
+    this.algorithms$ = yamcs.getInstanceClient()!.getAlgorithms();
   }
 }

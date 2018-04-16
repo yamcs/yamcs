@@ -51,7 +51,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   private layout: Layout;
 
   constructor(private yamcs: YamcsService, router: Router) {
-    this.yamcs.getInstanceClient().getDisplayInfo().then(displayInfo => {
+    this.yamcs.getInstanceClient()!.getDisplayInfo().then(displayInfo => {
       this.displayInfo$.next(displayInfo);
     });
     this.displayCommunicator = new MyDisplayCommunicator(yamcs, router);
@@ -107,7 +107,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   onDisplayFrameOpen(frame: DisplayFrame) {
     const ids = frame.getParameterIds();
     if (ids.length) {
-      this.yamcs.getInstanceClient().getParameterValueUpdates({
+      this.yamcs.getInstanceClient()!.getParameterValueUpdates({
         id: ids,
         abortOnInvalid: false,
         sendFromCache: true,

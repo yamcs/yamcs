@@ -17,6 +17,6 @@ export class ParametersPage {
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Parameters - Yamcs');
     this.instance = yamcs.getInstance();
-    this.parameters$ = yamcs.getInstanceClient().getParameters();
+    this.parameters$ = yamcs.getInstanceClient()!.getParameters();
   }
 }

@@ -23,4 +23,12 @@ export class SystemPage {
   showTablesItem() {
     return this.authService.hasSystemPrivilege('MayReadTables');
   }
+
+  showStreamsItem() {
+    const userInfo = this.authService.getUserInfo();
+    if (userInfo && userInfo.streamPrivileges) {
+      return userInfo.streamPrivileges.length > 0;
+    }
+    return false;
+  }
 }

@@ -22,7 +22,7 @@ export class TableScriptTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     const name = parent.paramMap.get('name')!;
-    this.table$ = yamcs.getInstanceClient().getTable(name);
+    this.table$ = yamcs.getInstanceClient()!.getTable(name);
   }
 
   formatSQL(sql: string) {

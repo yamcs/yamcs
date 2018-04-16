@@ -17,6 +17,7 @@ import org.yamcs.protobuf.Commanding.CommandQueueEvent;
 import org.yamcs.protobuf.Commanding.CommandQueueEvent.Type;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.security.SystemPrivilege;
 
 /**
  * Provides realtime command queue subscription via web.
@@ -38,6 +39,9 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     @Override
     public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
+
+        verifyAuthorization(ctx.getRequestId(), SystemPrivilege.MayControlCommandQueue);
+
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return subscribe(ctx.getRequestId());

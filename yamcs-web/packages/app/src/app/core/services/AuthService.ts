@@ -96,6 +96,7 @@ export class AuthService implements OnDestroy {
 
   logout() {
     document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    this.yamcsService.unselectInstance();
     this.yamcsService.yamcsClient.accessToken = undefined;
     this.userInfo$.next(null);
   }
@@ -105,6 +106,78 @@ export class AuthService implements OnDestroy {
     if (userInfo && userInfo.systemPrivileges) {
       for (const expression of userInfo.systemPrivileges) {
         if (privilege.match(expression)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  hasParameterPrivilege(parameter: string) {
+    const userInfo = this.userInfo$.value;
+    if (userInfo && userInfo.tmParaPrivileges) {
+      for (const expression of userInfo.tmParaPrivileges) {
+        if (parameter.match(expression)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  hasSetParameterPrivilege(parameter: string) {
+    const userInfo = this.userInfo$.value;
+    if (userInfo && userInfo.tmParaSetPrivileges) {
+      for (const expression of userInfo.tmParaSetPrivileges) {
+        if (parameter.match(expression)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  hasPacketPrivilege(packet: string) {
+    const userInfo = this.userInfo$.value;
+    if (userInfo && userInfo.tmPacketPrivileges) {
+      for (const expression of userInfo.tmPacketPrivileges) {
+        if (packet.match(expression)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  hasCommandPrivilege(command: string) {
+    const userInfo = this.userInfo$.value;
+    if (userInfo && userInfo.tcPrivileges) {
+      for (const expression of userInfo.tcPrivileges) {
+        if (command.match(expression)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  hasStreamPrivilege(stream: string) {
+    const userInfo = this.userInfo$.value;
+    if (userInfo && userInfo.streamPrivileges) {
+      for (const expression of userInfo.streamPrivileges) {
+        if (stream.match(expression)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  hasCommandHistoryPrivilege(command: string) {
+    const userInfo = this.userInfo$.value;
+    if (userInfo && userInfo.cmdHistoryPrivileges) {
+      for (const expression of userInfo.cmdHistoryPrivileges) {
+        if (command.match(expression)) {
           return true;
         }
       }

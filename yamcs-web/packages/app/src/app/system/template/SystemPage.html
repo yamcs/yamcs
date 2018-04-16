@@ -40,7 +40,8 @@
         Tables
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-item routerLink="streams"
+      <app-sidebar-nav-item *ngIf="showStreamsItem()"
+                            routerLink="streams"
                             [queryParams]="{instance: instance.name}">
         Streams
       </app-sidebar-nav-item>

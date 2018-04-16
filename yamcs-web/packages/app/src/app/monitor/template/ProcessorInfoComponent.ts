@@ -22,13 +22,13 @@ export class ProcessorInfoComponent implements OnDestroy {
   connected$: Observable<boolean>;
 
   constructor(private yamcs: YamcsService) {
-    this.yamcs.getInstanceClient().getTimeUpdates().then(response => {
+    this.yamcs.getInstanceClient()!.getTimeUpdates().then(response => {
       this.timeInfo$.next(response.timeInfo);
       this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
         this.timeInfo$.next(timeInfo);
       });
     });
-    this.connected$ = this.yamcs.getInstanceClient().connected$;
+    this.connected$ = this.yamcs.getInstanceClient()!.connected$;
   }
 
   ngOnDestroy() {

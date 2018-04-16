@@ -17,6 +17,6 @@ export class CommandsPage {
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Commands - Yamcs');
     this.instance = yamcs.getInstance();
-    this.commands$ = yamcs.getInstanceClient().getCommands();
+    this.commands$ = yamcs.getInstanceClient()!.getCommands();
   }
 }
