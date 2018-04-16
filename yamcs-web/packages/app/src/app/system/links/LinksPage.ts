@@ -6,6 +6,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { Subscription } from 'rxjs/Subscription';
+import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './LinksPage.html',
@@ -25,7 +26,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   private linksByName: { [key: string]: Link } = {};
 
-  constructor(private yamcs: YamcsService, title: Title) {
+  constructor(private yamcs: YamcsService, private authService: AuthService, title: Title) {
     title.setTitle('Links - Yamcs');
 
     // Fetch with REST first, otherwise may take up to a second
@@ -65,6 +66,10 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   disableLink(name: string) {
     this.yamcs.getInstanceClient().disableLink(name);
+  }
+
+  mayControlLinks() {
+    return this.authService.hasSystemPrivilege('MayControlLinks');
   }
 
   private processLinkEvent(evt: LinkEvent) {

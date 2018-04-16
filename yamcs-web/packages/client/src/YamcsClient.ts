@@ -50,7 +50,7 @@ export default class YamcsClient {
     const headers = new Headers();
     headers.append('Content-Type', 'application/x-www-form-urlencoded')
 
-    let body = `grant_type=password`;
+    let body = 'grant_type=password';
     body += `&username=${encodeURIComponent(username)}`;
     body += `&password=${encodeURIComponent(password)}`;
 
@@ -75,7 +75,7 @@ export default class YamcsClient {
    * was already expired, this will fail.
    */
   async refreshAccessToken() {
-    const response = await this.doFetch(`${this.apiUrl}/token`);
+    const response = await this.doFetch(`${this.authUrl}/token`);
     const tokenResponse = await response.json() as AccessTokenResponse;
     this.accessToken = tokenResponse.access_token;
     return tokenResponse;

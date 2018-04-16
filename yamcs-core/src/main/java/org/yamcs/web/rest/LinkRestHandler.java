@@ -6,7 +6,10 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.EditLinkRequest;
 import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
+import org.yamcs.security.Privilege;
+import org.yamcs.security.Privilege.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
+import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.NotFoundException;
 
@@ -43,6 +46,10 @@ public class LinkRestHandler extends RestHandler {
     @Route(path = "/api/links/:instance/:name", method = { "PATCH", "PUT", "POST" })
     @Route(path = "/api/links/:instance/link/:name", method = { "PATCH", "PUT", "POST" })
     public void editLink(RestRequest req) throws HttpException {
+        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayControlLinks)) {
+            throw new ForbiddenException("No privilege for this operation");
+        }
+
         LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));
 
         EditLinkRequest request = req.bodyAsMessage(EditLinkRequest.newBuilder()).build();

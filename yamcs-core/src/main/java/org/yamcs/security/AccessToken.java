@@ -34,4 +34,9 @@ public class AccessToken implements AuthenticationToken {
         long expTimeInSeconds = claims.get("exp").getAsLong();
         return expTimeInSeconds < System.currentTimeMillis() / 1000;
     }
+
+    @Override
+    public String toString() {
+        return getPrincipal().toString();
+    }
 }

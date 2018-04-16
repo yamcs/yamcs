@@ -32,13 +32,13 @@ import io.netty.handler.codec.http.HttpRequest;
 public class Privilege {
 
     public enum Type {
+        CMD_HISTORY,
+        STREAM,
         SYSTEM,
         TC,
         TM_PACKET,
         TM_PARAMETER,
         TM_PARAMETER_SET,
-        STREAM,
-        CMD_HISTORY
     }
 
     public enum SystemPrivilege {
@@ -48,11 +48,12 @@ public class Privilege {
         MayCommand,
         MayGetMissionDatabase,
         MayControlArchiving,
+        MayControlLinks,
         MayControlServices,
         MayReadEvents,
         MayWriteEvents,
         MayWriteTables,
-        MayReadTables
+        MayReadTables,
     }
 
     private static final Logger log = LoggerFactory.getLogger(Privilege.class);
