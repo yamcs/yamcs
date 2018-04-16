@@ -6,6 +6,7 @@ import { ProfilePage } from './core/pages/ProfilePage';
 import { AuthGuard } from './core/guards/AuthGuard';
 import { LoginPage } from './core/pages/LoginPage';
 import { ForbiddenPage } from './core/pages/ForbiddenPage';
+import { UnselectInstanceGuard } from './core/guards/UnselectInstanceGuard';
 
 /*
  * Notes that the nested modules also have AuthGuards.
@@ -20,7 +21,7 @@ const routes: Routes = [
         path: '',
         pathMatch: 'full',
         component: HomePage,
-        canActivate: [AuthGuard],
+        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'monitor',
@@ -40,19 +41,22 @@ const routes: Routes = [
       {
         path: 'profile',
         component: ProfilePage,
-        canActivate: [AuthGuard],
+        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'login',
         component: LoginPage,
+        canActivate: [UnselectInstanceGuard],
       },
       {
         path: '403',
         component: ForbiddenPage,
+        canActivate: [UnselectInstanceGuard],
       },
       {
         path: '**',
         component: NotFoundPage,
+        canActivate: [UnselectInstanceGuard],
       },
     ]
   },

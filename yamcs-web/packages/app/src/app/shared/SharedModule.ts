@@ -65,6 +65,7 @@ import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard'
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
+import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 
 const materialModules = [
   OverlayModule,
@@ -137,6 +138,7 @@ const guards = [
   MayGetMissionDatabaseGuard,
   MayReadEventsGuard,
   MayReadTablesGuard,
+  UnselectInstanceGuard,
 ];
 
 @NgModule({
