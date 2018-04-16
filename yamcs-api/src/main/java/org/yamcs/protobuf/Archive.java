@@ -8769,6 +8769,505 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.StreamInfo)
   }
 
+  public interface EventSourceInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:archive.EventSourceInfo)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated string source = 1;</code>
+     */
+    com.google.protobuf.ProtocolStringList
+        getSourceList();
+    /**
+     * <code>repeated string source = 1;</code>
+     */
+    int getSourceCount();
+    /**
+     * <code>repeated string source = 1;</code>
+     */
+    java.lang.String getSource(int index);
+    /**
+     * <code>repeated string source = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getSourceBytes(int index);
+  }
+  /**
+   * Protobuf type {@code archive.EventSourceInfo}
+   */
+  public static final class EventSourceInfo extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:archive.EventSourceInfo)
+      EventSourceInfoOrBuilder {
+    // Use EventSourceInfo.newBuilder() to construct.
+    private EventSourceInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private EventSourceInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final EventSourceInfo defaultInstance;
+    public static EventSourceInfo getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public EventSourceInfo getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private EventSourceInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                source_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              source_.add(bs);
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          source_ = source_.getUnmodifiableView();
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_EventSourceInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_EventSourceInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.EventSourceInfo.class, org.yamcs.protobuf.Archive.EventSourceInfo.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<EventSourceInfo> PARSER =
+        new com.google.protobuf.AbstractParser<EventSourceInfo>() {
+      public EventSourceInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new EventSourceInfo(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<EventSourceInfo> getParserForType() {
+      return PARSER;
+    }
+
+    public static final int SOURCE_FIELD_NUMBER = 1;
+    private com.google.protobuf.LazyStringList source_;
+    /**
+     * <code>repeated string source = 1;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getSourceList() {
+      return source_;
+    }
+    /**
+     * <code>repeated string source = 1;</code>
+     */
+    public int getSourceCount() {
+      return source_.size();
+    }
+    /**
+     * <code>repeated string source = 1;</code>
+     */
+    public java.lang.String getSource(int index) {
+      return source_.get(index);
+    }
+    /**
+     * <code>repeated string source = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSourceBytes(int index) {
+      return source_.getByteString(index);
+    }
+
+    private void initFields() {
+      source_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < source_.size(); i++) {
+        output.writeBytes(1, source_.getByteString(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < source_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(source_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getSourceList().size();
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Archive.EventSourceInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.EventSourceInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.EventSourceInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.EventSourceInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.EventSourceInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.EventSourceInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.EventSourceInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.EventSourceInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.EventSourceInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.EventSourceInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.EventSourceInfo prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code archive.EventSourceInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:archive.EventSourceInfo)
+        org.yamcs.protobuf.Archive.EventSourceInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_EventSourceInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_EventSourceInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.EventSourceInfo.class, org.yamcs.protobuf.Archive.EventSourceInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.EventSourceInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        source_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_EventSourceInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.EventSourceInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.EventSourceInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.EventSourceInfo build() {
+        org.yamcs.protobuf.Archive.EventSourceInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.EventSourceInfo buildPartial() {
+        org.yamcs.protobuf.Archive.EventSourceInfo result = new org.yamcs.protobuf.Archive.EventSourceInfo(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          source_ = source_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.source_ = source_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.EventSourceInfo) {
+          return mergeFrom((org.yamcs.protobuf.Archive.EventSourceInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.EventSourceInfo other) {
+        if (other == org.yamcs.protobuf.Archive.EventSourceInfo.getDefaultInstance()) return this;
+        if (!other.source_.isEmpty()) {
+          if (source_.isEmpty()) {
+            source_ = other.source_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureSourceIsMutable();
+            source_.addAll(other.source_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.EventSourceInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.EventSourceInfo) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private com.google.protobuf.LazyStringList source_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureSourceIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          source_ = new com.google.protobuf.LazyStringArrayList(source_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated string source = 1;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getSourceList() {
+        return source_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string source = 1;</code>
+       */
+      public int getSourceCount() {
+        return source_.size();
+      }
+      /**
+       * <code>repeated string source = 1;</code>
+       */
+      public java.lang.String getSource(int index) {
+        return source_.get(index);
+      }
+      /**
+       * <code>repeated string source = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSourceBytes(int index) {
+        return source_.getByteString(index);
+      }
+      /**
+       * <code>repeated string source = 1;</code>
+       */
+      public Builder setSource(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureSourceIsMutable();
+        source_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string source = 1;</code>
+       */
+      public Builder addSource(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureSourceIsMutable();
+        source_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string source = 1;</code>
+       */
+      public Builder addAllSource(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureSourceIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, source_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string source = 1;</code>
+       */
+      public Builder clearSource() {
+        source_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string source = 1;</code>
+       */
+      public Builder addSourceBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureSourceIsMutable();
+        source_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:archive.EventSourceInfo)
+    }
+
+    static {
+      defaultInstance = new EventSourceInfo(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:archive.EventSourceInfo)
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_ColumnData_descriptor;
   private static
@@ -8814,6 +9313,11 @@ public final class Archive {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_StreamInfo_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_EventSourceInfo_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_EventSourceInfo_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -8848,7 +9352,8 @@ public final class Archive {
       "pe\022\010\n\004TIME\020\001\022\t\n\005VALUE\020\002\022\022\n\016TIME_AND_VALU" +
       "E\020\003\"O\n\nStreamInfo\022\014\n\004name\030\001 \001(\t\022#\n\006colum" +
       "n\030\002 \003(\0132\023.archive.ColumnInfo\022\016\n\006script\030\003" +
-      " \001(\tB\024\n\022org.yamcs.protobuf"
+      " \001(\t\"!\n\017EventSourceInfo\022\016\n\006source\030\001 \003(\tB" +
+      "\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -8917,6 +9422,12 @@ public final class Archive {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_archive_StreamInfo_descriptor,
         new java.lang.String[] { "Name", "Column", "Script", });
+    internal_static_archive_EventSourceInfo_descriptor =
+      getDescriptor().getMessageTypes().get(8);
+    internal_static_archive_EventSourceInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_EventSourceInfo_descriptor,
+        new java.lang.String[] { "Source", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
   }
 

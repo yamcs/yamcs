@@ -11,8 +11,8 @@
     <ng-container *ngFor="let option of options">
       <mat-divider *ngIf="option.group"></mat-divider>
       <button mat-menu-item
-              (click)="selectOption(option)">
-        <mat-icon [style.visibility]="isSelected(option) ? 'visible' : 'hidden'">check</mat-icon>
+              (click)="select(option.id)">
+        <mat-icon [style.visibility]="isSelected(option.id) ? 'visible' : 'hidden'">check</mat-icon>
         {{ option.label }}
       </button>
     </ng-container>

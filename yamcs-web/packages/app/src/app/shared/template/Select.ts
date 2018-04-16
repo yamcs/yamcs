@@ -34,16 +34,28 @@ export class Select implements OnChanges {
     }
   }
 
-  isSelected(option: Option) {
+  public isSelected(id: string) {
     const selectedOption = this.selectedOption$.value;
     if (selectedOption !== null) {
-      return selectedOption.id === option.id;
+      return selectedOption.id === id;
     }
     return false;
   }
 
-  selectOption(option: Option) {
-    this.selectedOption$.next(option);
-    this.change.emit(option.id);
+  public select(id: string) {
+    const option = this.findOption(id);
+    if (option) {
+      this.selectedOption$.next(option);
+      this.change.emit(option.id);
+    }
+  }
+
+  private findOption(id: string) {
+    for (const option of this.options) {
+      if (option.id === id) {
+        return option;
+      }
+    }
+    return null;
   }
 }

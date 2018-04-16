@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Inject, ViewChild } from '@angular/core';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { EventsDataSource } from './EventsDataSource';
@@ -11,7 +11,7 @@ import { subtractDuration } from '../../shared/utils';
 import { rowAnimation } from '../animations';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { debounceTime } from 'rxjs/operators';
-import { Option } from '../../shared/template/Select';
+import { Option, Select } from '../../shared/template/Select';
 import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../../core/config/AppConfig';
 
 const defaultInterval = 'PT1H';
@@ -24,6 +24,9 @@ const defaultInterval = 'PT1H';
 })
 export class EventsPage {
 
+  @ViewChild('intervalSelect')
+  intervalSelect: Select;
+
   validStart: Date | null;
   validStop: Date | null;
 
@@ -35,6 +38,7 @@ export class EventsPage {
   filter = new FormGroup({
     textSearch: new FormControl(),
     severity: new FormControl('INFO'),
+    source: new FormControl('ANY'),
     interval: new FormControl(defaultInterval),
     customStart: new FormControl(null, [
       Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
@@ -78,6 +82,10 @@ export class EventsPage {
     { id: 'SEVERE', label: 'Severe level' },
   ];
 
+  sourceOptions: Option[] = [
+    { id: 'ANY', label: 'Any source', selected: true },
+  ];
+
   intervalOptions: Option[] = [
     { id: 'PT1H', label: 'Last hour', selected: true },
     { id: 'PT6H', label: 'Last 6 hours' },
@@ -91,6 +99,7 @@ export class EventsPage {
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
   private severity = 'INFO';
+  private source: string;
   private textSearch: string;
 
   constructor(
@@ -118,10 +127,23 @@ export class EventsPage {
       }
     }
 
-    const cols = preferenceStore.getVisibleColumns('events');
+    const cols = preferenceStore.getVisibleColumns('events').filter(el => {
+      // Filter out extraColumns (maybe from another instance - we should maybe store this per instance)
+      for (const column of this.columns) {
+        if (column.id === el) {
+          return true;
+        }
+      }
+    });
     if (cols.length) {
       this.displayedColumns = cols;
     }
+
+    yamcs.getInstanceClient()!.getEventSources().then(sources => {
+      for (const source of sources) {
+        this.sourceOptions.push({ id: source, label: source });
+      }
+    });
 
     this.dataSource = new EventsDataSource(yamcs);
 
@@ -139,6 +161,11 @@ export class EventsPage {
 
     this.filter.get('severity')!.valueChanges.forEach(severity => {
       this.severity = severity;
+      this.loadData();
+    });
+
+    this.filter.get('source')!.valueChanges.forEach(source => {
+      this.source = (source !== 'ANY') ? source : null;
       this.loadData();
     });
 
@@ -167,7 +194,10 @@ export class EventsPage {
     if (interval === 'NO_LIMIT') {
       // NO_LIMIT may include future data under erratic conditions. Reverting
       // to the default interval is more in line with the wording 'jump to now'.
-      this.filter.get('interval')!.setValue(defaultInterval);
+      this.intervalSelect.select(defaultInterval);
+    } else if (interval === 'CUSTOM') {
+      // For simplicity reasons, just reset to default 1h interval.
+      this.intervalSelect.select(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
       this.validStart = subtractDuration(this.validStop, interval);
@@ -207,6 +237,9 @@ export class EventsPage {
     if (this.textSearch) {
       options.filter = this.textSearch;
     }
+    if (this.source) {
+      options.source = this.source;
+    }
 
     const dlOptions: DownloadEventsOptions = {
       format: 'csv',
@@ -220,6 +253,9 @@ export class EventsPage {
     }
     if (this.textSearch) {
       dlOptions.filter = this.textSearch;
+    }
+    if (this.source) {
+      dlOptions.source = this.source;
     }
 
     const instanceClient = this.yamcs.getInstanceClient()!;
@@ -245,6 +281,10 @@ export class EventsPage {
 
   updateSeverity(severity: string) {
     this.filter.get('severity')!.setValue(severity);
+  }
+
+  updateSource(source: string) {
+    this.filter.get('source')!.setValue(source);
   }
 
   updateInterval(interval: string) {

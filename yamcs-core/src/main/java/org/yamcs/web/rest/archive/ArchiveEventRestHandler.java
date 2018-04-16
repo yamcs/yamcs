@@ -3,11 +3,14 @@ package org.yamcs.web.rest.archive;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -17,6 +20,7 @@ import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.EventRecorder;
+import org.yamcs.protobuf.Archive.EventSourceInfo;
 import org.yamcs.protobuf.Rest.ListEventsResponse;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.security.SystemPrivilege;
@@ -39,6 +43,7 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.csvreader.CsvWriter;
+import com.google.common.collect.BiMap;
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -186,6 +191,33 @@ public class ArchiveEventRestHandler extends RestHandler {
         log.debug("Adding event from REST API: {}", event.toString());
         eventProducer.sendEvent(event);
         completeOK(req);
+    }
+
+    /**
+     * Shows the distinct sources that occur in the events table. Theoretically the user could also retrieve this
+     * information via the table-related API, but then users without MayReadTables privilege, would not be able to call
+     * it.
+     */
+    @Route(path = "/api/archive/:instance/events/sources", method = "GET")
+    public void listSources(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        verifyEventArchiveSupport(instance);
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadEvents);
+
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+
+        EventSourceInfo.Builder responseb = EventSourceInfo.newBuilder();
+        TableDefinition tableDefinition = ydb.getTable(EventRecorder.TABLE_NAME);
+        BiMap<String, Short> enumValues = tableDefinition.getEnumValues("source");
+        if (enumValues != null) {
+            List<String> unsortedSources = new ArrayList<>();
+            for (Entry<String, Short> entry : enumValues.entrySet()) {
+                unsortedSources.add(entry.getKey());
+            }
+            Collections.sort(unsortedSources);
+            responseb.addAllSource(unsortedSources);
+        }
+        completeOK(req, responseb.build());
     }
 
     /**

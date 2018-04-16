@@ -64,3 +64,7 @@ message StreamInfo {
   repeated ColumnInfo column = 2;
   optional string script = 3;
 }
+
+message EventSourceInfo {
+  repeated string source = 1;
+}

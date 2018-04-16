@@ -22,6 +22,7 @@ import {
   ClientsWrapper,
   SamplesWrapper,
   CommandHistoryEntryWrapper,
+  SourcesWrapper,
 } from './types/internal';
 
 import {
@@ -104,6 +105,16 @@ export class InstanceClient {
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as EventsWrapper
     return wrapper.event || [];
+  }
+
+  /**
+   * Retrieves the distinct sources for the currently archived events.
+   */
+  async getEventSources() {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/events/sources`;
+    const response = await this.yamcs.doFetch(url);
+    const wrapper = await response.json() as SourcesWrapper
+    return wrapper.source || [];
   }
 
   getEventsDownloadURL(options: DownloadEventsOptions = {}) {

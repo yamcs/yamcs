@@ -121,3 +121,7 @@ export interface SamplesWrapper {
 export interface RangesWrapper {
   range: Range[];
 }
+
+export interface SourcesWrapper {
+  source: string[];
+}
