@@ -41,7 +41,6 @@ public class IntegerDataType extends NumericDataType {
     }
 
     public void setSizeInBits(int sizeInBits) {
-        new Exception().printStackTrace();
         this.sizeInBits=sizeInBits;
     }
 
