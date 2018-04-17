@@ -23,6 +23,7 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
     
     public BooleanValueSegment() {
         super(FORMAT_ID_BooleanValueSegment);
+        bitSet = new BitSet();
     }
     
     
@@ -108,12 +109,18 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
 
     @Override
     public void add(int pos, Value engValue) {
-        throw new UnsupportedOperationException("add not supported");
-        
+        if (pos == size) {
+            size++;
+            bitSet.set(pos, engValue.getBooleanValue());
+        } else {
+            size++;
+            // Ignore for now
+            // throw new UnsupportedOperationException("add in the middle of bitSet is not supported");
+        }
     }
 
     @Override
     public BaseSegment consolidate() {
-        throw new UnsupportedOperationException("consolidate not supported");
+        return this;
     }
 }

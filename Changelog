@@ -1,4 +1,7 @@
-Version 4.2.1 
+Version 4.2.2 released 17-Apr-2018
+- partially fixed the parameter archive for boolean parameters
+
+Version 4.2.1 released 17-Apr-2018
 - send events when an algorithm execution fails 
 - read commands from XTCE XML files compatible with CCSDS green book
 
