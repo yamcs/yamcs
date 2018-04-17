@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { YamcsService } from './YamcsService';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { AccessTokenResponse, UserInfo } from '@yamcs/client';
+import { Router } from '@angular/router';
 
 export interface Claims {
   iss: string;
@@ -28,7 +29,7 @@ export class AuthService implements OnDestroy {
 
   private tokenRefresher: number;
 
-  constructor(private yamcsService: YamcsService) {
+  constructor(private yamcsService: YamcsService, private router: Router) {
 
     // Simplistic token refresher that replaces an aged
     // access token with a newer one. As long as the browser
@@ -45,6 +46,13 @@ export class AuthService implements OnDestroy {
 
     yamcsService.yamcsClient.getAuthInfo().then(authInfo => {
       this.authRequired$.next(authInfo.requireAuthentication);
+    });
+
+    yamcsService.yamcsClient.addHttpInterceptor((url: string) => {
+      if (this.authRequired$.value && !this.isAccessTokenAvailable()) {
+        this.logout(); // Navigate user to login page
+      }
+      return Promise.resolve();
     });
   }
 
@@ -99,6 +107,7 @@ export class AuthService implements OnDestroy {
     this.yamcsService.unselectInstance();
     this.yamcsService.yamcsClient.accessToken = undefined;
     this.userInfo$.next(null);
+    this.router.navigate(['login']);
   }
 
   hasSystemPrivilege(privilege: string) {

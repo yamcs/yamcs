@@ -23,7 +23,7 @@
     <dd>
       <table yaDataTable>
         <tr>
-          <th>tmParaPrivileges</th>
+          <th class="lcolumn">tmParaPrivileges</th>
           <td>
             <ng-container *ngIf="user.tmParaPrivileges; else dash">
               <ng-container *ngFor="let privilege of user.tmParaPrivileges">
@@ -33,7 +33,7 @@
           </td>
         </tr>
         <tr>
-          <th>tmParaSetPrivileges</th>
+          <th class="lcolumn">tmParaSetPrivileges</th>
           <td>
             <ng-container *ngIf="user.tmParaSetPrivileges; else dash">
               <ng-container *ngFor="let privilege of user.tmParaSetPrivileges">
@@ -43,7 +43,7 @@
           </td>
         </tr>
         <tr>
-          <th>tmPacketPrivileges</th>
+          <th class="lcolumn">tmPacketPrivileges</th>
           <td>
             <ng-container *ngIf="user.tmPacketPrivileges; else dash">
               <ng-container *ngFor="let privilege of user.tmPacketPrivileges">
@@ -53,7 +53,7 @@
           </td>
         </tr>
         <tr>
-          <th>tcPrivileges</th>
+          <th class="lcolumn">tcPrivileges</th>
           <td>
             <ng-container *ngIf="user.tcPrivileges; else dash">
               <ng-container *ngFor="let privilege of user.tcPrivileges">
@@ -63,7 +63,7 @@
           </td>
         </tr>
         <tr>
-          <th>systemPrivileges</th>
+          <th class="lcolumn">systemPrivileges</th>
           <td>
             <ng-container *ngIf="user.systemPrivileges; else dash">
               <ng-container *ngFor="let privilege of user.systemPrivileges">
@@ -73,7 +73,7 @@
           </td>
         </tr>
         <tr>
-          <th>streamPrivileges</th>
+          <th class="lcolumn">streamPrivileges</th>
           <td>
             <ng-container *ngIf="user.streamPrivileges; else dash">
               <ng-container *ngFor="let privilege of user.streamPrivileges">
@@ -83,7 +83,7 @@
           </td>
         </tr>
         <tr>
-          <th>cmdHistoryPrivileges</th>
+          <th class="lcolumn">cmdHistoryPrivileges</th>
           <td>
             <ng-container *ngIf="user.cmdHistoryPrivileges; else dash">
               <ng-container *ngFor="let privilege of user.cmdHistoryPrivileges">

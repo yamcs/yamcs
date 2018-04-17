@@ -14,8 +14,8 @@ import {
 
 import { InstanceClient } from './InstanceClient';
 import { access } from 'fs';
-import { RequestListener } from './RequestListener';
 import { HttpError } from './HttpError';
+import { HttpInterceptor } from './HttpInterceptor';
 
 export default class YamcsClient {
 
@@ -26,7 +26,7 @@ export default class YamcsClient {
 
   public accessToken?: string;
 
-  private requestListeners: (RequestListener)[] = [];
+  private interceptors: HttpInterceptor[] = [];
 
   createInstanceClient(instance: string) {
     return new InstanceClient(instance, this);
@@ -82,12 +82,11 @@ export default class YamcsClient {
   }
 
   /**
-   * Register a listener that will get updated before every request.
-   * This does not provide any intercepting capabilities. Neither
-   * does it say anything about the http response status.
+   * Register an interceptor that will have the opportunity
+   * to inspect, modify or halt any request.
    */
-  addRequestListener(requestListener: RequestListener) {
-    this.requestListeners.push(requestListener);
+  addHttpInterceptor(interceptor: HttpInterceptor) {
+    this.interceptors.push(interceptor);
   }
 
   async getGeneralInfo() {
@@ -152,7 +151,7 @@ export default class YamcsClient {
     return xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
   }
 
-  async doFetch(input?: any, init?: RequestInit) {
+  async doFetch(url: string, init?: RequestInit) {
     if (this.accessToken) {
       if (!init) {
         init = { headers: new Headers() };
@@ -162,10 +161,14 @@ export default class YamcsClient {
       const headers = init.headers as Headers;
       headers.append('Authorization', `Bearer ${this.accessToken}`);
     }
-    for (const requestListener of this.requestListeners) {
-      requestListener(input);
+    for (const interceptor of this.interceptors) {
+      try {
+        await interceptor(url, init);
+      } catch (err) {
+        return Promise.reject(err);
+      }
     }
-    return fetch(input, init).then(response => {
+    return fetch(url, init).then(response => {
       // Make non 2xx responses available to clients via 'catch' instead of 'then'.
       if (response.status >= 200 && response.status < 300) {
         return Promise.resolve(response);

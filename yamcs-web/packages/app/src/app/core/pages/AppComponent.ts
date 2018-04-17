@@ -6,7 +6,6 @@ import { SelectInstanceDialog } from '../../shared/template/SelectInstanceDialog
 import { Observable } from 'rxjs/Observable';
 import { PreferenceStore } from '../services/PreferenceStore';
 import { AuthService } from '../services/AuthService';
-import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -33,7 +32,6 @@ export class AppComponent implements OnDestroy {
 
   constructor(
     yamcs: YamcsService,
-    private router: Router,
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
@@ -68,7 +66,6 @@ export class AppComponent implements OnDestroy {
 
   logout() {
     this.authService.logout();
-    this.router.navigate(['login']);
   }
 
   private enableDarkMode() {

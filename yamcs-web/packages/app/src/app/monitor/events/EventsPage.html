@@ -34,14 +34,17 @@
                  placeholder="Filter by text search"
                  style="width: 300px">
           &nbsp;&nbsp;
+          <app-column-chooser [columns]="columns"
+                              [displayedColumns]="displayedColumns"
+                              (change)="updateColumns($event)"></app-column-chooser>
+        </div>
+      </div>
+      <div fxLayout="row" class="filter-bar">
+        <div fxFlex class="vmiddle">
           <app-select [options]="severityOptions" (change)="updateSeverity($event)"></app-select>
           &nbsp;&nbsp;
           <app-select [options]="sourceOptions"
                       (change)="updateSource($event)"></app-select>
-          &nbsp;&nbsp;
-          <app-column-chooser [columns]="columns"
-                              [displayedColumns]="displayedColumns"
-                              (change)="updateColumns($event)"></app-column-chooser>
           &nbsp;&nbsp;
           <app-select #intervalSelect
                       [options]="intervalOptions"

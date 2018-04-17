@@ -1,6 +1,6 @@
 export { default as YamcsClient } from './YamcsClient';
 export { InstanceClient } from './InstanceClient';
-export { RequestListener } from './RequestListener';
+export { HttpInterceptor } from './HttpInterceptor';
 export { HttpError } from './HttpError';
 
 export {

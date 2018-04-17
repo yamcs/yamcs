@@ -20,7 +20,7 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryEntry> {
   loadEntries(processorName: string) {
     this.loading$.next(true);
     this.yamcs.getInstanceClient()!.getCommandHistoryEntries().then(entries => {
-      console.log(entries);
+      // console.log(entries);
       this.loading$.next(false);
       this.entries$.next(entries);
     });
