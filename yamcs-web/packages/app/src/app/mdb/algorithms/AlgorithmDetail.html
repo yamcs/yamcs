@@ -37,10 +37,14 @@
 
   <dt>Language</dt>
   <dd>{{ algorithm.language || '-' }}</dd>
+</dl>
 
+<mat-divider></mat-divider>
+
+<dl class="dl-horizontal">
   <dt>Text</dt>
   <dd>
-    <code class="code">{{ (algorithm.text || '-').trim() }}</code>
+    <div #text style="height: 300px;">{{ algorithm.text }}</div>
   </dd>
 </dl>
 
