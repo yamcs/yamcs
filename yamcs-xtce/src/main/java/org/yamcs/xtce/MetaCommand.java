@@ -30,7 +30,7 @@ public class MetaCommand extends NameDescription {
      * May not be referred to in the EntryList of a SequenceContainer, CommandContainerSet/CommandContainer or another MetaCommandContainer. 
      * May be extended by another MetaCommand/CommandContainer.
      */
-    MetaCommandContainer commandContainer;
+    CommandContainer commandContainer;
 
 
     /** Command inheritance
@@ -114,11 +114,11 @@ public class MetaCommand extends NameDescription {
     }
 
 
-    public void setMetaCommandContainer(MetaCommandContainer mcc) {
+    public void setCommandContainer(CommandContainer mcc) {
 	this.commandContainer = mcc;
     }
 
-    public MetaCommandContainer getCommandContainer() {
+    public CommandContainer getCommandContainer() {
 	return commandContainer;
     }
 
@@ -230,7 +230,6 @@ public class MetaCommand extends NameDescription {
         if(baseMetaCommand!=null) {
             out.println("\t baseMetaCommand: "+baseMetaCommand.getName()+" with argument assignment:" +argumentAssignmentList);
         }
-        
         
         commandContainer.print(out);
     }

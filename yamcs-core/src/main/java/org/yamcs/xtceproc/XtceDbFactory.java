@@ -27,6 +27,7 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.NameReference;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Container;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
@@ -357,10 +358,18 @@ public class XtceDbFactory {
             return (NameDescription) ss.getParameterType(name);
         case SEQUENCE_CONTAINTER:
             return ss.getSequenceContainer(name);
+        case COMMAND_CONTAINER:
+            Container c = ss.getCommandContainer(name);
+            if(c==null) {
+                c = ss.getSequenceContainer(name);
+            }
+            return c;
         case META_COMMAND:
             return ss.getMetaCommand(name);
         case ALGORITHM:
             return ss.getAlgorithm(name);
+        case ARGUMENT_TYPE:
+            return (NameDescription) ss.getArgumentType(name);
         }
         //shouldn't arrive here
         return null;
@@ -384,10 +393,10 @@ public class XtceDbFactory {
             l = ss.getParameterByAlias(alias);
             break;
         case SEQUENCE_CONTAINTER:
-            l =ss.getSequenceContainerByAlias(alias);
+            l = ss.getSequenceContainerByAlias(alias);
             break;
         case META_COMMAND:
-            l =ss.getMetaCommandByAlias(alias);
+            l = ss.getMetaCommandByAlias(alias);
             break;
         default:
             return null;

@@ -16,8 +16,7 @@ public class SequenceContainer extends Container {
 
     List<SequenceEntry> entryList =new ArrayList<>();
 
-    SequenceContainer baseContainer;
-    MatchCriteria restrictionCriteria;
+  
     
     public SequenceContainer(String name) {
         super(name);
@@ -30,15 +29,17 @@ public class SequenceContainer extends Container {
      */
     private boolean useAsArchivePartition;
     
-    
 
     public SequenceContainer getBaseContainer() {
-        return baseContainer;
+        return (SequenceContainer) baseContainer;
     }
 
-
-    public void setBaseContainer(SequenceContainer baseContainer) {
-        this.baseContainer = baseContainer;
+    public void setBaseContainer(Container baseContainer) {
+        if(baseContainer instanceof SequenceContainer) {
+            this.baseContainer = (SequenceContainer)baseContainer;
+        } else {
+            throw new IllegalArgumentException("The SequenceContainer expects a SequenceContainer as base container");
+        }
     }
 
     public MatchCriteria getRestrictionCriteria() {
@@ -55,10 +56,7 @@ public class SequenceContainer extends Container {
         entry.setIndex( getEntryList().size() - 1 );
     }
 
-    public void setRestrictionCriteria(MatchCriteria restrictionCriteria) {
-        this.restrictionCriteria = restrictionCriteria;
-    }
-
+   
    
     public void setEntryList(List<SequenceEntry> entryList) {
         this.entryList = entryList;

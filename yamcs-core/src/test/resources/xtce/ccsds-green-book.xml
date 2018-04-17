@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem xmlns:xtce="http://www.omg.org/space/xtce"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="SpaceVehicle"
+	xsi:schemaLocation="http://www.omg.org/space/xtce SpaceSystemV1.1.xsd">
+	<xtce:TelemetryMetaData>
+		<xtce:ParameterTypeSet>
+			<xtce:IntegerParameterType signed="false"
+				name="IDType">
+				<xtce:UnitSet />
+				<xtce:IntegerDataEncoding sizeInBits="8" />
+			</xtce:IntegerParameterType>
+			<xtce:IntegerParameterType signed="false"
+				name="SecHType">
+				<xtce:UnitSet />
+				<xtce:IntegerDataEncoding sizeInBits="1" />
+			</xtce:IntegerParameterType>
+			<xtce:IntegerParameterType signed="false"
+				name="TypeType">
+				<xtce:UnitSet />
+				<xtce:IntegerDataEncoding sizeInBits="7" />
+			</xtce:IntegerParameterType>
+			<xtce:IntegerParameterType signed="false"
+				name="LengthType">
+				<xtce:UnitSet />
+				<xtce:IntegerDataEncoding sizeInBits="16" />
+			</xtce:IntegerParameterType>
+			<xtce:EnumeratedParameterType name="PSWHLTIMFLGType"
+				initialValue="TIMER_OFF">
+				<xtce:UnitSet />
+				<xtce:IntegerDataEncoding sizeInBits="16" />
+				<xtce:EnumerationList>
+					<xtce:Enumeration label="TIMER_OFF" value="0" />
+					<xtce:Enumeration label="TIMER_ON" value="1" />
+					<xtce:Enumeration label="TIMER_COMPLETED" value="2" />
+				</xtce:EnumerationList>
+			</xtce:EnumeratedParameterType>
+			<xtce:FloatParameterType sizeInBits="64"
+				name="PBATMTEMPType">
+				<xtce:UnitSet>
+					<xtce:Unit description="Bq">units:Becquerel</xtce:Unit>
+				</xtce:UnitSet>
+				<xtce:IntegerDataEncoding sizeInBits="16"
+					encoding="twosCompliment">
+					<xtce:DefaultCalibrator>
+						<xtce:PolynomialCalibrator>
+							<xtce:Term coefficient="-7459.23273708" exponent="0" />
+							<xtce:Term coefficient="8.23643519148" exponent="1" />
+							<xtce:Term coefficient="-3.02185061876e-3" exponent="2" />
+							<xtce:Term coefficient="2.33422429056e-7" exponent="3" />
+							<xtce:Term coefficient="5.67189556173e-11" exponent="4" />
+						</xtce:PolynomialCalibrator>
+					</xtce:DefaultCalibrator>
+				</xtce:IntegerDataEncoding>
+			</xtce:FloatParameterType>
+			<xtce:AbsoluteTimeParameterType name="MissionTimeType">
+				<xtce:ReferenceTime>
+					<xtce:OffsetFrom parameterRef="Seconds" />
+				</xtce:ReferenceTime>
+			</xtce:AbsoluteTimeParameterType>
+			<xtce:AbsoluteTimeParameterType name="SecondsType">
+				<xtce:Encoding units="seconds">
+					<xtce:IntegerDataEncoding sizeInBits="32" />
+				</xtce:Encoding>
+				<xtce:ReferenceTime>
+					<xtce:OffsetFrom parameterRef="MilliSeconds" />
+				</xtce:ReferenceTime>
+			</xtce:AbsoluteTimeParameterType>
+			<xtce:AbsoluteTimeParameterType name="MilliSecondsType">
+				<xtce:Encoding scale="0.001" units="seconds">
+					<xtce:IntegerDataEncoding sizeInBits="16" />
+				</xtce:Encoding>
+				<xtce:ReferenceTime>
+					<xtce:Epoch>TAI</xtce:Epoch>
+				</xtce:ReferenceTime>
+			</xtce:AbsoluteTimeParameterType>
+		</xtce:ParameterTypeSet>
+		<xtce:ParameterSet>
+			<xtce:Parameter name="SecH" parameterTypeRef="SecHType" />
+			<xtce:Parameter name="Type" parameterTypeRef="TypeType" />
+			<xtce:Parameter name="ID" parameterTypeRef="IDType" />
+			<xtce:Parameter name="Length" parameterTypeRef="LengthType" />
+			<xtce:Parameter name="Seconds" parameterTypeRef="SecondsType" />
+			<xtce:Parameter name="MilliSeconds" parameterTypeRef="MilliSecondsType" />
+			<xtce:Parameter name="PBATMTEMP" parameterTypeRef="PBATMTEMPType" />
+			<xtce:Parameter name="PSWHLTIMFLG" parameterTypeRef="PSWHLTIMFLGType" />
+			<xtce:Parameter name="MissionTime" parameterTypeRef="MissionTimeType">
+				<xtce:ParameterProperties dataSource="derived" />
+			</xtce:Parameter>
+		</xtce:ParameterSet>
+		<xtce:ContainerSet>
+			<xtce:SequenceContainer abstract="true" name="Header">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="ID" />
+					<xtce:ParameterRefEntry parameterRef="SecH" />
+					<xtce:ParameterRefEntry parameterRef="Type" />
+					<xtce:ParameterRefEntry parameterRef="Length" />
+					<xtce:ContainerRefEntry containerRef="SecondaryHeader">
+						<xtce:IncludeCondition>
+							<xtce:Comparison parameterRef="SecH" value="1" />
+						</xtce:IncludeCondition>
+					</xtce:ContainerRefEntry>
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="SecondaryHeader">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="Seconds" />
+					<xtce:ParameterRefEntry parameterRef="MilliSeconds" />
+				</xtce:EntryList>
+			</xtce:SequenceContainer>
+			<xtce:SequenceContainer name="HealthSafety1">
+				<xtce:EntryList>
+					<xtce:ParameterRefEntry parameterRef="PBATMTEMP" />
+					<xtce:ParameterRefEntry parameterRef="PSWHLTIMFLG" />
+				</xtce:EntryList>
+				<xtce:BaseContainer containerRef="Header">
+					<xtce:RestrictionCriteria>
+						<xtce:ComparisonList>
+							<xtce:Comparison value="1" parameterRef="Type" />
+							<xtce:Comparison value="24" parameterRef="ID" />
+						</xtce:ComparisonList>
+					</xtce:RestrictionCriteria>
+				</xtce:BaseContainer>
+			</xtce:SequenceContainer>
+		</xtce:ContainerSet>
+	</xtce:TelemetryMetaData>
+	<xtce:CommandMetaData>
+		<xtce:ParameterTypeSet>
+			<xtce:IntegerParameterType name="CommandReturnType"
+				signed="false">
+				<xtce:UnitSet />
+			</xtce:IntegerParameterType>
+			<xtce:IntegerParameterType name="CommandCounterType"
+				signed="false">
+				<xtce:UnitSet />
+			</xtce:IntegerParameterType>
+			<xtce:IntegerParameterType name="CheckSumType"
+				signed="false">
+				<xtce:UnitSet />
+				<xtce:IntegerDataEncoding />
+			</xtce:IntegerParameterType>
+		</xtce:ParameterTypeSet>
+		<xtce:ParameterSet>
+			<xtce:Parameter name="CommandCounter"
+				parameterTypeRef="CommandCounterType">
+				<xtce:ParameterProperties dataSource="local" />
+			</xtce:Parameter>
+			<xtce:Parameter name="CheckSum" parameterTypeRef="CheckSumType">
+				<xtce:ParameterProperties dataSource="derived" />
+			</xtce:Parameter>
+			<xtce:Parameter name="CommandReturn" parameterTypeRef="CommandReturnType">
+				<xtce:ParameterProperties dataSource="local" />
+			</xtce:Parameter>
+		</xtce:ParameterSet>
+		<xtce:ArgumentTypeSet>
+			<xtce:EnumeratedArgumentType name="TimerStartStopType">
+				<xtce:UnitSet />
+				<xtce:IntegerDataEncoding sizeInBits="16" />
+				<xtce:EnumerationList>
+					<xtce:Enumeration label="TIMER_STOP" value="0" />
+					<xtce:Enumeration label="TIMER_START" value="1" />
+				</xtce:EnumerationList>
+			</xtce:EnumeratedArgumentType>
+		</xtce:ArgumentTypeSet>
+		<xtce:MetaCommandSet>
+			<xtce:MetaCommand name="PWHTMR">
+				<xtce:ArgumentList>
+					<xtce:Argument name="TimerStartStop" argumentTypeRef="TimerStartStopType" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="PWHTMRPacket">
+					<xtce:BinaryEncoding>
+						<xtce:SizeInBits>
+							<xtce:FixedValue>32</xtce:FixedValue>
+						</xtce:SizeInBits>
+					</xtce:BinaryEncoding>
+					<xtce:EntryList>
+						<xtce:FixedValueEntry binaryValue="1e" />
+						<xtce:ParameterRefEntry parameterRef="CheckSum" />
+						<xtce:ArgumentRefEntry argumentRef="TimerStartStop" />
+					</xtce:EntryList>
+					<xtce:BaseContainer containerRef="Header">
+						<xtce:RestrictionCriteria>
+							<xtce:ComparisonList>
+								<xtce:Comparison parameterRef="ID" value="255" />
+								<xtce:Comparison parameterRef="Type" value="0" />
+								<xtce:Comparison parameterRef="SecH" value="0" />
+							</xtce:ComparisonList>
+						</xtce:RestrictionCriteria>
+					</xtce:BaseContainer>
+				</xtce:CommandContainer>
+				<xtce:DefaultSignificance consequenceLevel="critical" />
+				<xtce:VerifierSet>
+					<xtce:CompleteVerifier>
+						<xtce:ContainerRef containerRef="HealthSafety1" />
+						<xtce:CheckWindow timeToStopChecking="PT10M" />
+					</xtce:CompleteVerifier>
+					<xtce:FailedVerifier>
+						<xtce:Comparison parameterRef="CommandReturn"
+							value="0" />
+						<xtce:CheckWindow timeToStopChecking="PT10M" />
+					</xtce:FailedVerifier>
+				</xtce:VerifierSet>
+				<xtce:ParameterToSetList>
+					<xtce:ParameterToSet parameterRef="CommandReturn"
+						setOnVerification="release">
+						<xtce:NewValue>0x00</xtce:NewValue>
+					</xtce:ParameterToSet>
+					<xtce:ParameterToSet parameterRef="CommandReturn">
+						<xtce:NewValue>0x55</xtce:NewValue>
+					</xtce:ParameterToSet>
+				</xtce:ParameterToSetList>
+			</xtce:MetaCommand>
+		</xtce:MetaCommandSet>
+	</xtce:CommandMetaData>
+</xtce:SpaceSystem>

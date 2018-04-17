@@ -347,7 +347,7 @@ public class XtceDb implements Serializable {
                         .get(sc.baseContainer);
                 if (al_sc == null) {
                     al_sc = new ArrayList<SequenceContainer>();
-                    sequenceContainer2InheritingContainerMap.put(sc.baseContainer, al_sc);
+                    sequenceContainer2InheritingContainerMap.put(sc.getBaseContainer(), al_sc);
                 }
                 al_sc.add(sc);
             }

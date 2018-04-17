@@ -4,20 +4,13 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MetaCommandContainer extends Container {
+public class CommandContainer extends Container {
     private static final long serialVersionUID = 1L;
-    public MetaCommandContainer(String name) {
+    public CommandContainer(String name) {
         super(name);
     }
 
     ArrayList<SequenceEntry> entryList =new ArrayList<SequenceEntry>();
-
-    /**
-     * From XTCE:
-     * Extend another MetaCommand/CommandContainer.
-     * Generally this item must be set if its MetaCommand is extending another MetaCommand, the reference to the other CommandContainer must be explicitly set here.
-     */
-    MetaCommandContainer baseContainer;
 
     /**
      * looks up in the argumentEntry list the first one that is linked to the passed on argument
@@ -43,16 +36,10 @@ public class MetaCommandContainer extends Container {
         return entryList;
     }
 
-    public void setBaseContainer(MetaCommandContainer commandContainer) {
-        this.baseContainer = commandContainer;		
-    }
-
-    public MetaCommandContainer getBaseContainer() {
-        return baseContainer;
-    }
-
+   
     public void addEntry(SequenceEntry se) {
         entryList.add(se);
+        se.setIndex( getEntryList().size() - 1 );
     }
 
     public void print(PrintStream out) {		

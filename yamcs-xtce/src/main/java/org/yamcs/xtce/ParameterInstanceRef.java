@@ -69,6 +69,6 @@ public class ParameterInstanceRef implements Serializable {
 
     @Override
     public String toString() {
-        return parameter.getQualifiedName()+" instance:"+instance;
+        return parameter!=null?parameter.getQualifiedName():null+" instance:"+instance;
     }
 }

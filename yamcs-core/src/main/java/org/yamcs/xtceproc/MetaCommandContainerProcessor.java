@@ -23,15 +23,24 @@ public class MetaCommandContainerProcessor {
             encode(parent);
         }
 
-        MetaCommandContainer container = metaCommand.getCommandContainer();
+        CommandContainer container = metaCommand.getCommandContainer();
         if(container == null) {
             throw new ErrorInCommand("MetaCommand has no container: " + metaCommand);
         }
+        
+        if(parent==null) { //strange case for inheriting only the container without a command
+            Container baseContainer = container.getBaseContainer();
+            if(baseContainer!=null) {
+                encode(baseContainer);
+            }
+        }
+        
 
         for(SequenceEntry se: container.getEntryList()) {
             
             int size=0;
             BitBuffer bitbuf = pcontext.bitbuf;
+            System.out.println("encoding at position"+bitbuf.getPosition()+": "+se);
             switch(se.getReferenceLocation()) {
             case previousEntry:
                 bitbuf.setPosition(bitbuf.getPosition() + se.getLocationInContainerInBits());
@@ -45,6 +54,9 @@ public class MetaCommandContainerProcessor {
             } else if (se instanceof FixedValueEntry) {
                 fillInFixedValueEntry((FixedValueEntry) se, pcontext);
                 size = (bitbuf.getPosition()+7)/8;
+            } else if (se instanceof ParameterEntry) {
+                fillInParameterEntry((ParameterEntry) se, pcontext);
+                size = (bitbuf.getPosition()+7)/8;
             }
             if(size>pcontext.size) {
                 pcontext.size = size;
@@ -52,6 +64,38 @@ public class MetaCommandContainerProcessor {
         } 
     }
 
+    private void encode(Container container) {
+        Container baseContainer = container.getBaseContainer();
+        if(baseContainer!=null) {
+            encode(baseContainer);
+        }
+        for(SequenceEntry se: container.getEntryList()) {
+            int size=0;
+            BitBuffer bitbuf = pcontext.bitbuf;
+            System.out.println("encoding at position"+bitbuf.getPosition()+": "+se);
+            switch(se.getReferenceLocation()) {
+            case previousEntry:
+                bitbuf.setPosition(bitbuf.getPosition() + se.getLocationInContainerInBits());
+                break;
+            case containerStart:
+                bitbuf.setPosition(se.getLocationInContainerInBits());
+            }
+            if(se instanceof ArgumentEntry) {
+                fillInArgumentEntry((ArgumentEntry) se, pcontext);
+                size = (bitbuf.getPosition()+7)/8;
+            } else if (se instanceof FixedValueEntry) {
+                fillInFixedValueEntry((FixedValueEntry) se, pcontext);
+                size = (bitbuf.getPosition()+7)/8;
+            } else if (se instanceof ParameterEntry) {
+                fillInParameterEntry((ParameterEntry) se, pcontext);
+                size = (bitbuf.getPosition()+7)/8;
+            }
+            if(size>pcontext.size) {
+                pcontext.size = size;
+            }
+        } 
+    }
+    
     private void fillInArgumentEntry(ArgumentEntry argEntry, TcProcessingContext pcontext) {
         Argument arg = argEntry.getArgument();
         Value argValue = pcontext.getArgumentValue(arg);
@@ -65,7 +109,19 @@ public class MetaCommandContainerProcessor {
         pcontext.deEncoder.encodeRaw(((BaseDataType) atype).getEncoding(), rawValue);
 
     }
+    private void fillInParameterEntry(ParameterEntry paraEntry, TcProcessingContext pcontext) {
+        Parameter para = paraEntry.getParameter();
+        Value paraValue = pcontext.getParameterValue(para);
+        if(paraValue==null) {
+            System.out.println("para data source: "+para.getDataSource());
+            paraValue = ParameterTypeProcessor.getDefaultValue(para.getParameterType());
+        }
+        Value rawValue = paraValue; //TBD if this is correct
+        ParameterType ptype = para.getParameterType();
+        
+        pcontext.deEncoder.encodeRaw(((BaseDataType) ptype).getEncoding(), rawValue);
 
+    }
     private void fillInFixedValueEntry(FixedValueEntry fve, TcProcessingContext pcontext) {
         int sizeInBits = fve.getSizeInBits();
         final byte[] v = fve.getBinaryValue();

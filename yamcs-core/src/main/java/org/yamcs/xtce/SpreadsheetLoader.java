@@ -1075,9 +1075,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
             }
 
-            MetaCommandContainer container = new MetaCommandContainer(name);
+            CommandContainer container = new CommandContainer(name);
             MetaCommand cmd = new MetaCommand(name);
-            cmd.setMetaCommandContainer(container);
+            cmd.setCommandContainer(container);
             commands.put(name, cmd);
 
             // load aliases
@@ -1173,7 +1173,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     container.setBaseContainer(parentCmd.getCommandContainer());
                 } else {
                     final MetaCommand mc = cmd;
-                    final MetaCommandContainer mcc = container;
+                    final CommandContainer mcc = container;
                     NameReference nr=new UnresolvedNameReference(parent, Type.META_COMMAND).addResolvedAction( nd -> {
                         mc.setBaseMetaCommand((MetaCommand) nd);
                         mcc.setBaseContainer(((MetaCommand) nd).getCommandContainer());
@@ -1417,7 +1417,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         return new ArgumentAssignment(aname, value);
     }
 
-    private void loadArgument(SpaceSystem spaceSystem, Cell[] cells, MetaCommand cmd, MetaCommandContainer container, int extraOffset, int counter) {
+    private void loadArgument(SpaceSystem spaceSystem, Cell[] cells, MetaCommand cmd, CommandContainer container, int extraOffset, int counter) {
         String engType = cells[IDX_CMD_ENGTYPE].getContents();
         String name = cells[IDX_CMD_ARGNAME].getContents();
 

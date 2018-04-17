@@ -1,6 +1,7 @@
 package org.yamcs.xtceproc;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,17 +9,26 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanParameterType;
+import org.yamcs.xtce.EnumeratedArgumentType;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.FloatValidRange;
+import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.IntegerRange;
+import org.yamcs.xtce.IntegerValidRange;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.StringParameterType;
+import org.yamcs.xtce.ValueEnumeration;
 
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.primitives.UnsignedLongs;
 
 /**
  * Responsible for converting between raw and engineering value by usage of calibrators or by simple type conversions.
@@ -234,5 +244,127 @@ public class ParameterTypeProcessor {
         if(!allowedAssignments.containsEntry(ptype.getClass(), engValue.getType())) {
             throw new IllegalArgumentException("Cannot assign "+ptype.getTypeAsString()+" from "+engValue.getType());
         }
+    }
+    
+    public static Value parseString(ParameterType type, String paramValue) {
+        Value v;
+        if(type instanceof IntegerParameterType) {
+            IntegerParameterType intType = (IntegerParameterType) type;
+            if(intType.isSigned()) {
+                long l = Long.decode(paramValue);
+                IntegerValidRange vr = ((IntegerArgumentType)type).getValidRange();
+                if(vr!=null) {
+                    if(!ValidRangeChecker.checkIntegerRange(vr, l)) {
+                        throw new IllegalArgumentException("Value "+l+" is not in the range required for the type "+type);
+                    }
+                }
+                v = ValueUtility.getSint64Value(l);
+            } else {
+                long l = UnsignedLongs.decode(paramValue);
+                IntegerValidRange vr = ((IntegerParameterType)type).getValidRange();
+                if(vr!=null) {
+                    if(!ValidRangeChecker.checkUnsignedIntegerRange(vr, l)) {
+                        throw new IllegalArgumentException("Value "+l+" is not in the range required for the type "+type);
+                    }
+                }
+                v = ValueUtility.getUint64Value(l);
+            }
+            
+       } else if(type instanceof FloatParameterType) {
+            double d = Double.parseDouble(paramValue);
+            FloatValidRange vr = ((FloatParameterType)type).getValidRange();
+            if(vr!=null) {
+                if(!ValidRangeChecker.checkFloatRange(vr, d)) {
+                    throw new IllegalArgumentException("Value "+d+" is not in the range required for the type "+type);
+                }
+            }
+            v = ValueUtility.getDoubleValue(d);
+        } else if(type instanceof StringParameterType) {
+            v = ValueUtility.getStringValue(paramValue);
+            IntegerRange r = ((StringParameterType)type).getSizeRangeInCharacters();
+
+            if(r!=null) {
+                int length = paramValue.length();
+                if (length<r.getMinInclusive()) {
+                    throw new IllegalArgumentException("Value "+paramValue+" supplied for parameter fo type "+type+" does not satisfy minimum length of "+r.getMinInclusive());
+                }
+                if(length>r.getMaxInclusive()) {
+                    throw new IllegalArgumentException("Value "+paramValue+" supplied for parameter fo type "+type+" does not satisfy maximum length of "+r.getMaxInclusive());
+                }
+            }
+
+        } else if (type instanceof BinaryParameterType) {
+            byte[] b = StringConverter.hexStringToArray(paramValue);
+            v = ValueUtility.getBinaryValue(b);
+        } else if (type instanceof EnumeratedArgumentType) {
+            EnumeratedArgumentType enumType = (EnumeratedArgumentType)type;
+            List<ValueEnumeration> vlist = enumType.getValueEnumerationList();
+            boolean found =false;
+            for(ValueEnumeration ve:vlist) {
+                if(ve.getLabel().equals(paramValue)) {
+                    found = true;
+                }
+            }
+            if(!found) {
+                throw new IllegalArgumentException("Value '"+paramValue+"' supplied for enumeration argument cannot be found in enumeration list "+vlist);
+            }
+            v = ValueUtility.getStringValue(paramValue);
+        } else if (type instanceof BooleanParameterType) {
+            boolean b = Boolean.parseBoolean(paramValue);
+            v = ValueUtility.getBooleanValue(b);
+        } else {
+            throw new IllegalArgumentException("Cannot parse values of type "+type);
+        }
+        return v;
+    }
+
+    public static Value getDefaultValue(ParameterType type) {
+        Value v;
+        if(type instanceof IntegerParameterType) {
+            IntegerParameterType intType = (IntegerParameterType) type;
+            String sv = intType.getInitialValue();
+            if(intType.isSigned()) {
+                long l = sv==null?0:Long.decode(sv);
+                v = ValueUtility.getSint64Value(l);
+            } else {
+                long l = sv==null?0:UnsignedLongs.decode(sv);
+                v = ValueUtility.getUint64Value(l);
+            }
+            
+       } else if(type instanceof FloatParameterType) {
+            Double d = ((FloatParameterType)type).getInitialValue();
+            if(d==null) {
+                d = 0.0;
+            }
+            v = ValueUtility.getDoubleValue(d);
+        } else if(type instanceof StringParameterType) {
+            String sv = ((StringParameterType)type).getInitialValue();
+            if(sv==null) {
+                sv="";
+            }
+            v = ValueUtility.getStringValue(sv);
+        } else if (type instanceof BinaryParameterType) {
+            byte[] b = ((BinaryParameterType)type).getInitialValue();
+            if(b==null) {
+                b = new byte[0];
+            }
+            v = ValueUtility.getBinaryValue(b);
+        } else if (type instanceof EnumeratedArgumentType) {
+            EnumeratedArgumentType enumType = (EnumeratedArgumentType)type;
+            String sv = enumType.getInitialValue();
+            if(sv==null) {
+                sv = enumType.getValueEnumerationList().get(0).getLabel();
+            }
+            v = ValueUtility.getStringValue(sv);
+        } else if (type instanceof BooleanParameterType) {
+            Boolean b = ((BooleanParameterType)type).getInitialValue();
+            if(b==null) {
+                b = Boolean.FALSE;
+            }
+            v = ValueUtility.getBooleanValue(b);
+        } else {
+            throw new IllegalArgumentException("Cannot parse values of type "+type);
+        }
+        return v;
     }
 }

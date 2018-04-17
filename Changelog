@@ -1,5 +1,6 @@
 Version 4.2.1 
 - send events when an algorithm execution fails 
+- read commands from XTCE XML files compatible with CCSDS green book
 
 
 Version 4.2.0 released 6-Apr-2018

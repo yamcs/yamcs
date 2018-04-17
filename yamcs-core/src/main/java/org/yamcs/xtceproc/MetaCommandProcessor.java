@@ -11,7 +11,13 @@ import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.MetaCommandContainer;
+import org.yamcs.xtce.OperatorType;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.CommandContainer;
+import org.yamcs.xtce.Comparison;
+import org.yamcs.xtce.ComparisonList;
+import org.yamcs.xtce.Container;
+import org.yamcs.xtce.MatchCriteria;
 
 public class MetaCommandProcessor {
     final ProcessorData pdata;
@@ -30,7 +36,7 @@ public class MetaCommandProcessor {
             throw new ErrorInCommand("Will not build command "+mc.getQualifiedName()+" because it is abstract");
         }
 
-        MetaCommandContainer def = mc.getCommandContainer();
+        CommandContainer def = mc.getCommandContainer();
         if(def==null) {
             throw new ErrorInCommand("MetaCommand has no container: "+def);
         }
@@ -41,9 +47,13 @@ public class MetaCommandProcessor {
         }
 
         collectAndCheckArguments(mc, args, argAssignment);
+        
+        
+        Map<Parameter, Value> params = new HashMap<>();
+        collectParameters(mc.getCommandContainer(), params);
+        
         BitBuffer bitbuf = new BitBuffer(new byte[MAX_CMD_SIZE]);
-        TcProcessingContext pcontext = new TcProcessingContext(pdata, bitbuf, 0);
-        pcontext.argValues = args;
+        TcProcessingContext pcontext = new TcProcessingContext(pdata, args, params, bitbuf, 0);
         pcontext.mccProcessor.encode(mc);
 
         int length = (bitbuf.getPosition()+7)/8;
@@ -52,6 +62,8 @@ public class MetaCommandProcessor {
         return new CommandBuildResult(b, args);
     }
 
+
+  
 
     /**
      * Builds the argument values args based on the argAssignment (which is basically the user input) 
@@ -116,6 +128,35 @@ public class MetaCommandProcessor {
             }
             collectAndCheckArguments(parent, args, argAssignment);
         }		
+    }
+    
+    
+    //look at the command container if it inherits another container using a condition list and add those parameters with 
+    // the respective values
+    private static void collectParameters(Container container, Map<Parameter, Value> params) throws ErrorInCommand {
+       Container parent = container.getBaseContainer();
+       if(parent!=null) {
+           MatchCriteria cr = container.getRestrictionCriteria();
+           if(cr instanceof ComparisonList) {
+               ComparisonList cl = (ComparisonList)cr;
+               for(Comparison c: cl.getComparisonList()) {
+                   if(c.getComparisonOperator()==OperatorType.EQUALITY) {
+                       Parameter param = c.getParameter();
+                       System.out.println("param: "+param);
+                       if(param!=null) {
+                           try {
+                               Value v = ParameterTypeProcessor.parseString(param.getParameterType(), c.getStringValue());
+                               params.put(param, v);
+                           } catch (IllegalArgumentException e) {
+                               throw new ErrorInCommand("Cannot parse '"+c.getStringValue()+"' as value for parameter "+param.getQualifiedName());
+                           }
+                       }
+                   }
+               }
+           }
+           System.out.println("cr: "+cr);
+       }
+        
     }
 
     static public class CommandBuildResult {

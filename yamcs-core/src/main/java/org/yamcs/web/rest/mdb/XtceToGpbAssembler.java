@@ -83,7 +83,7 @@ import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MetaCommand;
-import org.yamcs.xtce.MetaCommandContainer;
+import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.OnPeriodicRateTrigger;
@@ -258,7 +258,7 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
-    public static CommandContainerInfo toCommandContainerInfo(MetaCommandContainer container, String instanceURL,
+    public static CommandContainerInfo toCommandContainerInfo(CommandContainer container, String instanceURL,
             DetailLevel detail, Set<Option> options) {
         CommandContainerInfo.Builder ccb = CommandContainerInfo.newBuilder();
         ccb.setName(container.getName());
@@ -334,7 +334,7 @@ public class XtceToGpbAssembler {
             }
 
             if (cmd.getCommandContainer() != null) {
-                MetaCommandContainer container = cmd.getCommandContainer();
+                CommandContainer container = cmd.getCommandContainer();
                 cb.setCommandContainer(toCommandContainerInfo(container, instanceURL, DetailLevel.FULL, options));
             }
 

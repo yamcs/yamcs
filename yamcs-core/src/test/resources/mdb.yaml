@@ -6,3 +6,9 @@ refmdb:
            file: "mdb/refmdb.xls"
            enableAliasReferences: false
       
+      
+      
+ccsds-green-book:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/ccsds-green-book.xml"

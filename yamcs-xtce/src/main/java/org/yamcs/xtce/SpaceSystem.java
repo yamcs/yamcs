@@ -33,10 +33,12 @@ public class SpaceSystem extends NameDescription {
     private HashMap<String, Algorithm> algorithms = new HashMap<>();
     private HashMap<String, MetaCommand> commands = new HashMap<>();
     private HashMap<Class<?>, NonStandardData> nonStandardDatas = new HashMap<>();
+    private Map<String, CommandContainer> cmdContainers = new LinkedHashMap<>();
 
     private HashMap<String, SpaceSystem> subsystems = new HashMap<String, SpaceSystem>();
     static Logger log = LoggerFactory.getLogger(SpaceSystem.class.getName());
-
+    private HashMap<String, ArgumentType> argumentTypes = new HashMap<>();
+    
     transient List<NameReference> unresolvedReferences = new ArrayList<>();
     SpaceSystem parent;
 
@@ -69,9 +71,16 @@ public class SpaceSystem extends NameDescription {
     public void addParameterType(ParameterType parameterType) {
         String ptn=((NameDescription)parameterType).getName();
         if(parameterTypes.containsKey(ptn))
-            throw new IllegalArgumentException("there is already a parameter type with name "+ptn);
+            throw new IllegalArgumentException("there is already a parameter type with name '"+ptn+"'");
         parameterTypes.put(ptn, parameterType);
 
+    }
+
+    public void addArgumentType(ArgumentType argumentType) {
+        String atn = ((NameDescription)argumentType).getName();
+        if(argumentTypes.containsKey(atn))
+            throw new IllegalArgumentException("there is already a argument type with name '"+atn+"'");
+        argumentTypes.put(atn, argumentType);
     }
 
     public void addAlgorithm(Algorithm algorithm) {
@@ -93,9 +102,16 @@ public class SpaceSystem extends NameDescription {
     public ParameterType getParameterType(String typeName) {
         return parameterTypes.get(typeName);
     }
+    
+    public ArgumentType getArgumentType(String typeName) {
+        return argumentTypes.get(typeName);
+    }
 
     public SequenceContainer getSequenceContainer(String refName) {
         return containers.get(refName);
+    }
+    public CommandContainer getCommandContainer(String name) {
+        return cmdContainers.get(name);
     }
 
     public Algorithm getAlgorithm(String algoName) {
@@ -307,4 +323,6 @@ public class SpaceSystem extends NameDescription {
         }
         return l;
     }
+
+   
 }
