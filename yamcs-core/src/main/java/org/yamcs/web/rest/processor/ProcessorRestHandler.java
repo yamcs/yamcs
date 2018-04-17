@@ -7,6 +7,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
+import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsException;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmServer;
@@ -34,6 +35,7 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
+import org.yamcs.web.rest.ServiceHelper;
 
 public class ProcessorRestHandler extends RestHandler {
 
@@ -273,6 +275,10 @@ public class ProcessorRestHandler extends RestHandler {
 
         String instance = processor.getInstance();
         String name = processor.getName();
+
+        for (ServiceWithConfig serviceWithConfig : processor.getServices()) {
+            b.addService(ServiceHelper.toServiceInfo(serviceWithConfig, instance, name));
+        }
         if (req.getQueryParameterAsBoolean("links", false)) {
             String apiURL = req.getApiURL();
             b.setUrl(apiURL + "/processors/" + instance + "/" + name);

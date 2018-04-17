@@ -1,12 +1,10 @@
 package org.yamcs.web.rest;
 
-import java.util.List;
-
+import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
-import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
@@ -37,18 +35,18 @@ public class ServiceRestHandler extends RestHandler {
             verifyInstance(req, instance);
         }
 
-        List<ServiceInfo> slist;
+        ListServiceInfoResponse.Builder responseb = ListServiceInfoResponse.newBuilder();
 
         if (global) {
-            slist = YamcsServer.getGlobalServices();
+            for (ServiceWithConfig serviceWithConfig : YamcsServer.getGlobalServices()) {
+                responseb.addService(ServiceHelper.toServiceInfo(serviceWithConfig, null, null));
+            }
         } else {
             YamcsServerInstance ysi = YamcsServer.getInstance(instance);
-            slist = ysi.getServices();
+            for (ServiceWithConfig serviceWithConfig : ysi.getServices()) {
+                responseb.addService(ServiceHelper.toServiceInfo(serviceWithConfig, instance, null));
+            }
         }
-
-        ListServiceInfoResponse.Builder responseb = ListServiceInfoResponse.newBuilder();
-        responseb.addAllService(slist);
-
         completeOK(req, responseb.build());
     }
 

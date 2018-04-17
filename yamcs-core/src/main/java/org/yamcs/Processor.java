@@ -12,6 +12,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.yamcs.cmdhistory.CommandHistoryProvider;
@@ -43,8 +44,8 @@ import com.google.common.util.concurrent.Service;
 
 /**
  * 
- * This class helps keeping track of the different objects used in a Yamcs Processor - i.e. all the
- * objects required to have a TM/TC processing chain (either realtime or playback).
+ * This class helps keeping track of the different objects used in a Yamcs Processor - i.e. all the objects required to
+ * have a TM/TC processing chain (either realtime or playback).
  *
  *
  */
@@ -53,25 +54,24 @@ public class Processor extends AbstractService {
     private static final String CONFIG_KEY_PARAMETER_CACHE = "parameterCache";
     private static final String CONFIG_KEY_ALARM = "alarm";
 
-    //handles subscriptions to parameters
+    // handles subscriptions to parameters
     private ParameterRequestManager parameterRequestManager;
-    //handles subscriptions to containers
+    // handles subscriptions to containers
     private ContainerRequestManager containerRequestManager;
-    //handles subscriptions to command history
+    // handles subscriptions to command history
     private CommandHistoryRequestManager commandHistoryRequestManager;
 
-    //handles command building and queues
+    // handles command building and queues
     private CommandingManager commandingManager;
 
-    //publishes events to command history
+    // publishes events to command history
     private CommandHistoryPublisher commandHistoryPublisher;
 
-    //these are services defined in the processor.yaml. 
-    //They have to register themselves to the processor in their init method
+    // these are services defined in the processor.yaml.
+    // They have to register themselves to the processor in their init method
     private TmPacketProvider tmPacketProvider;
     private CommandHistoryProvider commandHistoryProvider;
     private CommandReleaser commandReleaser;
-
 
     private static Map<String, Processor> instances = Collections.synchronizedMap(new LinkedHashMap<>());
 
@@ -138,7 +138,7 @@ public class Processor extends AbstractService {
                         "A processor named '" + name + "' already exists in instance " + yamcsInstance);
             }
             if (config != null) {
-                for (Map.Entry<String, Object> me: config.entrySet()) {
+                for (Map.Entry<String, Object> me : config.entrySet()) {
                     String c = me.getKey();
                     Object o = me.getValue();
                     if (CONFIG_KEY_ALARM.equals(c)) {
@@ -171,7 +171,7 @@ public class Processor extends AbstractService {
 
             for (ServiceWithConfig swc : serviceList) {
                 ProcessorService service = (ProcessorService) swc.service;
-                if(spec==null) {
+                if (spec == null) {
                     service.init(this);
                 } else {
                     service.init(this, spec);
@@ -197,10 +197,9 @@ public class Processor extends AbstractService {
             throw new IllegalStateException("There is already a command releaser");
         }
         commandReleaser = cr;
-        //maybe we should un-hardcode these two and make them services
+        // maybe we should un-hardcode these two and make them services
         commandHistoryPublisher = new StreamCommandHistoryPublisher(yamcsInstance);
         setCommandHistoryProvider(new StreamCommandHistoryProvider(yamcsInstance));
-
 
         commandingManager = new CommandingManager(this);
         commandReleaser.setCommandHistory(commandHistoryPublisher);
@@ -215,7 +214,6 @@ public class Processor extends AbstractService {
         commandHistoryRequestManager = new CommandHistoryRequestManager(this);
         commandHistoryProvider.setCommandHistoryRequestManager(commandHistoryRequestManager);
     }
-
 
     public ExecutorService getExecutor() {
         return executor;
@@ -314,31 +312,33 @@ public class Processor extends AbstractService {
         try {
             tmProcessor.startAsync();
             tmProcessor.addListener(new Listener() {
-                public void terminated(State from) {stopAsync();}
+                @Override
+                public void terminated(State from) {
+                    stopAsync();
+                }
             }, MoreExecutors.directExecutor());
             startIfNecessary(commandHistoryRequestManager);
             startIfNecessary(commandHistoryProvider);
             startIfNecessary(parameterRequestManager);
             startIfNecessary(tmPacketProvider);
             startIfNecessary(commandingManager);
-            
+
             for (ServiceWithConfig swc : serviceList) {
                 startIfNecessary(swc.service);
             }
-            
-            tmProcessor.awaitRunning();;
+
+            tmProcessor.awaitRunning();
+            ;
             awaitIfNecessary(commandHistoryRequestManager);
             awaitIfNecessary(commandHistoryProvider);
             awaitIfNecessary(parameterRequestManager);
             awaitIfNecessary(tmPacketProvider);
             awaitIfNecessary(commandingManager);
-            
-            
+
             for (ServiceWithConfig swc : serviceList) {
                 swc.service.awaitRunning();
             }
 
-            
             notifyStarted();
         } catch (Exception e) {
             notifyFailed(e);
@@ -346,15 +346,20 @@ public class Processor extends AbstractService {
         propagateProcessorStateChange();
     }
 
+    public List<ServiceWithConfig> getServices() {
+        return serviceList.stream().collect(Collectors.toList());
+    }
+
     private void startIfNecessary(Service service) {
-        if(service!=null) {
+        if (service != null) {
             if (service.state() == State.NEW) {
                 service.startAsync();
             }
         }
     }
+
     private void awaitIfNecessary(Service service) {
-        if(service!=null) {
+        if (service != null) {
             service.awaitRunning();
         }
     }
@@ -506,12 +511,9 @@ public class Processor extends AbstractService {
     }
 
     /**
-     * Closes the processor by stoping the tm/pp and tc
-     * It can be that there are still clients connected, but they will not get any data and new clients can not connect
-     * to
-     * these processors anymore. Once it is closed, you can create a processor with the same name which will make it
-     * maybe a bit
-     * confusing :(
+     * Closes the processor by stoping the tm/pp and tc It can be that there are still clients connected, but they will
+     * not get any data and new clients can not connect to these processors anymore. Once it is closed, you can create a
+     * processor with the same name which will make it maybe a bit confusing :(
      *
      */
     @Override
@@ -589,7 +591,7 @@ public class Processor extends AbstractService {
         if (tmPacketProvider == null) {
             return false;
         }
-        
+
         return tmPacketProvider.isArchiveReplay();
     }
 
@@ -655,8 +657,7 @@ public class Processor extends AbstractService {
     /**
      * Returns the processor time
      * 
-     * for realtime processors it is the mission time or simulation time
-     * for replay processors it is the replay time
+     * for realtime processors it is the mission time or simulation time for replay processors it is the replay time
      * 
      * @return
      */
@@ -688,7 +689,7 @@ public class Processor extends AbstractService {
      * @return all processors names as a list of instance.processorName
      */
     public static List<String> getAllProcessors() {
-        List<String> l = new ArrayList<String>(instances.size());
+        List<String> l = new ArrayList<>(instances.size());
         l.addAll(instances.keySet());
         return l;
     }
