@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>4.2.2-SNAPSHOT</version>
+    <version>4.2.2</version>
     <relativePath>..</relativePath>
   </parent>
 
