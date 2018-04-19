@@ -1,6 +1,7 @@
 package org.yamcs.utils;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -336,6 +337,13 @@ public class TimeEncoding {
      */
     public static long fromCalendar(Calendar cal) {
         return fromUnixMillisec(cal.getTimeInMillis());
+    }
+
+    /**
+     * Transforms a Date from UNIX (millisec since 1970) to instant
+     */
+    public static long fromDate(Date date) {
+        return fromUnixTime(date.getTime());
     }
 
     /**
