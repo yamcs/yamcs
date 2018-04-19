@@ -84,6 +84,8 @@ public class PGSegment {
             return new LongValueSegment(true);
         case UINT64:
             return new LongValueSegment(false);
+        case TIMESTAMP:
+            return new LongValueSegment(true);
         case DOUBLE:
             return new DoubleValueSegment();
         case BOOLEAN:
