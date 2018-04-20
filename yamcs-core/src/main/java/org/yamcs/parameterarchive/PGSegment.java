@@ -81,11 +81,9 @@ public class PGSegment {
         case FLOAT:
             return new FloatValueSegment();
         case SINT64:
-            return new LongValueSegment(true);
-        case UINT64:
-            return new LongValueSegment(false);
-        case TIMESTAMP:
-            return new LongValueSegment(true);
+        case UINT64: 
+        case TIMESTAMP:  //intentional fall through
+            return new LongValueSegment(type);
         case DOUBLE:
             return new DoubleValueSegment();
         case BOOLEAN:
