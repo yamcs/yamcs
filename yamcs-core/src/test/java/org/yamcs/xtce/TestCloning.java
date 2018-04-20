@@ -55,6 +55,9 @@ public class TestCloning {
         } else if (ptype instanceof StringParameterType) {
             StringParameterType t = (StringParameterType) ptype;
             return new StringParameterType(t);
+        } else if (ptype instanceof AbsoluteTimeParameterType) {
+            AbsoluteTimeParameterType t = (AbsoluteTimeParameterType) ptype;
+            return new AbsoluteTimeParameterType(t);
         } else {
             throw new IllegalArgumentException("Cannot clone type "+ptype);
         }

@@ -33,6 +33,7 @@ public class AbsoluteTimeDataType extends BaseTimeDataType {
     protected AbsoluteTimeDataType(AbsoluteTimeDataType t) {
         super(t);
         this.initialValue = t.initialValue;
+        this.referenceTime = t.referenceTime;
     }
 
     public void setReferenceTime(ReferenceTime referenceTime) {

@@ -88,10 +88,10 @@ public class SpreadsheetLoaderTest {
     
     @Test
     public void testTimeParam() throws Exception {
-        Parameter p = db.getParameter("/REFMDB/SUBSYS1/TimePara_sec6_1");
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/TimePara6_1");
         assertEquals(TimeEpoch.CommonEpochs.GPS, ((AbsoluteTimeParameterType)p.getParameterType()).getReferenceTime().getEpoch().getCommonEpoch());
         
-        p = db.getParameter("/REFMDB/SUBSYS1/TimePara_subsec6_2");
+        p = db.getParameter("/REFMDB/SUBSYS1/TimePara6_2");
         assertEquals(0.0039062500, ((AbsoluteTimeParameterType)p.getParameterType()).getScale(), 1e-5);
     }
 }

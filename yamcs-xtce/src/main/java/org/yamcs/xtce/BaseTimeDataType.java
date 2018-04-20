@@ -19,6 +19,9 @@ public abstract class BaseTimeDataType extends BaseDataType {
     protected BaseTimeDataType(BaseTimeDataType t) {
         super(t);    
         this.encoding = t.encoding;
+        this.needsScaling = t.needsScaling;
+        this.scale = t.scale;
+        this.offset = t.offset;
     }
     
 
