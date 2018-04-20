@@ -44,6 +44,13 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
      * If null, the entry does not repeat.
      */
     Repeat repeatEntry = null;
+    
+    /**
+     * This entry will only be included in the sequence when this condition is true. 
+     * If no IncludeCondition is given, then it is will be included. A parameter that 
+     * is not included will be treated as if it did not exist in the sequence at all.
+     */
+    private MatchCriteria includeCondition = null;
 
     public SequenceEntry() {
         
@@ -111,5 +118,12 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
 
     public void setRepeatEntry(Repeat repeat) {
         repeatEntry = repeat;
+    }
+    
+    public MatchCriteria getIncludeCondition() {
+        return includeCondition;
+    }
+    public void setIncludeCondition(MatchCriteria includeCondition) {
+        this.includeCondition = includeCondition;
     }
 }

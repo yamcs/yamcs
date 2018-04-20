@@ -40,6 +40,11 @@ public class SequenceContainerProcessor {
         if(entries!=null) {
             for (SequenceEntry se:entries) {
                 try {
+                    
+                    if(se.getIncludeCondition()!=null && !se.getIncludeCondition().isMet(pcontext.criteriaEvaluator)) {
+                        continue;
+                    }
+                    
                     switch(se.getReferenceLocation()) {
                     case previousEntry:
                         buf.setPosition(buf.getPosition()+se.getLocationInContainerInBits());

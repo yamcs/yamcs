@@ -1,6 +1,7 @@
-Version 4.2.3 released 17-Apr-2018
+Version 4.2.3 released 
 - fixed the parameter archive for boolean parameters
 - fixed the processing of XTCE absolute time parameters 
+- implemented IncludeCondition for container and parameter entries as per XTCE spec
 
 Version 4.2.2 released 17-Apr-2018
 - partially fixed the parameter archive for boolean parameters

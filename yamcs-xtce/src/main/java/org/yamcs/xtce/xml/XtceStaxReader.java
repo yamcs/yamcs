@@ -1893,7 +1893,7 @@ public class XtceStaxReader {
                 Repeat r = readXtceRepeatEntry(spaceSystem);
                 parameterEntry.setRepeatEntry(r);
             } else if (isStartElementWithName(XTCE_INCLUDE_CONDITION)) {
-                skipXtceSection(XTCE_INCLUDE_CONDITION);
+                parameterEntry.setIncludeCondition(readMatchCriteria(spaceSystem));
             } else if (isEndElementWithName(XTCE_PARAMETER_REF_ENTRY)) {
                 return parameterEntry;
             }
@@ -1935,13 +1935,13 @@ public class XtceStaxReader {
                 Repeat r = readXtceRepeatEntry(spaceSystem);
                 containerEntry.setRepeatEntry(r);
             } else if (isStartElementWithName(XTCE_INCLUDE_CONDITION)) {
-                skipXtceSection(XTCE_INCLUDE_CONDITION);
+                containerEntry.setIncludeCondition(readMatchCriteria(spaceSystem));
             } else if (isEndElementWithName(XTCE_CONTAINER_REF_ENTRY)) {
                 return containerEntry;
             }
         }
     }
-
+    
     
     private Repeat readXtceRepeatEntry(SpaceSystem spaceSystem) throws  XMLStreamException {
         log.trace(XTCE_REPEAT_ENTRY);
