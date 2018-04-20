@@ -39,7 +39,8 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     public final int pkt4Length = headerLength + 4;
     public final int pkt5Length = headerLength + pFixedBinary1.length + pPrependedSizeBinary1.length;
-
+    public final int pkt6Length = headerLength + 5;
+    
     public final int pkt2Length = 8;
     public final int pkt1_ListLength = pkt1Length;
     public final int pkt1_AndLength = pkt1Length;
@@ -63,7 +64,10 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public volatile int pIntegerPara1_11_1 = 0xAFFFFFFE; // a uint32 stored in signed java int
     public volatile long pIntegerPara1_11_1_unsigned_value = 2952790014L; // the equivalent unsigned value
     public volatile float pFloatPara1_20_1 = (float) (Math.PI / 2);
+    public volatile int pTimePara_sec6_1 = 1;
+    public volatile byte pTimePara_sec6_2 = (byte)128;
 
+    
     public volatile byte pLEIntegerPara1_2_1 = 13;
     public volatile short pLEIntegerPara1_2_2 = 1300;
     public volatile int pLEIntegerPara1_2_3 = 130000;
@@ -234,6 +238,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public byte[] generate_PKT5() {
         ByteBuffer bb = ByteBuffer.allocate(pkt5Length);
         fill_PKT5(bb);
+        sendToTmProcessor(bb);
+        return bb.array();
+    }
+    
+    public byte[] generate_PKT6() {
+        ByteBuffer bb = ByteBuffer.allocate(pkt6Length);
+        fill_PKT6(bb);
         sendToTmProcessor(bb);
         return bb.array();
     }
@@ -478,6 +489,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         fill_CcsdsHeader(bb, 995, 4);
         bb.position(headerLength);
         bb.putFloat(pFloatPara1_20_1);
+    }
+    
+    private void fill_PKT6(ByteBuffer bb) {
+        fill_CcsdsHeader(bb, 995, 6);
+        bb.position(headerLength);
+        bb.putInt(pTimePara_sec6_1);
+        bb.put(pTimePara_sec6_2);
     }
 
     private void fill_PKT2(ByteBuffer bb) {

@@ -22,7 +22,7 @@ public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements P
   
     @Override
     public String getTypeAsString() {
-        return "integer";
+        return "long";
     }
 
     @Override

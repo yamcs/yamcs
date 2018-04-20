@@ -4,19 +4,22 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class SpreadsheetLoaderTest {
-
-    @Test
-    public void testParameterAliases() throws Exception {
+    XtceDb db;
+    
+    @Before
+    public void setupXtceDb() {
         YConfiguration.setup("refmdb");
         XtceDbFactory.reset();
-
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
-
+        db = XtceDbFactory.getInstance("refmdb");
+    }
+    @Test
+    public void testParameterAliases() throws Exception {
         Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
         assertNotNull(p);
         String aliasPathname = p.getAlias("MDB:Pathname");
@@ -29,11 +32,6 @@ public class SpreadsheetLoaderTest {
 
     @Test
     public void testCommandAliases() throws Exception {
-        YConfiguration.setup("refmdb");
-        XtceDbFactory.reset();
-
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
-
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/ONE_INT_ARG_TC");
         assertNotNull(cmd1);
         String alias = cmd1.getAlias("MDB:Alias1");
@@ -48,11 +46,6 @@ public class SpreadsheetLoaderTest {
     
     @Test
     public void testCommandVerifiers() throws Exception {
-        YConfiguration.setup("refmdb");
-        XtceDbFactory.reset();
-
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
-
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC");
         assertNotNull(cmd1);
         assertTrue(cmd1.hasCommandVerifiers());
@@ -62,11 +55,6 @@ public class SpreadsheetLoaderTest {
     
     @Test
     public void testAlgorithmAliases() throws Exception {
-        YConfiguration.setup("refmdb");
-        XtceDbFactory.reset();
-
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
-
         Algorithm algo = db.getAlgorithm("/REFMDB/SUBSYS1/sliding_window");
         assertNotNull(algo);
         String alias = algo.getAlias("namespace1");
@@ -80,11 +68,6 @@ public class SpreadsheetLoaderTest {
     
     @Test
     public void testContainerAliases() throws Exception {
-        YConfiguration.setup("refmdb");
-        XtceDbFactory.reset();
-
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
-
         SequenceContainer container = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT1_2");
         assertNotNull(container);
         String alias = container.getAlias("MDB:Pathname");
@@ -93,11 +76,6 @@ public class SpreadsheetLoaderTest {
     
     @Test
     public void testReferenceAliases() throws Exception {
-        YConfiguration.setup("refmdb");
-        XtceDbFactory.reset();
-
-        XtceDb db = XtceDbFactory.getInstance("refmdb");
-
         Algorithm a = db.getAlgorithm("/REFMDB/SUBSYS1/algo_ext_spacesys");
         assertNotNull(a);
         List<InputParameter> lin =  a.getInputSet();
@@ -106,5 +84,14 @@ public class SpreadsheetLoaderTest {
         List<OutputParameter> lout = a.getOutputSet();
         assertEquals(1, lout.size());
         assertEquals("/REFMDB/algo_ext_spacesys_out", lout.get(0).getParameter().getQualifiedName());
+    }
+    
+    @Test
+    public void testTimeParam() throws Exception {
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/TimePara_sec6_1");
+        assertEquals(TimeEpoch.CommonEpochs.GPS, ((AbsoluteTimeParameterType)p.getParameterType()).getReferenceTime().getEpoch().getCommonEpoch());
+        
+        p = db.getParameter("/REFMDB/SUBSYS1/TimePara_subsec6_2");
+        assertEquals(0.0039062500, ((AbsoluteTimeParameterType)p.getParameterType()).getScale(), 1e-5);
     }
 }

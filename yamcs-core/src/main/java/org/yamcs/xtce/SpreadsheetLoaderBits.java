@@ -118,8 +118,8 @@ public class SpreadsheetLoaderBits {
     protected static final String CALIB_TYPE_POLYNOMIAL = "polynomial";
     protected static final String CALIB_TYPE_SPLINE = "spline";
     protected static final String CALIB_TYPE_JAVA_EXPRESSION = "java-expression";
-    protected static final String CALIB_TYPE_STRING_ENCODING = "string-encoding";
-
+    protected static final String CALIB_TYPE_TIME = "time";
+    
     protected static final String PARAM_ENGTYPE_STRING = "string";
     protected static final String PARAM_ENGTYPE_BOOLEAN = "boolean";
     protected static final String PARAM_ENGTYPE_BINARY = "binary";
@@ -130,6 +130,7 @@ public class SpreadsheetLoaderBits {
     protected static final String PARAM_ENGTYPE_UINT64 = "uint64";
     protected static final String PARAM_ENGTYPE_INT64 = "int64";
     protected static final String PARAM_ENGTYPE_FLOAT = "float";
+    protected static final String PARAM_ENGTYPE_TIME = "time";
 
     protected static final String PARAM_RAWTYPE_FLOAT = "float";
     protected static final String PARAM_RAWTYPE_INT = "int";

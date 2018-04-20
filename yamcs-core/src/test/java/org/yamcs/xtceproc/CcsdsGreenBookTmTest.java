@@ -24,7 +24,7 @@ public class CcsdsGreenBookTmTest {
         XtceTmExtractor extractor = new XtceTmExtractor(db);
         extractor.provideAll();
        
-        byte[] buf = new byte[] {24, (byte)0x01, 0, 0, //Header1 -> no secondary header
+        byte[] buf = new byte[] {24, (byte)0x01, 0, 0, //Header1 SecH -> no secondary header
                         0, 0, //PBATMTEMP
                         0, 0}; //PSWHLTIMFLG
         extractor.processPacket(buf, now, now);

@@ -623,8 +623,6 @@ public class XtceTmExtractorTest {
         assertNotNull(pv2);
         
         assertEquals(3.0, pv2.getEngValue().getFloatValue(), 1e-2);
-
-    
     }
     
     @Test
@@ -650,6 +648,26 @@ public class XtceTmExtractorTest {
         
         ParameterValue pv3 = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/CustomBinaryEncoding1"));        
         assertTrue(Arrays.equals(MyDecoder.fixedValue, pv3.getRawValue().getBinaryValue()));
+    }
+    
+    @Test
+    public void testPKT6_TimePara() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+
+        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
+        tmExtractor.provideAll();
+        
+        byte[] bb = tmGenerator.generate_PKT6();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        
+        ParameterValueList received = tmExtractor.getParameterResult();
+        assertEquals(5, received.size() );
+
+        ParameterValue pv1 = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/TimePara6_1"));
+        assertEquals("1980-01-06T00:00:01.000Z", TimeEncoding.toString(pv1.getEngValue().getTimestampValue()));
+        
+        ParameterValue pv2 = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/TimePara6_2"));
+        assertEquals("1980-01-06T00:00:01.500Z", TimeEncoding.toString(pv2.getEngValue().getTimestampValue()));
     }
     
     

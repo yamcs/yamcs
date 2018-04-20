@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +54,10 @@ import jxl.read.biff.BiffException;
 public class SpreadsheetLoader extends AbstractFileLoader {
     protected HashMap<String, Calibrator> calibrators = new HashMap<>();
     protected HashMap<String, String> javaFormulas = new HashMap<>();
-    protected HashMap<String, String> stringEncodings = new HashMap<>();
+    protected HashMap<String, String> timeCalibEpochs = new HashMap<>();
+    protected HashMap<String, String> timeCalibScales = new HashMap<>();
+    protected HashMap<String, SpreadsheetLoadContext> timeCalibContexts = new HashMap<>();
+
 
     protected HashMap<String, EnumerationDefinition> enumerations = new HashMap<>();
     protected HashMap<String, Parameter> parameters = new HashMap<>();
@@ -296,26 +298,30 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if(end!=start+1) {
                     throw new SpreadsheetLoadException(ctx, "Java formula must be specified on one line");
                 }
-                if(isEmpty(cells[IDX_CALIB_CALIB1])) {
+                if(!hasColumn(cells, IDX_CALIB_CALIB1)) {
                     throw new SpreadsheetLoadException(ctx, "Java formula must be specified on the CALIB1 column");
                 }
                 String javaFormula = cells[IDX_CALIB_CALIB1].getContents();
                 javaFormulas.put(name, javaFormula);
                 start = end;
-            } else if (CALIB_TYPE_STRING_ENCODING.equalsIgnoreCase(type)) {
+            }  else if (CALIB_TYPE_TIME.equalsIgnoreCase(type)) {
                 cells = jumpToRow(sheet, start);
                 if(end!=start+1) {
-                    throw new SpreadsheetLoadException(ctx, "string encoding must be specified on one line");
+                    throw new SpreadsheetLoadException(ctx, "Time encoding must be specified on one line");
                 }
-                if(isEmpty(cells[IDX_CALIB_CALIB1])) {
-                    throw new SpreadsheetLoadException(ctx, "string encoding must be specified on the CALIB1 column");
+                if(!hasColumn(cells, IDX_CALIB_CALIB1)) {
+                    throw new SpreadsheetLoadException(ctx, "Reference epoch or parameter must be specified on the CALIB1 column");
                 }
-                String stringEncoding = cells[IDX_CALIB_CALIB1].getContents();
-                stringEncodings.put(name, stringEncoding);
+                timeCalibEpochs.put(name, cells[IDX_CALIB_CALIB1].getContents());
+                timeCalibContexts.put(name, ctx.copy());
+                if(hasColumn(cells, IDX_CALIB_CALIB2)) {
+                    timeCalibScales.put(name, cells[IDX_CALIB_CALIB2].getContents());
+                }
+
                 start = end;
             } else {
                 throw new SpreadsheetLoadException(ctx, "Calibration type '"+type+"' not supported. Supported types: "
-                        +Arrays.asList(CALIB_TYPE_ENUMERATION, CALIB_TYPE_POLYNOMIAL, CALIB_TYPE_SPLINE, CALIB_TYPE_JAVA_EXPRESSION, CALIB_TYPE_STRING_ENCODING));
+                        +Arrays.asList(CALIB_TYPE_ENUMERATION, CALIB_TYPE_POLYNOMIAL, CALIB_TYPE_SPLINE, CALIB_TYPE_JAVA_EXPRESSION, CALIB_TYPE_TIME));
             }
 
             for (int j = start; j < end; j++) {
@@ -443,6 +449,9 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 ptype = new BooleanParameterType(name);
             } else if (PARAM_ENGTYPE_BINARY.equalsIgnoreCase(engtype)) {
                 ptype = new BinaryParameterType(name);
+            }  else if (PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
+                ptype = new AbsoluteTimeParameterType(name);
+                populateTimeParameter(spaceSystem, (AbsoluteTimeParameterType)ptype, calib);
             } else {
                 if(engtype.isEmpty()) {
                     throw new SpreadsheetLoadException(ctx, "No engineering type specified");
@@ -452,9 +461,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
 
             String units=null;
-            if(cells.length>IDX_PARAM_ENGUNIT) {
+            if(hasColumn(cells, IDX_PARAM_ENGUNIT)) {
                 units = cells[IDX_PARAM_ENGUNIT].getContents();
             }
+
             if(!"".equals(units) && units != null && ptype instanceof BaseDataType) {
                 UnitType unitType = new UnitType(units);
                 ((BaseDataType) ptype).addUnit(unitType);
@@ -478,8 +488,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 } else {
                     ((IntegerParameterType)ptype).encoding = encoding;
                 }
-            } else if (ptype instanceof BinaryParameterType) {
-                ((BinaryParameterType)ptype).encoding = encoding;
             } else if (ptype instanceof FloatParameterType) {
                 // Floats can be encoded as strings
                 if ( encoding instanceof StringDataEncoding ) {
@@ -510,19 +518,69 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if( encoding instanceof StringDataEncoding ) {
                     IntegerDataEncoding intStringEncoding = new IntegerDataEncoding(name, ((StringDataEncoding)encoding));
                     // Don't set calibrator, already done when making ptype
-                    ((EnumeratedParameterType) ptype).encoding = intStringEncoding;
+                    ptype.setEncoding(intStringEncoding); ;
                 } else {
-                    ((EnumeratedParameterType) ptype).encoding = encoding;
+                    ptype.setEncoding(encoding);
                 }
-            } else if (ptype instanceof StringParameterType) {
-                ((StringParameterType)ptype).encoding = encoding;
-            } else if (ptype instanceof BooleanParameterType) {
-                ((BooleanParameterType)ptype).encoding = encoding;
+                
+            } else{
+                ptype.setEncoding(encoding);
             }
-
+            
             param.setParameterType(ptype);
             param.setDataSource(dataSource);
         }
+    }
+
+
+    private void populateTimeParameter(SpaceSystem spaceSystem, AbsoluteTimeParameterType ptype, String calib) {
+        if(calib== null) {
+            return;
+        }
+        SpreadsheetLoadContext ctx1 = timeCalibContexts.get(calib);
+        String ref = timeCalibEpochs.get(calib);
+        if(ref.startsWith("epoch:")) {
+            String epochs = ref.substring(6).toUpperCase();
+            try {
+                TimeEpoch.CommonEpochs ce = TimeEpoch.CommonEpochs.valueOf(epochs);
+                ReferenceTime rt = new ReferenceTime();
+                rt.setEpoch(new TimeEpoch(ce));
+                ptype.setReferenceTime(rt);
+            } catch (IllegalArgumentException e) {
+                throw new SpreadsheetLoadException(ctx1, "Invalid epoch '"+epochs+"'for time calibration. Known epochs are "+Arrays.toString(TimeEpoch.CommonEpochs.values()));
+            }
+        } else if(ref.toLowerCase().startsWith("parameter:")) {
+            String paraRefName = ref.substring(10);
+            NameReference paramRef = getParameterReference(spaceSystem, paraRefName, false);
+            final ParameterInstanceRef parameterInstance = new ParameterInstanceRef();
+            paramRef.addResolvedAction( nd -> {
+                parameterInstance.setParameter((Parameter) nd);
+                return true;
+            });
+            ReferenceTime rt = new ReferenceTime();
+            rt.setOffsetFrom(parameterInstance);
+            ptype.setReferenceTime(rt);
+            
+        } else {
+            throw new SpreadsheetLoadException(ctx1, "Invalid epoch reference '"+ref+"'for time calibration. It has to start with 'epoch:' or 'parameter:'");
+        }
+        
+        String scaling = timeCalibScales.get(calib);
+        if(scaling!=null) {
+            String[] a = scaling.split(":");
+            if(a.length!=2) {
+                throw new SpreadsheetLoadException(ctx1, "Invalid scaling '"+scaling+"'for time calibration. Please use 'offset:scale'.");
+            }
+            try {
+                double offset = Double.parseDouble(a[0]);
+                double scale = Double.parseDouble(a[1]);
+                ptype.setScaling(true, offset, scale);
+                
+            } catch (NumberFormatException e) {
+                throw new SpreadsheetLoadException(ctx1, "Invalid scaling '"+scaling+"'for time calibration. Please use 'offset:scale'.");
+            }
+        }
+
     }
 
 
@@ -603,7 +661,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
             }
 
-            if ((!PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)) && (calib!=null)) {
+            if (calib!=null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
+                    && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
                 Calibrator c = getNumberCalibrator(paraArgDescr, calib);
                 ((IntegerDataEncoding)encoding).defaultCalibrator = c;
             }
@@ -627,7 +686,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     ((FloatDataEncoding)encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1]));
                 }
             }
-            if((!PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)) && calib!=null) {
+            if (calib!=null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
+                    && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
                 Calibrator c = getNumberCalibrator(paraArgDescr, calib);
                 ((FloatDataEncoding)encoding).defaultCalibrator = c;
             }
@@ -726,7 +786,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         return encoding;
     }
 
-   
+
     private Calibrator getNumberCalibrator(String paraArgDescr, String calibName) {
         Calibrator c = calibrators.get(calibName);
         if (c != null) {
@@ -1124,7 +1184,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 if(pos.relative && counter==0 && extraOffset!=-1) {
                     pos = new Position(pos.pos, false);
                 }
-                
+
                 if(!hasColumn(cells, IDX_CMD_ENGTYPE)) {
                     throw new SpreadsheetLoadException(ctx, "engtype is not specified for "+argname+" on line "+(i+1));
                 }
@@ -1422,14 +1482,14 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         String name = cells[IDX_CMD_ARGNAME].getContents();
 
         Position pos = Position.RELATIVE_ZERO;
-        
+
         if(hasColumn(cells,  IDX_CMD_RELPOS)) {
             pos = getPosition(ctx, cells[IDX_CMD_RELPOS].getContents());
         }
         if(pos.relative && counter==0 && extraOffset!=-1) {
             pos = new Position(pos.pos, false);
         }
-        
+
 
         String calib = null;
         if(hasColumn(cells, IDX_CMD_CALIBRATION)) {
@@ -1439,10 +1499,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if(hasColumn(cells, IDX_CMD_FLAGS)) {
             flags = cells[IDX_CMD_FLAGS].getContents();
         }
-        
+
         String encodings = null;
         if(hasColumn(cells, IDX_CMD_ENCODING)) {
-             encodings = cells[IDX_CMD_ENCODING].getContents();
+            encodings = cells[IDX_CMD_ENCODING].getContents();
         }
 
         String rawType = engType;
@@ -1596,7 +1656,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
 
         DataEncoding encoding = getDataEncoding(spaceSystem, ctx, "Argument "+arg.getName(), rawType, engType, encodings, calib);
-        
+
         if (atype instanceof IntegerArgumentType) {
             // Integers can be encoded as strings
             if( encoding instanceof StringDataEncoding ) {
@@ -1977,10 +2037,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         }
         String trigger = cells[idxTrigger].getContents();
         String triggerValue = cells[idxValue].getContents();
-        
+
         SpreadsheetLoadContext ctx1 = ctx.copy();
         paraRef.addResolvedAction(nd -> {
-           
+
             Parameter para = (Parameter)nd;
             if(para.getParameterType() instanceof IntegerParameterType) {
                 double tvd = parseDouble(ctx1, triggerValue);

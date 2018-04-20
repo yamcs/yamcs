@@ -52,4 +52,7 @@ public interface ParameterType {
      * @return the data encoding for the parameter
      */
     public DataEncoding getEncoding();
+    
+    
+    void setEncoding(DataEncoding dataEncoding);
 }
