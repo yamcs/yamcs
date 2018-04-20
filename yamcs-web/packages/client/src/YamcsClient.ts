@@ -105,7 +105,7 @@ export default class YamcsClient {
   async getInstances() {
     const response = await this.doFetch(`${this.apiUrl}/instances`);
     const wrapper = await response.json() as InstancesWrapper;
-    return wrapper.instance;
+    return wrapper.instance || [];
   }
 
   async getInstance(name: string) {

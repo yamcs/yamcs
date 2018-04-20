@@ -6,27 +6,27 @@
 }
 
 .inlimits {
-  background: url('/assets/level-sprite.png') 0 0;
+  background-position: 0 0;
 }
 
 .watch {
-  background: url('/assets/level-sprite.png') 0 -5px;
+  background-position: 0 -5px;
 }
 
 .warning {
-  background: url('/assets/level-sprite.png') 0 -10px;
+  background-position: 0 -10px;
 }
 
 .distress {
-  background: url('/assets/level-sprite.png') 0 -15px;
+  background-position: 0 -15px;
 }
 
 .critical {
-  background: url('/assets/level-sprite.png') 0 -20px;
+  background-position: 0 -20px;
 }
 
 .severe {
-  background: url('/assets/level-sprite.png') 0 -25px;
+  background-position: 0 -25px;
 }
 
 .grayscale {

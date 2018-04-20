@@ -2,6 +2,14 @@
   <app-monitor-toolbar>
     Events
     &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-button
+            *ngIf="mayWriteEvents()"
+            color="primary"
+            (click)="createEvent()">
+      <mat-icon>add_box</mat-icon>
+      Create Event
+    </button>
+
     <button mat-icon-button
             matTooltip="Jump to now"
             color="primary"

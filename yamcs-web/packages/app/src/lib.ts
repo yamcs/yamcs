@@ -1,5 +1,8 @@
 import GridPlugin from './app/shared/widgets/GridPlugin';
 
+export * from './app/shared/template/Select';
+export * from './app/shared/utils';
+
 export * from './app/mdb/MdbModule';
 export * from './app/monitor/MonitorModule';
 export * from './app/shared/SharedModule';
@@ -30,5 +33,5 @@ export * from './app/core/pages/AppComponent';
 export * from './app/core/config/AppConfig';
 
 export {
-  GridPlugin
+  GridPlugin,
 };

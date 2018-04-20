@@ -33,6 +33,7 @@ export class LoginPage {
       this.router.navigateByUrl(next);
       return false;
     }).catch(err => {
+      this.formGroup.get('password')!.setValue('');
       if (err.statusCode === 401) {
         this.errorMessage$.next('Invalid user or password');
       } else if (err.statusCode) {

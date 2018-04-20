@@ -33,6 +33,7 @@ export {
   CommandHistoryEntry,
   CommandHistoryAttribute,
   CommandId,
+  CreateEventRequest,
   DisplayFile,
   DisplayFolder,
   DownloadEventsOptions,

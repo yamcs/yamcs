@@ -62,6 +62,7 @@ import {
   CommandHistoryEntry,
   TimeSubscriptionResponse,
   AlarmSubscriptionResponse,
+  CreateEventRequest,
 } from './types/monitoring';
 
 import {
@@ -125,6 +126,15 @@ export class InstanceClient {
   async getEventUpdates() {
     this.prepareWebSocketClient();
     return this.webSocketClient.getEventUpdates();
+  }
+
+  async createEvent(options: CreateEventRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/archive/${this.instance}/events2`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Event;
   }
 
   async getLinks() {

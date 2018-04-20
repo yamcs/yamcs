@@ -22771,6 +22771,32 @@ public final class Yamcs {
      */
     com.google.protobuf.ByteString
         getReceptionTimeUTCBytes();
+
+    /**
+     * <code>optional string createdBy = 10;</code>
+     *
+     * <pre>
+     * Set by API when event was posted by a user
+     * </pre>
+     */
+    boolean hasCreatedBy();
+    /**
+     * <code>optional string createdBy = 10;</code>
+     *
+     * <pre>
+     * Set by API when event was posted by a user
+     * </pre>
+     */
+    java.lang.String getCreatedBy();
+    /**
+     * <code>optional string createdBy = 10;</code>
+     *
+     * <pre>
+     * Set by API when event was posted by a user
+     * </pre>
+     */
+    com.google.protobuf.ByteString
+        getCreatedByBytes();
   }
   /**
    * Protobuf type {@code yamcs.Event}
@@ -22879,6 +22905,12 @@ public final class Yamcs {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000100;
               receptionTimeUTC_ = bs;
+              break;
+            }
+            case 82: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000200;
+              createdBy_ = bs;
               break;
             }
           }
@@ -23330,6 +23362,60 @@ public final class Yamcs {
       }
     }
 
+    public static final int CREATEDBY_FIELD_NUMBER = 10;
+    private java.lang.Object createdBy_;
+    /**
+     * <code>optional string createdBy = 10;</code>
+     *
+     * <pre>
+     * Set by API when event was posted by a user
+     * </pre>
+     */
+    public boolean hasCreatedBy() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    /**
+     * <code>optional string createdBy = 10;</code>
+     *
+     * <pre>
+     * Set by API when event was posted by a user
+     * </pre>
+     */
+    public java.lang.String getCreatedBy() {
+      java.lang.Object ref = createdBy_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          createdBy_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string createdBy = 10;</code>
+     *
+     * <pre>
+     * Set by API when event was posted by a user
+     * </pre>
+     */
+    public com.google.protobuf.ByteString
+        getCreatedByBytes() {
+      java.lang.Object ref = createdBy_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        createdBy_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private void initFields() {
       source_ = "";
       generationTime_ = 0L;
@@ -23340,6 +23426,7 @@ public final class Yamcs {
       severity_ = org.yamcs.protobuf.Yamcs.Event.EventSeverity.INFO;
       generationTimeUTC_ = "";
       receptionTimeUTC_ = "";
+      createdBy_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -23408,6 +23495,9 @@ public final class Yamcs {
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         output.writeBytes(9, getReceptionTimeUTCBytes());
       }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeBytes(10, getCreatedByBytes());
+      }
       extensionWriter.writeUntil(10001, output);
       getUnknownFields().writeTo(output);
     }
@@ -23453,6 +23543,10 @@ public final class Yamcs {
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(9, getReceptionTimeUTCBytes());
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(10, getCreatedByBytes());
       }
       size += extensionsSerializedSize();
       size += getUnknownFields().getSerializedSize();
@@ -23591,6 +23685,8 @@ public final class Yamcs {
         bitField0_ = (bitField0_ & ~0x00000080);
         receptionTimeUTC_ = "";
         bitField0_ = (bitField0_ & ~0x00000100);
+        createdBy_ = "";
+        bitField0_ = (bitField0_ & ~0x00000200);
         return this;
       }
 
@@ -23655,6 +23751,10 @@ public final class Yamcs {
           to_bitField0_ |= 0x00000100;
         }
         result.receptionTimeUTC_ = receptionTimeUTC_;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
+        }
+        result.createdBy_ = createdBy_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -23706,6 +23806,11 @@ public final class Yamcs {
         if (other.hasReceptionTimeUTC()) {
           bitField0_ |= 0x00000100;
           receptionTimeUTC_ = other.receptionTimeUTC_;
+          onChanged();
+        }
+        if (other.hasCreatedBy()) {
+          bitField0_ |= 0x00000200;
+          createdBy_ = other.createdBy_;
           onChanged();
         }
         this.mergeExtensionFields(other);
@@ -24271,6 +24376,106 @@ public final class Yamcs {
         return this;
       }
 
+      private java.lang.Object createdBy_ = "";
+      /**
+       * <code>optional string createdBy = 10;</code>
+       *
+       * <pre>
+       * Set by API when event was posted by a user
+       * </pre>
+       */
+      public boolean hasCreatedBy() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>optional string createdBy = 10;</code>
+       *
+       * <pre>
+       * Set by API when event was posted by a user
+       * </pre>
+       */
+      public java.lang.String getCreatedBy() {
+        java.lang.Object ref = createdBy_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            createdBy_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string createdBy = 10;</code>
+       *
+       * <pre>
+       * Set by API when event was posted by a user
+       * </pre>
+       */
+      public com.google.protobuf.ByteString
+          getCreatedByBytes() {
+        java.lang.Object ref = createdBy_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          createdBy_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string createdBy = 10;</code>
+       *
+       * <pre>
+       * Set by API when event was posted by a user
+       * </pre>
+       */
+      public Builder setCreatedBy(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000200;
+        createdBy_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string createdBy = 10;</code>
+       *
+       * <pre>
+       * Set by API when event was posted by a user
+       * </pre>
+       */
+      public Builder clearCreatedBy() {
+        bitField0_ = (bitField0_ & ~0x00000200);
+        createdBy_ = getDefaultInstance().getCreatedBy();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string createdBy = 10;</code>
+       *
+       * <pre>
+       * Set by API when event was posted by a user
+       * </pre>
+       */
+      public Builder setCreatedByBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000200;
+        createdBy_ = value;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:yamcs.Event)
     }
 
@@ -24490,26 +24695,26 @@ public final class Yamcs {
       " \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(\013" +
       "2\024.yamcs.NamedObjectId\"7\n\010TimeInfo\022\023\n\013cu" +
       "rrentTime\030\001 \001(\003\022\026\n\016currentTimeUTC\030\002 \001(\t\"" +
-      "\316\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016generationT" +
+      "\341\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016generationT" +
       "ime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n\tseqN" +
       "umber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007message\030\006 \002" +
       "(\t\0222\n\010severity\030\007 \001(\0162\032.yamcs.Event.Event" +
       "Severity:\004INFO\022\031\n\021generationTimeUTC\030\010 \001(" +
-      "\t\022\030\n\020receptionTimeUTC\030\t \001(\t\"d\n\rEventSeve",
-      "rity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002\022\t" +
-      "\n\005WATCH\020\003\022\014\n\010DISTRESS\020\005\022\014\n\010CRITICAL\020\006\022\n\n" +
-      "\006SEVERE\020\007*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LOOP\020\001\022" +
-      "\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*\357\002\n\rProtoDataType\022\014\n" +
-      "\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACK" +
-      "ET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX" +
-      "\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CM" +
-      "D_HISTORY\020\t\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013CLIEN" +
-      "T_INFO\020\013\022\031\n\025PROCESSING_STATISTICS\020\014\022\017\n\013S" +
-      "TREAM_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INF",
-      "O\020\017\022\016\n\nLINK_EVENT\020\020\022\026\n\022COMMAND_QUEUE_INF" +
-      "O\020\021\022\027\n\023COMMAND_QUEUE_EVENT\020\022\022\023\n\017CONNECTI" +
-      "ON_INFO\020\023\022\022\n\016EXTENSION_DATA\020dB\024\n\022org.yam" +
-      "cs.protobuf"
+      "\t\022\030\n\020receptionTimeUTC\030\t \001(\t\022\021\n\tcreatedBy",
+      "\030\n \001(\t\"d\n\rEventSeverity\022\010\n\004INFO\020\000\022\013\n\007WAR" +
+      "NING\020\001\022\t\n\005ERROR\020\002\022\t\n\005WATCH\020\003\022\014\n\010DISTRESS" +
+      "\020\005\022\014\n\010CRITICAL\020\006\022\n\n\006SEVERE\020\007*\005\010d\020\221N*)\n\tE" +
+      "ndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*\357" +
+      "\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_" +
+      "CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT" +
+      "\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r" +
+      "\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCES" +
+      "SOR_INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PROCESSIN" +
+      "G_STATISTICS\020\014\022\017\n\013STREAM_DATA\020\r\022\016\n\nALARM",
+      "_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK_EVENT\020\020\022\026" +
+      "\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023COMMAND_QUEUE_" +
+      "EVENT\020\022\022\023\n\017CONNECTION_INFO\020\023\022\022\n\016EXTENSIO" +
+      "N_DATA\020dB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -24672,7 +24877,7 @@ public final class Yamcs {
     internal_static_yamcs_Event_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_yamcs_Event_descriptor,
-        new java.lang.String[] { "Source", "GenerationTime", "ReceptionTime", "SeqNumber", "Type", "Message", "Severity", "GenerationTimeUTC", "ReceptionTimeUTC", });
+        new java.lang.String[] { "Source", "GenerationTime", "ReceptionTime", "SeqNumber", "Type", "Message", "Severity", "GenerationTimeUTC", "ReceptionTimeUTC", "CreatedBy", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

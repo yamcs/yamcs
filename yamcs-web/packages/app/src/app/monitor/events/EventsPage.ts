@@ -13,6 +13,9 @@ import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { debounceTime } from 'rxjs/operators';
 import { Option, Select } from '../../shared/template/Select';
 import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../../core/config/AppConfig';
+import { CreateEventDialog } from './CreateEventDialog';
+import { MatDialog } from '@angular/material';
+import { AuthService } from '../../core/services/AuthService';
 
 const defaultInterval = 'PT1H';
 
@@ -104,7 +107,9 @@ export class EventsPage {
 
   constructor(
     private yamcs: YamcsService,
+    private authService: AuthService,
     private preferenceStore: PreferenceStore,
+    private dialog: MatDialog,
     @Inject(APP_CONFIG) appConfig: AppConfig,
     title: Title,
   ) {
@@ -235,7 +240,7 @@ export class EventsPage {
       options.stop = this.validStop.toISOString();
     }
     if (this.textSearch) {
-      options.filter = this.textSearch;
+      options.q = this.textSearch;
     }
     if (this.source) {
       options.source = this.source;
@@ -252,7 +257,7 @@ export class EventsPage {
       dlOptions.stop = this.validStop.toISOString();
     }
     if (this.textSearch) {
-      dlOptions.filter = this.textSearch;
+      dlOptions.q = this.textSearch;
     }
     if (this.source) {
       dlOptions.source = this.source;
@@ -266,9 +271,17 @@ export class EventsPage {
   }
 
   loadMoreData() {
-    const options: GetEventsOptions = {};
+    const options: GetEventsOptions = {
+      severity: this.severity as any,
+    };
     if (this.validStart) {
       options.start = this.validStart.toISOString();
+    }
+    if (this.textSearch) {
+      options.q = this.textSearch;
+    }
+    if (this.source) {
+      options.source = this.source;
     }
 
     this.dataSource.loadMoreData(options);
@@ -289,5 +302,16 @@ export class EventsPage {
 
   updateInterval(interval: string) {
     this.filter.get('interval')!.setValue(interval);
+  }
+
+  mayWriteEvents() {
+    return this.authService.hasSystemPrivilege('MayWriteEvents');
+  }
+
+  createEvent() {
+    const dialogInstance = this.dialog.open(CreateEventDialog, {
+      width: '400px',
+    });
+    dialogInstance.afterClosed().subscribe(() => this.jumpToNow());
   }
 }

@@ -1,0 +1,32 @@
+<h2 mat-dialog-title>Create Event</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <mat-form-field style="width: 100%">
+      <textarea matInput
+                formControlName="message"
+                placeholder="Message"
+                matTextareaAutosize
+                matAutosizeMinRows="3"></textarea>
+    </mat-form-field>
+    <mat-form-field style="width: 100%">
+      <mat-select formControlName="severity" placeholder="Severity">
+        <mat-option value="INFO">INFO</mat-option>
+        <mat-option value="WATCH">WATCH</mat-option>
+        <mat-option value="WARNING">WARNING</mat-option>
+        <mat-option value="DISTRESS">DISTRESS</mat-option>
+        <mat-option value="CRITICAL">CRITICAL</mat-option>
+        <mat-option value="SEVERE">SEVERE</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field style="width: 100%">
+      <input matInput formControlName="time" placeholder="Event Time">
+    </mat-form-field>
+  </form>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button (click)="save()" color="primary" [disabled]="!form.valid">Save</button>
+</mat-dialog-actions>

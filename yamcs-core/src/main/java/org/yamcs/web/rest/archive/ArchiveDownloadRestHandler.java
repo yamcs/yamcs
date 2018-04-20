@@ -325,7 +325,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         }
 
-        String severity = req.getQueryParameter("severity", "INFO");
+        String severity = req.getQueryParameter("severity", "INFO").toUpperCase();
 
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -356,8 +356,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         default:
             sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
         }
-        if (req.hasQueryParameter("filter")) {
-            sqlb.where("body.message like ?", "%" + req.getQueryParameter("filter") + "%");
+        if (req.hasQueryParameter("q")) {
+            sqlb.where("body.message like ?", "%" + req.getQueryParameter("q") + "%");
         }
 
         sqlb.descend(req.asksDescending(false));

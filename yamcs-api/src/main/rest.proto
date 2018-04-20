@@ -149,6 +149,13 @@ message UpdateCommandHistoryRequest {
     repeated KeyValue historyEntry = 2;
 }
 
+message CreateEventRequest {
+  optional string type = 1;
+  optional string message = 2;
+  optional string severity = 3;
+  optional string time = 4;
+}
+
 message CreateProcessorRequest {
   optional string name = 1;
 
