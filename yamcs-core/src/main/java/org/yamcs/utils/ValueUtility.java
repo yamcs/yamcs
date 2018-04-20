@@ -268,7 +268,9 @@ public class ValueUtility {
         case STRING:
             return b.setStringValue(v.getStringValue()).build();
         case TIMESTAMP:
-            return b.setTimestampValue(v.getTimestampValue()).build();
+            return b.setTimestampValue(v.getTimestampValue())
+                    .setStringValue(TimeEncoding.toString(v.getTimestampValue()))
+                    .build();
         case UINT32:
             return b.setUint32Value(v.getUint32Value()).build();
         case UINT64:
@@ -352,5 +354,4 @@ public class ValueUtility {
             return false;
         }
     }
-   
 }
