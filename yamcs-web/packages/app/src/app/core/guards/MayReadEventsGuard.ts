@@ -9,6 +9,9 @@ export class MayReadEventsGuard implements CanActivate, CanActivateChild {
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    if (!this.authService.authRequired$.value) {
+      return true;
+    }
     const userInfo = this.authService.getUserInfo();
     if (userInfo) {
       const systemPrivileges = userInfo.systemPrivileges || [];

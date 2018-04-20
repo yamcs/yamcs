@@ -111,6 +111,9 @@ export class AuthService implements OnDestroy {
   }
 
   hasSystemPrivilege(privilege: string) {
+    if (!this.authRequired$.value) {
+      return true;
+    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.systemPrivileges) {
       for (const expression of userInfo.systemPrivileges) {
@@ -123,6 +126,9 @@ export class AuthService implements OnDestroy {
   }
 
   hasParameterPrivilege(parameter: string) {
+    if (!this.authRequired$.value) {
+      return true;
+    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.tmParaPrivileges) {
       for (const expression of userInfo.tmParaPrivileges) {
@@ -135,6 +141,9 @@ export class AuthService implements OnDestroy {
   }
 
   hasSetParameterPrivilege(parameter: string) {
+    if (!this.authRequired$.value) {
+      return true;
+    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.tmParaSetPrivileges) {
       for (const expression of userInfo.tmParaSetPrivileges) {
@@ -147,6 +156,9 @@ export class AuthService implements OnDestroy {
   }
 
   hasPacketPrivilege(packet: string) {
+    if (!this.authRequired$.value) {
+      return true;
+    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.tmPacketPrivileges) {
       for (const expression of userInfo.tmPacketPrivileges) {
@@ -159,6 +171,9 @@ export class AuthService implements OnDestroy {
   }
 
   hasCommandPrivilege(command: string) {
+    if (!this.authRequired$.value) {
+      return true;
+    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.tcPrivileges) {
       for (const expression of userInfo.tcPrivileges) {
@@ -171,6 +186,9 @@ export class AuthService implements OnDestroy {
   }
 
   hasStreamPrivilege(stream: string) {
+    if (!this.authRequired$.value) {
+      return true;
+    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.streamPrivileges) {
       for (const expression of userInfo.streamPrivileges) {
@@ -183,6 +201,9 @@ export class AuthService implements OnDestroy {
   }
 
   hasCommandHistoryPrivilege(command: string) {
+    if (!this.authRequired$.value) {
+      return true;
+    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.cmdHistoryPrivileges) {
       for (const expression of userInfo.cmdHistoryPrivileges) {
