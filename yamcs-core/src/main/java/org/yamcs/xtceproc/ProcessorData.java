@@ -3,6 +3,7 @@ package org.yamcs.xtceproc;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.FloatDataEncoding;

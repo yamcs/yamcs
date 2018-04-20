@@ -19,6 +19,9 @@ public class TimeEncoding {
     public static long MAX_INSTANT = 185539080470435999L;
 
     static final long GPS_EPOCH_YAMCS_EPOCH_DELTA = 315964819000L;
+    static final long TAI_EPOCH_YAMCS_EPOCH_DELTA = -378691191000L;
+    static final long J2000_EPOCH_YAMCS_EPOCH_DELTA = 946727967816L;
+    
     static final long GPS_TAI_DELTA = 19000;
 
     static TaiUtcConverter taiUtcConverter;
@@ -286,11 +289,22 @@ public class TimeEncoding {
      * 
      * @param milliseconds
      * @return
+     * @deprecated use {@link fromUnixMillisec}
      */
+    @Deprecated
     public static long fromUnixTime(long milliseconds) {
+        return fromUnixMillisec(milliseconds);
+    }
+    
+    /**
+     * Transforms UNIX time (milliseconds since 1970) to instant
+     * 
+     * @param milliseconds
+     * @return
+     */
+    public static long fromUnixMillisec(long milliseconds) {
         return taiUtcConverter.unixToInstant(milliseconds);
     }
-
     /**
      * Transforms UNIX time expressed in seconds and microseconds since 1970 to instant WARNING: this conversion will
      * loose precision (microsecond to millisecond)
@@ -321,7 +335,7 @@ public class TimeEncoding {
      * @return
      */
     public static long fromCalendar(Calendar cal) {
-        return fromUnixTime(cal.getTimeInMillis());
+        return fromUnixMillisec(cal.getTimeInMillis());
     }
 
     /**
@@ -362,5 +376,13 @@ public class TimeEncoding {
      */
     public static long fromGpsMillisec(long gpstime) {
         return gpstime + GPS_EPOCH_YAMCS_EPOCH_DELTA;
+    }
+
+    public static long fromTaiMillisec(long taitime) {
+        return taitime + TAI_EPOCH_YAMCS_EPOCH_DELTA;
+    }
+    
+    public static long fromJ2000Millisec(long j2000time) {
+        return j2000time + J2000_EPOCH_YAMCS_EPOCH_DELTA;
     }
 }

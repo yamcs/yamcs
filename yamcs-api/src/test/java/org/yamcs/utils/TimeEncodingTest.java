@@ -69,13 +69,13 @@ public class TimeEncodingTest {
 
     @Test
     public void getInstantFromUnix2() throws ParseException {
-        long instant = TimeEncoding.fromUnixTime(123);
+        long instant = TimeEncoding.fromUnixMillisec(123);
         assertEquals("1970-01-01T00:00:00.123Z", TimeEncoding.toString(instant));
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-        long inst1 = TimeEncoding.fromUnixTime(sdf.parse("2008-12-31T23:59:59.125Z").getTime());
-        long inst2 = TimeEncoding.fromUnixTime(sdf.parse("2009-01-01T00:00:00.126Z").getTime());
+        long inst1 = TimeEncoding.fromUnixMillisec(sdf.parse("2008-12-31T23:59:59.125Z").getTime());
+        long inst2 = TimeEncoding.fromUnixMillisec(sdf.parse("2009-01-01T00:00:00.126Z").getTime());
         assertEquals("2008-12-31T23:59:59.125Z", TimeEncoding.toString(inst1));
         assertEquals("2009-01-01T00:00:00.126Z", TimeEncoding.toString(inst2));
         assertEquals(2001, (inst2 - inst1));
@@ -88,8 +88,8 @@ public class TimeEncodingTest {
         long unix1 = sdf.parse("2008-12-31T23:59:59.125Z").getTime();
         long unix2 = sdf.parse("2009-01-01T00:00:00.126Z").getTime();
 
-        long inst1 = TimeEncoding.fromUnixTime(unix1);
-        long inst2 = TimeEncoding.fromUnixTime(unix2);
+        long inst1 = TimeEncoding.fromUnixMillisec(unix1);
+        long inst2 = TimeEncoding.fromUnixMillisec(unix2);
 
         assertEquals("2008-12-31T23:59:59.125Z", TimeEncoding.toString(inst1));
         assertEquals("2009-01-01T00:00:00.126Z", TimeEncoding.toString(inst2));
@@ -176,5 +176,17 @@ public class TimeEncodingTest {
         GpsCcsdsTime time = TimeEncoding.toGpsTime(instant);
         assertEquals(977876415, time.coarseTime);
         assertEquals(1, time.fineTime);
+    }
+    
+    @Test
+    public void testTaiOffset() {
+        long instant = TimeEncoding.fromTaiMillisec(0);
+        assertEquals(TimeEncoding.parse("1958-01-01T00:00:00"), instant);
+    }
+    
+    @Test
+    public void testJ2000Offset() {
+        long instant = TimeEncoding.fromJ2000Millisec(0);
+        assertEquals(TimeEncoding.parse("2000-01-01T11:58:55.816"), instant);
     }
 }

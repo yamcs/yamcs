@@ -585,7 +585,7 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_REFERENCE_TIME)) {
                 ptype.setReferenceTime(readXtceReferenceTime(spaceSystem));
             } else if (isStartElementWithName(XTCE_ENCODING)) {
-                ptype.setEncoding(readXtceEncoding());
+                readXtceEncoding(ptype);
             } else if (isEndElementWithName(XTCE_ABSOLUTE_TIME_PARAMETER_TYPE)) {
                 return ptype;
             }
@@ -627,10 +627,29 @@ public class XtceStaxReader {
         }
     }
     
-    private DataEncoding readXtceEncoding() throws XMLStreamException {
+    private void readXtceEncoding(AbsoluteTimeParameterType ptype) throws XMLStreamException {
         log.trace(XTCE_ENCODING);
         checkStartElementPreconditions();
-
+        // name attribute
+        String units = readAttribute("units", xmlEvent.asStartElement());
+        if ((units != null) && (!"seconds".equals(units))) {
+            throw new XMLStreamException("Unsupported unit types '"+units+"' for time encoding. Only seconds (with scaling) supported");
+        } 
+        boolean needsScaling = false;
+        double offset = 0d;
+        double scale = 1d;
+        String offsets = readAttribute("offset", xmlEvent.asStartElement());
+        if(offsets!=null) {
+            needsScaling = true;
+            offset = Double.parseDouble(offsets);
+        }
+        String scales = readAttribute("scale", xmlEvent.asStartElement());
+        if(scales!=null) {
+            needsScaling = true;
+            scale = Double.parseDouble(scales);
+        }
+        ptype.setScaling(needsScaling, offset, scale);
+        
         DataEncoding dataEncoding = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -639,7 +658,8 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
                 dataEncoding = readXtceFloatDataEncoding();
             } else if (isEndElementWithName(XTCE_ENCODING)) {
-                return dataEncoding;
+                ptype.setEncoding(dataEncoding);
+                return;
             }
         }
     }

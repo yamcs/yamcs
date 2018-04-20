@@ -3,11 +3,11 @@ package org.yamcs.xtce;
 import java.io.Serializable;
 
 public class TimeEpoch implements Serializable {
-    private static final long serialVersionUID = 1L;
-    
-   final CommonEpochs epoch;
-   final String dateTime;
+    private static final long serialVersionUID = 2L;
     public static enum CommonEpochs {TAI, J2000, UNIX, GPS};
+     
+    private final CommonEpochs epoch;
+    private final String dateTime;
     
     public TimeEpoch(CommonEpochs epoch) {
         this.epoch = epoch;
@@ -18,5 +18,12 @@ public class TimeEpoch implements Serializable {
         this.epoch = null;
         this.dateTime = dateTime;
     }
-    
+
+    public CommonEpochs getCommonEpoch() {
+        return epoch;
+    }
+
+    public String getDateTime() {
+        return dateTime;
+    }
 }

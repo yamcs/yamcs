@@ -59,7 +59,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
 
         byte[] bb = tmGenerator.generate_PKT1_1();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -92,7 +92,7 @@ public class XtceTmExtractorTest {
       //  xtcedb.print(System.out);
         
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
 
         byte[] bb = tmGenerator.generate_PKT1_2();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -130,7 +130,7 @@ public class XtceTmExtractorTest {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);        
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         byte[] bb = tmGenerator.generate_PKT1_3();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -173,7 +173,7 @@ public class XtceTmExtractorTest {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         byte[] bb = tmGenerator.generate_PKT14();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -208,7 +208,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         tmGenerator.pStringFloatTSCPara1_4_2 = "invalidfloat";
         byte[] bb = tmGenerator.generate_PKT14();
@@ -230,7 +230,7 @@ public class XtceTmExtractorTest {
     	RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         byte[] bb = tmGenerator.generate_PKT1_5();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -262,7 +262,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         tmGenerator.pStringIntTermPara1_5_2="invalidint";
         
@@ -284,7 +284,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         byte[] bb=tmGenerator.generate_PKT1_9();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -350,7 +350,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         byte[] bb=tmGenerator.generate_PKT1_7();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -380,7 +380,7 @@ public class XtceTmExtractorTest {
     public void testPKT1_11_longuint32() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         byte[] bb = tmGenerator.generate_PKT1_11();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -394,7 +394,7 @@ public class XtceTmExtractorTest {
     public void testPKT1_12_stringenum() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         byte[] bb = tmGenerator.generate_PKT1_12();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -410,7 +410,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         tmGenerator.pStringEnumPara1_12_1="invalidlong";
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         byte[] bb=tmGenerator.generate_PKT1_12();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -426,7 +426,7 @@ public class XtceTmExtractorTest {
     public void testPKT3_dynamicSize() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
 
         ByteBuffer bb=tmGenerator.generate_PKT3();
         tmExtractor.processPacket(bb.array(), TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -454,7 +454,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         ByteBuffer bb = tmGenerator.generate_PKT2();
         SequenceContainer startContainer = xtcedb.getSequenceContainer("/REFMDB/SUBSYS1/PKT2");
@@ -474,7 +474,7 @@ public class XtceTmExtractorTest {
     public void testPKT1_List() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
 
         ByteBuffer bb=tmGenerator.generate_PKT1_List();
         tmExtractor.processPacket(bb.array(), TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -491,7 +491,7 @@ public class XtceTmExtractorTest {
     public void testPKT1_AND() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
 
         ByteBuffer bb=tmGenerator.generate_PKT1_AND();
         tmExtractor.processPacket(bb.array(), TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -508,7 +508,7 @@ public class XtceTmExtractorTest {
     public void testPKT1_PKT1_OR() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
 
         // first condition
         ByteBuffer bb=tmGenerator.generate_PKT1_OR_1();
@@ -525,7 +525,7 @@ public class XtceTmExtractorTest {
     public void testPKT1_PKT1_AND_OR() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
 
         // first condition
         ByteBuffer bb=tmGenerator.generate_PKT1_AND_OR_1();
@@ -551,7 +551,7 @@ public class XtceTmExtractorTest {
     public void testPKT1_PKT1_OR_AND() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
 
         // or condition 1
         ByteBuffer bb=tmGenerator.generate_PKT1(0, 0, (short) 1);
@@ -585,7 +585,7 @@ public class XtceTmExtractorTest {
     public void testPKT1_PKT1_RANGE() {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
 
         // in range ]0xA, 0xC[
         ByteBuffer bb=tmGenerator.generate_PKT1(0, 0, (short) 11);
@@ -611,7 +611,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         byte[] bb = tmGenerator.generate_PKT4();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
@@ -632,7 +632,7 @@ public class XtceTmExtractorTest {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
 
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
         
         byte[] bb = tmGenerator.generate_PKT5();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());

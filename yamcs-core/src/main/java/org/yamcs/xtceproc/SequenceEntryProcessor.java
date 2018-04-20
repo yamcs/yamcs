@@ -62,7 +62,7 @@ public class SequenceEntryProcessor {
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+buf.getPosition());
         pv.setBitSize(((BaseDataType)ptype).getEncoding().getSizeInBits());
         pcontext.dataEncodingProcessor.extractRaw(((BaseDataType)ptype).getEncoding(), pv);
-        pcontext.pdata.parameterTypeProcessor.calibrate(pv);
+        pcontext.pdata.parameterTypeProcessor.calibrate(pv, pcontext);
         
         pv.setAcquisitionTime(pcontext.result.acquisitionTime);
         pv.setGenerationTime(pcontext.result.generationTime);

@@ -125,7 +125,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
      */
     @Override
     public void startProvidingAll() {
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
     }
 
     @Override
@@ -247,7 +247,7 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
 
     @Override
     public void startProvidingAllContainers() {
-        tmExtractor.startProvidingAll();
+        tmExtractor.provideAll();
     }
 
     @Override

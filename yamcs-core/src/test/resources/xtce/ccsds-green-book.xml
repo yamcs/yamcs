@@ -58,19 +58,19 @@
 				</xtce:ReferenceTime>
 			</xtce:AbsoluteTimeParameterType>
 			<xtce:AbsoluteTimeParameterType name="SecondsType">
-				<xtce:Encoding units="seconds">
+                <xtce:Encoding units="seconds">
 					<xtce:IntegerDataEncoding sizeInBits="32" />
 				</xtce:Encoding>
 				<xtce:ReferenceTime>
-					<xtce:OffsetFrom parameterRef="MilliSeconds" />
+					<xtce:Epoch>TAI</xtce:Epoch>
 				</xtce:ReferenceTime>
 			</xtce:AbsoluteTimeParameterType>
 			<xtce:AbsoluteTimeParameterType name="MilliSecondsType">
-				<xtce:Encoding scale="0.001" units="seconds">
+			    <xtce:Encoding  scale="0.001" units="seconds">
 					<xtce:IntegerDataEncoding sizeInBits="16" />
 				</xtce:Encoding>
 				<xtce:ReferenceTime>
-					<xtce:Epoch>TAI</xtce:Epoch>
+					<xtce:OffsetFrom parameterRef="Seconds" />
 				</xtce:ReferenceTime>
 			</xtce:AbsoluteTimeParameterType>
 		</xtce:ParameterTypeSet>

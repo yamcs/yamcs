@@ -1,6 +1,10 @@
 package org.yamcs.utils;
 
 import org.yamcs.protobuf.Yamcs.Value.Type;
+
+import java.util.function.DoubleConsumer;
+import java.util.function.LongConsumer;
+
 import org.yamcs.parameter.BinaryValue;
 import org.yamcs.parameter.BooleanValue;
 import org.yamcs.parameter.DoubleValue;
@@ -301,5 +305,52 @@ public class ValueUtility {
         }
     }
 
+    /**
+     * if the passed on value is INT32, SINT32, INT64 or SINT64, invoke the function on the long value and return true
+     * if v is of other types return false
+     * 
+     * @param v
+     * @param c
+     * @return
+     */
+    public static boolean processAsLong(Value v, LongConsumer c) {
+        switch (v.getType()) {
+        case SINT32:
+            c.accept(v.getSint32Value());
+            return true;
+        case SINT64:
+            c.accept(v.getSint64Value());
+            return true;
+        case UINT32:
+            c.accept(v.getUint32Value()&0xFFFFFFFFL);
+            return true;
+        case UINT64:
+            c.accept(v.getUint64Value());
+            return true;
+        default: 
+            return false;
+        }
+    }
+    
+    /**
+     * if the passed on value is FLOAT or DOUBLE, invoke the function on the double value and return true
+     * if v is of other types return false
+     * 
+     * @param v
+     * @param c
+     * @return
+     */
+    public static boolean processAsDouble(Value v, DoubleConsumer c) {
+        switch (v.getType()) {
+        case DOUBLE:
+            c.accept(v.getDoubleValue());
+            return true;
+        case FLOAT:
+            c.accept(v.getFloatValue());
+            return true;
+        default: 
+            return false;
+        }
+    }
    
 }

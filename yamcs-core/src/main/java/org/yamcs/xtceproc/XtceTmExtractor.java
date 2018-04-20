@@ -28,7 +28,7 @@ public class XtceTmExtractor {
     public final XtceDb xtcedb;
     final SequenceContainer rootContainer;
     ContainerProcessingOptions options = new ContainerProcessingOptions();
-    final ProcessorData pcontext;
+    final ProcessorData pdata;
 
     /**
      * Creates a TmExtractor extracting data according to the XtceDb
@@ -42,13 +42,13 @@ public class XtceTmExtractor {
      * Create a new TM extractor with the given context
      *
      * @param xtcedb
-     * @param pcontext
+     * @param pdata
      */
-    public XtceTmExtractor(XtceDb xtcedb, ProcessorData pcontext) {
+    public XtceTmExtractor(XtceDb xtcedb, ProcessorData pdata) {
         this.xtcedb = xtcedb;
         this.subscription = new Subscription(xtcedb);
         rootContainer = xtcedb.getRootSequenceContainer();
-        this.pcontext = pcontext;
+        this.pdata = pdata;
     }
 
     /**
@@ -66,7 +66,7 @@ public class XtceTmExtractor {
     /**
      * Adds all containers and parameters to the subscription
      */
-    public void startProvidingAll() {
+    public void provideAll() {
         for (SequenceContainer c : xtcedb.getSequenceContainers()) {
             if (c.getBaseContainer() == null) {
                 subscription.addAll(c);
@@ -105,7 +105,7 @@ public class XtceTmExtractor {
         result = new ContainerProcessingResult(acquisitionTime, generationTime, stats);
         try {
             synchronized(subscription) {
-                ContainerProcessingContext cpc = new ContainerProcessingContext(pcontext, buf, result, subscription, options);
+                ContainerProcessingContext cpc = new ContainerProcessingContext(pdata, buf, result, subscription, options);
                 cpc.sequenceContainerProcessor.extract(startContainer);
             }
         } catch (Exception e) {

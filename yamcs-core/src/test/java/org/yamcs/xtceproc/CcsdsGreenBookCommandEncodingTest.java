@@ -16,7 +16,7 @@ import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 
-public class XtceXmlCommandEncodingTest {
+public class CcsdsGreenBookCommandEncodingTest {
     static XtceDb xtcedb;
     static MetaCommandProcessor metaCommandProcessor;
     

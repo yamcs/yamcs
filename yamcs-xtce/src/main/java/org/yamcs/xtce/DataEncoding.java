@@ -18,7 +18,7 @@ import java.nio.ByteOrder;
  *
  */
 public abstract class DataEncoding implements Serializable {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
 
     /**
      * size in bits if known. If the size in bits is variable, it should be set to -1.

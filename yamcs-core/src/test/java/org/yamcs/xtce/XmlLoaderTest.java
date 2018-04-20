@@ -22,15 +22,15 @@ public class XmlLoaderTest {
         assertEquals(DataSource.DERIVED, cst.getDataSource());
         
         
-        Parameter pms = db.getParameter("/SpaceVehicle/MilliSeconds");
+        Parameter pms = db.getParameter("/SpaceVehicle/Seconds");
         assertTrue(pms.getParameterType() instanceof AbsoluteTimeParameterType);
         AbsoluteTimeParameterType ptype = (AbsoluteTimeParameterType) pms.getParameterType();
         ReferenceTime rtime = ptype.getReferenceTime();
-        assertEquals(TimeEpoch.CommonEpochs.TAI, rtime.getEpoch().epoch);
+        assertEquals(TimeEpoch.CommonEpochs.TAI, rtime.getEpoch().getCommonEpoch());
         
         DataEncoding encoding = ptype.getEncoding();
         assertTrue(encoding instanceof IntegerDataEncoding);
-        assertEquals(16, ((IntegerDataEncoding) encoding).getSizeInBits());
+        assertEquals(32, ((IntegerDataEncoding) encoding).getSizeInBits());
         
         
         MetaCommand cmd1 = db.getMetaCommand("/SpaceVehicle/PWHTMR");
