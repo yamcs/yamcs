@@ -139,7 +139,9 @@ public class YamcsSession {
             result.ycd = new YamcsConnectionProperties();
             result.ycd.setHost(host);
             result.ycd.setPort(port);
-            result.ycd.setAuthenticationToken(new UsernamePasswordToken(username, password));
+            if(username!=null) {
+                result.ycd.setAuthenticationToken(new UsernamePasswordToken(username, password));
+            }
             return this;
         }
 

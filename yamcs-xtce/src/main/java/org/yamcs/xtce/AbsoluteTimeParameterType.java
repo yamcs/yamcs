@@ -22,7 +22,7 @@ public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements P
   
     @Override
     public String getTypeAsString() {
-        return "long";
+        return "time";
     }
 
     @Override
@@ -32,7 +32,6 @@ public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements P
 
     @Override
     public Set<Parameter> getDependentParameters() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -46,6 +45,4 @@ public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements P
                 +((getReferenceTime()!=null)?", referenceTime:"+getReferenceTime():"");
                
     }
-
-   
 }

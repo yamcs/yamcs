@@ -102,7 +102,16 @@ public class YamlRealm implements Realm {
     }
 
     private void addRolePrivileges(User user, YConfiguration conf, String role) {
-        Map<String, Object> roleConf = conf.getMap("roles", role);
+        Map<String, Object> roles = conf.getMap("roles");
+
+        if (!roles.containsKey(role)) {
+            throw new ConfigurationException("Cannot find a mapping for 'roles->" + role + "' " + conf.getFilename());
+        }
+        Map<String, Object> roleConf = (Map<String, Object>) roles.get(role);
+        if (roleConf == null) {
+            return;
+        }
+
         if (roleConf.containsKey(TM_PARAMETER_PRIVILEGES)) {
             List<String> privileges = YConfiguration.getList(roleConf, TM_PARAMETER_PRIVILEGES);
             for (String privilege : privileges) {

@@ -24,7 +24,7 @@ public class JWTTest {
         JsonObject claims = JWT.decodeUnverified(unsignedToken);
         assertEquals("Yamcs", claims.get("iss").getAsString());
         assertEquals("someUser", claims.get("sub").getAsString());
-        assertEquals(1000L, claims.get("exp").getAsLong());
+        assertEquals(1000L, claims.get("exp").getAsLong()-claims.get("iat").getAsLong());
     }
 
     @Test
@@ -35,12 +35,12 @@ public class JWTTest {
         JsonObject unverifiedClaims = JWT.decodeUnverified(signedToken);
         assertEquals("Yamcs", unverifiedClaims.get("iss").getAsString());
         assertEquals("someUser", unverifiedClaims.get("sub").getAsString());
-        assertEquals(1000L, unverifiedClaims.get("exp").getAsLong());
+        assertEquals(1000L, unverifiedClaims.get("exp").getAsLong()-unverifiedClaims.get("iat").getAsLong());
 
         JsonObject verifiedClaims = JWT.decode(signedToken, "secret");
         assertEquals("Yamcs", verifiedClaims.get("iss").getAsString());
         assertEquals("someUser", verifiedClaims.get("sub").getAsString());
-        assertEquals(1000L, verifiedClaims.get("exp").getAsLong());
+        assertEquals(1000L, verifiedClaims.get("exp").getAsLong()-verifiedClaims.get("iat").getAsLong());
 
         boolean throwsException = false;
         try {

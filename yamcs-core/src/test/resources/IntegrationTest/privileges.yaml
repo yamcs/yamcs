@@ -14,6 +14,3 @@ artemisAuthModule:
 #maximum number of CIS sessions clients are allowed
 maxNoSessions: 10
 
-
-# yaml file, if using YamlRealm
-yamlRealmFilename:  credentials_test.yaml
