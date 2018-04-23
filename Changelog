@@ -1,7 +1,9 @@
-Version 4.2.3 released 
+Version 4.3.0 released 23-Apr-2018
+- implemented IncludeCondition for container and parameter entries as per XTCE spec
+- server support for access token generation based on password credentials
+- updates to yamcs-web to support authentication and privilege checking (using access tokens)
 - fixed the parameter archive for boolean parameters
 - fixed the processing of XTCE absolute time parameters 
-- implemented IncludeCondition for container and parameter entries as per XTCE spec
 
 Version 4.2.2 released 17-Apr-2018
 - partially fixed the parameter archive for boolean parameters
