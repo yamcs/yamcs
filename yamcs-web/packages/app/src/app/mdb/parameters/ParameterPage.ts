@@ -7,6 +7,9 @@ import { Subscription } from 'rxjs/Subscription';
 import { Title } from '@angular/platform-browser';
 import { ValuePipe } from '../../shared/pipes/ValuePipe';
 import { UnitsPipe } from '../../shared/pipes/UnitsPipe';
+import { SetParameterDialog } from './SetParameterDialog';
+import { MatDialog } from '@angular/material';
+import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './ParameterPage.html',
@@ -24,6 +27,8 @@ export class ParameterPage implements OnDestroy {
   constructor(
     route: ActivatedRoute,
     yamcs: YamcsService,
+    private authService: AuthService,
+    private dialog: MatDialog,
     private title: Title,
     private valuePipe: ValuePipe,
     private unitsPipe: UnitsPipe,
@@ -68,6 +73,23 @@ export class ParameterPage implements OnDestroy {
       }
       this.title.setTitle(title + ' - Yamcs');
     }
+  }
+
+  maySetParameter() {
+    const parameter = this.parameter$.value;
+    if (parameter) {
+      return this.authService.hasSetParameterPrivilege(parameter.qualifiedName);
+    }
+    return false;
+  }
+
+  setParameter() {
+    this.dialog.open(SetParameterDialog, {
+      width: '400px',
+      data: {
+        parameter: this.parameter$.value
+      }
+    });
   }
 
   ngOnDestroy() {

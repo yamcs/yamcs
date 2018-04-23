@@ -12,16 +12,16 @@ export interface Value {
   | 'UINT64'
   | 'SINT64'
   | 'BOOLEAN';
-  floatValue: number;
-  doubleValue: number;
-  sint32Value: number;
-  uint32Value: number;
-  binaryValue: string;
-  stringValue: string;
-  timestampValue: number;
-  uint64Value: number;
-  sint64Value: number;
-  booleanValue: boolean;
+  floatValue?: number;
+  doubleValue?: number;
+  sint32Value?: number;
+  uint32Value?: number;
+  binaryValue?: string;
+  stringValue?: string;
+  timestampValue?: number;
+  uint64Value?: number;
+  sint64Value?: number;
+  booleanValue?: boolean;
 }
 
 export interface DisplayFolder {

@@ -1,0 +1,70 @@
+<h2 mat-dialog-title>Set Parameter Value</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <ng-container [ngSwitch]="parameter?.type?.engType">
+
+      <ng-container *ngSwitchCase="'boolean'">
+        <mat-radio-group formControlName="value">
+          <mat-radio-button value="TRUE">true</mat-radio-button>
+          <mat-radio-button value="FALSE">false</mat-radio-button>
+        </mat-radio-group>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'string'">
+        <mat-form-field style="width: 100%">
+          <input matInput formControlName="value" placeholder="Value">
+        </mat-form-field>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'float'">
+        <mat-form-field style="width: 100%">
+          <input type="number" matInput formControlName="value" placeholder="Value">
+        </mat-form-field>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'double'">
+        <mat-form-field style="width: 100%">
+          <input type="number" matInput formControlName="value" placeholder="Value">
+        </mat-form-field>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'uint32'">
+        <mat-form-field style="width: 100%">
+          <input type="number" matInput formControlName="value" placeholder="Value">
+        </mat-form-field>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'sint32'">
+        <mat-form-field style="width: 100%">
+          <input type="number" matInput formControlName="value" placeholder="Value">
+        </mat-form-field>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'uint64'">
+        <mat-form-field style="width: 100%">
+          <input type="number" matInput formControlName="value" placeholder="Value">
+        </mat-form-field>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'sint64'">
+        <mat-form-field style="width: 100%">
+          <input type="number" matInput formControlName="value" placeholder="Value">
+        </mat-form-field>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'timestamp'">
+        <mat-form-field style="width: 100%">
+          <input type="datetime" matInput formControlName="value" placeholder="Value">
+        </mat-form-field>
+      </ng-container>
+
+    </ng-container>
+  </form>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button (click)="save()" color="primary" [disabled]="!form.valid">Save</button>
+</mat-dialog-actions>
