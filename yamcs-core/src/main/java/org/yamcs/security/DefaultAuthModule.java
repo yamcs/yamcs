@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.security.JWT.JWTDecodeException;
@@ -57,7 +58,7 @@ public class DefaultAuthModule implements AuthModule {
 
     private final Realm realm;
     private String realmName;
-    private String secretKey;
+
     // time to cache a user entry
     static final int PRIV_CACHE_TIME = 30 * 1000;
     // time to cache a certificate to username mapping
@@ -66,9 +67,6 @@ public class DefaultAuthModule implements AuthModule {
     public DefaultAuthModule(Map<String, Object> config) {
         String realmClass = YConfiguration.getString(config, "realm");
         realm = loadRealm(realmClass);
-
-        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
-        secretKey = yconf.getString("secretKey");
     }
 
     public Realm getRealm() {
@@ -173,7 +171,7 @@ public class DefaultAuthModule implements AuthModule {
     private CompletableFuture<AuthenticationToken> handleAccessToken(ChannelHandlerContext ctx, HttpRequest req,
             String jwt) {
         try {
-            AuthenticationToken token = new AccessToken(jwt, secretKey);
+            AuthenticationToken token = new AccessToken(jwt, YamcsServer.getSecretKey());
             if (!realm.authenticate(token)) {
                 sendUnauthorized(ctx, req, "Could not authenticate token against realm");
                 return completedExceptionally(new AuthenticationPendingException());

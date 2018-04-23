@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ import com.google.common.util.concurrent.Service.State;
 public class YamcsServer {
     static Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
     final static private String SERVER_ID_KEY = "serverId";
+    final static private String SECRET_KEY = "secretKey";
 
     ReplayServer replay;
 
@@ -58,6 +60,8 @@ public class YamcsServer {
     static TimeService mockupTimeService;
 
     private static String serverId;
+    private static String secretKey;
+
     static YObjectLoader<Service> objLoader = new YObjectLoader<>();
 
     static CrashHandler globalCrashHandler = new LogCrashHandler();
@@ -162,8 +166,13 @@ public class YamcsServer {
         return serverId;
     }
 
+    public static String getSecretKey() {
+        return secretKey;
+    }
+
     public static void createGlobalServicesAndInstances() throws ConfigurationException, IOException {
         serverId = deriveServerId();
+        deriveSecretKey();
 
         YConfiguration c = YConfiguration.getConfiguration("yamcs");
         if (c.containsKey("crashHandler")) {
@@ -306,6 +315,18 @@ public class YamcsServer {
             String msg = "Java cannot resolve local host (InetAddress.getLocalHost()). Make sure it's defined properly or alternatively add 'serverId: <name>' to yamcs.yaml";
             staticlog.warn(msg);
             throw new ConfigurationException(msg, e);
+        }
+    }
+
+    private static void deriveSecretKey() {
+        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+        if (yconf.containsKey(SECRET_KEY)) {
+            secretKey = yconf.getString(SECRET_KEY);
+        } else {
+            staticlog.warn("Generating random non-persisted secret key."
+                    + " Cryptographic verifications will not work across server restarts."
+                    + " Set 'secretKey: <secret>' in yamcs.yaml to avoid this message.");
+            secretKey = UUID.randomUUID().toString();
         }
     }
 

@@ -1,7 +1,7 @@
 #configuration of the privileges
 # if enabled is set to false, the connection to realm is not even
 # attempted and hasPrivilege method always returns true
-enabled: true
+enabled: false
 
 # The name of the default user when privileges are not enabled
 defaultUser: admin

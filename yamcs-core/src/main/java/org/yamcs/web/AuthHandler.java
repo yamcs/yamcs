@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Web.AccessTokenResponse;
 import org.yamcs.protobuf.Web.AuthInfo;
 import org.yamcs.security.AuthModule;
@@ -53,16 +53,12 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     private static final Logger log = LoggerFactory.getLogger(AuthHandler.class);
 
     private Realm realm;
-    private String secretKey;
 
     public AuthHandler() {
         AuthModule authModule = Privilege.getInstance().getAuthModule();
         if (authModule instanceof DefaultAuthModule) { // hmmm...
             realm = ((DefaultAuthModule) authModule).getRealm();
         }
-
-        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
-        this.secretKey = yconf.getString("secretKey");
     }
 
     @Override
@@ -162,7 +158,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
         try {
             int ttl = 500; // in seconds
-            String jwt = JWT.generateHS256Token(user, secretKey, ttl);
+            String jwt = JWT.generateHS256Token(user, YamcsServer.getSecretKey(), ttl);
 
             AccessTokenResponse.Builder responseb = AccessTokenResponse.newBuilder();
             responseb.setTokenType("bearer");
