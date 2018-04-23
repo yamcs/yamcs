@@ -3,7 +3,6 @@ package org.yamcs.security;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
@@ -22,42 +21,28 @@ import io.netty.handler.codec.http.HttpRequest;
 /**
  * Implements privileges loaded and short-term cached from realm.
  *
- * Extending classes provide concrete method to identify the user, which this
- * class then uses to load privileges. This class also provides methods to
- * extract a username from a supplied certificate.
+ * Extending classes provide concrete method to identify the user, which this class then uses to load privileges. This
+ * class also provides methods to extract a username from a supplied certificate.
  *
- * Requests are usually made in short bursts, so privileges loaded from realm
- * are cached for a short period to reduce load on the realm service and retain
- * responsiveness.
+ * Requests are usually made in short bursts, so privileges loaded from realm are cached for a short period to reduce
+ * load on the realm service and retain responsiveness.
  *
  * @author nm
  */
 public class Privilege {
 
-    public enum SystemPrivilege {
-        MayControlProcessor, MayModifyCommandHistory, MayControlCommandQueue, MayCommand, MayGetMissionDatabase, MayControlArchiving, 
-        MayControlServices, MayReadEvents, MayWriteEvents, MayWriteTables, MayReadTables
-    }
+    private static final Logger log = LoggerFactory.getLogger(Privilege.class);
+    private static Privilege instance;
 
-    private static String authModuleName;
-    public static boolean usePrivileges = true;
-    private static String defaultUser; // Only if !usePrivileges. Could eventually replace usePrivileges i guess
+    private String authModuleName;
+    private boolean usePrivileges;
+    private String defaultUser; // Only if !usePrivileges
 
-    private static AuthModule authModule;
-    static final Hashtable<String, String> contextEnv = new Hashtable<>();
+    private AuthModule authModule;
 
-    public static int maxNoSessions;
-    public static Privilege instance;
-    static Logger log = LoggerFactory.getLogger(Privilege.class);
+    private int maxNoSessions;
 
-    public enum Type {
-        SYSTEM, TC, TM_PACKET, TM_PARAMETER, TM_PARAMETER_SET, STREAM, CMD_HISTORY
-    }
-
-    /**
-     * Load configuration once only.
-     */
-    static {
+    private Privilege() {
         defaultUser = "admin";
         maxNoSessions = 10;
         usePrivileges = false;
@@ -72,7 +57,6 @@ public class Privilege {
                 if (usePrivileges) {
                     authModule = YObjectLoader.loadObject(conf.getMap("authModule"));
                     authModuleName = authModule.getClass().getName();
-
                 } else {
                     if (conf.containsKey("defaultUser")) {
                         String defaultUserString = conf.getString("defaultUser");
@@ -103,23 +87,10 @@ public class Privilege {
         return authModule.getRoles(authenticationToken);
     }
 
-    /**
-     * loads the configuration of the privilege. If privileges.enabled is not
-     * set to false in the privileges.properties, then load the privileges from
-     * the LDAP.
-     *
-     * @throws ConfigurationException
-     *             when the privileges.enabled is not set to false and the ldap
-     *             parammeters are not present
-     */
-    protected Privilege() throws ConfigurationException {
-    }
-
     public static synchronized Privilege getInstance() {
-        if (instance == null)
-            instance = new Privilege() {
-            };
-
+        if (instance == null) {
+            instance = new Privilege();
+        }
         return instance;
     }
 
@@ -170,7 +141,7 @@ public class Privilege {
      * @return true if the privilege is known and the current user has it.
      * @throws InvalidAuthenticationToken
      */
-    public boolean hasPrivilege(final AuthenticationToken authenticationToken, Type type, String privilege)
+    public boolean hasPrivilege(final AuthenticationToken authenticationToken, PrivilegeType type, String privilege)
             throws InvalidAuthenticationToken {
         if (!usePrivileges) {
             return true;
@@ -199,7 +170,7 @@ public class Privilege {
      * @param privilege
      * @return true if the user has the system privilege
      */
-    public boolean hasPrivilege1(final AuthenticationToken authenticationToken, Type type, String privilege) {
+    public boolean hasPrivilege1(final AuthenticationToken authenticationToken, PrivilegeType type, String privilege) {
         if (!usePrivileges) {
             return true;
         }
@@ -230,7 +201,7 @@ public class Privilege {
             return true;
         }
 
-        return hasPrivilege(authenticationToken, Type.SYSTEM, privilege.name());
+        return hasPrivilege(authenticationToken, PrivilegeType.SYSTEM, privilege.name());
     }
 
     /**
@@ -248,7 +219,7 @@ public class Privilege {
         }
     }
 
-    public static String getAuthModuleName() {
+    public String getAuthModuleName() {
         return authModuleName;
     }
 
@@ -257,7 +228,7 @@ public class Privilege {
      * 
      * @return default username
      */
-    public static String getDefaultUser() {
+    public String getDefaultUser() {
         return defaultUser;
     }
 
@@ -269,8 +240,7 @@ public class Privilege {
      * @param authToken
      * @param namespace
      *            If null defaults to "MDB:OPS Name"
-     * @return A collection of TM packet names in the specified namespace for
-     *         which the user has privileges.
+     * @return A collection of TM packet names in the specified namespace for which the user has privileges.
      * @throws ConfigurationException
      * @throws InvalidAuthenticationToken
      */
@@ -282,7 +252,7 @@ public class Privilege {
         Collection<String> tl = getTmPacketNames(XtceDbFactory.getInstance(yamcsInstance), namespace);
         ArrayList<String> l = new ArrayList<>();
         for (String name : tl) {
-            if (!hasPrivilege(authToken, Privilege.Type.TM_PACKET, name)) {
+            if (!hasPrivilege(authToken, PrivilegeType.TM_PACKET, name)) {
                 continue;
             }
             l.add(name);
@@ -298,8 +268,7 @@ public class Privilege {
      * @param authToken
      * @param namespace
      *            If null defaults to "MDB:OPS Name"
-     * @return A collection of TM packet names in the specified namespace for
-     *         which the user has privileges.
+     * @return A collection of TM packet names in the specified namespace for which the user has privileges.
      * @throws ConfigurationException
      * @throws InvalidAuthenticationToken
      */
@@ -308,7 +277,7 @@ public class Privilege {
         XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         ArrayList<String> tl = new ArrayList<>();
         for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
-            if (hasPrivilege1(authToken, Privilege.Type.TM_PACKET, sc.getQualifiedName())) {
+            if (hasPrivilege1(authToken, PrivilegeType.TM_PACKET, sc.getQualifiedName())) {
                 tl.add(sc.getQualifiedName());
             }
         }
@@ -334,8 +303,7 @@ public class Privilege {
      * @param authToken
      * @param namespace
      *            If null defaults to "MDB:OPS Name"
-     * @return A collection of TM parameter names in the specified namespace for
-     *         which the user has privileges.
+     * @return A collection of TM parameter names in the specified namespace for which the user has privileges.
      * @throws ConfigurationException
      * @throws InvalidAuthenticationToken
      */
@@ -347,9 +315,9 @@ public class Privilege {
         XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         ArrayList<String> l = new ArrayList<>();
         for (String name : xtcedb.getParameterNames()) {
-            if (!hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, name)) {
+            if (!hasPrivilege(authToken, PrivilegeType.TM_PARAMETER, name)) {
                 log.trace("User '{}' does not have privilege '{}' for parameter '{}'", authToken,
-                        Privilege.Type.TM_PARAMETER, name);
+                        PrivilegeType.TM_PARAMETER, name);
                 continue;
             }
             l.add(xtcedb.getParameter(name).getAlias(namespace));
@@ -361,7 +329,7 @@ public class Privilege {
         return maxNoSessions;
     }
 
-    public static String getUsername(AuthenticationToken authToken) {
+    public String getUsername(AuthenticationToken authToken) {
         if (!usePrivileges) {
             return defaultUser;
         }

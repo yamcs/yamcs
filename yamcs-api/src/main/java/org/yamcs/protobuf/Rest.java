@@ -21959,6 +21959,953 @@ public final class Rest {
     // @@protoc_insertion_point(class_scope:parameters.UpdateCommandHistoryRequest)
   }
 
+  public interface CreateEventRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:parameters.CreateEventRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string type = 1;</code>
+     */
+    boolean hasType();
+    /**
+     * <code>optional string type = 1;</code>
+     */
+    java.lang.String getType();
+    /**
+     * <code>optional string type = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getTypeBytes();
+
+    /**
+     * <code>optional string message = 2;</code>
+     */
+    boolean hasMessage();
+    /**
+     * <code>optional string message = 2;</code>
+     */
+    java.lang.String getMessage();
+    /**
+     * <code>optional string message = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getMessageBytes();
+
+    /**
+     * <code>optional string severity = 3;</code>
+     */
+    boolean hasSeverity();
+    /**
+     * <code>optional string severity = 3;</code>
+     */
+    java.lang.String getSeverity();
+    /**
+     * <code>optional string severity = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getSeverityBytes();
+
+    /**
+     * <code>optional string time = 4;</code>
+     */
+    boolean hasTime();
+    /**
+     * <code>optional string time = 4;</code>
+     */
+    java.lang.String getTime();
+    /**
+     * <code>optional string time = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getTimeBytes();
+  }
+  /**
+   * Protobuf type {@code parameters.CreateEventRequest}
+   */
+  public static final class CreateEventRequest extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:parameters.CreateEventRequest)
+      CreateEventRequestOrBuilder {
+    // Use CreateEventRequest.newBuilder() to construct.
+    private CreateEventRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private CreateEventRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final CreateEventRequest defaultInstance;
+    public static CreateEventRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public CreateEventRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private CreateEventRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              type_ = bs;
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              message_ = bs;
+              break;
+            }
+            case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000004;
+              severity_ = bs;
+              break;
+            }
+            case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000008;
+              time_ = bs;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_CreateEventRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_CreateEventRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.CreateEventRequest.class, org.yamcs.protobuf.Rest.CreateEventRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<CreateEventRequest> PARSER =
+        new com.google.protobuf.AbstractParser<CreateEventRequest>() {
+      public CreateEventRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new CreateEventRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<CreateEventRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private java.lang.Object type_;
+    /**
+     * <code>optional string type = 1;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string type = 1;</code>
+     */
+    public java.lang.String getType() {
+      java.lang.Object ref = type_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          type_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string type = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTypeBytes() {
+      java.lang.Object ref = type_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        type_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int MESSAGE_FIELD_NUMBER = 2;
+    private java.lang.Object message_;
+    /**
+     * <code>optional string message = 2;</code>
+     */
+    public boolean hasMessage() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string message = 2;</code>
+     */
+    public java.lang.String getMessage() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          message_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string message = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getMessageBytes() {
+      java.lang.Object ref = message_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        message_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SEVERITY_FIELD_NUMBER = 3;
+    private java.lang.Object severity_;
+    /**
+     * <code>optional string severity = 3;</code>
+     */
+    public boolean hasSeverity() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string severity = 3;</code>
+     */
+    public java.lang.String getSeverity() {
+      java.lang.Object ref = severity_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          severity_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string severity = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSeverityBytes() {
+      java.lang.Object ref = severity_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        severity_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int TIME_FIELD_NUMBER = 4;
+    private java.lang.Object time_;
+    /**
+     * <code>optional string time = 4;</code>
+     */
+    public boolean hasTime() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string time = 4;</code>
+     */
+    public java.lang.String getTime() {
+      java.lang.Object ref = time_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          time_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string time = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTimeBytes() {
+      java.lang.Object ref = time_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        time_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      type_ = "";
+      message_ = "";
+      severity_ = "";
+      time_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getTypeBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getMessageBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getSeverityBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(4, getTimeBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getTypeBytes());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getMessageBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getSeverityBytes());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(4, getTimeBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Rest.CreateEventRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.CreateEventRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateEventRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.CreateEventRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateEventRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.CreateEventRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateEventRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.CreateEventRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateEventRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Rest.CreateEventRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.CreateEventRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code parameters.CreateEventRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:parameters.CreateEventRequest)
+        org.yamcs.protobuf.Rest.CreateEventRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_CreateEventRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_CreateEventRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.CreateEventRequest.class, org.yamcs.protobuf.Rest.CreateEventRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.CreateEventRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        type_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        message_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        severity_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        time_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_CreateEventRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.CreateEventRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.CreateEventRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.CreateEventRequest build() {
+        org.yamcs.protobuf.Rest.CreateEventRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.CreateEventRequest buildPartial() {
+        org.yamcs.protobuf.Rest.CreateEventRequest result = new org.yamcs.protobuf.Rest.CreateEventRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.type_ = type_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.message_ = message_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.severity_ = severity_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.time_ = time_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.CreateEventRequest) {
+          return mergeFrom((org.yamcs.protobuf.Rest.CreateEventRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.CreateEventRequest other) {
+        if (other == org.yamcs.protobuf.Rest.CreateEventRequest.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          bitField0_ |= 0x00000001;
+          type_ = other.type_;
+          onChanged();
+        }
+        if (other.hasMessage()) {
+          bitField0_ |= 0x00000002;
+          message_ = other.message_;
+          onChanged();
+        }
+        if (other.hasSeverity()) {
+          bitField0_ |= 0x00000004;
+          severity_ = other.severity_;
+          onChanged();
+        }
+        if (other.hasTime()) {
+          bitField0_ |= 0x00000008;
+          time_ = other.time_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.CreateEventRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.CreateEventRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object type_ = "";
+      /**
+       * <code>optional string type = 1;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string type = 1;</code>
+       */
+      public java.lang.String getType() {
+        java.lang.Object ref = type_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            type_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string type = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTypeBytes() {
+        java.lang.Object ref = type_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          type_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string type = 1;</code>
+       */
+      public Builder setType(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string type = 1;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = getDefaultInstance().getType();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string type = 1;</code>
+       */
+      public Builder setTypeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        type_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object message_ = "";
+      /**
+       * <code>optional string message = 2;</code>
+       */
+      public boolean hasMessage() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string message = 2;</code>
+       */
+      public java.lang.String getMessage() {
+        java.lang.Object ref = message_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            message_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string message = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getMessageBytes() {
+        java.lang.Object ref = message_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          message_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string message = 2;</code>
+       */
+      public Builder setMessage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        message_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string message = 2;</code>
+       */
+      public Builder clearMessage() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        message_ = getDefaultInstance().getMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string message = 2;</code>
+       */
+      public Builder setMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        message_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object severity_ = "";
+      /**
+       * <code>optional string severity = 3;</code>
+       */
+      public boolean hasSeverity() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string severity = 3;</code>
+       */
+      public java.lang.String getSeverity() {
+        java.lang.Object ref = severity_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            severity_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string severity = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSeverityBytes() {
+        java.lang.Object ref = severity_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          severity_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string severity = 3;</code>
+       */
+      public Builder setSeverity(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        severity_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string severity = 3;</code>
+       */
+      public Builder clearSeverity() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        severity_ = getDefaultInstance().getSeverity();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string severity = 3;</code>
+       */
+      public Builder setSeverityBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        severity_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object time_ = "";
+      /**
+       * <code>optional string time = 4;</code>
+       */
+      public boolean hasTime() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string time = 4;</code>
+       */
+      public java.lang.String getTime() {
+        java.lang.Object ref = time_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            time_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string time = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTimeBytes() {
+        java.lang.Object ref = time_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          time_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string time = 4;</code>
+       */
+      public Builder setTime(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        time_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string time = 4;</code>
+       */
+      public Builder clearTime() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        time_ = getDefaultInstance().getTime();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string time = 4;</code>
+       */
+      public Builder setTimeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        time_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:parameters.CreateEventRequest)
+    }
+
+    static {
+      defaultInstance = new CreateEventRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:parameters.CreateEventRequest)
+  }
+
   public interface CreateProcessorRequestOrBuilder extends
       // @@protoc_insertion_point(interface_extends:parameters.CreateProcessorRequest)
       com.google.protobuf.MessageOrBuilder {
@@ -38352,6 +39299,11 @@ public final class Rest {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_parameters_UpdateCommandHistoryRequest_KeyValue_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_parameters_CreateEventRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_parameters_CreateEventRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_parameters_CreateProcessorRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -38519,46 +39471,48 @@ public final class Rest {
       "st\022$\n\005cmdId\030\001 \002(\0132\025.commanding.CommandId" +
       "\022F\n\014historyEntry\030\002 \003(\01320.parameters.Upda" +
       "teCommandHistoryRequest.KeyValue\032&\n\010KeyV" +
-      "alue\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"\214\002\n\026Cre" +
-      "ateProcessorRequest\022\014\n\004name\030\001 \001(\t\022\021\n\005sta" +
-      "rt\030\002 \001(\tB\002\030\001\022\020\n\004stop\030\003 \001(\tB\002\030\001\022\020\n\004loop\030\004" +
-      " \001(\010B\002\030\001\022\021\n\005speed\030\005 \001(\tB\002\030\001\022\020\n\010clientId\030" +
-      "\006 \003(\005\022\024\n\010paraname\030\007 \003(\tB\002\030\001\022\023\n\007ppgroup\030\010" +
-      " \003(\tB\002\030\001\022\026\n\npacketname\030\t \003(\tB\002\030\001\022\023\n\007cmdh",
-      "ist\030\n \001(\010B\002\030\001\022\022\n\npersistent\030\013 \001(\010\022\014\n\004typ" +
-      "e\030\014 \001(\t\022\016\n\006config\030\r \001(\t\"B\n\024EditProcessor" +
-      "Request\022\r\n\005state\030\001 \001(\t\022\014\n\004seek\030\002 \001(\t\022\r\n\005" +
-      "speed\030\003 \001(\t\"(\n\026StreamSubscribeRequest\022\016\n" +
-      "\006stream\030\001 \001(\t\"e\n\030SetSimulationTimeReques" +
-      "t\022\r\n\005time0\030\001 \001(\003\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016si" +
-      "mElapsedTime\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"I\n\025" +
-      "ListInstancesResponse\0220\n\010instance\030\001 \003(\0132" +
-      "\036.yamcsManagement.YamcsInstance\"2\n\020ListT" +
-      "agsResponse\022\036\n\003tag\030\001 \003(\0132\021.yamcs.Archive",
-      "Tag\"a\n\020CreateTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n" +
-      "\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013descriptio" +
-      "n\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"_\n\016EditTagRequest" +
-      "\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 " +
-      "\001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"" +
-      "6\n\022ListAlarmsResponse\022 \n\005alarm\030\001 \003(\0132\021.a" +
-      "larms.AlarmData\"2\n\020EditAlarmRequest\022\r\n\005s" +
-      "tate\030\001 \001(\t\022\017\n\007comment\030\002 \001(\t\"7\n\022ListTable" +
-      "sResponse\022!\n\005table\030\001 \003(\0132\022.archive.Table" +
-      "Info\":\n\023ListStreamsResponse\022#\n\006stream\030\001 ",
-      "\003(\0132\023.archive.StreamInfo\"1\n\022ListEventsRe" +
-      "sponse\022\033\n\005event\030\001 \003(\0132\014.yamcs.Event\":\n\023L" +
-      "istPacketsResponse\022#\n\006packet\030\001 \003(\0132\023.yam" +
-      "cs.TmPacketData\"H\n\027ListServiceInfoRespon" +
-      "se\022-\n\007service\030\001 \003(\0132\034.yamcsManagement.Se" +
-      "rviceInfo\"#\n\022EditServiceRequest\022\r\n\005state" +
-      "\030\001 \001(\t\"V\n\023BulkGetIndexRequest\022\r\n\005start\030\001" +
-      " \001(\t\022\014\n\004stop\030\002 \001(\t\022\016\n\006filter\030\003 \003(\t\022\022\n\npa" +
-      "cketname\030\004 \003(\t\"}\n\rDisplayFolder\022\014\n\004name\030" +
-      "\001 \001(\t\022\014\n\004path\030\002 \001(\t\022)\n\006folder\030\003 \003(\0132\031.pa",
-      "rameters.DisplayFolder\022%\n\004file\030\004 \003(\0132\027.p" +
-      "arameters.DisplayFile\"6\n\013DisplayFile\022\014\n\004" +
-      "name\030\001 \001(\t\022\014\n\004path\030\002 \001(\t\022\013\n\003url\030\003 \001(\tB\024\n" +
-      "\022org.yamcs.protobuf"
+      "alue\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"S\n\022Crea" +
+      "teEventRequest\022\014\n\004type\030\001 \001(\t\022\017\n\007message\030" +
+      "\002 \001(\t\022\020\n\010severity\030\003 \001(\t\022\014\n\004time\030\004 \001(\t\"\214\002" +
+      "\n\026CreateProcessorRequest\022\014\n\004name\030\001 \001(\t\022\021" +
+      "\n\005start\030\002 \001(\tB\002\030\001\022\020\n\004stop\030\003 \001(\tB\002\030\001\022\020\n\004l" +
+      "oop\030\004 \001(\010B\002\030\001\022\021\n\005speed\030\005 \001(\tB\002\030\001\022\020\n\010clie",
+      "ntId\030\006 \003(\005\022\024\n\010paraname\030\007 \003(\tB\002\030\001\022\023\n\007ppgr" +
+      "oup\030\010 \003(\tB\002\030\001\022\026\n\npacketname\030\t \003(\tB\002\030\001\022\023\n" +
+      "\007cmdhist\030\n \001(\010B\002\030\001\022\022\n\npersistent\030\013 \001(\010\022\014" +
+      "\n\004type\030\014 \001(\t\022\016\n\006config\030\r \001(\t\"B\n\024EditProc" +
+      "essorRequest\022\r\n\005state\030\001 \001(\t\022\014\n\004seek\030\002 \001(" +
+      "\t\022\r\n\005speed\030\003 \001(\t\"(\n\026StreamSubscribeReque" +
+      "st\022\016\n\006stream\030\001 \001(\t\"e\n\030SetSimulationTimeR" +
+      "equest\022\r\n\005time0\030\001 \001(\003\022\020\n\010time0UTC\030\002 \001(\t\022" +
+      "\026\n\016simElapsedTime\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(" +
+      "\001\"I\n\025ListInstancesResponse\0220\n\010instance\030\001",
+      " \003(\0132\036.yamcsManagement.YamcsInstance\"2\n\020" +
+      "ListTagsResponse\022\036\n\003tag\030\001 \003(\0132\021.yamcs.Ar" +
+      "chiveTag\"a\n\020CreateTagRequest\022\014\n\004name\030\001 \001" +
+      "(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013descr" +
+      "iption\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"_\n\016EditTagRe" +
+      "quest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004st" +
+      "op\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005" +
+      " \001(\t\"6\n\022ListAlarmsResponse\022 \n\005alarm\030\001 \003(" +
+      "\0132\021.alarms.AlarmData\"2\n\020EditAlarmRequest" +
+      "\022\r\n\005state\030\001 \001(\t\022\017\n\007comment\030\002 \001(\t\"7\n\022List",
+      "TablesResponse\022!\n\005table\030\001 \003(\0132\022.archive." +
+      "TableInfo\":\n\023ListStreamsResponse\022#\n\006stre" +
+      "am\030\001 \003(\0132\023.archive.StreamInfo\"1\n\022ListEve" +
+      "ntsResponse\022\033\n\005event\030\001 \003(\0132\014.yamcs.Event" +
+      "\":\n\023ListPacketsResponse\022#\n\006packet\030\001 \003(\0132" +
+      "\023.yamcs.TmPacketData\"H\n\027ListServiceInfoR" +
+      "esponse\022-\n\007service\030\001 \003(\0132\034.yamcsManageme" +
+      "nt.ServiceInfo\"#\n\022EditServiceRequest\022\r\n\005" +
+      "state\030\001 \001(\t\"V\n\023BulkGetIndexRequest\022\r\n\005st" +
+      "art\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\016\n\006filter\030\003 \003(\t\022",
+      "\022\n\npacketname\030\004 \003(\t\"}\n\rDisplayFolder\022\014\n\004" +
+      "name\030\001 \001(\t\022\014\n\004path\030\002 \001(\t\022)\n\006folder\030\003 \003(\013" +
+      "2\031.parameters.DisplayFolder\022%\n\004file\030\004 \003(" +
+      "\0132\027.parameters.DisplayFile\"6\n\013DisplayFil" +
+      "e\022\014\n\004name\030\001 \001(\t\022\014\n\004path\030\002 \001(\t\022\013\n\003url\030\003 \001" +
+      "(\tB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -38759,116 +39713,122 @@ public final class Rest {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_UpdateCommandHistoryRequest_KeyValue_descriptor,
         new java.lang.String[] { "Key", "Value", });
-    internal_static_parameters_CreateProcessorRequest_descriptor =
+    internal_static_parameters_CreateEventRequest_descriptor =
       getDescriptor().getMessageTypes().get(25);
+    internal_static_parameters_CreateEventRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_parameters_CreateEventRequest_descriptor,
+        new java.lang.String[] { "Type", "Message", "Severity", "Time", });
+    internal_static_parameters_CreateProcessorRequest_descriptor =
+      getDescriptor().getMessageTypes().get(26);
     internal_static_parameters_CreateProcessorRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_CreateProcessorRequest_descriptor,
         new java.lang.String[] { "Name", "Start", "Stop", "Loop", "Speed", "ClientId", "Paraname", "Ppgroup", "Packetname", "Cmdhist", "Persistent", "Type", "Config", });
     internal_static_parameters_EditProcessorRequest_descriptor =
-      getDescriptor().getMessageTypes().get(26);
+      getDescriptor().getMessageTypes().get(27);
     internal_static_parameters_EditProcessorRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_EditProcessorRequest_descriptor,
         new java.lang.String[] { "State", "Seek", "Speed", });
     internal_static_parameters_StreamSubscribeRequest_descriptor =
-      getDescriptor().getMessageTypes().get(27);
+      getDescriptor().getMessageTypes().get(28);
     internal_static_parameters_StreamSubscribeRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_StreamSubscribeRequest_descriptor,
         new java.lang.String[] { "Stream", });
     internal_static_parameters_SetSimulationTimeRequest_descriptor =
-      getDescriptor().getMessageTypes().get(28);
+      getDescriptor().getMessageTypes().get(29);
     internal_static_parameters_SetSimulationTimeRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_SetSimulationTimeRequest_descriptor,
         new java.lang.String[] { "Time0", "Time0UTC", "SimElapsedTime", "SimSpeed", });
     internal_static_parameters_ListInstancesResponse_descriptor =
-      getDescriptor().getMessageTypes().get(29);
+      getDescriptor().getMessageTypes().get(30);
     internal_static_parameters_ListInstancesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_ListInstancesResponse_descriptor,
         new java.lang.String[] { "Instance", });
     internal_static_parameters_ListTagsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(30);
+      getDescriptor().getMessageTypes().get(31);
     internal_static_parameters_ListTagsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_ListTagsResponse_descriptor,
         new java.lang.String[] { "Tag", });
     internal_static_parameters_CreateTagRequest_descriptor =
-      getDescriptor().getMessageTypes().get(31);
+      getDescriptor().getMessageTypes().get(32);
     internal_static_parameters_CreateTagRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_CreateTagRequest_descriptor,
         new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
     internal_static_parameters_EditTagRequest_descriptor =
-      getDescriptor().getMessageTypes().get(32);
+      getDescriptor().getMessageTypes().get(33);
     internal_static_parameters_EditTagRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_EditTagRequest_descriptor,
         new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
     internal_static_parameters_ListAlarmsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(33);
+      getDescriptor().getMessageTypes().get(34);
     internal_static_parameters_ListAlarmsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_ListAlarmsResponse_descriptor,
         new java.lang.String[] { "Alarm", });
     internal_static_parameters_EditAlarmRequest_descriptor =
-      getDescriptor().getMessageTypes().get(34);
+      getDescriptor().getMessageTypes().get(35);
     internal_static_parameters_EditAlarmRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_EditAlarmRequest_descriptor,
         new java.lang.String[] { "State", "Comment", });
     internal_static_parameters_ListTablesResponse_descriptor =
-      getDescriptor().getMessageTypes().get(35);
+      getDescriptor().getMessageTypes().get(36);
     internal_static_parameters_ListTablesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_ListTablesResponse_descriptor,
         new java.lang.String[] { "Table", });
     internal_static_parameters_ListStreamsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(36);
+      getDescriptor().getMessageTypes().get(37);
     internal_static_parameters_ListStreamsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_ListStreamsResponse_descriptor,
         new java.lang.String[] { "Stream", });
     internal_static_parameters_ListEventsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(37);
+      getDescriptor().getMessageTypes().get(38);
     internal_static_parameters_ListEventsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_ListEventsResponse_descriptor,
         new java.lang.String[] { "Event", });
     internal_static_parameters_ListPacketsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(38);
+      getDescriptor().getMessageTypes().get(39);
     internal_static_parameters_ListPacketsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_ListPacketsResponse_descriptor,
         new java.lang.String[] { "Packet", });
     internal_static_parameters_ListServiceInfoResponse_descriptor =
-      getDescriptor().getMessageTypes().get(39);
+      getDescriptor().getMessageTypes().get(40);
     internal_static_parameters_ListServiceInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_ListServiceInfoResponse_descriptor,
         new java.lang.String[] { "Service", });
     internal_static_parameters_EditServiceRequest_descriptor =
-      getDescriptor().getMessageTypes().get(40);
+      getDescriptor().getMessageTypes().get(41);
     internal_static_parameters_EditServiceRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_EditServiceRequest_descriptor,
         new java.lang.String[] { "State", });
     internal_static_parameters_BulkGetIndexRequest_descriptor =
-      getDescriptor().getMessageTypes().get(41);
+      getDescriptor().getMessageTypes().get(42);
     internal_static_parameters_BulkGetIndexRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_BulkGetIndexRequest_descriptor,
         new java.lang.String[] { "Start", "Stop", "Filter", "Packetname", });
     internal_static_parameters_DisplayFolder_descriptor =
-      getDescriptor().getMessageTypes().get(42);
+      getDescriptor().getMessageTypes().get(43);
     internal_static_parameters_DisplayFolder_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_DisplayFolder_descriptor,
         new java.lang.String[] { "Name", "Path", "Folder", "File", });
     internal_static_parameters_DisplayFile_descriptor =
-      getDescriptor().getMessageTypes().get(43);
+      getDescriptor().getMessageTypes().get(44);
     internal_static_parameters_DisplayFile_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_parameters_DisplayFile_descriptor,

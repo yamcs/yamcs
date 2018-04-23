@@ -23,10 +23,8 @@ import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.TableLoadResponse;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
-import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpContentToByteBufDecoder;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
@@ -178,7 +176,6 @@ public class ArchiveTableRestHandler extends RestHandler {
         pipeline.addLast("protobufDecoder", new ProtobufDecoder(Row.getDefaultInstance()));
         pipeline.addLast("loader", new TableLoader(table, req, inputStream));
     }
-
 
     static class TableLoader extends SimpleChannelInboundHandler<Row> {
         private static final Logger log = LoggerFactory.getLogger(TableLoader.class);

@@ -13,12 +13,17 @@ import { PreferenceStore } from './core/services/PreferenceStore';
 import { YamcsService } from './core/services/YamcsService';
 import { HomePage } from './core/pages/HomePage';
 import { ProfilePage } from './core/pages/ProfilePage';
-import { MdbModule } from './mdb/MdbModule';
+import { LoginPage } from './core/pages/LoginPage';
+import { AuthService } from './core/services/AuthService';
+import { ForbiddenPage } from './core/pages/ForbiddenPage';
+import { APP_CONFIG } from './core/config/AppConfig';
 
 @NgModule({
   declarations: [
     AppComponent,
+    ForbiddenPage,
     HomePage,
+    LoginPage,
     NotFoundPage,
     ProfilePage,
   ],
@@ -28,16 +33,26 @@ import { MdbModule } from './mdb/MdbModule';
 
     AppRoutingModule, // Keep in front of modules that contribute child routing
     SharedModule,
-    MdbModule,
   ],
   providers: [
+    AuthService,
     ExtensionRegistry,
     PreferenceStore,
     YamcsService,
     {
       provide: APP_BASE_HREF,
       useValue: '/',
-    }
+    },
+    {
+      provide: APP_CONFIG,
+      useValue: {},
+    },
+  ],
+  exports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    AppRoutingModule,
+    SharedModule,
   ],
   bootstrap: [ AppComponent ]
 })

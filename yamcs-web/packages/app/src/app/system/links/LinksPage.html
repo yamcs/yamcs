@@ -67,13 +67,13 @@
         <mat-cell *matCellDef="let link" style="text-align: right">
           <button mat-stroked-button
                   (click)="enableLink(link.name)"
-                  *ngIf="link.status === 'DISABLED'">
+                  *ngIf="mayControlLinks() && link.status === 'DISABLED'">
             Enable
           </button>
           <button mat-stroked-button
                   class="alert"
                   (click)="disableLink(link.name)"
-                  *ngIf="link.status !== 'DISABLED'">
+                  *ngIf="mayControlLinks() && link.status !== 'DISABLED'">
             Disable
           </button>
         </mat-cell>

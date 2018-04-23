@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Inject, ViewChild } from '@angular/core';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { EventsDataSource } from './EventsDataSource';
@@ -11,7 +11,11 @@ import { subtractDuration } from '../../shared/utils';
 import { rowAnimation } from '../animations';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { debounceTime } from 'rxjs/operators';
-import { Option } from '../../shared/template/Select';
+import { Option, Select } from '../../shared/template/Select';
+import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../../core/config/AppConfig';
+import { CreateEventDialog } from './CreateEventDialog';
+import { MatDialog } from '@angular/material';
+import { AuthService } from '../../core/services/AuthService';
 
 const defaultInterval = 'PT1H';
 
@@ -22,6 +26,9 @@ const defaultInterval = 'PT1H';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventsPage {
+
+  @ViewChild('intervalSelect')
+  intervalSelect: Select;
 
   validStart: Date | null;
   validStop: Date | null;
@@ -34,6 +41,7 @@ export class EventsPage {
   filter = new FormGroup({
     textSearch: new FormControl(),
     severity: new FormControl('INFO'),
+    source: new FormControl('ANY'),
     interval: new FormControl(defaultInterval),
     customStart: new FormControl(null, [
       Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
@@ -55,6 +63,11 @@ export class EventsPage {
     { id: 'seqNumber', label: 'Sequence Number' },
   ];
 
+  /**
+   * Columns specific to a site
+   */
+  extraColumns: ExtraColumnInfo[] = [];
+
   displayedColumns = [
     'severity',
     'gentime',
@@ -72,6 +85,10 @@ export class EventsPage {
     { id: 'SEVERE', label: 'Severe level' },
   ];
 
+  sourceOptions: Option[] = [
+    { id: 'ANY', label: 'Any source', selected: true },
+  ];
+
   intervalOptions: Option[] = [
     { id: 'PT1H', label: 'Last hour', selected: true },
     { id: 'PT6H', label: 'Last 6 hours' },
@@ -85,19 +102,53 @@ export class EventsPage {
   // Would prefer to use formGroup, but when using valueChanges this
   // only is updated after the callback...
   private severity = 'INFO';
+  private source: string;
   private textSearch: string;
 
   constructor(
     private yamcs: YamcsService,
+    private authService: AuthService,
     private preferenceStore: PreferenceStore,
+    private dialog: MatDialog,
+    @Inject(APP_CONFIG) appConfig: AppConfig,
     title: Title,
   ) {
     title.setTitle('Events - Yamcs');
 
-    const cols = preferenceStore.getVisibleColumns('events');
+    // Consider site-specific configuration
+    if (appConfig.events) {
+      const eventConfig = appConfig.events;
+      this.extraColumns = eventConfig.extraColumns || [];
+      for (const extraColumn of this.extraColumns) {
+        for (let i = 0; i < this.columns.length; i++) {
+          if (this.columns[i].id === extraColumn.after) {
+            this.columns.splice(i + 1, 0, extraColumn);
+            break;
+          }
+        }
+      }
+      if (eventConfig.displayedColumns) {
+        this.displayedColumns = eventConfig.displayedColumns;
+      }
+    }
+
+    const cols = preferenceStore.getVisibleColumns('events').filter(el => {
+      // Filter out extraColumns (maybe from another instance - we should maybe store this per instance)
+      for (const column of this.columns) {
+        if (column.id === el) {
+          return true;
+        }
+      }
+    });
     if (cols.length) {
       this.displayedColumns = cols;
     }
+
+    yamcs.getInstanceClient()!.getEventSources().then(sources => {
+      for (const source of sources) {
+        this.sourceOptions.push({ id: source, label: source });
+      }
+    });
 
     this.dataSource = new EventsDataSource(yamcs);
 
@@ -115,6 +166,11 @@ export class EventsPage {
 
     this.filter.get('severity')!.valueChanges.forEach(severity => {
       this.severity = severity;
+      this.loadData();
+    });
+
+    this.filter.get('source')!.valueChanges.forEach(source => {
+      this.source = (source !== 'ANY') ? source : null;
       this.loadData();
     });
 
@@ -143,7 +199,10 @@ export class EventsPage {
     if (interval === 'NO_LIMIT') {
       // NO_LIMIT may include future data under erratic conditions. Reverting
       // to the default interval is more in line with the wording 'jump to now'.
-      this.filter.get('interval')!.setValue(defaultInterval);
+      this.intervalSelect.select(defaultInterval);
+    } else if (interval === 'CUSTOM') {
+      // For simplicity reasons, just reset to default 1h interval.
+      this.intervalSelect.select(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
       this.validStart = subtractDuration(this.validStop, interval);
@@ -181,7 +240,10 @@ export class EventsPage {
       options.stop = this.validStop.toISOString();
     }
     if (this.textSearch) {
-      options.filter = this.textSearch;
+      options.q = this.textSearch;
+    }
+    if (this.source) {
+      options.source = this.source;
     }
 
     const dlOptions: DownloadEventsOptions = {
@@ -195,10 +257,13 @@ export class EventsPage {
       dlOptions.stop = this.validStop.toISOString();
     }
     if (this.textSearch) {
-      dlOptions.filter = this.textSearch;
+      dlOptions.q = this.textSearch;
+    }
+    if (this.source) {
+      dlOptions.source = this.source;
     }
 
-    const instanceClient = this.yamcs.getInstanceClient();
+    const instanceClient = this.yamcs.getInstanceClient()!;
     this.dataSource.loadEvents(options).then(events => {
       const downloadURL = instanceClient.getEventsDownloadURL(dlOptions);
       this.downloadURL$.next(downloadURL);
@@ -206,9 +271,17 @@ export class EventsPage {
   }
 
   loadMoreData() {
-    const options: GetEventsOptions = {};
+    const options: GetEventsOptions = {
+      severity: this.severity as any,
+    };
     if (this.validStart) {
       options.start = this.validStart.toISOString();
+    }
+    if (this.textSearch) {
+      options.q = this.textSearch;
+    }
+    if (this.source) {
+      options.source = this.source;
     }
 
     this.dataSource.loadMoreData(options);
@@ -223,7 +296,22 @@ export class EventsPage {
     this.filter.get('severity')!.setValue(severity);
   }
 
+  updateSource(source: string) {
+    this.filter.get('source')!.setValue(source);
+  }
+
   updateInterval(interval: string) {
     this.filter.get('interval')!.setValue(interval);
+  }
+
+  mayWriteEvents() {
+    return this.authService.hasSystemPrivilege('MayWriteEvents');
+  }
+
+  createEvent() {
+    const dialogInstance = this.dialog.open(CreateEventDialog, {
+      width: '400px',
+    });
+    dialogInstance.afterClosed().subscribe(() => this.jumpToNow());
   }
 }

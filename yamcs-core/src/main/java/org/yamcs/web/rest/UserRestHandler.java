@@ -1,6 +1,10 @@
 package org.yamcs.web.rest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
@@ -17,40 +21,57 @@ public class UserRestHandler extends RestHandler {
     @Route(path = "/api/user", method = "GET")
     public void getUser(RestRequest req) throws HttpException {
         User user = Privilege.getInstance().getUser(req.getAuthToken());
+        UserInfo userInfo = toUserInfo(user, true);
+        completeOK(req, userInfo);
+    }
 
+    public static UserInfo toUserInfo(User user, boolean addClientInfo) {
         UserInfo.Builder userInfob;
         if (user == null) {
             userInfob = buildFullyPrivilegedUser();
-            userInfob.setLogin(Privilege.getDefaultUser());
+            userInfob.setLogin(Privilege.getInstance().getDefaultUser());
         } else {
             userInfob = UserInfo.newBuilder();
             userInfob.setLogin(user.getPrincipalName());
-            userInfob.addAllRoles(Arrays.asList(user.getRoles()));
-            userInfob.addAllTmParaPrivileges(user.getTmParaPrivileges());
-            userInfob.addAllTmParaSetPrivileges(user.getTmParaSetPrivileges());
-            userInfob.addAllTmPacketPrivileges(user.getTmPacketPrivileges());
-            userInfob.addAllTcPrivileges(user.getTcPrivileges());
-            userInfob.addAllSystemPrivileges(user.getSystemPrivileges());
+            userInfob.addAllRoles(asSortedList(user.getRoles()));
+            userInfob.addAllTmParaPrivileges(asSortedList(user.getTmParaPrivileges()));
+            userInfob.addAllTmParaSetPrivileges(asSortedList(user.getTmParaSetPrivileges()));
+            userInfob.addAllTmPacketPrivileges(asSortedList(user.getTmPacketPrivileges()));
+            userInfob.addAllTcPrivileges(asSortedList(user.getTcPrivileges()));
+            userInfob.addAllSystemPrivileges(asSortedList(user.getSystemPrivileges()));
+            userInfob.addAllStreamPrivileges(asSortedList(user.getStreamPrivileges()));
+            userInfob.addAllCmdHistoryPrivileges(asSortedList(user.getCmdHistoryPrivileges()));
         }
 
         for (ClientInfo ci : ManagementService.getInstance().getClientInfo(userInfob.getLogin())) {
             userInfob.addClientInfo(ci);
         }
 
-        UserInfo info = userInfob.build();
-        completeOK(req, info);
+        return userInfob.build();
     }
 
-    private UserInfo.Builder buildFullyPrivilegedUser() {
+    private static UserInfo.Builder buildFullyPrivilegedUser() {
         UserInfo.Builder userInfob = UserInfo.newBuilder();
-        userInfob.addRoles("admin");
+        // userInfob.addRoles("admin");
         userInfob.addTmParaPrivileges(".*");
         userInfob.addTmParaSetPrivileges(".*");
         userInfob.addTmPacketPrivileges(".*");
         userInfob.addTcPrivileges(".*");
-        for (Privilege.SystemPrivilege sp : Privilege.SystemPrivilege.values()) {
-            userInfob.addSystemPrivileges(sp.name());
-        }
+        userInfob.addTcPrivileges(".*");
+        userInfob.addSystemPrivileges(".*");
+        userInfob.addStreamPrivileges(".*");
+        userInfob.addCmdHistoryPrivileges(".*");
         return userInfob;
+    }
+
+    private static List<String> asSortedList(String[] unsorted) {
+        Arrays.sort(unsorted);
+        return Arrays.asList(unsorted);
+    }
+
+    private static List<String> asSortedList(Collection<String> unsorted) {
+        List<String> sorted = new ArrayList<>(unsorted);
+        Collections.sort(sorted);
+        return sorted;
     }
 }

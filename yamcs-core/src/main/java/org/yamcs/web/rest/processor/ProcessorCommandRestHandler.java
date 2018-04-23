@@ -17,6 +17,8 @@ import org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest;
 import org.yamcs.security.InvalidAuthenticationToken;
+import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -35,8 +37,6 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import org.yaml.snakeyaml.util.UriEncoder;
 
 import com.google.protobuf.ByteString;
-import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
 
 /**
  * Processes command requests
@@ -45,9 +45,9 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/commands/:name*", method = "POST")
     public void issueCommand(RestRequest req) throws HttpException {
-        
+
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayCommand);
-        
+
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.hasCommanding()) {
             throw new BadRequestException("Commanding not activated for this processor");
@@ -56,8 +56,8 @@ public class ProcessorCommandRestHandler extends RestHandler {
         String requestCommandName = UriEncoder.decode(req.getRouteParam("name"));
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         MetaCommand cmd = verifyCommand(req, mdb, requestCommandName);
-        
-        verifyAuthorization(req.getAuthToken(), Privilege.Type.TC, cmd.getQualifiedName());
+
+        verifyAuthorization(req.getAuthToken(), PrivilegeType.TC, cmd.getQualifiedName());
 
         String origin = "";
         int sequenceNumber = 0;

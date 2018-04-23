@@ -3,8 +3,8 @@ package org.yamcs.web.rest.mdb;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Rest.ListCommandInfoResponse;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
-import org.yamcs.security.Privilege.Type;
+import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -23,7 +23,7 @@ public class MDBCommandRestHandler extends RestHandler {
     @Route(path = "/api/mdb/:instance/commands/:name*", method = "GET")
     public void getCommand(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
-        
+
         if (req.hasRouteParam("name")) {
             getCommandInfo(req);
         } else {
@@ -36,10 +36,10 @@ public class MDBCommandRestHandler extends RestHandler {
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
-     
-        
+
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL, req.getOptions());
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
+        CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL, addLinks);
         completeOK(req, cinfo);
     }
 
@@ -55,6 +55,7 @@ public class MDBCommandRestHandler extends RestHandler {
 
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         ListCommandInfoResponse.Builder responseb = ListCommandInfoResponse.newBuilder();
         if (req.hasQueryParameter("namespace")) {
@@ -62,7 +63,7 @@ public class MDBCommandRestHandler extends RestHandler {
 
             Privilege privilege = Privilege.getInstance();
             for (MetaCommand cmd : mdb.getMetaCommands()) {
-                if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TC, cmd.getQualifiedName()))
+                if (!privilege.hasPrivilege1(req.getAuthToken(), PrivilegeType.TC, cmd.getQualifiedName()))
                     continue;
                 if (matcher != null && !matcher.matches(cmd))
                     continue;
@@ -70,7 +71,7 @@ public class MDBCommandRestHandler extends RestHandler {
                 String alias = cmd.getAlias(namespace);
                 if (alias != null || (recurse && cmd.getQualifiedName().startsWith(namespace))) {
                     responseb.addCommand(
-                            XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                            XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, addLinks));
                 }
             }
         } else { // List all
@@ -78,7 +79,7 @@ public class MDBCommandRestHandler extends RestHandler {
                 if (matcher != null && !matcher.matches(cmd))
                     continue;
                 responseb.addCommand(
-                        XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                        XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, addLinks));
             }
         }
 

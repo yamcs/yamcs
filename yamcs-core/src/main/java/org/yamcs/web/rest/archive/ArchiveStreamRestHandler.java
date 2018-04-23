@@ -2,6 +2,8 @@ package org.yamcs.web.rest.archive;
 
 import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Rest.ListStreamsResponse;
+import org.yamcs.security.Privilege;
+import org.yamcs.security.PrivilegeType;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -18,8 +20,13 @@ public class ArchiveStreamRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
+        Privilege privilege = Privilege.getInstance();
+
         ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
         for (AbstractStream stream : ydb.getStreams()) {
+            if (!privilege.hasPrivilege1(req.getAuthToken(), PrivilegeType.STREAM, stream.getName())) {
+                continue;
+            }
             responseb.addStream(ArchiveHelper.toStreamInfo(stream));
         }
         completeOK(req, responseb.build());

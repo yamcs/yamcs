@@ -12,8 +12,8 @@ import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse.GetParameterInfoResp
 import org.yamcs.protobuf.Rest.ListParameterInfoResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
-import org.yamcs.security.Privilege.Type;
+import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
@@ -33,9 +33,10 @@ public class MDBParameterRestHandler extends RestHandler {
     @Route(path = "/api/mdb/:instance/parameters/bulk", method = { "GET", "POST" }, priority = true)
     public void getBulkParameterInfo(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
-        
+
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         BulkGetParameterInfoRequest request = req.bodyAsMessage(BulkGetParameterInfoRequest.newBuilder()).build();
         BulkGetParameterInfoResponse.Builder responseb = BulkGetParameterInfoResponse.newBuilder();
@@ -44,7 +45,7 @@ public class MDBParameterRestHandler extends RestHandler {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
-            if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.Type.TM_PARAMETER,
+            if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
                     p.getQualifiedName())) {
                 log.warn("Not providing information about parameter {} because no privileges exists",
                         p.getQualifiedName());
@@ -55,7 +56,7 @@ public class MDBParameterRestHandler extends RestHandler {
             response.setId(id);
             String instanceURL = req.getApiURL() + "/mdb/" + instance;
             response.setParameter(
-                    XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                    XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, addLinks));
             responseb.addResponse(response);
         }
 
@@ -79,7 +80,8 @@ public class MDBParameterRestHandler extends RestHandler {
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
 
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.FULL, req.getOptions());
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
+        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.FULL, addLinks);
         completeOK(req, pinfo);
     }
 
@@ -96,6 +98,7 @@ public class MDBParameterRestHandler extends RestHandler {
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         boolean details = req.getQueryParameterAsBoolean("details", false);
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         // Support both type[]=float&type[]=integer and type=float,integer
         Set<String> types = new HashSet<>();
@@ -115,7 +118,7 @@ public class MDBParameterRestHandler extends RestHandler {
 
             Privilege privilege = Privilege.getInstance();
             for (Parameter p : mdb.getParameters()) {
-                if (!privilege.hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
+                if (!privilege.hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
                     continue;
                 }
                 if (matcher != null && !matcher.matches(p)) {
@@ -126,7 +129,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
                     if (parameterTypeMatches(p, types)) {
                         responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL,
-                                details ? DetailLevel.FULL : DetailLevel.SUMMARY, req.getOptions()));
+                                details ? DetailLevel.FULL : DetailLevel.SUMMARY, addLinks));
                     }
                 }
             }
@@ -137,7 +140,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 }
                 if (parameterTypeMatches(p, types)) {
                     responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL,
-                            details ? DetailLevel.FULL : DetailLevel.SUMMARY, req.getOptions()));
+                            details ? DetailLevel.FULL : DetailLevel.SUMMARY, addLinks));
                 }
             }
         }

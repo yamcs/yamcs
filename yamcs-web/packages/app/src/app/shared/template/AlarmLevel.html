@@ -1,31 +1,42 @@
+<!--
+  Background images urls via *.html instead of *.css.
+  This prevents an issue where assets are not correctly resolved
+  on yamcs-web rebuilds that use the ng-packagr output.
+ -->
 <ng-container [ngSwitch]="level">
   <div *ngSwitchCase="'IN_LIMITS'"
        class="inlimits"
        matTooltip="In Limits"
-       [class.grayscale]="grayscale"></div>
+       [class.grayscale]="grayscale"
+       style="background-image: url('/_static/assets/level-sprite.png')"></div>
 
   <div *ngSwitchCase="'WATCH'"
        class="watch"
        matTooltip="Watch"
-       [class.grayscale]="grayscale"></div>
+       [class.grayscale]="grayscale"
+       style="background-image: url('/_static/assets/level-sprite.png')"></div>
 
   <div *ngSwitchCase="'WARNING'"
        class="warning"
        matTooltip="Warning"
-       [class.grayscale]="grayscale"></div>
+       [class.grayscale]="grayscale"
+       style="background-image: url('/_static/assets/level-sprite.png')"></div>
 
   <div *ngSwitchCase="'DISTRESS'"
        class="distress"
        matTooltip="Distress"
-       [class.grayscale]="grayscale"></div>
+       [class.grayscale]="grayscale"
+       style="background-image: url('/_static/assets/level-sprite.png')"></div>
 
   <div *ngSwitchCase="'CRITICAL'"
        class="critical"
        matTooltip="Critical"
-       [class.grayscale]="grayscale"></div>
+       [class.grayscale]="grayscale"
+       style="background-image: url('/_static/assets/level-sprite.png')"></div>
 
   <div *ngSwitchCase="'SEVERE'"
         class="severe"
         matTooltip="Severe"
-        [class.grayscale]="grayscale"></div>
+        [class.grayscale]="grayscale"
+        style="background-image: url('/_static/assets/level-sprite.png')"></div>
 </ng-container>

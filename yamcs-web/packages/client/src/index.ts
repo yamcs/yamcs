@@ -1,5 +1,7 @@
 export { default as YamcsClient } from './YamcsClient';
 export { InstanceClient } from './InstanceClient';
+export { HttpInterceptor } from './HttpInterceptor';
+export { HttpError } from './HttpError';
 
 export {
   AlarmInfo,
@@ -31,6 +33,7 @@ export {
   CommandHistoryEntry,
   CommandHistoryAttribute,
   CommandId,
+  CreateEventRequest,
   DisplayFile,
   DisplayFolder,
   DownloadEventsOptions,
@@ -53,8 +56,11 @@ export {
 } from './types/monitoring';
 
 export {
+  AccessTokenResponse,
+  AuthInfo,
   ClientInfo,
   ClientSubscriptionResponse,
+  Column,
   CommandQueue,
   CommandQueueEntry,
   CommandQueueEvent,

@@ -1,37 +1,26 @@
 package org.yamcs.security;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Created by msc on 05/05/15.
  */
 public class UsernamePasswordToken implements AuthenticationToken {
 
-    /**
-     * The username, password
-     */
     private String username;
     private char[] password;
 
-
-    /**
-     * Constructors
-     *
-     * @param username
-     * @param password
-     */
     public UsernamePasswordToken(final String username, final char[] password) {
-        this.username = username;
+        this.username = Objects.requireNonNull(username);
         this.password = password;
     }
 
     public UsernamePasswordToken(final String username, final String password) {
-        this(username, password != null ? password.toCharArray() : null);
+        this.username = Objects.requireNonNull(username);
+        this.password = password != null ? password.toCharArray() : null;
     }
 
-    /**
-     * getter/setter
-     */
     public String getUsername() {
         return username;
     }
@@ -45,7 +34,8 @@ public class UsernamePasswordToken implements AuthenticationToken {
     }
 
     public String getPasswordS() {
-        if(password == null) return null;
+        if (password == null)
+            return null;
         return new String(password);
     }
 
@@ -57,7 +47,6 @@ public class UsernamePasswordToken implements AuthenticationToken {
         this.password = password != null ? password.toCharArray() : null;
     }
 
-
     @Override
     public Object getPrincipal() {
         return username;
@@ -65,20 +54,22 @@ public class UsernamePasswordToken implements AuthenticationToken {
 
     @Override
     public String toString() {
-        String repr = (username != null ? username : "null");
-        repr += (password != null ? "/*****" : "/null");
-        return repr;
+        return username;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         UsernamePasswordToken that = (UsernamePasswordToken) o;
 
-        if (!Arrays.equals(password, that.password)) return false;
-        if (username != null ? !username.equals(that.username) : that.username != null) return false;
+        if (!Arrays.equals(password, that.password))
+            return false;
+        if (username != null ? !username.equals(that.username) : that.username != null)
+            return false;
 
         return true;
     }

@@ -14,7 +14,7 @@ export class YamcsService {
   readonly yamcsClient = new YamcsClient();
   readonly instance$ = new BehaviorSubject<Instance | null>(null);
 
-  private selectedInstance: InstanceClient;
+  private selectedInstance: InstanceClient | null;
 
   private timeInfo$ = new BehaviorSubject<TimeInfo | null>(null);
   private timeInfoSubscription: Subscription;
@@ -22,19 +22,15 @@ export class YamcsService {
   /**
    * Prepares a (new) instance.
    */
-  switchInstance(instance: Instance) {
+  selectInstance(instance: Instance) {
     return new Promise<void>((resolve, reject) => {
       if (this.selectedInstance) {
         if (this.selectedInstance.instance === instance.name) {
           resolve();
           return;
-        } else {
-          this.timeInfo$.next(null);
-          this.timeInfoSubscription.unsubscribe();
-          this.selectedInstance.closeConnection();
         }
       }
-
+      this.unselectInstance();
       this.instance$.next(instance);
       this.selectedInstance = this.yamcsClient.createInstanceClient(instance.name);
 
@@ -49,6 +45,18 @@ export class YamcsService {
         reject(err);
       });
     });
+  }
+
+  unselectInstance() {
+    this.timeInfo$.next(null);
+    this.instance$.next(null);
+    if (this.timeInfoSubscription) {
+      this.timeInfoSubscription.unsubscribe();
+    }
+    if (this.selectedInstance) {
+      this.selectedInstance.closeConnection();
+      this.selectedInstance = null;
+    }
   }
 
   /**

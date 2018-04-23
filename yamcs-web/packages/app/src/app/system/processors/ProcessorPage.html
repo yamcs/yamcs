@@ -14,7 +14,8 @@
       TM
     </a>
 
-    <a mat-tab-link
+    <a *ngIf="mayControlCommandQueue()"
+      mat-tab-link
       routerLink="./tc"
       routerLinkActive #rlb="routerLinkActive"
       [queryParams]="{instance: instance.name}"

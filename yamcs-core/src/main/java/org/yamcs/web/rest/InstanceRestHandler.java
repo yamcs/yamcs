@@ -14,6 +14,7 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.ExceptionUtil;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -62,7 +63,7 @@ public class InstanceRestHandler extends RestHandler {
 
     @Route(path = "/api/instances/:instance", method = { "PATCH", "PUT", "POST" })
     public void editInstance(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.SystemPrivilege.MayControlServices)) {
+        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayControlServices)) {
             throw new ForbiddenException("No privilege for this operation");
         }
         String instance = verifyInstance(req, req.getRouteParam("instance"));

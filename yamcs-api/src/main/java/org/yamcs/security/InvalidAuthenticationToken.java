@@ -1,12 +1,14 @@
 package org.yamcs.security;
 
 /**
- * Exception thrown in case an AuthenticationToken is not (anymore) valid.
+ * Thrown when an AuthenticationToken is not or no longer valid.
  * 
  * @author nm
  *
  */
+@SuppressWarnings("serial")
 public class InvalidAuthenticationToken extends Exception {
+
     public InvalidAuthenticationToken(String message) {
         super(message);
     }

@@ -83,7 +83,8 @@
       <tr *ngFor="let constraint of command.constraint">
         <td>
           <ng-container *ngFor="let comparison of constraint.comparison">
-            {{ comparison.parameter.qualifiedName }}
+            <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
+               [queryParams]="{instance: instance.name}">{{ comparison.parameter.qualifiedName }}</a>
             {{ comparison.operator | operator }}
             {{ comparison.value }}
           </ng-container>

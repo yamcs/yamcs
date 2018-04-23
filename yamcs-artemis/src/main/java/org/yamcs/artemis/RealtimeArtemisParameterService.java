@@ -1,6 +1,8 @@
 package org.yamcs.artemis;
 
-import static org.yamcs.api.artemis.Protocol.*;
+import static org.yamcs.api.artemis.Protocol.DATA_TO_HEADER_NAME;
+import static org.yamcs.api.artemis.Protocol.REPLYTO_HEADER_NAME;
+import static org.yamcs.api.artemis.Protocol.REQUEST_TYPE_HEADER_NAME;
 
 import java.util.List;
 
@@ -9,12 +11,11 @@ import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.MessageHandler;
 import org.slf4j.Logger;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Maps;
-
-import org.yamcs.*;
+import org.yamcs.InvalidIdentification;
+import org.yamcs.InvalidRequestIdentification;
+import org.yamcs.NoPermissionException;
+import org.yamcs.Processor;
+import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.api.artemis.YamcsClient;
@@ -29,9 +30,11 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.HqClientMessageToken;
 import org.yamcs.utils.LoggingUtils;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 
 /**
  * Provides realtime parameter subscription via artemis.
@@ -109,15 +112,14 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
             log.warn("Could not decode the parameter list", e);
             return;
         }
-        HqClientMessageToken authToken = new HqClientMessageToken(msg, null);
 
         try {
             if (subscriptions.containsValue(dataAddress)) {
                 int subscriptionId = subscriptions.inverse().get(dataAddress);
-                prh.addItemsToRequest(subscriptionId, paraList, authToken);
+                prh.addItemsToRequest(subscriptionId, paraList, null);
             } else {
                 // TODO configure non-blocking
-                int subscriptionId = prh.addRequest(paraList, authToken);
+                int subscriptionId = prh.addRequest(paraList, null);
                 subscriptions.put(subscriptionId, dataAddress);
             }
             yclient.sendReply(replyto, "OK", null);
@@ -142,11 +144,10 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
             log.warn("Could not decode the parameter list");
             return;
         }
-        AuthenticationToken authToken = new HqClientMessageToken(msg, null);
         if (subscriptions.containsValue(dataAddress)) {
             int subscriptionId = subscriptions.inverse().get(dataAddress);
             try {
-                prh.removeItemsFromRequest(subscriptionId, paraList, authToken);
+                prh.removeItemsFromRequest(subscriptionId, paraList, null);
                 yclient.sendReply(replyto, "OK", null);
             } catch (NoPermissionException e) {
                 log.error("No permission.", e);
@@ -174,10 +175,9 @@ public class RealtimeArtemisParameterService implements ParameterWithIdConsumer 
             yclient.sendErrorReply(replyto, "already subscribed for this address");
             return;
         }
-        AuthenticationToken authToken = new HqClientMessageToken(msg, null);
         int subscriptionId = 0;
         try {
-            subscriptionId = prh.subscribeAll(namespace, authToken);
+            subscriptionId = prh.subscribeAll(namespace, null);
             subscriptions.put(subscriptionId, dataAddress);
             yclient.sendReply(replyto, "OK", null);
         } catch (NoPermissionException e) {

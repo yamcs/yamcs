@@ -1,6 +1,17 @@
 import { CommandId, Value } from './monitoring';
 import { Observable } from 'rxjs/Observable';
 
+export interface AuthInfo {
+  requireAuthentication: boolean;
+}
+
+export interface AccessTokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  user: UserInfo;
+}
+
 export interface GeneralInfo {
   yamcsVersion: string;
   serverId: string;
@@ -44,6 +55,8 @@ export interface UserInfo {
   tmPacketPrivileges: string[];
   tcPrivileges: string[];
   systemPrivileges: string[];
+  streamPrivileges: string[];
+  cmdHistoryPrivileges: string[];
 }
 
 export interface Service {
@@ -96,12 +109,32 @@ export interface Stream {
 export interface Column {
   name: string;
   type: string;
+  enumValue: SQLEnumValue[];
+}
+
+export interface SQLEnumValue {
+  value: number;
+  label: string;
 }
 
 export interface Table {
   name: string;
   keyColumn: Column[];
   valueColumn: Column[];
+  histogramColumn?: string[];
+  storageEngine: string;
+  formatVersion: number;
+  tablespace?: string;
+  compressed: boolean;
+  partitioningInfo?: PartitioningInfo;
+}
+
+export interface PartitioningInfo {
+  type: 'TIME' | 'VALUE' | 'TIME_AND_VALUE';
+  timeColumn: string;
+  timePartitionSchema: string;
+  valueColumn: string;
+  valueColumnType: string;
 }
 
 export interface Record {

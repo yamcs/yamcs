@@ -2,6 +2,14 @@
   <app-monitor-toolbar>
     Events
     &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-button
+            *ngIf="mayWriteEvents()"
+            color="primary"
+            (click)="createEvent()">
+      <mat-icon>add_box</mat-icon>
+      Create Event
+    </button>
+
     <button mat-icon-button
             matTooltip="Jump to now"
             color="primary"
@@ -34,13 +42,20 @@
                  placeholder="Filter by text search"
                  style="width: 300px">
           &nbsp;&nbsp;
-          <app-select [options]="severityOptions" (change)="updateSeverity($event)"></app-select>
-          &nbsp;&nbsp;
           <app-column-chooser [columns]="columns"
                               [displayedColumns]="displayedColumns"
                               (change)="updateColumns($event)"></app-column-chooser>
+        </div>
+      </div>
+      <div fxLayout="row" class="filter-bar">
+        <div fxFlex class="vmiddle">
+          <app-select [options]="severityOptions" (change)="updateSeverity($event)"></app-select>
           &nbsp;&nbsp;
-          <app-select [options]="intervalOptions"
+          <app-select [options]="sourceOptions"
+                      (change)="updateSource($event)"></app-select>
+          &nbsp;&nbsp;
+          <app-select #intervalSelect
+                      [options]="intervalOptions"
                       icon="access_time"
                       (change)="updateInterval($event)"></app-select>
           &nbsp;&nbsp;
@@ -103,41 +118,48 @@
 
       <ng-container cdkColumnDef="message">
         <mat-header-cell *cdkHeaderCellDef>Message</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" style="white-space: pre">{{ row.message }}</mat-cell>
+        <mat-cell *cdkCellDef="let row" style="white-space: pre">{{ row.message || '-' }}</mat-cell>
       </ng-container>
 
       <ng-container cdkColumnDef="type">
         <mat-header-cell *cdkHeaderCellDef fxFlex="150px">Type</mat-header-cell>
         <mat-cell *cdkCellDef="let row" fxFlex="150px">
-          {{ row.type }}
+          {{ row.type || '-' }}
         </mat-cell>
       </ng-container>
 
       <ng-container cdkColumnDef="source">
         <mat-header-cell *cdkHeaderCellDef fxFlex="150px">Source</mat-header-cell>
         <mat-cell *cdkCellDef="let row" fxFlex="150px">
-          {{ row.source }}
+          {{ row.source || '-' }}
         </mat-cell>
       </ng-container>
 
       <ng-container cdkColumnDef="gentime">
         <mat-header-cell *cdkHeaderCellDef fxFlex="200px">Generation Time</mat-header-cell>
         <mat-cell *cdkCellDef="let row" fxFlex="200px">
-          {{ row.generationTimeUTC | datetime }}
+          {{ (row.generationTimeUTC | datetime) || '-' }}
         </mat-cell>
       </ng-container>
 
       <ng-container cdkColumnDef="rectime">
         <mat-header-cell *cdkHeaderCellDef fxFlex="200px">Reception Time</mat-header-cell>
         <mat-cell *cdkCellDef="let row" fxFlex="200px">
-          {{ row.receptionTimeUTC | datetime }}
+          {{ (row.receptionTimeUTC | datetime) || '-' }}
         </mat-cell>
       </ng-container>
 
       <ng-container cdkColumnDef="seqNumber">
         <mat-header-cell *cdkHeaderCellDef fxFlex="100px">Sequence Number</mat-header-cell>
         <mat-cell *cdkCellDef="let row" fxFlex="100px">
-          {{ row.seqNumber }}
+          {{ row.seqNumber || '-' }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container *ngFor="let extraColumn of extraColumns" [cdkColumnDef]="extraColumn.id">
+        <mat-header-cell *cdkHeaderCellDef [fxFlex]="extraColumn.width || '200px'">{{ extraColumn.label }}</mat-header-cell>
+        <mat-cell *cdkCellDef="let row" [fxFlex]="extraColumn.width || '200px'">
+          {{ row[extraColumn.id] || '-' }}
         </mat-cell>
       </ng-container>
 

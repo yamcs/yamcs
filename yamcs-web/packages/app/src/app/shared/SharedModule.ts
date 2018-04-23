@@ -59,6 +59,13 @@ import { TextAction } from './template/TextAction';
 import { ColumnChooser } from './template/ColumnChooser';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { Select } from './template/Select';
+import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
+import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
+import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
+import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
+import { AuthGuard } from '../core/guards/AuthGuard';
+import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
+import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 
 const materialModules = [
   OverlayModule,
@@ -124,6 +131,16 @@ const pipes = [
   ValuePipe,
 ];
 
+const guards = [
+  AuthGuard,
+  InstanceExistsGuard,
+  MayControlServicesGuard,
+  MayGetMissionDatabaseGuard,
+  MayReadEventsGuard,
+  MayReadTablesGuard,
+  UnselectInstanceGuard,
+];
+
 @NgModule({
   imports: [
     CommonModule,
@@ -151,6 +168,7 @@ const pipes = [
     SelectInstanceDialog,
   ],
   providers: [
+    guards,
     pipes, // Make pipes available in components too
   ]
 })

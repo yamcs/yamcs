@@ -1,7 +1,7 @@
 services:
     #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
     - org.yamcs.tctm.DataLinkInitialiser
-    - class: org.yamcs.archive.XtceTmRecorder
+    - org.yamcs.archive.XtceTmRecorder
     - org.yamcs.archive.ParameterRecorder
     - org.yamcs.archive.AlarmRecorder
     - org.yamcs.archive.EventRecorder

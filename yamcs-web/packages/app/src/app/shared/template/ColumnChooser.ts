@@ -4,6 +4,7 @@ export interface ColumnInfo {
   id: string;
   label: string;
   alwaysVisible?: boolean;
+  width?: string;
 }
 
 @Component({

@@ -21,10 +21,13 @@ import { CommandPage } from './commands/CommandPage';
 import { ParameterChartTab } from './parameters/ParameterChartTab';
 import { ParameterDataTab } from './parameters/ParameterDataTab';
 import { ParameterSummaryTab } from './parameters/ParameterSummaryTab';
+import { AuthGuard } from '../core/guards/AuthGuard';
+import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
 
 const routes = [{
   path: '',
-  canActivate: [InstanceExistsGuard],
+  canActivate: [AuthGuard, InstanceExistsGuard, MayGetMissionDatabaseGuard],
+  canActivateChild: [AuthGuard, MayGetMissionDatabaseGuard],
   component: MdbPage,
   children: [{
     path: '',

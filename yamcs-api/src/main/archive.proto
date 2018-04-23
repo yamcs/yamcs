@@ -25,6 +25,12 @@ message TableData {
 message ColumnInfo {
   optional string name = 1;
   optional string type = 2;
+  repeated EnumValue enumValue = 3;
+}
+
+message EnumValue {
+  optional int32 value = 1;
+  optional string label = 2;
 }
 
 message TableInfo {
@@ -32,10 +38,33 @@ message TableInfo {
   repeated ColumnInfo keyColumn = 2;
   repeated ColumnInfo valueColumn = 3;
   optional string script = 4;
+  repeated string histogramColumn = 5;
+  optional string storageEngine = 6;
+  optional int32 formatVersion = 7;
+  optional string tablespace = 8;
+  optional bool compressed = 9;
+  optional PartitioningInfo partitioningInfo = 10;
+}
+
+message PartitioningInfo {
+  enum PartitioningType {
+    TIME = 1;
+    VALUE = 2;
+    TIME_AND_VALUE = 3;
+  }
+  optional PartitioningType type = 1;
+  optional string timeColumn = 2;
+  optional string timePartitionSchema = 3;
+  optional string valueColumn = 4;
+  optional string valueColumnType = 5;
 }
 
 message StreamInfo {
   optional string name = 1;
   repeated ColumnInfo column = 2;
   optional string script = 3;
+}
+
+message EventSourceInfo {
+  repeated string source = 1;
 }

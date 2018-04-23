@@ -8,8 +8,8 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 
 /**
- * Default implementation of an EventProducer that provides shortcut methods for
- * sending message of different severity types.
+ * Default implementation of an EventProducer that provides shortcut methods for sending message of different severity
+ * types.
  */
 public abstract class AbstractEventProducer implements EventProducer {
     String source;
@@ -19,67 +19,62 @@ public abstract class AbstractEventProducer implements EventProducer {
     private Event originalEvent; // Original evt of a series of repeated events
     private Event lastRepeat; // Last evt of a series of repeated events
     private int repeatCounter = 0;
-    private long repeatedEventTimeout = 60000; //how long in milliseconds to buffer repeated events
-    
-    
-    // Flushes the Event Buffer about each minute
+    private long repeatedEventTimeout = 60000; // how long in milliseconds to buffer repeated events
+
+    // Flushes the Event Buffer about every minute
     private Timer flusher;
 
-    /* (non-Javadoc)
-     * @see org.yamcs.api.EventProducer#setSource(java.lang.String)
-     */
     @Override
     public void setSource(String source) {
-        this.source=source;
+        this.source = source;
     }
 
-    /* (non-Javadoc)
-     * @see org.yamcs.api.EventProducer#setSeqNo(int)
-     */
     @Override
     public void setSeqNo(int sn) {
         this.seqNo.set(sn);
     }
 
-    /* (non-Javadoc)
-     * @see org.yamcs.api.EventProducer#sendError(java.lang.String, java.lang.String)
-     */
     @Override
     public synchronized void sendError(String type, String msg) {
         sendMessage(EventSeverity.ERROR, type, msg);
     }
 
-    /* (non-Javadoc)
-     * @see org.yamcs.api.EventProducer#sendWarning(java.lang.String, java.lang.String)
-     */
     @Override
     public synchronized void sendWarning(String type, String msg) {
         sendMessage(EventSeverity.WARNING, type, msg);
     }
 
-    /* (non-Javadoc)
-     * @see org.yamcs.api.EventProducer#sendInfo(java.lang.String, java.lang.String)
-     */
     @Override
     public synchronized void sendInfo(String type, String msg) {
         sendMessage(EventSeverity.INFO, type, msg);
     }
 
+    @Override
     public synchronized void sendWatch(String type, String msg) {
         sendMessage(EventSeverity.WATCH, type, msg);
     }
+
+    @Override
     public synchronized void sendDistress(String type, String msg) {
         sendMessage(EventSeverity.DISTRESS, type, msg);
     }
+
+    @Override
     public synchronized void sendCritical(String type, String msg) {
         sendMessage(EventSeverity.CRITICAL, type, msg);
     }
+
+    @Override
     public synchronized void sendSevere(String type, String msg) {
         sendMessage(EventSeverity.SEVERE, type, msg);
     }
-    
+
     private void sendMessage(EventSeverity severity, String type, String msg) {
-        Event e = newEvent().setSeverity(severity).setType(type).setMessage(msg).build();
+        Event.Builder eventb = newEvent().setSeverity(severity).setMessage(msg);
+        if (type != null) {
+            eventb.setType(type);
+        }
+        Event e = eventb.build();
         if (!repeatedEventReduction) {
             sendEvent(e);
         } else {
@@ -111,11 +106,12 @@ public abstract class AbstractEventProducer implements EventProducer {
         }
     }
 
-    /** 
-     * By default event repetitions are checked for possible reduction. Disable if
-     * 'realtime' events are required.
+    /**
+     * By default event repetitions are checked for possible reduction. Disable if 'realtime' events are required.
      */
-    public synchronized void setRepeatedEventReduction(boolean repeatedEventReduction, long repeatedEventTimeoutMillisec) {
+    @Override
+    public synchronized void setRepeatedEventReduction(boolean repeatedEventReduction,
+            long repeatedEventTimeoutMillisec) {
         this.repeatedEventReduction = repeatedEventReduction;
         this.repeatedEventTimeout = repeatedEventTimeoutMillisec;
         if (!repeatedEventReduction) {
@@ -130,7 +126,7 @@ public abstract class AbstractEventProducer implements EventProducer {
     protected synchronized void flushEventBuffer(boolean startNewSequence) {
         if (repeatCounter > 1) {
             sendEvent(Event.newBuilder(lastRepeat)
-                    .setMessage("Repeated "+repeatCounter+" times: "+lastRepeat.getMessage())
+                    .setMessage("Repeated " + repeatCounter + " times: " + lastRepeat.getMessage())
                     .build());
         } else if (repeatCounter == 1) {
             sendEvent(lastRepeat);
@@ -152,16 +148,16 @@ public abstract class AbstractEventProducer implements EventProducer {
         return originalEvent.getMessage().equals(e.getMessage())
                 && originalEvent.getSeverity().equals(e.getSeverity())
                 && originalEvent.getSource().equals(e.getSource())
-                && originalEvent.getType().equals(e.getType());
+                && originalEvent.hasType() == e.hasType()
+                && (!originalEvent.hasType() || originalEvent.getType().equals(e.getType()));
     }
 
     @Override
     public Event.Builder newEvent() {
         long t = getMissionTime();
-        return Event.newBuilder().setSource(source).
-                setSeqNumber(seqNo.getAndIncrement()).setGenerationTime(t).
-                setReceptionTime(t);
+        return Event.newBuilder().setSource(source).setSeqNumber(seqNo.getAndIncrement()).setGenerationTime(t)
+                .setReceptionTime(t);
     }
 
-    public abstract long getMissionTime() ;
+    public abstract long getMissionTime();
 }

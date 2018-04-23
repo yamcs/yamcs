@@ -7,6 +7,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
+import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsException;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmServer;
@@ -26,15 +27,15 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestRequest.Option;
 import org.yamcs.web.rest.Route;
+import org.yamcs.web.rest.ServiceHelper;
 
 public class ProcessorRestHandler extends RestHandler {
 
@@ -71,7 +72,7 @@ public class ProcessorRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
     public void editProcessor(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlProcessor);
-        
+
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
             throw new BadRequestException("Cannot update a non-replay processor");
@@ -226,11 +227,10 @@ public class ProcessorRestHandler extends RestHandler {
         }
     }
 
-  
     private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds,
             AuthenticationToken authToken) throws ForbiddenException {
-        String username = Privilege.getUsername(authToken);
-        if (!Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
+        String username = Privilege.getInstance().getUsername(authToken);
+        if (!Privilege.getInstance().hasPrivilege1(authToken, SystemPrivilege.MayControlProcessor)) {
             if (persistent) {
                 log.warn("User {} is not allowed to create persistent processors", username);
                 throw new ForbiddenException("No permission to create persistent processors");
@@ -275,7 +275,11 @@ public class ProcessorRestHandler extends RestHandler {
 
         String instance = processor.getInstance();
         String name = processor.getName();
-        if (!req.getOptions().contains(Option.NO_LINK)) {
+
+        for (ServiceWithConfig serviceWithConfig : processor.getServices()) {
+            b.addService(ServiceHelper.toServiceInfo(serviceWithConfig, instance, name));
+        }
+        if (req.getQueryParameterAsBoolean("links", false)) {
             String apiURL = req.getApiURL();
             b.setUrl(apiURL + "/processors/" + instance + "/" + name);
             b.setClientsUrl(apiURL + "/processors/" + instance + "/" + name + "/clients");

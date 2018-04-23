@@ -6,6 +6,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { Subscription } from 'rxjs/Subscription';
+import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './LinksPage.html',
@@ -25,19 +26,19 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   private linksByName: { [key: string]: Link } = {};
 
-  constructor(private yamcs: YamcsService, title: Title) {
+  constructor(private yamcs: YamcsService, private authService: AuthService, title: Title) {
     title.setTitle('Links - Yamcs');
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.
-    this.yamcs.getInstanceClient().getLinks().then(links => {
+    this.yamcs.getInstanceClient()!.getLinks().then(links => {
       for (const link of links) {
         this.linksByName[link.name] = link;
       }
       this.dataSource.data = Object.values(this.linksByName);
     });
 
-    this.yamcs.getInstanceClient().getLinkUpdates().then(response => {
+    this.yamcs.getInstanceClient()!.getLinkUpdates().then(response => {
       this.linkSubscription = response.linkEvent$.subscribe(evt => {
         this.processLinkEvent(evt);
       });
@@ -60,11 +61,15 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   tableTrackerFn = (index: number, link: Link) => link.name;
 
   enableLink(name: string) {
-    this.yamcs.getInstanceClient().enableLink(name);
+    this.yamcs.getInstanceClient()!.enableLink(name);
   }
 
   disableLink(name: string) {
-    this.yamcs.getInstanceClient().disableLink(name);
+    this.yamcs.getInstanceClient()!.disableLink(name);
+  }
+
+  mayControlLinks() {
+    return this.authService.hasSystemPrivilege('MayControlLinks');
   }
 
   private processLinkEvent(evt: LinkEvent) {

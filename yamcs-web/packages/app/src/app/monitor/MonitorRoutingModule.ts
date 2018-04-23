@@ -11,11 +11,14 @@ import { LayoutPage } from './layouts/LayoutPage';
 import { AlarmsPage } from './alarms/AlarmsPage';
 import { CommandsPage } from './commands/CommandsPage';
 import { ExtensionPage } from './ext/ExtensionPage';
+import { AuthGuard } from '../core/guards/AuthGuard';
+import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 
 const routes: Routes = [
   {
     path: '',
-    canActivate: [InstanceExistsGuard],
+    canActivate: [AuthGuard, InstanceExistsGuard],
+    canActivateChild: [AuthGuard],
     runGuardsAndResolvers: 'always',  // See DisplaysPage.ts for documentation
     component: MonitorPage,
     children: [
@@ -39,6 +42,7 @@ const routes: Routes = [
       {
         path: 'events',
         component: EventsPage,
+        canActivate: [MayReadEventsGuard],
       },
       {
         path: 'layouts',

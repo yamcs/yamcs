@@ -6,13 +6,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.management.ManagementService;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class NameDescriptionSearchMatcherTest {
-    
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setup("refmdb");
@@ -26,7 +25,7 @@ public class NameDescriptionSearchMatcherTest {
         assertTrue(match("REFMDB_ccsds-apid", mdb));
         assertTrue(match("ap ReFmDB_CC", mdb));
     }
-    
+
     private boolean match(String searchTerm, XtceDb mdb) {
         NameDescriptionSearchMatcher matcher = new NameDescriptionSearchMatcher(searchTerm);
         for (Parameter p : mdb.getParameters()) {

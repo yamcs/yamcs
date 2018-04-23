@@ -19,6 +19,7 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.PrivilegeType;
 import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -27,9 +28,8 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * Yarch replay server
  *
- * A note about terminology: we call this replay because it provides capability
- * to speed control/pause/resume. However, it is not replay in terms of
- * reprocessing the data - the data is sent as recorded in the streams.
+ * A note about terminology: we call this replay because it provides capability to speed control/pause/resume. However,
+ * it is not replay in terms of reprocessing the data - the data is sent as recorded in the streams.
  *
  * @author nm
  *
@@ -83,14 +83,14 @@ public class ReplayServer extends AbstractService {
                     .build();
         }
 
-        if (Privilege.usePrivileges) {
+        if (Privilege.getInstance().isEnabled()) {
             Privilege priv = Privilege.getInstance();
 
             // Check privileges for requested parameters
             if (replayRequest.hasParameterRequest()) {
                 List<NamedObjectId> invalidParameters = new ArrayList<>();
                 for (NamedObjectId noi : replayRequest.getParameterRequest().getNameFilterList()) {
-                    if (!priv.hasPrivilege(authToken, Privilege.Type.TM_PARAMETER, noi.getName())) {
+                    if (!priv.hasPrivilege(authToken, PrivilegeType.TM_PARAMETER, noi.getName())) {
                         invalidParameters.add(noi);
                     }
                 }

@@ -3,10 +3,8 @@ package org.yamcs.web.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,9 +35,6 @@ import io.netty.util.AsciiString;
  * Encapsulates everything to do with one Rest Request. Object is gc-ed, when request ends.
  */
 public class RestRequest {
-    public enum Option {
-        NO_LINK;
-    }
 
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
@@ -134,17 +129,6 @@ public class RestRequest {
     }
 
     /**
-     * Experimental feature to gather common parameters. Should also be made to include the pretty-flag
-     */
-    public Set<Option> getOptions() {
-        Set<Option> options = new HashSet<>(2);
-        if (getQueryParameterAsBoolean("nolink", false)) {
-            options.add(Option.NO_LINK);
-        }
-        return options;
-    }
-
-    /**
      * Matches the content type on either the Accept header or a 'format' query param. Should probably better be
      * integrated with the deriveTargetContentType setting.
      */
@@ -174,7 +158,7 @@ public class RestRequest {
      * authenticated.
      */
     public String getUsername() {
-        return Privilege.getUsername(token);
+        return Privilege.getInstance().getUsername(token);
     }
 
     public AuthenticationToken getAuthToken() {

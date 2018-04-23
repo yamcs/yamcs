@@ -46,7 +46,8 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
             AuthenticationToken authToken) {
         this.applicationName = applicationName;
         this.authToken = authToken;
-        this.username = authToken != null ? authToken.getPrincipal().toString() : Privilege.getDefaultUser();
+        this.username = authToken != null ? authToken.getPrincipal().toString()
+                : Privilege.getInstance().getDefaultUser();
         this.wsHandler = wsHandler;
         log = LoggingUtils.getLogger(WebSocketProcessorClient.class, yamcsInstance);
         processor = Processor.getFirstProcessor(yamcsInstance);

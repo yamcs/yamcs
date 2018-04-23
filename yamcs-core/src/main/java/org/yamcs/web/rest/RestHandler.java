@@ -20,7 +20,8 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -266,7 +267,7 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(id);
         }
 
-        if (p != null && !authorised(req, Privilege.Type.TM_PARAMETER, p.getQualifiedName())) {
+        if (p != null && !authorised(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead",
                     StringConverter.idToString(id));
             p = null;
@@ -282,13 +283,13 @@ public abstract class RestHandler extends RouteHandler {
     protected static Stream verifyStream(RestRequest req, YarchDatabaseInstance ydb, String streamName)
             throws NotFoundException {
         Stream stream = ydb.getStream(streamName);
-        
-        if (stream != null && !authorised(req, Privilege.Type.STREAM, streamName)) {
+
+        if (stream != null && !authorised(req, PrivilegeType.STREAM, streamName)) {
             log.warn("Stream {} found, but withheld due to insufficient privileges. Returning 404 instead",
                     streamName);
             stream = null;
         }
-        
+
         if (stream == null) {
             throw new NotFoundException(req,
                     "No stream named '" + streamName + "' (instance: '" + ydb.getName() + "')");
@@ -396,7 +397,7 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    protected static boolean authorised(RestRequest req, Privilege.Type type, String privilege) {
+    protected static boolean authorised(RestRequest req, PrivilegeType type, String privilege) {
         return Privilege.getInstance().hasPrivilege1(req.getAuthToken(), type, privilege);
     }
 
@@ -424,31 +425,35 @@ public abstract class RestHandler extends RouteHandler {
                 .addListener(l -> req.getCompletableFuture().complete(null));
     }
 
-    protected static void checkSystemPrivilege(RestRequest req, Privilege.SystemPrivilege priv) throws HttpException {
+    protected static void checkSystemPrivilege(RestRequest req, SystemPrivilege priv) throws HttpException {
         if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), priv)) {
             throw new ForbiddenException("Need " + priv + " privilege for this operation");
         }
     }
-    
+
     protected void verifyAuthorization(AuthenticationToken authToken, SystemPrivilege p) throws ForbiddenException {
         if (!Privilege.getInstance().hasPrivilege1(authToken, p)) {
             throw new ForbiddenException("Need " + p + " privilege for this operation");
         }
     }
-    
-    protected static void verifyAuthorization(AuthenticationToken authToken, Privilege.Type type, Collection<String> names) throws ForbiddenException {
-        for(String n: names) {
-            if(!Privilege.getInstance().hasPrivilege1(authToken, type, n)) {
-                throw new ForbiddenException("No "+type+" authorization for '"+n+"'");
-            };
+
+    protected static void verifyAuthorization(AuthenticationToken authToken, PrivilegeType type,
+            Collection<String> names) throws ForbiddenException {
+        for (String n : names) {
+            if (!Privilege.getInstance().hasPrivilege1(authToken, type, n)) {
+                throw new ForbiddenException("No " + type + " authorization for '" + n + "'");
+            }
+            ;
         }
     };
 
-    protected static void verifyAuthorization(AuthenticationToken authToken, Privilege.Type type, String...names) throws ForbiddenException {
-        for(String n: names) {
-            if(!Privilege.getInstance().hasPrivilege1(authToken, type, n)) {
-                throw new ForbiddenException("No "+type+" authorization for '"+n+"'");
-            };
+    protected static void verifyAuthorization(AuthenticationToken authToken, PrivilegeType type, String... names)
+            throws ForbiddenException {
+        for (String n : names) {
+            if (!Privilege.getInstance().hasPrivilege1(authToken, type, n)) {
+                throw new ForbiddenException("No " + type + " authorization for '" + n + "'");
+            }
+            ;
         }
     };
 }

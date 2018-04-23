@@ -177,10 +177,26 @@ export interface GetCommandHistoryOptions {
   order?: 'asc' | 'desc';
 }
 
+export interface CreateEventRequest {
+  message: string;
+  type?: string;
+  severity?: EventSeverity;
+  time?: string;
+}
+
 export interface GetEventsOptions {
+  /**
+   * Inclusive lower bound
+   */
   start?: string;
+  /**
+   * Exclusive upper bound
+   */
   stop?: string;
-  filter?: string;
+  /**
+   * Search string
+   */
+  q?: string;
   severity?: EventSeverity;
   source?: string | string[];
   pos?: number;
@@ -189,9 +205,18 @@ export interface GetEventsOptions {
 }
 
 export interface DownloadEventsOptions {
+  /**
+   * Inclusive lower bound
+   */
   start?: string;
+  /**
+   * Exclusive upper bound
+   */
   stop?: string;
-  filter?: string;
+  /**
+   * Search string
+   */
+  q?: string;
   severity?: EventSeverity;
   source?: string | string[];
   format?: 'csv';

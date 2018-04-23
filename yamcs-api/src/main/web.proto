@@ -129,8 +129,19 @@ message TimeSubscriptionResponse {
 
 //sent via the websocket with information about connected client
 message ConnectionInfo {
-   optional int32 clientId = 1;   
-   optional yamcsManagement.YamcsInstance instance = 2;
-   optional yamcsManagement.ProcessorInfo processor = 3;
+  optional int32 clientId = 1;   
+  optional yamcsManagement.YamcsInstance instance = 2;
+  optional yamcsManagement.ProcessorInfo processor = 3;
 }
 
+message AuthInfo {
+  optional bool requireAuthentication = 1;
+}
+
+// Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework
+message AccessTokenResponse {
+  optional string access_token = 1;
+  optional string token_type = 2;
+  optional int32 expires_in = 3; // In seconds
+  optional yamcsManagement.UserInfo user = 4;
+}

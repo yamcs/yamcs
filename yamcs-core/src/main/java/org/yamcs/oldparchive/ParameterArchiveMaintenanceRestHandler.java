@@ -8,7 +8,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.oldparchive.ParameterArchive.Partition;
 import org.yamcs.oldparchive.ParameterIdDb.ParameterId;
 import org.yamcs.protobuf.Yamcs.StringMessage;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;

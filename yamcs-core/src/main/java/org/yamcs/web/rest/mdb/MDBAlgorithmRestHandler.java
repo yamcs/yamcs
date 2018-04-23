@@ -2,7 +2,7 @@ package org.yamcs.web.rest.mdb;
 
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
 import org.yamcs.protobuf.Rest.ListAlgorithmInfoResponse;
-import org.yamcs.security.Privilege.SystemPrivilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -21,7 +21,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
     @Route(path = "/api/mdb/:instance/algorithms/:name*", method = "GET")
     public void getAlgorithm(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
-        
+
         if (req.hasRouteParam("name")) {
             getAlgorithmInfo(req);
         } else {
@@ -36,7 +36,8 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         Algorithm algo = verifyAlgorithm(req, mdb, req.getRouteParam("name"));
 
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.FULL, req.getOptions());
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
+        AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.FULL, addLinks);
         completeOK(req, cinfo);
     }
 
@@ -52,6 +53,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
 
         String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
+        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         ListAlgorithmInfoResponse.Builder responseb = ListAlgorithmInfoResponse.newBuilder();
         if (req.hasQueryParameter("namespace")) {
@@ -64,7 +66,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
                 String alias = algo.getAlias(namespace);
                 if (alias != null || (recurse && algo.getQualifiedName().startsWith(namespace))) {
                     responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.SUMMARY,
-                            req.getOptions()));
+                            addLinks));
                 }
             }
         } else { // List all
@@ -72,7 +74,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
                 if (matcher != null && !matcher.matches(algo))
                     continue;
                 responseb.addAlgorithm(
-                        XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.SUMMARY, req.getOptions()));
+                        XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.SUMMARY, addLinks));
             }
         }
 

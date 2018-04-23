@@ -44,14 +44,16 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   }
 
   /**
-   * Fetches a page of data and keeps track of one invisible record that will
-   * allow to deterimine if there are further page(s) and which stop date should
-   * be used for the next page (start/stop are inclusive).
+   * Fetches a page of data and keeps track of one invisible record that
+   * allows to deterimine if there are further page(s). The next to last
+   * record is used to determine the stop date of the next query because
+   * the server uses the interval bounds: [start,stop)
    */
   private loadPage(options: GetEventsOptions) {
-    return this.yamcs.getInstanceClient().getEvents(options).then(events => {
+    return this.yamcs.getInstanceClient()!.getEvents(options).then(events => {
       if (events.length > this.pageSize) {
-        this.offscreenRecord = events.splice(events.length - 1, 1)[0];
+        events.splice(events.length - 1, 1);
+        this.offscreenRecord = events[events.length - 1];
       } else {
         this.offscreenRecord = null;
       }
@@ -80,7 +82,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   }
 
   startStreaming() {
-    this.yamcs.getInstanceClient().getEventUpdates().then(response => {
+    this.yamcs.getInstanceClient()!.getEventUpdates().then(response => {
       this.streaming$.next(true);
       this.realtimeSubscription = response.event$.subscribe(event => {
         if (!this.loading$.getValue()) {

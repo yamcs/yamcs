@@ -23,7 +23,7 @@ export class ProcessorTCTab implements OnDestroy {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     const processorName = parent.paramMap.get('name')!;
-    const instanceClient = yamcs.getInstanceClient();
+    const instanceClient = yamcs.getInstanceClient()!;
 
     // Single shot (websocket also provides an initial update,
     // but only first time we navigate to this page)

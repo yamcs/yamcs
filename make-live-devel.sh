@@ -65,7 +65,7 @@ if [ $YSS_CONFIGURATION -eq "1" ]; then
     ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
     ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
 
-    rm -f $TARGET/web
+    rm -rf $TARGET/web
     ln -fs $YAMCS_HOME/yamcs-simulation/web $TARGET/web
 
     mkdir -p $YAMCS_DATA/simulator/profiles

@@ -17,6 +17,6 @@ export class ContainersPage {
   constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Containers - Yamcs');
     this.instance = yamcs.getInstance();
-    this.containers$ = yamcs.getInstanceClient().getContainers();
+    this.containers$ = yamcs.getInstanceClient()!.getContainers();
   }
 }

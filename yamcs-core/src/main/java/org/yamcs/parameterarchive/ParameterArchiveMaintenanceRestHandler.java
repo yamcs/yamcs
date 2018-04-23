@@ -8,6 +8,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
@@ -116,7 +117,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     }
 
     private void checkPrivileges(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Privilege.SystemPrivilege.MayControlArchiving)) {
+        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayControlArchiving)) {
             throw new ForbiddenException("No privilege for this operation");
         }
     }

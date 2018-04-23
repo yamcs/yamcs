@@ -8,11 +8,12 @@ import { DisplayNavigator } from './displays/DisplayNavigator';
 import { SaveLayoutDialog } from './displays/SaveLayoutDialog';
 import { LayoutComponent } from './displays/LayoutComponent';
 import { AlarmDetail } from './alarms/AlarmDetail';
-import { MonitorSidebarItemHost } from './ext/MonitorSidebarItemHost';
 import { MonitorToolbar } from './template/MonitorToolbar';
 import { PageContentHost } from './ext/PageContentHost';
+import { CreateEventDialog } from './events/CreateEventDialog';
 
 const dialogComponents = [
+  CreateEventDialog,
   SaveLayoutDialog,
 ];
 
@@ -29,7 +30,6 @@ const dialogComponents = [
     EventSeverity,
     LayoutComponent,
     MonitorPageTemplate,
-    MonitorSidebarItemHost,
     PageContentHost,
     ProcessorInfoComponent,
   ],

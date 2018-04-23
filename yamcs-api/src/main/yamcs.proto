@@ -283,6 +283,8 @@ message Event {
 
   optional string generationTimeUTC = 8;
   optional string receptionTimeUTC = 9;
+  
+  optional string createdBy = 10; // Set by API when event was posted by a user
 
   extensions 100 to 10000;
 }

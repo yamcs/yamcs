@@ -1,12 +1,17 @@
 package org.yamcs.web.rest.archive;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Archive.ColumnData;
 import org.yamcs.protobuf.Archive.ColumnInfo;
+import org.yamcs.protobuf.Archive.EnumValue;
+import org.yamcs.protobuf.Archive.PartitioningInfo;
+import org.yamcs.protobuf.Archive.PartitioningInfo.PartitioningType;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Archive.TableInfo;
@@ -32,11 +37,14 @@ import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.PartitioningSpec;
+import org.yamcs.yarch.PartitioningSpec._type;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 
+import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageLite;
 
@@ -48,12 +56,77 @@ public final class ArchiveHelper {
     final static TableInfo toTableInfo(TableDefinition def) {
         TableInfo.Builder infob = TableInfo.newBuilder();
         infob.setName(def.getName());
-        infob.setScript("create table " + def.toString());
+        infob.setCompressed(def.isCompressed());
+        infob.setFormatVersion(def.getFormatVersion());
+        infob.setStorageEngine(def.getStorageEngineName());
+        if (def.getTablespaceName() != null) {
+            infob.setTablespace(def.getTablespaceName());
+        }
+        if (def.hasHistogram()) {
+            infob.addAllHistogramColumn(def.getHistogramColumns());
+        }
+        if (def.hasPartitioning()) {
+            PartitioningInfo.Builder partb = PartitioningInfo.newBuilder();
+            PartitioningSpec spec = def.getPartitioningSpec();
+            switch (spec.type) {
+            case TIME:
+                partb.setType(PartitioningType.TIME);
+                break;
+            case VALUE:
+                partb.setType(PartitioningType.VALUE);
+                break;
+            case TIME_AND_VALUE:
+                partb.setType(PartitioningType.TIME_AND_VALUE);
+                break;
+            case NONE:
+                break;
+            default:
+                throw new IllegalStateException("Unexpected partitioning type " + spec.type);
+            }
+            if (spec.type == _type.TIME || spec.type == _type.TIME_AND_VALUE) {
+                if (spec.timeColumn != null) {
+                    partb.setTimeColumn(spec.timeColumn);
+                    partb.setTimePartitionSchema(spec.getTimePartitioningSchema().getName());
+                }
+            }
+            if (spec.type == _type.VALUE || spec.type == _type.TIME_AND_VALUE) {
+                if (spec.valueColumn != null) {
+                    partb.setValueColumn(spec.valueColumn);
+                    partb.setValueColumnType(spec.getValueColumnType().toString());
+                }
+            }
+
+            if (spec.type != _type.NONE) {
+                infob.setPartitioningInfo(partb);
+            }
+        }
+        StringBuilder scriptb = new StringBuilder("create table ").append(def.toString());
+        scriptb.append(" engine ").append(def.getStorageEngineName());
+        if (def.hasHistogram()) {
+            scriptb.append(" histogram(").append(String.join(", ", def.getHistogramColumns())).append(")");
+        }
+        if (def.hasPartitioning()) {
+            PartitioningSpec spec = def.getPartitioningSpec();
+            if (spec.type == _type.TIME) {
+                scriptb.append(" partition by time(").append(spec.timeColumn)
+                        .append("('").append(spec.getTimePartitioningSchema().getName()).append("'))");
+            } else if (spec.type == _type.VALUE) {
+                scriptb.append(" partition by value(").append(spec.valueColumn).append(")");
+            } else if (spec.type == _type.TIME_AND_VALUE) {
+                scriptb.append(" partition by time_and_value(").append(spec.timeColumn)
+                        .append("('").append(spec.getTimePartitioningSchema().getName()).append("')")
+                        .append(", ").append(spec.valueColumn).append(")");
+            }
+        }
+        if (def.isCompressed()) {
+            scriptb.append(" table_format=compressed");
+        }
+        infob.setScript(scriptb.toString());
         for (ColumnDefinition cdef : def.getKeyDefinition().getColumnDefinitions()) {
-            infob.addKeyColumn(toColumnInfo(cdef));
+            infob.addKeyColumn(toColumnInfo(cdef, def));
         }
         for (ColumnDefinition cdef : def.getValueDefinition().getColumnDefinitions()) {
-            infob.addValueColumn(toColumnInfo(cdef));
+            infob.addValueColumn(toColumnInfo(cdef, def));
         }
         return infob.build();
     }
@@ -63,15 +136,27 @@ public final class ArchiveHelper {
         infob.setName(stream.getName());
         infob.setScript("create stream " + stream.getName() + stream.getDefinition().getStringDefinition());
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
-            infob.addColumn(toColumnInfo(cdef));
+            infob.addColumn(toColumnInfo(cdef, null));
         }
         return infob.build();
     }
 
-    private static ColumnInfo toColumnInfo(ColumnDefinition cdef) {
+    private static ColumnInfo toColumnInfo(ColumnDefinition cdef, TableDefinition tableDefinition) {
         ColumnInfo.Builder infob = ColumnInfo.newBuilder();
         infob.setName(cdef.getName());
         infob.setType(cdef.getType().toString());
+        if (tableDefinition != null && cdef.getType() == DataType.ENUM) {
+            BiMap<String, Short> enumValues = tableDefinition.getEnumValues(cdef.getName());
+            if (enumValues != null) {
+                List<EnumValue> enumValueList = new ArrayList<>();
+                for (Entry<String, Short> entry : enumValues.entrySet()) {
+                    EnumValue val = EnumValue.newBuilder().setValue(entry.getValue()).setLabel(entry.getKey()).build();
+                    enumValueList.add(val);
+                }
+                Collections.sort(enumValueList, (v1, v2) -> Integer.compare(v1.getValue(), v2.getValue()));
+                infob.addAllEnumValue(enumValueList);
+            }
+        }
         return infob.build();
     }
 
@@ -209,8 +294,7 @@ public final class ArchiveHelper {
         b.setCount(r.count);
         return b.build();
     }
-    
-    
+
     final static String[] EVENT_CSV_HEADER = new String[] { "Source", "Generation Time", "Reception Time", "Event Type",
             "Event Text" };
 

@@ -7,6 +7,7 @@ package org.yamcs.security;
  * @author nm
  *
  */
+@SuppressWarnings("serial")
 public class AuthenticationPendingException extends RuntimeException {
 
 }

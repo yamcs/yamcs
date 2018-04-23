@@ -19,7 +19,7 @@ export class StreamColumnsTab {
     if (parent) {
       const name = parent.paramMap.get('name');
       if (name != null) {
-        this.stream$ = yamcs.getInstanceClient().getStream(name);
+        this.stream$ = yamcs.getInstanceClient()!.getStream(name);
       }
     }
   }

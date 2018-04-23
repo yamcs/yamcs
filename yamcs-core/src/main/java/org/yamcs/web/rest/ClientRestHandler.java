@@ -15,6 +15,7 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.Privilege;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
@@ -91,8 +92,8 @@ public class ClientRestHandler extends RestHandler {
 
     private void verifyPermission(Processor processor, int clientId, AuthenticationToken authToken)
             throws HttpException {
-        String username = Privilege.getUsername(authToken);
-        if (Privilege.getInstance().hasPrivilege1(authToken, Privilege.SystemPrivilege.MayControlProcessor)) {
+        String username = Privilege.getInstance().getUsername(authToken);
+        if (Privilege.getInstance().hasPrivilege1(authToken, SystemPrivilege.MayControlProcessor)) {
             // MayControlProcesor can do whatever they want
             return;
         }

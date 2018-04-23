@@ -25,8 +25,8 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.Privilege;
-import org.yamcs.security.Privilege.SystemPrivilege;
-import org.yamcs.security.Privilege.Type;
+import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
@@ -96,14 +96,15 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
-            if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER, p.getQualifiedName())) {
+            if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
+                    p.getQualifiedName())) {
                 throw new BadRequestException("Insufficient privileges for parameter " + p.getQualifiedName());
             }
             ids.add(id);
         }
         if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
-                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), Type.TM_PARAMETER,
+                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
                         p.getQualifiedName())) {
                     continue;
                 }
@@ -198,7 +199,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         }
 
-        verifyAuthorization(req.getAuthToken(), Privilege.Type.TM_PACKET, nameSet);
+        verifyAuthorization(req.getAuthToken(), PrivilegeType.TM_PACKET, nameSet);
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -243,7 +244,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         }
 
-        verifyAuthorization(req.getAuthToken(), Privilege.Type.CMD_HISTORY, nameSet);
+        verifyAuthorization(req.getAuthToken(), PrivilegeType.CMD_HISTORY, nameSet);
 
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -324,7 +325,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         }
 
-        String severity = req.getQueryParameter("severity", "INFO");
+        String severity = req.getQueryParameter("severity", "INFO").toUpperCase();
 
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -355,8 +356,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         default:
             sqlb.whereColIn("body.severity = ?", Arrays.asList(severity));
         }
-        if (req.hasQueryParameter("filter")) {
-            sqlb.where("body.message like ?", "%" + req.getQueryParameter("filter") + "%");
+        if (req.hasQueryParameter("q")) {
+            sqlb.where("body.message like ?", "%" + req.getQueryParameter("q") + "%");
         }
 
         sqlb.descend(req.asksDescending(false));

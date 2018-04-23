@@ -20,7 +20,7 @@ export class SpaceSystemContainersTab {
   constructor(route: ActivatedRoute, yamcs: YamcsService) {
     const parent = route.snapshot.parent!;
     this.qualifiedName = parent.paramMap.get('qualifiedName')!;
-    this.containers$ = yamcs.getInstanceClient().getContainers({
+    this.containers$ = yamcs.getInstanceClient()!.getContainers({
       namespace: this.qualifiedName
     });
     this.instance = yamcs.getInstance();
