@@ -14,14 +14,14 @@ public class BooleanValueSegmentTest {
 
     @Test
     public void test() throws IOException, DecodingException {
-        BooleanValueSegment bvs = BooleanValueSegment.consolidate(Arrays.asList(ValueUtility.getBooleanValue(true), ValueUtility.getBooleanValue(true), 
-                ValueUtility.getBooleanValue(false)));
+        BooleanValueSegment bvs = BooleanValueSegment.consolidate(Arrays.asList(ValueUtility.getBooleanValue(true), 
+                ValueUtility.getBooleanValue(true), ValueUtility.getBooleanValue(false)));
        
         
-        assertEquals(8, bvs.getMaxSerializedSize());
+        assertEquals(16, bvs.getMaxSerializedSize());
         assertEquals(3, bvs.size());
         
-        ByteBuffer bb = ByteBuffer.allocate(12);
+        ByteBuffer bb = ByteBuffer.allocate(bvs.getMaxSerializedSize());
         bvs.writeTo(bb);
         
         bb.rewind();

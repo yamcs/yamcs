@@ -60,7 +60,10 @@ public class BooleanValueSegment extends BaseSegment implements ValueSegment {
 
     @Override
     public int getMaxSerializedSize() {
-        return 8 + ba.size() / 8;
+        // 4 bytes max for the segment size
+        // 4 bytes max for the long array length
+        // 8 bytes for each 64 bits, rounded up
+        return 16 + ba.size() / 8;
     }
 
     @Override
