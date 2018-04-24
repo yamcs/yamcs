@@ -53,6 +53,15 @@ export interface ParameterType {
   unitSet?: UnitInfo[];
   defaultAlarm: AlarmInfo;
   enumValue: EnumValue[];
+  absoluteTimeInfo: AbsoluteTimeInfo;
+}
+
+export interface AbsoluteTimeInfo {
+  initialValue: string;
+  scale: number;
+  offset: number;
+  offsetFrom: Parameter;
+  epoch: string;
 }
 
 export interface AlarmInfo {

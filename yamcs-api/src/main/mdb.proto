@@ -97,6 +97,15 @@ message ParameterTypeInfo {
   repeated UnitInfo unitSet = 3;
   optional AlarmInfo defaultAlarm = 4;
   repeated EnumValue enumValue = 5;
+  optional AbsoluteTimeInfo absoluteTimeInfo = 6;
+}
+
+message AbsoluteTimeInfo {
+  optional string initialValue = 1;
+  optional double scale = 2;
+  optional double offset = 3;
+  optional ParameterInfo offsetFrom = 4;
+  optional string epoch = 5;
 }
 
 message ParameterInfo {

@@ -65,6 +65,41 @@
         </table>
         <p>&nbsp;</p>
       </ng-container>
+
+      <ng-container *ngIf="parameter.type?.engType === 'time'">
+        <div class="section-divider">
+          <mat-divider></mat-divider>
+        </div>
+        <h4>Time Info</h4>
+        <dl class="dl-horizontal">
+          <ng-container *ngIf="parameter.type?.absoluteTimeInfo.epoch">
+            <dt>Epoch</dt>
+            <dd>{{ parameter.type?.absoluteTimeInfo.epoch }}</dd>
+          </ng-container>
+          <ng-container *ngIf="parameter.type?.absoluteTimeInfo.offsetFrom">
+            <dt>Offset from</dt>
+            <dd>
+              <a [routerLink]="['/mdb/parameters/', parameter.type.absoluteTimeInfo.offsetFrom.qualifiedName]"
+                 [queryParams]="{instance: instance.name}"
+                 class="ya-link">
+                {{ parameter.type?.absoluteTimeInfo.offsetFrom.qualifiedName }}
+              </a>
+            </dd>
+          </ng-container>
+          <ng-container *ngIf="parameter.type?.absoluteTimeInfo.offset !== undefined">
+            <dt>Offset</dt>
+            <dd>{{ parameter.type?.absoluteTimeInfo.offset }}</dd>
+          </ng-container>
+          <ng-container *ngIf="parameter.type?.absoluteTimeInfo.scale !== undefined">
+            <dt>Scale</dt>
+            <dd>{{ parameter.type?.absoluteTimeInfo.scale }}</dd>
+          </ng-container>
+          <ng-container *ngIf="parameter.type?.absoluteTimeInfo.initialValue !== undefined">
+            <dt>Initial Value</dt>
+            <dd>{{ parameter.type?.absoluteTimeInfo.initialValue }}</dd>
+          </ng-container>
+        </dl>
+      </ng-container>
     </ng-container>
   </div>
 </div>

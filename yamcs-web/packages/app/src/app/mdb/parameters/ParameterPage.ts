@@ -26,7 +26,7 @@ export class ParameterPage implements OnDestroy {
 
   constructor(
     route: ActivatedRoute,
-    yamcs: YamcsService,
+    private yamcs: YamcsService,
     private authService: AuthService,
     private dialog: MatDialog,
     private title: Title,
@@ -35,13 +35,25 @@ export class ParameterPage implements OnDestroy {
   ) {
     this.instance = yamcs.getInstance();
 
-    const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
+    // When clicking links pointing to this same component, Angular will not reinstantiate
+    // the component. Therefore subscribe to routeParams
+    route.paramMap.subscribe(params => {
+      const qualifiedName = params.get('qualifiedName')!;
+      this.changeParameter(qualifiedName);
+    });
+  }
+
+  changeParameter(qualifiedName: string) {
+    this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
       this.updateTitle();
     });
 
-    yamcs.getInstanceClient()!.getParameterValueUpdates({
+    if (this.parameterValueSubscription) {
+      this.parameterValueSubscription.unsubscribe();
+    }
+
+    this.yamcs.getInstanceClient()!.getParameterValueUpdates({
       id: [{ name: qualifiedName }],
       abortOnInvalid: false,
       sendFromCache: true,
