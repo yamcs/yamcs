@@ -47,13 +47,6 @@ public class XmlLoaderTest {
         assertTrue(cc.getRestrictionCriteria() instanceof ComparisonList);
     }
 
-
-    @Test
-    public void test2() throws Exception {        
-        XtceDb db = XtceDbFactory.createInstanceByConfig("dc");
-        db.print(System.out);
-    }
-    
     @Test
     public void testBogusSat() throws XMLStreamException, IOException {
         XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT");
