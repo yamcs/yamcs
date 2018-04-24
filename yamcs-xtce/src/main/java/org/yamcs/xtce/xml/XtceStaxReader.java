@@ -1731,6 +1731,7 @@ public class XtceStaxReader {
 
             if (isStartElementWithName(XTCE_SEQUENCE_CONTAINER)) {
                 SequenceContainer sc = readXtceSequenceContainer(spaceSystem);
+                
                 if(excludedContainers.contains(sc.getName())) {
                     log.debug("Not adding '"+sc.getName()+"' to the SpaceSystem because excluded by configuration");
                 } else {
@@ -2508,6 +2509,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_COMMAND_CONTAINER)) {
                 CommandContainer cc = readXtceCommandContainer(spaceSystem, mc);
                 mc.setCommandContainer(cc);
+                spaceSystem.addCommandContainer(cc);
             } else if (isStartElementWithName(XTCE_ARGUMENT_LIST)) {
                 readXtceArgumentList(spaceSystem, mc);
             } else if (isEndElementWithName(XTCE_META_COMMAND)) {
@@ -2520,7 +2522,7 @@ public class XtceStaxReader {
         log.trace(XTCE_BASE_META_COMMAND);
         checkStartElementPreconditions();
 
-        String refName = readAttribute("containerRef", xmlEvent.asStartElement());
+        String refName = readAttribute("metaCommandRef", xmlEvent.asStartElement());
         if (refName != null) {
             if(excludedContainers.contains(refName)) {
                 log.debug("adding "+mc.getName()+" to the list of the excluded containers because its parent is excluded");
@@ -2540,7 +2542,7 @@ public class XtceStaxReader {
                 }
             }
         } else {
-            throw new XMLStreamException("Reference on base container is missing");
+            throw new XMLStreamException("For "+mc.getName()+": reference to base meta command is missing");
         }
 
         while (true) {
@@ -2687,7 +2689,7 @@ public class XtceStaxReader {
                 } else { //must come from somewhere else
                     final CommandContainer finalsc = mcContainer;
                     NameReference nr = new UnresolvedNameReference(refName, Type.COMMAND_CONTAINER).addResolvedAction( nd -> {
-                        finalsc.setBaseContainer((SequenceContainer) nd);
+                        finalsc.setBaseContainer((Container)nd);
                         return true;
                     });
                     spaceSystem.addUnresolvedReference(nr);

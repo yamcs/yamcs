@@ -12,3 +12,9 @@ ccsds-green-book:
     - type: xtce
       args:
           file: "src/test/resources/xtce/ccsds-green-book.xml"
+
+      
+BogusSAT:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/BogusSAT-1.xml"          

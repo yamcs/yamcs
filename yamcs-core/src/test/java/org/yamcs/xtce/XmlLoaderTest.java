@@ -2,9 +2,14 @@ package org.yamcs.xtce;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.List;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.junit.Test;
+import org.yamcs.xtce.StringDataEncoding.SizeType;
+import org.yamcs.xtce.xml.XtceStaxReader;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class XmlLoaderTest {
@@ -43,5 +48,62 @@ public class XmlLoaderTest {
     }
 
 
+    @Test
+    public void test2() throws Exception {        
+        XtceDb db = XtceDbFactory.createInstanceByConfig("dc");
+        db.print(System.out);
+    }
+    
+    @Test
+    public void testBogusSat() throws XMLStreamException, IOException {
+        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT");
+        
+        SpaceSystem sc001 = db.getSpaceSystem("/BogusSAT/SC001"); 
+        assertNotNull(sc001);
+        
+        SpaceSystem busElectronics = sc001.getSubsystem("BusElectronics");
+        assertNotNull(busElectronics);
+        SpaceSystem payload1 = sc001.getSubsystem("Payload1");
+        assertNotNull(payload1);
+        SpaceSystem payload2 = sc001.getSubsystem("Payload2");
+        assertNotNull(payload2);
+        
+        
+        Parameter p = busElectronics.getParameter("Bus_Fault_Message");
+        assertNotNull(p);
+        assertEquals(p.getParameterType().getClass(), StringParameterType.class);
+        StringParameterType sp = (StringParameterType)p.getParameterType();
+        assertEquals(sp.encoding.getClass(), StringDataEncoding.class);
+        StringDataEncoding sde = (StringDataEncoding) sp.encoding;
+        assertEquals(SizeType.FIXED, sde.getSizeType());
+        assertEquals(128, sde.getSizeInBits());
+        
+        p = payload1.getParameter("Payload_Fault_Message");
+        assertNotNull(p);
+        assertEquals(p.getParameterType().getClass(), StringParameterType.class);
+        sp = (StringParameterType)p.getParameterType();
+        assertEquals(sp.encoding.getClass(), StringDataEncoding.class);
+        sde = (StringDataEncoding) sp.encoding;
+        assertEquals(SizeType.TERMINATION_CHAR, sde.getSizeType());
+        assertEquals(0, sde.getTerminationChar());
+        
+        SequenceContainer sc = busElectronics.getSequenceContainer("SensorHistoryRecord");
+        assertNotNull(sc);
+        RateInStream ris = sc.getRateInStream();
+        assertNotNull(ris);
+        assertEquals(10000, ris.getMaxInterval());
+        assertEquals(100, ris.getMinInterval());
+        
+        
+        
+        MetaCommand mc = payload1.getMetaCommand("Adjust_Payload_1_Config");
+        assertNotNull(mc);
+        CommandContainer cc = mc.getCommandContainer();
+        assertEquals("Payload_1_Control_Container", cc.getName());
+        Container basec = cc.getBaseContainer();
+        assertEquals("CCSDSPUSCommandPacket", basec.getName());
 
+    }
+    
+        
 }

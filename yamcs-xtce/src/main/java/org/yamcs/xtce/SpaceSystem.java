@@ -110,6 +110,9 @@ public class SpaceSystem extends NameDescription {
     public SequenceContainer getSequenceContainer(String refName) {
         return containers.get(refName);
     }
+    public void addCommandContainer(CommandContainer cmdContainer) {
+        cmdContainers.put(cmdContainer.getName(), cmdContainer);
+    }
     public CommandContainer getCommandContainer(String name) {
         return cmdContainers.get(name);
     }
