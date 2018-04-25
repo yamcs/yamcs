@@ -1,3 +1,8 @@
+Version 4.3.1 released 25-Apr-2018
+- parameter archive: fixed encoding of boolean segments
+- XTCE parser: fixed parsing container references in command definition
+- yamcs-web: allow to set software parameters and display information about time parameters
+
 Version 4.3.0 released 23-Apr-2018
 - implemented IncludeCondition for container and parameter entries as per XTCE spec
 - server support for access token generation based on password credentials
