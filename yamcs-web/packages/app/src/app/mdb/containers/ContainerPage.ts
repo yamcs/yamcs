@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Instance, Container } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Title } from '@angular/platform-browser';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 @Component({
   templateUrl: './ContainerPage.html',
@@ -11,15 +12,23 @@ import { Title } from '@angular/platform-browser';
 export class ContainerPage {
 
   instance: Instance;
-  container$: Promise<Container>;
+  container$ = new BehaviorSubject<Container | null>(null);
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, title: Title) {
+  constructor(route: ActivatedRoute, private yamcs: YamcsService, private title: Title) {
     this.instance = yamcs.getInstance();
 
-    const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    this.container$ = yamcs.getInstanceClient()!.getContainer(qualifiedName);
-    this.container$.then(container => {
-      title.setTitle(container.name + ' - Yamcs');
+    // When clicking links pointing to this same component, Angular will not reinstantiate
+    // the component. Therefore subscribe to routeParams
+    route.paramMap.subscribe(params => {
+      const qualifiedName = params.get('qualifiedName')!;
+      this.changeContainer(qualifiedName);
+    });
+  }
+
+  changeContainer(qualifiedName: string) {
+    this.yamcs.getInstanceClient()!.getContainer(qualifiedName).then(container => {
+      this.container$.next(container);
+      this.title.setTitle(container.name + ' - Yamcs');
     });
   }
 }

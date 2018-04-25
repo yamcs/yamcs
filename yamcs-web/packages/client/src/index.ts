@@ -4,6 +4,7 @@ export { HttpInterceptor } from './HttpInterceptor';
 export { HttpError } from './HttpError';
 
 export {
+  AbsoluteTimeInfo,
   AlarmInfo,
   AlarmRange,
   Algorithm,

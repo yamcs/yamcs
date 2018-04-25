@@ -9,6 +9,14 @@
         </a>/{{ alias.name }}
       </ng-container>
     </ng-container>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button *ngIf="parameter.dataSource === 'LOCAL' && maySetParameter()"
+            mat-button
+            color="primary"
+            (click)="setParameter()">
+      <mat-icon>edit</mat-icon>
+      SET VALUE
+    </button>
   </app-mdb-toolbar>
 
   <nav mat-tab-nav-bar>

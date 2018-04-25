@@ -16,9 +16,15 @@ import { ParameterValuesTable } from './parameters/ParameterValuesTable';
 import { PolynomialPipe } from './pipes/PolynomialPipe';
 import { ParameterCalibration } from './parameters/ParameterCalibration';
 import { SelectRangeDialog } from './parameters/SelectRangeDialog';
+import { SetParameterDialog } from './parameters/SetParameterDialog';
 
 const pipes = [
   PolynomialPipe,
+];
+
+const dialogComponents = [
+  SelectRangeDialog,
+  SetParameterDialog,
 ];
 
 @NgModule({
@@ -27,6 +33,7 @@ const pipes = [
     MdbRoutingModule,
   ],
   declarations: [
+    dialogComponents,
     pipes,
     routingComponents,
     AlgorithmsTable,
@@ -41,11 +48,10 @@ const pipes = [
     ParameterCalibration,
     ParameterDetail,
     ParameterValuesTable,
-    SelectRangeDialog,
     SeverityMeter,
   ],
   entryComponents: [
-    SelectRangeDialog,
+    dialogComponents,
   ],
 })
 export class MdbModule {
