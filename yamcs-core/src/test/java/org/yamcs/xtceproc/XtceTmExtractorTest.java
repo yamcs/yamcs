@@ -670,6 +670,23 @@ public class XtceTmExtractorTest {
         assertEquals("1980-01-06T00:00:01.500Z", TimeEncoding.toString(pv2.getEngValue().getTimestampValue()));
     }
     
+    @Test
+    public void testPKT6_TimeParaPartialExtraction() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        Parameter p6_2 = xtcedb.getParameter("/REFMDB/SUBSYS1/TimePara6_2");
+        
+        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
+        tmExtractor.startProviding(p6_2);
+        
+        byte[] bb = tmGenerator.generate_PKT6();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        
+        ParameterValueList received = tmExtractor.getParameterResult();
+
+        ParameterValue pv2 = received.getLastInserted(p6_2);
+        assertEquals("1980-01-06T00:00:01.500Z", TimeEncoding.toString(pv2.getEngValue().getTimestampValue()));
+    }
+    
     
     private String byteBufferToHexString(ByteBuffer bb) {
         bb.mark();

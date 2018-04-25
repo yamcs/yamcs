@@ -1,6 +1,7 @@
 package org.yamcs.xtceproc;
 
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
@@ -59,6 +61,13 @@ public class XtceTmExtractor {
      */
     public void startProviding(Parameter param) {
         synchronized(subscription) {
+            ParameterType ptype = param.getParameterType();
+            if(ptype!=null) {
+                Set<Parameter> dependencies = ptype.getDependentParameters();
+                if(dependencies!=null) {
+                    dependencies.forEach(p -> subscription.addParameter(p));
+                }
+            }
             subscription.addParameter(param);
         }
     }
