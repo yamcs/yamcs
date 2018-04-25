@@ -7,6 +7,9 @@ import { Subscription } from 'rxjs/Subscription';
 import { Title } from '@angular/platform-browser';
 import { ValuePipe } from '../../shared/pipes/ValuePipe';
 import { UnitsPipe } from '../../shared/pipes/UnitsPipe';
+import { SetParameterDialog } from './SetParameterDialog';
+import { MatDialog } from '@angular/material';
+import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './ParameterPage.html',
@@ -23,20 +26,34 @@ export class ParameterPage implements OnDestroy {
 
   constructor(
     route: ActivatedRoute,
-    yamcs: YamcsService,
+    private yamcs: YamcsService,
+    private authService: AuthService,
+    private dialog: MatDialog,
     private title: Title,
     private valuePipe: ValuePipe,
     private unitsPipe: UnitsPipe,
   ) {
     this.instance = yamcs.getInstance();
 
-    const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
+    // When clicking links pointing to this same component, Angular will not reinstantiate
+    // the component. Therefore subscribe to routeParams
+    route.paramMap.subscribe(params => {
+      const qualifiedName = params.get('qualifiedName')!;
+      this.changeParameter(qualifiedName);
+    });
+  }
+
+  changeParameter(qualifiedName: string) {
+    this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
       this.parameter$.next(parameter);
       this.updateTitle();
     });
 
-    yamcs.getInstanceClient()!.getParameterValueUpdates({
+    if (this.parameterValueSubscription) {
+      this.parameterValueSubscription.unsubscribe();
+    }
+
+    this.yamcs.getInstanceClient()!.getParameterValueUpdates({
       id: [{ name: qualifiedName }],
       abortOnInvalid: false,
       sendFromCache: true,
@@ -68,6 +85,23 @@ export class ParameterPage implements OnDestroy {
       }
       this.title.setTitle(title + ' - Yamcs');
     }
+  }
+
+  maySetParameter() {
+    const parameter = this.parameter$.value;
+    if (parameter) {
+      return this.authService.hasSetParameterPrivilege(parameter.qualifiedName);
+    }
+    return false;
+  }
+
+  setParameter() {
+    this.dialog.open(SetParameterDialog, {
+      width: '400px',
+      data: {
+        parameter: this.parameter$.value
+      }
+    });
   }
 
   ngOnDestroy() {

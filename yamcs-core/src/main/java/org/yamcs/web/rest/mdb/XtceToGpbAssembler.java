@@ -9,6 +9,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb;
+import org.yamcs.protobuf.Mdb.AbsoluteTimeInfo;
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.protobuf.Mdb.AlarmRange;
@@ -45,6 +46,7 @@ import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
 import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.rest.RestRequest;
+import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Argument;
@@ -91,6 +93,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
+import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
@@ -100,6 +103,7 @@ import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
+import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
@@ -542,6 +546,32 @@ public class XtceToGpbAssembler {
                 for (ValueEnumeration xtceValue : ept.getValueEnumerationList()) {
                     infob.addEnumValue(toEnumValue(xtceValue));
                 }
+            } else if (parameterType instanceof AbsoluteTimeParameterType) {
+                AbsoluteTimeParameterType apt = (AbsoluteTimeParameterType) parameterType;
+                AbsoluteTimeInfo.Builder timeb = AbsoluteTimeInfo.newBuilder();
+                if (apt.getInitialValue() != null) {
+                    timeb.setInitialValue(apt.getInitialValue());
+                }
+                if (apt.needsScaling()) {
+                    timeb.setScale(apt.getScale());
+                    timeb.setOffset(apt.getOffset());
+                }
+                ReferenceTime referenceTime = apt.getReferenceTime();
+                if (referenceTime != null) {
+                    TimeEpoch epoch = referenceTime.getEpoch();
+                    if (epoch != null) {
+                        if (epoch.getCommonEpoch() != null) {
+                            timeb.setEpoch(epoch.getCommonEpoch().toString());
+                        } else {
+                            timeb.setEpoch(epoch.getDateTime());
+                        }
+                    }
+                    if (referenceTime.getOffsetFrom() != null) {
+                        Parameter p = referenceTime.getOffsetFrom().getParameter();
+                        timeb.setOffsetFrom(toParameterInfo(p, null, DetailLevel.LINK, false));
+                    }
+                }
+                infob.setAbsoluteTimeInfo(timeb);
             }
         }
         return infob.build();

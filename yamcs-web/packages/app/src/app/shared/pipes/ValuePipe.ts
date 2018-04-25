@@ -23,9 +23,9 @@ export class ValuePipe implements PipeTransform {
       case 'BINARY':
         return '<binary>';
       case 'STRING':
-        return value.stringValue;
+        return value.stringValue!;
       case 'TIMESTAMP':
-        return this.dateTimePipe.transform(value.stringValue);
+        return this.dateTimePipe.transform(value.stringValue!);
       case 'UINT64':
         return '' + value.uint64Value;
       case 'SINT64':

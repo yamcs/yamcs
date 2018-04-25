@@ -8,10 +8,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -57,7 +57,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ArchiveEventRestHandler.class);
 
-    private Map<String, EventProducer> eventProducerMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, EventProducer> eventProducerMap = new ConcurrentHashMap<>();
     private AtomicInteger eventSequenceNumber = new AtomicInteger();
     private ExtensionRegistry gpbExtensionRegistry;
 
@@ -183,11 +183,9 @@ public class ArchiveEventRestHandler extends RestHandler {
         Event event = req.bodyAsMessage(Event.newBuilder()).build();
 
         // get event producer for this instance
-        EventProducer eventProducer = eventProducerMap.get(instance);
-        if (eventProducer == null) {
-            eventProducer = EventProducerFactory.getEventProducer(instance);
-            eventProducerMap.put(instance, eventProducer);
-        }
+        EventProducer eventProducer = eventProducerMap.computeIfAbsent(instance, x -> {
+            return EventProducerFactory.getEventProducer(x);
+        });
 
         // update event reception time
         event = event.toBuilder().setReceptionTime(YamcsServer.getTimeService(instance).getMissionTime()).build();
@@ -241,12 +239,9 @@ public class ArchiveEventRestHandler extends RestHandler {
             eventb.setSeverity(EventSeverity.INFO);
         }
 
-        // get event producer for this instance
-        EventProducer eventProducer = eventProducerMap.get(instance);
-        if (eventProducer == null) {
-            eventProducer = EventProducerFactory.getEventProducer(instance);
-            eventProducerMap.put(instance, eventProducer);
-        }
+        EventProducer eventProducer = eventProducerMap.computeIfAbsent(instance, x -> {
+            return EventProducerFactory.getEventProducer(x);
+        });
 
         // Distribute event (without augmented fields, or they'll get stored)
         Event event = eventb.build();

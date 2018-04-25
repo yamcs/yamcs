@@ -63,6 +63,7 @@ import {
   TimeSubscriptionResponse,
   AlarmSubscriptionResponse,
   CreateEventRequest,
+  Value,
 } from './types/monitoring';
 
 import {
@@ -393,6 +394,14 @@ export class InstanceClient {
   async getParameterValueUpdates(options: ParameterSubscriptionRequest) {
     this.prepareWebSocketClient();
     return this.webSocketClient.getParameterValueUpdates(options);
+  }
+
+  async setParameterValue(processorName: string, qualifiedName: string, value: Value) {
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/parameters${qualifiedName}`;
+    return this.yamcs.doFetch(url, {
+      body: JSON.stringify(value),
+      method: 'PUT',
+    });
   }
 
   async getParameterSamples(qualifiedName: string, options: GetParameterSamplesOptions = {}) {

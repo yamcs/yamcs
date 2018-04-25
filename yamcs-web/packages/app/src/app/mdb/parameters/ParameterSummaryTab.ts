@@ -13,25 +13,39 @@ import { Subscription } from 'rxjs/Subscription';
 export class ParameterSummaryTab {
 
   instance: Instance;
-  parameter$: Promise<Parameter>;
+  parameter$ = new BehaviorSubject<Parameter | null>(null);
 
   parameterValue$ = new BehaviorSubject<ParameterValue | null>(null);
   parameterValueSubscription: Subscription;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService) {
+  constructor(route: ActivatedRoute, private yamcs: YamcsService) {
     this.instance = yamcs.getInstance();
-    const qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
-    this.parameter$ = yamcs.getInstanceClient()!.getParameter(qualifiedName);
 
-    yamcs.getInstanceClient()!.getParameterValueUpdates({
-      id: [{ name: qualifiedName }],
-      abortOnInvalid: false,
-      sendFromCache: true,
-      subscriptionId: -1,
-      updateOnExpiration: true,
-    }).then(res => {
-      this.parameterValueSubscription = res.parameterValues$.subscribe(pvals => {
-        this.parameterValue$.next(pvals[0]);
+    // When clicking links pointing to this same component, Angular will not reinstantiate
+    // the component. Therefore subscribe to routeParams
+    route.parent!.paramMap.subscribe(params => {
+      const qualifiedName = params.get('qualifiedName')!;
+      this.changeParameter(qualifiedName);
+    });
+  }
+
+  changeParameter(qualifiedName: string) {
+    this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
+      this.parameter$.next(parameter);
+
+      if (this.parameterValueSubscription) {
+        this.parameterValueSubscription.unsubscribe();
+      }
+      this.yamcs.getInstanceClient()!.getParameterValueUpdates({
+        id: [{ name: qualifiedName }],
+        abortOnInvalid: false,
+        sendFromCache: true,
+        subscriptionId: -1,
+        updateOnExpiration: true,
+      }).then(res => {
+        this.parameterValueSubscription = res.parameterValues$.subscribe(pvals => {
+          this.parameterValue$.next(pvals[0]);
+        });
       });
     });
   }
