@@ -46,7 +46,7 @@ public class Subscription {
         if (seq.getBaseContainer() != null) {
             addContainer2InheritingContainer(seq.getBaseContainer(), seq);
             // it can be that the inheritance condition parameters are not from the baseContainer, so we need to add
-            // it explicitely
+            // it explicitly
             addSequenceContainer(seq.getBaseContainer());
             for (Parameter p : seq.getRestrictionCriteria().getDependentParameters()) {
                 addParameter(p);
@@ -90,29 +90,24 @@ public class Subscription {
     }
 
     public void addSequenceEntry(SequenceEntry se) {
-
         boolean containerAlreadyAdded = container2EntryMap.containsKey(se.getSequenceContainer());
 
         addContainer2Entry(se.getSequenceContainer(), se);
-        SequenceEntry setmp = se;
         SequenceContainer sctmp = se.getSequenceContainer();
         // if this entry's location is relative to the previous one, then we have to add also that one in the list
-        if (setmp.getReferenceLocation() == SequenceEntry.ReferenceLocationType.previousEntry) {
-            System.out.println("setmp: " + setmp);
-            if (setmp.getIndex() > 0) {
-                setmp = sctmp.getEntryList().get(setmp.getIndex() - 1);
+        if (se.getReferenceLocation() == SequenceEntry.ReferenceLocationType.previousEntry) {
+            if (se.getIndex() > 0) {
+                addSequenceEntry(sctmp.getEntryList().get(se.getIndex() - 1));
             } else { // continue with the basecontainer if we are at the first entry
                 sctmp = sctmp.getBaseContainer();
-                if (sctmp == null) {
-                    return;
+                if(sctmp!=null) {
+                    addSequenceEntry(sctmp.getEntryList().get(sctmp.getEntryList().size() - 1));
                 }
-                setmp = sctmp.getEntryList().get(sctmp.getEntryList().size() - 1);
             }
-            addSequenceEntry(setmp);
         }
         if ((se.getRepeatEntry() != null) && (se.getRepeatEntry().getCount() instanceof DynamicIntegerValue)) {
-            addParameter(
-                    ((DynamicIntegerValue) se.getRepeatEntry().getCount()).getParameterInstnaceRef().getParameter());
+            addParameter(((DynamicIntegerValue) se.getRepeatEntry().getCount())
+                    .getParameterInstnaceRef().getParameter());
         }
         if (!containerAlreadyAdded) {
             addSequenceContainer(se.getSequenceContainer());
