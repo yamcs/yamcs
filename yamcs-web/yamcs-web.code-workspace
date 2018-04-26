@@ -8,7 +8,10 @@
 		},
 		{
 			"path": "packages/displays"
-		}
+		},
+        {
+            "path": "packages/timeline"
+        }
 	],
 	"settings": {}
 }

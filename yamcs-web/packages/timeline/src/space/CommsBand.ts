@@ -1,0 +1,121 @@
+import { G, Rect, Set, Title } from '../tags';
+import { toDate, isAfter, isBefore } from '../utils';
+import Band from '../core/Band';
+import Timeline from '../Timeline';
+import { EventEvent } from '../events';
+import RenderContext from '../RenderContext';
+import { Action } from '../Action';
+
+/**
+ * Band indicating availability of one or more communication bands.
+ */
+export default class CommsBand extends Band {
+
+  static get type() {
+    return 'CommsBand';
+  }
+
+  static get rules() {
+    return {
+      topMargin: 0,
+      bottomMargin: 0,
+      highlightOpacity: 0.7,
+    };
+  }
+
+  private commsBands: any[];
+  private events: any[];
+
+  private eventsById: { [key: string]: object } = {};
+
+  constructor(timeline: Timeline, opts: any, style: any) {
+    super(timeline, opts, style);
+
+    this.commsBands = opts.bands || [];
+    this.events = opts.events || [];
+  }
+
+  renderViewport(ctx: RenderContext) {
+    const g = new G();
+    const barHeight = (this.height - this.style['topMargin'] - this.style['bottomMargin']) / this.commsBands.length;
+
+    for (const event of this.events) {
+      const start = toDate(event.start);
+      const stop = toDate(event.stop);
+
+      // Only render if somehow visible within load range
+      if (isBefore(start, this.timeline.loadStop) && isAfter(stop, this.timeline.loadStart)) {
+        for (let i = 0; i < this.commsBands.length; i++) {
+          const commsBand = this.commsBands[i];
+          if (event[commsBand['type']]) {
+            const id = Timeline.nextId();
+            const bgRect = new Rect({
+              id,
+              x: ctx.x + this.timeline.positionDate(start),
+              y: ctx.y + this.style['topMargin'] + (i * barHeight),
+              width: this.timeline.pointsBetween(start, stop),
+              height: barHeight,
+              fill: commsBand['color'],
+            });
+            if (event.tooltip) {
+              bgRect.addChild(new Title({}, event.tooltip));
+            }
+            g.addChild(bgRect);
+
+            if (this.interactive) {
+              bgRect.setAttribute('cursor', this.style['highlightCursor']);
+              bgRect.addChild(new Set({
+                attributeName: 'opacity',
+                to: this.style['highlightOpacity'],
+                begin: 'mouseover',
+                end: 'mouseout',
+              }));
+              this.eventsById[id] = event;
+              this.timeline.registerInteractionTarget(id);
+            }
+          }
+        }
+      }
+    }
+
+    return g;
+  }
+
+  onAction(id: string, action: Action) {
+    super.onAction(id, action);
+    if (this.eventsById[id]) {
+      switch (action.type) {
+      case 'click':
+        const eventClickEvent = new EventEvent(this.eventsById[id], action.target);
+        eventClickEvent.clientX = action.clientX;
+        eventClickEvent.clientY = action.clientY;
+        this.timeline.fireEvent('eventClick', eventClickEvent);
+        break;
+      case 'contextmenu':
+        const eventContextMenuEvent = new EventEvent(this.eventsById[id], action.target);
+        eventContextMenuEvent.clientX = action.clientX;
+        eventContextMenuEvent.clientY = action.clientY;
+        this.timeline.fireEvent('eventContextMenu', eventContextMenuEvent);
+        break;
+      case 'mouseenter':
+        const mouseEnterEvent = new EventEvent(this.eventsById[id], action.target);
+        mouseEnterEvent.clientX = action.clientX;
+        mouseEnterEvent.clientY = action.clientY;
+        this.timeline.fireEvent('eventMouseEnter', mouseEnterEvent);
+        break;
+      case 'mousemove':
+        const mouseMoveEvent = new EventEvent(this.eventsById[id], action.target);
+        mouseMoveEvent.clientX = action.clientX;
+        mouseMoveEvent.clientY = action.clientY;
+        this.timeline.fireEvent('eventMouseMove', mouseMoveEvent);
+        break;
+      case 'mouseleave':
+        const mouseLeaveEvent = new EventEvent(this.eventsById[id], action.target);
+        mouseLeaveEvent.clientX = action.clientX;
+        mouseLeaveEvent.clientY = action.clientY;
+        this.timeline.fireEvent('eventMouseLeave', mouseLeaveEvent);
+        break;
+      }
+    }
+  }
+}

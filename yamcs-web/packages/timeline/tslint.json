@@ -1,0 +1,45 @@
+{
+  "defaultSeverity": "warning",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
+  "rules": {
+    "align": [
+      true,
+      "parameters",
+      "statements"
+    ],
+    "arrow-parens": false,
+    "comment-format": [true, "check-space"],
+    "eofline": true,
+    "interface-name": [false],
+    "indent": [true, "spaces", 2],
+    "max-classes-per-file": [false],
+    "max-line-length": [false],
+    "member-access": false,
+    "member-ordering": [false],
+    "no-bitwise": false,
+    "no-console": [true],
+    "no-empty": true,
+    "no-empty-interface": false,
+    "no-null-keyword": true,
+    "no-trailing-whitespace": [true],
+    /*"no-any": {
+      "options": false,
+      "severity": "warning"
+    },*/
+    "no-string-literal": false,
+    "no-unused-expression": [true],
+    "object-literal-key-quotes": [true, "as-needed"],
+    "object-literal-sort-keys": false,
+    "only-arrow-functions": [false],
+    "ordered-imports": [false],
+    "prefer-const": true,
+    "quotemark": [true, "single"],
+    "semicolon": [true, "always"],
+    "trailing-comma": [false],
+    "variable-name": [true, "ban-keywords", "allow-leading-underscore"]
+  },
+  "rulesDirectory": []
+}
