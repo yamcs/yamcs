@@ -84,6 +84,8 @@ message IndexRequest {
   //if sendAllEvent is true, then all events are sent, otherwise those in the eventSource list (which can be empty)
   optional bool sendAllEvent = 12 [default=false];
   repeated NamedObjectId eventSource = 13;
+  
+  optional uint32 mergeTime = 16;
 }
 
 //contains histogram data

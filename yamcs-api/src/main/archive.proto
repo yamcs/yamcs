@@ -68,3 +68,18 @@ message StreamInfo {
 message EventSourceInfo {
   repeated string source = 1;
 }
+
+message IndexResponse {
+  repeated IndexGroup group = 1;
+}
+
+message IndexGroup {
+  optional yamcs.NamedObjectId id = 1;
+  repeated IndexEntry entry = 2;
+}
+
+message IndexEntry {
+  optional string start = 1;
+  optional string stop = 2;
+  optional int32 n = 4;
+}
