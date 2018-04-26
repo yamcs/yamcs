@@ -3,6 +3,7 @@ import { UssDisplay } from './uss/UssDisplay';
 import { ParameterValue, NamedObjectId } from '@yamcs/client';
 import { Display } from './Display';
 import { OpiDisplay } from './opi/OpiDisplay';
+import { ParDisplay } from './par/ParDisplay';
 
 export interface Coordinates {
   x: number;
@@ -95,6 +96,8 @@ export class DisplayFrame {
       this.display = new UssDisplay(this, this.frameContent, this.layout.displayCommunicator);
     } else if (id.toLowerCase().endsWith('opi')) {
       this.display = new OpiDisplay(this, this.frameContent, this.layout.displayCommunicator);
+    } else if (id.toLowerCase().endsWith('par')) {
+      this.display = new ParDisplay(this, this.frameContent, this.layout.displayCommunicator);
     } else {
       alert('No viewer for file ' + id);
     }
