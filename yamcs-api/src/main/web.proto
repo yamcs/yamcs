@@ -82,6 +82,10 @@ message RestExceptionMessage {
   extensions 100 to 200;
 }
 
+message LinkSubscriptionRequest {
+  optional string instance = 1;
+}
+
 /*
  * Used for parameter subscription and unsubscription.
  */
