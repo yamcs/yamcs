@@ -95,6 +95,16 @@ public class XmlLoaderTest {
         assertEquals("Payload_1_Control_Container", cc.getName());
         Container basec = cc.getBaseContainer();
         assertEquals("CCSDSPUSCommandPacket", basec.getName());
+        
+        Parameter pssl = busElectronics.getParameter("SunSensorLevel");
+        FloatParameterType ptype = (FloatParameterType) pssl.getParameterType();
+        IntegerDataEncoding encoding = (IntegerDataEncoding) ptype.getEncoding();
+        PolynomialCalibrator cal = (PolynomialCalibrator) encoding.getDefaultCalibrator();
+        assertArrayEquals(new double[] {-10.0, 5.0}, cal.coefficients, 1E-10);
+        
+        List<ContextCalibrator> ctxc = encoding.getContextCalibratorList();
+        assertEquals(2, ctxc.size());
+        
 
     }
     

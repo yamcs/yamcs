@@ -24,11 +24,6 @@ public class BooleanParameterType extends BooleanDataType implements ParameterTy
     }
 
     @Override
-    public Set<Parameter> getDependentParameters() {
-        return null;
-    }
-
-    @Override
     public String getTypeAsString() {
         return "boolean";
     }

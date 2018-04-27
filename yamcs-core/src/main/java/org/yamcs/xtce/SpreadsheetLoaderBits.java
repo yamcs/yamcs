@@ -1,11 +1,19 @@
 package org.yamcs.xtce;
 
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import jxl.Cell;
 import jxl.CellType;
 import jxl.NumberCell;
+import jxl.Sheet;
+import jxl.Workbook;
 
 /**
  * static fields and methods to reduce the size of the SpreadsheetLoader
@@ -33,12 +41,6 @@ public class SpreadsheetLoaderBits {
     static final int IDX_CONT_SIZEINBITS = 6;
     static final int IDX_CONT_EXPECTED_INTERVAL = 7;
     static final int IDX_CONT_DESCRIPTION = 8;
-
-    // columns in calibrations sheet
-    static final int IDX_CALIB_NAME = 0;
-    static final int IDX_CALIB_TYPE = 1;
-    static final int IDX_CALIB_CALIB1 = 2;
-    static final int IDX_CALIB_CALIB2 = 3;
 
     // columns in the algorithms sheet
     static final int IDX_ALGO_NAME = 0;
@@ -118,7 +120,7 @@ public class SpreadsheetLoaderBits {
     protected static final String CALIB_TYPE_SPLINE = "spline";
     protected static final String CALIB_TYPE_JAVA_EXPRESSION = "java-expression";
     protected static final String CALIB_TYPE_TIME = "time";
-    
+
     protected static final String PARAM_ENGTYPE_STRING = "string";
     protected static final String PARAM_ENGTYPE_BOOLEAN = "boolean";
     protected static final String PARAM_ENGTYPE_BINARY = "binary";
@@ -150,6 +152,71 @@ public class SpreadsheetLoaderBits {
     protected static final String PARAM_RAWTYPE_STRING_PREPENDED = "prependedsizestring";
     protected static final String PARAM_RAWTYPE_STRING_TERMINATED = "terminatedstring";
     protected static final String PARAM_RAWTYPE_STRING_FIXED = "fixedstring";
+
+    static final String CN_CONTEXT = "context";
+
+    // columns names in calibrations sheet
+    static final String CN_CALIB_NAME = "calibrator name";
+    static final String CN_CALIB_TYPE = "type";
+    static final String CN_CALIB_CALIB1 = "calib1";
+    static final String CN_CALIB_CALIB2 = "calib2";
+
+    // sheet names
+    protected static final String SHEET_GENERAL = "General";
+    protected static final String SHEET_CHANGELOG = "ChangeLog";
+
+    protected static final String SHEET_CALIBRATION = "Calibration";
+    protected static final String SHEET_TELEMETERED_PARAMETERS = "Parameters";
+    protected static final String SHEET_LOCAL_PARAMETERS = "LocalParameters";
+    protected static final String SHEET_DERIVED_PARAMETERS = "DerivedParameters";
+    protected static final String SHEET_CONTAINERS = "Containers";
+
+    protected static final String SHEET_ALGORITHMS = "Algorithms";
+    protected static final String SHEET_ALARMS = "Alarms";
+    protected static final String SHEET_COMMANDS = "Commands";
+    protected static final String SHEET_COMMANDOPTIONS = "CommandOptions";
+    protected static final String SHEET_COMMANDVERIFICATION = "CommandVerification";
+
+    // the list of sheets that can be part of subsystems with a sub1/sub2/sub3/SheetName notation
+    static String[] SUBSYSTEM_SHEET_NAMES = {
+            SHEET_CALIBRATION,
+            SHEET_TELEMETERED_PARAMETERS,
+            SHEET_LOCAL_PARAMETERS,
+            SHEET_DERIVED_PARAMETERS,
+            SHEET_CONTAINERS,
+            SHEET_ALGORITHMS,
+            SHEET_ALARMS,
+            SHEET_COMMANDS,
+            SHEET_COMMANDOPTIONS,
+            SHEET_COMMANDVERIFICATION
+    };
+
+    public static Map<String, Map<String, Integer>> readHeaders(Workbook workbook) {
+        List<String> relevantSheets = Arrays.stream(workbook.getSheetNames()).filter(sheetName -> {
+            return Arrays.stream(SUBSYSTEM_SHEET_NAMES).filter(s -> sheetName.endsWith(s)).findAny().isPresent();
+        }).collect(Collectors.toList());
+
+        Map<String, Map<String, Integer>> results = new HashMap<>();
+
+        for (String sheetName : relevantSheets) {
+            Map<String, Integer> m = new HashMap<>();
+            Sheet sheet = workbook.getSheet(sheetName);
+            Cell[] cells = sheet.getRow(0);
+            for (int i = 0; i < cells.length; i++) {
+                String hname = cells[i].getContents();
+                if (hname != null && !hname.isEmpty()) {
+                    if (m.containsKey(hname)) {
+                        throw new SpreadsheetLoadException(new SpreadsheetLoadContext(),
+                                "Duplicate column name '" + hname + "' on header line in" + sheetName);
+                    }
+                    m.put(hname, i);
+                }
+            }
+
+            results.put(sheetName, m);
+        }
+        return results;
+    }
 
     public static RawTypeEncoding oldToNewEncoding(SpreadsheetLoadContext ctx, int bitsize, String rawtype) {
         RawTypeEncoding rte = null;
@@ -318,6 +385,108 @@ public class SpreadsheetLoaderBits {
         }
     }
 
+    /*
+     * Used for parsing calibration and alarms with context
+     * 
+     * scans col1 starting with startRow until it finds some content
+     * then starts creating sub ranges based on col2
+     * 
+     * a range starts when the col1 is not empty. The start of the range automatically starts its first subRange
+     * 
+     * a subrange is finished in one of the three cases:
+     * - an empty line is encountered
+     * - another range starts (col1 is not empty)
+     * - another subRange starts(col2 is not empty)
+     * 
+     * the range is finished by the last line before the start of new range
+     * 
+     * if col2 is -1 then only one subRange is returned
+     * 
+     */
+    static Range findRange(Sheet sheet, int startRow, int col1, int col2) {
+        int numRows = sheet.getRows();
+        int rangeStart = -1;
+        int rangeStop = -1;
+        int subRangeStart = -1;
+        int i = startRow;
+        List<Range> subRange = new ArrayList<>();
+        while (i < numRows) {
+            Cell[] cells = sheet.getRow(i);
+            if (cells.length > 0 && cells[0].getContents().startsWith("#")) {// ignore comments
+                i++;
+                continue;
+            }
+            if (rangeStart == -1) { // looking for range start
+                if (!isCellEmpty(cells, col1)) {
+                    rangeStart = i;
+                    subRangeStart = i;
+                }
+            } else if (subRangeStart == -1) { // looking for subRange start (can only happen if col2 > -1)
+                if (!isCellEmpty(cells, col1)) {
+                    break;
+                }
+                if (!isCellEmpty(cells, col2)) {
+                    subRangeStart = i;
+                }
+            } else { // looking for range or subRange end
+                if (isRowEmpty(cells)) {
+                    subRange.add(new Range(subRangeStart, i));
+                    rangeStop = i;
+                    if (col2 > -1) {
+                        subRangeStart = -1;
+                    } else {
+                        break;
+                    }
+                } else if (!isCellEmpty(cells, col1)) {
+                    subRange.add(new Range(subRangeStart, i));
+                    rangeStop = i;
+                    break;
+                } else if (col2 > -1 && !isCellEmpty(cells, col2)) {
+                    subRange.add(new Range(subRangeStart, i));
+                    subRangeStart = i;
+                }
+            }
+            i++;
+        }
+        if (rangeStart == -1) {
+            return null;
+        }
+        Range r = new Range(rangeStart, rangeStop);
+        r.subRanges = subRange;
+        return r;
+    }
+
+    private static boolean isCellEmpty(Cell[] cells, int col) {
+        return cells.length <= col || cells[col].getContents().isEmpty();
+    }
+
+    private static boolean isRowEmpty(Cell[] cells) {
+        for(Cell cell: cells) {
+            if(!cell.getContents().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static int findEnd(Sheet sheet, int startRow, int endRow, int col) {
+        int r = startRow;
+        int i = startRow + 1;
+        while (i < endRow) {
+            Cell[] cells = sheet.getRow(i);
+            if (cells.length > col
+                    && !cells[0].getContents().startsWith("#")
+                    && cells[col].getContents().length() > 0) {
+                break;
+            }
+            if (cells.length > 0 && !cells[0].getContents().startsWith("#")) {
+                r = i;
+            }
+            i++;
+        }
+        return r;
+    }
+
     static byte parseByte(SpreadsheetLoadContext ctx, String s) {
         try {
             return Byte.decode(s);
@@ -368,6 +537,24 @@ public class SpreadsheetLoaderBits {
         public Position(int pos, boolean relative) {
             this.pos = pos;
             this.relative = relative;
+        }
+    }
+
+    static class Range {
+        
+
+        final int firstRow;
+        final int lastRow;// note that lastRow is NOT part of the range
+
+        public Range(int firstRow, int lastRow) {
+            this.firstRow = firstRow;
+            this.lastRow = lastRow;
+        }
+
+        List<Range> subRanges;
+        @Override
+        public String toString() {
+            return "Range [firstRow=" + firstRow + ", lastRow=" + lastRow + ", subRanges=" + subRanges + "]";
         }
     }
 }

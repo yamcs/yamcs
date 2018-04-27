@@ -68,10 +68,7 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer 
                 ParameterType ptype = parameter.getParameterType();
                 if (ptype != null && ptype.hasAlarm()) {
                     requiredParameters.add(parameter);
-                    Set<Parameter> dependentParameters = ptype.getDependentParameters();
-                    if (dependentParameters != null) {
-                        requiredParameters.addAll(dependentParameters);
-                    }
+                    requiredParameters.addAll(ptype.getDependentParameters());
                 }
             }
         } catch (ConfigurationException e) {

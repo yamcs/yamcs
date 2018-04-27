@@ -20,11 +20,6 @@ public class BinaryParameterType extends BinaryDataType implements ParameterType
     }
 
     @Override
-    public Set<Parameter> getDependentParameters() {
-        return null;
-    }
-
-    @Override
     public String getTypeAsString() {
         return "binary";
     }

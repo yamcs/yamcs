@@ -51,7 +51,6 @@ public class XtceTmExtractorTest {
         YConfiguration.setup("refmdb");
         XtceDbFactory.reset();
         xtcedb=XtceDbFactory.createInstanceByConfig("refmdb");
-        //xtcedb.print(System.out);
     }
 
     @Test
@@ -64,8 +63,6 @@ public class XtceTmExtractorTest {
         byte[] bb = tmGenerator.generate_PKT1_1();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
-        //System.out.println("PKT11 buffer: "+StringConvertors.arrayToHexString(bb.array()));
-        // System.out.println("received: "+received);
         ParameterValueList received = tmExtractor.getParameterResult();
         Parameter p = xtcedb.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
         ParameterValue pv=received.getLastInserted(p);
@@ -89,7 +86,6 @@ public class XtceTmExtractorTest {
     @Test
     public void testPKT1_2() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
-      //  xtcedb.print(System.out);
         
         XtceTmExtractor tmExtractor=new XtceTmExtractor(xtcedb);
         tmExtractor.provideAll();
@@ -135,7 +131,6 @@ public class XtceTmExtractorTest {
         byte[] bb = tmGenerator.generate_PKT1_3();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
-        //System.out.println("PKT13 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ParameterValueList received=tmExtractor.getParameterResult();
         assertEquals( 13, received.size() );
         
@@ -178,7 +173,6 @@ public class XtceTmExtractorTest {
         byte[] bb = tmGenerator.generate_PKT14();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
-        //System.out.println("PKT14 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ParameterValueList received=tmExtractor.getParameterResult();
         
         // Check all the parameters have been parsed
@@ -214,7 +208,6 @@ public class XtceTmExtractorTest {
         byte[] bb = tmGenerator.generate_PKT14();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
-        //System.out.println("PKT14 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ParameterValueList received=tmExtractor.getParameterResult();
         
         // Check all the parameters have been parsed
@@ -235,7 +228,6 @@ public class XtceTmExtractorTest {
         byte[] bb = tmGenerator.generate_PKT1_5();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
-        //System.out.println("PKT15 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ParameterValueList received=tmExtractor.getParameterResult();
         // Check all the parameters have been parsed
         assertEquals( 11, received.size() );
@@ -269,7 +261,6 @@ public class XtceTmExtractorTest {
         byte[] bb = tmGenerator.generate_PKT1_5();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
-        //System.out.println("PKT15 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ParameterValueList received = tmExtractor.getParameterResult();
         // Check all the parameters have been parsed
         assertEquals( 11, received.size() );
@@ -289,7 +280,6 @@ public class XtceTmExtractorTest {
         byte[] bb=tmGenerator.generate_PKT1_9();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
-        //System.out.println("PKT19 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ParameterValueList received=tmExtractor.getParameterResult();
 
         assertEquals(10, received.size());
@@ -355,7 +345,6 @@ public class XtceTmExtractorTest {
         byte[] bb=tmGenerator.generate_PKT1_7();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
         
-        //System.out.println("PKT17 buffer: "+StringConvertors.arrayToHexString(bb.array()));
         ParameterValueList received=tmExtractor.getParameterResult();
 
         assertEquals(11, received.size());
@@ -685,6 +674,30 @@ public class XtceTmExtractorTest {
 
         ParameterValue pv2 = received.getLastInserted(p6_2);
         assertEquals("1980-01-06T00:00:01.500Z", TimeEncoding.toString(pv2.getEngValue().getTimestampValue()));
+    }
+    
+    
+    @Test
+    public void testPKT1_10ContextCalibration() throws ConfigurationException {
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+        Parameter p10_3 = xtcedb.getParameter("/REFMDB/SUBSYS1/FloatPara1_10_3");
+        
+        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
+        tmExtractor.startProviding(p10_3);
+        
+        byte[] bb = tmGenerator.generate_PKT1_10(0, 1, 30);
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        ParameterValue pv1 = tmExtractor.getParameterResult().getLastInserted(p10_3);
+        assertEquals(30, pv1.getRawValue().getFloatValue(), 1E-10);
+        assertEquals(30, pv1.getEngValue().getFloatValue(), 1E-10);
+        
+        //now with the spline calibrator
+        bb = tmGenerator.generate_PKT1_10(0, 0, 30);
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        
+        ParameterValue pv2 = tmExtractor.getParameterResult().getLastInserted(p10_3);
+        assertEquals(30, pv2.getRawValue().getFloatValue(), 1E-10);
+        assertEquals(3, pv2.getEngValue().getFloatValue(), 1E-10);
     }
     
     

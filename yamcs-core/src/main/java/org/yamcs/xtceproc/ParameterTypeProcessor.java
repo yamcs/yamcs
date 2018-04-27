@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -15,6 +16,7 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanParameterType;
+import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.EnumeratedArgumentType;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatParameterType;
@@ -65,20 +67,20 @@ public class ParameterTypeProcessor {
      * Sets the value of a pval, based on the raw value and the applicable calibrator
      * @param pval 
      */
-    public void calibrate(ParameterValue pval, ContainerProcessingContext pcontext) {
-        doCalibrate(pval, pval.getParameter().getParameterType(), pcontext);
+    public void calibrate(ContainerProcessingContext pcontext, ParameterValue pval) {
+        doCalibrate(pcontext.result.params, pcontext.criteriaEvaluator, pval, pval.getParameter().getParameterType());
     }
     public void calibrate(ParameterValue pval) {
-        doCalibrate(pval, pval.getParameter().getParameterType(), null);
+        doCalibrate(null, null, pval, pval.getParameter().getParameterType());
     }
 
-    private void doCalibrate(ParameterValue pval, ParameterType ptype, ContainerProcessingContext pcontext) {
+    private void doCalibrate(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, ParameterValue pval, ParameterType ptype) {
         if (ptype instanceof EnumeratedParameterType) {
             calibrateEnumerated((EnumeratedParameterType) ptype, pval);
         } else if (ptype instanceof IntegerParameterType) {
-            calibrateInteger((IntegerParameterType) ptype, pval);
+            calibrateInteger(contextEvaluator, (IntegerParameterType) ptype, pval);
         } else if (ptype instanceof FloatParameterType) {
-            calibrateFloat((FloatParameterType) ptype, pval);
+            calibrateFloat(contextEvaluator, (FloatParameterType) ptype, pval);
         } else if (ptype instanceof BinaryParameterType) {
             calibrateBinary((BinaryParameterType) ptype, pval);
         } else if (ptype instanceof StringParameterType) {
@@ -86,7 +88,7 @@ public class ParameterTypeProcessor {
         } else if (ptype instanceof BooleanParameterType) {
             calibrateBoolean((BooleanParameterType) ptype, pval);
         } else if (ptype instanceof AbsoluteTimeParameterType) {
-            calibrateAbsoluteTime((AbsoluteTimeParameterType) ptype, pval, pcontext);
+            calibrateAbsoluteTime(pvalues, (AbsoluteTimeParameterType) ptype, pval);
         } else {
             throw new IllegalArgumentException("Extraction of "+ptype+" not implemented");
         }
@@ -150,20 +152,20 @@ public class ParameterTypeProcessor {
         pval.setEngineeringValue(pval.getRawValue());
     }
 
-    private void calibrateInteger(IntegerParameterType ipt, ParameterValue pval) {
+    private void calibrateInteger(CriteriaEvaluator contextEvaluator, IntegerParameterType ipt, ParameterValue pval) {
         Value rawValue = pval.getRawValue();
         if(ValueUtility.processAsLong(rawValue, l -> {
-            doIntegerCalibration(ipt, pval, l);           
+            doIntegerCalibration(contextEvaluator, ipt, pval, l);           
         })) return;
         
         if(ValueUtility.processAsDouble(rawValue, d -> {
-            doIntegerCalibration(ipt, pval, (long)d);            
+            doIntegerCalibration(contextEvaluator, ipt, pval, (long)d);            
         })) return;
        
         if (rawValue.getType() == Type.STRING) {
             try {
                 long l = Long.decode(rawValue.getStringValue());
-                doIntegerCalibration(ipt, pval, l);
+                doIntegerCalibration(contextEvaluator, ipt, pval, l);
             } catch (NumberFormatException e) {
                 log.warn("{}: failed to parse string '{}' to long", ipt.getName(), rawValue.getStringValue());
                 pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
@@ -173,8 +175,8 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private void doIntegerCalibration(IntegerParameterType ipt, ParameterValue pval, long longValue) {
-        CalibratorProc calibrator = pdata.getCalibrator(ipt.getEncoding());
+    private void doIntegerCalibration(CriteriaEvaluator contextEvaluator, IntegerParameterType ipt, ParameterValue pval, long longValue) {
+        CalibratorProc calibrator = pdata.getCalibrator(contextEvaluator, ipt.getEncoding());
 
         long longCalValue = (calibrator == null) ? longValue: (long)calibrator.calibrate(longValue);
 
@@ -200,23 +202,23 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private void calibrateFloat(FloatParameterType fpt, ParameterValue pval) {
+    private void calibrateFloat(CriteriaEvaluator contextEvaluator, FloatParameterType ptype, ParameterValue pval) {
         Value rawValue = pval.getRawValue();
         
         if(ValueUtility.processAsDouble(rawValue, d -> {
-            doFloatCalibration(fpt, pval, d);
+            doFloatCalibration(contextEvaluator, ptype, d, pval);
         })) return;
             
         if(ValueUtility.processAsLong(rawValue, l -> {
-            doFloatCalibration(fpt, pval, l);
+            doFloatCalibration(contextEvaluator, ptype, l, pval);
         })) return;
             
         if(rawValue.getType() == Type.STRING) {
             try {
                 Double d = Double.parseDouble(rawValue.getStringValue());
-                doFloatCalibration(fpt, pval, d);
+                doFloatCalibration(contextEvaluator, ptype, d, pval);
             } catch (NumberFormatException e) {
-                log.warn("{}: failed to parse string '{}' to double", fpt.getName(), rawValue.getStringValue());
+                log.warn("{}: failed to parse string '{}' to double", ptype.getName(), rawValue.getStringValue());
                 pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
             }
         } else {
@@ -224,11 +226,11 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private void doFloatCalibration(FloatParameterType fpt, ParameterValue pval, double doubleValue) {
-        CalibratorProc calibrator = pdata.getCalibrator(fpt.getEncoding());
+    private void doFloatCalibration(CriteriaEvaluator contextEvaluator, FloatParameterType ptype, double doubleValue, ParameterValue pval) {
+        CalibratorProc calibrator = pdata.getCalibrator(contextEvaluator, ptype.getEncoding());
 
         double doubleCalValue = (calibrator == null) ? doubleValue:calibrator.calibrate(doubleValue);
-        if(fpt.getSizeInBits() == 32) {
+        if(ptype.getSizeInBits() == 32) {
             pval.setFloatValue((float) doubleCalValue);
         } else {
             pval.setDoubleValue(doubleCalValue);
@@ -236,7 +238,7 @@ public class ParameterTypeProcessor {
     }
 
 
-    private void calibrateAbsoluteTime(AbsoluteTimeParameterType ptype, ParameterValue pval, ContainerProcessingContext pcontext) {
+    private void calibrateAbsoluteTime(ParameterValueList context, AbsoluteTimeParameterType ptype, ParameterValue pval) {
         ReferenceTime rtime = ptype.getReferenceTime();
         TimeEpoch epoch = rtime.getEpoch();
         Value rawValue = pval.getRawValue();
@@ -247,7 +249,7 @@ public class ParameterTypeProcessor {
         } else {
             ParameterInstanceRef ref = rtime.getOffsetFrom();
             if(ref!=null) {
-                referenceTime = getParaReferenceTime(pval.getParameter(), ref, pcontext);
+                referenceTime = getParaReferenceTime(context, pval.getParameter(), ref);
                 if(referenceTime==TimeEncoding.INVALID_INSTANT) {
                     pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
                 }
@@ -283,12 +285,12 @@ public class ParameterTypeProcessor {
             return (long)(epochMillisec + offset);
         }
     }
-    private long getParaReferenceTime(Parameter p, ParameterInstanceRef ref, ContainerProcessingContext pcontext) {
-        if(pcontext==null) {
-            log.warn("{}: no container processing context avaialble", p.getQualifiedName());
+    private long getParaReferenceTime(ParameterValueList context, Parameter p, ParameterInstanceRef ref) {
+        if(context==null) {
+            log.warn("{}: no parameter processing context avaialble", p.getQualifiedName());
             return TimeEncoding.INVALID_INSTANT;
         }
-        ParameterValue pv = pcontext.result.params.getLastInserted(ref.getParameter());
+        ParameterValue pv = context.getLastInserted(ref.getParameter());
         if(pv==null) {
             log.warn("{}: no instance of {} found in the processing context", p.getQualifiedName(), ref.getParameter().getQualifiedName());
             return TimeEncoding.INVALID_INSTANT;

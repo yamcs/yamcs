@@ -54,7 +54,7 @@ import jxl.read.biff.BiffException;
  */
 public class SpreadsheetLoader extends AbstractFileLoader {
     protected HashMap<String, Calibrator> calibrators = new HashMap<>();
-    protected HashMap<String, String> javaFormulas = new HashMap<>();
+    protected HashMap<String, List<ContextCalibrator>> contextCalibrators = new HashMap<>();
     protected HashMap<String, String> timeCalibEpochs = new HashMap<>();
     protected HashMap<String, String> timeCalibScales = new HashMap<>();
     protected HashMap<String, SpreadsheetLoadContext> timeCalibContexts = new HashMap<>();
@@ -66,41 +66,20 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     final protected SpreadsheetLoadContext ctx = new SpreadsheetLoadContext();
 
     final ConditionParser conditionParser = new ConditionParser(ctx);
-    // sheet names
-    protected static final String SHEET_GENERAL = "General";
-    protected static final String SHEET_CHANGELOG = "ChangeLog";
 
-    protected static final String SHEET_CALIBRATION = "Calibration";
-    protected static final String SHEET_TELEMETERED_PARAMETERS = "Parameters";
-    protected static final String SHEET_LOCAL_PARAMETERS = "LocalParameters";
-    protected static final String SHEET_DERIVED_PARAMETERS = "DerivedParameters";
-    protected static final String SHEET_CONTAINERS = "Containers";
 
-    protected static final String SHEET_ALGORITHMS = "Algorithms";
-    protected static final String SHEET_ALARMS = "Alarms";
-    protected static final String SHEET_COMMANDS = "Commands";
-    protected static final String SHEET_COMMANDOPTIONS = "CommandOptions";
-    protected static final String SHEET_COMMANDVERIFICATION = "CommandVerification";
+    //sheet name -> column name -> column number
+    Map<String, Map<String, Integer>> headers;
 
-    // the list of sheets that can be part of subsystems with a sub1/sub2/sub3/SheetName notation
-    static String[] SUBSYSTEM_SHEET_NAMES = {
-            SHEET_CALIBRATION,
-            SHEET_TELEMETERED_PARAMETERS,
-            SHEET_LOCAL_PARAMETERS,
-            SHEET_DERIVED_PARAMETERS,
-            SHEET_CONTAINERS,
-            SHEET_ALGORITHMS,
-            SHEET_ALARMS,
-            SHEET_COMMANDS,
-            SHEET_COMMANDOPTIONS,
-            SHEET_COMMANDVERIFICATION
-    };
+    //current sheet header
+    Map<String, Integer> h;
+
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION = "6.1";
+    final static String FORMAT_VERSION = "6.3";
     // Explicitly support these versions (i.e. load without warning)
     final static String[] FORMAT_VERSIONS_SUPPORTED = new String[] { FORMAT_VERSION, "5.3", "5.4", "5.5", "5.6",
-            "6.0" };
+            "6.0", "6.1", "6.2", "6.3" };
     String fileFormatVersion;
 
     protected Workbook workbook;
@@ -141,6 +120,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         } catch (BiffException | IOException e) {
             throw new SpreadsheetLoadException(ctx, e);
         }
+        headers = readHeaders(workbook);
 
         try {
             loadSheets();
@@ -181,7 +161,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
     protected void loadSpaceSystem(String sheetNamePrefix, SpaceSystem spaceSystem) {
-
         loadCalibrationSheet(spaceSystem, sheetNamePrefix + SHEET_CALIBRATION);
         loadParametersSheet(spaceSystem, sheetNamePrefix + SHEET_TELEMETERED_PARAMETERS, DataSource.TELEMETERED);
         loadParametersSheet(spaceSystem, sheetNamePrefix + SHEET_DERIVED_PARAMETERS, DataSource.DERIVED);
@@ -258,108 +237,144 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if (sheet == null) {
             return;
         }
-
+        requireColumn(CN_CALIB_NAME);
+        requireColumn(CN_CALIB_TYPE);
+        
         double[] pol_coef = null;
         // SplinePoint = pointpair
         ArrayList<SplinePoint> spline = null;
         EnumerationDefinition enumeration = null;
         // start at 1 to not use the first line (= title line)
-        int start = 1;
+        int idxContext = h.containsKey(CN_CONTEXT)?h.get(CN_CONTEXT):-1;
+        int n = 1;
         while (true) {
-            // we first search for a row containing (= starting) a new calibration
-            while (start < sheet.getRows()) {
-                Cell[] cells = jumpToRow(sheet, start);
-                if ((cells.length > 0) && (cells[0].getContents().length() > 0)
-                        && !cells[0].getContents().startsWith("#")) {
-                    break;
-                }
-                start++;
-            }
-            if (start >= sheet.getRows()) {
+            Range r = findRange(sheet, n, h.get(CN_CALIB_NAME), idxContext);
+            if(r==null) {
                 break;
             }
-            Cell[] cells = jumpToRow(sheet, start);
-            String name = cells[IDX_CALIB_NAME].getContents();
-            String type = cells[IDX_CALIB_TYPE].getContents();
-
-            // now we search for the matching last row of that calibration
-            int end = start + 1;
-            while (end < sheet.getRows()) {
-                cells = jumpToRow(sheet, end);
-                if (!hasColumn(cells, IDX_CALIB_CALIB1)) {
-                    break;
+            n = r.lastRow;
+            Cell[] cells = jumpToRow(sheet, r.firstRow);
+            String name = getContent(cells, CN_CALIB_NAME);
+            
+            for(Range sr: r.subRanges) {
+                cells = jumpToRow(sheet, sr.firstRow);
+                MatchCriteria context = null;
+                if(hasColumn(cells, CN_CONTEXT)) {
+                    String contextString = getContent(cells, CN_CONTEXT);
+                    context = toMatchCriteria(spaceSystem, contextString);
                 }
-                end++;
-            }
-            if ("pointpair".equalsIgnoreCase(type)) {
-                type = CALIB_TYPE_SPLINE;
-            }
-            if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
-                enumeration = new EnumerationDefinition();
-            } else if (CALIB_TYPE_POLYNOMIAL.equalsIgnoreCase(type)) {
-                pol_coef = new double[end - start];
-            } else if (CALIB_TYPE_SPLINE.equalsIgnoreCase(type)) {
-                spline = new ArrayList<>();
-            } else if (CALIB_TYPE_JAVA_EXPRESSION.equalsIgnoreCase(type)) {
-                cells = jumpToRow(sheet, start);
-                if (end != start + 1) {
-                    throw new SpreadsheetLoadException(ctx, "Java formula must be specified on one line");
+                String type =  getContent(cells, CN_CALIB_TYPE);
+                
+                if ("pointpair".equalsIgnoreCase(type)) {
+                    type = CALIB_TYPE_SPLINE;
                 }
-                if (!hasColumn(cells, IDX_CALIB_CALIB1)) {
-                    throw new SpreadsheetLoadException(ctx, "Java formula must be specified on the CALIB1 column");
-                }
-                String javaFormula = cells[IDX_CALIB_CALIB1].getContents();
-                javaFormulas.put(name, javaFormula);
-                start = end;
-            } else if (CALIB_TYPE_TIME.equalsIgnoreCase(type)) {
-                cells = jumpToRow(sheet, start);
-                if (end != start + 1) {
-                    throw new SpreadsheetLoadException(ctx, "Time encoding must be specified on one line");
-                }
-                if (!hasColumn(cells, IDX_CALIB_CALIB1)) {
-                    throw new SpreadsheetLoadException(ctx,
-                            "Reference epoch or parameter must be specified on the CALIB1 column");
-                }
-                timeCalibEpochs.put(name, cells[IDX_CALIB_CALIB1].getContents());
-                timeCalibContexts.put(name, ctx.copy());
-                if (hasColumn(cells, IDX_CALIB_CALIB2)) {
-                    timeCalibScales.put(name, cells[IDX_CALIB_CALIB2].getContents());
-                }
-
-                start = end;
-            } else {
-                throw new SpreadsheetLoadException(ctx,
-                        "Calibration type '" + type + "' not supported. Supported types: "
-                                + Arrays.asList(CALIB_TYPE_ENUMERATION, CALIB_TYPE_POLYNOMIAL, CALIB_TYPE_SPLINE,
-                                        CALIB_TYPE_JAVA_EXPRESSION, CALIB_TYPE_TIME));
-            }
-
-            for (int j = start; j < end; j++) {
-                cells = jumpToRow(sheet, j);
                 if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
-                    try {
-                        long raw = Integer.decode(cells[IDX_CALIB_CALIB1].getContents());
-                        enumeration.valueMap.put(raw, cells[IDX_CALIB_CALIB2].getContents());
-                    } catch (NumberFormatException e) {
-                        throw new SpreadsheetLoadException(ctx, "Can't get integer from raw value out of '"
-                                + cells[IDX_CALIB_CALIB1].getContents() + "'");
+                    if(context!=null) {
+                        throw new SpreadsheetLoadException(ctx, "Context calibrators not supported for enumerations");
                     }
+                    enumeration = new EnumerationDefinition();
                 } else if (CALIB_TYPE_POLYNOMIAL.equalsIgnoreCase(type)) {
-                    pol_coef[j - start] = parseDouble(ctx, cells[IDX_CALIB_CALIB1]);
+                    pol_coef = new double[sr.lastRow - sr.firstRow];
                 } else if (CALIB_TYPE_SPLINE.equalsIgnoreCase(type)) {
-                    spline.add(new SplinePoint(parseDouble(ctx, cells[IDX_CALIB_CALIB1]),
-                            parseDouble(ctx, cells[IDX_CALIB_CALIB2])));
+                    spline = new ArrayList<>();
+                } else if (CALIB_TYPE_JAVA_EXPRESSION.equalsIgnoreCase(type)) {
+                    cells = jumpToRow(sheet, sr.firstRow);
+                    if (sr.lastRow != sr.firstRow + 1) {
+                        throw new SpreadsheetLoadException(ctx, "Java formula must be specified on one line");
+                    }
+                    if (!hasColumn(cells, CN_CALIB_CALIB1)) {
+                        throw new SpreadsheetLoadException(ctx, "Java formula must be specified on the CALIB1 column");
+                    }
+                    String javaFormula = getContent(cells, CN_CALIB_CALIB1);
+                    addCalibrator(name, context, getJavaCalibrator(javaFormula));
+                } else if (CALIB_TYPE_TIME.equalsIgnoreCase(type)) {
+                    if(context!=null) {
+                        throw new SpreadsheetLoadException(ctx, "Context calibrators not supported for time");
+                    }
+                    cells = jumpToRow(sheet, sr.firstRow);
+                    if (sr.lastRow != sr.firstRow + 1) {
+                        throw new SpreadsheetLoadException(ctx, "Time encoding must be specified on one line");
+                    }
+                    if (!hasColumn(cells, CN_CALIB_CALIB1)) {
+                        throw new SpreadsheetLoadException(ctx,
+                                "Reference epoch or parameter must be specified on the CALIB1 column");
+                    }
+                    timeCalibEpochs.put(name, getContent(cells, CN_CALIB_CALIB1));
+                    timeCalibContexts.put(name, ctx.copy());
+                    if (hasColumn(cells, CN_CALIB_CALIB2)) {
+                        timeCalibScales.put(name, getContent(cells, CN_CALIB_CALIB2));
+                    }
+                } else {
+                    throw new SpreadsheetLoadException(ctx,
+                            "Calibration type '" + type + "' not supported. Supported types: "
+                                    + Arrays.asList(CALIB_TYPE_ENUMERATION, CALIB_TYPE_POLYNOMIAL, CALIB_TYPE_SPLINE,
+                                            CALIB_TYPE_JAVA_EXPRESSION, CALIB_TYPE_TIME));
+                }
+
+                for (int j = sr.firstRow; j < sr.lastRow; j++) {
+                    cells = jumpToRow(sheet, j);
+                    if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
+                        try {
+                            long raw = Integer.decode(getContent(cells, CN_CALIB_CALIB1));
+                            enumeration.valueMap.put(raw, getContent(cells, CN_CALIB_CALIB2));
+                        } catch (NumberFormatException e) {
+                            throw new SpreadsheetLoadException(ctx, "Can't get integer from raw value out of '"
+                                    + getContent(cells, CN_CALIB_CALIB1) + "'");
+                        }
+                    } else if (CALIB_TYPE_POLYNOMIAL.equalsIgnoreCase(type)) {
+                        pol_coef[j - sr.firstRow] = parseDouble(ctx, getCell(cells, CN_CALIB_CALIB1));
+                    } else if (CALIB_TYPE_SPLINE.equalsIgnoreCase(type)) {
+                        spline.add(new SplinePoint(parseDouble(ctx, getCell(cells, CN_CALIB_CALIB1)),
+                                parseDouble(ctx, getCell(cells, CN_CALIB_CALIB2))));
+                    }
+                }
+                if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
+                    enumerations.put(name, enumeration);
+                } else if (CALIB_TYPE_POLYNOMIAL.equalsIgnoreCase(type)) {
+                    addCalibrator(name, context, new PolynomialCalibrator(pol_coef));
+                } else if (CALIB_TYPE_SPLINE.equalsIgnoreCase(type)) {
+                    addCalibrator(name, context, new SplineCalibrator(spline));
                 }
             }
-            if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
-                enumerations.put(name, enumeration);
-            } else if (CALIB_TYPE_POLYNOMIAL.equalsIgnoreCase(type)) {
-                calibrators.put(name, new PolynomialCalibrator(pol_coef));
-            } else if (CALIB_TYPE_SPLINE.equalsIgnoreCase(type)) {
-                calibrators.put(name, new SplineCalibrator(spline));
-            }
-            start = end;
         }
+    }
+    
+    private void addCalibrator(String name, MatchCriteria context, Calibrator c) {
+        if(context==null) {
+            if (calibrators.containsKey(name)) {
+                throw new SpreadsheetLoadException(ctx, "There is already a calibrator named '"+name+"' defined");
+            }
+            calibrators.put(name, c);
+        } else {
+            List<ContextCalibrator> l = contextCalibrators.get(name);
+            if(l==null) {
+                l = new ArrayList<>();
+                contextCalibrators.put(name, l);
+            }
+            l.add(new ContextCalibrator(context, c));
+        }
+    }
+
+    private void requireColumn(String colName) throws SpreadsheetLoadException {
+        if(!h.containsKey(colName)) {
+            throw new SpreadsheetLoadException(ctx, "Ssheet does not contain required column '"+colName+"'");
+        }
+    }
+
+    private Cell getCell(Cell[] cells, String colName) {
+        if(!h.containsKey(colName)) {
+            throw new SpreadsheetLoadException(ctx, "Unexisting column '"+colName+"'");
+        }
+        int idx = h.get(colName);
+        return cells[idx];
+    }
+
+    private String getContent(Cell[] cells, String colName) {
+        Integer x = h.get(colName);
+        if(x==null) {
+            throw new SpreadsheetLoadException(ctx, "Unexisting column '"+colName+"'");
+        }
+        return cells[x].getContents();
     }
 
     protected void loadParametersSheet(SpaceSystem spaceSystem, String sheetName, DataSource dataSource) {
@@ -681,8 +696,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                Calibrator c = getNumberCalibrator(paraArgDescr, calib);
-                ((IntegerDataEncoding) encoding).defaultCalibrator = c;
+                ((IntegerDataEncoding) encoding).defaultCalibrator = getNumberCalibrator(paraArgDescr, calib);
+                ((IntegerDataEncoding) encoding).setContextCalibratorList(contextCalibrators.get(calib));
             }
         } else if (PARAM_RAWTYPE_FLOAT.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
@@ -706,8 +721,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                Calibrator c = getNumberCalibrator(paraArgDescr, calib);
-                ((FloatDataEncoding) encoding).defaultCalibrator = c;
+                ((FloatDataEncoding) encoding).defaultCalibrator = getNumberCalibrator(paraArgDescr, calib);
+                ((FloatDataEncoding) encoding).setContextCalibratorList(contextCalibrators.get(calib));
             }
         } else if (PARAM_RAWTYPE_BOOLEAN.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
@@ -815,20 +830,23 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if (c != null) {
             return c;
         }
-        String jf = javaFormulas.get(calibName);
-        if (jf != null) {
-            JavaExpressionCalibrator jec = new JavaExpressionCalibrator(jf);
-            try {
-                JavaExpressionCalibratorFactory.compile(jec);
-            } catch (IllegalArgumentException e) {
-                throw new SpreadsheetLoadException(ctx, e.getMessage());
-            }
-            return jec;
-        }
-
-        throw new SpreadsheetLoadException(ctx, paraArgDescr + " is supposed to have a calibrator '" + calibName
+        if(!contextCalibrators.containsKey(calibName)) {
+            throw new SpreadsheetLoadException(ctx, paraArgDescr + " is supposed to have a calibrator '" + calibName
                 + "' but the calibrator does not exist.");
+        }
+        return null;
     }
+    
+    JavaExpressionCalibrator getJavaCalibrator(String javaFormula) {
+        JavaExpressionCalibrator jec = new JavaExpressionCalibrator(javaFormula);
+        try {
+            JavaExpressionCalibratorFactory.compile(jec);
+        } catch (IllegalArgumentException e) {
+            throw new SpreadsheetLoadException(ctx, e.getMessage());
+        }
+        return jec;
+    }
+    
 
     /**
      * Searches firstRow for all cells that start with "namespace:" and adds corresponding aliases
@@ -952,7 +970,6 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 container.setAliasSet(xas);
             }
 
-            // System.out.println("for "+name+" got absoluteOffset="+)
             // we mark the start of the command and advance to the next line, to get to the first argument (if there is
             // one)
             int start = i++;
@@ -1125,13 +1142,13 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             IntegerDataEncoding intenc = (IntegerDataEncoding) encoding;
             if (intenc.getEncoding() != IntegerDataEncoding.Encoding.STRING) {
                 throw new SpreadsheetLoadException(ctx, "Parameter " + param.getName()
-                        + " is part of a container and encoded as integer but has no size in bits specified");
+                + " is part of a container and encoded as integer but has no size in bits specified");
             }
         } else if (encoding instanceof FloatDataEncoding) {
             FloatDataEncoding fenc = (FloatDataEncoding) encoding;
             if (fenc.getEncoding() != FloatDataEncoding.Encoding.STRING) {
                 throw new SpreadsheetLoadException(ctx, "Parameter " + param.getName()
-                        + " is part of a container and encoded as float but has no size in bits specified");
+                + " is part of a container and encoded as float but has no size in bits specified");
             }
         }
     }
@@ -1447,8 +1464,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         } catch (IllegalArgumentException e) {
                             throw new SpreadsheetLoadException(ctx,
                                     "Invalid value '" + s
-                                            + "' specified for CheckWindow relative to parameter. Use one of "
-                                            + Arrays.toString(TimeWindowIsRelativeToType.values()));
+                                    + "' specified for CheckWindow relative to parameter. Use one of "
+                                    + Arrays.toString(TimeWindowIsRelativeToType.values()));
                         }
                     }
                     CheckWindow cw = new CheckWindow(start, stop, cwr);
@@ -1508,8 +1525,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     } catch (IllegalArgumentException e) {
                         throw new SpreadsheetLoadException(ctx,
                                 "Invalid termination action '" + tas
-                                        + "' specified for the command verifier. Supported actions are: "
-                                        + TerminationAction.values());
+                                + "' specified for the command verifier. Supported actions are: "
+                                + TerminationAction.values());
                     }
                 }
                 i++;
@@ -2228,6 +2245,16 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 && (!cells[idx].getContents().isEmpty());
     }
 
+    protected boolean hasColumn(Cell[] cells, String colName) {
+        if(!h.containsKey(colName)) {
+            return false;
+        }
+        int idx = h.get(colName);
+
+        return (cells != null) && (cells.length > idx) && (cells[idx].getContents() != null)
+                && (!cells[idx].getContents().isEmpty());
+    }
+
     private int getSize(Parameter param, SequenceContainer sc) {
         // either we have a Parameter or we have a SequenceContainer, we cannot have both or neither
         if (param != null) {
@@ -2267,7 +2294,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     throw new SpreadsheetLoadException(ctx, "Cannot find the parameter for repeat " + repeat);
                 }
                 ((DynamicIntegerValue) se.repeatEntry.count)
-                        .setParameterInstanceRef(new ParameterInstanceRef(repeatparam, true));
+                .setParameterInstanceRef(new ParameterInstanceRef(repeatparam, true));
                 return -1;
             }
         } else {
@@ -2282,6 +2309,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if (required && sheet == null) {
             throw new SpreadsheetLoadException(ctx, "Required sheet '" + sheetName + "' was found missing");
         }
+        h = headers.get(sheetName);
         return sheet;
     }
 

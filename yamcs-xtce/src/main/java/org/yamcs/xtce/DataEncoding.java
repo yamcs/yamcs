@@ -5,6 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteOrder;
+import java.util.Collections;
+import java.util.Set;
 /**
  * Describes how a particular piece of data is sent or received from some non-native, off-platform device. (e.g. a spacecraft)
  * 
@@ -85,5 +87,9 @@ public abstract class DataEncoding implements Serializable {
 
     public void setFromBinaryTransformAlgorithm(Algorithm fromBinaryTransformAlgorithm) {
         this.fromBinaryTransformAlgorithm = fromBinaryTransformAlgorithm;
+    }
+    
+    public Set<Parameter> getDependentParameters() {
+        return Collections.emptySet();
     }
 }

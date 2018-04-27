@@ -94,4 +94,14 @@ public class SpreadsheetLoaderTest {
         p = db.getParameter("/REFMDB/SUBSYS1/TimePara6_2");
         assertEquals(0.0039062500, ((AbsoluteTimeParameterType)p.getParameterType()).getScale(), 1e-5);
     }
+    
+    
+    @Test
+    public void testContextCalib() throws Exception {
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/FloatPara1_10_3");
+        FloatParameterType ptype = (FloatParameterType) p.getParameterType();
+        FloatDataEncoding encoding = (FloatDataEncoding) ptype.getEncoding();
+        
+        assertEquals(1, encoding.getContextCalibratorList().size());
+    }
 }

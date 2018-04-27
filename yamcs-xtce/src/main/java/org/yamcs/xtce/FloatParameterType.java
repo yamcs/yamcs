@@ -2,6 +2,7 @@ package org.yamcs.xtce;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -118,10 +119,13 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
 
     @Override
     public Set<Parameter> getDependentParameters() {
-        if(getContextAlarmList()==null) {
-            return null;
+        if(contextAlarmList==null) {
+            return (encoding!=null)?encoding.getDependentParameters():Collections.emptySet();
         }
+        
         Set<Parameter>dependentParameters = new HashSet<>();
+        dependentParameters.addAll(encoding.getDependentParameters());
+        
         for(NumericContextAlarm nca:contextAlarmList) {
             dependentParameters.addAll(nca.getContextMatch().getDependentParameters());
         }

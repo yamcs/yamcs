@@ -31,7 +31,7 @@ public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements P
     @Override
     public Set<Parameter> getDependentParameters() {
         if (referenceTime == null || referenceTime.getOffsetFrom()==null) {
-            return null;
+            return Collections.emptySet();
         }
         ParameterInstanceRef pref = referenceTime.getOffsetFrom();
         return Collections.singleton(pref.getParameter());

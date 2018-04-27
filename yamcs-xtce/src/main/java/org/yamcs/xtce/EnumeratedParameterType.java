@@ -1,6 +1,7 @@
 package org.yamcs.xtce;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +35,7 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
     @Override
     public Set<Parameter> getDependentParameters() {
         if(contextAlarmList==null) {
-            return null;
+            return Collections.emptySet();
         }
         Set<Parameter>dependentParameters = new HashSet<>();
         for(EnumerationContextAlarm eca:contextAlarmList)

@@ -64,9 +64,7 @@ public class XtceTmExtractor {
             ParameterType ptype = param.getParameterType();
             if(ptype!=null) {
                 Set<Parameter> dependencies = ptype.getDependentParameters();
-                if(dependencies!=null) {
-                    dependencies.forEach(p -> subscription.addParameter(p));
-                }
+                dependencies.forEach(p -> subscription.addParameter(p));
             }
             subscription.addParameter(param);
         }

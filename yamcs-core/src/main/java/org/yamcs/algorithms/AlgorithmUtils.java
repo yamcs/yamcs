@@ -52,7 +52,7 @@ public class AlgorithmUtils {
             } else {
                 DataEncoding encoding = ((BaseDataType)p.getParameterType()).getEncoding();
                 if(encoding instanceof IntegerDataEncoding) {
-                    return  processorData.getCalibrator(encoding).calibrate(raw);
+                    return  processorData.getCalibrator(null, encoding).calibrate(raw);
                 }
             }
         } else {

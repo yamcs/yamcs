@@ -161,20 +161,21 @@ public class AlarmTest {
         alarmReporter.startAsync();
 
         tmGenerator.generate_PKT1_10(0, 1, 30);
-
+        ParameterValue pv = params.get(0);
+        
         // Check whether spreadsheet loads all levels ok
-        assertEquals(-11, params.get(0).getWatchRange().getMin(), 1e-17);
-        assertEquals(30, params.get(0).getWatchRange().getMax(), 1e-17);
-        assertEquals(-22, params.get(0).getWarningRange().getMin(), 1e-17);
-        assertEquals(40, params.get(0).getWarningRange().getMax(), 1e-17);
-        assertEquals(-33, params.get(0).getDistressRange().getMin(), 1e-17);
-        assertEquals(50, params.get(0).getDistressRange().getMax(), 1e-17);
-        assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getCriticalRange().getMin(), 1e-17);
-        assertEquals(60, params.get(0).getCriticalRange().getMax(), 1e-17);
-        assertEquals(Double.NEGATIVE_INFINITY, params.get(0).getSevereRange().getMin(), 1e-17);
-        assertEquals(70, params.get(0).getSevereRange().getMax(), 1e-17);
+        assertEquals(-11, pv.getWatchRange().getMin(), 1e-17);
+        assertEquals(30, pv.getWatchRange().getMax(), 1e-17);
+        assertEquals(-22, pv.getWarningRange().getMin(), 1e-17);
+        assertEquals(40, pv.getWarningRange().getMax(), 1e-17);
+        assertEquals(-33, pv.getDistressRange().getMin(), 1e-17);
+        assertEquals(50, pv.getDistressRange().getMax(), 1e-17);
+        assertEquals(Double.NEGATIVE_INFINITY, pv.getCriticalRange().getMin(), 1e-17);
+        assertEquals(60, pv.getCriticalRange().getMax(), 1e-17);
+        assertEquals(Double.NEGATIVE_INFINITY, pv.getSevereRange().getMin(), 1e-17);
+        assertEquals(70, pv.getSevereRange().getMax(), 1e-17);
 
-        assertEquals(MonitoringResult.IN_LIMITS, params.get(0).getMonitoringResult());
+        assertEquals(MonitoringResult.IN_LIMITS, pv.getMonitoringResult());
         assertEquals(0, q.size());
 
         tmGenerator.generate_PKT1_10(0, 1, 42);
@@ -208,7 +209,6 @@ public class AlarmTest {
 
         // Now, change context
         tmGenerator.generate_PKT1_10(0, 0 /* ! */, 71);
-
         assertEquals(MonitoringResult.CRITICAL, params.get(7).getMonitoringResult());
         assertEquals(RangeCondition.HIGH, params.get(7).getRangeCondition());
         assertEquals(6, q.size()); // Message for changed MonitoringResult

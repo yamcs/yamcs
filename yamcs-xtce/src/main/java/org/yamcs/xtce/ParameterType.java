@@ -1,5 +1,6 @@
 package org.yamcs.xtce;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -9,11 +10,14 @@ import java.util.Set;
  *
  */
 public interface ParameterType {
-    /**
+    /**    
      * 
      * @return the set of parameters on which this one depends in order to be extracted or alarm checked 
+     *         can be an empty set if this parameter does not depend on any other
      */
-    Set<Parameter> getDependentParameters();
+    default Set<Parameter> getDependentParameters() {
+        return Collections.emptySet();
+    }
 
     /**
      * String which represents the type.

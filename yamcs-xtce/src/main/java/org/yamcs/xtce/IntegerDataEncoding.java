@@ -1,22 +1,39 @@
 package org.yamcs.xtce;
 
 import java.nio.ByteOrder;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+/**
+ * For all major encodings of integer data
+ * 
+ * @author nm
+ *
+ */
+public class IntegerDataEncoding extends DataEncoding implements NumericDataEncoding {
+    private static final long serialVersionUID = 3L;
+    static Logger log = LoggerFactory.getLogger(IntegerDataEncoding.class.getName());
+    
+    Calibrator defaultCalibrator = null;
+    private List<ContextCalibrator> contextCalibratorList = null;
+    
 
-public class IntegerDataEncoding extends DataEncoding {
-    private static final long serialVersionUID = 200805131551L;
-    static Logger log=LoggerFactory.getLogger(IntegerDataEncoding.class.getName());
-    Calibrator defaultCalibrator=null;
-    public enum Encoding {UNSIGNED, TWOS_COMPLEMENT, SIGN_MAGNITUDE, ONES_COMPLEMENT, STRING};
+    public enum Encoding {
+        UNSIGNED, TWOS_COMPLEMENT, SIGN_MAGNITUDE, ONES_COMPLEMENT, STRING
+    };
+
     Encoding encoding = Encoding.UNSIGNED;
-    StringDataEncoding stringEncoding=null;
+    StringDataEncoding stringEncoding = null;
 
     /**
      * IntegerDataEncoding of type {@link IntegerDataEncoding.Encoding#UNSIGNED}
+     * 
      * @param sizeInBits
-     * @param byteOrder 
+     * @param byteOrder
      */
     public IntegerDataEncoding(int sizeInBits, ByteOrder byteOrder) {
         super(sizeInBits, byteOrder);
@@ -25,10 +42,13 @@ public class IntegerDataEncoding extends DataEncoding {
     public IntegerDataEncoding(int sizeInBits) {
         super(sizeInBits, ByteOrder.BIG_ENDIAN);
     }
+
     /**
      * Integer data encoded as a string.
+     * 
      * @param name
-     * @param sde describes how the string is encoded.
+     * @param sde
+     *            describes how the string is encoded.
      */
     public IntegerDataEncoding(String name, StringDataEncoding sde) {
         super(sde.getSizeInBits());
@@ -48,7 +68,6 @@ public class IntegerDataEncoding extends DataEncoding {
         return defaultCalibrator;
     }
 
-
     public void setEncoding(Encoding encoding) {
         this.encoding = encoding;
     }
@@ -59,25 +78,46 @@ public class IntegerDataEncoding extends DataEncoding {
 
     @Override
     public String toString() {
-        if( stringEncoding == null ) {
-            return "IntegerDataEncoding(sizeInBits:"+sizeInBits+", encoding:"+encoding+", defaultCalibrator:"+defaultCalibrator+" byteOrder:"+byteOrder+")";
+        if (stringEncoding == null) {
+            return "IntegerDataEncoding(sizeInBits:" + sizeInBits + ", encoding:" + encoding + ", defaultCalibrator:"
+                    + defaultCalibrator + " byteOrder:" + byteOrder + ")";
         } else {
-            return "IntegerDataEncoding(StringEncoding: "+stringEncoding+" defaultCalibrator:"+defaultCalibrator+" byteOrder:"+byteOrder+")";
+            return "IntegerDataEncoding(StringEncoding: " + stringEncoding + " defaultCalibrator:" + defaultCalibrator
+                    + " byteOrder:" + byteOrder + ")";
         }
     }
 
     @Override
     public Object parseString(String stringValue) {
-        if(encoding == Encoding.STRING) {
+        if (encoding == Encoding.STRING) {
             return stringValue;
         }
-        
-        if(sizeInBits>32) {
+
+        if (sizeInBits > 32) {
             return Long.decode(stringValue);
         } else {
             return Long.decode(stringValue).intValue();
         }
     }
 
-   
+    public List<ContextCalibrator> getContextCalibratorList() {
+        return contextCalibratorList;
+    }
+
+    public void setContextCalibratorList(List<ContextCalibrator> contextCalibratorList) {
+        this.contextCalibratorList = contextCalibratorList;
+    }
+    
+    @Override
+    public Set<Parameter> getDependentParameters() {
+        if(contextCalibratorList!=null) {
+            Set<Parameter> r = new HashSet<>();
+            for(ContextCalibrator cc: contextCalibratorList) {
+                r.addAll(cc.getContextMatch().getDependentParameters());
+            }
+            return r;
+        } else {
+            return Collections.emptySet();
+        }
+    }
 }

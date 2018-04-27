@@ -44,9 +44,9 @@ public class AlarmChecker {
     ParameterRequestManager prm;
     Logger log = LoggerFactory.getLogger(this.getClass());
 
-    //keep the last values of parameters that are needed to check alarms (for alarms that are enabled/disabled based on some other parameters)
+    // keep the last values of parameters that are needed to check alarms (for alarms that are enabled/disabled based on
+    // some other parameters)
     ParameterValueList lastValues = new ParameterValueList();
-
 
     public AlarmChecker(ParameterRequestManager prm, int subscriptionId) {
         this.subscriptionId = subscriptionId;
@@ -59,25 +59,24 @@ public class AlarmChecker {
      */
     public void parameterSubscribed(Parameter p) {
         ParameterType ptype = p.getParameterType();
-        if(ptype==null) {
+        if (ptype == null) {
             log.debug("Parameter {} has no type", p.getName());
             return;
         }
         Set<Parameter> params = ptype.getDependentParameters();
-        if(params!=null) {
-            for(Parameter p1:params) {
-                prm.addItemsToRequest(subscriptionId, p1);
-            }
+        for (Parameter p1 : params) {
+            prm.addItemsToRequest(subscriptionId, p1);
         }
     }
 
     /**
      * Update the list of parameters used for alarm checking
+     * 
      * @param pvals
      */
     public void updateParameters(Collection<ParameterValue> pvals) {
-        synchronized(lastValues) {
-            for(ParameterValue pv: pvals) {
+        synchronized (lastValues) {
+            for (ParameterValue pv : pvals) {
                 lastValues.removeFirst(pv.getParameter());
                 lastValues.add(pv);
             }
@@ -90,15 +89,15 @@ public class AlarmChecker {
      */
     public void performAlarmChecking(Collection<ParameterValue> pvals) {
         CriteriaEvaluator criteriaEvaluator = new CriteriaEvaluatorImpl(lastValues);
-        for(ParameterValue pval:pvals) {
-            if(pval.getParameter().getParameterType()!=null && pval.getParameter().getParameterType().hasAlarm()) {
+        for (ParameterValue pval : pvals) {
+            if (pval.getParameter().getParameterType() != null && pval.getParameter().getParameterType().hasAlarm()) {
                 performAlarmChecking(pval, criteriaEvaluator);
-            } //else do not set the MonitoringResult
+            } // else do not set the MonitoringResult
         }
     }
 
     public void enableReporting(AlarmReporter reporter) {
-        this.alarmReporter=reporter;
+        this.alarmReporter = reporter;
     }
 
     public void enableServer(AlarmServer server) {
@@ -109,151 +108,155 @@ public class AlarmChecker {
      * Updates the ParameterValue with monitoring (out of limits) information
      */
     private void performAlarmChecking(ParameterValue pv, CriteriaEvaluator criteriaEvaluator) {
-        ParameterType ptype=pv.getParameter().getParameterType();
-        if(ptype instanceof FloatParameterType) {
+        ParameterType ptype = pv.getParameter().getParameterType();
+        if (ptype instanceof FloatParameterType) {
             performAlarmCheckingFloat((FloatParameterType) ptype, pv, criteriaEvaluator);
-        } else if(ptype instanceof EnumeratedParameterType) {
+        } else if (ptype instanceof EnumeratedParameterType) {
             performAlarmCheckingEnumerated((EnumeratedParameterType) ptype, pv, criteriaEvaluator);
-        } else if(ptype instanceof IntegerParameterType) {
+        } else if (ptype instanceof IntegerParameterType) {
             performAlarmCheckingInteger((IntegerParameterType) ptype, pv, criteriaEvaluator);
         }
     }
 
-    private void performAlarmCheckingInteger(IntegerParameterType ipt, ParameterValue pv, CriteriaEvaluator criteriaEvaluator) {
-        long intCalValue=0;
-        if(pv.getEngValue().getType()==Type.SINT32) {
-            intCalValue=pv.getEngValue().getSint32Value();
-        } else if(pv.getEngValue().getType()==Type.UINT32) { 
-            intCalValue=0xFFFFFFFFL & pv.getEngValue().getUint32Value();
-        } else if(pv.getEngValue().getType()==Type.SINT64) {
-            intCalValue=pv.getEngValue().getSint64Value();
-        } else if(pv.getEngValue().getType()==Type.UINT64) {
-            intCalValue=pv.getEngValue().getUint64Value();
+    private void performAlarmCheckingInteger(IntegerParameterType ipt, ParameterValue pv,
+            CriteriaEvaluator criteriaEvaluator) {
+        long intCalValue = 0;
+        if (pv.getEngValue().getType() == Type.SINT32) {
+            intCalValue = pv.getEngValue().getSint32Value();
+        } else if (pv.getEngValue().getType() == Type.UINT32) {
+            intCalValue = 0xFFFFFFFFL & pv.getEngValue().getUint32Value();
+        } else if (pv.getEngValue().getType() == Type.SINT64) {
+            intCalValue = pv.getEngValue().getSint64Value();
+        } else if (pv.getEngValue().getType() == Type.UINT64) {
+            intCalValue = pv.getEngValue().getUint64Value();
         } else {
             throw new IllegalStateException("Unexpected integer value");
         }
 
         // Determine applicable ranges based on context
-        boolean mon=false;
-        AlarmType alarmType=null;
-        AlarmRanges staticAlarmRanges=null;
-        int minViolations=1;
-        if(ipt.getContextAlarmList()!=null) {
-            for(NumericContextAlarm nca:ipt.getContextAlarmList()) {
-                if(nca.getContextMatch().isMet(criteriaEvaluator)) {
-                    mon=true;
-                    alarmType=nca;
-                    staticAlarmRanges=nca.getStaticAlarmRanges();
-                    minViolations=nca.getMinViolations();
+        boolean mon = false;
+        AlarmType alarmType = null;
+        AlarmRanges staticAlarmRanges = null;
+        int minViolations = 1;
+        if (ipt.getContextAlarmList() != null) {
+            for (NumericContextAlarm nca : ipt.getContextAlarmList()) {
+                if (nca.getContextMatch().isMet(criteriaEvaluator)) {
+                    mon = true;
+                    alarmType = nca;
+                    staticAlarmRanges = nca.getStaticAlarmRanges();
+                    minViolations = nca.getMinViolations();
                     break;
                 }
             }
         }
-        NumericAlarm defaultAlarm=ipt.getDefaultAlarm();
-        if(!mon && defaultAlarm!=null) {
-            alarmType=defaultAlarm;
-            staticAlarmRanges=defaultAlarm.getStaticAlarmRanges();
-            minViolations=defaultAlarm.getMinViolations();
+        NumericAlarm defaultAlarm = ipt.getDefaultAlarm();
+        if (!mon && defaultAlarm != null) {
+            alarmType = defaultAlarm;
+            staticAlarmRanges = defaultAlarm.getStaticAlarmRanges();
+            minViolations = defaultAlarm.getMinViolations();
         }
 
         // Set MonitoringResult
-        pv.setMonitoringResult(null); // The default is DISABLED, but set it to null, so that below code is more readable
-        if(staticAlarmRanges!=null) {
+        pv.setMonitoringResult(null); // The default is DISABLED, but set it to null, so that below code is more
+                                      // readable
+        if (staticAlarmRanges != null) {
             checkStaticAlarmRanges(pv, intCalValue, staticAlarmRanges);
         }
 
-
-
         // Notify when severity changes
-        if(alarmReporter!=null) {
+        if (alarmReporter != null) {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
         }
-        if(alarmServer!=null) {
+        if (alarmServer != null) {
             alarmServer.update(pv, minViolations);
         }
     }
 
-    private void performAlarmCheckingFloat(FloatParameterType fpt, ParameterValue pv, CriteriaEvaluator criteriaEvaluator) {
-        double doubleCalValue=0;
-        if(pv.getEngValue().getType()==Type.FLOAT) {
-            doubleCalValue=pv.getEngValue().getFloatValue();
-        } else if(pv.getEngValue().getType()==Type.DOUBLE) {
-            doubleCalValue=pv.getEngValue().getDoubleValue();
+    private void performAlarmCheckingFloat(FloatParameterType fpt, ParameterValue pv,
+            CriteriaEvaluator criteriaEvaluator) {
+        double doubleCalValue = 0;
+        if (pv.getEngValue().getType() == Type.FLOAT) {
+            doubleCalValue = pv.getEngValue().getFloatValue();
+        } else if (pv.getEngValue().getType() == Type.DOUBLE) {
+            doubleCalValue = pv.getEngValue().getDoubleValue();
         } else {
             throw new IllegalStateException("Unexpected float value");
         }
 
         // Determine applicable AlarmType based on context
-        boolean mon=false;
-        AlarmType alarmType=null;
-        AlarmRanges staticAlarmRanges=null;
-        int minViolations=1;
-        if(fpt.getContextAlarmList()!=null) {
-            for(NumericContextAlarm nca:fpt.getContextAlarmList()) {
-                if(nca.getContextMatch().isMet(criteriaEvaluator)) {
-                    mon=true;
-                    alarmType=nca;
-                    staticAlarmRanges=nca.getStaticAlarmRanges();
-                    minViolations=nca.getMinViolations();
+        boolean mon = false;
+        AlarmType alarmType = null;
+        AlarmRanges staticAlarmRanges = null;
+        int minViolations = 1;
+        if (fpt.getContextAlarmList() != null) {
+            for (NumericContextAlarm nca : fpt.getContextAlarmList()) {
+                
+                if (nca.getContextMatch().isMet(criteriaEvaluator)) {
+                    mon = true;
+                    alarmType = nca;
+                    staticAlarmRanges = nca.getStaticAlarmRanges();
+                    minViolations = nca.getMinViolations();
                     break;
                 }
             }
         }
-        NumericAlarm defaultAlarm=fpt.getDefaultAlarm();
-        if(!mon && defaultAlarm!=null) {
-            alarmType=defaultAlarm;
-            staticAlarmRanges=defaultAlarm.getStaticAlarmRanges();
-            minViolations=defaultAlarm.getMinViolations();
+        NumericAlarm defaultAlarm = fpt.getDefaultAlarm();
+        if (!mon && defaultAlarm != null) {
+            alarmType = defaultAlarm;
+            staticAlarmRanges = defaultAlarm.getStaticAlarmRanges();
+            minViolations = defaultAlarm.getMinViolations();
         }
 
-        // Set MonitoringResult	
-        pv.setMonitoringResult(null); // The default is DISABLED, but set it to null, so that below code is more readable
-        if(staticAlarmRanges!=null) {
+        // Set MonitoringResult
+        pv.setMonitoringResult(null); // The default is DISABLED, but set it to null, so that below code is more
+                                      // readable
+        if (staticAlarmRanges != null) {
             checkStaticAlarmRanges(pv, doubleCalValue, staticAlarmRanges);
         }
 
         // Notify when severity changes
-        if(alarmReporter!=null) {
+        if (alarmReporter != null) {
             alarmReporter.reportNumericParameterEvent(pv, alarmType, minViolations);
         }
-        if(alarmServer!=null) {
+        if (alarmServer != null) {
             alarmServer.update(pv, minViolations);
         }
     }
 
     private void checkRange(ParameterValue pv, MonitoringResult mr, DoubleRange fr, double v) {
         int x = fr.inRange(v);
-        if(x<0) {
+        if (x < 0) {
             pv.setMonitoringResult(mr);
             pv.setRangeCondition(RangeCondition.LOW);
-        } else if(x>0) {
+        } else if (x > 0) {
             pv.setMonitoringResult(mr);
             pv.setRangeCondition(RangeCondition.HIGH);
         }
     }
+
     /**
      * Verify limits, giving priority to highest severity
      */
     private void checkStaticAlarmRanges(ParameterValue pv, double doubleCalValue, AlarmRanges staticAlarmRanges) {
         pv.setMonitoringResult(null);
-        DoubleRange watchRange=staticAlarmRanges.getWatchRange();
-        DoubleRange warningRange=staticAlarmRanges.getWarningRange();
-        DoubleRange distressRange=staticAlarmRanges.getDistressRange();
-        DoubleRange criticalRange=staticAlarmRanges.getCriticalRange();
-        DoubleRange severeRange=staticAlarmRanges.getSevereRange();
-        if(severeRange!=null) {
+        DoubleRange watchRange = staticAlarmRanges.getWatchRange();
+        DoubleRange warningRange = staticAlarmRanges.getWarningRange();
+        DoubleRange distressRange = staticAlarmRanges.getDistressRange();
+        DoubleRange criticalRange = staticAlarmRanges.getCriticalRange();
+        DoubleRange severeRange = staticAlarmRanges.getSevereRange();
+        if (severeRange != null) {
             checkRange(pv, MonitoringResult.SEVERE, severeRange, doubleCalValue);
         }
-        if(pv.getMonitoringResult()==null && criticalRange!=null) {
+        if (pv.getMonitoringResult() == null && criticalRange != null) {
             checkRange(pv, MonitoringResult.CRITICAL, criticalRange, doubleCalValue);
         }
-        if(pv.getMonitoringResult()==null && distressRange!=null) {
+        if (pv.getMonitoringResult() == null && distressRange != null) {
             checkRange(pv, MonitoringResult.DISTRESS, distressRange, doubleCalValue);
         }
-        if(pv.getMonitoringResult()==null && warningRange!=null) {
+        if (pv.getMonitoringResult() == null && warningRange != null) {
             checkRange(pv, MonitoringResult.WARNING, warningRange, doubleCalValue);
         }
-        if(pv.getMonitoringResult()==null && watchRange!=null) {
+        if (pv.getMonitoringResult() == null && watchRange != null) {
             checkRange(pv, MonitoringResult.WATCH, watchRange, doubleCalValue);
         }
 
@@ -268,30 +271,31 @@ public class AlarmChecker {
         pv.setSevereRange(severeRange);
     }
 
-    private void performAlarmCheckingEnumerated(EnumeratedParameterType ept, ParameterValue pv, CriteriaEvaluator criteriaEvaluator) {
+    private void performAlarmCheckingEnumerated(EnumeratedParameterType ept, ParameterValue pv,
+            CriteriaEvaluator criteriaEvaluator) {
         pv.setMonitoringResult(null); // Default is DISABLED, but that doesn't seem fit when we are checking
-        String s=pv.getEngValue().getStringValue();
+        String s = pv.getEngValue().getStringValue();
 
-        EnumerationAlarm alarm=ept.getDefaultAlarm();
-        int minViolations=(alarm==null)?1:alarm.getMinViolations();
-        if(ept.getContextAlarmList()!=null) {
-            for(EnumerationContextAlarm nca:ept.getContextAlarmList()) {
-                if(nca.getContextMatch().isMet(criteriaEvaluator)) {
-                    alarm=nca;
-                    minViolations=nca.getMinViolations();
+        EnumerationAlarm alarm = ept.getDefaultAlarm();
+        int minViolations = (alarm == null) ? 1 : alarm.getMinViolations();
+        if (ept.getContextAlarmList() != null) {
+            for (EnumerationContextAlarm nca : ept.getContextAlarmList()) {
+                if (nca.getContextMatch().isMet(criteriaEvaluator)) {
+                    alarm = nca;
+                    minViolations = nca.getMinViolations();
                     break;
                 }
             }
         }
-        if(alarm != null) {
-            AlarmLevels level=alarm.getDefaultAlarmLevel();
-            for(EnumerationAlarmItem eai:alarm.getAlarmList()) {
-                if(eai.getEnumerationLabel().equals(s)) {
+        if (alarm != null) {
+            AlarmLevels level = alarm.getDefaultAlarmLevel();
+            for (EnumerationAlarmItem eai : alarm.getAlarmList()) {
+                if (eai.getEnumerationLabel().equals(s)) {
                     level = eai.getAlarmLevel();
                 }
             }
 
-            switch(level) {
+            switch (level) {
             case normal:
                 pv.setMonitoringResult(MonitoringResult.IN_LIMITS);
                 break;
@@ -312,13 +316,12 @@ public class AlarmChecker {
                 break;
             }
 
-            if(alarmReporter!=null) {
+            if (alarmReporter != null) {
                 alarmReporter.reportEnumeratedParameterEvent(pv, alarm, minViolations);
             }
         }
 
-
-        if(alarmServer!=null) {
+        if (alarmServer != null) {
             alarmServer.update(pv, minViolations);
         }
     }

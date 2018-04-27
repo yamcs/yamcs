@@ -1,14 +1,17 @@
 package org.yamcs.xtceproc;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.yamcs.parameter.ParameterValueList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.xtce.Calibrator;
+import org.yamcs.xtce.ContextCalibrator;
+import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtce.FloatDataEncoding;
-import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.JavaExpressionCalibrator;
+import org.yamcs.xtce.NumericDataEncoding;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.XtceDb;
@@ -28,11 +31,12 @@ public class ProcessorData {
      */
     final ParameterTypeProcessor parameterTypeProcessor = new ParameterTypeProcessor(this);
 
-    private Map<DataEncoding, CalibratorProc> calibrators = new HashMap<>();
+    private Map<Calibrator, CalibratorProc> calibrators = new HashMap<>();
     private Map<DataEncoding, DataDecoder> decoders = new HashMap<>();
 
     final XtceDb xtcedb;
-    
+    static Logger log=LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
+
     public ProcessorData(XtceDb xtcedb) {
         this.xtcedb = xtcedb;
     }
@@ -41,42 +45,56 @@ public class ProcessorData {
      * Can be null if the DataEncoding does not define a calibrator.
      * 
      * @param de
+     * @param result - if used in the context of container processing, this represents the intermediate result
+     * 
      * @return a calibrator processor or null
      */
-    public CalibratorProc getCalibrator(DataEncoding de) {
-        CalibratorProc calibrator = calibrators.get(de);
-        if(calibrator==null) {
-            if(de instanceof IntegerDataEncoding) {
-                calibrator = getCalibrator(((IntegerDataEncoding) de).getDefaultCalibrator());
-            } else if(de instanceof  FloatDataEncoding) {
-                calibrator = getCalibrator(((FloatDataEncoding) de).getDefaultCalibrator());
-            } else {
-                throw new IllegalStateException("Calibrators not supported for: "+de);
+    public CalibratorProc getCalibrator(CriteriaEvaluator contextEvaluator, DataEncoding de) {
+        if(de instanceof NumericDataEncoding) {
+            NumericDataEncoding nde =  (NumericDataEncoding) de;
+            Calibrator c = nde.getDefaultCalibrator();
+
+            List<ContextCalibrator> clist = nde.getContextCalibratorList();
+            if(clist!=null) {
+                if(contextEvaluator==null) {
+                    log.warn("For {} : context calibrators without a context evaluator", de);
+                } else {
+                    for(ContextCalibrator cc: clist) {
+                        if(cc.getContextMatch().isMet(contextEvaluator)) {
+                            c = cc.getCalibrator();
+                            break;
+                        }
+                    }
+                }
             }
-            if(calibrator!=null) {
-                calibrators.put(de, calibrator);
-            }
+            return getCalibrator(c);
+        } else {
+            throw new IllegalStateException("Calibrators not supported for: "+de);
         }
-        return calibrator;
     }
 
     public CalibratorProc getDecalibrator(DataEncoding de) {
-        return getCalibrator(de);
+        return getCalibrator(null, de);
     }
 
     private CalibratorProc getCalibrator(Calibrator c) {
         if(c==null) {
             return null;
         }
-        if(c instanceof PolynomialCalibrator) {
-            return new PolynomialCalibratorProc((PolynomialCalibrator) c);
-        } else if(c instanceof SplineCalibrator) {
-            return new SplineCalibratorProc((SplineCalibrator) c);
-        } else if(c instanceof JavaExpressionCalibrator) {
-            return JavaExpressionCalibratorFactory.compile((JavaExpressionCalibrator) c);
-        }  else {
-            throw new IllegalStateException("No calibrator processor for "+c);
+        CalibratorProc calibrator = calibrators.get(c);
+        if(calibrator==null) {
+            if(c instanceof PolynomialCalibrator) {
+                calibrator= new PolynomialCalibratorProc((PolynomialCalibrator) c);
+            } else if(c instanceof SplineCalibrator) {
+                calibrator = new SplineCalibratorProc((SplineCalibrator) c);
+            } else if(c instanceof JavaExpressionCalibrator) {
+                calibrator = JavaExpressionCalibratorFactory.compile((JavaExpressionCalibrator) c);
+            }  else {
+                throw new IllegalStateException("No calibrator processor for "+c);
+            }
+            calibrators.put(c, calibrator);
         }
+        return calibrator;
     }
 
     public DataDecoder getDataDecoder(DataEncoding de) {
@@ -84,14 +102,14 @@ public class ProcessorData {
         if(dd==null) {
             dd = DataDecoderFactory.get(de.getFromBinaryTransformAlgorithm());
         }
-        
+
         return dd;
     }
-    
+
     public XtceDb getXtceDb() {
         return xtcedb;
     }
-    
+
     /**
      * Returns the parameter type processor (this is the guy that converts from raw to engineering value) used by the associated processor.
      * @return
