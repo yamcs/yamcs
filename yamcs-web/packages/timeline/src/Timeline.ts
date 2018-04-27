@@ -322,6 +322,10 @@ export default class Timeline {
     return utils.addSeconds(this.visibleStart, offsetSeconds);
   }
 
+  getZoom() {
+    return this.zoom;
+  }
+
   zoomIn(x: number) {
     this.applyZoom(this.zoom + 1, x);
     return this;

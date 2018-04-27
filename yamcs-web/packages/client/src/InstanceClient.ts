@@ -23,6 +23,7 @@ import {
   SamplesWrapper,
   CommandHistoryEntryWrapper,
   SourcesWrapper,
+  IndexResult,
 } from './types/internal';
 
 import {
@@ -64,6 +65,8 @@ import {
   AlarmSubscriptionResponse,
   CreateEventRequest,
   Value,
+  IndexGroup,
+  GetPacketIndexOptions,
 } from './types/monitoring';
 
 import {
@@ -332,6 +335,13 @@ export class InstanceClient {
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as RecordsWrapper;
     return wrapper.record || [];
+  }
+
+  async getPacketIndex(options: GetPacketIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/packet-index`;
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
   }
 
   async getRootSpaceSystems() {

@@ -10869,13 +10869,13 @@ public final class Archive {
         getStopBytes();
 
     /**
-     * <code>optional int32 n = 4;</code>
+     * <code>optional int32 count = 3;</code>
      */
-    boolean hasN();
+    boolean hasCount();
     /**
-     * <code>optional int32 n = 4;</code>
+     * <code>optional int32 count = 3;</code>
      */
-    int getN();
+    int getCount();
   }
   /**
    * Protobuf type {@code archive.IndexEntry}
@@ -10941,9 +10941,9 @@ public final class Archive {
               stop_ = bs;
               break;
             }
-            case 32: {
+            case 24: {
               bitField0_ |= 0x00000004;
-              n_ = input.readInt32();
+              count_ = input.readInt32();
               break;
             }
           }
@@ -11070,25 +11070,25 @@ public final class Archive {
       }
     }
 
-    public static final int N_FIELD_NUMBER = 4;
-    private int n_;
+    public static final int COUNT_FIELD_NUMBER = 3;
+    private int count_;
     /**
-     * <code>optional int32 n = 4;</code>
+     * <code>optional int32 count = 3;</code>
      */
-    public boolean hasN() {
+    public boolean hasCount() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional int32 n = 4;</code>
+     * <code>optional int32 count = 3;</code>
      */
-    public int getN() {
-      return n_;
+    public int getCount() {
+      return count_;
     }
 
     private void initFields() {
       start_ = "";
       stop_ = "";
-      n_ = 0;
+      count_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -11110,7 +11110,7 @@ public final class Archive {
         output.writeBytes(2, getStopBytes());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeInt32(4, n_);
+        output.writeInt32(3, count_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -11131,7 +11131,7 @@ public final class Archive {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(4, n_);
+          .computeInt32Size(3, count_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -11254,7 +11254,7 @@ public final class Archive {
         bitField0_ = (bitField0_ & ~0x00000001);
         stop_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
-        n_ = 0;
+        count_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
@@ -11295,7 +11295,7 @@ public final class Archive {
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.n_ = n_;
+        result.count_ = count_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -11322,8 +11322,8 @@ public final class Archive {
           stop_ = other.stop_;
           onChanged();
         }
-        if (other.hasN()) {
-          setN(other.getN());
+        if (other.hasCount()) {
+          setCount(other.getCount());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -11504,34 +11504,34 @@ public final class Archive {
         return this;
       }
 
-      private int n_ ;
+      private int count_ ;
       /**
-       * <code>optional int32 n = 4;</code>
+       * <code>optional int32 count = 3;</code>
        */
-      public boolean hasN() {
+      public boolean hasCount() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional int32 n = 4;</code>
+       * <code>optional int32 count = 3;</code>
        */
-      public int getN() {
-        return n_;
+      public int getCount() {
+        return count_;
       }
       /**
-       * <code>optional int32 n = 4;</code>
+       * <code>optional int32 count = 3;</code>
        */
-      public Builder setN(int value) {
+      public Builder setCount(int value) {
         bitField0_ |= 0x00000004;
-        n_ = value;
+        count_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 n = 4;</code>
+       * <code>optional int32 count = 3;</code>
        */
-      public Builder clearN() {
+      public Builder clearCount() {
         bitField0_ = (bitField0_ & ~0x00000004);
-        n_ = 0;
+        count_ = 0;
         onChanged();
         return this;
       }
@@ -11650,9 +11650,9 @@ public final class Archive {
       "3\n\rIndexResponse\022\"\n\005group\030\001 \003(\0132\023.archiv" +
       "e.IndexGroup\"R\n\nIndexGroup\022 \n\002id\030\001 \001(\0132\024" +
       ".yamcs.NamedObjectId\022\"\n\005entry\030\002 \003(\0132\023.ar" +
-      "chive.IndexEntry\"4\n\nIndexEntry\022\r\n\005start\030",
-      "\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\t\n\001n\030\004 \001(\005B\024\n\022org.ya" +
-      "mcs.protobuf"
+      "chive.IndexEntry\"8\n\nIndexEntry\022\r\n\005start\030",
+      "\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\r\n\005count\030\003 \001(\005B\024\n\022or" +
+      "g.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -11744,7 +11744,7 @@ public final class Archive {
     internal_static_archive_IndexEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_archive_IndexEntry_descriptor,
-        new java.lang.String[] { "Start", "Stop", "N", });
+        new java.lang.String[] { "Start", "Stop", "Count", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
   }
 

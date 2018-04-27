@@ -96,7 +96,7 @@ public class ArchivePacketRestHandler extends RestHandler {
                                 groupb.addEntry(IndexEntry.newBuilder()
                                         .setStart(TimeEncoding.toString(rec.getFirst()))
                                         .setStop(TimeEncoding.toString(rec.getLast()))
-                                        .setN(rec.getNum()));
+                                        .setCount(rec.getNum()));
                                 count++;
                             }
                         }
@@ -106,9 +106,11 @@ public class ArchivePacketRestHandler extends RestHandler {
                 @Override
                 public void finished(boolean success) {
                     if (success) {
-                        groupBuilders.forEach((id, groupb) -> {
-                            responseb.addGroup(groupb);
+                        List<IndexGroup.Builder> sortedGroups = new ArrayList<>(groupBuilders.values());
+                        Collections.sort(sortedGroups, (g1, g2) -> {
+                            return g1.getId().getName().compareTo(g2.getId().getName());
                         });
+                        sortedGroups.forEach(groupb -> responseb.addGroup(groupb));
                         completeOK(req, responseb.build());
                     } else {
                         sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR,

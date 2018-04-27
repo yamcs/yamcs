@@ -81,5 +81,5 @@ message IndexGroup {
 message IndexEntry {
   optional string start = 1;
   optional string stop = 2;
-  optional int32 n = 4;
+  optional int32 count = 3;
 }

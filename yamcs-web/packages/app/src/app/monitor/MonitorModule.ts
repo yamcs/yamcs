@@ -11,6 +11,7 @@ import { AlarmDetail } from './alarms/AlarmDetail';
 import { MonitorToolbar } from './template/MonitorToolbar';
 import { PageContentHost } from './ext/PageContentHost';
 import { CreateEventDialog } from './events/CreateEventDialog';
+import { TimelineTooltip } from './archive/TimelineTooltip';
 
 const dialogComponents = [
   CreateEventDialog,
@@ -32,6 +33,7 @@ const dialogComponents = [
     MonitorPageTemplate,
     PageContentHost,
     ProcessorInfoComponent,
+    TimelineTooltip,
   ],
   exports: [
     MonitorPageTemplate,
@@ -39,6 +41,7 @@ const dialogComponents = [
   ],
   entryComponents: [
     dialogComponents,
+    TimelineTooltip,
   ]
 })
 export class MonitorModule {

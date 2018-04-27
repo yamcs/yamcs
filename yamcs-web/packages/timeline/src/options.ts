@@ -6,7 +6,7 @@ export interface TimelineOptions {
 
   theme?: string;
   zoom?: number;
-  initialDate?: Date;
+  initialDate?: Date | string;
   style?: any;
   tracker?: any;
   nodata?: boolean;

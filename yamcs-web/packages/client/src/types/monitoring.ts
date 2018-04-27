@@ -254,3 +254,21 @@ export interface GetParameterRangesOptions {
   minGap?: number;
   maxGap?: number;
 }
+
+export interface GetPacketIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+  limit?: number;
+}
+
+export interface IndexGroup {
+  id: NamedObjectId;
+  entry: IndexEntry[];
+}
+
+export interface IndexEntry {
+  start: string;
+  stop: string;
+  count: number;
+}
