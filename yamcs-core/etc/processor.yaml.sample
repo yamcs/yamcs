@@ -24,6 +24,8 @@ realtime:
         # manages software parameters
         - class: org.yamcs.parameter.SoftwareParameterManager
     config:
+        #Generate events in case of errors when processing telemetry
+        generateEvents: true
         #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
         alarm:
             check: true
@@ -44,9 +46,10 @@ realtime:
 # initiated from Yamcs Monitor, Yamcs Studio.
 # should be renamed to ArchiveReplay
 Archive:
+
     services: 
         - class: org.yamcs.tctm.ReplayService
-    config:
+    config:        
         #keep a small cache in case new displays are open while the replay is paused, to have the parameters readily available
         parameterCache:
             enabled: true
@@ -60,6 +63,9 @@ ParameterArchive:
     services: 
         - class: org.yamcs.tctm.ReplayService
     config:
+        #Do not generate events in case of errors when processing telemetry (otherwise it will flood the event log with plenty of repeats)
+        generateEvents: false
+        
         parameterCache:
             enabled: false
 
@@ -69,6 +75,8 @@ ArchiveRetrieval:
     services:
         - class: org.yamcs.tctm.ReplayService
     config:
+        #Do not generate events in case of errors when processing telemetry (otherwise it will flood the event log with plenty of repeats)
+        generateEvents: false
         parameterCache:
             enabled: false
 

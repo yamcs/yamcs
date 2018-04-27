@@ -53,6 +53,7 @@ public class Processor extends AbstractService {
     private static final String CONFIG_KEY_TM_PROCESSOR = "tmProcessor";
     private static final String CONFIG_KEY_PARAMETER_CACHE = "parameterCache";
     private static final String CONFIG_KEY_ALARM = "alarm";
+    private static final String CONFIG_KEY_GENERATE_EVENTS = "generateEvents";
 
     // handles subscriptions to parameters
     private ParameterRequestManager parameterRequestManager;
@@ -126,7 +127,12 @@ public class Processor extends AbstractService {
     void init(List<ServiceWithConfig> serviceList, Map<String, Object> config, Object spec)
             throws ProcessorException, ConfigurationException {
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-        processorData = new ProcessorData(xtcedb);
+        boolean generateEvents = false;
+        if(config !=null) {
+            generateEvents = YConfiguration.getBoolean(config, CONFIG_KEY_GENERATE_EVENTS, true);
+        }
+        
+        processorData = new ProcessorData(yamcsInstance, name, xtcedb, generateEvents);
         this.serviceList = serviceList;
 
         timeService = YamcsServer.getTimeService(yamcsInstance);

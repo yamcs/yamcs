@@ -6,11 +6,15 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.EventProducer;
+import org.yamcs.api.EventProducerFactory;
+import org.yamcs.api.QuietEventProducer;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.JavaExpressionCalibrator;
+import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.NumericDataEncoding;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
@@ -35,11 +39,25 @@ public class ProcessorData {
     private Map<DataEncoding, DataDecoder> decoders = new HashMap<>();
 
     final XtceDb xtcedb;
-    static Logger log=LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
-
-    public ProcessorData(XtceDb xtcedb) {
+    static Logger log = LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
+    final EventProducer eventProducer;
+    
+    /**
+     * 
+     * @param xtcedb
+     * @param generateEvents - generate events in case of errors when processing data 
+     */
+    public ProcessorData(String instance, String procName, XtceDb xtcedb, boolean generateEvents) {
         this.xtcedb = xtcedb;
+        if((instance != null) && generateEvents) { 
+            eventProducer = EventProducerFactory.getEventProducer(instance);
+        } else {//instance can be null when running in test or as a library - in this case we don't generate events
+            eventProducer = new QuietEventProducer();
+        }
+        eventProducer.setSource("PROC_"+procName);
+        eventProducer.setRepeatedEventReduction(true, 10000);
     }
+    
     /**
      * returns a calibrator processor for the given data encoding. 
      * Can be null if the DataEncoding does not define a calibrator.
@@ -67,7 +85,11 @@ public class ProcessorData {
                     }
                 }
             }
-            return getCalibrator(c);
+            try {
+                return getCalibrator(c);
+            } catch (Exception e) {
+                return null;
+            }
         } else {
             throw new IllegalStateException("Calibrators not supported for: "+de);
         }
@@ -89,6 +111,8 @@ public class ProcessorData {
                 calibrator = new SplineCalibratorProc((SplineCalibrator) c);
             } else if(c instanceof JavaExpressionCalibrator) {
                 calibrator = JavaExpressionCalibratorFactory.compile((JavaExpressionCalibrator) c);
+            } else if(c instanceof MathOperationCalibrator) {
+                calibrator = MathOperationCalibratorFactory.compile((MathOperationCalibrator) c);
             }  else {
                 throw new IllegalStateException("No calibrator processor for "+c);
             }
@@ -116,5 +140,9 @@ public class ProcessorData {
      */
     public ParameterTypeProcessor getParameterTypeProcessor() {
         return parameterTypeProcessor;
+    }
+
+    public EventProducer getEventProducer() {
+        return eventProducer;
     }
 }

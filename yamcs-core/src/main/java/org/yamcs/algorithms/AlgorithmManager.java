@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorService;
 import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
@@ -89,7 +88,7 @@ public class AlgorithmManager extends AbstractService
     Map<String, ScriptAlgorithmManager> scriptAlgManagerByLanguage = new HashMap<>();
 
     Map<String, List<String>> libraries = null;
-    final EventProducer eventProducer;
+    EventProducer eventProducer;
 
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
         this(yamcsInstance, (Map<String, Object>) null);
@@ -98,9 +97,6 @@ public class AlgorithmManager extends AbstractService
     @SuppressWarnings("unchecked")
     public AlgorithmManager(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
-        this.eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
-        eventProducer.setSource("AlgorithmManager");
-        eventProducer.setRepeatedEventReduction(true, 10000);
 
         if (config != null) {
             if (config.containsKey("libraries")) {
@@ -123,6 +119,7 @@ public class AlgorithmManager extends AbstractService
     @Override
     public void init(Processor yproc) {
         this.yproc = yproc;
+        this.eventProducer = yproc.getProcessorData().getEventProducer();
         this.parameterRequestManager = yproc.getParameterRequestManager();
         this.parameterRequestManager.addParameterProvider(this);
         xtcedb = yproc.getXtceDb();

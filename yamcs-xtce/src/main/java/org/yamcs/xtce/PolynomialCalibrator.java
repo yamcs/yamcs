@@ -9,8 +9,8 @@ import java.util.Arrays;
  * @author mache
  *
  */
-public class PolynomialCalibrator extends Calibrator {
-    private static final long serialVersionUID = 200706050619L;
+public class PolynomialCalibrator implements Calibrator {
+    private static final long serialVersionUID = 3L;
     double[] coefficients;
     public PolynomialCalibrator(double[] coefficients) {
         this.coefficients=coefficients;

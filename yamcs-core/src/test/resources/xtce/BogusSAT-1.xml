@@ -473,7 +473,8 @@ limitations under the License.
 						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="64">
 							<xtce:DefaultCalibrator>
                                                             <xtce:MathOperationCalibrator>
-                                                                <!-- Equation in "infix" notation: 64 * log(2)[1.234 * value] also is 64 * (ln[1.234 * value] / ln[2]) -->
+                                                                <!-- Equation in "infix" notation: 64 * log(2)[1.234 * value] 
+                                                                    also is 64 * (ln[1.234 * value] / ln[2]) -->
                                                                 <xtce:ValueOperand>1.234</xtce:ValueOperand>
                                                                 <xtce:ThisParameterOperand/>
                                                                 <xtce:Operator>*</xtce:Operator>
@@ -523,6 +524,7 @@ limitations under the License.
 					<xtce:FloatParameterType name="Float_MathOpCal_6_Type" sizeInBits="32" shortDescription="This is a float parameter with unsupported operator in math operation calibrator">
 						<xtce:UnitSet/>
 						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32">
+							<!--commented out otherwise 'foo' will throw an exception in the yamcs parser
 							<xtce:DefaultCalibrator>
                                                             <xtce:MathOperationCalibrator>
                                                                 <xtce:ValueOperand>3.0</xtce:ValueOperand>
@@ -530,6 +532,7 @@ limitations under the License.
                                                                 <xtce:Operator>foo</xtce:Operator>
                                                             </xtce:MathOperationCalibrator>
 							</xtce:DefaultCalibrator>
+							 -->
 						</xtce:FloatDataEncoding>
 					</xtce:FloatParameterType>
 					<xtce:FloatParameterType name="Float_MathOpCal_7_Type" sizeInBits="64" shortDescription="This is a float parameter with lots of operators in math operation calibrator">
@@ -573,6 +576,7 @@ limitations under the License.
 					<xtce:FloatParameterType name="Float_MathOpCal_8_Type" sizeInBits="64" shortDescription="This is a float parameter with lots of operators in math operation calibrator">
 						<xtce:UnitSet/>
 						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="64">
+						<!-- The conditional operatos are not supported in Yamcs, not sure what they should do
 							<xtce:DefaultCalibrator>
                                                             <xtce:MathOperationCalibrator>
                                                                 <xtce:ValueOperand>99</xtce:ValueOperand>
@@ -607,6 +611,7 @@ limitations under the License.
                                                                 <xtce:Operator>e^x</xtce:Operator>
                                                             </xtce:MathOperationCalibrator>
 							</xtce:DefaultCalibrator>
+							 -->
 						</xtce:FloatDataEncoding>
 					</xtce:FloatParameterType>
 					<xtce:FloatParameterType name="Float_MathOpCal_9_Type" sizeInBits="64" shortDescription="This is a float parameter with lots of operators in math operation calibrator">
@@ -633,10 +638,12 @@ limitations under the License.
 					</xtce:FloatParameterType>
 					<xtce:FloatParameterType name="Float_MathOpCal_10_Type" sizeInBits="32" shortDescription="This is a float parameter with arithmetic exception in math operation calibrator">
 						<xtce:UnitSet/>
+						
 						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32">
+						<!-- The conditional operatos are not supported in Yamcs, not sure what they should do
 							<xtce:DefaultCalibrator>
                                                             <xtce:MathOperationCalibrator>
-                                                                <!-- multi-purpose bad expression, throws on divide by zero but catches extra operators on infix print -->
+                                                                - multi-purpose bad expression, throws on divide by zero but catches extra operators on infix print -
                                                                 <xtce:ThisParameterOperand/>
                                                                 <xtce:ValueOperand>0.0</xtce:ValueOperand>
                                                                 <xtce:Operator>/</xtce:Operator>
@@ -655,8 +662,9 @@ limitations under the License.
                                                                 <xtce:ValueOperand>1</xtce:ValueOperand>
                                                                 <xtce:Operator>&gt;&gt;&gt;</xtce:Operator>
                                                             </xtce:MathOperationCalibrator>
-							</xtce:DefaultCalibrator>
+							</xtce:DefaultCalibrator> -->
 						</xtce:FloatDataEncoding>
+						
 					</xtce:FloatParameterType>
 					<xtce:BooleanParameterType name="Solar_Array_Voltage_State_Type" initialValue="OFF" zeroStringValue="OFF" oneStringValue="ON" shortDescription="The operational state of the solar array voltage sensor">
 						<xtce:UnitSet/>

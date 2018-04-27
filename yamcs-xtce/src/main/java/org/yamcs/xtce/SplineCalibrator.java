@@ -9,8 +9,8 @@ import java.util.List;
  * The algorithm triggers on the input parameter.
  *
  */
-public class SplineCalibrator extends Calibrator {
-    private static final long serialVersionUID = 200706050819L;
+public class SplineCalibrator implements Calibrator {
+    private static final long serialVersionUID = 3L;
     SplinePoint[] points;
 
     public SplineCalibrator(List<SplinePoint> points) {

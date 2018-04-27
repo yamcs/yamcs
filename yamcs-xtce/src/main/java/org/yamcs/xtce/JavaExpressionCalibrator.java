@@ -1,6 +1,6 @@
 package org.yamcs.xtce;
 
-public class JavaExpressionCalibrator extends Calibrator {
+public class JavaExpressionCalibrator implements Calibrator {
     private static final long serialVersionUID = 1L;
     private final String javaFormula;
 

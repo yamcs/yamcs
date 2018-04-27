@@ -25,7 +25,7 @@ public class CcsdsGreenBookCommandEncodingTest {
         TimeEncoding.setUp();
         YConfiguration.setup();
         xtcedb = XtceDbFactory.createInstanceByConfig("ccsds-green-book");
-        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData(xtcedb));
+        metaCommandProcessor = new MetaCommandProcessor(new ProcessorData("test", "test", xtcedb, false));
     }
     
     @Test

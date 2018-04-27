@@ -54,6 +54,9 @@ import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.MatchCriteria;
+import org.yamcs.xtce.MathOperation;
+import org.yamcs.xtce.MathOperationCalibrator;
+import org.yamcs.xtce.MathOperator;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.NameReference;
@@ -223,7 +226,7 @@ public class XtceStaxReader {
     private static final String  XTCE_ARGUMENT_REF_ENTRY            = "ArgumentRefEntry";
     private static final String  XTCE_ARRAY_ARGUMENT_REF_ENTRY      = "ArrayArgumentRefEntry";
     private static final String  XTCE_FIXED_VALUE_ENTRY             = "FixedValueEntry";
-     
+    private static final String  XTCE_VALUE_OPERAND                 = "ValueOperand";
     /**
      * Logging subsystem
      */
@@ -745,7 +748,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_DEFAULT_CALIBRATOR)) {
-                floatDataEncoding.setDefaultCalibrator(readCalibrator());
+                floatDataEncoding.setDefaultCalibrator(readCalibrator(spaceSystem));
             } else if (isStartElementWithName(XTCE_CONTEXT_CALIBRATOR_LIST)) {
                 floatDataEncoding.setContextCalibratorList(readContextCalibratorList(spaceSystem));
             } else if (isEndElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
@@ -1128,7 +1131,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_DEFAULT_CALIBRATOR)) {
-                integerDataEncoding.setDefaultCalibrator(readCalibrator());
+                integerDataEncoding.setDefaultCalibrator(readCalibrator(spaceSystem));
             } else if (isStartElementWithName(XTCE_CONTEXT_CALIBRATOR_LIST)) {
                 integerDataEncoding.setContextCalibratorList(readContextCalibratorList(spaceSystem));
             } else if (isEndElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
@@ -1154,7 +1157,7 @@ public class XtceStaxReader {
     }
 
 
-    private Calibrator readCalibrator() throws IllegalStateException, XMLStreamException {
+    private Calibrator readCalibrator(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_DEFAULT_CALIBRATOR);
         checkStartElementPreconditions();
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
@@ -1166,7 +1169,7 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_POLYNOMIAL_CALIBRATOR)) {
                 calibrator = readXtcePolynomialCalibrator();
             } else if (isStartElementWithName(XTCE_MATH_OPERATION_CALIBRATOR)) {
-                skipXtceSection(XTCE_MATH_OPERATION_CALIBRATOR);
+                calibrator = (Calibrator) readMathOperation(spaceSystem, true);
             } else if (isStartElementWithName(XTCE_SPLINE_CALIBRATOR)) {
                 calibrator = readXtceSplineCalibrator();
             } else if (isEndElementWithName(tag)) {
@@ -1174,6 +1177,50 @@ public class XtceStaxReader {
             }
         }
     }
+
+    private MathOperation readMathOperation(SpaceSystem spaceSystem, boolean calibrator) throws XMLStreamException {
+
+        String tag = xmlEvent.asStartElement().getName().getLocalPart();
+        MathOperation mathOp;
+        
+        List<MathOperation.Element> list = new ArrayList<>();
+        AlarmRanges ar = new AlarmRanges();
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName(XTCE_VALUE_OPERAND)) {
+                list.add(new MathOperation.Element(readDouble()));
+            }  else if (isStartElementWithName("ThisParameterOperand")) {
+                skipQuietly("ThisParameterOperand");
+                list.add(new MathOperation.Element());
+            } else if (isStartElementWithName("ParameterInstanceRefOperand")) {
+                list.add(new MathOperation.Element(readXtceParameterInstanceRef(spaceSystem)));
+            } else if (isStartElementWithName("Operator")) {
+                list.add(new MathOperation.Element(readMathOperator()));
+            } else if (isEndElementWithName(tag)) {
+                if(calibrator) {
+                    mathOp =new MathOperationCalibrator(list);
+                } else {
+                    mathOp = new MathOperation(list);
+                }
+                return mathOp;
+            }
+        }
+    }
+
+
+    private MathOperator readMathOperator() throws XMLStreamException {
+        String tag = xmlEvent.asStartElement().getName().getLocalPart();
+        MathOperator m = null;
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (xmlEvent.isCharacters()) {
+                m = MathOperator.fromXtceName(xmlEvent.asCharacters().getData());
+            } else if (isEndElementWithName(tag)) {
+                return m;
+            }
+        }
+    }
+
 
     private ContextCalibrator readContextCalibrator(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_CONTEXT_CALIBRATOR);
@@ -1187,7 +1234,7 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_CONTEXT_MATCH)) {
                 context = readMatchCriteria(spaceSystem);
             } else if (isStartElementWithName(XTCE_CALIBRATOR)) {
-                calibrator=readCalibrator();
+                calibrator=readCalibrator(spaceSystem);
             } else if (isEndElementWithName(XTCE_CONTEXT_CALIBRATOR)) {
                 if(context==null) {
                     throw new XMLStreamException("Invalid context calibrator, no context specified");
@@ -1331,6 +1378,18 @@ public class XtceStaxReader {
         }
     }
 
+    private Double readDouble() throws XMLStreamException {
+        String tag = xmlEvent.asStartElement().getName().getLocalPart();
+        Double d = null;
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (xmlEvent.isCharacters()) {
+                d = Double.parseDouble(xmlEvent.asCharacters().getData());
+            } else if (isEndElementWithName(tag)) {
+                return d;
+            }
+        }
+    }
 
     private UnitType readXtceUnit() throws XMLStreamException {
         log.trace(XTCE_UNIT);
@@ -2872,8 +2931,7 @@ public class XtceStaxReader {
      * @throws IllegalStateException
      *             Exception on algorithm error
      */
-    private void skipXtceSection(String sectionName) throws XMLStreamException,
-    IllegalStateException {
+    private void skipXtceSection(String sectionName) throws XMLStreamException, IllegalStateException {
         log.trace(sectionName);
         checkStartElementPreconditions();
 
@@ -2890,6 +2948,26 @@ public class XtceStaxReader {
                     skipXtceSection(sectionName);
                 } else if (isEndElementWithName(sectionName)) {
                     log.info("Section <" + sectionName + "> skipped");
+                    return;
+                }
+            } catch (NoSuchElementException e) {
+                throw new IllegalStateException("End of section unreachable: " + sectionName);
+            }
+        }
+    }
+    
+    private void skipQuietly(String sectionName) throws XMLStreamException, IllegalStateException {
+        log.trace(sectionName);
+        checkStartElementPreconditions();
+        while (true) {
+            // just skip whole section, read events until the
+            // end element of the section occurs
+            try {
+                xmlEvent = xmlEventReader.nextEvent();
+
+                if (isStartElementWithName(sectionName)) {
+                    skipXtceSection(sectionName);
+                } else if (isEndElementWithName(sectionName)) {
                     return;
                 }
             } catch (NoSuchElementException e) {

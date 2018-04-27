@@ -9,8 +9,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.junit.Test;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
-import org.yamcs.xtce.xml.XtceStaxReader;
+import org.yamcs.xtceproc.CalibratorProc;
+import org.yamcs.xtceproc.MathOperationCalibratorFactory;
 import org.yamcs.xtceproc.XtceDbFactory;
+
 
 public class XmlLoaderTest {
 
@@ -105,8 +107,48 @@ public class XmlLoaderTest {
         List<ContextCalibrator> ctxc = encoding.getContextCalibratorList();
         assertEquals(2, ctxc.size());
         
-
-    }
-    
         
+       
+        
+    }
+    @Test
+    public void testMathOpCal() throws XMLStreamException, IOException {
+        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT");
+        SpaceSystem busElectronics = db.getSpaceSystem("/BogusSAT/SC001/BusElectronics"); 
+
+        FloatParameterType ptype = (FloatParameterType) busElectronics.getParameterType("Float_MathOpCal_2_Type");
+        FloatDataEncoding encoding = (FloatDataEncoding) ptype.getEncoding();
+        MathOperationCalibrator c = (MathOperationCalibrator)encoding.getDefaultCalibrator();
+        
+        CalibratorProc cproc = MathOperationCalibratorFactory.compile(c);
+        double value = 3;
+        double expectedResult = 64 * (Math.log(1.234 * value) / Math.log(2));
+        assertEquals(expectedResult, cproc.calibrate(value), 1E-10);
+        
+        
+        ptype = (FloatParameterType) busElectronics.getParameterType("Float_MathOpCal_7_Type");
+        encoding = (FloatDataEncoding) ptype.getEncoding();
+        c = (MathOperationCalibrator)encoding.getDefaultCalibrator();
+        
+        cproc = MathOperationCalibratorFactory.compile(c);
+        value = 20;
+        double x1 = Math.pow((5-3), 3.0)+92;
+        double x2 = Math.abs(-4.0/Math.log10(x1));
+        double x3 = Math.atan(Math.acos(Math.sin(Math.acos(Math.cos(Math.asin(5-x2-2.0))))));
+        double x4 = (x3+19.0)%8.0;
+        expectedResult = Math.pow(4.0, x4);
+        assertEquals(expectedResult, cproc.calibrate(value), 1E-10);
+        
+        ptype = (FloatParameterType) busElectronics.getParameterType("Float_MathOpCal_9_Type");
+        encoding = (FloatDataEncoding) ptype.getEncoding();
+        c = (MathOperationCalibrator)encoding.getDefaultCalibrator();
+        
+        cproc = MathOperationCalibratorFactory.compile(c);
+        value = 50;
+        x1 = Math.cos(Math.cos(90-1)+89)+45;
+        expectedResult = Math.sinh(Math.cosh(Math.tanh(Math.tan(x1))));
+        assertEquals(expectedResult, cproc.calibrate(value), 1E-10);
+        
+    }
+
 }
