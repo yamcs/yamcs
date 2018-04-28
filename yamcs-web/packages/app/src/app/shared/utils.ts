@@ -1,4 +1,4 @@
-import { Value } from "@yamcs/client";
+import { Value } from '@yamcs/client';
 
 /**
  * Substracts an ISO 8601 duration string from the given date.

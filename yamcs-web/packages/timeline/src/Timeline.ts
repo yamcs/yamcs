@@ -326,17 +326,17 @@ export default class Timeline {
     return this.zoom;
   }
 
-  zoomIn(x: number) {
+  zoomIn(x?: number) {
     this.applyZoom(this.zoom + 1, x);
     return this;
   }
 
-  zoomOut(x: number) {
+  zoomOut(x?: number) {
     this.applyZoom(this.zoom - 1, x);
     return this;
   }
 
-  applyZoom(zoom: number, x: number) {
+  applyZoom(zoom: number, x?: number) {
     if (x === undefined) {
       const visibleCenter = this.visibleCenter;
       this.zoom = Math.min(Timeline.maxZoom, Math.max(Timeline.minZoom, zoom));

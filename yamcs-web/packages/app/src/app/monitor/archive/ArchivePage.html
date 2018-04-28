@@ -2,18 +2,30 @@
   <app-monitor-toolbar>
     Archive
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <button mat-icon-button
-            matTooltip="Refresh"
+    <button mat-button
             color="primary"
-            (click)="refresh()">
+            (click)="zoomIn()">
+      <mat-icon>zoom_in</mat-icon>
+      Zoom In
+    </button>
+
+    <button mat-button
+            color="primary"
+            (click)="zoomOut()">
+      <mat-icon>zoom_out</mat-icon>
+      Zoom Out
+    </button>
+
+    <button mat-icon-button
+            matTooltip="Jump to now"
+            color="primary"
+            (click)="jumpToNow()">
       <mat-icon>refresh</mat-icon>
     </button>
   </app-monitor-toolbar>
 
-  <div #container style="line-height: 0" matTooltip="What">
+  <div #container style="line-height: 0">
   </div>
-  <div #tooltip class="mat-tooltip tooltip">what</div>
-
 
   <!--button mat-raised-button (click)="ttooltip.show()"> Show tooltip </button>
 

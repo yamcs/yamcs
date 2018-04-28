@@ -11,6 +11,7 @@ import { TimelineTooltip } from './TimelineTooltip';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { Subscription } from 'rxjs/Subscription';
 import { TimelineOptions } from '../../../../../timeline/dist/types/options';
+import { DateTimePipe } from '../../shared/pipes/DateTimePipe';
 
 @Component({
   templateUrl: './ArchivePage.html',
@@ -23,10 +24,10 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
   container: ElementRef;
 
   instance: Instance;
-  missionTime: Date;
 
   timeline: Timeline;
 
+  private tooltipInstance: TimelineTooltip;
   private darkModeSubscription: Subscription;
 
   constructor(
@@ -36,9 +37,9 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private overlay: Overlay,
+    private dateTimePipe: DateTimePipe,
   ) {
     title.setTitle('Archive - Yamcs');
-    this.missionTime = yamcs.getMissionTime();
     this.instance = yamcs.getInstance();
 
     this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
@@ -53,7 +54,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
 
     const bodyRef = new ElementRef(document.body);
     const positionStrategy = this.overlay.position().connectedTo(bodyRef, {
-      originX: 'end',
+      originX: 'start',
       originY: 'top',
     }, {
       overlayX: 'start',
@@ -61,8 +62,8 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     });
 
     const overlayRef = this.overlay.create({ positionStrategy });
-    const userProfilePortal = new ComponentPortal(TimelineTooltip);
-    overlayRef.attach(userProfilePortal);
+    const tooltipPortal = new ComponentPortal(TimelineTooltip);
+    this.tooltipInstance = overlayRef.attach(tooltipPortal).instance;
   }
 
   ngAfterViewInit() {
@@ -74,10 +75,19 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
   }
 
   initializeTimeline() {
+    const queryParams = this.route.snapshot.queryParamMap;
+    const c = queryParams.get('c');
+    let z;
+    if (queryParams.has('z')) {
+      z = Number(queryParams.get('z'));
+    }
     const opts: TimelineOptions = {
-      initialDate: this.missionTime.toISOString(),
-      zoom: 10,
+      initialDate: c || this.yamcs.getMissionTime().toISOString(),
+      zoom: z || 12,
       pannable: 'X_ONLY',
+      style: {
+        sidebarWidth: 200,
+      }
     };
     if (this.preferenceStore.isDarkMode()) {
       opts.theme = 'dark';
@@ -91,12 +101,28 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
         queryParams: {
           c: this.timeline.visibleCenter.toISOString(),
           z: this.timeline.getZoom(),
-        }
+        },
+        replaceUrl: true,
       });
     });
 
     this.timeline.on('eventMouseEnter', evt => {
-      console.log('have on mouse enter', evt);
+      const userObject = evt.userObject as any;
+      let ttText = `Start: ${this.dateTimePipe.transform(userObject.start)}<br>`;
+      ttText += `Stop:&nbsp; ${this.dateTimePipe.transform(userObject.stop)}<br>`;
+      const sec = (Date.parse(userObject.stop) - Date.parse(userObject.start)) / 1000;
+      ttText += `Count: ${userObject.count} - ${(sec / userObject.count).toFixed(3)} Hz`;
+      this.tooltipInstance.show(ttText, evt.clientX, evt.clientY);
+    });
+
+    this.timeline.on('eventMouseLeave', evt => {
+      this.tooltipInstance.hide();
+    });
+
+    this.timeline.on('viewportHover', evt => {
+      if (evt.x === undefined) {
+        this.tooltipInstance.hide();
+      }
     });
 
     this.timeline.on('loadRange', () => {
@@ -105,6 +131,11 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       }).then(groups => {
         const bands = [];
         for (const group of groups) {
+          const events: any[] = group.entry;
+          for (const event of events) {
+            const sec = (Date.parse(event.stop) - Date.parse(event.start)) / 1000;
+            event.title = `${(sec / event.count).toFixed(1)} Hz`;
+          }
           bands.push({
             type: 'EventBand',
             label: group.id.name,
@@ -130,8 +161,17 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     this.timeline.render();
   }
 
-  refresh() {
-    console.log('what ', (this.timeline as any).width, this.timeline.visibleWidth);
+  jumpToNow() {
+    const missionTime = this.yamcs.getMissionTime();
+    this.timeline.reveal(missionTime);
+  }
+
+  zoomIn() {
+    this.timeline.zoomIn();
+  }
+
+  zoomOut() {
+    this.timeline.zoomOut();
   }
 
   ngOnDestroy() {

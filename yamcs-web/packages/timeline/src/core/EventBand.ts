@@ -21,6 +21,7 @@ interface DrawInfo {
   renderStopX: number;
   textOutside: boolean;
   milestone: boolean;
+  availableTitleWidth: number;
   offscreenStart: boolean;
 }
 
@@ -46,7 +47,7 @@ export interface EventBandStyle {
   marginTop: number;
   marginBottom: number;
   hatchFill: string;
-  borders: boolean;
+  borders: boolean | 'vertical';
   highlightOpacity: number;
   highlightCursor: string;
 }
@@ -87,8 +88,6 @@ export default class EventBand extends Band {
     };
   }
 
-  private hatchUncovered: boolean;
-  private leakEventBackground: boolean;
   private lines: EventWithDrawInfo[][];
   private eventHeight: number;
   private bandHeight: number;
@@ -98,8 +97,6 @@ export default class EventBand extends Band {
   constructor(timeline: Timeline, protected opts: EventBandOptions, protected style: EventBandStyle) {
     super(timeline, opts, style);
     this.eventHeight = style.eventHeight || style.lineHeight!;
-    this.hatchUncovered = (opts.hatchUncovered === true);
-    this.leakEventBackground = (opts.leakEventBackground === true);
     this.prepareDrawOperation(opts.events || []);
   }
 
@@ -129,6 +126,7 @@ export default class EventBand extends Band {
       let renderStartX: number;
       let renderStopX: number;
       let textOutside: boolean;
+      let availableTitleWidth: number;
       let offscreenStart: boolean;
 
       // Events without duration are considered 'milestones'
@@ -148,8 +146,9 @@ export default class EventBand extends Band {
           renderStopX = renderStartX + this.eventHeight;
 
           const fm = this.timeline.getFontMetrics(event.title, this.style.textSize!);
-          renderStopX += fm['width'] + this.style.eventLeftMargin;
+          renderStopX += fm.width + this.style.eventLeftMargin;
           textOutside = true;
+          availableTitleWidth = 0;
           offscreenStart = false;
         } else {
           renderStartX = this.timeline.positionDate(start);
@@ -163,14 +162,14 @@ export default class EventBand extends Band {
 
           const fm = this.timeline.getFontMetrics(title, this.style.textSize);
 
-          let availableTitleWidth = renderStopX - renderStartX;
+          availableTitleWidth = renderStopX - renderStartX;
           if (offscreenStart) {
             availableTitleWidth = renderStopX - this.timeline.positionDate(this.timeline.visibleStart);
           }
 
           textOutside = false;
-          if (this.style.wrap && availableTitleWidth < fm['width']) {
-            renderStopX += fm['width'] + this.style.eventLeftMargin;
+          if (this.style.wrap && availableTitleWidth < fm.width) {
+            renderStopX += fm.width + this.style.eventLeftMargin;
             textOutside = true;
           }
         }
@@ -189,6 +188,7 @@ export default class EventBand extends Band {
             renderStopX,
             milestone,
             textOutside,
+            availableTitleWidth,
             offscreenStart,
           }
         });
@@ -249,7 +249,7 @@ export default class EventBand extends Band {
 
   renderViewport(ctx: RenderContext) {
     const g = new G();
-    if (this.hatchUncovered) {
+    if (this.opts.hatchUncovered) {
       g.addChild(new Rect({
         x: ctx.x + this.timeline.positionDate(this.timeline.loadStart),
         y: ctx.y,
@@ -325,7 +325,7 @@ export default class EventBand extends Band {
       milestoneG.addChild(new Rect({
         x: textX,
         y: rectY,
-        width: fm['width'],
+        width: fm.width,
         height: rectHeight,
         opacity: 0,
       }));
@@ -408,6 +408,7 @@ export default class EventBand extends Band {
         eventG.addChild(new Title({}, event.userObject.tooltip));
       }
       const fm = this.timeline.getFontMetrics(title, this.style.textSize);
+      const titleFitsInBox = fm.width <= event.drawInfo!.availableTitleWidth;
 
       if (event.drawInfo!.textOutside) {
         const textX = rectX + rectWidth + this.style.eventLeftMargin;
@@ -418,7 +419,7 @@ export default class EventBand extends Band {
         eventG.addChild(new Rect({
           x: textX,
           y: rectY,
-          width: fm['width'],
+          width: fm.width,
           height: rectHeight,
           opacity: 0,
         }));
@@ -432,7 +433,7 @@ export default class EventBand extends Band {
           'dominant-baseline': 'middle',
           'font-size': this.style.textSize,
         }, title));
-      } else { // Render text inside box
+      } else if (this.style.wrap || titleFitsInBox) { // Render text inside box
         // A clipPath for the text, with same dimensions as background
         const pathId = Timeline.nextId();
         eventG.addChild(new ClipPath({ id: pathId }).addChild(
@@ -514,7 +515,7 @@ export default class EventBand extends Band {
 
   renderViewportXOverlay(ctx: RenderContext) {
     const g = new G();
-    if (this.leakEventBackground) {
+    if (this.opts.leakEventBackground) {
       // Incoming ctx is not very useful as an origin
       // TODO try to fix the need for this xOffset
       const xOffset = ctx.sidebarWidth - ctx.translation.x;
