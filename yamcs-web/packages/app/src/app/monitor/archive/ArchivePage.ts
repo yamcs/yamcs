@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 
 import { Instance } from '@yamcs/client';
 import { Timeline } from '@yamcs/timeline';
@@ -8,13 +8,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { TimelineTooltip } from './TimelineTooltip';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { Subscription } from 'rxjs/Subscription';
+import { TimelineOptions } from '../../../../../timeline/dist/types/options';
 
 @Component({
   templateUrl: './ArchivePage.html',
   styleUrls: ['./ArchivePage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ArchivePage implements AfterViewInit {
+export class ArchivePage implements AfterViewInit, OnDestroy {
 
   @ViewChild('container')
   container: ElementRef;
@@ -24,9 +27,12 @@ export class ArchivePage implements AfterViewInit {
 
   timeline: Timeline;
 
+  private darkModeSubscription: Subscription;
+
   constructor(
     title: Title,
     private yamcs: YamcsService,
+    private preferenceStore: PreferenceStore,
     private route: ActivatedRoute,
     private router: Router,
     private overlay: Overlay,
@@ -34,6 +40,16 @@ export class ArchivePage implements AfterViewInit {
     title.setTitle('Archive - Yamcs');
     this.missionTime = yamcs.getMissionTime();
     this.instance = yamcs.getInstance();
+
+    this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
+      if (this.timeline) {
+        if (darkMode) {
+          this.timeline.updateOptions({ theme: 'dark' });
+        } else {
+          this.timeline.updateOptions({ theme: 'base' });
+        }
+      }
+    });
 
     const bodyRef = new ElementRef(document.body);
     const positionStrategy = this.overlay.position().connectedTo(bodyRef, {
@@ -58,11 +74,17 @@ export class ArchivePage implements AfterViewInit {
   }
 
   initializeTimeline() {
-    this.timeline = new Timeline(this.container.nativeElement, {
+    const opts: TimelineOptions = {
       initialDate: this.missionTime.toISOString(),
       zoom: 10,
       pannable: 'X_ONLY',
-    }).on('viewportChanged', () => {
+    };
+    if (this.preferenceStore.isDarkMode()) {
+      opts.theme = 'dark';
+    }
+    this.timeline = new Timeline(this.container.nativeElement, opts);
+
+    this.timeline.on('viewportChanged', () => {
       this.router.navigate([], {
         relativeTo: this.route,
         queryParamsHandling: 'merge',
@@ -71,9 +93,13 @@ export class ArchivePage implements AfterViewInit {
           z: this.timeline.getZoom(),
         }
       });
-    }).on('eventMouseEnter', evt => {
+    });
+
+    this.timeline.on('eventMouseEnter', evt => {
       console.log('have on mouse enter', evt);
-    }).on('loadRange', () => {
+    });
+
+    this.timeline.on('loadRange', () => {
       this.yamcs.getInstanceClient()!.getPacketIndex({
         limit: 1000,
       }).then(groups => {
@@ -100,10 +126,17 @@ export class ArchivePage implements AfterViewInit {
         });
       });
     });
+
     this.timeline.render();
   }
 
   refresh() {
     console.log('what ', (this.timeline as any).width, this.timeline.visibleWidth);
+  }
+
+  ngOnDestroy() {
+    if (this.darkModeSubscription) {
+      this.darkModeSubscription.unsubscribe();
+    }
   }
 }
