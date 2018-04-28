@@ -67,6 +67,7 @@ import {
   Value,
   IndexGroup,
   GetPacketIndexOptions,
+  DownloadPacketsOptions,
 } from './types/monitoring';
 
 import {
@@ -342,6 +343,11 @@ export class InstanceClient {
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as IndexResult;
     return wrapper.group || [];
+  }
+
+  getPacketsDownloadURL(options: DownloadPacketsOptions = {}) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/downloads/packets`;
+    return url + this.queryString(options);
   }
 
   async getRootSpaceSystems() {

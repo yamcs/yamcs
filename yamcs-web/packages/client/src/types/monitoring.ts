@@ -262,6 +262,20 @@ export interface GetPacketIndexOptions {
   limit?: number;
 }
 
+export interface DownloadPacketsOptions {
+  /**
+   * Inclusive lower bound
+   */
+  start?: string;
+  /**
+   * Exclusive upper bound
+   */
+  stop?: string;
+  name?: string | string[];
+  format?: 'raw';
+  order?: 'asc' | 'desc';
+}
+
 export interface IndexGroup {
   id: NamedObjectId;
   entry: IndexEntry[];

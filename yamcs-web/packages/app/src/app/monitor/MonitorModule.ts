@@ -12,8 +12,10 @@ import { MonitorToolbar } from './template/MonitorToolbar';
 import { PageContentHost } from './ext/PageContentHost';
 import { CreateEventDialog } from './events/CreateEventDialog';
 import { TimelineTooltip } from './archive/TimelineTooltip';
+import { CreateDownloadDialog } from './archive/CreateDownloadDialog';
 
 const dialogComponents = [
+  CreateDownloadDialog,
   CreateEventDialog,
   SaveLayoutDialog,
 ];

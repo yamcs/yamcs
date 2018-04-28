@@ -8,9 +8,11 @@ import {
   LoadRangeEvent,
   TimelineEventMap,
   ViewportChangedEvent,
+  RangeSelectionChangedEvent,
 } from './events';
 import { PanMode, TimelineOptions, TrackerMode } from './options';
 import { Action } from './Action';
+import { Range } from './Range';
 
 export default class Timeline {
 
@@ -61,6 +63,8 @@ export default class Timeline {
    */
   unpannedVisibleStart: Date;
 
+  selectedRange?: Range;
+
   private plugins: { [key: string]: any } = {};
   private themes: { [key: string]: any } = {};
 
@@ -71,6 +75,7 @@ export default class Timeline {
     eventMouseEnter: [],
     eventMouseMove: [],
     eventMouseLeave: [],
+    rangeSelectionChanged: [],
     sidebarClick: [],
     viewportHover: [],
     viewportChange: [],
@@ -112,7 +117,7 @@ export default class Timeline {
     this.registerPlugin(core.SpacerBand);
     this.registerPlugin(core.LocationTracker);
     this.registerPlugin(core.NoDataZone);
-    this.registerPlugin(core.EventTracker);
+    this.registerPlugin(core.HorizontalSelection);
     this.registerPlugin(core.WallclockLocator);
     this.registerPlugin(core.Timescale);
 
@@ -142,7 +147,7 @@ export default class Timeline {
       initialDate: new Date(),
       domReduction: false,
       pannable: 'XY',
-      tracker: 'location',
+      tracker: true,
       nodata: true,
       wallclock: true,
       data: [],
@@ -507,13 +512,10 @@ export default class Timeline {
       }
     }
 
-    if (this.tracker === 'location') {
+    this.createContribution({ type: 'HorizontalSelection' });
+
+    if (this.tracker) {
       this.createContribution({ type: 'LocationTracker' });
-    } else if (this.tracker === 'event') {
-      this.createContribution({ type: 'EventTracker' });
-    } else if (this.tracker === 'all') {
-      this.createContribution({ type: 'LocationTracker' });
-      this.createContribution({ type: 'EventTracker' });
     }
 
     if (this.nodata) {
@@ -565,6 +567,31 @@ export default class Timeline {
     contribution['type'] = pluginClass['type'];
     contribution['header'] = header;
     this.contributions.push(contribution);
+  }
+
+  selectRange(start: Date | string, stop: Date | string) {
+    this.selectedRange = {
+      start: utils.toDate(start),
+      stop: utils.toDate(stop),
+    };
+    for (const contribution of this.contributions) {
+      if (contribution.type === core.HorizontalSelection.type) {
+        contribution.setSelection(this.selectedRange);
+        this.fireEvent('rangeSelectionChanged', new RangeSelectionChangedEvent(this.selectedRange));
+        return;
+      }
+    }
+  }
+
+  clearSelection() {
+    this.selectedRange = undefined;
+    for (const contribution of this.contributions) {
+      if (contribution.type === core.HorizontalSelection.type) {
+        contribution.clearSelection();
+        this.fireEvent('rangeSelectionChanged', new RangeSelectionChangedEvent());
+        return;
+      }
+    }
   }
 
   /**

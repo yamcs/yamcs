@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 
 import { Instance } from '@yamcs/client';
-import { Timeline } from '@yamcs/timeline';
+import { Timeline, Range } from '@yamcs/timeline';
 import { Title } from '@angular/platform-browser';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,9 @@ import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { Subscription } from 'rxjs/Subscription';
 import { TimelineOptions } from '../../../../../timeline/dist/types/options';
 import { DateTimePipe } from '../../shared/pipes/DateTimePipe';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { MatDialog } from '@angular/material';
+import { CreateDownloadDialog } from './CreateDownloadDialog';
 
 @Component({
   templateUrl: './ArchivePage.html',
@@ -27,6 +30,8 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
 
   timeline: Timeline;
 
+  rangeSelection$ = new BehaviorSubject<Range | null>(null);
+
   private tooltipInstance: TimelineTooltip;
   private darkModeSubscription: Subscription;
 
@@ -37,9 +42,10 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private overlay: Overlay,
+    private dialog: MatDialog,
     private dateTimePipe: DateTimePipe,
   ) {
-    title.setTitle('Archive - Yamcs');
+    title.setTitle('TM Archive - Yamcs');
     this.instance = yamcs.getInstance();
 
     this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
@@ -111,8 +117,13 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       let ttText = `Start: ${this.dateTimePipe.transform(userObject.start)}<br>`;
       ttText += `Stop:&nbsp; ${this.dateTimePipe.transform(userObject.stop)}<br>`;
       const sec = (Date.parse(userObject.stop) - Date.parse(userObject.start)) / 1000;
-      ttText += `Count: ${userObject.count} (${(sec / userObject.count).toFixed(3)} Hz)`;
+      ttText += `Count: ${userObject.count} (${(userObject.count / sec).toFixed(3)} Hz)`;
       this.tooltipInstance.show(ttText, evt.clientX, evt.clientY);
+    });
+
+    this.timeline.on('eventClick', evt => {
+      const userObject = evt.userObject as any;
+      this.timeline.selectRange(userObject.start, userObject.stop);
     });
 
     this.timeline.on('eventMouseLeave', evt => {
@@ -125,6 +136,10 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       }
     });
 
+    this.timeline.on('rangeSelectionChanged', evt => {
+      this.rangeSelection$.next(evt.range || null);
+    });
+
     this.timeline.on('loadRange', () => {
       this.yamcs.getInstanceClient()!.getPacketIndex({
         limit: 1000,
@@ -134,7 +149,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
           const events: any[] = group.entry;
           for (const event of events) {
             const sec = (Date.parse(event.stop) - Date.parse(event.start)) / 1000;
-            event.title = `${(sec / event.count).toFixed(1)} Hz`;
+            event.title = `${(event.count / sec).toFixed(1)} Hz`;
           }
           bands.push({
             type: 'EventBand',
@@ -172,6 +187,29 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
 
   zoomOut() {
     this.timeline.zoomOut();
+  }
+
+  createDownload() {
+    const currentRange = this.rangeSelection$.value;
+    if (currentRange) {
+      const dialogRef = this.dialog.open(CreateDownloadDialog, {
+        width: '400px',
+        data: {
+          start: currentRange.start,
+          stop: currentRange.stop,
+        },
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.yamcs.getInstanceClient()!.getEventsDownloadURL({
+            start: result.start.toISOString(),
+            stop: result.stop.toISOString(),
+            format: 'csv',
+          });
+        }
+      });
+    }
   }
 
   ngOnDestroy() {

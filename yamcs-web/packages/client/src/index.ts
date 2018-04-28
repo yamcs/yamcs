@@ -38,6 +38,7 @@ export {
   DisplayFile,
   DisplayFolder,
   DownloadEventsOptions,
+  DownloadPacketsOptions,
   DownloadParameterValuesOptions,
   Event,
   EventSeverity,
