@@ -111,7 +111,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       let ttText = `Start: ${this.dateTimePipe.transform(userObject.start)}<br>`;
       ttText += `Stop:&nbsp; ${this.dateTimePipe.transform(userObject.stop)}<br>`;
       const sec = (Date.parse(userObject.stop) - Date.parse(userObject.start)) / 1000;
-      ttText += `Count: ${userObject.count} - ${(sec / userObject.count).toFixed(3)} Hz`;
+      ttText += `Count: ${userObject.count} (${(sec / userObject.count).toFixed(3)} Hz)`;
       this.tooltipInstance.show(ttText, evt.clientX, evt.clientY);
     });
 

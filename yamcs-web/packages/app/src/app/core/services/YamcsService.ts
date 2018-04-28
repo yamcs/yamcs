@@ -22,27 +22,29 @@ export class YamcsService {
   /**
    * Prepares a (new) instance.
    */
-  selectInstance(instance: Instance) {
-    return new Promise<void>((resolve, reject) => {
+  selectInstance(instanceId: string) {
+    return new Promise<Instance>((resolve, reject) => {
       if (this.selectedInstance) {
-        if (this.selectedInstance.instance === instance.name) {
+        if (this.selectedInstance.instance === instanceId) {
           resolve();
           return;
         }
       }
       this.unselectInstance();
-      this.instance$.next(instance);
-      this.selectedInstance = this.yamcsClient.createInstanceClient(instance.name);
+      this.yamcsClient.getInstance(instanceId).then(instance => {
+        this.instance$.next(instance);
+        this.selectedInstance = this.yamcsClient.createInstanceClient(instance.name);
 
-      // Listen to time updates, so that we can easily provide actual mission time to components
-      this.selectedInstance.getTimeUpdates().then(response => {
-        this.timeInfo$.next(response.timeInfo);
-        this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
-          this.timeInfo$.next(timeInfo);
+        // Listen to time updates, so that we can easily provide actual mission time to components
+        this.selectedInstance.getTimeUpdates().then(response => {
+          this.timeInfo$.next(response.timeInfo);
+          this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
+            this.timeInfo$.next(timeInfo);
+          });
+          resolve(instance);
+        }).catch(err => {
+          reject(err);
         });
-        resolve();
-      }).catch(err => {
-        reject(err);
       });
     });
   }
