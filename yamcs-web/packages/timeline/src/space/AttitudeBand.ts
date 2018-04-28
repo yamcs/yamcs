@@ -1,12 +1,30 @@
 import { Ellipse, G, Line, Rect, Set, Text, Title } from '../tags';
 import { toDate, isAfter, isBefore } from '../utils';
-import Band from '../core/Band';
+import Band, { BandOptions } from '../core/Band';
 import Timeline from '../Timeline';
 import { EventEvent } from '../events';
 import RenderContext from '../RenderContext';
 import { Action } from '../Action';
 
 const leftTextMargin = 20;
+
+export interface AttitudeBandOptions extends BandOptions {
+  hatchUncovered?: boolean;
+  events?: any[];
+}
+
+export interface AttitudeBandStyle {
+  lineHeight: number;
+  textSize: number;
+  textColor: string;
+  connectorColor: string;
+  dotColor: string;
+  dotRadius: number;
+  hatchFill: string;
+  bandBackgroundColor: string;
+  highlightCursor: string;
+  eventHoverBackground: string;
+}
 
 /**
  * Attitude of a vehicle. Center dots indicate a change
@@ -39,13 +57,13 @@ export default class AttitudeBand extends Band {
 
   private eventsById: { [key: string]: object } = {};
 
-  constructor(timeline: Timeline, opts: any, style: any) {
+  constructor(timeline: Timeline, protected opts: AttitudeBandOptions, protected style: AttitudeBandStyle) {
     super(timeline, opts, style);
 
     this.events = opts.events || [];
     this.hatchUncovered = (opts.hatchUncovered !== false);
     this.lines = this.spreadAcrossLines(this.events);
-    this.lineHeight = style['lineHeight'];
+    this.lineHeight = style.lineHeight;
     this.bandHeight = Math.max(this.lineHeight, this.lineHeight * this.lines.length);
   }
 
@@ -58,7 +76,7 @@ export default class AttitudeBand extends Band {
     for (const event of events) {
       const start = toDate(event.start);
       const stop = toDate(event.stop);
-      const fm = this.timeline.getFontMetrics(event.attitude, this.style['textSize']);
+      const fm = this.timeline.getFontMetrics(event.attitude, this.style.textSize);
 
       // Only consider if somehow visible within load range
       if (isBefore(start, this.timeline.loadStop) && isAfter(stop, this.timeline.loadStart)) {
@@ -70,7 +88,7 @@ export default class AttitudeBand extends Band {
           let max = line.length - 1;
           while (min <= max) {
             const mid = Math.floor((min + max) / 2);
-            const midFm = this.timeline.getFontMetrics(line[mid].attitude, this.style['textSize']);
+            const midFm = this.timeline.getFontMetrics(line[mid].attitude, this.style.textSize);
             const mid_start_x = this.timeline.positionDate(toDate(line[mid].start));
             const mid_stop_x = mid_start_x + leftTextMargin + midFm['width'];
             if (stop_x <= mid_start_x) {
@@ -98,12 +116,12 @@ export default class AttitudeBand extends Band {
 
   overlaps(needle: any) {
     const needleStart = this.timeline.positionDate(toDate(needle.start));
-    const fm = this.timeline.getFontMetrics(needle.attitude, this.style['textSize']);
+    const fm = this.timeline.getFontMetrics(needle.attitude, this.style.textSize);
     const needleStop = needleStart + leftTextMargin + fm['width'];
     for (const hay of this.events) {
       if (needle !== hay) {
         const otherStart = this.timeline.positionDate(toDate(hay.start));
-        const otherFm = this.timeline.getFontMetrics(hay.attitude, this.style['textSize']);
+        const otherFm = this.timeline.getFontMetrics(hay.attitude, this.style.textSize);
         const otherStop = otherStart + leftTextMargin + otherFm['width'];
         if (needleStart < otherStop && needleStop > otherStart) {
           return true;
@@ -126,7 +144,7 @@ export default class AttitudeBand extends Band {
         y: ctx.y,
         width: this.timeline.pointsBetween(this.timeline.loadStart, this.timeline.loadStop),
         height: this.height,
-        fill: this.style['hatchFill'],
+        fill: this.style.hatchFill,
         'pointer-events': 'none',
       }));
     }
@@ -143,18 +161,18 @@ export default class AttitudeBand extends Band {
           y: ctx.y,
           width: this.timeline.pointsBetween(start, stop),
           height: this.height,
-          fill: this.style['bandBackgroundColor'],
+          fill: this.style.bandBackgroundColor,
         });
         if (event.tooltip) {
           bgRect.addChild(new Title({}, event.tooltip));
         }
         g.addChild(bgRect);
 
-        if (this.interactive) {
-          bgRect.setAttribute('cursor', this.style['highlightCursor']);
+        if (this.opts.interactive) {
+          bgRect.setAttribute('cursor', this.style.highlightCursor);
           bgRect.addChild(new Set({
             attributeName: 'fill',
-            to: this.style['eventHoverBackground'],
+            to: this.style.eventHoverBackground,
             begin: 'mouseover',
             end: 'mouseout',
           }));
@@ -172,7 +190,7 @@ export default class AttitudeBand extends Band {
         const start = toDate(event.start);
         let startX = ctx.x + this.timeline.positionDate(start) + leftTextMargin;
         const stop = toDate(event.stop);
-        const fm = this.timeline.getFontMetrics(event.attitude, this.style['textSize']);
+        const fm = this.timeline.getFontMetrics(event.attitude, this.style.textSize);
 
         let textY = ctx.y + (this.bandHeight / 2);
         if (this.overlaps(event)) {
@@ -185,17 +203,17 @@ export default class AttitudeBand extends Band {
           y1: ctx.y + (this.height / 2),
           x2: startX - 3, // The 3 is some small breather room
           y2: textY,
-          stroke: this.style['connectorColor'],
+          stroke: this.style.connectorColor,
         }));
 
         // Add text directly after start divider
         g.addChild(new Text({
           x: startX,
           y: textY,
-          fill: this.style['textColor'],
+          fill: this.style.textColor,
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
-          'font-size': this.style['textSize'],
+          'font-size': this.style.textSize,
           'pointer-events': 'none',
         }, event.attitude));
 
@@ -204,9 +222,9 @@ export default class AttitudeBand extends Band {
           g.addChild(new Ellipse({
             cx: ctx.x + this.timeline.positionDate(start),
             cy: ctx.y + (this.bandHeight / 2),
-            rx: this.style['dotRadius'],
-            ry: this.style['dotRadius'],
-            fill: this.style['dotColor'],
+            rx: this.style.dotRadius,
+            ry: this.style.dotRadius,
+            fill: this.style.dotColor,
           }));
         }
 
@@ -221,10 +239,10 @@ export default class AttitudeBand extends Band {
             g.addChild(new Text({
               x: startX,
               y: ctx.y + (this.height / 2),
-              fill: this.style['textColor'],
+              fill: this.style.textColor,
               'text-anchor': 'left',
               'dominant-baseline': 'middle',
-              'font-size': this.style['textSize'],
+              'font-size': this.style.textSize,
               'pointer-events': 'none',
             }, event.attitude));
             startX += 2 * fm['width'];

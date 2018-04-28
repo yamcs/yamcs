@@ -1,10 +1,22 @@
 import { G, Rect, Set, Title } from '../tags';
 import { toDate, isAfter, isBefore } from '../utils';
-import Band from '../core/Band';
+import Band, { BandOptions } from '../core/Band';
 import Timeline from '../Timeline';
 import { EventEvent } from '../events';
 import RenderContext from '../RenderContext';
 import { Action } from '../Action';
+
+export interface CommsBandOptions extends BandOptions {
+  bands?: any[];
+  events?: any[];
+}
+
+export interface CommsBandStyle {
+  topMargin: number;
+  bottomMargin: number;
+  highlightCursor: string;
+  highlightOpacity: number;
+}
 
 /**
  * Band indicating availability of one or more communication bands.
@@ -28,7 +40,7 @@ export default class CommsBand extends Band {
 
   private eventsById: { [key: string]: object } = {};
 
-  constructor(timeline: Timeline, opts: any, style: any) {
+  constructor(timeline: Timeline, protected opts: CommsBandOptions, protected style: CommsBandStyle) {
     super(timeline, opts, style);
 
     this.commsBands = opts.bands || [];
@@ -37,7 +49,7 @@ export default class CommsBand extends Band {
 
   renderViewport(ctx: RenderContext) {
     const g = new G();
-    const barHeight = (this.height - this.style['topMargin'] - this.style['bottomMargin']) / this.commsBands.length;
+    const barHeight = (this.height - this.style.topMargin - this.style.bottomMargin) / this.commsBands.length;
 
     for (const event of this.events) {
       const start = toDate(event.start);
@@ -52,7 +64,7 @@ export default class CommsBand extends Band {
             const bgRect = new Rect({
               id,
               x: ctx.x + this.timeline.positionDate(start),
-              y: ctx.y + this.style['topMargin'] + (i * barHeight),
+              y: ctx.y + this.style.topMargin + (i * barHeight),
               width: this.timeline.pointsBetween(start, stop),
               height: barHeight,
               fill: commsBand['color'],
@@ -62,11 +74,11 @@ export default class CommsBand extends Band {
             }
             g.addChild(bgRect);
 
-            if (this.interactive) {
-              bgRect.setAttribute('cursor', this.style['highlightCursor']);
+            if (this.opts.interactive) {
+              bgRect.setAttribute('cursor', this.style.highlightCursor);
               bgRect.addChild(new Set({
                 attributeName: 'opacity',
-                to: this.style['highlightOpacity'],
+                to: this.style.highlightOpacity,
                 begin: 'mouseover',
                 end: 'mouseout',
               }));

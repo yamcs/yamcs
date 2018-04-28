@@ -15,7 +15,8 @@ export default class DayNightBackgroundAddon {
     const g = new G();
     for (const c of ctx.contributions) {
       if (c instanceof DayNightBand) {
-        for (const event of c['opts']['events']) {
+        const events = c.opts.events || [];
+        for (const event of events) {
           if (!event.day) {
             const start = toDate(event.start);
             const stop = toDate(event.stop);

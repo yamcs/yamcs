@@ -1,10 +1,26 @@
 import { G, Line, Rect, Set, Title } from '../tags';
 import { toDate, isAfter, isBefore } from '../utils';
-import Band from '../core/Band';
+import Band, { BandOptions } from '../core/Band';
 import Timeline from '../Timeline';
 import { EventEvent } from '../events';
 import RenderContext from '../RenderContext';
 import { Action } from '../Action';
+
+export interface DayNightBandOptions extends BandOptions {
+  hatchUncovered?: boolean;
+  interactiveDays?: boolean;
+  events?: any[];
+}
+
+export interface DayNightBandStyle {
+  hatchFill: string;
+  dayColor: string;
+  nightColor: string;
+  cursor: string;
+  dayHoverColor: string;
+  nightHoverColor: string;
+  dividerColor: string;
+}
 
 /**
  * Day/Night terminator band
@@ -30,31 +46,25 @@ export default class DayNightBand extends Band {
     };
   }
 
-  hatchUncovered: boolean;
-  interactiveDays: boolean;
   events: any[];
 
   private eventsById: { [key: string]: object } = {};
 
-  constructor(timeline: Timeline, opts: any, style: any) {
+  constructor(timeline: Timeline, public opts: DayNightBandOptions, protected style: DayNightBandStyle) {
     super(timeline, opts, style);
-
-    this.hatchUncovered = (opts.hatchUncovered !== false);
-    this.interactive = (opts.interactive === true);
-    this.interactiveDays = (opts.interactiveDays === true);
     this.events = opts.events || [];
   }
 
   renderViewport(ctx: RenderContext) {
     const g = new G();
 
-    if (this.hatchUncovered) {
+    if (this.opts.hatchUncovered) {
       g.addChild(new Rect({
         x: ctx.x + this.timeline.positionDate(this.timeline.loadStart),
         y: ctx.y,
         width: this.timeline.pointsBetween(this.timeline.loadStart, this.timeline.loadStop),
         height: this.height,
-        fill: this.style['hatchFill'],
+        fill: this.style.hatchFill,
         'pointer-events': 'none',
       }));
     }
@@ -72,19 +82,19 @@ export default class DayNightBand extends Band {
           y: ctx.y,
           width: this.timeline.pointsBetween(start, stop),
           height: this.height,
-          fill: (event.day ? this.style['dayColor'] : this.style['nightColor']),
+          fill: (event.day ? this.style.dayColor : this.style.nightColor),
         });
         if (event.tooltip) {
           bgRect.addChild(new Title({}, event.tooltip));
         }
         g.addChild(bgRect);
 
-        if (this.interactive) {
-          if (!event.day || this.interactiveDays) {
-            bgRect.setAttribute('cursor', this.style['cursor']);
+        if (this.opts.interactive) {
+          if (!event.day || this.opts.interactiveDays) {
+            bgRect.setAttribute('cursor', this.style.cursor);
             bgRect.addChild(new Set({
               attributeName: 'fill',
-              to: (event.day ? this.style['dayHoverColor'] : this.style['nightHoverColor']),
+              to: (event.day ? this.style.dayHoverColor : this.style.nightHoverColor),
               begin: 'mouseover',
               end: 'mouseout',
             }));
@@ -100,7 +110,7 @@ export default class DayNightBand extends Band {
             y1: ctx.y,
             x2: ctx.x + this.timeline.positionDate(start),
             y2: ctx.y + this.height,
-            stroke: this.style['dividerColor'],
+            stroke: this.style.dividerColor,
           }));
         }
 
@@ -111,7 +121,7 @@ export default class DayNightBand extends Band {
             y1: ctx.y,
             x2: ctx.x + this.timeline.positionDate(stop),
             y2: ctx.y + this.height,
-            stroke: this.style['dividerColor'],
+            stroke: this.style.dividerColor,
           }));
         }
       }

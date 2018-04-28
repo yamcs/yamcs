@@ -30,7 +30,7 @@ export default class NoDataZone extends Plugin {
       y: 0,
       width: 15000,
       height: ctx.totalHeight,
-      fill: this.style['backgroundColor'],
+      fill: this.style.backgroundColor,
       'pointer-events': 'none',
     }));
     g.addChild(new Rect({
@@ -38,7 +38,7 @@ export default class NoDataZone extends Plugin {
       y: 0,
       width: 15000,
       height: ctx.totalHeight,
-      fill: `url(#${this.style['backgroundFilter']})`,
+      fill: `url(#${this.style.backgroundFilter})`,
       'pointer-events': 'none',
     }));
     g.addChild(new Rect({
@@ -46,7 +46,7 @@ export default class NoDataZone extends Plugin {
       y: 0,
       width: 15000,
       height: ctx.totalHeight,
-      fill: this.style['backgroundColor'],
+      fill: this.style.backgroundColor,
       'pointer-events': 'none',
     }));
     g.addChild(new Rect({
@@ -54,7 +54,7 @@ export default class NoDataZone extends Plugin {
       y: 0,
       width: 15000,
       height: ctx.totalHeight,
-      fill: `url(#${this.style['backgroundFilter']})`,
+      fill: `url(#${this.style.backgroundFilter})`,
       'pointer-events': 'none',
     }));
 

@@ -44,8 +44,8 @@ export default class EventTracker extends Plugin {
       y: 0,
       width: 0,
       height: ctx.totalHeight,
-      fill: this.style['backgroundColor'],
-      'fill-opacity': this.style['backgroundOpacity'],
+      fill: this.style.backgroundColor,
+      'fill-opacity': this.style.backgroundOpacity,
       'pointer-events': 'none',
     }), new Line({
       id: this.lineLeftId,
@@ -53,17 +53,17 @@ export default class EventTracker extends Plugin {
       y1: 0,
       x2: 0,
       y2: ctx.totalHeight,
-      stroke: this.style['lineColor'],
+      stroke: this.style.lineColor,
       'stroke-dasharray': '4 3',
-      'stroke-opacity': this.style['lineOpacity'],
+      'stroke-opacity': this.style.lineOpacity,
     }), new Line({
       id: this.lineRightId,
       x1: ctx.x,
       y1: 0,
       x2: 0,
       y2: ctx.totalHeight,
-      stroke: this.style['lineColor'],
-      'stroke-opacity': this.style['lineOpacity'],
+      stroke: this.style.lineColor,
+      'stroke-opacity': this.style.lineOpacity,
       'stroke-dasharray': '4 3',
     }));
   }

@@ -3,19 +3,22 @@ import RenderContext, { RenderSection } from './RenderContext';
 import { G, Tag } from './tags';
 import { Action } from './Action';
 
+export interface PluginOptions {
+  addons?: any[];
+  enabled?: boolean;
+}
+
 export default abstract class Plugin {
 
-  addons: any[] = [];
+  addons: any[];
   enabled: boolean;
 
   constructor(
     protected timeline: Timeline,
-    protected opts: any,
+    protected opts: PluginOptions,
     protected style: any,
   ) {
-    if (opts.addons) {
-      this.addons = opts.addons;
-    }
+    this.addons = opts.addons || [];
     this.enabled = (opts.enabled !== false);
   }
 

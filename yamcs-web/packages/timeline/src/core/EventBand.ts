@@ -1,6 +1,6 @@
 import { ClipPath, G, Path, Rect, Set, Text, Title, Line } from '../tags';
 import { toDate, isBefore, isAfter } from '../utils';
-import Band from './Band';
+import Band, { BandOptions } from './Band';
 import Timeline from '../Timeline';
 import { EventEvent } from '../events';
 import RenderContext from '../RenderContext';
@@ -22,6 +22,33 @@ interface DrawInfo {
   textOutside: boolean;
   milestone: boolean;
   offscreenStart: boolean;
+}
+
+export interface EventBandOptions extends BandOptions {
+  hatchUncovered?: boolean;
+  leakEventBackground?: boolean;
+  events?: any[];
+}
+
+export interface EventBandStyle {
+  backgroundColor: string;
+  borderColor: string;
+  textColor: string;
+  textSize: number;
+  textAlign: string;
+  cornerRadius: number;
+  eventLeftMargin: number;
+  eventHeight: number;
+  lineHeight: number;
+  spaceBetween: number;
+  wrap: boolean;
+  lineSpacing: number;
+  marginTop: number;
+  marginBottom: number;
+  hatchFill: string;
+  borders: boolean;
+  highlightOpacity: number;
+  highlightCursor: string;
 }
 
 /**
@@ -68,9 +95,9 @@ export default class EventBand extends Band {
 
   private eventsById: { [key: string]: object } = {};
 
-  constructor(timeline: Timeline, opts: any, style: any) {
+  constructor(timeline: Timeline, protected opts: EventBandOptions, protected style: EventBandStyle) {
     super(timeline, opts, style);
-    this.eventHeight = style['eventHeight'] || style['lineHeight'];
+    this.eventHeight = style.eventHeight || style.lineHeight!;
     this.hatchUncovered = (opts.hatchUncovered === true);
     this.leakEventBackground = (opts.leakEventBackground === true);
     this.prepareDrawOperation(opts.events || []);
@@ -85,10 +112,10 @@ export default class EventBand extends Band {
       ...this.spreadAcrossLines(analyzedEvents.filter(evt => (evt.drawInfo && !evt.drawInfo.milestone))),
     ];
 
-    this.bandHeight = this.style['marginTop'] + (this.eventHeight * this.lines.length) + (this.style['lineSpacing'] * (this.lines.length - 1)) + this.style['marginBottom'];
+    this.bandHeight = this.style.marginTop + (this.eventHeight * this.lines.length) + (this.style.lineSpacing * (this.lines.length - 1)) + this.style.marginBottom;
 
     // Band could be empty
-    this.bandHeight = Math.max(this.bandHeight, this.style['marginTop'] + this.eventHeight + this.style['marginBottom']);
+    this.bandHeight = Math.max(this.bandHeight, this.style.marginTop + this.eventHeight + this.style.marginBottom);
 
     // console.log('height is ', this.bandHeight)
   }
@@ -120,8 +147,8 @@ export default class EventBand extends Band {
           renderStartX = this.timeline.positionDate(start) - (this.eventHeight / 2);
           renderStopX = renderStartX + this.eventHeight;
 
-          const fm = this.timeline.getFontMetrics(event.title, this.style['textSize']);
-          renderStopX += fm['width'] + this.style['eventLeftMargin'];
+          const fm = this.timeline.getFontMetrics(event.title, this.style.textSize!);
+          renderStopX += fm['width'] + this.style.eventLeftMargin;
           textOutside = true;
           offscreenStart = false;
         } else {
@@ -134,7 +161,7 @@ export default class EventBand extends Band {
             title = '◀' + title;
           }
 
-          const fm = this.timeline.getFontMetrics(title, this.style['textSize']);
+          const fm = this.timeline.getFontMetrics(title, this.style.textSize);
 
           let availableTitleWidth = renderStopX - renderStartX;
           if (offscreenStart) {
@@ -142,15 +169,15 @@ export default class EventBand extends Band {
           }
 
           textOutside = false;
-          if (this.style['wrap'] && availableTitleWidth < fm['width']) {
-            renderStopX += fm['width'] + this.style['eventLeftMargin'];
+          if (this.style.wrap && availableTitleWidth < fm['width']) {
+            renderStopX += fm['width'] + this.style.eventLeftMargin;
             textOutside = true;
           }
         }
 
         const id = Timeline.nextId();
         this.eventsById[id] = event;
-        if (this.interactive) {
+        if (this.opts.interactive) {
           this.timeline.registerInteractionTarget(id);
         }
 
@@ -193,9 +220,9 @@ export default class EventBand extends Band {
           const mid = Math.floor((min + max) / 2);
           const midStartX = line[mid].drawInfo!.renderStartX;
           const midStopX = line[mid].drawInfo!.renderStopX;
-          if ((stopX + this.style['spaceBetween']) <= midStartX) {
+          if ((stopX + this.style.spaceBetween) <= midStartX) {
             max = mid - 1; // Put cursor before mid
-          } else if (startX >= (midStopX + this.style['spaceBetween'])) {
+          } else if (startX >= (midStopX + this.style.spaceBetween)) {
             min = mid + 1; // Put cursor after mid
           } else {
             break; // Overlap
@@ -228,15 +255,15 @@ export default class EventBand extends Band {
         y: ctx.y,
         width: this.timeline.pointsBetween(this.timeline.loadStart, this.timeline.loadStop),
         height: this.height,
-        fill: this.style['hatchFill'],
+        fill: this.style.hatchFill,
         'pointer-events': 'none',
       }));
     }
 
     for (let idx = 0; idx < this.lines.length; idx++) {
       const line = this.lines[idx];
-      let offsetY = ctx.y + this.style['marginTop'];
-      offsetY += idx * (this.style['lineSpacing'] + this.eventHeight);
+      let offsetY = ctx.y + this.style.marginTop;
+      offsetY += idx * (this.style.lineSpacing + this.eventHeight);
 
       for (const event of line) {
         const start = toDate(event.userObject.start);
@@ -267,10 +294,10 @@ export default class EventBand extends Band {
     const rectHeight = this.eventHeight;
 
     // Allow event-specific style overrides
-    const bgColor = milestone.userObject.backgroundColor || this.style['backgroundColor'];
-    const fgColor = milestone.userObject.foregroundColor || this.style['textColor'];
-    const borderColor = milestone.userObject.borderColor || this.style['borderColor'];
-    const borders = milestone.userObject.borders || this.style['borders'];
+    const bgColor = milestone.userObject.backgroundColor || this.style.backgroundColor;
+    const fgColor = milestone.userObject.foregroundColor || this.style.textColor;
+    const borderColor = milestone.userObject.borderColor || this.style.borderColor;
+    const borders = milestone.userObject.borders || this.style.borders;
 
     const r = this.eventHeight / 2;
     const milestoneBg = new Path({
@@ -288,9 +315,9 @@ export default class EventBand extends Band {
       if (milestone.userObject.tooltip) {
         milestoneG.addChild(new Title({}, milestone.userObject.tooltip));
       }
-      const fm = this.timeline.getFontMetrics(title, this.style['textSize']);
+      const fm = this.timeline.getFontMetrics(title, this.style.textSize);
 
-      const textX = rectX + rectWidth - (this.eventHeight / 2) + this.style['eventLeftMargin'];
+      const textX = rectX + rectWidth - (this.eventHeight / 2) + this.style.eventLeftMargin;
       const textY = rectY + (this.eventHeight / 2);
 
       // Invisible rect with same width as outside text. Primary use is to catch
@@ -310,15 +337,15 @@ export default class EventBand extends Band {
         'pointer-events': 'none',
         'text-anchor': 'left',
         'dominant-baseline': 'middle',
-        'font-size': this.style['textSize'],
+        'font-size': this.style.textSize,
       }, title));
     }
 
-    if (this.interactive) {
-      milestoneG.setAttribute('cursor', this.style['highlightCursor']);
+    if (this.opts.interactive) {
+      milestoneG.setAttribute('cursor', this.style.highlightCursor);
       milestoneG.addChild(new Set({
         attributeName: 'opacity',
-        to: this.style['highlightOpacity'],
+        to: this.style.highlightOpacity,
         begin: 'mouseover',
         end: 'mouseout',
       }));
@@ -346,11 +373,11 @@ export default class EventBand extends Band {
     const rectHeight = this.eventHeight;
 
     // Allow event-specific style overrides
-    const bgColor = event.userObject.backgroundColor || this.style['backgroundColor'];
-    const fgColor = event.userObject.foregroundColor || this.style['textColor'];
-    const borderColor = event.userObject.borderColor || this.style['borderColor'];
-    const textAlign = event.userObject.textAlign || this.style['textAlign'];
-    const borders = event.userObject.borders || this.style['borders'];
+    const bgColor = event.userObject.backgroundColor || this.style.backgroundColor;
+    const fgColor = event.userObject.foregroundColor || this.style.textColor;
+    const borderColor = event.userObject.borderColor || this.style.borderColor;
+    const textAlign = event.userObject.textAlign || this.style.textAlign;
+    const borders = event.userObject.borders || this.style.borders;
 
     // Background
     const eventBg = new Rect({
@@ -359,7 +386,7 @@ export default class EventBand extends Band {
       width: rectWidth,
       height: rectHeight,
       fill: bgColor,
-      rx: this.style['cornerRadius'],
+      rx: this.style.cornerRadius,
     });
     eventG.addChild(eventBg);
 
@@ -380,10 +407,10 @@ export default class EventBand extends Band {
       if (event.userObject.tooltip) {
         eventG.addChild(new Title({}, event.userObject.tooltip));
       }
-      const fm = this.timeline.getFontMetrics(title, this.style['textSize']);
+      const fm = this.timeline.getFontMetrics(title, this.style.textSize);
 
       if (event.drawInfo!.textOutside) {
-        const textX = rectX + rectWidth + this.style['eventLeftMargin'];
+        const textX = rectX + rectWidth + this.style.eventLeftMargin;
         const textY = rectY + (this.eventHeight / 2);
 
         // Invisible rect with same width as outside text. Primary use is to catch
@@ -403,7 +430,7 @@ export default class EventBand extends Band {
           'pointer-events': 'none',
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
-          'font-size': this.style['textSize'],
+          'font-size': this.style.textSize,
         }, title));
       } else { // Render text inside box
         // A clipPath for the text, with same dimensions as background
@@ -434,25 +461,25 @@ export default class EventBand extends Band {
             'pointer-events': 'none',
             'text-anchor': 'middle',
             'dominant-baseline': 'middle',
-            'font-size': this.style['textSize'],
+            'font-size': this.style.textSize,
             'clip-path': `url(#${pathId})`,
           }, title));
         } else {
           eventG.addChild(new Text({
-            x: textX + this.style['eventLeftMargin'],
+            x: textX + this.style.eventLeftMargin,
             y: rectY + (this.eventHeight / 2),
             fill: fgColor,
             'pointer-events': 'none',
             'text-anchor': 'left',
             'dominant-baseline': 'middle',
-            'font-size': this.style['textSize'],
+            'font-size': this.style.textSize,
             'clip-path': `url(#${pathId})`,
           }, title));
         }
       }
     }
 
-    if (this.interactive) {
+    if (this.opts.interactive) {
       /*eventG.addChild(new Ellipse({
         cx: rectX,
         cy: rectY + (this.eventHeight / 2),
@@ -473,10 +500,10 @@ export default class EventBand extends Band {
         'stroke-width': 0.5,
         cursor: 'e-resize',
       }))*/
-      eventG.setAttribute('cursor', this.style['highlightCursor']);
+      eventG.setAttribute('cursor', this.style.highlightCursor);
       eventG.addChild(new Set({
         attributeName: 'opacity',
-        to: this.style['highlightOpacity'],
+        to: this.style.highlightOpacity,
         begin: 'mouseover',
         end: 'mouseout',
       }));
@@ -505,7 +532,7 @@ export default class EventBand extends Band {
               y1: 0,
               x2: xOffset + startX,
               y2: ctx.totalHeight,
-              stroke: event.userObject.backgroundColor || this.style['backgroundColor'],
+              stroke: event.userObject.backgroundColor || this.style.backgroundColor,
               'stroke-width': 1,
               'stroke-opacity': 0.3,
               'pointer-events': 'none',
@@ -516,7 +543,7 @@ export default class EventBand extends Band {
               y: 0,
               width: this.timeline.pointsBetween(start, stop),
               height: ctx.totalHeight,
-              fill: event.userObject.backgroundColor || this.style['backgroundColor'],
+              fill: event.userObject.backgroundColor || this.style.backgroundColor,
               'fill-opacity': 0.1,
               'pointer-events': 'none',
             }));
@@ -574,7 +601,7 @@ export default class EventBand extends Band {
     }
     // console.log('Drag2. Recalculating')
     // this.test += 5
-    this.prepareDrawOperation(this.opts);
+    this.prepareDrawOperation(this.opts.events || []);
     this.timeline.rebuildDOM();
   }
 }

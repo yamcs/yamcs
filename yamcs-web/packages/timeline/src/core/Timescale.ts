@@ -1,6 +1,6 @@
 import { Defs, G, Line, Pattern, Rect, Svg, Text } from '../tags';
 import * as utils from '../utils';
-import Band from './Band';
+import Band, { BandOptions } from './Band';
 import Timeline from '../Timeline';
 import RenderContext from '../RenderContext';
 
@@ -9,6 +9,28 @@ const SCALE_QD = 2;
 const SCALE_1D = 3;
 const SCALE_5D = 4;
 const SCALE_1M = 5;
+
+export interface TimescaleOptions extends BandOptions {
+  resolution?: 'auto';
+  dayFormat?: string;
+  tz: string;
+}
+
+export interface TimescaleStyle {
+  divisionWidth: number;
+  lineHeight: number;
+  textColor: string;
+  textSize: number;
+  majorTickColor: string;
+  majorTickWidth: number;
+  midTickColor: string;
+  midTickWidth: number;
+  minorTickColor: string;
+  minorTickWidth: number;
+  bandBackgroundColor: string;
+  horizontalTickLineColor: string;
+  horizontalTickLineWidth: number;
+}
 
 /**
  * TIMESCALE
@@ -44,7 +66,7 @@ export default class Timescale extends Band {
   dayFormat: any;
   contributionId: any;
 
-  constructor(timeline: Timeline, opts: any, style: any) {
+  constructor(timeline: Timeline, protected opts: TimescaleOptions, protected style: TimescaleStyle) {
     super(timeline, opts, style);
 
     if (!opts.resolution || opts.resolution === 'auto') {
@@ -82,7 +104,7 @@ export default class Timescale extends Band {
     const tickSvg = new Svg({
       x: ctx.x + offsetX,
       y: ctx.y,
-      height: this.style['lineHeight'],
+      height: this.style.lineHeight,
       style: 'overflow: visible',
     }).addChild(new Defs().addChild(this._renderHourPattern()));
 
@@ -90,16 +112,16 @@ export default class Timescale extends Band {
       x: this.timeline.positionDate(this.timeline.loadStart),
       y: 0,
       width: this.timeline.pointsBetween(this.timeline.loadStart, this.timeline.loadStop) - offsetX,
-      height: this.style['lineHeight'],
-      fill: this.style['bandBackgroundColor'],
+      height: this.style.lineHeight,
+      fill: this.style.bandBackgroundColor,
       'pointer-events': 'none'
     };
 
-    if (this.style['horizontalTickLineColor']) {
-      scaleBg['stroke'] = this.style['horizontalTickLineColor'];
+    if (this.style.horizontalTickLineColor) {
+      scaleBg['stroke'] = this.style.horizontalTickLineColor;
     }
-    if (this.style['horizontalTickLineWidth']) {
-      scaleBg['stroke-width'] = this.style['horizontalTickLineWidth'];
+    if (this.style.horizontalTickLineWidth) {
+      scaleBg['stroke-width'] = this.style.horizontalTickLineWidth;
     }
 
     tickSvg.addChild(new Rect(scaleBg));
@@ -107,7 +129,7 @@ export default class Timescale extends Band {
     const labelSvg = new Svg({
       x: ctx.x,
       y: ctx.y,
-      height: this.style['lineHeight'],
+      height: this.style.lineHeight,
       style: 'overflow: visible',
     });
     if (this.scale === SCALE_1H) {
@@ -135,13 +157,13 @@ export default class Timescale extends Band {
     const testDate = utils.addMillis(this.timeline.loadStart, step);
     const x = this.timeline.positionDate(testDate);
     const xDiff = x - startX;
-    return (xDiff > this.timeline.style['divisionWidth'] * 2);
+    return (xDiff > this.timeline.style.divisionWidth * 2);
   }
 
   _renderHourPattern() {
     // Make the pattern the same size as one hour
-    const width = this.style['divisionWidth'] * (60 * 60 / this.timeline.secondsPerDivision);
-    const height = this.style['lineHeight'];
+    const width = this.style.divisionWidth * (60 * 60 / this.timeline.secondsPerDivision);
+    const height = this.style.lineHeight;
 
     // it might be that we need to offset due to the visible start
     // position not aligning exactly on the hour. However, we do this
@@ -158,26 +180,26 @@ export default class Timescale extends Band {
       new Line({
         x1: 0, y1: 0,
         x2: 0, y2: height,
-        stroke: this.style['majorTickColor'],
-        'stroke-width': this.style['majorTickWidth'],
+        stroke: this.style.majorTickColor,
+        'stroke-width': this.style.majorTickWidth,
       }),
       new Line({
         x1: width * 0.25, y1: height * 0.8,
         x2: width * 0.25, y2: height,
-        stroke: this.style['minorTickColor'],
-        'stroke-width': this.style['minorTickWidth'],
+        stroke: this.style.minorTickColor,
+        'stroke-width': this.style.minorTickWidth,
       }),
       new Line({
         x1: width * 0.5, y1: height * 0.6,
         x2: width * 0.5, y2: height,
-        stroke: this.style['midTickColor'],
-        'stroke-width': this.style['midTickWidth'],
+        stroke: this.style.midTickColor,
+        'stroke-width': this.style.midTickWidth,
       }),
       new Line({
         x1: width * 0.75, y1: height * 0.8,
         x2: width * 0.75, y2: height,
-        stroke: this.style['minorTickColor'],
-        'stroke-width': this.style['minorTickWidth'],
+        stroke: this.style.minorTickColor,
+        'stroke-width': this.style.minorTickWidth,
       }),
     );
   }
@@ -194,20 +216,20 @@ export default class Timescale extends Band {
       if (label === '00') {
         result.push(new Text({
           x: x + 2,
-          y: this.style['lineHeight'] / 4,
+          y: this.style.lineHeight / 4,
           cursor: 'default',
-          fill: this.style['textColor'],
-          'font-size': this.style['textSize'],
+          fill: this.style.textColor,
+          'font-size': this.style.textSize,
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
           'pointer-events': 'none'
         }, utils.formatDate(date, 'MMM', tz) + ' ' + utils.formatDate(date, 'DD', tz)));
         result.push(new Text({
           x: x + 2,
-          y: this.style['lineHeight'] * 0.75,
+          y: this.style.lineHeight * 0.75,
           cursor: 'default',
-          fill: this.style['textColor'],
-          'font-size': this.style['textSize'],
+          fill: this.style.textColor,
+          'font-size': this.style.textSize,
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
           'pointer-events': 'none'
@@ -215,10 +237,10 @@ export default class Timescale extends Band {
       } else {
         result.push(new Text({
           x: x + 2,
-          y: this.style['lineHeight'] / 2,
+          y: this.style.lineHeight / 2,
           cursor: 'default',
-          fill: this.style['textColor'],
-          'font-size': this.style['textSize'],
+          fill: this.style.textColor,
+          'font-size': this.style.textSize,
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
           'pointer-events': 'none'
@@ -240,27 +262,27 @@ export default class Timescale extends Band {
       if (label === '00') {
         result.push(new Line({
           x1: x, y1: 0,
-          x2: x, y2: this.style['lineHeight'],
-          stroke: this.style['majorTickColor'],
-          'stroke-width': this.style['majorTickWidth'],
+          x2: x, y2: this.style.lineHeight,
+          stroke: this.style.majorTickColor,
+          'stroke-width': this.style.majorTickWidth,
           'pointer-events': 'none'
         }));
         result.push(new Text({
           x: x + 2,
-          y: this.style['lineHeight'] / 4,
+          y: this.style.lineHeight / 4,
           cursor: 'default',
-          fill: this.style['textColor'],
-          'font-size': this.style['textSize'],
+          fill: this.style.textColor,
+          'font-size': this.style.textSize,
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
           'pointer-events': 'none'
         }, utils.formatDate(date, 'ddd', tz) + ' ' + utils.formatDate(date, 'DD', tz) + '/' + utils.formatDate(date, 'MM', tz)));
       } else {
         result.push(new Line({
-          x1: x, y1: this.style['lineHeight'] / 2,
-          x2: x, y2: this.style['lineHeight'],
-          stroke: this.style['majorTickColor'],
-          'stroke-width': this.style['majorTickWidth'],
+          x1: x, y1: this.style.lineHeight / 2,
+          x2: x, y2: this.style.lineHeight,
+          stroke: this.style.majorTickColor,
+          'stroke-width': this.style.majorTickWidth,
           'pointer-events': 'none'
         }));
       }
@@ -277,10 +299,10 @@ export default class Timescale extends Band {
       const x2 = this.timeline.positionDate(date);
       result.push(new Text({
         x: ((x + x2) / 2) + 2,
-        y: this.style['lineHeight'] * 0.75,
+        y: this.style.lineHeight * 0.75,
         cursor: 'default',
-        fill: this.style['textColor'],
-        'font-size': this.style['textSize'],
+        fill: this.style.textColor,
+        'font-size': this.style.textSize,
         'text-anchor': 'middle',
         'dominant-baseline': 'middle',
         'pointer-events': 'none'
@@ -300,29 +322,29 @@ export default class Timescale extends Band {
       const x = this.timeline.positionDate(date);
       result.push(new Line({
         x1: x, y1: 0,
-        x2: x, y2: this.style['lineHeight'],
-        stroke: this.style['majorTickColor'],
-        'stroke-width': this.style['majorTickWidth'],
+        x2: x, y2: this.style.lineHeight,
+        stroke: this.style.majorTickColor,
+        'stroke-width': this.style.majorTickWidth,
         'pointer-events': 'none'
       }));
       const label = utils.formatDate(date, 'Do', tz);
       if (label === '01') {
         result.push(new Text({
           x: x + 2,
-          y: this.style['lineHeight'] / 4,
+          y: this.style.lineHeight / 4,
           cursor: 'default',
-          fill: this.style['textColor'],
-          'font-size': this.style['textSize'],
+          fill: this.style.textColor,
+          'font-size': this.style.textSize,
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
           'pointer-events': 'none'
         }, utils.formatDate(date, 'MMM', tz)));
         result.push(new Text({
           x: x + 2,
-          y: this.style['lineHeight'] * 0.75,
+          y: this.style.lineHeight * 0.75,
           cursor: 'default',
-          fill: this.style['textColor'],
-          'font-size': this.style['textSize'],
+          fill: this.style.textColor,
+          'font-size': this.style.textSize,
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
           'pointer-events': 'none'
@@ -330,10 +352,10 @@ export default class Timescale extends Band {
       } else {
         result.push(new Text({
           x: x + 2,
-          y: this.style['lineHeight'] / 2,
+          y: this.style.lineHeight / 2,
           cursor: 'default',
-          fill: this.style['textColor'],
-          'font-size': this.style['textSize'],
+          fill: this.style.textColor,
+          'font-size': this.style.textSize,
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
           'pointer-events': 'none'
@@ -365,17 +387,17 @@ export default class Timescale extends Band {
       const x = this.timeline.positionDate(date);
       result.push(new Line({
         x1: x, y1: 0,
-        x2: x, y2: this.style['lineHeight'] / 2,
-        stroke: this.style['majorTickColor'],
-        'stroke-width': this.style['majorTickWidth'],
+        x2: x, y2: this.style.lineHeight / 2,
+        stroke: this.style.majorTickColor,
+        'stroke-width': this.style.majorTickWidth,
         'pointer-events': 'none'
       }));
       result.push(new Text({
         x: x + 2,
-        y: this.style['lineHeight'] / 4,
+        y: this.style.lineHeight / 4,
         cursor: 'default',
-        fill: this.style['textColor'],
-        'font-size': this.style['textSize'],
+        fill: this.style.textColor,
+        'font-size': this.style.textSize,
         'text-anchor': 'left',
         'dominant-baseline': 'middle',
         'pointer-events': 'none'
@@ -394,10 +416,10 @@ export default class Timescale extends Band {
       const x = this.timeline.positionDate(date);
       const label = utils.formatDate(date, 'DD', tz) + '/' + utils.formatDate(date, 'MM', tz);
       result.push(new Line({
-        x1: x, y1: this.style['lineHeight'] / 2,
-        x2: x, y2: this.style['lineHeight'],
-        stroke: this.style['majorTickColor'],
-        'stroke-width': this.style['majorTickWidth'],
+        x1: x, y1: this.style.lineHeight / 2,
+        x2: x, y2: this.style.lineHeight,
+        stroke: this.style.majorTickColor,
+        'stroke-width': this.style.majorTickWidth,
         'pointer-events': 'none'
       }));
 
@@ -411,10 +433,10 @@ export default class Timescale extends Band {
       const x2 = this.timeline.positionDate(date);
       result.push(new Text({
         x: ((x + x2) / 2) + 2,
-        y: this.style['lineHeight'] * 0.75,
+        y: this.style.lineHeight * 0.75,
         cursor: 'default',
-        fill: this.style['textColor'],
-        'font-size': this.style['textSize'],
+        fill: this.style.textColor,
+        'font-size': this.style.textSize,
         'text-anchor': 'middle',
         'dominant-baseline': 'middle',
         'pointer-events': 'none'
@@ -444,27 +466,27 @@ export default class Timescale extends Band {
       if (weekDay === 1) { // Monday
         result.push(new Line({
           x1: x, y1: 0,
-          x2: x, y2: this.style['lineHeight'],
-          stroke: this.style['majorTickColor'],
-          'stroke-width': this.style['majorTickWidth'],
+          x2: x, y2: this.style.lineHeight,
+          stroke: this.style.majorTickColor,
+          'stroke-width': this.style.majorTickWidth,
           'pointer-events': 'none'
         }));
         result.push(new Text({
           x: x + 2,
-          y: this.style['lineHeight'] / 4,
+          y: this.style.lineHeight / 4,
           cursor: 'default',
-          fill: this.style['textColor'],
-          'font-size': this.style['textSize'],
+          fill: this.style.textColor,
+          'font-size': this.style.textSize,
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
           'pointer-events': 'none'
         }, utils.formatDate(date, 'DD', tz) + ' ' + utils.formatDate(date, 'MMM', tz) + ', \'' + shortYear));
       } else {
         result.push(new Line({
-          x1: x, y1: this.style['lineHeight'] / 2,
-          x2: x, y2: this.style['lineHeight'],
-          stroke: this.style['majorTickColor'],
-          'stroke-width': this.style['majorTickWidth'],
+          x1: x, y1: this.style.lineHeight / 2,
+          x2: x, y2: this.style.lineHeight,
+          stroke: this.style.majorTickColor,
+          'stroke-width': this.style.majorTickWidth,
           'pointer-events': 'none'
         }));
       }
@@ -482,10 +504,10 @@ export default class Timescale extends Band {
       const x2 = this.timeline.positionDate(date);
       result.push(new Text({
         x: x + ((x2 - x) / 2),
-        y: this.style['lineHeight'] * 0.75,
+        y: this.style.lineHeight * 0.75,
         cursor: 'default',
-        fill: this.style['textColor'],
-        'font-size': this.style['textSize'],
+        fill: this.style.textColor,
+        'font-size': this.style.textSize,
         'text-anchor': 'middle',
         'dominant-baseline': 'middle',
         'pointer-events': 'none'
@@ -507,26 +529,26 @@ export default class Timescale extends Band {
       if (label === 'Jan') {
         result.push(new Line({
           x1: x, y1: 0,
-          x2: x, y2: this.style['lineHeight'],
-          stroke: this.style['majorTickColor'],
-          'stroke-width': this.style['majorTickWidth'],
+          x2: x, y2: this.style.lineHeight,
+          stroke: this.style.majorTickColor,
+          'stroke-width': this.style.majorTickWidth,
         }));
         result.push(new Text({
           x: x + 2,
-          y: this.style['lineHeight'] / 4,
+          y: this.style.lineHeight / 4,
           cursor: 'default',
-          fill: this.style['textColor'],
-          'font-size': this.style['textSize'],
+          fill: this.style.textColor,
+          'font-size': this.style.textSize,
           'text-anchor': 'left',
           'dominant-baseline': 'middle',
           'pointer-events': 'none'
         }, utils.formatDate(date, 'YYYY', tz)));
       } else {
         result.push(new Line({
-          x1: x, y1: this.style['lineHeight'] / 2,
-          x2: x, y2: this.style['lineHeight'],
-          stroke: this.style['majorTickColor'],
-          'stroke-width': this.style['majorTickWidth'],
+          x1: x, y1: this.style.lineHeight / 2,
+          x2: x, y2: this.style.lineHeight,
+          stroke: this.style.majorTickColor,
+          'stroke-width': this.style.majorTickWidth,
           'pointer-events': 'none'
         }));
       }
@@ -540,10 +562,10 @@ export default class Timescale extends Band {
       const x2 = this.timeline.positionDate(date);
       result.push(new Text({
         x: ((x + x2) / 2) + 2,
-        y: this.style['lineHeight'] * 0.75,
+        y: this.style.lineHeight * 0.75,
         cursor: 'default',
-        fill: this.style['textColor'],
-        'font-size': this.style['textSize'],
+        fill: this.style.textColor,
+        'font-size': this.style.textSize,
         'text-anchor': 'middle',
         'dominant-baseline': 'middle',
         'pointer-events': 'none'

@@ -28,7 +28,7 @@ export default class SpacerBand extends Band {
     return new Rect({ // horizontal divider
       x: ctx.x,
       y: ctx.y + this.height,
-      width: this.style['sidebarWidth'],
+      width: this.style.sidebarWidth,
       height: 1,
       fill: '#d1d5da',
     });

@@ -1,10 +1,23 @@
-import Band from '../core/Band';
+import Band, { BandOptions } from '../core/Band';
 import { EventEvent } from '../events';
 import { G, Line, Rect, Title } from '../tags';
 import Timeline from '../Timeline';
 import RenderContext from '../RenderContext';
 import { isAfter, isBefore, toDate } from '../utils';
 import { Action } from '../Action';
+
+export interface SaaBandOptions extends BandOptions {
+  events?: any[];
+}
+
+export interface SaaBandStyle {
+  highlightCursor: string;
+  lineColor: string;
+  lineWidth: number;
+  whiskerColor: string;
+  whiskerHeight: number;
+  whiskerWidth: number;
+}
 
 /**
  * South Atlantic Anomaly (SAA) band.
@@ -26,20 +39,18 @@ export default class SaaBand extends Band {
     };
   }
 
-  events: any[];
-
   private eventsById: { [key: string]: object } = {};
 
-  constructor(timeline: Timeline, opts: any, style: any) {
+  constructor(timeline: Timeline, protected opts: SaaBandOptions, protected style: SaaBandStyle) {
     super(timeline, opts, style);
-    this.events = opts.events || [];
   }
 
   renderViewport(ctx: RenderContext) {
     const g = new G();
-    const whiskerLead = (this.height - this.style['whiskerHeight']) / 2;
+    const whiskerLead = (this.height - this.style.whiskerHeight) / 2;
 
-    for (const event of this.events) {
+    const events = this.opts.events || [];
+    for (const event of events) {
       const start = toDate(event.start);
       const stop = toDate(event.stop);
 
@@ -60,32 +71,32 @@ export default class SaaBand extends Band {
             y1: ctx.y + whiskerLead,
             x2: ctx.x + this.timeline.positionDate(start),
             y2: ctx.y + this.height - whiskerLead,
-            stroke: this.style['whiskerColor'] || this.style['lineColor'],
-            'stroke-width': this.style['whiskerWidth'] || this.style['lineWidth'],
+            stroke: this.style.whiskerColor || this.style.lineColor,
+            'stroke-width': this.style.whiskerWidth || this.style.lineWidth,
           }),
           new Line({
             x1: ctx.x + this.timeline.positionDate(stop),
             y1: ctx.y + whiskerLead,
             x2: ctx.x + this.timeline.positionDate(stop),
             y2: ctx.y + this.height - whiskerLead,
-            stroke: this.style['whiskerColor'] || this.style['lineColor'],
-            'stroke-width': this.style['whiskerWidth'] || this.style['lineWidth'],
+            stroke: this.style.whiskerColor || this.style.lineColor,
+            'stroke-width': this.style.whiskerWidth || this.style.lineWidth,
           }),
           new Line({
             x1: ctx.x + this.timeline.positionDate(start),
             y1: ctx.y + (this.height / 2),
             x2: ctx.x + this.timeline.positionDate(stop),
             y2: ctx.y + (this.height / 2),
-            stroke: this.style['lineColor'],
-            'stroke-width': this.style['lineWidth'],
+            stroke: this.style.lineColor,
+            'stroke-width': this.style.lineWidth,
           }),
         );
 
         if (event.tooltip) {
           eventG.addChild(new Title({}, event.tooltip));
         }
-        if (this.interactive) {
-          eventG.setAttribute('cursor', this.style['highlightCursor']);
+        if (this.opts.interactive) {
+          eventG.setAttribute('cursor', this.style.highlightCursor);
           this.eventsById[id] = event;
           this.timeline.registerInteractionTarget(id);
         }

@@ -2,24 +2,25 @@ import { SidebarClickEvent } from '../events';
 import { Defs, G, Rect, Set, Svg, Tag, Text } from '../tags';
 import Timeline from '../Timeline';
 import RenderContext, { RenderSection } from '../RenderContext';
-import Plugin from '../Plugin';
+import Plugin, { PluginOptions } from '../Plugin';
 import { Action } from '../Action';
+
+export interface BandOptions extends PluginOptions {
+  interactive?: boolean;
+  interactiveSidebar?: boolean;
+  label?: string;
+}
 
 export default abstract class Band extends Plugin {
 
-  protected interactive: boolean;
-  private interactiveSidebar: boolean;
-
   private sidebarId: string;
 
-  constructor(timeline: Timeline, opts: any, style: any) {
+  constructor(timeline: Timeline, protected opts: BandOptions, style: any) {
     super(timeline, opts, style);
-    this.interactive = (opts.interactive === true);
-    this.interactiveSidebar = (opts.interactiveSidebar === true);
   }
 
   get height() {
-    return this.style['lineHeight'];
+    return this.style.lineHeight;
   }
 
   renderSection(ctx: RenderContext, section: RenderSection) {
@@ -33,7 +34,7 @@ export default abstract class Band extends Plugin {
   renderViewportSection(ctx: RenderContext, section: RenderSection) {
     ctx.addToViewportSection(section, this.renderBand(ctx));
 
-    if (this.timeline.domReduction && !this.interactive) {
+    if (this.timeline.domReduction && !this.opts.interactive) {
       ctx.addToViewportSection(section, this.renderViewportAsImage(ctx));
     } else {
       ctx.addToViewportSection(section, this.renderViewport(ctx));
@@ -58,7 +59,7 @@ export default abstract class Band extends Plugin {
     ctx.x += this.timeline.pointsBetween(this.timeline.loadStart, this.timeline.visibleStart);
 
     const svg = new Svg({
-      'font-family': this.style['fontFamily']
+      'font-family': this.style.fontFamily
     });
 
     // Image cannot have external dependencies, so copy root defs
@@ -88,7 +89,7 @@ export default abstract class Band extends Plugin {
         y: ctx.y,
         width: loadWidth,
         height: this.height,
-        fill: this.style['bandBackgroundColor'],
+        fill: this.style.bandBackgroundColor,
         'pointer-events': 'none'
       }),
       new Rect({ // horizontal divider
@@ -108,17 +109,17 @@ export default abstract class Band extends Plugin {
       id: this.sidebarId,
       x: ctx.x,
       y: ctx.y,
-      width: this.style['sidebarWidth'],
+      width: this.style.sidebarWidth,
       height: this.height + ctx.paddingTop + ctx.paddingBottom,
       cursor: 'default',
       fill: 'transparent',
     });
 
-    if (this.interactiveSidebar) {
+    if (this.opts.interactiveSidebar) {
       bg.setAttribute('cursor', 'pointer');
       bg.addChild(new Set({
         attributeName: 'fill',
-        to: this.style['sidebarHoverBackgroundColor'],
+        to: this.style.sidebarHoverBackgroundColor,
         begin: 'mouseover',
         end: 'mouseout',
       }));
@@ -130,14 +131,14 @@ export default abstract class Band extends Plugin {
       new Rect({ // horizontal divider
         x: ctx.x,
         y: ctx.y + this.height,
-        width: this.style['sidebarWidth'],
+        width: this.style.sidebarWidth,
         height: 1,
         fill: '#d1d5da',
         'pointer-events': 'none',
       })
     );
 
-    if (this.opts['label']) {
+    if (this.opts.label) {
       g.addChild(new Text({
         x: ctx.x + 5,
         y: ctx.y + ctx.paddingTop + (this.height / 2),
@@ -146,7 +147,7 @@ export default abstract class Band extends Plugin {
         'text-anchor': 'left',
         'dominant-baseline': 'middle',
         'font-size': this.style['textSize'],
-      }, this.opts['label'] || 'Untitled'));
+      }, this.opts.label || 'Untitled'));
     }
 
     return g;
