@@ -1,12 +1,15 @@
 package org.yamcs.web.rest.processor;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsException;
 import org.yamcs.alarms.ActiveAlarm;
@@ -19,6 +22,7 @@ import org.yamcs.protobuf.Rest.EditProcessorRequest;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
+import org.yamcs.protobuf.Yamcs.ProcessorTypeInfo;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
@@ -194,23 +198,17 @@ public class ProcessorRestHandler extends RestHandler {
     public void createProcessorForInstance(RestRequest restReq) throws HttpException {
         CreateProcessorRequest request = restReq.bodyAsMessage(CreateProcessorRequest.newBuilder()).build();
         String yamcsInstance = verifyInstance(restReq, restReq.getRouteParam("instance"));
-        String processorName;
-        if (request.hasName()) {
-            processorName = request.getName();
-        } else if (restReq.hasQueryParameter("name")) {
-            processorName = restReq.getQueryParameter("name");
-        } else {
+
+        if (!request.hasName()) {
             throw new BadRequestException("No processor name was specified");
         }
+        String processorName = request.getName();
 
-        String processorType = null;
-        if (request.hasType()) {
-            processorType = request.getType();
-        } else if (restReq.hasQueryParameter("type")) {
-            processorName = restReq.getQueryParameter("type");
-        } else {
+        if (!request.hasType()) {
             throw new BadRequestException("No processor type was specified");
         }
+        String processorType = request.getType();
+
         ProcessorManagementRequest.Builder reqb = ProcessorManagementRequest.newBuilder();
         reqb.setInstance(yamcsInstance);
         reqb.setName(processorName);
@@ -267,7 +265,7 @@ public class ProcessorRestHandler extends RestHandler {
             } else {
                 if (!username.equals(ci.getUsername())) {
                     log.warn("User {} is not allowed to connect {} to new processor", username, ci.getUsername());
-                    throw new ForbiddenException("Not allowed to connect other client than your own");
+                    throw new ForbiddenException("Not allowed to connect clients other than your own");
                 }
             }
         }
@@ -287,14 +285,6 @@ public class ProcessorRestHandler extends RestHandler {
 
         for (ServiceWithConfig serviceWithConfig : processor.getServices()) {
             b.addService(ServiceHelper.toServiceInfo(serviceWithConfig, instance, name));
-        }
-        if (req.getQueryParameterAsBoolean("links", false)) {
-            String apiURL = req.getApiURL();
-            b.setUrl(apiURL + "/processors/" + instance + "/" + name);
-            b.setClientsUrl(apiURL + "/processors/" + instance + "/" + name + "/clients");
-            b.setParametersUrl(apiURL + "/processors/" + instance + "/" + name + "/parameters{/namespace}{/name}");
-            b.setCommandsUrl(apiURL + "/processors/" + instance + "/" + name + "/commands{/namespace}{/name}");
-            b.setCommandQueuesUrl(apiURL + "/processors/" + instance + "/" + name + "/cqueues{/name}");
         }
         return b.build();
     }
