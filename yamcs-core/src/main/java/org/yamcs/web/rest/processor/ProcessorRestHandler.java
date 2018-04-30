@@ -41,6 +41,15 @@ public class ProcessorRestHandler extends RestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ProcessorRestHandler.class);
 
+    @Route(path = "/api/processor-types", method = "GET")
+    public void listProcessorTypes(RestRequest req) throws HttpException {
+        ProcessorTypeInfo.Builder response = ProcessorTypeInfo.newBuilder();
+        List<String> processorTypes = ProcessorFactory.getProcessorTypes();
+        Collections.sort(processorTypes);
+        response.addAllType(processorTypes);
+        completeOK(req, response.build());
+    }
+
     @Route(path = "/api/processors", method = "GET")
     public void listProcessors(RestRequest req) throws HttpException {
         ListProcessorsResponse.Builder response = ListProcessorsResponse.newBuilder();
