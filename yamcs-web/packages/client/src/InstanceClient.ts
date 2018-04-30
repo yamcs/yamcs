@@ -64,6 +64,7 @@ import {
   TimeSubscriptionResponse,
   AlarmSubscriptionResponse,
   CreateEventRequest,
+  CreateProcessorRequest,
   Value,
   IndexGroup,
   GetPacketIndexOptions,
@@ -158,6 +159,14 @@ export class InstanceClient {
       method: 'POST',
     });
     return await response.json() as Event;
+  }
+
+  async createProcessor(options: CreateProcessorRequest) {
+    const body = JSON.stringify(options);
+    return await this.yamcs.doFetch(`${this.yamcs.apiUrl}/processors/${this.instance}`, {
+      body,
+      method: 'POST',
+    });
   }
 
   async getLinks() {

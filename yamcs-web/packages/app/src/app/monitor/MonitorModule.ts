@@ -12,12 +12,14 @@ import { MonitorToolbar } from './template/MonitorToolbar';
 import { PageContentHost } from './ext/PageContentHost';
 import { CreateEventDialog } from './events/CreateEventDialog';
 import { TimelineTooltip } from './archive/TimelineTooltip';
-import { CreateDownloadDialog } from './archive/CreateDownloadDialog';
+import { DownloadDumpDialog } from './archive/DownloadDumpDialog';
+import { StartReplayDialog } from './template/StartReplayDialog';
 
 const dialogComponents = [
-  CreateDownloadDialog,
   CreateEventDialog,
+  DownloadDumpDialog,
   SaveLayoutDialog,
+  StartReplayDialog,
 ];
 
 @NgModule({

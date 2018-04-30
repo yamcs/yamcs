@@ -184,6 +184,20 @@ export interface CreateEventRequest {
   time?: string;
 }
 
+export interface CreateProcessorRequest {
+  name: string;
+  type: string;
+  clientId?: number[];
+  persistent?: boolean;
+  config?: string;
+}
+
+export interface EditReplayProcessorRequest {
+  state?: 'running' | 'paused' | 'closed';
+  seek?: string;
+  speed?: string;
+}
+
 export interface GetEventsOptions {
   /**
    * Inclusive lower bound

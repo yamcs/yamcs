@@ -12,6 +12,7 @@ import { Subscription } from 'rxjs/Subscription';
 @Component({
   selector: 'app-processor-info',
   templateUrl: './ProcessorInfoComponent.html',
+  styleUrls: ['./ProcessorInfoComponent.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProcessorInfoComponent implements OnDestroy {

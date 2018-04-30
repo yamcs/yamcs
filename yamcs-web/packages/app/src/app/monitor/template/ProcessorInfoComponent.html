@@ -1,11 +1,10 @@
 <ng-container *ngIf="connected$ | async; else noConnection">
-  <button mat-button
-          matTooltip="Mission Time (realtime processor)"
-          matTooltipPosition="below"
-          *ngIf="timeInfo$ | async as timeInfo">
-    <mat-icon>access_time</mat-icon>
-    {{ timeInfo.currentTimeUTC | datetime }}
-  </button>
+  <div class="wrapper">
+    <span class="time" *ngIf="timeInfo$ | async as timeInfo">
+      <span matTooltip="Processor">realtime</span> / <span matTooltip="Mission Time">{{ timeInfo.currentTimeUTC | datetime }}</span><br>
+      <mat-icon>play_arrow</mat-icon>
+    </span>
+  </div>
 </ng-container>
 
 <ng-template #noConnection>

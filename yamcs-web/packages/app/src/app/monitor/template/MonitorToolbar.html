@@ -2,6 +2,16 @@
   <mat-toolbar-row>
     <ng-content></ng-content>
     <span style="flex: 1 1 auto"></span>
+    <mat-menu #processorMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="after" yPosition="below">
+      <button mat-menu-item (click)="startReplay()">
+        Replay from date
+      </button>
+    </mat-menu>
+    <button mat-button class="drop-down" [matMenuTriggerFor]="processorMenu">
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+
+    <!-- Uses absolute positioning -->
     <app-processor-info></app-processor-info>
   </mat-toolbar-row>
 </mat-toolbar>
