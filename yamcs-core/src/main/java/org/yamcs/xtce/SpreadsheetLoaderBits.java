@@ -431,10 +431,10 @@ public class SpreadsheetLoaderBits {
             } else { // looking for range or subRange end
                 if (isRowEmpty(cells)) {
                     subRange.add(new Range(subRangeStart, i));
-                    rangeStop = i;
                     if (col2 > -1) {
                         subRangeStart = -1;
                     } else {
+                        rangeStop = i;
                         break;
                     }
                 } else if (!isCellEmpty(cells, col1)) {
@@ -450,6 +450,14 @@ public class SpreadsheetLoaderBits {
         }
         if (rangeStart == -1) {
             return null;
+        }
+        if(i==numRows) {
+            if(rangeStop==-1) {
+                rangeStop = numRows;
+            }
+            if(subRangeStart!=-1) {
+                subRange.add(new Range(subRangeStart, numRows));
+            }
         }
         Range r = new Range(rangeStart, rangeStop);
         r.subRanges = subRange;
