@@ -9,7 +9,6 @@ import org.yamcs.Processor;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
@@ -54,7 +53,11 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
         int requestId = ctx.getRequestId();
         ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
         try {
-            wsHandler.sendReply(WebSocketReply.ack(requestId));
+            WebSocketReply reply = new WebSocketReply(requestId);
+            reply.attachData("ProcessorInfo", pinfo);
+            wsHandler.sendReply(reply);
+
+            // TODO Should probably remove this line, now that we sent this already in the response.
             wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo);
         } catch (IOException e) {
             log.warn("Exception when sending data", e);
@@ -69,7 +72,11 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
         ClientInfo cinfo = ManagementService.getInstance().getClientInfo(clientId);
         cinfo = ClientInfo.newBuilder(cinfo).setState(ClientState.CONNECTED).setCurrentClient(true).build();
         try {
-            wsHandler.sendReply(WebSocketReply.ack(requestId));
+            WebSocketReply reply = new WebSocketReply(requestId);
+            reply.attachData("ClientInfo", cinfo);
+            wsHandler.sendReply(reply);
+
+            // TODO Should probably remove this line, now that we sent this already in the response.
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
