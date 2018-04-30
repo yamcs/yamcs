@@ -5,25 +5,42 @@ import Plugin, { PluginOptions } from '../Plugin';
 
 class LocalTimeProvider {
 
-  _intervalId: number;
+  intervalId: number;
 
-  constructor(ctx: RenderContext, locator: any) {
-    this._intervalId = window.setInterval(() => {
-      locator.updateTime(ctx, new Date());
+  constructor(locator: any) {
+    this.intervalId = window.setInterval(() => {
+      locator.updateTime(new Date());
     }, 500);
   }
 
   stop() {
-    clearInterval(this._intervalId);
+    clearInterval(this.intervalId);
   }
 }
 
 export interface WallclockLocatorOptions extends PluginOptions {
+
+  /**
+   * Initial time at which to set the locator. When unset,
+   * the locator will be hidden until updateTime is called.
+   */
   time?: Date;
+
+  /**
+   * When true, data before the locator position will be shaded.
+   * Default: false
+   */
   markPast?: boolean;
+
+  /**
+   * When true, the locator will automatically follow local client time.
+   * Default: true
+   */
+  auto?: boolean;
 }
 
 export interface WallclockLocatorStyle {
+  sidebarWidth: number;
   pastBackgroundColor: string;
   pastBackgroundOpacity: number;
   knobRadius: number;
@@ -53,22 +70,27 @@ export default class WallclockLocator extends Plugin {
     };
   }
 
-  time: Date;
-  clockUpdater: any;
+  time?: Date;
+  private clockUpdater: any;
 
-  wallclockLocatorLineEl: any;
-  wallclockLocatorPastEl: any;
+  private wallclockLocatorLineEl: any;
+  private wallclockLocatorPastEl: any;
+
+  private wallclockLocatorPastId = Timeline.nextId();
+  private wallclockLocatorLineId = Timeline.nextId();
 
   constructor(timeline: Timeline, protected opts: WallclockLocatorOptions, protected style: WallclockLocatorStyle) {
     super(timeline, opts, style);
-    this.time = opts.time || new Date();
+    console.log('opts', opts);
+    this.time = opts.time;
   }
 
-  updateTime(ctx: RenderContext, newTime: Date) {
+  updateTime(newTime: Date) {
     this.time = newTime;
     if (this.wallclockLocatorLineEl) {
+      this.wallclockLocatorLineEl.style.visibility = 'visible';
       let x = this.timeline.pointsBetween(this.timeline.unpannedVisibleStart, newTime);
-      x += ctx.sidebarWidth; // overlay uses the entire space
+      x += this.style.sidebarWidth; // overlay uses the entire space
       this.wallclockLocatorLineEl.childNodes[0].setAttribute('x1', x);
       this.wallclockLocatorLineEl.childNodes[0].setAttribute('x2', x);
       this.wallclockLocatorLineEl.childNodes[1].setAttribute('cx', x);
@@ -76,6 +98,7 @@ export default class WallclockLocator extends Plugin {
     }
 
     if (this.wallclockLocatorPastEl) {
+      this.wallclockLocatorPastEl.style.visibility = 'visible';
       // For past-overlay, just adjust width
       const pointsBetween = this.timeline.pointsBetween(this.timeline.loadStart, newTime);
       const x = String(Math.max(pointsBetween, 0));
@@ -90,13 +113,18 @@ export default class WallclockLocator extends Plugin {
     // TODO try to fix the need for this xOffset
     const xOffset = ctx.sidebarWidth - ctx.translation.x;
 
-    const time = this.time;
+    const visibility = (this.time === undefined) ? 'hidden' : 'visible';
+
+    const time = this.time || new Date();
     const g = new G({ class: 'wallclockLocator' });
     const timeX = xOffset + this.timeline.positionDate(time);
 
     // Past indicator
     if (this.opts.markPast) {
-      const pastG = new G({ class: 'wallclockLocatorPast' });
+      const pastG = new G({
+        id: this.wallclockLocatorPastId,
+        visibility,
+      });
       pastG.addChild(new Rect({
         x: xOffset + this.timeline.positionDate(this.timeline.loadStart),
         y: 0,
@@ -109,7 +137,10 @@ export default class WallclockLocator extends Plugin {
       g.addChild(pastG);
     }
 
-    g.addChild(new G({ class: 'wallclockLocatorLine' }).addChild(
+    g.addChild(new G({
+      id: this.wallclockLocatorLineId,
+      visibility,
+    }).addChild(
       new Line({
         x1: ctx.x + timeX,
         y1: this.style.knobRadius,
@@ -140,9 +171,11 @@ export default class WallclockLocator extends Plugin {
   }
 
   postRender(ctx: RenderContext, svgEl: any) {
-    this.wallclockLocatorLineEl = svgEl.getElementsByClassName('wallclockLocatorLine')[0];
-    this.wallclockLocatorPastEl = svgEl.getElementsByClassName('wallclockLocatorPast')[0];
-    this.clockUpdater = new LocalTimeProvider(ctx, this);
+    this.wallclockLocatorLineEl = svgEl.getElementById(this.wallclockLocatorLineId);
+    this.wallclockLocatorPastEl = svgEl.getElementById(this.wallclockLocatorPastId);
+    if (this.opts.auto !== false) {
+      this.clockUpdater = new LocalTimeProvider(this);
+    }
   }
 
   tearDown() {

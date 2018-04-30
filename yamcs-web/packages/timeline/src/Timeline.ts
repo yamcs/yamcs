@@ -31,7 +31,8 @@ export default class Timeline {
   private static idCounter = 0;
 
   containerEl: HTMLElement;
-  contributions: any[];
+  contributions: any[] = [];
+  private contributionsById: { [key: string]: any } = {};
 
   theme: any;
   style: any;
@@ -93,7 +94,10 @@ export default class Timeline {
   private _style: any;
   private tracker: TrackerMode;
   private nodata: boolean;
+
   private wallclock: boolean;
+  private lastManualWallclockTime: Date;
+
   private data: any;
   private vdom: VDom;
 
@@ -111,7 +115,6 @@ export default class Timeline {
 
   constructor(el: HTMLElement, opts: TimelineOptions) {
     this.containerEl = el;
-    this.contributions = [];
 
     this.registerPlugin(core.EventBand);
     this.registerPlugin(core.SpacerBand);
@@ -436,7 +439,7 @@ export default class Timeline {
    */
   pointsBetween(date1: Date, date2: Date) {
     const td = utils.millisBetween(date1, date2) / 1000;
-    return (td / this.secondsPerDivision) * this.style['divisionWidth'];
+    return (td / this.secondsPerDivision) * this.style.divisionWidth;
   }
 
   /**
@@ -452,8 +455,17 @@ export default class Timeline {
     }
   }
 
+  /**
+   * Manually update the time of the wallclock vertical time locator.
+   */
+  setWallclockTime(time: string | Date) {
+    this.lastManualWallclockTime = utils.toDate(time);
+    const contribution = this.contributionsById['_wallclock'];
+    contribution.updateTime(this.lastManualWallclockTime);
+  }
+
   get visibleWidth(): number {
-    return this.width - this.style['sidebarWidth'];
+    return this.width - this.style.sidebarWidth;
   }
 
   /**
@@ -461,7 +473,7 @@ export default class Timeline {
    * to the corresponding leftmost visible date.
    */
   private leftifyDate(date: Date): Date {
-    const offsetSeconds = - (this.visibleWidth / 2) * (this.secondsPerDivision / this.style['divisionWidth']);
+    const offsetSeconds = - (this.visibleWidth / 2) * (this.secondsPerDivision / this.style.divisionWidth);
     return utils.addSeconds(date, offsetSeconds);
   }
 
@@ -497,6 +509,7 @@ export default class Timeline {
         contribution.tearDown();
       }
       this.contributions = [];
+      this.contributionsById = {};
     }
 
     if (Array.isArray(this.data)) {
@@ -522,9 +535,12 @@ export default class Timeline {
       this.createContribution({ type: 'NoDataZone' });
     }
 
-    if (this.wallclock) {
-      this.createContribution({ type: 'WallclockLocator' });
-    }
+    this.createContribution({
+      id: '_wallclock',
+      type: 'WallclockLocator',
+      auto: !!this.wallclock,
+      time: this.lastManualWallclockTime || new Date(),
+    });
 
     if (!this.vdom) {
       this.vdom = new VDom(this, this.style);
@@ -567,6 +583,10 @@ export default class Timeline {
     contribution['type'] = pluginClass['type'];
     contribution['header'] = header;
     this.contributions.push(contribution);
+
+    if (spec['id']) {
+      this.contributionsById[spec['id']] = contribution;
+    }
   }
 
   selectRange(start: Date | string, stop: Date | string) {

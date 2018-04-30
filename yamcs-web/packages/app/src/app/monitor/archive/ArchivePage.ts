@@ -35,6 +35,8 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
   private tooltipInstance: TimelineTooltip;
   private darkModeSubscription: Subscription;
 
+  private timeInfoSubscription: Subscription;
+
   constructor(
     title: Title,
     private yamcs: YamcsService,
@@ -56,6 +58,14 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
           this.timeline.updateOptions({ theme: 'base' });
         }
       }
+    });
+
+    yamcs.getInstanceClient()!.getTimeUpdates().then(response => {
+      this.timeInfoSubscription = response.timeInfo$.subscribe(timeInfo => {
+        if (this.timeline) {
+          this.timeline.setWallclockTime(timeInfo.currentTimeUTC);
+        }
+      });
     });
 
     const bodyRef = new ElementRef(document.body);
@@ -91,6 +101,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       initialDate: c || this.yamcs.getMissionTime().toISOString(),
       zoom: z || 12,
       pannable: 'X_ONLY',
+      wallclock: false,
       style: {
         sidebarWidth: 200,
       }
@@ -211,6 +222,9 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
   ngOnDestroy() {
     if (this.darkModeSubscription) {
       this.darkModeSubscription.unsubscribe();
+    }
+    if (this.timeInfoSubscription) {
+      this.timeInfoSubscription.unsubscribe();
     }
   }
 }
