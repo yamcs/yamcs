@@ -75,6 +75,7 @@ export class WebSocketClient {
     this.subscriptionModel = new SubscriptionModel();
     this.webSocket = webSocket({
       url: wsUrl,
+      protocol: 'json',
       closeObserver: {
         next: () => {
           this.connected$.next(false);
