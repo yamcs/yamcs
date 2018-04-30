@@ -431,10 +431,10 @@ public class SpreadsheetLoaderBits {
             } else { // looking for range or subRange end
                 if (isRowEmpty(cells)) {
                     subRange.add(new Range(subRangeStart, i));
+                    rangeStop = i;
                     if (col2 > -1) {
                         subRangeStart = -1;
                     } else {
-                        rangeStop = i;
                         break;
                     }
                 } else if (!isCellEmpty(cells, col1)) {
