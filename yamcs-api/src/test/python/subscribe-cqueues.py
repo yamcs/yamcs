@@ -1,6 +1,6 @@
 import websocket
 ws = websocket.WebSocket()
-wsaddr = "ws://localhost:8090/aces-sim/_websocket"
+wsaddr = "ws://localhost:8090/_websocket/aces-sim"
 print "Connecting to "+wsaddr + "...",
 ws.connect(wsaddr)
 print "connected"
