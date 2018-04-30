@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Observable } from 'rxjs/Observable';
-import { TimeInfo } from '@yamcs/client';
+import { TimeInfo, ConnectionInfo } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -21,6 +21,7 @@ export class ProcessorInfoComponent implements OnDestroy {
   timeInfoSubscription: Subscription;
 
   connected$: Observable<boolean>;
+  connectionInfo$: Observable<ConnectionInfo | null>;
 
   constructor(private yamcs: YamcsService) {
     this.yamcs.getInstanceClient()!.getTimeUpdates().then(response => {
@@ -30,6 +31,7 @@ export class ProcessorInfoComponent implements OnDestroy {
       });
     });
     this.connected$ = this.yamcs.getInstanceClient()!.connected$;
+    this.connectionInfo$ = this.yamcs.connectionInfo$;
   }
 
   ngOnDestroy() {

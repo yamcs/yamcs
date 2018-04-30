@@ -89,6 +89,7 @@ import {
   CommandQueueEventSubscriptionResponse,
   ClientSubscriptionResponse,
   CommandQueueSubscriptionResponse,
+  ConnectionInfoSubscriptionResponse,
 } from './types/system';
 import { Observable } from 'rxjs/Observable';
 
@@ -174,6 +175,21 @@ export class InstanceClient {
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as LinksWrapper;
     return wrapper.link || [];
+  }
+
+  /**
+   * Returns Connection Info messages whenever a major event on
+   * the websocket connection happens. This includes:
+   * - Changed active instance
+   * - Changed active processor
+   * - Restart of connected instance
+   *
+   * Note especially that this does not provide info about the connection
+   * state itself (e.g. no disconnect event).
+   */
+  async getConnectionInfoUpdates(): Promise<ConnectionInfoSubscriptionResponse> {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getConnectionInfoUpdates();
   }
 
   async getLinkUpdates() {

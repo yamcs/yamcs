@@ -46,8 +46,12 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
             AuthenticationToken authToken) {
         this.applicationName = applicationName;
         this.authToken = authToken;
-        this.username = authToken != null ? authToken.getPrincipal().toString()
-                : Privilege.getInstance().getDefaultUser();
+        if (authToken != null) {
+            username = authToken.getPrincipal().toString();
+        } else {
+            username = Privilege.getInstance().getDefaultUser();
+        }
+
         this.wsHandler = wsHandler;
         log = LoggingUtils.getLogger(WebSocketProcessorClient.class, yamcsInstance);
         processor = Processor.getFirstProcessor(yamcsInstance);
@@ -157,14 +161,16 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
         sendConnectionInfo();
     }
 
-    private void sendConnectionInfo() {
+    void sendConnectionInfo() {
         String instanceName = processor.getInstance();
         YamcsServerInstance ysi = YamcsServer.getInstance(instanceName);
         Service.State instanceState = ysi.state();
         YamcsInstance yi = YamcsInstance.newBuilder().setName(instanceName)
                 .setState(ServiceState.valueOf(instanceState.name())).build();
-        ConnectionInfo.Builder conninf = ConnectionInfo.newBuilder().setInstance(yi);
-        conninf.setProcessor(ManagementGpbHelper.toProcessorInfo(processor));
+        ConnectionInfo.Builder conninf = ConnectionInfo.newBuilder()
+                .setClientId(clientId)
+                .setInstance(yi)
+                .setProcessor(ManagementGpbHelper.toProcessorInfo(processor));
         try {
             wsHandler.sendData(ProtoDataType.CONNECTION_INFO, conninf.build());
         } catch (IOException e) {

@@ -31,6 +31,17 @@ export interface Instance {
   processor: Processor[];
 }
 
+export interface ConnectionInfo {
+  clientId: number;
+  instance: Instance;
+  processor: Processor;
+}
+
+export interface ConnectionInfoSubscriptionResponse {
+  connectionInfo: ConnectionInfo;
+  connectionInfo$: Observable<ConnectionInfo>;
+}
+
 export interface ClientInfo {
   instance: string;
   id: number;

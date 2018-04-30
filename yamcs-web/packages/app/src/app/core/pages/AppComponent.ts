@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, HostBinding, OnDestroy } from '@angular/core';
-import { Instance, UserInfo } from '@yamcs/client';
+import { UserInfo, ConnectionInfo } from '@yamcs/client';
 import { YamcsService } from '../services/YamcsService';
 import { MatDialog } from '@angular/material';
 import { SelectInstanceDialog } from '../../shared/template/SelectInstanceDialog';
@@ -22,7 +22,7 @@ export class AppComponent implements OnDestroy {
 
   title = 'Yamcs';
 
-  instance$: Observable<Instance | null>;
+  connectionInfo$: Observable<ConnectionInfo | null>;
   user$: Observable<UserInfo | null>;
 
   darkMode$: Observable<boolean>;
@@ -36,7 +36,7 @@ export class AppComponent implements OnDestroy {
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
   ) {
-    this.instance$ = yamcs.instance$;
+    this.connectionInfo$ = yamcs.connectionInfo$;
     this.user$ = authService.userInfo$;
 
     this.userSubscription = this.user$.subscribe(user => {

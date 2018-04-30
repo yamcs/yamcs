@@ -133,7 +133,7 @@ message TimeSubscriptionResponse {
 
 //sent via the websocket with information about connected client
 message ConnectionInfo {
-  optional int32 clientId = 1;   
+  optional int32 clientId = 1;
   optional yamcsManagement.YamcsInstance instance = 2;
   optional yamcsManagement.ProcessorInfo processor = 3;
 }

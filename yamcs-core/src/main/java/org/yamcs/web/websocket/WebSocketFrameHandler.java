@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.ws.WSConstants;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.HttpRequestHandler;
@@ -18,8 +17,6 @@ import org.yamcs.web.HttpRequestInfo;
 import org.yamcs.web.HttpServer;
 import org.yamcs.web.WebConfig;
 
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.Message;
 
 import io.netty.buffer.ByteBuf;
@@ -105,6 +102,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
             // After upgrade, no further HTTP messages will be received
             ctx.pipeline().remove(HttpRequestHandler.class);
+
+            // Send data with server-assigned connection state (clientId, instance, processor)
+            processorClient.sendConnectionInfo();
         } else {
             super.userEventTriggered(ctx, evt);
         }
@@ -140,19 +140,19 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
                     if (log.isTraceEnabled()) {
                         log.debug("Websocket data: {}", frame);
                     }
-                        WebSocketDecodeContext msg = decoder.decodeMessage(binary);
+                    WebSocketDecodeContext msg = decoder.decodeMessage(binary);
 
-                        AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
-                        if (resource != null) {
-                            WebSocketReply reply = resource.processRequest(msg, decoder);
-                            if (reply != null) {
-                                sendReply(reply);
-                            }
-                        } else {
-                            throw new WebSocketException(msg.getRequestId(),
-                                    "Invalid message (unsupported resource: '" + msg.getResource() + "')");
+                    AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
+                    if (resource != null) {
+                        WebSocketReply reply = resource.processRequest(msg, decoder);
+                        if (reply != null) {
+                            sendReply(reply);
                         }
-                    
+                    } else {
+                        throw new WebSocketException(msg.getRequestId(),
+                                "Invalid message (unsupported resource: '" + msg.getResource() + "')");
+                    }
+
                 }
             } catch (WebSocketException e) {
                 log.debug("Returning nominal exception back to the client: {}", e.getMessage());

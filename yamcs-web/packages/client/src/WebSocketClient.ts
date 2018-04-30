@@ -1,6 +1,6 @@
 import { SubscriptionModel } from './SubscriptionModel';
 import { webSocket } from 'rxjs/observable/dom/webSocket';
-import { delay, filter, map, retryWhen, first } from 'rxjs/operators';
+import { delay, filter, map, retryWhen, first, take } from 'rxjs/operators';
 import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { WebSocketServerMessage } from './types/internal';
 import {
@@ -28,6 +28,8 @@ import {
   CommandQueue,
   CommandQueueEvent,
   Link,
+  ConnectionInfoSubscriptionResponse,
+  ConnectionInfo,
 } from './types/system';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
@@ -52,6 +54,10 @@ export class WebSocketClient {
 
   private webSocketConnection$: Observable<{}>;
   private webSocketConnectionSubscription: Subscription;
+
+  // Server-controlled metadata on the connected client
+  // (clientId, instance, processor)
+  private connectionInfo$ = new BehaviorSubject<ConnectionInfo | null>(null);
 
   private requestSequence = 0;
 
@@ -78,10 +84,9 @@ export class WebSocketClient {
       openObserver: {
         next: () => {
           console.log('Connected to Yamcs');
-          this.connected$.next(true);
-          if (this.subscribeOnOpen) {
-            this.registerSubscriptions();
-          }
+          // Note we do not set connected$ here
+          // Instead prefer to set that after we
+          // receive the initial bootstrap message
         }
       }
     });
@@ -91,13 +96,20 @@ export class WebSocketClient {
         return errors.pipe(delay(1000));
       }),
     );
-    this.webSocketConnectionSubscription = this.webSocketConnection$.subscribe((msg: WebSocketServerMessage) => {
-        if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+    this.webSocketConnectionSubscription = this.webSocketConnection$.subscribe(
+      (msg: WebSocketServerMessage) => {
+        if (!this.connected$.value && msg[1] === MESSAGE_TYPE_DATA && msg[3].dt === 'CONNECTION_INFO') {
+          const connectionInfo = msg[3].data as ConnectionInfo;
+          this.connectionInfo$.next(connectionInfo);
+          this.connected$.next(true);
+          if (this.subscribeOnOpen) {
+            this.registerSubscriptions();
+          }
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
           console.error(`Server error:  ${msg[3].et}`, msg[3].msg);
         }
       },
-      (err) => console.log(err),
-      () => console.log('complete'),
+      (err) => console.log(err)
     );
   }
 
@@ -152,6 +164,27 @@ export class WebSocketClient {
           reject('Unexpected response code');
         }
       });
+    });
+  }
+
+  async getConnectionInfoUpdates() {
+    // No need to emit anything for this, all clients receive these events.
+    return new Promise<ConnectionInfoSubscriptionResponse>((resolve, reject) => {
+      // Wait for the intial connection info data to arrive. Yamcs will always
+      // sent this as the first data packet of a new connection.
+      this.connectionInfo$.pipe(
+        filter(connectionInfo => connectionInfo != null),
+        take(1),
+      ).subscribe(connectionInfo => {
+        const response = {} as ConnectionInfoSubscriptionResponse;
+        response.connectionInfo = connectionInfo!;
+        response.connectionInfo$ = this.webSocketConnection$.pipe(
+          filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+          filter((msg: WebSocketServerMessage) => msg[3].dt === 'CONNECTION_INFO'),
+          map(msg => msg[3].data as ConnectionInfo),
+        );
+        resolve(response);
+      }, err => reject(err))
     });
   }
 

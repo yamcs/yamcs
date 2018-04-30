@@ -73,6 +73,8 @@ export {
   CommandQueueEvent,
   CommandQueueEventSubscriptionResponse,
   CommandQueueSubscriptionResponse,
+  ConnectionInfo,
+  ConnectionInfoSubscriptionResponse,
   GeneralInfo,
   Instance,
   Link,
