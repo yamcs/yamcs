@@ -25,10 +25,10 @@
 
     <button mat-button
             color="primary"
-            (click)="createDownload()"
+            (click)="downloadDump()"
             [disabled]="!(rangeSelection$ | async)">
       <mat-icon>file_download</mat-icon>
-      CREATE DOWNLOAD
+      DOWNLOAD DUMP
     </button>
   </app-monitor-toolbar>
 

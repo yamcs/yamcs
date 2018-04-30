@@ -122,7 +122,10 @@ export default class EventBand extends Band {
     for (const event of events) {
       const start = toDate(event.start);
       let stop;
-      const milestone = event.milestone || !event.stop || (toDate(event.stop).getTime() === start.getTime());
+      let milestone = event.milestone;
+      if (milestone === undefined) {
+        milestone = !event.stop || (toDate(event.stop).getTime() === start.getTime());
+      }
       let renderStartX: number;
       let renderStopX: number;
       let textOutside: boolean;
@@ -266,9 +269,7 @@ export default class EventBand extends Band {
       offsetY += idx * (this.style.lineSpacing + this.eventHeight);
 
       for (const event of line) {
-        const start = toDate(event.userObject.start);
-        const milestone = event.drawInfo!.milestone || !event.userObject.stop || (toDate(event.userObject.stop).getTime() === start.getTime());
-        if (milestone) {
+        if (event.drawInfo!.milestone) {
           const milestoneG = this.renderMilestone(event, ctx.x, offsetY);
           g.addChild(milestoneG);
         } else {

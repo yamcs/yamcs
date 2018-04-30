@@ -3,6 +3,16 @@ html, body {
   padding: 0;
 }
 
+/* Disable dashed border in menus etc. Only FF does this */
+::-moz-focus-inner {
+  border:0;
+}
+
+body {
+  /* Without this FF font are too crispy */
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .material-icons.icon12 {
   font-size: 12px !important;
   height: 12px !important;

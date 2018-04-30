@@ -29,6 +29,16 @@
         <mat-cell *matCellDef="let processor" fxFlex="100px">{{ processor.creator }}</mat-cell>
       </ng-container>
 
+      <ng-container matColumnDef="time">
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="160px">Time</mat-header-cell>
+        <mat-cell *matCellDef="let processor" fxFlex="160px">{{ processor.time }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="persistent">
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="100px">Persistent</mat-header-cell>
+        <mat-cell *matCellDef="let processor" fxFlex="100px">{{ processor.persistent }}</mat-cell>
+      </ng-container>
+
       <ng-container matColumnDef="state">
         <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="100px">State</mat-header-cell>
         <mat-cell *matCellDef="let processor" fxFlex="100px">{{ processor.state | titlecase }}</mat-cell>

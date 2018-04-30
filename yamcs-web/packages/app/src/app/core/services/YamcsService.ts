@@ -26,7 +26,7 @@ export class YamcsService {
     return new Promise<Instance>((resolve, reject) => {
       if (this.selectedInstance) {
         if (this.selectedInstance.instance === instanceId) {
-          resolve();
+          resolve(this.instance$.value!);
           return;
         }
       }

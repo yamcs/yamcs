@@ -6,10 +6,10 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
-  selector: 'app-create-download-dialog',
-  templateUrl: './CreateDownloadDialog.html',
+  selector: 'app-download-dump-dialog',
+  templateUrl: './DownloadDumpDialog.html',
 })
-export class CreateDownloadDialog {
+export class DownloadDumpDialog {
 
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
@@ -17,7 +17,7 @@ export class CreateDownloadDialog {
   form: FormGroup;
 
   constructor(
-    private dialogRef: MatDialogRef<CreateDownloadDialog>,
+    private dialogRef: MatDialogRef<DownloadDumpDialog>,
     yamcs: YamcsService,
     formBuilder: FormBuilder,
     @Inject(MAT_DIALOG_DATA) readonly data: any,

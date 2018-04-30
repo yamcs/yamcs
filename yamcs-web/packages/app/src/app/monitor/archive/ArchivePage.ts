@@ -14,7 +14,7 @@ import { TimelineOptions } from '../../../../../timeline/dist/types/options';
 import { DateTimePipe } from '../../shared/pipes/DateTimePipe';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { MatDialog } from '@angular/material';
-import { CreateDownloadDialog } from './CreateDownloadDialog';
+import { DownloadDumpDialog } from './DownloadDumpDialog';
 
 @Component({
   templateUrl: './ArchivePage.html',
@@ -117,7 +117,10 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       let ttText = `Start: ${this.dateTimePipe.transform(userObject.start)}<br>`;
       ttText += `Stop:&nbsp; ${this.dateTimePipe.transform(userObject.stop)}<br>`;
       const sec = (Date.parse(userObject.stop) - Date.parse(userObject.start)) / 1000;
-      ttText += `Count: ${userObject.count} (${(userObject.count / sec).toFixed(3)} Hz)`;
+      ttText += `Count: ${userObject.count}`;
+      if (userObject.count > 1) {
+        ttText += ` (${(userObject.count / sec).toFixed(3)} Hz)`;
+      }
       this.tooltipInstance.show(ttText, evt.clientX, evt.clientY);
     });
 
@@ -148,8 +151,11 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
         for (const group of groups) {
           const events: any[] = group.entry;
           for (const event of events) {
-            const sec = (Date.parse(event.stop) - Date.parse(event.start)) / 1000;
-            event.title = `${(event.count / sec).toFixed(1)} Hz`;
+            event.milestone = false;
+            if (event.count > 1) {
+              const sec = (Date.parse(event.stop) - Date.parse(event.start)) / 1000;
+              event.title = `${(event.count / sec).toFixed(1)} Hz`;
+            }
           }
           bands.push({
             type: 'EventBand',
@@ -189,25 +195,15 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     this.timeline.zoomOut();
   }
 
-  createDownload() {
+  downloadDump() {
     const currentRange = this.rangeSelection$.value;
     if (currentRange) {
-      const dialogRef = this.dialog.open(CreateDownloadDialog, {
+      this.dialog.open(DownloadDumpDialog, {
         width: '400px',
         data: {
           start: currentRange.start,
           stop: currentRange.stop,
         },
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this.yamcs.getInstanceClient()!.getEventsDownloadURL({
-            start: result.start.toISOString(),
-            stop: result.stop.toISOString(),
-            format: 'csv',
-          });
-        }
       });
     }
   }

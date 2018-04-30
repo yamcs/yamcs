@@ -8,7 +8,7 @@
             (click)="layoutComponent.clear()"
             [disabled]="!state.frames.length">
       <mat-icon>clear</mat-icon>
-      Empty Canvas
+      EMPTY CANVAS
     </button>
 
     <button mat-button
@@ -16,7 +16,7 @@
             (click)="saveLayout()"
             [disabled]="!state.frames.length">
       <mat-icon>save</mat-icon>
-      Save Layout
+      SAVE LAYOUT
     </button>
 
     <mat-menu #arrangeMenu="matMenu" overlapTrigger="false">
@@ -29,7 +29,7 @@
             [matMenuTriggerFor]="arrangeMenu"
             [disabled]="!state.frames.length"
             color="primary">
-      Arrange
+      ARRANGE
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
   </app-monitor-toolbar>

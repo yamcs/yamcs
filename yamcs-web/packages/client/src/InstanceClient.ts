@@ -133,6 +133,24 @@ export class InstanceClient {
     return this.webSocketClient.getEventUpdates();
   }
 
+  /**
+   * Returns the Client Info for the current web socket connection.
+   * This will initiate a new connection, is none is active already.
+   */
+  async getCurrentClientInfo() {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getClientInfo();
+  }
+
+  /**
+   * Returns the processor for the current web socket connection.
+   * This will initate a new connection, is none is active already.
+   */
+  async getCurrentProcessor() {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getProcessorInfo();
+  }
+
   async createEvent(options: CreateEventRequest) {
     const body = JSON.stringify(options);
     const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/archive/${this.instance}/events2`, {

@@ -16,7 +16,7 @@ export class ProcessorsPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  displayedColumns = ['name', 'type', 'creator', 'state'];
+  displayedColumns = ['name', 'type', 'creator', 'persistent', 'time', 'state'];
 
   instance: Instance;
   dataSource = new MatTableDataSource<Processor>();

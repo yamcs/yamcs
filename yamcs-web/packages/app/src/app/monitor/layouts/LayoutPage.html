@@ -10,7 +10,7 @@
             (click)="saveLayout()"
             [disabled]="!(dirty$ | async)">
       <mat-icon>save</mat-icon>
-      Save
+      SAVE
     </button>
 
     <button mat-button
@@ -18,14 +18,14 @@
             (click)="renameLayout()"
             disabled>
       <mat-icon>edit</mat-icon>
-      Rename
+      RENAME
     </button>
 
     <button mat-button
             color="primary"
             (click)="removeLayout()">
       <mat-icon>delete_forever</mat-icon>
-      Delete
+      DELETE
     </button>
 
     <mat-menu #arrangeMenu="matMenu" overlapTrigger="false">
@@ -33,7 +33,7 @@
       <button mat-menu-item (click)="layoutComponent.cascadeFrames()">Cascade Displays</button>
     </mat-menu>
     <button mat-button [matMenuTriggerFor]="arrangeMenu" color="primary">
-      Arrange
+      ARRANGE
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
   </app-monitor-toolbar>

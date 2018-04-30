@@ -86,6 +86,9 @@ export interface Processor {
   hasAlarms: boolean;
   hasCommanding: boolean;
   state: ServiceState;
+  persistent: boolean;
+  time: string;
+  replay: boolean;
 }
 
 export interface ProcessorSubscriptionResponse {
