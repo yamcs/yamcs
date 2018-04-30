@@ -172,6 +172,11 @@ public class ManagementService implements ProcessorListener {
         if (cwi == null) {
             return;
         }
+        ProcessorClient client = cwi.client;
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            processor.disconnect(client);
+        }
         ClientInfo ci = cwi.clientInfo;
         try {
             managementListeners.forEach(l -> l.clientUnregistered(ci));
