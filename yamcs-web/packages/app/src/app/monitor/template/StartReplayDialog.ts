@@ -18,13 +18,26 @@ export class StartReplayDialog {
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
+
+    let initialStart = yamcs.getMissionTime().toISOString();
+    let initialStop = '';
+
+    if (this.data) {
+      if (this.data.start) {
+        initialStart = this.data.start.toISOString();
+      }
+      if (this.data.stop) {
+        initialStop = this.data.stop.toISOString();
+      }
+    }
+
     this.form = formBuilder.group({
       name: [generateRandomName(), Validators.required],
-      start: [yamcs.getMissionTime().toISOString(), [
+      start: [initialStart, [
         Validators.required,
         Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
       ]],
-      stop: ['', Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)],
+      stop: [initialStop, Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)],
     });
   }
 

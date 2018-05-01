@@ -61,6 +61,9 @@ export default class EventHandling {
    * depending on where the mouse is released.
    */
   private clickBlocker = (e: MouseEvent) => {
+    // Remove ourself. This to prevent capturing unrelated events.
+    document.removeEventListener('click', this.clickBlocker, true /* Must be same as when created */);
+
     e.preventDefault();
     e.stopPropagation();
     return false;

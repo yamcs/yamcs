@@ -15,6 +15,7 @@ import { DateTimePipe } from '../../shared/pipes/DateTimePipe';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { MatDialog } from '@angular/material';
 import { DownloadDumpDialog } from './DownloadDumpDialog';
+import { StartReplayDialog } from '../template/StartReplayDialog';
 
 @Component({
   templateUrl: './ArchivePage.html',
@@ -213,6 +214,19 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
 
   zoomOut() {
     this.timeline.zoomOut();
+  }
+
+  replayRange() {
+    const currentRange = this.rangeSelection$.value;
+    if (currentRange) {
+      this.dialog.open(StartReplayDialog, {
+        width: '400px',
+        data: {
+          start: currentRange.start,
+          stop: currentRange.stop,
+        },
+      });
+    }
   }
 
   downloadDump() {

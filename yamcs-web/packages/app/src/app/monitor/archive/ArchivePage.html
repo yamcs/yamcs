@@ -25,6 +25,14 @@
 
     <button mat-button
             color="primary"
+            (click)="replayRange()"
+            [disabled]="!(rangeSelection$ | async)">
+      <mat-icon>replay</mat-icon>
+      REPLAY RANGE
+    </button>
+
+    <button mat-button
+            color="primary"
             (click)="downloadDump()"
             [disabled]="!(rangeSelection$ | async)">
       <mat-icon>file_download</mat-icon>
