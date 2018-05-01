@@ -9,7 +9,9 @@ import {
 } from './events';
 
 /**
- * Groups all DOM event handling. This includes panning of sections.
+ * Groups global DOM event listeners.
+ * Depending on registered action ids, different events are either handled internally (e.g. panning), or
+ * offloaded to the plugins that registered those actions.
  */
 export default class EventHandling {
 
@@ -26,7 +28,7 @@ export default class EventHandling {
   private grabbing = false;
 
   // These grab-related properties are set optimistically (before snap detection)
-  private grabAction?: 'pan' | 'drag' | 'select';
+  private panning = false;
   private mouseDownStart?: Point;
   private grabElement?: Element;
   private grabStart?: Point;
@@ -38,7 +40,9 @@ export default class EventHandling {
   private skipNextClick = false;
 
   /**
-   * High-level element currently under mouse
+   * High-level element currently under mouse. Do not use for grab
+   * handling because the mouse may enter different targets while
+   * in the middle of grabbing another.
    */
   private mouseEnteredTarget: string | undefined;
 
@@ -175,12 +179,7 @@ export default class EventHandling {
     this.grabStart = this.mouseDownStart.minus(this.translation);
 
     this.grabElement = this.timeline.getTargetElement(event.target as Element);
-
-    if (this.mouseEnteredTarget) {
-      this.grabAction = 'drag';
-    } else {
-      this.grabAction = 'pan';
-    }
+    this.panning = !this.grabElement;
   }
 
   /**
@@ -189,16 +188,29 @@ export default class EventHandling {
    */
   private maybeGrab(dst: Point, clientX: number, clientY: number) {
     if (Math.abs(this.mouseDownStart!.distanceTo(dst)) > this.snap) {
-      this.grabbing = true;
-      this.skipNextClick = true;
-      if (this.grabAction === 'drag') {
-        this.timeline.handleUserAction(this.mouseEnteredTarget!, {
-          type: 'drag',
+
+      // Output grabstart (but not on pan)
+      if (this.grabElement && !this.grabbing) {
+        this.timeline.handleUserAction(this.grabElement!.id, {
+          type: 'grabstart',
           target: this.grabElement,
           clientX,
           clientY,
         });
-      } else if (this.grabAction === 'pan') {
+      }
+
+      this.grabbing = true;
+      this.skipNextClick = true;
+
+      // Output grabmove if grab target, otherwise just pan
+      if (this.grabElement) {
+        this.timeline.handleUserAction(this.grabElement!.id, {
+          type: 'grabmove',
+          target: this.grabElement,
+          clientX,
+          clientY,
+        });
+      } else {
         this.pan(dst);
       }
     }
@@ -348,9 +360,16 @@ export default class EventHandling {
   private endGrab() {
     if (this.grabbing) {
       this.grabbing = false;
-      if (this.grabAction === 'pan') {
+      if (this.panning) {
         this.reloadData();
         this.timeline.fireEvent('viewportChanged', new ViewportChangedEvent());
+      } else {
+        this.timeline.handleUserAction(this.grabElement!.id, {
+          type: 'grabend',
+          target: this.grabElement,
+          clientX: -1,
+          clientY: -1,
+        });
       }
     }
     this.mouseDownStart = undefined;
@@ -365,15 +384,7 @@ export default class EventHandling {
     // mouse returns back, because the mouse could be much further than the rendering had
     // advanced at the point of leaving.
     if (this.mouseDownStart) {
-      if (this.grabbing) {
-        this.grabbing = false;
-        if (this.grabAction === 'pan') {
-          this.reloadData();
-          this.timeline.fireEvent('viewportChanged', new ViewportChangedEvent());
-        }
-      }
-      this.mouseDownStart = undefined;
-      this.grabElement = undefined;
+      this.endGrab();
 
       // TODO hmm double render with above reloadData??
       this.timeline.render(); // Force redraw, we may get close to unrendered regions

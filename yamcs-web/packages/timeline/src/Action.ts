@@ -1,6 +1,8 @@
 export type ActionType = 'click'
   | 'contextmenu' // todo remove? just use click?
-  | 'drag' // todo remove instead of grab?
+  | 'grabstart'
+  | 'grabmove'
+  | 'grabend'
   | 'mouseenter'
   | 'mousemove'
   | 'mouseleave';
