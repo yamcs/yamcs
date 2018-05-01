@@ -26,7 +26,7 @@ export default class EventHandling {
   private grabbing = false;
 
   // These grab-related properties are set optimistically (before snap detection)
-  private grabState?: 'PANNING' | 'DRAGGING';
+  private grabAction?: 'pan' | 'drag' | 'select';
   private mouseDownStart?: Point;
   private grabElement?: Element;
   private grabStart?: Point;
@@ -177,9 +177,9 @@ export default class EventHandling {
     this.grabElement = this.timeline.getTargetElement(event.target as Element);
 
     if (this.mouseEnteredTarget) {
-      this.grabState = 'DRAGGING';
+      this.grabAction = 'drag';
     } else {
-      this.grabState = 'PANNING';
+      this.grabAction = 'pan';
     }
   }
 
@@ -191,14 +191,14 @@ export default class EventHandling {
     if (Math.abs(this.mouseDownStart!.distanceTo(dst)) > this.snap) {
       this.grabbing = true;
       this.skipNextClick = true;
-      if (this.grabState === 'DRAGGING') {
+      if (this.grabAction === 'drag') {
         this.timeline.handleUserAction(this.mouseEnteredTarget!, {
           type: 'drag',
           target: this.grabElement,
           clientX,
           clientY,
         });
-      } else if (this.grabState === 'PANNING') {
+      } else if (this.grabAction === 'pan') {
         this.pan(dst);
       }
     }
@@ -346,10 +346,12 @@ export default class EventHandling {
   }
 
   private endGrab() {
-    if (this.grabbing && this.grabState === 'PANNING') {
+    if (this.grabbing) {
       this.grabbing = false;
-      this.reloadData();
-      this.timeline.fireEvent('viewportChanged', new ViewportChangedEvent());
+      if (this.grabAction === 'pan') {
+        this.reloadData();
+        this.timeline.fireEvent('viewportChanged', new ViewportChangedEvent());
+      }
     }
     this.mouseDownStart = undefined;
     this.grabElement = undefined;
@@ -363,10 +365,12 @@ export default class EventHandling {
     // mouse returns back, because the mouse could be much further than the rendering had
     // advanced at the point of leaving.
     if (this.mouseDownStart) {
-      if (this.grabbing && this.grabState === 'PANNING') {
+      if (this.grabbing) {
         this.grabbing = false;
-        this.reloadData();
-        this.timeline.fireEvent('viewportChanged', new ViewportChangedEvent());
+        if (this.grabAction === 'pan') {
+          this.reloadData();
+          this.timeline.fireEvent('viewportChanged', new ViewportChangedEvent());
+        }
       }
       this.mouseDownStart = undefined;
       this.grabElement = undefined;

@@ -183,7 +183,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
         }
         this.timeline.setData({
           header: [
-            { type: 'Timescale', label: 'UTC', tz: 'UTC' },
+            { type: 'Timescale', label: 'UTC', tz: 'UTC', grabAction: 'select' },
           ],
           body: bands,
         });

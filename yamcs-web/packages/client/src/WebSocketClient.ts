@@ -84,10 +84,9 @@ export class WebSocketClient {
       },
       openObserver: {
         next: () => {
-          console.log('Connected to Yamcs');
           // Note we do not set connected$ here
-          // Instead prefer to set that after we
-          // receive the initial bootstrap message
+          // Instead prefer to set that after
+          // receiving the initial bootstrap message
         }
       }
     });

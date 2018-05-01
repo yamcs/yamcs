@@ -11,9 +11,10 @@ const SCALE_5D = 4;
 const SCALE_1M = 5;
 
 export interface TimescaleOptions extends BandOptions {
+  tz: string;
   resolution?: 'auto';
   dayFormat?: string;
-  tz: string;
+  grabAction?: 'pan' | 'select';
 }
 
 export interface TimescaleStyle {
@@ -114,8 +115,13 @@ export default class Timescale extends Band {
       width: this.timeline.pointsBetween(this.timeline.loadStart, this.timeline.loadStop) - offsetX,
       height: this.style.lineHeight,
       fill: this.style.bandBackgroundColor,
-      'pointer-events': 'none'
     };
+
+    if (this.opts.grabAction === 'select') {
+      scaleBg['cursor'] = 'col-resize';
+    } else {
+      scaleBg['pointer-events'] = 'none';
+    }
 
     if (this.style.horizontalTickLineColor) {
       scaleBg['stroke'] = this.style.horizontalTickLineColor;

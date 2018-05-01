@@ -81,7 +81,6 @@ export default class WallclockLocator extends Plugin {
 
   constructor(timeline: Timeline, protected opts: WallclockLocatorOptions, protected style: WallclockLocatorStyle) {
     super(timeline, opts, style);
-    console.log('opts', opts);
     this.time = opts.time;
   }
 
