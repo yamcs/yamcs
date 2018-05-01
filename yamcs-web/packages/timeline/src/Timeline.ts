@@ -619,10 +619,24 @@ export default class Timeline {
   }
 
   /**
+   * Returns the action target of the given element, but only if it was registered
+   * with the specified type.
+   */
+  findActionTarget(actionType: ActionType, element: Element) {
+    const targetElement = this.getTargetElement(element);
+    if (targetElement) {
+      const validTargets = this.actionTargetsByType[actionType];
+      if (validTargets && validTargets.indexOf(targetElement.id) >= 0) {
+        return targetElement;
+      }
+    }
+  }
+
+  /**
    * Returns the parent element that bears the group id and is passed to
    * the user in events.
    */
-  getTargetElement(element: Element) {
+  private getTargetElement(element: Element) {
     let el = element;
     while (el && el.parentElement && (el !== this.vdom.rootEl) && !el['id']) {
       el = el.parentElement;

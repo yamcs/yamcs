@@ -1,4 +1,4 @@
-import { ClipPath, G, Path, Rect, Set, Text, Title, Line } from '../tags';
+import { ClipPath, G, Path, Rect, Set, Text, Title, Line, Ellipse } from '../tags';
 import { toDate, isBefore, isAfter } from '../utils';
 import Band, { BandOptions } from './Band';
 import Timeline from '../Timeline';
@@ -26,9 +26,34 @@ interface DrawInfo {
 }
 
 export interface EventBandOptions extends BandOptions {
-  hatchUncovered?: boolean;
-  leakEventBackground?: boolean;
+
+  /**
+   * Events that will be drawn in the band.
+   */
   events?: any[];
+
+  /**
+   * Whether ranges without a single overlapping event should be rendered
+   * with a cross-hatch pattern. Default: false.
+   */
+  hatchUncovered?: boolean;
+
+  /**
+   * Whether the event's background color should be extended vertically (with opacity).
+   * Default: false.
+   */
+  leakEventBackground?: boolean;
+
+  /**
+   * If true, events on this band may be dragged from one location
+   * to another. Default: false
+   */
+  draggable?: boolean;
+
+  /**
+   * If true, events on this band may be resized. Default: true
+   */
+  resizable?: boolean;
 }
 
 export interface EventBandStyle {
@@ -182,12 +207,15 @@ export default class EventBand extends Band {
         if (this.opts.interactive) {
           this.timeline.registerActionTarget('click', id);
           this.timeline.registerActionTarget('contextmenu', id);
-          this.timeline.registerActionTarget('grabstart', id);
-          this.timeline.registerActionTarget('grabmove', id);
-          this.timeline.registerActionTarget('grabend', id);
           this.timeline.registerActionTarget('mouseenter', id);
           this.timeline.registerActionTarget('mousemove', id);
           this.timeline.registerActionTarget('mouseleave', id);
+
+          if (this.opts.draggable) {
+            this.timeline.registerActionTarget('grabstart', id);
+            this.timeline.registerActionTarget('grabmove', id);
+            this.timeline.registerActionTarget('grabend', id);
+          }
         }
 
         analyzedEvents.push({
@@ -489,26 +517,28 @@ export default class EventBand extends Band {
     }
 
     if (this.opts.interactive) {
-      /*eventG.addChild(new Ellipse({
-        cx: rectX,
-        cy: rectY + (this.eventHeight / 2),
-        rx: 3,
-        ry: 3,
-        fill: 'white',
-        stroke: 'black',
-        'stroke-width': 0.5,
-        cursor: 'w-resize',
-      }))
-      eventG.addChild(new Ellipse({
-        cx: rectX + rectWidth,
-        cy: rectY + (this.eventHeight / 2),
-        rx: 3,
-        ry: 3,
-        fill: 'white',
-        stroke: 'black',
-        'stroke-width': 0.5,
-        cursor: 'e-resize',
-      }))*/
+      if (this.opts.resizable) {
+        eventG.addChild(new Ellipse({
+          cx: rectX,
+          cy: rectY + (this.eventHeight / 2),
+          rx: 3,
+          ry: 3,
+          fill: 'white',
+          stroke: 'black',
+          'stroke-width': 0.5,
+          cursor: 'w-resize',
+        }));
+        eventG.addChild(new Ellipse({
+          cx: rectX + rectWidth,
+          cy: rectY + (this.eventHeight / 2),
+          rx: 3,
+          ry: 3,
+          fill: 'white',
+          stroke: 'black',
+          'stroke-width': 0.5,
+          cursor: 'e-resize',
+        }));
+      }
       eventG.setAttribute('cursor', this.style.highlightCursor);
       eventG.addChild(new Set({
         attributeName: 'opacity',

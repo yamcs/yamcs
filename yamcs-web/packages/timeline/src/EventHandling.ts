@@ -30,7 +30,7 @@ export default class EventHandling {
   // These grab-related properties are set optimistically (before snap detection)
   private panning = false;
   private mouseDownStart?: Point;
-  private grabElement?: Element;
+  private grabTarget?: Element;
   private grabStart?: Point;
 
   /**
@@ -178,8 +178,8 @@ export default class EventHandling {
     // the pre-existing transform)
     this.grabStart = this.mouseDownStart.minus(this.translation);
 
-    this.grabElement = this.timeline.getTargetElement(event.target as Element);
-    this.panning = !this.grabElement;
+    this.grabTarget = this.timeline.findActionTarget('grabstart', event.target as Element);
+    this.panning = !this.grabTarget;
   }
 
   /**
@@ -190,10 +190,10 @@ export default class EventHandling {
     if (Math.abs(this.mouseDownStart!.distanceTo(dst)) > this.snap) {
 
       // Output grabstart (but not on pan)
-      if (this.grabElement && !this.grabbing) {
-        this.timeline.handleUserAction(this.grabElement!.id, {
+      if (this.grabTarget && !this.grabbing) {
+        this.timeline.handleUserAction(this.grabTarget!.id, {
           type: 'grabstart',
-          target: this.grabElement,
+          target: this.grabTarget,
           clientX,
           clientY,
         });
@@ -203,10 +203,10 @@ export default class EventHandling {
       this.skipNextClick = true;
 
       // Output grabmove if grab target, otherwise just pan
-      if (this.grabElement) {
-        this.timeline.handleUserAction(this.grabElement!.id, {
+      if (this.grabTarget) {
+        this.timeline.handleUserAction(this.grabTarget!.id, {
           type: 'grabmove',
-          target: this.grabElement,
+          target: this.grabTarget,
           clientX,
           clientY,
         });
@@ -364,16 +364,16 @@ export default class EventHandling {
         this.reloadData();
         this.timeline.fireEvent('viewportChanged', new ViewportChangedEvent());
       } else {
-        this.timeline.handleUserAction(this.grabElement!.id, {
+        this.timeline.handleUserAction(this.grabTarget!.id, {
           type: 'grabend',
-          target: this.grabElement,
+          target: this.grabTarget,
           clientX: -1,
           clientY: -1,
         });
       }
     }
     this.mouseDownStart = undefined;
-    this.grabElement = undefined;
+    this.grabTarget = undefined;
   }
 
   private onMouseLeave(event: Event) {
