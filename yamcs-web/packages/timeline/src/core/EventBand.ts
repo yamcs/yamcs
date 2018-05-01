@@ -610,20 +610,19 @@ export default class EventBand extends Band {
           this.timeline.fireEvent('eventContextMenu', eventContextMenuEvent);
           break;
         case 'grabstart':
-          console.log('event grab actin');
           break;
         case 'grabmove':
-          console.log('grabmove..');
           this.handleDrag(id, action);
           break;
         case 'grabend':
-          console.log('event grabend');
           break;
         case 'mouseenter':
-          const mouseEnterEvent = new EventEvent(this.eventsById[id], action.target);
-          mouseEnterEvent.clientX = action.clientX;
-          mouseEnterEvent.clientY = action.clientY;
-          this.timeline.fireEvent('eventMouseEnter', mouseEnterEvent);
+          if (!action.grabbing) {
+            const mouseEnterEvent = new EventEvent(this.eventsById[id], action.target);
+            mouseEnterEvent.clientX = action.clientX;
+            mouseEnterEvent.clientY = action.clientY;
+            this.timeline.fireEvent('eventMouseEnter', mouseEnterEvent);
+          }
           break;
         case 'mousemove':
           const mouseMoveEvent = new EventEvent(this.eventsById[id], action.target);

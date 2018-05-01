@@ -76,6 +76,8 @@ export default class Timeline {
     eventMouseEnter: [],
     eventMouseMove: [],
     eventMouseLeave: [],
+    grabStart: [],
+    grabEnd: [],
     rangeSelectionChanged: [],
     sidebarClick: [],
     viewportHover: [],
@@ -88,7 +90,6 @@ export default class Timeline {
 
   // action-type -> id
   private actionTargetsByType: { [key: string]: string[] } = {};
-  private actionTargets: string[] = [];
 
   private _style: any;
   private tracker: TrackerMode;
@@ -450,7 +451,6 @@ export default class Timeline {
     } else {
       this.actionTargetsByType[actionType] = [id];
     }
-    this.actionTargets.push(id);
   }
 
   handleUserAction(id: string, action: Action) {
@@ -650,10 +650,6 @@ export default class Timeline {
     if (el && el['id']) {
       return el;
     }
-  }
-
-  isActionTarget(id: string) {
-    return this.actionTargets.indexOf(id) >= 0;
   }
 
   setRootCursor(cursorStyle: string, important = false) {

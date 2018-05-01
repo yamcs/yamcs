@@ -1,7 +1,7 @@
 import { Range } from './Range';
 
 /**
- * Marker interface for all timelineStuff events
+ * Marker interface for all Timeline events
  */
 export interface TimelineEvent {
 }
@@ -13,6 +13,8 @@ export interface TimelineEventMap {
   'eventMouseEnter': EventEvent;
   'eventMouseMove': EventEvent;
   'eventMouseLeave': EventEvent;
+  'grabStart': GrabStartEvent;
+  'grabEnd': GrabEndEvent;
   'rangeSelectionChanged': RangeSelectionChangedEvent;
   'sidebarClick': SidebarClickEvent;
   'viewportHover': ViewportHoverEvent;
@@ -61,6 +63,12 @@ export class ViewportChangeEvent implements TimelineEvent {
 }
 
 export class ViewportChangedEvent implements TimelineEvent {
+}
+
+export class GrabStartEvent implements TimelineEvent {
+}
+
+export class GrabEndEvent implements TimelineEvent {
 }
 
 export class RangeSelectionChangedEvent implements TimelineEvent {

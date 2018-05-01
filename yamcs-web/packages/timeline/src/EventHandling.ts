@@ -6,6 +6,8 @@ import {
   ViewportChangedEvent,
   ViewportHoverEvent,
   WheelViewportEvent,
+  GrabStartEvent,
+  GrabEndEvent,
 } from './events';
 
 /**
@@ -121,6 +123,7 @@ export default class EventHandling {
           target: actionTarget,
           clientX: event.clientX,
           clientY: event.clientY,
+          grabbing: this.grabbing,
         });
       }
     }
@@ -138,6 +141,7 @@ export default class EventHandling {
           target: actionTarget,
           clientX: event.clientX,
           clientY: event.clientY,
+          grabbing: this.grabbing,
         });
       }
     }
@@ -193,6 +197,8 @@ export default class EventHandling {
   private maybeGrab(dst: Point, clientX: number, clientY: number) {
     if (Math.abs(this.mouseDownStart!.distanceTo(dst)) > this.snap) {
 
+      this.timeline.fireEvent('grabStart', new GrabStartEvent());
+
       // Output grabstart (but not on pan)
       if (this.grabTarget && !this.grabbing) {
         const x = this.mouseDownStart!.x - this.translation.x - this.timeline.style['sidebarWidth'];
@@ -202,8 +208,8 @@ export default class EventHandling {
           target: this.grabTarget,
           clientX,
           clientY,
-          x,
           date,
+          grabbing: this.grabbing,
         });
       }
 
@@ -219,8 +225,8 @@ export default class EventHandling {
           target: this.grabTarget,
           clientX,
           clientY,
-          x,
           date,
+          grabbing: this.grabbing,
         });
       } else {
         this.pan(dst);
@@ -300,6 +306,7 @@ export default class EventHandling {
             target: actionTarget,
             clientX: event.clientX,
             clientY: event.clientY,
+            grabbing: this.grabbing,
           });
         }
         this.mouseEnteredTarget = actionTarget.id;
@@ -308,6 +315,7 @@ export default class EventHandling {
           target: actionTarget,
           clientX: event.clientX,
           clientY: event.clientY,
+          grabbing: this.grabbing,
         });
       }
       this.timeline.handleUserAction(actionTarget.id, {
@@ -315,6 +323,7 @@ export default class EventHandling {
         target: actionTarget,
         clientX: event.clientX,
         clientY: event.clientY,
+        grabbing: this.grabbing,
       });
     } else if (this.mouseEnteredTarget) {
       this.timeline.handleUserAction(this.mouseEnteredTarget, {
@@ -322,6 +331,7 @@ export default class EventHandling {
         target: actionTarget,
         clientX: event.clientX,
         clientY: event.clientY,
+        grabbing: this.grabbing,
       });
       this.mouseEnteredTarget = undefined;
     }
@@ -384,17 +394,17 @@ export default class EventHandling {
           x = dst!.x - this.translation.x - this.timeline.style['sidebarWidth'];
           date = this.timeline.toDate(x);
         }
+        this.timeline.fireEvent('grabEnd', new GrabEndEvent());
         this.timeline.handleUserAction(this.grabTarget!.id, {
           type: 'grabend',
           target: this.grabTarget,
           clientX: -1,
           clientY: -1,
-          x,
           date,
+          grabbing: this.grabbing,
         });
       }
     }
-    // this.skipNextClick = false;
     this.mouseDownStart = undefined;
     this.grabTarget = undefined;
   }

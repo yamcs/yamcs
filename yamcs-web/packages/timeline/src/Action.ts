@@ -21,10 +21,23 @@ export interface Action {
 
   type: ActionType;
 
+  /**
+   * DOM element associated with this action.
+   */
   target?: Element;
+
   clientX: number;
   clientY: number;
 
-  x?: number;
+  /**
+   * Whether the user is currently in the middle of doing any kind of grab action.
+   * (pan, select, resize, drag).
+   */
+  grabbing: boolean;
+
+  /**
+   * Optional date associated with the event. For example
+   * a click on a viewport location matches to a specific date.
+   */
   date?: Date;
 }

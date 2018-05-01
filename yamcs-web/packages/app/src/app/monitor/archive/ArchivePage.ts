@@ -140,6 +140,10 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       this.timeline.selectRange(userObject.start, userObject.stop);
     });
 
+    this.timeline.on('grabStart', () => {
+      this.tooltipInstance.hide();
+    });
+
     this.timeline.on('eventMouseLeave', evt => {
       this.tooltipInstance.hide();
     });
