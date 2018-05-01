@@ -3,6 +3,7 @@ import * as utils from '../utils';
 import Band, { BandOptions } from './Band';
 import Timeline from '../Timeline';
 import RenderContext from '../RenderContext';
+import { Action } from '../Action';
 
 const SCALE_1H = 1;
 const SCALE_QD = 2;
@@ -14,6 +15,11 @@ export interface TimescaleOptions extends BandOptions {
   tz: string;
   resolution?: 'auto';
   dayFormat?: string;
+
+  /**
+   * Which action to perform when the user performs a grab operation anywhere on the band.
+   * Default: pan
+   */
   grabAction?: 'pan' | 'select';
 }
 
@@ -67,6 +73,8 @@ export default class Timescale extends Band {
   dayFormat: any;
   contributionId: any;
 
+  scaleBgId: string;
+
   constructor(timeline: Timeline, protected opts: TimescaleOptions, protected style: TimescaleStyle) {
     super(timeline, opts, style);
 
@@ -109,7 +117,9 @@ export default class Timescale extends Band {
       style: 'overflow: visible',
     }).addChild(new Defs().addChild(this._renderHourPattern()));
 
+    this.scaleBgId = Timeline.nextId();
     const scaleBg: any = {
+      id: this.scaleBgId,
       x: this.timeline.positionDate(this.timeline.loadStart),
       y: 0,
       width: this.timeline.pointsBetween(this.timeline.loadStart, this.timeline.loadStop) - offsetX,
@@ -119,6 +129,10 @@ export default class Timescale extends Band {
 
     if (this.opts.grabAction === 'select') {
       scaleBg['cursor'] = 'col-resize';
+      this.timeline.registerActionTarget('click', this.scaleBgId);
+      this.timeline.registerActionTarget('grabstart', this.scaleBgId);
+      this.timeline.registerActionTarget('grabmove', this.scaleBgId);
+      this.timeline.registerActionTarget('grabend', this.scaleBgId);
     } else {
       scaleBg['pointer-events'] = 'none';
     }
@@ -579,5 +593,28 @@ export default class Timescale extends Band {
     }
 
     return result;
+  }
+
+  grabX1?: Date;
+
+  onAction(id: string, action: Action) {
+    super.onAction(id, action);
+    if (id === this.scaleBgId) {
+      switch (action.type) {
+        case 'click':
+          console.log('got a click');
+          this.timeline.clearSelection();
+          break;
+        case 'grabstart':
+          this.grabX1 = action.date;
+          this.timeline.clearSelection();
+          break;
+        case 'grabmove':
+        case 'grabend':
+          const grabX2 = action.date;
+          this.timeline.selectRange(this.grabX1!, grabX2!);
+          break;
+      }
+    }
   }
 }

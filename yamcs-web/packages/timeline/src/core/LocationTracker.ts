@@ -51,6 +51,7 @@ export default class LocationTracker extends Plugin {
         rx: this.style.knobRadius,
         ry: this.style.knobRadius,
         fill: this.style.lineColor,
+        'pointer-events': 'none',
       }),
       new Ellipse({
         cx: ctx.x - this.style.knobRadius,
@@ -58,6 +59,7 @@ export default class LocationTracker extends Plugin {
         rx: this.style.knobRadius,
         ry: this.style.knobRadius,
         fill: this.style.lineColor,
+        'pointer-events': 'none',
       }),
     );
   }

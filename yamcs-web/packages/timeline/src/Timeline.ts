@@ -594,10 +594,14 @@ export default class Timeline {
   }
 
   selectRange(start: Date | string, stop: Date | string) {
-    this.selectedRange = {
-      start: utils.toDate(start),
-      stop: utils.toDate(stop),
-    };
+    const startDate = utils.toDate(start);
+    const stopDate = utils.toDate(stop);
+    if (startDate.getTime() <= stopDate.getTime()) {
+      this.selectedRange = { start: startDate, stop: stopDate };
+    } else {
+      this.selectedRange = { start: stopDate, stop: startDate };
+    }
+
     for (const contribution of this.contributions) {
       if (contribution.type === core.HorizontalSelection.type) {
         contribution.setSelection(this.selectedRange);
@@ -622,9 +626,11 @@ export default class Timeline {
    * Returns the action target of the given element, but only if it was registered
    * with the specified type.
    */
-  findActionTarget(actionType: ActionType, element: Element) {
+  findActionTarget(element: Element, actionType?: ActionType) {
     const targetElement = this.getTargetElement(element);
-    if (targetElement) {
+    if (!actionType) {
+      return targetElement;
+    } else if (targetElement) {
       const validTargets = this.actionTargetsByType[actionType];
       if (validTargets && validTargets.indexOf(targetElement.id) >= 0) {
         return targetElement;

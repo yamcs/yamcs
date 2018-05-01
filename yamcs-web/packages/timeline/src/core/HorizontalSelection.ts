@@ -55,6 +55,7 @@ export default class HorizontalSelection extends Plugin {
       stroke: this.style.lineColor,
       'stroke-dasharray': '4 3',
       'stroke-opacity': this.style.lineOpacity,
+      'pointer-events': 'none'
     }), new Line({
       id: this.lineRightId,
       x1: ctx.x,
@@ -64,6 +65,7 @@ export default class HorizontalSelection extends Plugin {
       stroke: this.style.lineColor,
       'stroke-opacity': this.style.lineOpacity,
       'stroke-dasharray': '4 3',
+      'pointer-events': 'none'
     }));
   }
 

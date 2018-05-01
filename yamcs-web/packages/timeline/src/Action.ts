@@ -24,4 +24,7 @@ export interface Action {
   target?: Element;
   clientX: number;
   clientY: number;
+
+  x?: number;
+  date?: Date;
 }

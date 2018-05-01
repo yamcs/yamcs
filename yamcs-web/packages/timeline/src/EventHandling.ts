@@ -34,7 +34,7 @@ export default class EventHandling {
   private grabStart?: Point;
 
   /**
-   * Used to signal from 'mousedown' when the 'click' event
+   * Signal while handling 'mousedown' that the 'click' event
    * should not do anything (i.e. because the user was grabbing)
    */
   private skipNextClick = false;
@@ -114,13 +114,15 @@ export default class EventHandling {
       return;
     }
     if (!this.grabbing && this.mouseEnteredTarget) {
-      const targetElement = this.timeline.getTargetElement(event.target as Element);
-      this.timeline.handleUserAction(this.mouseEnteredTarget, {
-        type: 'click',
-        target: targetElement,
-        clientX: event.clientX,
-        clientY: event.clientY,
-      });
+      const actionTarget = this.timeline.findActionTarget(event.target as Element, 'click');
+      if (actionTarget) {
+        this.timeline.handleUserAction(this.mouseEnteredTarget, {
+          type: 'click',
+          target: actionTarget,
+          clientX: event.clientX,
+          clientY: event.clientY,
+        });
+      }
     }
   }
 
@@ -129,13 +131,15 @@ export default class EventHandling {
       return;
     }
     if (this.mouseEnteredTarget) {
-      const targetElement = this.timeline.getTargetElement(event.target as Element);
-      this.timeline.handleUserAction(this.mouseEnteredTarget, {
-        type: 'contextmenu',
-        target: targetElement,
-        clientX: event.clientX,
-        clientY: event.clientY,
-      });
+      const actionTarget = this.timeline.findActionTarget(event.target as Element, 'contextmenu');
+      if (actionTarget) {
+        this.timeline.handleUserAction(this.mouseEnteredTarget, {
+          type: 'contextmenu',
+          target: actionTarget,
+          clientX: event.clientX,
+          clientY: event.clientY,
+        });
+      }
     }
 
     event.preventDefault();
@@ -178,7 +182,7 @@ export default class EventHandling {
     // the pre-existing transform)
     this.grabStart = this.mouseDownStart.minus(this.translation);
 
-    this.grabTarget = this.timeline.findActionTarget('grabstart', event.target as Element);
+    this.grabTarget = this.timeline.findActionTarget(event.target as Element, 'grabstart');
     this.panning = !this.grabTarget;
   }
 
@@ -191,11 +195,15 @@ export default class EventHandling {
 
       // Output grabstart (but not on pan)
       if (this.grabTarget && !this.grabbing) {
+        const x = this.mouseDownStart!.x - this.translation.x - this.timeline.style['sidebarWidth'];
+        const date = this.timeline.toDate(x);
         this.timeline.handleUserAction(this.grabTarget!.id, {
           type: 'grabstart',
           target: this.grabTarget,
           clientX,
           clientY,
+          x,
+          date,
         });
       }
 
@@ -204,11 +212,15 @@ export default class EventHandling {
 
       // Output grabmove if grab target, otherwise just pan
       if (this.grabTarget) {
+        const x = dst.x - this.translation.x - this.timeline.style['sidebarWidth'];
+        const date = this.timeline.toDate(x);
         this.timeline.handleUserAction(this.grabTarget!.id, {
           type: 'grabmove',
           target: this.grabTarget,
           clientX,
           clientY,
+          x,
+          date,
         });
       } else {
         this.pan(dst);
@@ -279,35 +291,35 @@ export default class EventHandling {
     }
 
     // High-level interactions with registered events
-    const targetElement = this.timeline.getTargetElement(event.target as Element);
-    if (targetElement && this.timeline.isActionTarget(targetElement['id'])) {
-      if (targetElement['id'] !== this.mouseEnteredTarget) {
+    const actionTarget = this.timeline.findActionTarget(event.target as Element);
+    if (actionTarget) {
+      if (actionTarget.id !== this.mouseEnteredTarget) {
         if (this.mouseEnteredTarget) {
           this.timeline.handleUserAction(this.mouseEnteredTarget, {
             type: 'mouseleave',
-            target: targetElement,
+            target: actionTarget,
             clientX: event.clientX,
             clientY: event.clientY,
           });
         }
-        this.mouseEnteredTarget = targetElement['id'];
-        this.timeline.handleUserAction(targetElement['id'], {
+        this.mouseEnteredTarget = actionTarget.id;
+        this.timeline.handleUserAction(actionTarget.id, {
           type: 'mouseenter',
-          target: targetElement,
+          target: actionTarget,
           clientX: event.clientX,
           clientY: event.clientY,
         });
       }
-      this.timeline.handleUserAction(targetElement['id'], {
+      this.timeline.handleUserAction(actionTarget.id, {
         type: 'mousemove',
-        target: targetElement,
+        target: actionTarget,
         clientX: event.clientX,
         clientY: event.clientY,
       });
-    } else if (!targetElement && this.mouseEnteredTarget) {
+    } else if (this.mouseEnteredTarget) {
       this.timeline.handleUserAction(this.mouseEnteredTarget, {
         type: 'mouseleave',
-        target: targetElement,
+        target: actionTarget,
         clientX: event.clientX,
         clientY: event.clientY,
       });
@@ -338,7 +350,8 @@ export default class EventHandling {
     // Ensure new re-rendering aligns with last viewport
     this.onMouseMove(event);
 
-    this.endGrab();
+    const pos = this.mousePosition(event);
+    this.endGrab(pos);
 
     event.preventDefault();
     event.stopPropagation();
@@ -350,28 +363,38 @@ export default class EventHandling {
       return;
     }
 
-    this.endGrab();
+    const pos = this.touchPosition(event);
+    this.endGrab(pos);
 
     event.preventDefault();
     event.stopPropagation();
     return false;
   }
 
-  private endGrab() {
+  private endGrab(dst?: Point) {
     if (this.grabbing) {
       this.grabbing = false;
       if (this.panning) {
         this.reloadData();
         this.timeline.fireEvent('viewportChanged', new ViewportChangedEvent());
       } else {
+        let x;
+        let date;
+        if (dst) {
+          x = dst!.x - this.translation.x - this.timeline.style['sidebarWidth'];
+          date = this.timeline.toDate(x);
+        }
         this.timeline.handleUserAction(this.grabTarget!.id, {
           type: 'grabend',
           target: this.grabTarget,
           clientX: -1,
           clientY: -1,
+          x,
+          date,
         });
       }
     }
+    // this.skipNextClick = false;
     this.mouseDownStart = undefined;
     this.grabTarget = undefined;
   }
