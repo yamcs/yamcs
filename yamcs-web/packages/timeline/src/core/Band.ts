@@ -123,7 +123,7 @@ export default abstract class Band extends Plugin {
         begin: 'mouseover',
         end: 'mouseout',
       }));
-      this.timeline.registerInteractionTarget(this.sidebarId);
+      this.timeline.registerActionTarget('click', this.sidebarId);
     }
 
     const g = new G().addChild(

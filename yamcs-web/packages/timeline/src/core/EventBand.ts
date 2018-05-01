@@ -180,7 +180,11 @@ export default class EventBand extends Band {
         const id = Timeline.nextId();
         this.eventsById[id] = event;
         if (this.opts.interactive) {
-          this.timeline.registerInteractionTarget(id);
+          this.timeline.registerActionTarget('click', id);
+          this.timeline.registerActionTarget('contextmenu', id);
+          this.timeline.registerActionTarget('mouseenter', id);
+          this.timeline.registerActionTarget('mousemove', id);
+          this.timeline.registerActionTarget('mouseleave', id);
         }
 
         analyzedEvents.push({

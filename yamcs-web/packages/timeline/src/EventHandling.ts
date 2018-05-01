@@ -268,7 +268,7 @@ export default class EventHandling {
 
     // High-level interactions with registered events
     const targetElement = this.timeline.getTargetElement(event.target as Element);
-    if (targetElement && this.timeline.isInteractionTarget(targetElement['id'])) {
+    if (targetElement && this.timeline.isActionTarget(targetElement['id'])) {
       if (targetElement['id'] !== this.mouseEnteredTarget) {
         if (this.mouseEnteredTarget) {
           this.timeline.handleUserAction(this.mouseEnteredTarget, {

@@ -83,7 +83,11 @@ export default class CommsBand extends Band {
                 end: 'mouseout',
               }));
               this.eventsById[id] = event;
-              this.timeline.registerInteractionTarget(id);
+              this.timeline.registerActionTarget('click', id);
+              this.timeline.registerActionTarget('contextmenu', id);
+              this.timeline.registerActionTarget('mouseenter', id);
+              this.timeline.registerActionTarget('mousemove', id);
+              this.timeline.registerActionTarget('mouseleave', id);
             }
           }
         }

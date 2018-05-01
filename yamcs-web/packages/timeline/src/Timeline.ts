@@ -11,7 +11,7 @@ import {
   RangeSelectionChangedEvent,
 } from './events';
 import { PanMode, TimelineOptions, TrackerMode } from './options';
-import { Action } from './Action';
+import { Action, ActionType } from './Action';
 import { Range } from './Range';
 
 export default class Timeline {
@@ -86,10 +86,9 @@ export default class Timeline {
 
   private measurerSvg: SVGElement;
 
-  // We can maybe delete this, but currently is used
-  // to only generate events for registered targets
-  // maybe use a custom attribute rather than "id"?
-  private interactionTargets: string[] = [];
+  // action-type -> id
+  private actionTargetsByType: { [key: string]: string[] } = {};
+  private actionTargets: string[] = [];
 
   private _style: any;
   private tracker: TrackerMode;
@@ -445,8 +444,13 @@ export default class Timeline {
   /**
    * Register a target that will respond to user interaction
    */
-  registerInteractionTarget(id: string) {
-    this.interactionTargets.push(id);
+  registerActionTarget(actionType: ActionType, id: string) {
+    if (this.actionTargetsByType.hasOwnProperty(actionType)) {
+      this.actionTargetsByType[actionType].push(id);
+    } else {
+      this.actionTargetsByType[actionType] = [id];
+    }
+    this.actionTargets.push(id);
   }
 
   handleUserAction(id: string, action: Action) {
@@ -628,8 +632,8 @@ export default class Timeline {
     }
   }
 
-  isInteractionTarget(id: string) {
-    return this.interactionTargets.indexOf(id) >= 0;
+  isActionTarget(id: string) {
+    return this.actionTargets.indexOf(id) >= 0;
   }
 
   setRootCursor(cursorStyle: string, important = false) {

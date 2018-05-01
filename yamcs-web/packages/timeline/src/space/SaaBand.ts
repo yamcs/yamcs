@@ -98,7 +98,11 @@ export default class SaaBand extends Band {
         if (this.opts.interactive) {
           eventG.setAttribute('cursor', this.style.highlightCursor);
           this.eventsById[id] = event;
-          this.timeline.registerInteractionTarget(id);
+          this.timeline.registerActionTarget('click', id);
+          this.timeline.registerActionTarget('contextmenu', id);
+          this.timeline.registerActionTarget('mouseenter', id);
+          this.timeline.registerActionTarget('mousemove', id);
+          this.timeline.registerActionTarget('mouseleave', id);
         }
         g.addChild(eventG);
       }
