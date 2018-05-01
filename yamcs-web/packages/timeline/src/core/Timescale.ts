@@ -602,7 +602,6 @@ export default class Timescale extends Band {
     if (id === this.scaleBgId) {
       switch (action.type) {
         case 'click':
-          console.log('got a click');
           this.timeline.clearSelection();
           break;
         case 'grabstart':
