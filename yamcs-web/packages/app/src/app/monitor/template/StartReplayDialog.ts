@@ -29,22 +29,18 @@ export class StartReplayDialog {
   }
 
   start() {
-    this.yamcs.getInstanceClient()!.getCurrentClientInfo().then(clientInfo => {
-      const clientId = clientInfo.id;
+    const replayConfig: {[key: string]: any} = {
+      utcStart: this.form.value.start
+    };
+    if (this.form.value.stop) {
+      replayConfig.utcStop = this.form.value.stop;
+    }
 
-      const replayConfig: {[key: string]: any} = {
-        utcStart: this.form.value.start
-      };
-      if (this.form.value.stop) {
-        replayConfig.utcStop = this.form.value.stop;
-      }
-
-      this.yamcs.getInstanceClient()!.createProcessor({
-        name: this.form.value.name,
-        type: 'Archive',
-        clientId: [clientId],
-        config: JSON.stringify(replayConfig),
-      }).then(() => this.dialogRef.close());
-    });
+    this.yamcs.getInstanceClient()!.createProcessor({
+      name: this.form.value.name,
+      type: 'Archive', // TODO make configurable via AppConfig?
+      clientId: [this.yamcs.getClientId()],
+      config: JSON.stringify(replayConfig),
+    }).then(() => this.dialogRef.close());
   }
 }

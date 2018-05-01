@@ -430,58 +430,6 @@ export class WebSocketClient {
     });
   }
 
-  /**
-   * Returns client info for the current connection.
-   */
-  async getClientInfo() {
-    const requestId = this.emit({
-      management: 'getClientInfo',
-    });
-
-    return new Promise<ClientInfo>((resolve, reject) => {
-      this.webSocketConnection$.pipe(
-        first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
-        }),
-      ).subscribe((msg: WebSocketServerMessage) => {
-        if (msg[1] === MESSAGE_TYPE_REPLY) {
-          const response = msg[3].data as ClientInfo;
-          resolve(response);
-        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
-          reject(msg[3].et);
-        } else {
-          reject('Unexpected response code');
-        }
-      });
-    });
-  }
-
-  /**
-   * Returns processor info for the current connection.
-   */
-  async getProcessorInfo() {
-    const requestId = this.emit({
-      management: 'getProcessorInfo',
-    });
-
-    return new Promise<Processor>((resolve, reject) => {
-      this.webSocketConnection$.pipe(
-        first((msg: WebSocketServerMessage) => {
-          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
-        }),
-      ).subscribe((msg: WebSocketServerMessage) => {
-        if (msg[1] === MESSAGE_TYPE_REPLY) {
-          const response = msg[3].data as Processor;
-          resolve(response);
-        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
-          reject(msg[3].et);
-        } else {
-          reject('Unexpected response code');
-        }
-      });
-    });
-  }
-
   close() {
     this.webSocketConnectionSubscription.unsubscribe();
     this.webSocket.unsubscribe();

@@ -85,6 +85,21 @@ export class YamcsService {
   }
 
   /**
+   * Returns the server-assigned client-id for the currently
+   * active WebSocket connection.
+   */
+  getClientId() {
+    return this.connectionInfo$.getValue()!.clientId;
+  }
+
+  /**
+   * Returns the currently active processor (if any).
+   */
+  getProcessor() {
+    return this.connectionInfo$.getValue()!.processor;
+  }
+
+  /**
    * Returns the InstanceClient for the currently active instance (if any).
    */
   getInstanceClient() {
