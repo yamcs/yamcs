@@ -36,12 +36,6 @@ export default class EventHandling {
   private grabStart?: Point;
 
   /**
-   * Signal while handling 'mousedown' that the 'click' event
-   * should not do anything (i.e. because the user was grabbing)
-   */
-  private skipNextClick = false;
-
-  /**
    * High-level element currently under mouse. Do not use for grab
    * handling because the mouse may enter different targets while
    * in the middle of grabbing another.
@@ -55,9 +49,22 @@ export default class EventHandling {
    */
   private snap = 5;
 
+  // Global handlers instantiated only during a grab action.
+  // Purpose is to support the user doing grab actions while leaving the timeline.
   private documentMouseMoveListener = (e: MouseEvent) => this.onDocumentMouseMove(e);
   private documentMouseUpListener = (e: MouseEvent) => this.onDocumentMouseUp(e);
   private documentMouseLeaveListener = (e: any) => this.onDocumentMouseLeave(e);
+
+  /**
+   * Swallows any click event wherever they may originate.
+   * Usually there's 0 or 1 when the user ends the grab,
+   * depending on where the mouse is released.
+   */
+  private clickBlocker = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }
 
   constructor(private timeline: Timeline, private vdom: VDom) {
     vdom.rootEl.addEventListener('click', e => this.onClick(e), false);
@@ -73,11 +80,6 @@ export default class EventHandling {
   }
 
   private onClick(event: MouseEvent) {
-    console.log('click. skip? ' + this.skipNextClick + ' ' + Math.random());
-    if (this.skipNextClick) {
-      this.skipNextClick = false;
-      return;
-    }
     if (!this.interactionAllowed) {
       return;
     }
@@ -130,6 +132,7 @@ export default class EventHandling {
   }
 
   private onMouseDown(event: MouseEvent) {
+    document.removeEventListener('click', this.clickBlocker, true /* Must be same as when created */);
     if (!this.interactionAllowed) {
       return;
     }
@@ -197,6 +200,7 @@ export default class EventHandling {
     if (!this.grabbing && Math.abs(this.mouseDownStart!.distanceTo(dst)) > this.snap) {
       // These listeners are added to the document so that they keep triggering
       // when the mouse moves outside the viewport.
+      document.addEventListener('click', this.clickBlocker, true /* capture ! */);
       document.addEventListener('mousemove', this.documentMouseMoveListener);
       document.addEventListener('mouseup', this.documentMouseUpListener);
       document.addEventListener('mouseleave', this.documentMouseLeaveListener);
@@ -217,7 +221,6 @@ export default class EventHandling {
         });
       }
       this.grabbing = true;
-      this.skipNextClick = true;
     }
   }
 
@@ -375,6 +378,9 @@ export default class EventHandling {
     this.timeline.fireEvent('viewportWheel', evt);
   }
 
+  /**
+   * Global handler only active during a grab.
+   */
   private onDocumentMouseMove(event: MouseEvent) {
     const pos = this.mousePosition(event);
 
