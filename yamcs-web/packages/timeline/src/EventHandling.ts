@@ -55,27 +55,25 @@ export default class EventHandling {
    */
   private snap = 5;
 
-  private documentMouseMoveListener: (e: MouseEvent) => any;
-  private documentMouseUpListener: (e: MouseEvent) => any;
-  private documentMouseLeaveListener: (e: any) => any;
+  private documentMouseMoveListener = (e: MouseEvent) => this.onDocumentMouseMove(e);
+  private documentMouseUpListener = (e: MouseEvent) => this.onDocumentMouseUp(e);
+  private documentMouseLeaveListener = (e: any) => this.onDocumentMouseLeave(e);
 
   constructor(private timeline: Timeline, private vdom: VDom) {
     vdom.rootEl.addEventListener('click', e => this.onClick(e), false);
     vdom.rootEl.addEventListener('contextmenu', e => this.onContextMenu(e), false);
     vdom.rootEl.addEventListener('mousedown', e => this.onMouseDown(e), false);
+    vdom.rootEl.addEventListener('mouseup', e => this.onMouseUp(e), false);
     vdom.rootEl.addEventListener('mousemove', e => this.onMouseMove(e), false);
     vdom.rootEl.addEventListener('wheel', e => this.onWheel(e), false);
 
     vdom.rootEl.addEventListener('touchstart', e => this.onTouchStart(e as TouchEvent), false);
     vdom.rootEl.addEventListener('touchmove', e => this.onTouchMove(e as TouchEvent), false);
     vdom.rootEl.addEventListener('touchend', e => this.onTouchEnd(e as TouchEvent), false);
-
-    this.documentMouseMoveListener = e => this.onDocumentMouseMove(e);
-    this.documentMouseUpListener = e => this.onDocumentMouseUp(e);
-    this.documentMouseLeaveListener = e => this.onDocumentMouseLeave(e);
   }
 
   private onClick(event: MouseEvent) {
+    console.log('click. skip? ' + this.skipNextClick + ' ' + Math.random());
     if (this.skipNextClick) {
       this.skipNextClick = false;
       return;
@@ -219,9 +217,8 @@ export default class EventHandling {
         });
       }
       this.grabbing = true;
+      this.skipNextClick = true;
     }
-
-    this.skipNextClick = true;
   }
 
   private onMouseMove(event: MouseEvent) {
@@ -289,6 +286,16 @@ export default class EventHandling {
     event.preventDefault();
     event.stopPropagation();
     return false;
+  }
+
+  private onMouseUp(event: MouseEvent) {
+    if (!this.interactionAllowed) {
+      return;
+    }
+
+    // This is also set in the document-level mouseUp
+    // handler, but that one is only active while grabbing.
+    this.mouseDownStart = undefined;
   }
 
   private onTouchEnd(event: TouchEvent) {
@@ -458,6 +465,7 @@ export default class EventHandling {
     // effect on the SVG anyway, but without this code it would create a stutter when
     // mouse returns back, because the mouse could be much further than the rendering had
     // advanced at the point of leaving.
+    // TODO no longer needed?
     if (this.mouseDownStart) {
       this.endGrab();
 

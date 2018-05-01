@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild, ElementRef, OnDestroy, HostListener } from '@angular/core';
 
 import { Instance } from '@yamcs/client';
 import { Timeline, Range } from '@yamcs/timeline';
@@ -80,6 +80,11 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     const overlayRef = this.overlay.create({ positionStrategy });
     const tooltipPortal = new ComponentPortal(TimelineTooltip);
     this.tooltipInstance = overlayRef.attach(tooltipPortal).instance;
+  }
+
+  @HostListener('mouseleave')
+  hideTooltip() {
+    this.tooltipInstance.hide();
   }
 
   ngAfterViewInit() {
