@@ -133,7 +133,34 @@ public class SpaceSystem extends NameDescription {
     }
 
     public void addUnresolvedReference(NameReference nr) {
-        unresolvedReferences.add(nr);
+        //try to resolve it immediately
+        boolean resolved = false;
+        NameDescription nd = null;
+        switch(nr.getType()) {
+        case PARAMETER:
+            nd = getParameter(nr.getReference());
+            break;
+        case ALGORITHM:
+            nd = getAlgorithm(nr.getReference());
+            break;
+        case COMMAND_CONTAINER:
+            nd = getCommandContainer(nr.getReference());
+            break;
+        case META_COMMAND:
+            nd = getMetaCommand(nr.getReference());
+            break;
+        case SEQUENCE_CONTAINTER:
+            nd = getSequenceContainer(nr.getReference());
+            break;
+        default:
+            break;
+        }
+        if(nd!=null) {
+            resolved = nr.resolved(nd);
+        }
+        if(!resolved) {
+            unresolvedReferences.add(nr);
+        }
     }
 
     public Collection<SequenceContainer> getSequenceContainers() {

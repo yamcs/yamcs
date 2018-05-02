@@ -499,6 +499,7 @@ limitations under the License.
 					<xtce:FloatParameterType name="Float_MathOpCal_4_Type" sizeInBits="32" shortDescription="This is a float parameter with unsupported element in math operation calibrator">
 						<xtce:UnitSet/>
 						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32">
+						<!-- not supported in Yamcs to refer to other parameters for calibration
 							<xtce:DefaultCalibrator>
                                                             <xtce:MathOperationCalibrator>
                                                                 <xtce:ValueOperand>3.0</xtce:ValueOperand>
@@ -508,6 +509,7 @@ limitations under the License.
                                                                 <xtce:Operator>+</xtce:Operator>
                                                             </xtce:MathOperationCalibrator>
 							</xtce:DefaultCalibrator>
+							 -->
 						</xtce:FloatDataEncoding>
 					</xtce:FloatParameterType>
 					<xtce:FloatParameterType name="Float_MathOpCal_5_Type" sizeInBits="32" shortDescription="This is a float parameter with short stack in math operation calibrator">

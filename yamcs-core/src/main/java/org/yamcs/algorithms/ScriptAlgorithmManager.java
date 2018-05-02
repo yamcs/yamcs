@@ -86,7 +86,6 @@ public class ScriptAlgorithmManager {
 
 
     ScriptAlgorithmExecutor createExecutor(CustomAlgorithm calg,  AlgorithmExecutionContext execCtx) {
-   //   System.out.println(functionScript);
         String functionName = calg.getQualifiedName().replace("/", "_");
         if(scriptEngine.get(functionName)==null) {
             String functionScript = generateFunctionCode(functionName, calg);

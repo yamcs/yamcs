@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,6 @@ import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
 
-
 public class XtceDbFactory {
 
     static Logger log = LoggerFactory.getLogger(XtceDbFactory.class);
@@ -62,10 +62,11 @@ public class XtceDbFactory {
         return createInstanceByConfig(configSection, true);
     }
 
-    public static synchronized XtceDb createInstanceByConfig(String configSection, boolean attemptToLoadSerialized) throws ConfigurationException {
+    public static synchronized XtceDb createInstanceByConfig(String configSection, boolean attemptToLoadSerialized)
+            throws ConfigurationException {
         YConfiguration c = YConfiguration.getConfiguration("mdb");
 
-        if(configSection == null) {
+        if (configSection == null) {
             configSection = c.getFirstEntry();
         }
 
@@ -77,34 +78,38 @@ public class XtceDbFactory {
      * Load a XTCE database from a description.
      * 
      * 
-     * @param treeConfig - this should be a list of maps as it would come out of the mdb.yaml definition.
-     * @param attemptToLoadSerialized - if true, it will attempt to load a serialized version from the disk 
-     *        instead of creating a new object by loading all elements from the tree definition. 
-     * @param saveSerialized - if the result should be saved as a serialized file. 
-     *        If the database has been loaded from a serialized file, this option will have no effect.
+     * @param treeConfig
+     *            - this should be a list of maps as it would come out of the mdb.yaml definition.
+     * @param attemptToLoadSerialized
+     *            - if true, it will attempt to load a serialized version from the disk
+     *            instead of creating a new object by loading all elements from the tree definition.
+     * @param saveSerialized
+     *            - if the result should be saved as a serialized file.
+     *            If the database has been loaded from a serialized file, this option will have no effect.
      * @return a newly created XTCE database object.
      * @throws ConfigurationException
      */
     @SuppressWarnings("unchecked")
-    public static synchronized XtceDb createInstance(List<Object> treeConfig, boolean attemptToLoadSerialized, boolean saveSerialized) throws ConfigurationException {
+    public static synchronized XtceDb createInstance(List<Object> treeConfig, boolean attemptToLoadSerialized,
+            boolean saveSerialized) throws ConfigurationException {
         LoaderTree loaderTree = new LoaderTree(new RootSpaceSystemLoader());
 
-        for(Object o: treeConfig) {
-            if(o instanceof Map) {
+        for (Object o : treeConfig) {
+            if (o instanceof Map) {
                 loaderTree.addChild(getLoaderTree((Map<String, Object>) o));
             } else {
-                throw new ConfigurationException("Expected type Map instead of "+o.getClass());
+                throw new ConfigurationException("Expected type Map instead of " + o.getClass());
             }
         }
 
         boolean loadSerialized = attemptToLoadSerialized;
         boolean serializedLoaded = false;
-        String filename = sha1(loaderTree.getConfigName()+".xtce");
+        String filename = sha1(loaderTree.getConfigName() + ".xtce");
 
         if (loadSerialized) {
             if (new File(getFullName(filename) + ".serialized").exists()) {
-                try(RandomAccessFile raf = new RandomAccessFile(getFullName(filename) + ".consistency_date", "r")) {                
-                    if(loaderTree.needsUpdate(raf)) {
+                try (RandomAccessFile raf = new RandomAccessFile(getFullName(filename) + ".consistency_date", "r")) {
+                    if (loaderTree.needsUpdate(raf)) {
                         loadSerialized = false;
                     }
                 } catch (IOException e) {
@@ -112,7 +117,7 @@ public class XtceDbFactory {
                         log.warn("can't check the consistency date of the serialized database", e);
                     }
                     loadSerialized = false;
-                } 
+                }
             } else {
                 loadSerialized = false;
             }
@@ -130,7 +135,8 @@ public class XtceDbFactory {
         }
 
         if (db == null) {
-            //Construct a Space System with one branch from the config file and the other one /yamcs for system variables
+            // Construct a Space System with one branch from the config file and the other one /yamcs for system
+            // variables
             SpaceSystem rootSs = loaderTree.load();
             SpaceSystem yamcsSs = new SpaceSystem(XtceDb.YAMCS_SPACESYSTEM_NAME.substring(1));
             yamcsSs.setQualifiedName(XtceDb.YAMCS_SPACESYSTEM_NAME);
@@ -138,21 +144,21 @@ public class XtceDbFactory {
             rootSs.addSpaceSystem(yamcsSs);
 
             int n;
-            while((n=resolveReferences(rootSs, rootSs))>0 ){}
+            while ((n = resolveReferences(rootSs, rootSs)) > 0) {
+            }
 
-
-            StringBuilder sb=new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             collectUnresolvedReferences(rootSs, sb);
-            if(n==0) {
-                throw new ConfigurationException("Cannot resolve (circular?) references: "+ sb.toString());
+            if (n == 0) {
+                throw new ConfigurationException("Cannot resolve (circular?) references: " + sb.toString());
             }
             setQualifiedNames(rootSs, "");
             db = new XtceDb(rootSs);
 
-            //set the root sequence container as the first root sequence container found in the sub-systems.
-            for(SpaceSystem ss: rootSs.getSubSystems()) {
+            // set the root sequence container as the first root sequence container found in the sub-systems.
+            for (SpaceSystem ss : rootSs.getSubSystems()) {
                 SequenceContainer seqc = ss.getRootSequenceContainer();
-                if(seqc!=null){
+                if (seqc != null) {
                     db.setRootSequenceContainer(seqc);
                 }
             }
@@ -172,15 +178,15 @@ public class XtceDbFactory {
         return db;
     }
 
-    /*collects a description for all unresolved references into the StringBuffer to raise an error*/
+    /* collects a description for all unresolved references into the StringBuffer to raise an error */
     private static void collectUnresolvedReferences(SpaceSystem ss, StringBuilder sb) {
         List<NameReference> refs = ss.getUnresolvedReferences();
-        if(refs!=null) {
-            for(NameReference nr: ss.getUnresolvedReferences()) {
+        if (refs != null) {
+            for (NameReference nr : ss.getUnresolvedReferences()) {
                 sb.append("system").append(ss.getName()).append(" ").append(nr.toString()).append("\n");
             }
         }
-        for(SpaceSystem ss1:ss.getSubSystems()) {
+        for (SpaceSystem ss1 : ss.getSubSystems()) {
             collectUnresolvedReferences(ss1, sb);
         }
     }
@@ -195,32 +201,33 @@ public class XtceDbFactory {
     private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss) throws ConfigurationException {
         List<NameReference> refs = ss.getUnresolvedReferences();
 
-        //This can happen when we deserialise the SpaceSystem since the unresolved references is a transient list.
-        if(refs==null) {
+        // This can happen when we deserialise the SpaceSystem since the unresolved references is a transient list.
+        if (refs == null) {
             refs = Collections.emptyList();
         }
 
-        int n = (refs.size()==0)?-1:0;
+        int n = (refs.size() == 0) ? -1 : 0;
 
         Iterator<NameReference> it = refs.iterator();
         while (it.hasNext()) {
             NameReference nr = it.next();
 
             NameDescription nd = findReference(rootSs, nr, ss);
-            if(nd==null && nr.getType()==Type.PARAMETER && nr.getReference().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
-                //Special case for system parameters: they are created on the fly
+            if (nd == null && nr.getType() == Type.PARAMETER
+                    && nr.getReference().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
+                // Special case for system parameters: they are created on the fly
                 String fqname = nr.getReference();
                 SystemParameter sp = SystemParameter.getForFullyQualifiedName(fqname);
 
                 String ssname = sp.getSubsystemName();
                 String[] a = ssname.split("/");
                 SpaceSystem ss1 = rootSs;
-                for(String name:a) {
-                    if(name.isEmpty()) {
+                for (String name : a) {
+                    if (name.isEmpty()) {
                         continue;
                     }
                     SpaceSystem ss2 = ss1.getSubsystem(name);
-                    if(ss2 == null) {
+                    if (ss2 == null) {
                         ss2 = new SpaceSystem(name);
                         ss1.addSpaceSystem(ss2);
                     }
@@ -228,34 +235,34 @@ public class XtceDbFactory {
                 }
                 ss1.addParameter(sp);
                 nd = sp;
-            } 
-            if(nd == null) { //look for aliases up the hierarchy
+            }
+            if (nd == null) { // look for aliases up the hierarchy
                 nd = findAliasReference(rootSs, nr, ss);
             }
-            if(nd==null) {
-                throw new ConfigurationException("Cannot resolve reference SpaceSystem: "+ss.getName()+" "+nr);
+            if (nd == null) {
+                System.out.println("parameters: "
+                        + ss.getParameters().stream().map(p -> p.getName()).collect(Collectors.toList()));
+                throw new ConfigurationException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
             }
-            if(nr.resolved(nd)) {
+            if (nr.resolved(nd)) {
                 n++;
                 it.remove();
             }
         }
-        for(SpaceSystem ss1:ss.getSubSystems()) {
+        for (SpaceSystem ss1 : ss.getSubSystems()) {
             int m = resolveReferences(rootSs, ss1);
-            if(n==-1) {
+            if (n == -1) {
                 n = m;
-            } else if(m>0) {
-                n+=m;
+            } else if (m > 0) {
+                n += m;
             }
         }
         return n;
     }
 
-
-
     /**
-     * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference) 
-     *  or in the parent hierarchy if relative reference
+     * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference)
+     * or in the parent hierarchy if relative reference
      *
      * @param rootSs
      * @param nr
@@ -267,23 +274,23 @@ public class XtceDbFactory {
         boolean absolute = false;
         SpaceSystem startSs = null;
 
-        if(ref.startsWith("/")) {
-            absolute=true;
-            startSs=rootSs;
-        } else if(ref.startsWith("./")|| ref.startsWith("..")) {
-            absolute=true;
-            startSs=ss;
+        if (ref.startsWith("/")) {
+            absolute = true;
+            startSs = rootSs;
+        } else if (ref.startsWith("./") || ref.startsWith("..")) {
+            absolute = true;
+            startSs = ss;
         }
 
-        if(absolute) {
+        if (absolute) {
             return findReference(startSs, nr);
         } else {
-            //go up until the root
-            NameDescription nd=null;
-            startSs=ss;
-            while(true) {
-                nd=findReference(startSs, nr);
-                if((nd!=null) || (startSs==rootSs)){
+            // go up until the root
+            NameDescription nd = null;
+            startSs = ss;
+            while (true) {
+                nd = findReference(startSs, nr);
+                if ((nd != null) || (startSs == rootSs)) {
                     break;
                 }
                 startSs = startSs.getParent();
@@ -294,18 +301,19 @@ public class XtceDbFactory {
 
     /**
      * searches for aliases in the parent hierarchy
+     * 
      * @param rootSs
      * @param nr
      * @param ss
      * @return
      */
     static NameDescription findAliasReference(SpaceSystem rootSs, NameReference nr, SpaceSystem startSs) {
-        //go up until the root
-        NameDescription nd=null;
+        // go up until the root
+        NameDescription nd = null;
         SpaceSystem ss = startSs;
-        while(true) {
+        while (true) {
             nd = findAliasReference(ss, nr);
-            if((nd!=null) || (ss==rootSs)){
+            if ((nd != null) || (ss == rootSs)) {
                 break;
             }
             ss = ss.getParent();
@@ -313,45 +321,43 @@ public class XtceDbFactory {
         return nd;
     }
 
-
-
     /**
      * find reference starting at startSs and looking through the SpaceSystem path
+     * 
      * @param startSs
      * @param nr
      * @return
      */
     private static NameDescription findReference(SpaceSystem startSs, NameReference nr) {
-        String[] path=nr.getReference().split("/");
-        SpaceSystem ss=startSs;
-
-        for(int i=0; i<path.length-1; i++) {
-            if(".".equals(path[i]) || "".equals(path[i])) {
+        String[] path = nr.getReference().split("/");
+        SpaceSystem ss = startSs;
+        for (int i = 0; i < path.length - 1; i++) {
+            if (".".equals(path[i]) || "".equals(path[i])) {
                 continue;
-            } else if("..".equals(path[i])) {
-                ss=ss.getParent();
-                if(ss==null) {
-                    break; //this can only happen if the root has no parent (normally it's its own parent)
+            } else if ("..".equals(path[i])) {
+                ss = ss.getParent();
+                if (ss == null) {
+                    break; // this can only happen if the root has no parent (normally it's its own parent)
                 }
                 continue;
             }
 
-            if(i==path.length-1) {
+            if (i == path.length - 1) {
                 break;
             }
 
             ss = ss.getSubsystem(path[i]);
 
-            if(ss==null) {
+            if (ss == null) {
                 break;
             }
         }
-        if(ss==null) {
+        if (ss == null) {
             return null;
         }
 
-        String name=path[path.length-1];
-        switch(nr.getType()) {
+        String name = path[path.length - 1];
+        switch (nr.getType()) {
         case PARAMETER:
             return ss.getParameter(name);
         case PARAMETER_TYPE:
@@ -360,7 +366,7 @@ public class XtceDbFactory {
             return ss.getSequenceContainer(name);
         case COMMAND_CONTAINER:
             Container c = ss.getCommandContainer(name);
-            if(c==null) {
+            if (c == null) {
                 c = ss.getSequenceContainer(name);
             }
             return c;
@@ -371,15 +377,16 @@ public class XtceDbFactory {
         case ARGUMENT_TYPE:
             return (NameDescription) ss.getArgumentType(name);
         }
-        //shouldn't arrive here
+        // shouldn't arrive here
         return null;
     }
 
     /**
-     * looks in the SpaceSystem ss for a namedObject with the given alias. 
+     * looks in the SpaceSystem ss for a namedObject with the given alias.
      * Prints a warning in case multiple references are found and returns the first one.
-     *  
+     * 
      * If none is found, returns null.
+     * 
      * @param ss
      * @param nr
      * @return
@@ -388,7 +395,7 @@ public class XtceDbFactory {
 
         String alias = nr.getReference();
         List<? extends NameDescription> l;
-        switch(nr.getType()) {
+        switch (nr.getType()) {
         case PARAMETER:
             l = ss.getParameterByAlias(alias);
             break;
@@ -402,24 +409,22 @@ public class XtceDbFactory {
             return null;
         }
 
-        if(l==null || l.isEmpty()) {
+        if (l == null || l.isEmpty()) {
             return null;
-        } else if(l.size()>1) {
+        } else if (l.size() > 1) {
             log.warn("When looking for aliases '{}' found multiple matches: ", nr, l);
         }
         return l.get(0);
     }
 
-
-
     @SuppressWarnings({ "unchecked" })
-    private static LoaderTree getLoaderTree(Map<String,Object> m) throws ConfigurationException {
-        String type=YConfiguration.getString(m, "type");
-        Object args=null;
-        if(m.containsKey("args")) {
-            args=m.get("args");
-        } else if(m.containsKey("spec")) {
-            args=m.get("spec");
+    private static LoaderTree getLoaderTree(Map<String, Object> m) throws ConfigurationException {
+        String type = YConfiguration.getString(m, "type");
+        Object args = null;
+        if (m.containsKey("args")) {
+            args = m.get("args");
+        } else if (m.containsKey("spec")) {
+            args = m.get("spec");
         }
 
         SpaceSystemLoader l;
@@ -437,16 +442,15 @@ public class XtceDbFactory {
             throw new ConfigurationException("Cannot load xtce database: " + e.getMessage(), e);
         }
 
+        ltree = new LoaderTree(l);
 
-        ltree=new LoaderTree(l);
-
-        if(m.containsKey("subLoaders")) {
-            List<Object> list=YConfiguration.getList(m, "subLoaders");
-            for(Object o: list) {
-                if(o instanceof Map) {
+        if (m.containsKey("subLoaders")) {
+            List<Object> list = YConfiguration.getList(m, "subLoaders");
+            for (Object o : list) {
+                if (o instanceof Map) {
                     ltree.addChild(getLoaderTree((Map<String, Object>) o));
                 } else {
-                    throw new ConfigurationException("Expected type Map instead of "+o.getClass());
+                    throw new ConfigurationException("Expected type Map instead of " + o.getClass());
                 }
             }
         }
@@ -460,10 +464,10 @@ public class XtceDbFactory {
      */
     private static void setQualifiedNames(SpaceSystem ss, String parentqname) {
         String ssqname;
-        if(String.valueOf(NameDescription.PATH_SEPARATOR).equals(parentqname)) { //parent is root
-            ssqname = NameDescription.PATH_SEPARATOR+ss.getName();
+        if (String.valueOf(NameDescription.PATH_SEPARATOR).equals(parentqname)) { // parent is root
+            ssqname = NameDescription.PATH_SEPARATOR + ss.getName();
         } else {
-            ssqname = parentqname+NameDescription.PATH_SEPARATOR+ss.getName();
+            ssqname = parentqname + NameDescription.PATH_SEPARATOR + ss.getName();
         }
 
         ss.setQualifiedName(ssqname);
@@ -471,42 +475,43 @@ public class XtceDbFactory {
         if (!"".equals(parentqname)) {
             ss.addAlias(parentqname, ss.getName());
         }
-        for(Parameter p: ss.getParameters()) {
-            p.setQualifiedName(ss.getQualifiedName()+NameDescription.PATH_SEPARATOR + p.getName());
+        for (Parameter p : ss.getParameters()) {
+            p.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + p.getName());
         }
-        for(ParameterType pt: ss.getParameterTypes()) {
-            NameDescription nd=(NameDescription)pt;
+        for (ParameterType pt : ss.getParameterTypes()) {
+            NameDescription nd = (NameDescription) pt;
             nd.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + nd.getName());
         }
 
-        for(SequenceContainer c: ss.getSequenceContainers()) {
+        for (SequenceContainer c : ss.getSequenceContainers()) {
             c.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + c.getName());
         }
 
-        for(MetaCommand c: ss.getMetaCommands()) {
+        for (MetaCommand c : ss.getMetaCommands()) {
             c.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + c.getName());
         }
 
-        for(Algorithm a: ss.getAlgorithms()) {
+        for (Algorithm a : ss.getAlgorithms()) {
             a.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + a.getName());
         }
 
-        for(NonStandardData<?> nonStandardData: ss.getNonStandardData()) {
+        for (NonStandardData<?> nonStandardData : ss.getNonStandardData()) {
             nonStandardData.setSpaceSystemQualifiedName(ss.getQualifiedName());
         }
 
-        for(SpaceSystem ss1:ss.getSubSystems()) {
+        for (SpaceSystem ss1 : ss.getSubSystems()) {
             setQualifiedNames(ss1, ss.getQualifiedName());
         }
     }
 
     private static XtceDb loadSerializedInstance(String filename) throws IOException, ClassNotFoundException {
         log.debug("Loading serialized XTCE DB from: {}", filename);
-       
+
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
             XtceDb db = (XtceDb) in.readObject();
             log.info("Loaded XTCE DB from {} with {} containers, {} parameters and {} commands",
-                filename, db.getSequenceContainers().size(), db.getParameterNames().size(), db.getMetaCommands().size());
+                    filename, db.getSequenceContainers().size(), db.getParameterNames().size(),
+                    db.getMetaCommands().size());
             return db;
         }
     }
@@ -515,9 +520,10 @@ public class XtceDbFactory {
         return new File(YConfiguration.getGlobalProperty("cacheDirectory"), filename).getAbsolutePath();
     }
 
-    private static void saveSerializedInstance(LoaderTree loaderTree, XtceDb db, String filename) throws IOException, ConfigurationException {
+    private static void saveSerializedInstance(LoaderTree loaderTree, XtceDb db, String filename)
+            throws IOException, ConfigurationException {
         try (OutputStream os = new FileOutputStream(getFullName(filename) + ".serialized");
-                ObjectOutputStream out =  new ObjectOutputStream(os);
+                ObjectOutputStream out = new ObjectOutputStream(os);
                 FileWriter fw = new FileWriter(getFullName(filename) + ".consistency_date");) {
             out.writeObject(db);
             loaderTree.writeConsistencyDate(fw);
@@ -527,6 +533,7 @@ public class XtceDbFactory {
     /**
      * retrieves the XtceDb for the corresponding yamcsInstance.
      * if yamcsInstance is null, then the first one in the mdb.yaml config file is loaded
+     * 
      * @param yamcsInstance
      * @return
      * @throws ConfigurationException
@@ -535,7 +542,7 @@ public class XtceDbFactory {
     public static synchronized XtceDb getInstance(String yamcsInstance) throws ConfigurationException {
         XtceDb db = instance2Db.get(yamcsInstance);
         if (db == null) {
-            YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
+            YConfiguration c = YConfiguration.getConfiguration("yamcs." + yamcsInstance);
             if (c.isList("mdb")) {
                 db = createInstance(c.getList("mdb"), true, true);
                 instance2Db.put(yamcsInstance, db);
@@ -547,7 +554,8 @@ public class XtceDbFactory {
         return db;
     }
 
-    public static synchronized XtceDb getInstanceByConfig(String yamcsInstance, String config) throws ConfigurationException {
+    public static synchronized XtceDb getInstanceByConfig(String yamcsInstance, String config)
+            throws ConfigurationException {
         Map<String, XtceDb> dbConfigs = instance2DbConfigs.get(yamcsInstance);
         if (dbConfigs == null) {
             dbConfigs = new HashMap<>();
@@ -555,13 +563,13 @@ public class XtceDbFactory {
         }
 
         XtceDb db = dbConfigs.get(config);
-        if(db==null) {
+        if (db == null) {
             db = createInstanceByConfig(config);
             dbConfigs.put(config, db);
         }
         return db;
     }
-    
+
     /**
      * 
      * Removes the Xtcedb corresponding to yamcsInstance from memory
@@ -579,13 +587,13 @@ public class XtceDbFactory {
         instance2Db.clear();
         instance2DbConfigs.clear();
     }
-    
+
     private static String sha1(String input) throws ConfigurationException {
         try {
             MessageDigest msdDigest = MessageDigest.getInstance("SHA-1");
             msdDigest.update(input.getBytes("UTF-8"), 0, input.length());
             return StringConverter.arrayToHexString(msdDigest.digest());
-        } catch(NoSuchAlgorithmException|UnsupportedEncodingException e) {
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             throw new ConfigurationException("Cannot compute SHA-1 of a string", e);
         }
     }
@@ -595,13 +603,12 @@ public class XtceDbFactory {
         List<LoaderTree> children;
 
         LoaderTree(SpaceSystemLoader root) {
-            this.root=root;
+            this.root = root;
         }
 
-
         void addChild(LoaderTree c) {
-            if(children==null) {
-                children=new ArrayList<LoaderTree>();
+            if (children == null) {
+                children = new ArrayList<LoaderTree>();
             }
             children.add(c);
         }
@@ -612,29 +619,32 @@ public class XtceDbFactory {
          * @throws ConfigurationException
          */
         String getConfigName() throws ConfigurationException {
-            if(children==null) {
+            if (children == null) {
                 return root.getConfigName();
             } else {
-                StringBuilder sb=new StringBuilder();
+                StringBuilder sb = new StringBuilder();
                 sb.append(root.getConfigName());
-                for(LoaderTree c:children) {
+                for (LoaderTree c : children) {
                     sb.append("_").append(c.getConfigName());
                 }
                 return sb.toString();
             }
         }
 
-        /**checks the date in the file and returns true if any of the root or children needs to be updated
+        /**
+         * checks the date in the file and returns true if any of the root or children needs to be updated
+         * 
          * @throws ConfigurationException
-         * @throws IOException */
+         * @throws IOException
+         */
         public boolean needsUpdate(RandomAccessFile raf) throws IOException, ConfigurationException {
             raf.seek(0);
-            if(root.needsUpdate(raf)) {
+            if (root.needsUpdate(raf)) {
                 return true;
             }
-            if(children!=null) {
-                for(LoaderTree lt:children) {
-                    if(lt.needsUpdate(raf)) {
+            if (children != null) {
+                for (LoaderTree lt : children) {
+                    if (lt.needsUpdate(raf)) {
                         return true;
                     }
                 }
@@ -644,10 +654,10 @@ public class XtceDbFactory {
 
         public SpaceSystem load() throws ConfigurationException {
             try {
-                SpaceSystem rss=root.load();
-                if(children!=null) {
-                    for(LoaderTree lt:children) {
-                        SpaceSystem ss=lt.load();
+                SpaceSystem rss = root.load();
+                if (children != null) {
+                    for (LoaderTree lt : children) {
+                        SpaceSystem ss = lt.load();
                         rss.addSpaceSystem(ss);
                         ss.setParent(rss);
                     }
@@ -658,21 +668,20 @@ public class XtceDbFactory {
             }
         }
 
-
         public void writeConsistencyDate(FileWriter fw) throws IOException {
             root.writeConsistencyDate(fw);
-            if(children!=null) {
-                for(LoaderTree lt:children) {
+            if (children != null) {
+                for (LoaderTree lt : children) {
                     lt.writeConsistencyDate(fw);
                 }
             }
         }
     }
 
-    //fake loader for the root (empty) space system
+    // fake loader for the root (empty) space system
     static class RootSpaceSystemLoader implements SpaceSystemLoader {
         @Override
-        public boolean needsUpdate(RandomAccessFile consistencyDateFile)   throws IOException, ConfigurationException {
+        public boolean needsUpdate(RandomAccessFile consistencyDateFile) throws IOException, ConfigurationException {
             return false;
         }
 
@@ -682,11 +691,11 @@ public class XtceDbFactory {
         }
 
         @Override
-        public void writeConsistencyDate(FileWriter consistencyDateFile)  throws IOException {
+        public void writeConsistencyDate(FileWriter consistencyDateFile) throws IOException {
         }
 
         @Override
-        public SpaceSystem load() throws ConfigurationException,  DatabaseLoadException {
+        public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
             SpaceSystem rootSs = new SpaceSystem("");
             rootSs.setParent(rootSs);
             return rootSs;

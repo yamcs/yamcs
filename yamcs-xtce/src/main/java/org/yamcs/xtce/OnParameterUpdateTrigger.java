@@ -8,7 +8,7 @@ import java.io.Serializable;
  * cause this algorithm to be executed.
  */
 public class OnParameterUpdateTrigger implements Serializable {
-    private static final long serialVersionUID = -2973053745020302894L;
+    private static final long serialVersionUID = 2L;
 
     private Parameter parameter;
     
@@ -16,6 +16,14 @@ public class OnParameterUpdateTrigger implements Serializable {
         this.parameter = parameter;
     }
     
+    //constructor to be used when the parameter has to be resolved later
+    public OnParameterUpdateTrigger() {
+    }
+    
+    public void setParameter(Parameter parameter) {
+        this.parameter = parameter;
+    }
+
     public Parameter getParameter() {
         return parameter;
     }

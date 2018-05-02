@@ -1,5 +1,6 @@
 package org.yamcs.xtceproc;
 
+import java.util.List;
 import java.util.Stack;
 
 import org.codehaus.janino.Location;
@@ -7,10 +8,12 @@ import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.util.LocatedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.MathOperation;
 import org.yamcs.xtce.MathOperation.ElementType;
 import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.MathOperator;
+import org.yamcs.xtce.ParameterInstanceRef;
 
 public class MathOperationCalibratorFactory {
     protected static final Logger log = LoggerFactory.getLogger(MathOperationCalibratorFactory.class);
@@ -28,7 +31,7 @@ public class MathOperationCalibratorFactory {
         sb.append("package org.yamcs.xtceproc.mocf;\n")
         .append("public class ").append(className).append(" implements org.yamcs.xtceproc.CalibratorProc {\n")
         .append("   public double calibrate(double v) {\n")
-        .append("       return ").append(getJavaExpression(c)).append(";\n")
+        .append("       return ").append(getJavaExpression(c, null)).append(";\n")
         .append("   }\n")
         .append("}\n");
         String expr = sb.toString();
@@ -54,9 +57,9 @@ public class MathOperationCalibratorFactory {
         }
     }
 
-    public static String getJavaExpression(MathOperationCalibrator c) {
+    public static String getJavaExpression(MathOperation operation, List<InputParameter> inputParams) {
         Stack<String> stack = new Stack<>();
-        for (MathOperation.Element e : c.getElementList()) {
+        for (MathOperation.Element e : operation.getElementList()) {
             ElementType type = e.getType();
             if (type == ElementType.Operator) {
                 MathOperator mo = e.getOperator();
@@ -91,8 +94,17 @@ public class MathOperationCalibratorFactory {
                 stack.push("v");
             } else if(type == ElementType.ValueOperand) {
                 stack.push(e.toString());
+            }  else if(type == ElementType.ParameterInstanceRefOperand) {
+                if(inputParams==null) {
+                    throw new IllegalArgumentException("Reference to parameter encountered but no input list was provided");
+                }
+                int idx = findParameter(inputParams, e.getParameterInstanceRef());
+                if(idx==-1) {
+                    throw new IllegalArgumentException("Reference to parameter "+e.getParameterInstanceRef()+" encountered but that parameter is not in the input list: "+inputParams);
+                }
+                stack.push("input["+idx+"]");
             } else {
-                throw new UnsupportedOperationException(" MathOperations operans of type "+type+" not supported for calibrations");
+                throw new UnsupportedOperationException(" MathOperations operans of type "+type+" not supported");
             }
         }
 
@@ -101,6 +113,15 @@ public class MathOperationCalibratorFactory {
                     "Invalid MathOperation (stack is not empty at the end of the processing)");
         }
         return stack.get(0);
+    }
+
+    private static int findParameter(List<InputParameter> inputParams, ParameterInstanceRef parameterInstanceRef) {
+        for(int i=0; i<inputParams.size(); i++) {
+            if(inputParams.get(i).getParameterInstance() == parameterInstanceRef) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     static String getJavaExpression(MathOperator op, String l, String r) {
@@ -144,5 +165,6 @@ public class MathOperationCalibratorFactory {
             throw new UnsupportedOperationException(op + " not implemented");
         }
     }
+
 
 }

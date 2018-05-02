@@ -333,6 +333,39 @@ public class ValueUtility {
             return false;
         }
     }
+
+    /**
+     * if the passed on value is float, double or integer invoke the function on the double value and return true
+     * if v is of other types return false
+     * 
+     * @param v
+     * @param c
+     * @return
+     */
+    public static boolean processAsDouble(Value v, DoubleConsumer c) {
+        switch (v.getType()) {
+        case DOUBLE:
+            c.accept(v.getDoubleValue());
+            return true;
+        case FLOAT:
+            c.accept(v.getFloatValue());
+            return true;
+        case SINT32:
+            c.accept(v.getSint32Value());
+            return true;
+        case SINT64:
+            c.accept(v.getSint64Value());
+            return true;
+        case UINT32:
+            c.accept(v.getUint32Value()&0xFFFFFFFFL);
+            return true;
+        case UINT64:
+            c.accept(UnsignedLong.toDouble(v.getUint64Value()));
+            return true;
+        default: 
+            return false;
+        }
+    }
     
     /**
      * if the passed on value is FLOAT or DOUBLE, invoke the function on the double value and return true
@@ -342,7 +375,7 @@ public class ValueUtility {
      * @param c
      * @return
      */
-    public static boolean processAsDouble(Value v, DoubleConsumer c) {
+    public static boolean processAsDouble1(Value v, DoubleConsumer c) {
         switch (v.getType()) {
         case DOUBLE:
             c.accept(v.getDoubleValue());

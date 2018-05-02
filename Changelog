@@ -1,8 +1,8 @@
 Version 4.4.0 released
 - added support for context calibrators
-- addes support for XTCE MathOperationCalibrator
+- added support for XTCE MathOperationCalibrator
 - fixed the names in the spreadsheet such that additional columns can be inserted without loosing compatibility. 
-  WARNING: this may break loading of some sheets if the names in the first row do not correspond with the refmdb.xls
+- added support for XTCE MathOperation algorithms
 
 
 Version 4.3.1 released 25-Apr-2018

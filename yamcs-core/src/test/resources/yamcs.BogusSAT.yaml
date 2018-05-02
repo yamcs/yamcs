@@ -1,0 +1,10 @@
+#all services that are started for this instance instance
+services:
+    - org.yamcs.YarchChannel
+
+
+
+mdb: BogusSAT
+
+streamConfig:
+   tm: ["tm_realtime"]

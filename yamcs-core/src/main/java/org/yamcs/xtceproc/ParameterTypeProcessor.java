@@ -126,7 +126,7 @@ public class ParameterTypeProcessor {
             pval.setBooleanValue(l != 0);            
         })) return;
         
-        if(ValueUtility.processAsDouble(rawValue, d -> {
+        if(ValueUtility.processAsDouble1(rawValue, d -> {
             pval.setBooleanValue(d != 0);            
         })) return;
         
@@ -158,7 +158,7 @@ public class ParameterTypeProcessor {
             doIntegerCalibration(contextEvaluator, ipt, pval, l);           
         })) return;
         
-        if(ValueUtility.processAsDouble(rawValue, d -> {
+        if(ValueUtility.processAsDouble1(rawValue, d -> {
             doIntegerCalibration(contextEvaluator, ipt, pval, (long)d);            
         })) return;
        
@@ -209,9 +209,6 @@ public class ParameterTypeProcessor {
             doFloatCalibration(contextEvaluator, ptype, d, pval);
         })) return;
             
-        if(ValueUtility.processAsLong(rawValue, l -> {
-            doFloatCalibration(contextEvaluator, ptype, l, pval);
-        })) return;
             
         if(rawValue.getType() == Type.STRING) {
             try {
@@ -264,7 +261,7 @@ public class ParameterTypeProcessor {
             pval.setEngineeringValue(ValueUtility.getTimestampValue(computeTime(ptype, rt, l)));
         })) return;
         
-        if(ValueUtility.processAsDouble(rawValue, d -> {
+        if(ValueUtility.processAsDouble1(rawValue, d -> {
             pval.setEngineeringValue(ValueUtility.getTimestampValue(computeTime(ptype, rt, d)));
         })) return;
         

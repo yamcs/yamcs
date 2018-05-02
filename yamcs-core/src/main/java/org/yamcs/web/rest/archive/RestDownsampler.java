@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.UnsignedLong;
 
 /**
  * One-pass downsampler for time-series data (i.e. numeric archived parameters),
@@ -219,7 +220,7 @@ public class RestDownsampler implements Consumer<ParameterValueArray> {
         case UINT64:
             long[] lv = va.getLongArray();
             for (int i = 0; i < n; i++) {
-                process(timestamps[i], unsignedLongToDouble(lv[i]));
+                process(timestamps[i], UnsignedLong.toDouble(lv[i]));
             }
             break;
         case SINT64:
@@ -232,15 +233,6 @@ public class RestDownsampler implements Consumer<ParameterValueArray> {
             log.debug("Ignoring value type {}", engType);
         }
         
-    }
-    
-    /** copied from guava */
-    double unsignedLongToDouble(long x) {
-        double d = (double) (x & 0x7fffffffffffffffL);
-        if (x < 0) {
-            d += 0x1.0p63;
-        }
-        return d;
     }
 
 }

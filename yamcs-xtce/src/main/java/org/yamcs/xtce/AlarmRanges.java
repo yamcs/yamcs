@@ -3,7 +3,6 @@ package org.yamcs.xtce;
 import java.io.Serializable;
 
 import org.yamcs.utils.DoubleRange;
-import org.yamcs.xtce.MathOperation.Element;
 
 /**
  * Contains five ranges: Watch, Warning, Distress, Critical, and Severe each in increasing severity. 

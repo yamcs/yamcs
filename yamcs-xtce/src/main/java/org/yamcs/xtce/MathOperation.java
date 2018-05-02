@@ -1,5 +1,6 @@
 package org.yamcs.xtce;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,16 +11,16 @@ import java.util.List;
 * @author nm
 *
 */
-public class MathOperation {
+public class MathOperation implements Serializable {
+    private static final long serialVersionUID = 1L;
     final private List<Element> elementList;
-   
+
     public static enum ElementType {
         ValueOperand, ThisParameterOperand, ParameterInstanceRefOperand, Operator
     }
     
-   
-    
-    public static class Element {
+    public static class Element implements Serializable {
+        private static final long serialVersionUID = 1L;
         final ElementType type;
         double value;
         ParameterInstanceRef pref;
@@ -52,6 +53,10 @@ public class MathOperation {
             return operator;
         }
         
+        public ParameterInstanceRef getParameterInstanceRef() {
+            return pref;
+        }
+        
         public String toString() {
             switch(type) {
             case Operator:
@@ -74,7 +79,5 @@ public class MathOperation {
     public List<Element> getElementList() {
         return elementList;
     }
-    
-    
-    
+
 }

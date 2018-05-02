@@ -186,7 +186,6 @@ public class IntArray {
         return a;
     }
     public String toString() {
-        System.out.println("n: "+length+" a.length: "+a.length);
         StringBuilder b = new StringBuilder();
         int n = length - 1;
         if(n==-1) {

@@ -54,7 +54,6 @@ public class BitWriter {
             	doWrite(x, k);
             }
         }
-      //  System.out.println("bitShift: "+bitShift+" bb.position: "+bb.position()+" numBits: "+numBits);
     }
     
     //here we know that numBits<bitShift

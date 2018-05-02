@@ -142,7 +142,6 @@ public class MetaCommandProcessor {
                for(Comparison c: cl.getComparisonList()) {
                    if(c.getComparisonOperator()==OperatorType.EQUALITY) {
                        Parameter param = c.getParameter();
-                       System.out.println("param: "+param);
                        if(param!=null) {
                            try {
                                Value v = ParameterTypeProcessor.parseString(param.getParameterType(), c.getStringValue());
@@ -154,9 +153,7 @@ public class MetaCommandProcessor {
                    }
                }
            }
-           System.out.println("cr: "+cr);
        }
-        
     }
 
     static public class CommandBuildResult {

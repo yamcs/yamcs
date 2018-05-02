@@ -195,8 +195,7 @@ public class PasswordHash
      *
      * @param   args        ignored
      */
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
 
         Console console = System.console();
         if (console == null) {

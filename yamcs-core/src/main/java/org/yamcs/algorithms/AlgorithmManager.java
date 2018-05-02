@@ -36,6 +36,7 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.InputParameter;
+import org.yamcs.xtce.MathAlgorithm;
 import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.OnPeriodicRateTrigger;
 import org.yamcs.xtce.OutputParameter;
@@ -240,6 +241,8 @@ public class AlgorithmManager extends AbstractService
                 ScriptAlgorithmManager sam = getScriptManagerByLanguage(calg.getLanguage());
                 executor = sam.createExecutor(calg, execCtx);
             }
+        } else if (algorithm instanceof MathAlgorithm) {
+            executor = new MathAlgorithmExecutor(algorithm, execCtx, (MathAlgorithm) algorithm);
         } else {
             throw new UnsupportedOperationException(
                     "Algorithms of type " + algorithm.getClass() + " not yet implemented");
@@ -285,7 +288,7 @@ public class AlgorithmManager extends AbstractService
                 parameterRequestManager.addItemsToRequest(subscriptionId, newItems);
             }
             executionOrder.add(executor); // Add at the back (dependent algorithms will come in front)
-        }  catch (InvalidRequestIdentification e) {
+        } catch (InvalidRequestIdentification e) {
             log.error("InvalidRequestIdentification caught when subscribing to the items required for the algorithm {}",
                     executor.getAlgorithm().getName(), e);
         }

@@ -54,6 +54,7 @@ import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.MatchCriteria;
+import org.yamcs.xtce.MathAlgorithm;
 import org.yamcs.xtce.MathOperation;
 import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.MathOperator;
@@ -66,7 +67,10 @@ import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
+import org.yamcs.xtce.OnParameterUpdateTrigger;
+import org.yamcs.xtce.OnPeriodicRateTrigger;
 import org.yamcs.xtce.OperatorType;
+import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterInstanceRef;
@@ -83,11 +87,13 @@ import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 
-
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
+import org.yamcs.xtce.TriggerSetType;
+import org.yamcs.xtce.TriggeredMathOperation;
 import org.yamcs.xtce.ValueEnumerationRange;
 import org.yamcs.xtce.Header;
+import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerArgumentType;
 
 import javax.xml.namespace.QName;
@@ -100,7 +106,6 @@ import javax.xml.stream.events.StartDocument;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-
 /**
  * This class reads the XTCE XML files. XML document is accessed with the use of
  * the Stax Iterator API.
@@ -112,159 +117,162 @@ public class XtceStaxReader {
 
     // XTCE Schema defined tags, to minimize the mistyping errors
 
-    private static final String  XTCE_RelativeTimeParameterType = "RelativeTimeParameterType";
-    private static final String  XTCE_ArrayParameterType        = "ArrayParameterType";
-    private static final String  XTCE_AggregateParameterType    = "AggregateParameterType";
-    
-    private static final String  XTCE_AuthorSet                 = "AuthorSet";
-    private static final String  XTCE_NoteSet                   = "NoteSet";
-    private static final String  XTCE_HistorySet                = "HistorySet";
+    private static final String XTCE_RelativeTimeParameterType = "RelativeTimeParameterType";
+    private static final String XTCE_ArrayParameterType = "ArrayParameterType";
+    private static final String XTCE_AggregateParameterType = "AggregateParameterType";
 
-    private static final String  XTCE_TELEMTRY_META_DATA            = "TelemetryMetaData";
-    private static final String  XTCE_PARAMETER_TYPE_SET            = "ParameterTypeSet";
-    private static final String  XTCE_BOOLEAN_PARAMETER_TYPE        = "BooleanParameterType";
-    private static final String  XTCE_ENUMERATED_PARAMETER_TYPE     = "EnumeratedParameterType";
-    private static final String  XTCE_ENUMERATION_LIST              = "EnumerationList";
-    private static final String  XTCE_ENUMERATION                   = "Enumeration";
-    private static final String  XTCE_RANGE_ENUMERATION             = "RangeEnumeration";
-    private static final String  XTCE_STRING_PARAMETER_TYPE         = "StringParameterType";
-    private static final String  XTCE_BINARY_PARAMETER_TYPE         = "BinaryParameterType";
-    private static final String  XTCE_INTEGER_PARAMETER_TYPE        = "IntegerParameterType";
-    private static final String  XTCE_FLOAT_PARAMETER_TYPE          = "FloatParameterType";
-    private static final String  XTCE_SPACE_SYSTEM                  = "SpaceSystem";
-    private static final String  XTCE_ALIAS_SET                     = "AliasSet";
-    private static final String  XTCE_ALIAS                         = "Alias";
-    private static final String  XTCE_LONG_DESCRIPTION              = "LongDescription";
-    private static final String  XTCE_HEADER                        = "Header";
-    private static final String  XTCE_ABSOLUTE_TIME_PARAMETER_TYPE  = "AbsoluteTimeParameterType";
-    private static final String  XTCE_PARAMETER_SET                 = "ParameterSet";
-    private static final String  XTCE_PARAMETER                     = "Parameter";
-    private static final String  XTCE_PARAMETER_REF                 = "ParameterRef";
-    private static final String  XTCE_PARAMETER_PROPERTIES          = "ParameterProperties";
-    private static final String  XTCE_VALIDITY_CONDITION            = "ValidityCondition";
-    private static final String  XTCE_COMPARISON_LIST               = "ComparisonList";
-    private static final String  XTCE_COMPARISON                    = "Comparison";
-    private static final String  XTCE_BOOLEAN_EXPRESSION            = "BooleanExpression";
-    private static final String  XTCE_CUSTOM_ALGORITHM              = "CustomAlgorithm";
-    private static final String  XTCE_MATH_ALGORITHM                = "MathAlgorithm";
-    private static final String  XTCE_RESTRICTION_CRITERIA          = "RestrictionCriteria";
-    private static final String  XTCE_SYSTEM_NAME                   = "SystemName";
-    private static final String  XTCE_PHYSICAL_ADDRESS_SET          = "PhysicalAddressSet";
-    private static final String  XTCE_TIME_ASSOCIATION              = "TimeAssociation";
-    private static final String  XTCE_CONTAINER_SET                 = "ContainerSet";
-    private static final String  XTCE_COMMAND_CONTAINER_SET         = "CommandContainerSet";
-    private static final String  XTCE_BASE_CONTAINER                = "BaseContainer";
-    private static final String  XTCE_MESSAGE_SET                   = "MessageSet";
-    private static final String  XTCE_STREAM_SET                    = "StreamSet";
-    private static final String  XTCE_ALGORITHM_SET                 = "AlgorithmSet";
+    private static final String XTCE_AuthorSet = "AuthorSet";
+    private static final String XTCE_NoteSet = "NoteSet";
+    private static final String XTCE_HistorySet = "HistorySet";
 
-    private static final String  XTCE_COMMAND_MEATA_DATA            = "CommandMetaData";
-    private static final String  XTCE_SEQUENCE_CONTAINER            = "SequenceContainer";
-    private static final String  XTCE_ENTRY_LIST                    = "EntryList";
-    private static final String  XTCE_PARAMETER_REF_ENTRY           = "ParameterRefEntry";
+    private static final String XTCE_TELEMTRY_META_DATA = "TelemetryMetaData";
+    private static final String XTCE_PARAMETER_TYPE_SET = "ParameterTypeSet";
+    private static final String XTCE_BOOLEAN_PARAMETER_TYPE = "BooleanParameterType";
+    private static final String XTCE_ENUMERATED_PARAMETER_TYPE = "EnumeratedParameterType";
+    private static final String XTCE_ENUMERATION_LIST = "EnumerationList";
+    private static final String XTCE_ENUMERATION = "Enumeration";
+    private static final String XTCE_RANGE_ENUMERATION = "RangeEnumeration";
+    private static final String XTCE_STRING_PARAMETER_TYPE = "StringParameterType";
+    private static final String XTCE_BINARY_PARAMETER_TYPE = "BinaryParameterType";
+    private static final String XTCE_INTEGER_PARAMETER_TYPE = "IntegerParameterType";
+    private static final String XTCE_FLOAT_PARAMETER_TYPE = "FloatParameterType";
+    private static final String XTCE_SPACE_SYSTEM = "SpaceSystem";
+    private static final String XTCE_ALIAS_SET = "AliasSet";
+    private static final String XTCE_ALIAS = "Alias";
+    private static final String XTCE_LONG_DESCRIPTION = "LongDescription";
+    private static final String XTCE_HEADER = "Header";
+    private static final String XTCE_ABSOLUTE_TIME_PARAMETER_TYPE = "AbsoluteTimeParameterType";
+    private static final String XTCE_PARAMETER_SET = "ParameterSet";
+    private static final String XTCE_PARAMETER = "Parameter";
+    private static final String XTCE_PARAMETER_REF = "ParameterRef";
+    private static final String XTCE_PARAMETER_PROPERTIES = "ParameterProperties";
+    private static final String XTCE_VALIDITY_CONDITION = "ValidityCondition";
+    private static final String XTCE_COMPARISON_LIST = "ComparisonList";
+    private static final String XTCE_COMPARISON = "Comparison";
+    private static final String XTCE_BOOLEAN_EXPRESSION = "BooleanExpression";
+    private static final String XTCE_CUSTOM_ALGORITHM = "CustomAlgorithm";
+    private static final String XTCE_MATH_ALGORITHM = "MathAlgorithm";
+    private static final String XTCE_RESTRICTION_CRITERIA = "RestrictionCriteria";
+    private static final String XTCE_SYSTEM_NAME = "SystemName";
+    private static final String XTCE_PHYSICAL_ADDRESS_SET = "PhysicalAddressSet";
+    private static final String XTCE_TIME_ASSOCIATION = "TimeAssociation";
+    private static final String XTCE_CONTAINER_SET = "ContainerSet";
+    private static final String XTCE_COMMAND_CONTAINER_SET = "CommandContainerSet";
+    private static final String XTCE_BASE_CONTAINER = "BaseContainer";
+    private static final String XTCE_MESSAGE_SET = "MessageSet";
+    private static final String XTCE_STREAM_SET = "StreamSet";
+    private static final String XTCE_ALGORITHM_SET = "AlgorithmSet";
 
-    private static final String  XTCE_LOCATION_IN_CONTAINER_IN_BITS = "LocationInContainerInBits";
-    private static final String  XTCE_REPEAT_ENTRY                  = "RepeatEntry";
-    private static final String  XTCE_INCLUDE_CONDITION             = "IncludeCondition";
+    private static final String XTCE_COMMAND_MEATA_DATA = "CommandMetaData";
+    private static final String XTCE_SEQUENCE_CONTAINER = "SequenceContainer";
+    private static final String XTCE_ENTRY_LIST = "EntryList";
+    private static final String XTCE_PARAMETER_REF_ENTRY = "ParameterRefEntry";
 
-    private static final String  XTCE_PARAMETER_SEGMENT_REF_ENTRY   = "ParameterSegmentRefEntry";
-    private static final String  XTCE_CONTAINER_REF_ENTRY           = "ContainerRefEntry";
-    private static final String  XTCE_CONTAINER_SEGMENT_REF_ENTRY   = "ContainerSegmentRefEntry";
-    private static final String  XTCE_STREAM_SEGMENT_ENTRY          = "StreamSegmentEntry";
-    private static final String  XTCE_INDIRECT_PARAMETER_REF_ENTRY  = "IndirectParameterRefEntry";
-    private static final String  XTCE_ARRAY_PARAMETER_REF_ENTRY     = "ArrayParameterRefEntry";
+    private static final String XTCE_LOCATION_IN_CONTAINER_IN_BITS = "LocationInContainerInBits";
+    private static final String XTCE_REPEAT_ENTRY = "RepeatEntry";
+    private static final String XTCE_INCLUDE_CONDITION = "IncludeCondition";
 
-    private static final String  XTCE_UNIT_SET                      = "UnitSet";
-    private static final String  XTCE_UNIT                          = "Unit";
-    private static final String  XTCE_FLOAT_DATA_ENCODING           = "FloatDataEncoding";
-    private static final String  XTCE_BINARY_DATA_ENCODING          = "BinaryDataEncoding";
-    private static final String  XTCE_SIZE_IN_BITS                  = "SizeInBits";
-    private static final String  XTCE_FIXED_VALUE                   = "FixedValue";
-    private static final String  XTCE_DYNAMIC_VALUE                 = "DynamicValue";
-    private static final String  XTCE_DISCRETE_LOOKUP_LIST          = "DiscreteLookupList";
-    private static final String  XTCE_INTEGER_DATA_ENCODING         = "IntegerDataEncoding";
-    private static final String  XTCE_STRING_DATA_ENCODING          = "StringDataEncoding";
-    private static final String  XTCE_CONTEXT_ALARM_LIST            = "ContextAlarmList";
-    private static final String  XTCE_CONTEXT_ALARM                 = "ContextAlarm";
-    private static final String  XTCE_CONTEXT_MATCH                 = "ContextMatch";
-    private static final String  XTCE_DEFAULT_CALIBRATOR            = "DefaultCalibrator";
-    private static final String  XTCE_CALIBRATOR                    = "Calibrator";
-    private static final String  XTCE_CONTEXT_CALIBRATOR            = "ContextCalibrator";
-    private static final String  XTCE_CONTEXT_CALIBRATOR_LIST       = "ContextCalibratorList";
-    private static final String  XTCE_SPLINE_CALIBRATOR             = "SplineCalibrator";
-    private static final String  XTCE_POLYNOMIAL_CALIBRATOR         = "PolynomialCalibrator";
-    private static final String  XTCE_MATH_OPERATION_CALIBRATOR     = "MathOperationCalibrator";
-    private static final String  XTCE_TERM                          = "Term";
-    private static final String  XTCE_SPLINE_POINT                  = "SplinePoint";
-    private static final String  XTCE_COUNT                         = "Count";
-    private static final String  XTCE_INTEGER_VALUE                 = "IntegerValue";
-    private static final String  XTCE_PARAMETER_INSTANCE_REF        = "ParameterInstanceRef";
-    private static final String  XTCE_STATIC_ALARM_RANGES           = "StaticAlarmRanges";
-    private static final String  XTCE_DEFAULT_ALARM                 = "DefaultAlarm";
-    private static final String  XTCE_FIXED                         = "Fixed";
-    private static final String  XTCE_TERMINATION_CHAR              = "TerminationChar";
-    private static final String  XTCE_LEADING_SIZE                  = "LeadingSize";
-    private static final String  XTCE_DEFAULT_RATE_IN_STREAM        = "DefaultRateInStream";
-    private static final String  XTCE_REFERENCE_TIME                = "ReferenceTime";
-    private static final String  XTCE_OFFSET_FROM                   = "OffsetFrom";
-    private static final String  XTCE_EPOCH                         = "Epoch";
-    private static final String  XTCE_ENCODING                      = "Encoding";
-    private static final String  XTCE_ARGUMENT_TYPE_SET             = "ArgumentTypeSet";
-    private static final String  XTCE_META_COMMAND_SET              = "MetaCommandSet";
-    private static final String  XTCE_META_COMMAND                  = "MetaCommand";
-    private static final String  XTCE_COMMAND_CONTAINER             = "CommandContainer";
-    private static final String  XTCE_STRING_ARGUMENT_TYPE          = "StringArgumentType";
-    private static final String  XTCE_BINARY_ARGUMENT_TYPE          = "BinaryArgumentType";
-    private static final String  XTCE_INTEGER_ARGUMENT_TYPE         = "IntegerArgumentType";
-    private static final String  XTCE_FLOAT_ARGUMENT_TYPE           = "FloatArgumentType";
-    private static final String  XTCE_BOOLEAN_ARGUMENT_TYPE         = "BooleanArgumentType";
-    private static final String  XTCE_ENUMERATED_ARGUMENT_TYPE      = "EnumeratedArgumentType";
-    private static final String  XTCE_BASE_META_COMMAND             = "BaseMetaCommand";
-    private static final String  XTCE_ARGUMENT_LIST                 = "ArgumentList";
-    private static final String  XTCE_ARGUMENT_ASSIGNMENT_LIST      = "ArgumentAssignmentList";
-    private static final String  XTCE_ARGUMENT                      = "Argument";
-    private static final String  XTCE_ARGUMENT_REF_ENTRY            = "ArgumentRefEntry";
-    private static final String  XTCE_ARRAY_ARGUMENT_REF_ENTRY      = "ArrayArgumentRefEntry";
-    private static final String  XTCE_FIXED_VALUE_ENTRY             = "FixedValueEntry";
-    private static final String  XTCE_VALUE_OPERAND                 = "ValueOperand";
+    private static final String XTCE_PARAMETER_SEGMENT_REF_ENTRY = "ParameterSegmentRefEntry";
+    private static final String XTCE_CONTAINER_REF_ENTRY = "ContainerRefEntry";
+    private static final String XTCE_CONTAINER_SEGMENT_REF_ENTRY = "ContainerSegmentRefEntry";
+    private static final String XTCE_STREAM_SEGMENT_ENTRY = "StreamSegmentEntry";
+    private static final String XTCE_INDIRECT_PARAMETER_REF_ENTRY = "IndirectParameterRefEntry";
+    private static final String XTCE_ARRAY_PARAMETER_REF_ENTRY = "ArrayParameterRefEntry";
+
+    private static final String XTCE_UNIT_SET = "UnitSet";
+    private static final String XTCE_UNIT = "Unit";
+    private static final String XTCE_FLOAT_DATA_ENCODING = "FloatDataEncoding";
+    private static final String XTCE_BINARY_DATA_ENCODING = "BinaryDataEncoding";
+    private static final String XTCE_SIZE_IN_BITS = "SizeInBits";
+    private static final String XTCE_FIXED_VALUE = "FixedValue";
+    private static final String XTCE_DYNAMIC_VALUE = "DynamicValue";
+    private static final String XTCE_DISCRETE_LOOKUP_LIST = "DiscreteLookupList";
+    private static final String XTCE_INTEGER_DATA_ENCODING = "IntegerDataEncoding";
+    private static final String XTCE_STRING_DATA_ENCODING = "StringDataEncoding";
+    private static final String XTCE_CONTEXT_ALARM_LIST = "ContextAlarmList";
+    private static final String XTCE_CONTEXT_ALARM = "ContextAlarm";
+    private static final String XTCE_CONTEXT_MATCH = "ContextMatch";
+    private static final String XTCE_DEFAULT_CALIBRATOR = "DefaultCalibrator";
+    private static final String XTCE_CALIBRATOR = "Calibrator";
+    private static final String XTCE_CONTEXT_CALIBRATOR = "ContextCalibrator";
+    private static final String XTCE_CONTEXT_CALIBRATOR_LIST = "ContextCalibratorList";
+    private static final String XTCE_SPLINE_CALIBRATOR = "SplineCalibrator";
+    private static final String XTCE_POLYNOMIAL_CALIBRATOR = "PolynomialCalibrator";
+    private static final String XTCE_MATH_OPERATION_CALIBRATOR = "MathOperationCalibrator";
+    private static final String XTCE_TERM = "Term";
+    private static final String XTCE_SPLINE_POINT = "SplinePoint";
+    private static final String XTCE_COUNT = "Count";
+    private static final String XTCE_INTEGER_VALUE = "IntegerValue";
+    private static final String XTCE_PARAMETER_INSTANCE_REF = "ParameterInstanceRef";
+    private static final String XTCE_STATIC_ALARM_RANGES = "StaticAlarmRanges";
+    private static final String XTCE_DEFAULT_ALARM = "DefaultAlarm";
+    private static final String XTCE_FIXED = "Fixed";
+    private static final String XTCE_TERMINATION_CHAR = "TerminationChar";
+    private static final String XTCE_LEADING_SIZE = "LeadingSize";
+    private static final String XTCE_DEFAULT_RATE_IN_STREAM = "DefaultRateInStream";
+    private static final String XTCE_REFERENCE_TIME = "ReferenceTime";
+    private static final String XTCE_OFFSET_FROM = "OffsetFrom";
+    private static final String XTCE_EPOCH = "Epoch";
+    private static final String XTCE_ENCODING = "Encoding";
+    private static final String XTCE_ARGUMENT_TYPE_SET = "ArgumentTypeSet";
+    private static final String XTCE_META_COMMAND_SET = "MetaCommandSet";
+    private static final String XTCE_META_COMMAND = "MetaCommand";
+    private static final String XTCE_COMMAND_CONTAINER = "CommandContainer";
+    private static final String XTCE_STRING_ARGUMENT_TYPE = "StringArgumentType";
+    private static final String XTCE_BINARY_ARGUMENT_TYPE = "BinaryArgumentType";
+    private static final String XTCE_INTEGER_ARGUMENT_TYPE = "IntegerArgumentType";
+    private static final String XTCE_FLOAT_ARGUMENT_TYPE = "FloatArgumentType";
+    private static final String XTCE_BOOLEAN_ARGUMENT_TYPE = "BooleanArgumentType";
+    private static final String XTCE_ENUMERATED_ARGUMENT_TYPE = "EnumeratedArgumentType";
+    private static final String XTCE_BASE_META_COMMAND = "BaseMetaCommand";
+    private static final String XTCE_ARGUMENT_LIST = "ArgumentList";
+    private static final String XTCE_ARGUMENT_ASSIGNMENT_LIST = "ArgumentAssignmentList";
+    private static final String XTCE_ARGUMENT = "Argument";
+    private static final String XTCE_ARGUMENT_REF_ENTRY = "ArgumentRefEntry";
+    private static final String XTCE_ARRAY_ARGUMENT_REF_ENTRY = "ArrayArgumentRefEntry";
+    private static final String XTCE_FIXED_VALUE_ENTRY = "FixedValueEntry";
+    private static final String XTCE_VALUE_OPERAND = "ValueOperand";
+    private static final String XTCE_MATH_OPERATION = "MathOperation";
+    private static final String XTCE_TRIGGER_SET = "TriggerSet";
     /**
      * Logging subsystem
      */
-    private static Logger                log                            = LoggerFactory.getLogger(XtceStaxReader.class);
+    private static Logger log = LoggerFactory.getLogger(XtceStaxReader.class);
 
     /**
      * XML Event reader
      */
-    private XMLEventReader       xmlEventReader                 = null;
+    private XMLEventReader xmlEventReader = null;
 
     /**
      * XML Event
      */
-    private XMLEvent             xmlEvent                       = null;
+    private XMLEvent xmlEvent = null;
 
     /**
      * Statistics about the skipped sections. (good for overview about unimplemented features)
      */
-    private Map<String, Integer> xtceSkipStatistics             = new HashMap<String, Integer>();
+    private Map<String, Integer> xtceSkipStatistics = new HashMap<String, Integer>();
     private Set<String> excludedContainers = new HashSet<String>();
     String fileName;
+
     /**
      * Constructor
      */
     public XtceStaxReader() {
     }
 
-
     /**
      * Reading of the XML XTCE file
-     * @param fileName 
+     * 
+     * @param fileName
      * 
      * @return returns the SpaceSystem read from the XML file
-     * @throws XMLStreamException 
-     * @throws IOException 
+     * @throws XMLStreamException
+     * @throws IOException
      * 
      */
-    public SpaceSystem readXmlDocument(String fileName) throws XMLStreamException, IOException  {
+    public SpaceSystem readXmlDocument(String fileName) throws XMLStreamException, IOException {
         this.fileName = fileName;
         xmlEventReader = initEventReader(fileName);
         xmlEvent = null;
@@ -275,7 +283,7 @@ public class XtceStaxReader {
             if (eventType == XMLStreamConstants.COMMENT) {
                 continue;
             }
-            
+
             if (eventType == XMLStreamConstants.START_DOCUMENT) {
                 onStartDocument((StartDocument) xmlEvent);
             } else if (eventType == XMLStreamConstants.START_ELEMENT) {
@@ -335,7 +343,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_ALIAS_SET)) {
-                XtceAliasSet aliasSet=readXtceAliasSet();
+                XtceAliasSet aliasSet = readXtceAliasSet();
                 spaceSystem.setAliasSet(aliasSet);
             } else if (isStartElementWithName(XTCE_HEADER)) {
                 readXtceHeader(spaceSystem);
@@ -344,7 +352,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_COMMAND_MEATA_DATA)) {
                 readXtceCommandMetaData(spaceSystem);
             } else if (isStartElementWithName(XTCE_SPACE_SYSTEM)) {
-                SpaceSystem ss= readSpaceSystem();
+                SpaceSystem ss = readSpaceSystem();
                 spaceSystem.addSpaceSystem(ss);
             } else if (isEndElementWithName(XTCE_SPACE_SYSTEM)) {
                 return spaceSystem;
@@ -427,14 +435,15 @@ public class XtceStaxReader {
     /**
      * Extraction of the Header section Current implementation does nothing,
      * just skips whole section
-     * @param spaceSystem 
+     * 
+     * @param spaceSystem
      * 
      * @throws XMLStreamException
      */
     private void readXtceHeader(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_HEADER);
         checkStartElementPreconditions();
-        Header h=new Header();
+        Header h = new Header();
 
         String value = readAttribute("version", xmlEvent.asStartElement());
         h.setVersion(value);
@@ -460,7 +469,8 @@ public class XtceStaxReader {
 
     /**
      * Extraction of the TelemetryMetaData section
-     * @param spaceSystem 
+     * 
+     * @param spaceSystem
      * 
      * @throws XMLStreamException
      */
@@ -472,9 +482,9 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_PARAMETER_TYPE_SET)) {
-                readXtceParameterTypeSet(spaceSystem);
+                readParameterTypeSet(spaceSystem);
             } else if (isStartElementWithName(XTCE_PARAMETER_SET)) {
-                readXtceParameterSet(spaceSystem);
+                readParameterSet(spaceSystem);
             } else if (isStartElementWithName(XTCE_CONTAINER_SET)) {
                 readXtceContainerSet(spaceSystem);
             } else if (isStartElementWithName(XTCE_MESSAGE_SET)) {
@@ -482,7 +492,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_STREAM_SET)) {
                 readXtceStreamSet();
             } else if (isStartElementWithName(XTCE_ALGORITHM_SET)) {
-                readXtceAlgorithmSet(spaceSystem);
+                readAlgorithmSet(spaceSystem);
             } else if (isEndElementWithName(XTCE_TELEMTRY_META_DATA)) {
                 return;
             }
@@ -490,10 +500,10 @@ public class XtceStaxReader {
     }
 
     /**
-     * @param spaceSystem 
+     * @param spaceSystem
      * @throws XMLStreamException
      */
-    private void readXtceParameterTypeSet(SpaceSystem spaceSystem) throws XMLStreamException {
+    private void readParameterTypeSet(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_PARAMETER_TYPE_SET);
         checkStartElementPreconditions();
 
@@ -506,7 +516,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_ENUMERATED_PARAMETER_TYPE)) {
                 parameterType = readXtceEnumeratedParameterType(spaceSystem);
             } else if (isStartElementWithName(XTCE_FLOAT_PARAMETER_TYPE)) {
-                parameterType = readXtceFloatParameterType(spaceSystem);
+                parameterType = readFloatParameterType(spaceSystem);
             } else if (isStartElementWithName(XTCE_INTEGER_PARAMETER_TYPE)) {
                 parameterType = readXtceIntegerParameterType(spaceSystem);
             } else if (isStartElementWithName(XTCE_BINARY_PARAMETER_TYPE)) {
@@ -533,7 +543,8 @@ public class XtceStaxReader {
         }
     }
 
-    private BooleanParameterType readXtceBooleanParameterType(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private BooleanParameterType readXtceBooleanParameterType(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_BOOLEAN_PARAMETER_TYPE);
         checkStartElementPreconditions();
 
@@ -551,7 +562,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_UNIT_SET)) {
-                boolParamType.addAllUnits(readXtceUnitSet());               
+                boolParamType.addAllUnits(readXtceUnitSet());
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 boolParamType.setEncoding(readXtceIntegerDataEncoding(spaceSystem));
             } else if (isEndElementWithName(XTCE_BOOLEAN_PARAMETER_TYPE)) {
@@ -561,30 +572,31 @@ public class XtceStaxReader {
     }
 
     private ParameterType readXtceAggregateParameterType() throws IllegalStateException,
-    XMLStreamException {
+            XMLStreamException {
         skipXtceSection(XTCE_AggregateParameterType);
         return null;
     }
 
     private ParameterType readXtceArrayParameterType() throws IllegalStateException,
-    XMLStreamException {
+            XMLStreamException {
         skipXtceSection(XTCE_ArrayParameterType);
         return null;
     }
 
-    private AbsoluteTimeParameterType readXtceAbsoluteTimeParameterType(SpaceSystem spaceSystem) throws IllegalStateException,
-    XMLStreamException {
+    private AbsoluteTimeParameterType readXtceAbsoluteTimeParameterType(SpaceSystem spaceSystem)
+            throws IllegalStateException,
+            XMLStreamException {
         AbsoluteTimeParameterType ptype = null;
         log.trace(XTCE_ABSOLUTE_TIME_PARAMETER_TYPE);
         checkStartElementPreconditions();
-        
+
         String value = readAttribute("name", xmlEvent.asStartElement());
         if (value != null) {
             ptype = new AbsoluteTimeParameterType(value);
         } else {
             throw new XMLStreamException("Unnamed absolute time parameter type");
         }
-      
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -598,9 +610,8 @@ public class XtceStaxReader {
         }
     }
 
-    
     private ParameterType readXtceRelativeTimeParameterType() throws IllegalStateException,
-    XMLStreamException {
+            XMLStreamException {
         skipXtceSection(XTCE_RelativeTimeParameterType);
         return null;
     }
@@ -608,13 +619,13 @@ public class XtceStaxReader {
     private ReferenceTime readXtceReferenceTime(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_REFERENCE_TIME);
         checkStartElementPreconditions();
-        
+
         ReferenceTime referenceTime = new ReferenceTime();
-        
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_OFFSET_FROM)) {
-                referenceTime.setOffsetFrom(readXtceParameterInstanceRef(spaceSystem));
+                referenceTime.setOffsetFrom(readParameterInstanceRef(spaceSystem));
             } else if (isStartElementWithName(XTCE_EPOCH)) {
                 referenceTime.setEpoch(readXtceEpoch());
             } else if (isEndElementWithName(XTCE_REFERENCE_TIME)) {
@@ -622,45 +633,47 @@ public class XtceStaxReader {
             }
         }
     }
+
     private TimeEpoch readXtceEpoch() throws XMLStreamException {
         log.trace(XTCE_EPOCH);
         String s = readStringBetweenTags(XTCE_EPOCH);
         try {
             return new TimeEpoch(TimeEpoch.CommonEpochs.valueOf(s));
         } catch (IllegalArgumentException e) {
-            //TODO validate the date
+            // TODO validate the date
             return new TimeEpoch(s);
         }
     }
-    
+
     private void readXtceEncoding(SpaceSystem spaceSystem, AbsoluteTimeParameterType ptype) throws XMLStreamException {
         log.trace(XTCE_ENCODING);
         checkStartElementPreconditions();
         // name attribute
         String units = readAttribute("units", xmlEvent.asStartElement());
         if ((units != null) && (!"seconds".equals(units))) {
-            throw new XMLStreamException("Unsupported unit types '"+units+"' for time encoding. Only seconds (with scaling) supported");
-        } 
+            throw new XMLStreamException(
+                    "Unsupported unit types '" + units + "' for time encoding. Only seconds (with scaling) supported");
+        }
         boolean needsScaling = false;
         double offset = 0d;
         double scale = 1d;
         String offsets = readAttribute("offset", xmlEvent.asStartElement());
-        if(offsets!=null) {
+        if (offsets != null) {
             needsScaling = true;
-            offset = Double.parseDouble(offsets);
+            offset = parseDouble(offsets);
         }
         String scales = readAttribute("scale", xmlEvent.asStartElement());
-        if(scales!=null) {
+        if (scales != null) {
             needsScaling = true;
-            scale = Double.parseDouble(scales);
+            scale = parseDouble(scales);
         }
         ptype.setScaling(needsScaling, offset, scale);
-        
+
         DataEncoding dataEncoding = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-             if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
-                 dataEncoding = readXtceIntegerDataEncoding(spaceSystem);
+            if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
+                dataEncoding = readXtceIntegerDataEncoding(spaceSystem);
             } else if (isStartElementWithName(XTCE_FLOAT_DATA_ENCODING)) {
                 dataEncoding = readXtceFloatDataEncoding(spaceSystem);
             } else if (isEndElementWithName(XTCE_ENCODING)) {
@@ -669,8 +682,9 @@ public class XtceStaxReader {
             }
         }
     }
-    
-    private FloatParameterType readXtceFloatParameterType(SpaceSystem spaceSystem) throws IllegalStateException,  XMLStreamException {
+
+    private FloatParameterType readFloatParameterType(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         FloatParameterType floatParamType = null;
         log.trace(XTCE_FLOAT_PARAMETER_TYPE);
         checkStartElementPreconditions();
@@ -684,15 +698,16 @@ public class XtceStaxReader {
         }
 
         value = readAttribute("sizeInBits", xmlEvent.asStartElement());
-        
+
         if (value != null) {
             int sizeInBits = Integer.parseInt(value);
-            if(sizeInBits!=32 && sizeInBits!=64){
-                throw new XMLStreamException("Float encoding "+sizeInBits+" not supported; Only 32 and 64 bits are supported");
+            if (sizeInBits != 32 && sizeInBits != 64) {
+                throw new XMLStreamException(
+                        "Float encoding " + sizeInBits + " not supported; Only 32 and 64 bits are supported");
             }
             floatParamType.setSizeInBits(sizeInBits);
-        } 
-        
+        }
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -705,7 +720,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_DEFAULT_ALARM)) {
                 floatParamType.setDefaultAlarm(readDefaultAlarm());
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
-                floatParamType.setContextAlarmList(readNumericContextAlarmList(spaceSystem));                
+                floatParamType.setContextAlarmList(readNumericContextAlarmList(spaceSystem));
             } else if (isEndElementWithName(XTCE_FLOAT_PARAMETER_TYPE)) {
                 return floatParamType;
             }
@@ -756,8 +771,9 @@ public class XtceStaxReader {
             }
         }
     }
-        
-    private List<NumericContextAlarm> readNumericContextAlarmList(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException  {
+
+    private List<NumericContextAlarm> readNumericContextAlarmList(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_CONTEXT_ALARM_LIST);
         List<NumericContextAlarm> contextAlarmList = new ArrayList<NumericContextAlarm>();
         while (true) {
@@ -770,43 +786,44 @@ public class XtceStaxReader {
             }
         }
     }
-    
+
     private NumericAlarm readDefaultAlarm() throws XMLStreamException {
         NumericAlarm na = new NumericAlarm();
         readAlarmAttributes(na);
-        
+
         while (true) {
-            xmlEvent = xmlEventReader.nextEvent();            
+            xmlEvent = xmlEventReader.nextEvent();
             if (isEndElementWithName(XTCE_DEFAULT_ALARM)) {
                 return na;
-            } else if(xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT){
+            } else if (xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT) {
                 readNumericAlarmElement(na);
             }
         }
     }
+
     private NumericContextAlarm readNumericContextAlarm(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_CONTEXT_ALARM);
         NumericContextAlarm nca = new NumericContextAlarm();
         readAlarmAttributes(nca);
-        
+
         while (true) {
-            xmlEvent = xmlEventReader.nextEvent();            
+            xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_CONTEXT_MATCH)) {
                 nca.setContextMatch(readMatchCriteria(spaceSystem));
             } else if (isEndElementWithName(XTCE_CONTEXT_ALARM)) {
                 return nca;
-            } else if(xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT){
+            } else if (xmlEvent.getEventType() == XMLStreamConstants.START_ELEMENT) {
                 readNumericAlarmElement(nca);
             }
         }
     }
-    
+
     private void readNumericAlarmElement(NumericAlarm numericAlarm) throws XMLStreamException {
         if (isStartElementWithName(XTCE_STATIC_ALARM_RANGES)) {
             numericAlarm.setStaticAlarmRanges(readAlarmRanges());
         }
     }
-    
+
     private AlarmRanges readAlarmRanges() throws XMLStreamException {
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
         AlarmRanges ar = new AlarmRanges();
@@ -814,7 +831,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName("WatchRange")) {
                 ar.addWatchRange(readFloatRange());
-            }  else if (isStartElementWithName("WarningRange")) {
+            } else if (isStartElementWithName("WarningRange")) {
                 ar.addWarningRange(readFloatRange());
             } else if (isStartElementWithName("DistressRange")) {
                 ar.addDistressRange(readFloatRange());
@@ -828,37 +845,34 @@ public class XtceStaxReader {
         }
     }
 
-
-    private DoubleRange readFloatRange() {
+    private DoubleRange readFloatRange() throws XMLStreamException {
         StartElement e = xmlEvent.asStartElement();
         double minExclusive = Double.NaN;
         double maxExclusive = Double.NaN;
         double minInclusive = Double.NaN;
         double maxInclusive = Double.NaN;
-        
-        String value = readAttribute("minExclusive", e);        
+
+        String value = readAttribute("minExclusive", e);
         if (value != null) {
-            minExclusive = Double.parseDouble(value);            
-        } 
-        
-        value = readAttribute("maxExclusive", e);        
+            minExclusive = parseDouble(value);
+        }
+
+        value = readAttribute("maxExclusive", e);
         if (value != null) {
-            maxExclusive = Double.parseDouble(value);            
-        } 
-        value = readAttribute("minInclusive", e);        
+            maxExclusive = parseDouble(value);
+        }
+        value = readAttribute("minInclusive", e);
         if (value != null) {
-            minInclusive = Double.parseDouble(value);            
-        } 
-        
-        value = readAttribute("maxInclusive", e);        
+            minInclusive = parseDouble(value);
+        }
+
+        value = readAttribute("maxInclusive", e);
         if (value != null) {
-            maxInclusive = Double.parseDouble(value);            
-        } 
-       
-        
+            maxInclusive = parseDouble(value);
+        }
+
         return DoubleRange.fromXtceComplement(minExclusive, maxExclusive, minInclusive, maxInclusive);
     }
-
 
     private void readAlarmAttributes(NumericAlarm numericAlarm) {
         String value = readAttribute("minViolations", xmlEvent.asStartElement());
@@ -867,9 +881,9 @@ public class XtceStaxReader {
             numericAlarm.setMinViolations(minViolations);
         }
     }
-    
-    
-    private BinaryParameterType readXtceBinaryParameterType(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+
+    private BinaryParameterType readXtceBinaryParameterType(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_BINARY_PARAMETER_TYPE);
         checkStartElementPreconditions();
 
@@ -908,8 +922,8 @@ public class XtceStaxReader {
 
             if (isStartElementWithName(XTCE_SIZE_IN_BITS)) {
                 IntegerValue v = readXtceIntegerValue(spaceSystem);
-                if(v instanceof FixedIntegerValue) {
-                    binaryDataEncoding = new BinaryDataEncoding((int)((FixedIntegerValue) v).getValue());
+                if (v instanceof FixedIntegerValue) {
+                    binaryDataEncoding = new BinaryDataEncoding((int) ((FixedIntegerValue) v).getValue());
                 } else {
                     throwException("Only FixedIntegerValue supported for sizeInBits");
                 }
@@ -924,9 +938,9 @@ public class XtceStaxReader {
     }
 
     private void throwException(String msg) throws XMLStreamException {
-        throw new XMLStreamException(msg+" at "+xmlEvent.getLocation().getLineNumber()+": "+xmlEvent.getLocation().getColumnNumber());
+        throw new XMLStreamException(msg + " at " + xmlEvent.getLocation().getLineNumber() + ": "
+                + xmlEvent.getLocation().getColumnNumber());
     }
-  
 
     private int readIntegerValue() throws XMLStreamException {
         checkStartElementPreconditions();
@@ -936,7 +950,7 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-           
+
             if (xmlEvent.isCharacters()) {
                 sizeInBits = getIntegerCharacter();
             } else if (isEndElementWithName(tag)) {
@@ -944,23 +958,27 @@ public class XtceStaxReader {
             }
         }
     }
-    int getIntegerCharacter() throws XMLStreamException { 
+
+    int getIntegerCharacter() throws XMLStreamException {
         if (xmlEvent.isCharacters()) {
             String value = xmlEvent.asCharacters().getData();
             try {
                 return Integer.parseInt(value);
-            } catch(NumberFormatException e) {
-                throw new XMLStreamException("Cannot parse integer '"+value+"' at "+xmlEvent.getLocation().getLineNumber()+":"+xmlEvent.getLocation().getColumnNumber());
+            } catch (NumberFormatException e) {
+                throw new XMLStreamException("Cannot parse integer '" + value + "' at "
+                        + xmlEvent.getLocation().getLineNumber() + ":" + xmlEvent.getLocation().getColumnNumber());
             }
         } else {
             throw new IllegalStateException();
         }
     }
-    private StringParameterType readXtceStringParameterType(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+
+    private StringParameterType readXtceStringParameterType(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_INTEGER_PARAMETER_TYPE);
         checkStartElementPreconditions();
         StringParameterType stringParamType = null;
-        
+
         // name attribute
         String value = readAttribute("name", xmlEvent.asStartElement());
         if (value != null) {
@@ -983,13 +1001,13 @@ public class XtceStaxReader {
             }
         }
     }
-    
 
     private StringDataEncoding readXtceStringDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
         checkStartElementPreconditions();
 
-        StringDataEncoding stringDataEncoding = new StringDataEncoding();;
-      
+        StringDataEncoding stringDataEncoding = new StringDataEncoding();
+        ;
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -1001,24 +1019,25 @@ public class XtceStaxReader {
         }
     }
 
-
-    private void readStringSizeInBits(SpaceSystem spaceSystem, StringDataEncoding stringDataEncoding) throws XMLStreamException {
+    private void readStringSizeInBits(SpaceSystem spaceSystem, StringDataEncoding stringDataEncoding)
+            throws XMLStreamException {
         checkStartElementPreconditions();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_FIXED)) {
                 IntegerValue v = readXtceIntegerValue(spaceSystem);
-                if(v instanceof FixedIntegerValue) {
+                if (v instanceof FixedIntegerValue) {
                     stringDataEncoding.setSizeType(SizeType.FIXED);
-                    stringDataEncoding.setSizeInBits((int)((FixedIntegerValue) v).getValue());
+                    stringDataEncoding.setSizeInBits((int) ((FixedIntegerValue) v).getValue());
                 } else {
                     throwException("Only FixedValue supported for string size in bits");
                 }
-             } else if (isStartElementWithName(XTCE_TERMINATION_CHAR)) {
+            } else if (isStartElementWithName(XTCE_TERMINATION_CHAR)) {
                 stringDataEncoding.setSizeType(SizeType.TERMINATION_CHAR);
                 byte[] x = readHexBinary();
-                if(x==null || x.length!=1) {
-                    throw new XMLStreamException("Terminated strings have to have the size of the termination character of 1");
+                if (x == null || x.length != 1) {
+                    throw new XMLStreamException(
+                            "Terminated strings have to have the size of the termination character of 1");
                 }
                 stringDataEncoding.setTerminationChar(x[0]);
             } else if (isStartElementWithName(XTCE_LEADING_SIZE)) {
@@ -1031,11 +1050,10 @@ public class XtceStaxReader {
         }
     }
 
-
     private byte[] readHexBinary() throws XMLStreamException {
         checkStartElementPreconditions();
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
-        byte[] b=null;
+        byte[] b = null;
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -1047,8 +1065,8 @@ public class XtceStaxReader {
         }
     }
 
-
-    private IntegerParameterType readXtceIntegerParameterType(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private IntegerParameterType readXtceIntegerParameterType(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         IntegerParameterType integerParamType;
 
         log.trace(XTCE_INTEGER_PARAMETER_TYPE);
@@ -1070,7 +1088,7 @@ public class XtceStaxReader {
         value = readAttribute("signed", xmlEvent.asStartElement());
         if (value != null) {
             boolean signed = Boolean.parseBoolean(value);
-            integerParamType. setSigned(signed);
+            integerParamType.setSigned(signed);
         }
 
         while (true) {
@@ -1081,7 +1099,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 integerParamType.setEncoding(readXtceIntegerDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_DEFAULT_ALARM)) {
-                integerParamType.setDefaultAlarm(readDefaultAlarm());             
+                integerParamType.setDefaultAlarm(readDefaultAlarm());
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 integerParamType.setContextAlarmList(readNumericContextAlarmList(spaceSystem));
             } else if (isEndElementWithName(XTCE_INTEGER_PARAMETER_TYPE)) {
@@ -1091,7 +1109,7 @@ public class XtceStaxReader {
     }
 
     private IntegerDataEncoding readXtceIntegerDataEncoding(SpaceSystem spaceSystem) throws IllegalStateException,
-    XMLStreamException {
+            XMLStreamException {
         log.trace(XTCE_INTEGER_DATA_ENCODING);
         checkStartElementPreconditions();
 
@@ -1115,12 +1133,13 @@ public class XtceStaxReader {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.SIGN_MAGNITUDE);
             } else if ("twosComplement".equalsIgnoreCase(value)) {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
-            } else if ("twosCompliment".equalsIgnoreCase(value)) { //this is for compatibility with CD-MCS/CGS SCOE XML exporter
+            } else if ("twosCompliment".equalsIgnoreCase(value)) { // this is for compatibility with CD-MCS/CGS SCOE XML
+                                                                   // exporter
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
             } else if ("onesComplement".equalsIgnoreCase(value)) {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.ONES_COMPLEMENT);
             } else {
-                throwException("Unsupported encoding '"+value+"'");
+                throwException("Unsupported encoding '" + value + "'");
             }
         } else {
             // default is unsigned
@@ -1143,19 +1162,18 @@ public class XtceStaxReader {
     private List<ContextCalibrator> readContextCalibratorList(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_CONTEXT_CALIBRATOR_LIST);
         checkStartElementPreconditions();
-        
+
         List<ContextCalibrator> clist = new ArrayList<>();
-        
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_CONTEXT_CALIBRATOR)) {
-                clist.add(readContextCalibrator(spaceSystem));            
+                clist.add(readContextCalibrator(spaceSystem));
             } else if (isEndElementWithName(XTCE_CONTEXT_CALIBRATOR_LIST)) {
                 return clist;
             }
         }
     }
-
 
     private Calibrator readCalibrator(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_DEFAULT_CALIBRATOR);
@@ -1169,7 +1187,7 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_POLYNOMIAL_CALIBRATOR)) {
                 calibrator = readXtcePolynomialCalibrator();
             } else if (isStartElementWithName(XTCE_MATH_OPERATION_CALIBRATOR)) {
-                calibrator = (Calibrator) readMathOperation(spaceSystem, true);
+                calibrator = (Calibrator) readMathOperation(spaceSystem, null);
             } else if (isStartElementWithName(XTCE_SPLINE_CALIBRATOR)) {
                 calibrator = readXtceSplineCalibrator();
             } else if (isEndElementWithName(tag)) {
@@ -1178,35 +1196,114 @@ public class XtceStaxReader {
         }
     }
 
-    private MathOperation readMathOperation(SpaceSystem spaceSystem, boolean calibrator) throws XMLStreamException {
-
+    //reads a math operation either as part of an algorithm (when algo is not null) 
+    //or as part of a calibration     
+    private MathOperation readMathOperation(SpaceSystem spaceSystem, MathAlgorithm algo) throws XMLStreamException {
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
-        MathOperation mathOp;
-        
         List<MathOperation.Element> list = new ArrayList<>();
-        AlarmRanges ar = new AlarmRanges();
+
+        String refName = null;
+        if (algo!=null) {
+            refName = readAttribute("outputParameterRef", xmlEvent.asStartElement());
+            if (refName == null) {
+                throw new XMLStreamException("Invalid MathOperation for algorithm, "
+                        + "no outputParameterRef attribute defined", xmlEvent.getLocation());
+            }
+        }
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_VALUE_OPERAND)) {
                 list.add(new MathOperation.Element(readDouble()));
-            }  else if (isStartElementWithName("ThisParameterOperand")) {
+            } else if (isStartElementWithName("ThisParameterOperand")) {
+                if(algo!=null) {
+                    throw new XMLStreamException("Cannot reference 'ThisParameter' in algorithms.", xmlEvent.getLocation());
+                }
                 skipQuietly("ThisParameterOperand");
                 list.add(new MathOperation.Element());
             } else if (isStartElementWithName("ParameterInstanceRefOperand")) {
-                list.add(new MathOperation.Element(readXtceParameterInstanceRef(spaceSystem)));
+                if(algo==null) {
+                    throw new XMLStreamException("Cannot reference other paramters in calibrations."
+                            + " Use 'ThisParameterOperand' to refer to the parameter to be calibrated ", xmlEvent.getLocation());
+                }
+                ParameterInstanceRef pref = readParameterInstanceRef(spaceSystem);
+                algo.addInput(new InputParameter(pref));
+                list.add(new MathOperation.Element(pref));
             } else if (isStartElementWithName("Operator")) {
                 list.add(new MathOperation.Element(readMathOperator()));
+            } else if (isStartElementWithName(XTCE_TRIGGER_SET)) {
+                algo.setTriggerSet(readTriggerSet(spaceSystem));
             } else if (isEndElementWithName(tag)) {
-                if(calibrator) {
-                    mathOp =new MathOperationCalibrator(list);
-                } else {
-                    mathOp = new MathOperation(list);
-                }
-                return mathOp;
+                break;
+            }
+        }
+        
+        if (algo!=null) {
+            
+            TriggeredMathOperation trigMathOp = new TriggeredMathOperation(list);
+            NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
+                algo.addOutput(new OutputParameter((Parameter) nd));
+                return true;
+            });
+            spaceSystem.addUnresolvedReference(nr);
+            algo.setMathOperation(trigMathOp);
+            return trigMathOp;
+        } else {
+            return new MathOperationCalibrator(list);
+        }
+    }
+
+    private TriggerSetType readTriggerSet(SpaceSystem spaceSystem) throws XMLStreamException {
+        String tag = xmlEvent.asStartElement().getName().getLocalPart();
+        TriggerSetType triggerSet = new TriggerSetType();
+        
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName("OnParameterUpdateTrigger")) {
+                triggerSet.addOnParameterUpdateTrigger(readOnParameterUpdateTrigger(spaceSystem));
+            } else if (isStartElementWithName("OnContainerUpdateTrigger")) {
+                throw new XMLStreamException("OnContainerUpdateTrigger not implemented", xmlEvent.getLocation());
+            } else if (isStartElementWithName("OnPeriodicRateTrigger")) {
+                triggerSet.addOnPeriodicRateTrigger(readOnPeriodicRateTrigger(spaceSystem));
+            } else if (isEndElementWithName(tag)) {
+                return triggerSet;
             }
         }
     }
 
+    private OnParameterUpdateTrigger readOnParameterUpdateTrigger(SpaceSystem spaceSystem) throws XMLStreamException {
+        String refName = null;
+        refName = readAttribute("parameterRef", xmlEvent.asStartElement());
+        if (refName == null) {
+            throw new XMLStreamException("Invalid OnParameterUpdateTrigger, no parameterRef defined", xmlEvent.getLocation());
+        }
+        OnParameterUpdateTrigger trigger = new OnParameterUpdateTrigger();
+        NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
+            trigger.setParameter((Parameter) nd);
+            return true;
+        });
+        spaceSystem.addUnresolvedReference(nr);
+        return trigger;
+    }
+    
+    private OnPeriodicRateTrigger readOnPeriodicRateTrigger(SpaceSystem spaceSystem) throws XMLStreamException {
+        String value = null;
+        value = readAttribute("fireRateInSeconds", xmlEvent.asStartElement());
+        if (value == null) {
+            throw new XMLStreamException("Invalid OnPeriodicRateTrigger, no fireRateInSeconds defined", xmlEvent.getLocation());
+        }
+        OnPeriodicRateTrigger trigger = new OnPeriodicRateTrigger((long)(1000*parseDouble(value)));
+        return trigger;
+    }
+    
+
+    private double parseDouble(String value) throws XMLStreamException {
+        try {
+            return Double.parseDouble(value);
+        } catch (Exception e) {
+            throw new XMLStreamException("Cannot parse double value '"+value+"'", xmlEvent.getLocation());
+        }
+    }
 
     private MathOperator readMathOperator() throws XMLStreamException {
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
@@ -1221,25 +1318,25 @@ public class XtceStaxReader {
         }
     }
 
-
-    private ContextCalibrator readContextCalibrator(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private ContextCalibrator readContextCalibrator(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_CONTEXT_CALIBRATOR);
         checkStartElementPreconditions();
 
-        MatchCriteria context = null; 
-        Calibrator calibrator = null; 
+        MatchCriteria context = null;
+        Calibrator calibrator = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_CONTEXT_MATCH)) {
                 context = readMatchCriteria(spaceSystem);
             } else if (isStartElementWithName(XTCE_CALIBRATOR)) {
-                calibrator=readCalibrator(spaceSystem);
+                calibrator = readCalibrator(spaceSystem);
             } else if (isEndElementWithName(XTCE_CONTEXT_CALIBRATOR)) {
-                if(context==null) {
+                if (context == null) {
                     throw new XMLStreamException("Invalid context calibrator, no context specified");
                 }
-                if(calibrator==null) {
+                if (calibrator == null) {
                     throw new XMLStreamException("Invalid context calibrator, no calibrator specified");
                 }
                 return new ContextCalibrator(context, calibrator);
@@ -1247,9 +1344,9 @@ public class XtceStaxReader {
         }
     }
 
-
     /**
      * Instantiate the SplineCalibrator element.
+     * 
      * @return
      * @throws XMLStreamException
      */
@@ -1273,8 +1370,9 @@ public class XtceStaxReader {
     /**
      * Instantiate SplinePoint element.
      * This element has two required attributes: raw, calibrated
+     * 
      * @return
-     * @throws XMLStreamException 
+     * @throws XMLStreamException
      */
     private SplinePoint readXtceSplinePoint() throws XMLStreamException {
         log.trace(XTCE_SPLINE_POINT);
@@ -1285,14 +1383,14 @@ public class XtceStaxReader {
 
         String attributeValue = readAttribute("raw", xmlEvent.asStartElement());
         if (attributeValue != null) {
-            raw = Double.parseDouble(attributeValue);
+            raw = parseDouble(attributeValue);
         } else {
             throw new XMLStreamException();
         }
 
         attributeValue = readAttribute("calibrated", xmlEvent.asStartElement());
         if (attributeValue != null) {
-            calibrated = Double.parseDouble(attributeValue);
+            calibrated = parseDouble(attributeValue);
         } else {
             throw new XMLStreamException();
         }
@@ -1324,7 +1422,7 @@ public class XtceStaxReader {
                 polynome.put(term.getExponent(), term.getCoefficient());
             } else if (isEndElementWithName(XTCE_POLYNOMIAL_CALIBRATOR)) {
                 double[] coefficients = new double[maxExponent + 1];
-                for (Map.Entry<Integer, Double> entry:polynome.entrySet()) {
+                for (Map.Entry<Integer, Double> entry : polynome.entrySet()) {
                     coefficients[entry.getKey()] = entry.getValue();
                 }
                 return new PolynomialCalibrator(coefficients);
@@ -1341,14 +1439,14 @@ public class XtceStaxReader {
 
         String value = readAttribute("coefficient", xmlEvent.asStartElement());
         if (value != null) {
-            coefficient = Double.parseDouble(value);
+            coefficient = parseDouble(value);
         } else {
             throw new XMLStreamException();
         }
 
         value = readAttribute("exponent", xmlEvent.asStartElement());
         if (value != null) {
-            exponent = (int) Double.parseDouble(value);
+            exponent = (int) parseDouble(value);
         } else {
             throw new XMLStreamException();
         }
@@ -1384,7 +1482,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (xmlEvent.isCharacters()) {
-                d = Double.parseDouble(xmlEvent.asCharacters().getData());
+                d = parseDouble(xmlEvent.asCharacters().getData());
             } else if (isEndElementWithName(tag)) {
                 return d;
             }
@@ -1395,14 +1493,12 @@ public class XtceStaxReader {
         log.trace(XTCE_UNIT);
         checkStartElementPreconditions();
 
-
         StartElement element = xmlEvent.asStartElement();
 
         String powerValue = readAttribute("power", element);
         String factorValue = readAttribute("factor", element);
         String descriptionValue = readAttribute("description", element);
         String unit;
-
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -1416,20 +1512,21 @@ public class XtceStaxReader {
         }
 
         UnitType unitType = new UnitType(unit);
-        if ( powerValue != null ) {
-            unitType.setPower( Double.parseDouble(powerValue));
+        if (powerValue != null) {
+            unitType.setPower(parseDouble(powerValue));
         }
-        if ( factorValue != null ) {
-            unitType.setFactor( factorValue );
+        if (factorValue != null) {
+            unitType.setFactor(factorValue);
         }
-        if ( descriptionValue != null ) {
-            unitType.setDescription( descriptionValue );
+        if (descriptionValue != null) {
+            unitType.setDescription(descriptionValue);
         }
 
         return unitType;
     }
 
-    private EnumeratedParameterType readXtceEnumeratedParameterType(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private EnumeratedParameterType readXtceEnumeratedParameterType(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         EnumeratedParameterType enumParamType = null;
 
         log.trace(XTCE_ENUMERATED_PARAMETER_TYPE);
@@ -1453,7 +1550,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_UNIT_SET)) {
-                enumParamType.addAllUnits(readXtceUnitSet());               
+                enumParamType.addAllUnits(readXtceUnitSet());
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 enumParamType.setEncoding(readXtceIntegerDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_ENUMERATION_LIST)) {
@@ -1488,12 +1585,12 @@ public class XtceStaxReader {
             }
         }
     }
-    
+
     private EnumerationAlarm readXtceEnumerationAlarm(EnumeratedParameterType enumParamType) throws XMLStreamException {
         checkStartElementPreconditions();
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
         EnumerationAlarm alarm = new EnumerationAlarm();
-        
+
         // initialValue attribute
         String v = readAttribute("minViolations", xmlEvent.asStartElement());
         if (v != null) {
@@ -1505,14 +1602,15 @@ public class XtceStaxReader {
 
             if (isStartElementWithName("EnumerationAlarm")) {
                 String label = readAttribute("enumerationLabel", xmlEvent.asStartElement());
-                if(label==null) {
-                    label = readAttribute("enumerationValue", xmlEvent.asStartElement()); //XTCE 1.1
+                if (label == null) {
+                    label = readAttribute("enumerationValue", xmlEvent.asStartElement()); // XTCE 1.1
                 }
-                if(label==null) {
-                    throw new XMLStreamException(fileName+": error in In definition of "+enumParamType.getName()+"EnumerationAlarm: no enumerationLabel specified", xmlEvent.getLocation());
+                if (label == null) {
+                    throw new XMLStreamException(fileName + ": error in In definition of " + enumParamType.getName()
+                            + "EnumerationAlarm: no enumerationLabel specified", xmlEvent.getLocation());
                 }
-                if(!enumParamType.hasLabel(label)) {
-                    throw new XMLStreamException("Reference to invalid enumeration label '"+label+"'");
+                if (!enumParamType.hasLabel(label)) {
+                    throw new XMLStreamException("Reference to invalid enumeration label '" + label + "'");
                 }
                 AlarmLevels level = getAlarmLevel(readAttribute("alarmLevel", xmlEvent.asStartElement()));
                 alarm.addAlarm(label, level);
@@ -1521,15 +1619,15 @@ public class XtceStaxReader {
             }
         }
     }
-    
+
     private AlarmLevels getAlarmLevel(String l) throws XMLStreamException {
         try {
             return AlarmLevels.valueOf(l.toLowerCase());
         } catch (IllegalArgumentException e) {
-            throw new XMLStreamException("Invalid alarm level '"+l+"'; use one of: "+Arrays.toString(AlarmLevels.values()));
+            throw new XMLStreamException(
+                    "Invalid alarm level '" + l + "'; use one of: " + Arrays.toString(AlarmLevels.values()));
         }
     }
-    
 
     private ValueEnumerationRange readXtceRangeEnumeration() throws XMLStreamException {
         log.trace(XTCE_RANGE_ENUMERATION);
@@ -1542,26 +1640,26 @@ public class XtceStaxReader {
 
         String value = readAttribute("maxInclusive", xmlEvent.asStartElement());
         if (value != null) {
-            max = Double.parseDouble(value);
+            max = parseDouble(value);
             isMaxInclusive = true;
         }
 
         value = readAttribute("minInclusive", xmlEvent.asStartElement());
         if (value != null) {
             isMinInclusive = true;
-            min = Double.parseDouble(value);
+            min = parseDouble(value);
         }
 
         value = readAttribute("maxExclusive", xmlEvent.asStartElement());
         if (value != null) {
-            max = Double.parseDouble(value);
+            max = parseDouble(value);
             isMaxInclusive = false;
         }
 
         value = readAttribute("minExclusive", xmlEvent.asStartElement());
         if (value != null) {
             isMinInclusive = false;
-            min = Double.parseDouble(value);
+            min = parseDouble(value);
         }
 
         value = readAttribute("label", xmlEvent.asStartElement());
@@ -1610,10 +1708,10 @@ public class XtceStaxReader {
     }
 
     /**
-     * @param spaceSystem 
+     * @param spaceSystem
      * 
      */
-    private void readXtceParameterSet(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private void readParameterSet(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_PARAMETER_SET);
         checkStartElementPreconditions();
 
@@ -1621,7 +1719,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_PARAMETER)) {
-                readXtceParameter(spaceSystem); // the parameter is registered inside
+                readParameter(spaceSystem); // the parameter is registered inside
             } else if (isStartElementWithName(XTCE_PARAMETER_REF)) {
                 readXtceParameterRef();
             } else if (isEndElementWithName(XTCE_PARAMETER_SET)) {
@@ -1630,7 +1728,6 @@ public class XtceStaxReader {
         }
     }
 
-    
     /**
      * @return
      * @throws IllegalStateException
@@ -1647,7 +1744,7 @@ public class XtceStaxReader {
      * @throws IllegalStateException
      * @throws XMLStreamException
      */
-    private Parameter readXtceParameter(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private Parameter readParameter(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_PARAMETER);
         checkStartElementPreconditions();
 
@@ -1661,23 +1758,22 @@ public class XtceStaxReader {
         } else {
             throw new XMLStreamException("Missing name for the parameter");
         }
-
         // parameterTypeRef
         value = readAttribute("parameterTypeRef", element);
         if (value != null) {
             ParameterType ptype = spaceSystem.getParameterType(value);
-            if(ptype!=null) {
+            if (ptype != null) {
                 parameter.setParameterType(ptype);
             } else {
-                final Parameter p=parameter;
-                NameReference nr=new UnresolvedNameReference(value, Type.PARAMETER_TYPE).addResolvedAction( nd -> {
-                        p.setParameterType((ParameterType) nd);
-                        return true;
+                final Parameter p = parameter;
+                NameReference nr = new UnresolvedNameReference(value, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
+                    p.setParameterType((ParameterType) nd);
+                    return true;
                 });
                 spaceSystem.addUnresolvedReference(nr);
             }
         } else {
-            throw new XMLStreamException("Cannot find parameterTypeRef in element: "+element);
+            throw new XMLStreamException("Cannot find parameterTypeRef in element: " + element);
         }
 
         // shortDescription
@@ -1703,19 +1799,21 @@ public class XtceStaxReader {
         }
     }
 
-    private XtceParameterProperties readXtceParameterProperties(SpaceSystem spaceSystem, Parameter p) throws XMLStreamException {
+    private XtceParameterProperties readXtceParameterProperties(SpaceSystem spaceSystem, Parameter p)
+            throws XMLStreamException {
         log.trace(XTCE_PARAMETER_PROPERTIES);
         checkStartElementPreconditions();
         String v = readAttribute("dataSource", xmlEvent.asStartElement());
-        if(v!=null) {
+        if (v != null) {
             try {
                 p.setDataSource(DataSource.valueOf(v.toUpperCase()));
             } catch (IllegalArgumentException e) {
-                throw new XMLStreamException("invalid dataSource '"+v+"'. Valid values: "+Arrays.toString(DataSource.values()));
+                throw new XMLStreamException(
+                        "invalid dataSource '" + v + "'. Valid values: " + Arrays.toString(DataSource.values()));
             }
-            
+
         }
-        
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -1737,13 +1835,14 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
 
         StringBuilder longDescr = new StringBuilder();
-        while(true) {
+        while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if(isEndElementWithName(tagName)) {
+            if (isEndElementWithName(tagName)) {
                 break;
             }
-            if(!xmlEvent.isCharacters()) {
-                throw new IllegalStateException(tagName + " characters or end element expected but instead got "+xmlEvent);
+            if (!xmlEvent.isCharacters()) {
+                throw new IllegalStateException(
+                        tagName + " characters or end element expected but instead got " + xmlEvent);
             }
             longDescr.append(xmlEvent.asCharacters().getData());
         }
@@ -1755,18 +1854,18 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
 
         String basis = readAttribute("basis", xmlEvent.asStartElement());
-        if((basis!=null) && !"perSecond".equalsIgnoreCase(basis)) {
+        if ((basis != null) && !"perSecond".equalsIgnoreCase(basis)) {
             throw new XMLStreamException("Currently unsupported rate in stream basis: " + basis);
         }
         long minInterval = -1;
         long maxInterval = -1;
-        String v= readAttribute("minimumValue", xmlEvent.asStartElement());
-        if(v!=null) {
-            maxInterval = (long) (1000/Double.parseDouble(v));
+        String v = readAttribute("minimumValue", xmlEvent.asStartElement());
+        if (v != null) {
+            maxInterval = (long) (1000 / parseDouble(v));
         }
-        v= readAttribute("maximumValue", xmlEvent.asStartElement());
-        if(v!=null) {
-            minInterval = (long) (1000/Double.parseDouble(v));
+        v = readAttribute("maximumValue", xmlEvent.asStartElement());
+        if (v != null) {
+            minInterval = (long) (1000 / parseDouble(v));
         }
         RateInStream ris = new RateInStream(minInterval, maxInterval);
 
@@ -1819,7 +1918,8 @@ public class XtceStaxReader {
 
     /**
      * Reads the definition of the containers
-     * @param spaceSystem 
+     * 
+     * @param spaceSystem
      * 
      * @return
      * @throws IllegalStateException
@@ -1834,13 +1934,13 @@ public class XtceStaxReader {
 
             if (isStartElementWithName(XTCE_SEQUENCE_CONTAINER)) {
                 SequenceContainer sc = readXtceSequenceContainer(spaceSystem);
-                
-                if(excludedContainers.contains(sc.getName())) {
-                    log.debug("Not adding '"+sc.getName()+"' to the SpaceSystem because excluded by configuration");
+
+                if (excludedContainers.contains(sc.getName())) {
+                    log.debug("Not adding '" + sc.getName() + "' to the SpaceSystem because excluded by configuration");
                 } else {
                     spaceSystem.addSequenceContainer(sc);
                 }
-                if((sc.getBaseContainer()==null) && (spaceSystem.getRootSequenceContainer()==null)) {
+                if ((sc.getBaseContainer() == null) && (spaceSystem.getRootSequenceContainer() == null)) {
                     spaceSystem.setRootSequenceContainer(sc);
                 }
             } else if (isEndElementWithName(XTCE_CONTAINER_SET)) {
@@ -1880,37 +1980,40 @@ public class XtceStaxReader {
                 seqContainer.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
             } else if (isStartElementWithName(XTCE_DEFAULT_RATE_IN_STREAM)) {
                 seqContainer.setRateInStream(readXtceRateInStream(spaceSystem));
-            }  else if (isEndElementWithName(XTCE_SEQUENCE_CONTAINER)) {
+            } else if (isEndElementWithName(XTCE_SEQUENCE_CONTAINER)) {
                 return seqContainer;
             }
         }
     }
 
-    private void readXtceBaseContainer(SpaceSystem spaceSystem, SequenceContainer seqContainer)  throws IllegalStateException, XMLStreamException {
+    private void readXtceBaseContainer(SpaceSystem spaceSystem, SequenceContainer seqContainer)
+            throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_BASE_CONTAINER);
         checkStartElementPreconditions();
 
         String refName = readAttribute("containerRef", xmlEvent.asStartElement());
         if (refName != null) {
-            if(excludedContainers.contains(refName)) {
-                log.debug("adding "+seqContainer.getName()+" to the list of the excluded containers because its parent is excluded");
+            if (excludedContainers.contains(refName)) {
+                log.debug("adding " + seqContainer.getName()
+                        + " to the list of the excluded containers because its parent is excluded");
                 excludedContainers.add(seqContainer.getName());
             } else {
                 // find base container in the set of already defined containers
                 SequenceContainer baseContainer = spaceSystem.getSequenceContainer(refName);
                 if (baseContainer != null) {
                     seqContainer.setBaseContainer(baseContainer);
-                } else { //must come from somewhere else
+                } else { // must come from somewhere else
                     final SequenceContainer finalsc = seqContainer;
-                    NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINTER).addResolvedAction( nd -> {
-                        finalsc.setBaseContainer((SequenceContainer) nd);
-                        return true;
-                    });
+                    NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINTER)
+                            .addResolvedAction(nd -> {
+                                finalsc.setBaseContainer((SequenceContainer) nd);
+                                return true;
+                            });
                     spaceSystem.addUnresolvedReference(nr);
                 }
             }
         } else {
-            throw new XMLStreamException("Reference on base container is missing");
+            throw new XMLStreamException("Reference on base container is missing", xmlEvent.getLocation());
         }
 
         while (true) {
@@ -1925,7 +2028,8 @@ public class XtceStaxReader {
         }
     }
 
-    private void readXtceEntryList(SpaceSystem spaceSystem, Container container, MetaCommand mc) throws XMLStreamException {
+    private void readXtceEntryList(SpaceSystem spaceSystem, Container container, MetaCommand mc)
+            throws XMLStreamException {
         log.trace(XTCE_ENTRY_LIST);
         checkStartElementPreconditions();
 
@@ -1937,7 +2041,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_PARAMETER_SEGMENT_REF_ENTRY)) {
                 skipXtceSection(XTCE_PARAMETER_SEGMENT_REF_ENTRY);
             } else if (isStartElementWithName(XTCE_CONTAINER_REF_ENTRY)) {
-                entry = readXtceConteinerRefEntry(spaceSystem);                 
+                entry = readXtceConteinerRefEntry(spaceSystem);
             } else if (isStartElementWithName(XTCE_CONTAINER_SEGMENT_REF_ENTRY)) {
                 skipXtceSection(XTCE_CONTAINER_SEGMENT_REF_ENTRY);
             } else if (isStartElementWithName(XTCE_STREAM_SEGMENT_ENTRY)) {
@@ -1951,18 +2055,17 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_ARRAY_ARGUMENT_REF_ENTRY)) {
                 skipXtceSection(XTCE_ARRAY_ARGUMENT_REF_ENTRY);
             } else if (isStartElementWithName(XTCE_FIXED_VALUE_ENTRY)) {
-                entry = readXtceFixedValueEntry(spaceSystem);                 
+                entry = readXtceFixedValueEntry(spaceSystem);
             } else if (isEndElementWithName(XTCE_ENTRY_LIST)) {
                 return;
             }
-            if(entry!=null) {
+            if (entry != null) {
                 entry.setContainer(container);
                 container.addEntry(entry);
             }
         }
 
     }
-
 
     private SequenceEntry readXtceParameterRefEntry(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_PARAMETER_REF_ENTRY);
@@ -1973,20 +2076,16 @@ public class XtceStaxReader {
             throw new XMLStreamException("Reference to parameter is missing");
         }
 
-        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; //default
-        Parameter parameter = spaceSystem.getParameter(refName);
-        ParameterEntry parameterEntry=null;
-        if (parameter != null) {
-            parameterEntry = new ParameterEntry(-1, null, 0, locationType, parameter);
-        } else {
-            parameterEntry = new ParameterEntry(-1, null, 0, locationType);
-            final ParameterEntry finalpe=parameterEntry;
-            NameReference nr=new UnresolvedNameReference(refName, Type.PARAMETER_TYPE).addResolvedAction( nd -> {
-                finalpe.setParameter((Parameter) nd);
-                return true;
-            });
-            spaceSystem.addUnresolvedReference(nr);
-        }
+        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; // default
+        ParameterEntry parameterEntry = null;
+        parameterEntry = new ParameterEntry(-1, null, 0, locationType);
+        final ParameterEntry finalpe = parameterEntry;
+        NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
+            finalpe.setParameter((Parameter) nd);
+            return true;
+        });
+
+        spaceSystem.addUnresolvedReference(nr);
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -2004,8 +2103,6 @@ public class XtceStaxReader {
         }
     }
 
-    
-
     private ContainerEntry readXtceConteinerRefEntry(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_CONTAINER_REF_ENTRY);
         checkStartElementPreconditions();
@@ -2015,15 +2112,15 @@ public class XtceStaxReader {
             throw new XMLStreamException("Reference to container is missing");
         }
 
-        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; //default
+        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; // default
         SequenceContainer container = spaceSystem.getSequenceContainer(refName);
-        ContainerEntry containerEntry=null;
+        ContainerEntry containerEntry = null;
         if (container != null) {
             containerEntry = new ContainerEntry(-1, null, 0, locationType, container);
         } else {
             containerEntry = new ContainerEntry(-1, null, 0, locationType);
             final ContainerEntry finalce = containerEntry;
-            NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINTER).addResolvedAction( nd -> {
+            NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINTER).addResolvedAction(nd -> {
                 finalce.setRefContainer((SequenceContainer) nd);
                 return true;
             });
@@ -2045,9 +2142,8 @@ public class XtceStaxReader {
             }
         }
     }
-    
-    
-    private Repeat readXtceRepeatEntry(SpaceSystem spaceSystem) throws  XMLStreamException {
+
+    private Repeat readXtceRepeatEntry(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_REPEAT_ENTRY);
         Repeat r = new Repeat();
         while (true) {
@@ -2065,11 +2161,9 @@ public class XtceStaxReader {
         }
     }
 
-
-
     private IntegerValue readXtceIntegerValue(SpaceSystem spaceSystem) throws XMLStreamException {
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
-        
+
         checkStartElementPreconditions();
         IntegerValue v = null;
 
@@ -2085,7 +2179,6 @@ public class XtceStaxReader {
         }
     }
 
-
     private DynamicIntegerValue readDynamicValue(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_DYNAMIC_VALUE);
 
@@ -2095,7 +2188,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_PARAMETER_INSTANCE_REF)) {
-                ParameterInstanceRef pir = readXtceParameterInstanceRef(spaceSystem);
+                ParameterInstanceRef pir = readParameterInstanceRef(spaceSystem);
                 v.setParameterInstanceRef(pir);
             } else if (isEndElementWithName(XTCE_DYNAMIC_VALUE)) {
                 return v;
@@ -2103,24 +2196,23 @@ public class XtceStaxReader {
         }
     }
 
-
-    private ParameterInstanceRef readXtceParameterInstanceRef(SpaceSystem spaceSystem) throws XMLStreamException {
+    private ParameterInstanceRef readParameterInstanceRef(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_PARAMETER_INSTANCE_REF);
         String paramRef = readAttribute("parameterRef", xmlEvent.asStartElement());
-        if(paramRef==null) {
+        if (paramRef == null) {
             throw new XMLStreamException("Reference to parameter is missing");
         }
 
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef(true);
 
-        NameReference nr=new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction( nd -> {
+        NameReference nr = new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction(nd -> {
             instanceRef.setParameter((Parameter) nd);
             return true;
         });
 
         Parameter parameter = spaceSystem.getParameter(paramRef);
-        if(parameter!=null) {
-            if(!nr.resolved(parameter)) {
+        if (parameter != null) {
+            if (!nr.resolved(parameter)) {
                 spaceSystem.addUnresolvedReference(nr);
             }
         } else {
@@ -2129,7 +2221,6 @@ public class XtceStaxReader {
 
         return instanceRef;
     }
-
 
     private void readXtceLocationInContainerInBits(SequenceEntry entry) throws XMLStreamException {
         log.trace(XTCE_LOCATION_IN_CONTAINER_IN_BITS);
@@ -2166,14 +2257,12 @@ public class XtceStaxReader {
         }
     }
 
-   
     private Comparison readXtceComparison(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_COMPARISON);
         checkStartElementPreconditions();
 
-
         String paramRef = readAttribute("parameterRef", xmlEvent.asStartElement());
-        if(paramRef==null) {
+        if (paramRef == null) {
             throw new XMLStreamException("Reference to parameter is missing");
         }
 
@@ -2196,24 +2285,22 @@ public class XtceStaxReader {
             useCalibratedValue = value.equalsIgnoreCase("true");
         }
 
-
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibratedValue);
         Comparison comparison = new Comparison(instanceRef, theValue, optype);
-        
-        NameReference nr = new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction( nd -> {
-                Parameter p=(Parameter)nd;
-                instanceRef.setParameter((Parameter) nd);                                
-                if(p.getParameterType()==null) {
-                    return false;
-                }
-                comparison.resolveValueType();
-                return true;
-            });
 
+        NameReference nr = new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction(nd -> {
+            Parameter p = (Parameter) nd;
+            instanceRef.setParameter((Parameter) nd);
+            if (p.getParameterType() == null) {
+                return false;
+            }
+            comparison.resolveValueType();
+            return true;
+        });
 
         Parameter parameter = spaceSystem.getParameter(paramRef);
-        if(parameter!=null) {
-            if(!nr.resolved(parameter)) {
+        if (parameter != null) {
+            if (!nr.resolved(parameter)) {
                 spaceSystem.addUnresolvedReference(nr);
             }
         } else {
@@ -2236,8 +2323,7 @@ public class XtceStaxReader {
      * @throws IllegalStateException
      * @throws XMLStreamException
      */
-    private XtceNotImplemented readXtceMessageSet() throws IllegalStateException,
-    XMLStreamException {
+    private XtceNotImplemented readXtceMessageSet() throws IllegalStateException, XMLStreamException {
         skipXtceSection(XTCE_MESSAGE_SET);
         return null;
     }
@@ -2256,13 +2342,14 @@ public class XtceStaxReader {
 
     /**
      * Just skips the whole section.
-     * @param spaceSystem 
+     * 
+     * @param spaceSystem
      * 
      * @return
      * @throws IllegalStateException
      * @throws XMLStreamException
      */
-    private void readXtceAlgorithmSet(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private void readAlgorithmSet(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_ALGORITHM_SET);
         checkStartElementPreconditions();
 
@@ -2270,7 +2357,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_MATH_ALGORITHM)) {
-                readXtceMathAlgorithm(); 
+                readMathAlgorithm(spaceSystem);
             } else if (isStartElementWithName(XTCE_CUSTOM_ALGORITHM)) {
                 readXtceCustomAlgorithm();
             } else if (isEndElementWithName(XTCE_ALGORITHM_SET)) {
@@ -2278,15 +2365,36 @@ public class XtceStaxReader {
             }
         }
     }
-    
-    private XtceNotImplemented readXtceMathAlgorithm() throws IllegalStateException, XMLStreamException {
-        skipXtceSection(XTCE_MATH_ALGORITHM);
-        return null;
+
+    private void readMathAlgorithm(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+        checkStartElementPreconditions();
+
+        String value = readAttribute("name", xmlEvent.asStartElement());
+        if (value == null) {
+            throw new XMLStreamException("Name is missing for meta command", xmlEvent.getLocation());
+        }
+        MathAlgorithm algo = new MathAlgorithm(value);
+
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+
+            if (isStartElementWithName(XTCE_MATH_OPERATION)) {
+                readMathOperation(spaceSystem, algo);                
+            } else if (isStartElementWithName(XTCE_ALIAS_SET)) {
+                algo.setAliasSet(readXtceAliasSet());
+            } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
+                algo.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
+            } else if (isEndElementWithName(XTCE_MATH_ALGORITHM)) {
+                spaceSystem.addAlgorithm(algo);
+                return;
+            }
+        }
     }
-    
+
     /**
-     * Extraction of the TelemetryMetaData section 
-     * @param spaceSystem 
+     * Extraction of the TelemetryMetaData section
+     * 
+     * @param spaceSystem
      * 
      * @throws XMLStreamException
      */
@@ -2298,9 +2406,9 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_PARAMETER_TYPE_SET)) {
-                readXtceParameterTypeSet(spaceSystem);
+                readParameterTypeSet(spaceSystem);
             } else if (isStartElementWithName(XTCE_PARAMETER_SET)) {
-                readXtceParameterSet(spaceSystem);
+                readParameterSet(spaceSystem);
             } else if (isStartElementWithName(XTCE_ARGUMENT_TYPE_SET)) {
                 readXtceArgumentTypeSet(spaceSystem);
             } else if (isStartElementWithName(XTCE_META_COMMAND_SET)) {
@@ -2310,16 +2418,15 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_MESSAGE_SET)) {
                 readXtceMessageSet();
             } else if (isStartElementWithName(XTCE_ALGORITHM_SET)) {
-                readXtceAlgorithmSet(spaceSystem);
+                readAlgorithmSet(spaceSystem);
             } else if (isEndElementWithName(XTCE_COMMAND_MEATA_DATA)) {
                 return;
             }
         }
     }
 
-    
     /**
-     * @param spaceSystem 
+     * @param spaceSystem
      * @throws XMLStreamException
      */
     private void readXtceArgumentTypeSet(SpaceSystem spaceSystem) throws XMLStreamException {
@@ -2342,8 +2449,8 @@ public class XtceStaxReader {
                 argumentType = readXtceBinaryArgumentType(spaceSystem);
             } else if (isStartElementWithName(XTCE_STRING_ARGUMENT_TYPE)) {
                 argumentType = readXtceStringArgumentType(spaceSystem);
-            } 
-            if(argumentType!=null) {
+            }
+            if (argumentType != null) {
                 spaceSystem.addArgumentType(argumentType);
             }
 
@@ -2363,13 +2470,13 @@ public class XtceStaxReader {
         if (name != null) {
             boolArgType = new BooleanArgumentType(name);
         } else {
-            throw new XMLStreamException("Unnamed boolean argument type");
+            throw new XMLStreamException("Unnamed boolean argument type", xmlEvent.getLocation());
         }
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_UNIT_SET)) {
-                boolArgType.addAllUnits(readXtceUnitSet());               
+                boolArgType.addAllUnits(readXtceUnitSet());
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 boolArgType.setEncoding(readXtceIntegerDataEncoding(spaceSystem));
             } else if (isEndElementWithName(XTCE_BOOLEAN_ARGUMENT_TYPE)) {
@@ -2377,8 +2484,9 @@ public class XtceStaxReader {
             }
         }
     }
-    
-    private FloatArgumentType readXtceFloatArgumentType(SpaceSystem spaceSystem) throws IllegalStateException,  XMLStreamException {
+
+    private FloatArgumentType readXtceFloatArgumentType(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         FloatArgumentType floatArgType = null;
         log.trace(XTCE_FLOAT_ARGUMENT_TYPE);
         checkStartElementPreconditions();
@@ -2388,19 +2496,20 @@ public class XtceStaxReader {
         if (value != null) {
             floatArgType = new FloatArgumentType(value);
         } else {
-            throw new XMLStreamException("Unnamed float argument type");
+            throw new XMLStreamException("Unnamed float argument type", xmlEvent.getLocation());
         }
 
         value = readAttribute("sizeInBits", xmlEvent.asStartElement());
-        
+
         if (value != null) {
             int sizeInBits = Integer.parseInt(value);
-            if(sizeInBits!=32 && sizeInBits!=64){
-                throw new XMLStreamException("Float encoding "+sizeInBits+" not supported; Only 32 and 64 bits are supported");
+            if (sizeInBits != 32 && sizeInBits != 64) {
+                throw new XMLStreamException("Float encoding " + sizeInBits + " not supported;"
+                        + " Only 32 and 64 bits are supported", xmlEvent.getLocation());
             }
             floatArgType.setSizeInBits(sizeInBits);
-        } 
-        
+        }
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -2415,6 +2524,7 @@ public class XtceStaxReader {
             }
         }
     }
+
     private EnumeratedArgumentType readXtceEnumeratedArgumentType(SpaceSystem spaceSystem) throws XMLStreamException {
         EnumeratedArgumentType enumArgType = null;
 
@@ -2426,7 +2536,7 @@ public class XtceStaxReader {
         if (value != null) {
             enumArgType = new EnumeratedArgumentType(value);
         } else {
-            throw new XMLStreamException();
+            throw new XMLStreamException("No name provided for the enumerated argument type", xmlEvent.getLocation());
         }
 
         // defaultValue attribute
@@ -2439,7 +2549,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_UNIT_SET)) {
-                enumArgType.addAllUnits(readXtceUnitSet());               
+                enumArgType.addAllUnits(readXtceUnitSet());
             } else if (isStartElementWithName(XTCE_INTEGER_DATA_ENCODING)) {
                 enumArgType.setEncoding(readXtceIntegerDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_ENUMERATION_LIST)) {
@@ -2449,8 +2559,9 @@ public class XtceStaxReader {
             }
         }
     }
-    
-    private IntegerArgumentType readXtceIntegerArgumentType(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+
+    private IntegerArgumentType readXtceIntegerArgumentType(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         IntegerArgumentType integerParamType;
 
         log.trace(XTCE_INTEGER_ARGUMENT_TYPE);
@@ -2461,7 +2572,7 @@ public class XtceStaxReader {
         if (value != null) {
             integerParamType = new IntegerArgumentType(value);
         } else {
-            throw new XMLStreamException("Unnamed integer parameter type");
+            throw new XMLStreamException("Unnamed integer parameter type", xmlEvent.getLocation());
         }
 
         value = readAttribute("sizeInBits", xmlEvent.asStartElement());
@@ -2472,7 +2583,7 @@ public class XtceStaxReader {
         value = readAttribute("signed", xmlEvent.asStartElement());
         if (value != null) {
             boolean signed = Boolean.parseBoolean(value);
-            integerParamType. setSigned(signed);
+            integerParamType.setSigned(signed);
         }
 
         while (true) {
@@ -2488,7 +2599,8 @@ public class XtceStaxReader {
         }
     }
 
-    private BinaryArgumentType readXtceBinaryArgumentType(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private BinaryArgumentType readXtceBinaryArgumentType(SpaceSystem spaceSystem)
+            throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_BINARY_ARGUMENT_TYPE);
         checkStartElementPreconditions();
 
@@ -2498,7 +2610,7 @@ public class XtceStaxReader {
         if (name != null) {
             binaryParamType = new BinaryArgumentType(name);
         } else {
-            throw new XMLStreamException("Unnamed binary parameter type");
+            throw new XMLStreamException("Unnamed binary parameter type", xmlEvent.getLocation());
         }
 
         while (true) {
@@ -2515,18 +2627,17 @@ public class XtceStaxReader {
         }
     }
 
-    
     private StringArgumentType readXtceStringArgumentType(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_INTEGER_ARGUMENT_TYPE);
         checkStartElementPreconditions();
         StringArgumentType stringParamType = null;
-        
+
         // name attribute
         String value = readAttribute("name", xmlEvent.asStartElement());
         if (value != null) {
             stringParamType = new StringArgumentType(value);
         } else {
-            throw new XMLStreamException("Unnamed string parameter type");
+            throw new XMLStreamException("Unnamed string parameter type", xmlEvent.getLocation());
         }
 
         while (true) {
@@ -2543,9 +2654,11 @@ public class XtceStaxReader {
             }
         }
     }
+
     /**
      * Reads the definition of the command containers
-     * @param spaceSystem 
+     * 
+     * @param spaceSystem
      * 
      * @return
      * @throws IllegalStateException
@@ -2554,10 +2667,10 @@ public class XtceStaxReader {
         skipXtceSection(XTCE_COMMAND_CONTAINER_SET);
     }
 
-    
     /**
      * Reads the definition of the metacommand containers
-     * @param spaceSystem 
+     * 
+     * @param spaceSystem
      * 
      * @return
      * @throws IllegalStateException
@@ -2571,8 +2684,8 @@ public class XtceStaxReader {
 
             if (isStartElementWithName(XTCE_META_COMMAND)) {
                 MetaCommand mc = readXtceMetaCommand(spaceSystem);
-                if(excludedContainers.contains(mc.getName())) {
-                    log.debug("Not adding '"+mc.getName()+"' to the SpaceSystem because excluded by configuration");
+                if (excludedContainers.contains(mc.getName())) {
+                    log.debug("Not adding '" + mc.getName() + "' to the SpaceSystem because excluded by configuration");
                 } else {
                     spaceSystem.addMetaCommand(mc);
                 }
@@ -2581,8 +2694,7 @@ public class XtceStaxReader {
             }
         }
     }
-    
-    
+
     private MetaCommand readXtceMetaCommand(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_META_COMMAND);
         checkStartElementPreconditions();
@@ -2593,7 +2705,7 @@ public class XtceStaxReader {
         if (value != null) {
             mc = new MetaCommand(value);
         } else {
-            throw new XMLStreamException("Name is missing for meta command");
+            throw new XMLStreamException("Name is missing for meta command", xmlEvent.getLocation());
         }
 
         value = readAttribute("shortDescription", xmlEvent.asStartElement());
@@ -2620,24 +2732,26 @@ public class XtceStaxReader {
             }
         }
     }
-  
-    private void readXtceBaseMetaCommand(SpaceSystem spaceSystem, MetaCommand mc)  throws IllegalStateException, XMLStreamException {
+
+    private void readXtceBaseMetaCommand(SpaceSystem spaceSystem, MetaCommand mc)
+            throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_BASE_META_COMMAND);
         checkStartElementPreconditions();
 
         String refName = readAttribute("metaCommandRef", xmlEvent.asStartElement());
         if (refName != null) {
-            if(excludedContainers.contains(refName)) {
-                log.debug("adding "+mc.getName()+" to the list of the excluded containers because its parent is excluded");
+            if (excludedContainers.contains(refName)) {
+                log.debug("adding " + mc.getName()
+                        + " to the list of the excluded containers because its parent is excluded");
                 excludedContainers.add(mc.getName());
             } else {
                 // find base container in the set of already defined containers
                 MetaCommand baseContainer = spaceSystem.getMetaCommand(refName);
                 if (baseContainer != null) {
                     mc.setBaseMetaCommand(baseContainer);
-                } else { //must come from somewhere else
+                } else { // must come from somewhere else
                     final MetaCommand finalmc = mc;
-                    NameReference nr = new UnresolvedNameReference(refName, Type.META_COMMAND).addResolvedAction( nd -> {
+                    NameReference nr = new UnresolvedNameReference(refName, Type.META_COMMAND).addResolvedAction(nd -> {
                         finalmc.setBaseMetaCommand((MetaCommand) nd);
                         return true;
                     });
@@ -2645,7 +2759,7 @@ public class XtceStaxReader {
                 }
             }
         } else {
-            throw new XMLStreamException("For "+mc.getName()+": reference to base meta command is missing");
+            throw new XMLStreamException("For " + mc.getName() + ": reference to base meta command is missing", xmlEvent.getLocation());
         }
 
         while (true) {
@@ -2658,12 +2772,13 @@ public class XtceStaxReader {
             }
         }
     }
-    
+
     private void readArgumentAssignmentList(SpaceSystem spaceSystem, MetaCommand mc) {
         log.trace(XTCE_ARGUMENT_LIST);
         checkStartElementPreconditions();
-        
+
     }
+
     private void readXtceArgumentList(SpaceSystem spaceSystem, MetaCommand mc) throws XMLStreamException {
         log.trace(XTCE_ARGUMENT_LIST);
         checkStartElementPreconditions();
@@ -2679,8 +2794,6 @@ public class XtceStaxReader {
             }
         }
     }
-    
-    
 
     /**
      * 
@@ -2700,24 +2813,24 @@ public class XtceStaxReader {
         if (value != null) {
             arg = new Argument(value);
         } else {
-            throw new XMLStreamException("Missing name for the argument");
+            throw new XMLStreamException("Missing name for the argument", xmlEvent.getLocation());
         }
 
         value = readAttribute("argumentTypeRef", element);
         if (value != null) {
             ArgumentType ptype = spaceSystem.getArgumentType(value);
-            if(ptype!=null) {
+            if (ptype != null) {
                 arg.setArgumentType(ptype);
             } else {
                 final Argument a = arg;
-                NameReference nr=new UnresolvedNameReference(value, Type.ARGUMENT_TYPE).addResolvedAction( nd -> {
-                        a.setArgumentType((ArgumentType) nd);
-                        return true;
+                NameReference nr = new UnresolvedNameReference(value, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
+                    a.setArgumentType((ArgumentType) nd);
+                    return true;
                 });
                 spaceSystem.addUnresolvedReference(nr);
             }
         } else {
-            throw new XMLStreamException("Cannot find argumentTypeRef in element: "+element);
+            throw new XMLStreamException("Cannot find argumentTypeRef in element: " + element, xmlEvent.getLocation());
         }
 
         // shortDescription
@@ -2737,7 +2850,8 @@ public class XtceStaxReader {
         }
     }
 
-    private CommandContainer readXtceCommandContainer(SpaceSystem spaceSystem, MetaCommand mc) throws XMLStreamException {
+    private CommandContainer readXtceCommandContainer(SpaceSystem spaceSystem, MetaCommand mc)
+            throws XMLStreamException {
         log.trace(XTCE_COMMAND_CONTAINER);
         checkStartElementPreconditions();
 
@@ -2747,7 +2861,7 @@ public class XtceStaxReader {
         if (value != null) {
             cmdContainer = new CommandContainer(value);
         } else {
-            throw new XMLStreamException("Name is missing for container");
+            throw new XMLStreamException("Name is missing for container", xmlEvent.getLocation());
         }
 
         value = readAttribute("shortDescription", xmlEvent.asStartElement());
@@ -2768,38 +2882,40 @@ public class XtceStaxReader {
                 cmdContainer.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
             } else if (isStartElementWithName(XTCE_DEFAULT_RATE_IN_STREAM)) {
                 cmdContainer.setRateInStream(readXtceRateInStream(spaceSystem));
-            }  else if (isEndElementWithName(XTCE_COMMAND_CONTAINER)) {
+            } else if (isEndElementWithName(XTCE_COMMAND_CONTAINER)) {
                 return cmdContainer;
             }
         }
     }
-    
 
-    private void readXtceBaseContainer(SpaceSystem spaceSystem, CommandContainer mcContainer)  throws IllegalStateException, XMLStreamException {
+    private void readXtceBaseContainer(SpaceSystem spaceSystem, CommandContainer mcContainer)
+            throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_BASE_CONTAINER);
         checkStartElementPreconditions();
 
         String refName = readAttribute("containerRef", xmlEvent.asStartElement());
         if (refName != null) {
-            if(excludedContainers.contains(refName)) {
-                log.debug("adding "+mcContainer.getName()+" to the list of the excluded containers because its parent is excluded");
+            if (excludedContainers.contains(refName)) {
+                log.debug("adding " + mcContainer.getName()
+                        + " to the list of the excluded containers because its parent is excluded");
                 excludedContainers.add(mcContainer.getName());
             } else {
                 // find base container in the set of already defined containers
                 CommandContainer baseContainer = spaceSystem.getCommandContainer(refName);
                 if (baseContainer != null) {
                     mcContainer.setBaseContainer(baseContainer);
-                } else { //must come from somewhere else
+                } else { // must come from somewhere else
                     final CommandContainer finalsc = mcContainer;
-                    NameReference nr = new UnresolvedNameReference(refName, Type.COMMAND_CONTAINER).addResolvedAction( nd -> {
-                        finalsc.setBaseContainer((Container)nd);
-                        return true;
-                    });
+                    NameReference nr = new UnresolvedNameReference(refName, Type.COMMAND_CONTAINER)
+                            .addResolvedAction(nd -> {
+                                finalsc.setBaseContainer((Container) nd);
+                                return true;
+                            });
                     spaceSystem.addUnresolvedReference(nr);
                 }
             }
         } else {
-            throw new XMLStreamException("Reference on base container is missing");
+            throw new XMLStreamException("Reference on base container is missing", xmlEvent.getLocation());
         }
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -2813,20 +2929,19 @@ public class XtceStaxReader {
         }
     }
 
-
     private ArgumentEntry readXtceArgumentRefEntry(SpaceSystem spaceSystem, MetaCommand mc) throws XMLStreamException {
         log.trace(XTCE_ARGUMENT_REF_ENTRY);
         checkStartElementPreconditions();
 
         String refName = readAttribute("argumentRef", xmlEvent.asStartElement());
         if (refName == null) {
-            throw new XMLStreamException("Reference to argument is missing");
+            throw new XMLStreamException("Reference to argument is missing", xmlEvent.getLocation());
         }
 
         Argument arg = mc.getArgument(refName);
-        ArgumentEntry argumentEntry=null;
+        ArgumentEntry argumentEntry = null;
         if (arg == null) {
-            throw new XMLStreamException("Undefined argument reference '"+refName+"'");
+            throw new XMLStreamException("Undefined argument reference '" + refName + "'", xmlEvent.getLocation());
         }
         argumentEntry = new ArgumentEntry(arg);
 
@@ -2852,15 +2967,15 @@ public class XtceStaxReader {
         StartElement startElement = xmlEvent.asStartElement();
 
         String name = readAttribute("name", startElement);
-        
+
         String value = readAttribute("binaryValue", startElement);
         if (value == null) {
-            throw new XMLStreamException("binaryValue for fixed entry is missing");
+            throw new XMLStreamException("binaryValue for fixed entry is missing", xmlEvent.getLocation());
         }
         byte[] binaryValue = StringConverter.hexStringToArray(value);
-        
+
         value = readAttribute("sizeInBits", startElement);
-        int sizeInBits = binaryValue.length*8;
+        int sizeInBits = binaryValue.length * 8;
         if (value != null) {
             sizeInBits = Integer.parseInt(value);
         }
@@ -2882,8 +2997,6 @@ public class XtceStaxReader {
         }
     }
 
-
-
     /**
      * Just skips the whole section.
      * 
@@ -2895,9 +3008,12 @@ public class XtceStaxReader {
         skipXtceSection(XTCE_CUSTOM_ALGORITHM);
         return null;
     }
+
     /**
      * Increase the skip statistics for the section.
-     * @param xtceSectionName Name of the skipped section.
+     * 
+     * @param xtceSectionName
+     *            Name of the skipped section.
      */
     private void addToSkipStatistics(String xtceSectionName) {
         Integer count = xtceSkipStatistics.get(xtceSectionName);
@@ -2905,10 +3021,9 @@ public class XtceStaxReader {
             xtceSkipStatistics.put(xtceSectionName, new Integer(1));
         } else {
             xtceSkipStatistics.put(xtceSectionName, count + 1);
-        } 
+        }
     }
 
-    
     /**
      * Write statistics.
      */
@@ -2931,7 +3046,7 @@ public class XtceStaxReader {
      * @throws IllegalStateException
      *             Exception on algorithm error
      */
-    private void skipXtceSection(String sectionName) throws XMLStreamException, IllegalStateException {
+    private void skipXtceSection(String sectionName) throws XMLStreamException {
         log.trace(sectionName);
         checkStartElementPreconditions();
 
@@ -2951,11 +3066,11 @@ public class XtceStaxReader {
                     return;
                 }
             } catch (NoSuchElementException e) {
-                throw new IllegalStateException("End of section unreachable: " + sectionName);
+                throw new XMLStreamException("End of section unreachable: " + sectionName, xmlEvent.getLocation());
             }
         }
     }
-    
+
     private void skipQuietly(String sectionName) throws XMLStreamException, IllegalStateException {
         log.trace(sectionName);
         checkStartElementPreconditions();
@@ -2971,7 +3086,7 @@ public class XtceStaxReader {
                     return;
                 }
             } catch (NoSuchElementException e) {
-                throw new IllegalStateException("End of section unreachable: " + sectionName);
+                throw new XMLStreamException("End of section unreachable: " + sectionName, xmlEvent.getLocation());
             }
         }
     }
@@ -3036,7 +3151,8 @@ public class XtceStaxReader {
      * Checks preconditions before the dedicated code for section reading will
      * run
      * 
-     * @throws IllegalStateException If the conditions are not met
+     * @throws IllegalStateException
+     *             If the conditions are not met
      */
     private void checkStartElementPreconditions() throws IllegalStateException {
         if (xmlEvent == null) {
@@ -3065,8 +3181,10 @@ public class XtceStaxReader {
     }
 
     /**
-     * Test method. 
-     * @param args XTCE document to load.
+     * Test method.
+     * 
+     * @param args
+     *            XTCE document to load.
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
@@ -3081,7 +3199,6 @@ public class XtceStaxReader {
         }
 
     }
-
 
     public void setExcludedContainers(Set<String> excludedContainers) {
         this.excludedContainers = excludedContainers;
