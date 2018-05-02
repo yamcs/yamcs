@@ -13,8 +13,8 @@ public abstract class Algorithm extends NameDescription {
     private static final long serialVersionUID = 6L;
     
     private TriggerSetType triggerSet;
-    private ArrayList<InputParameter> inputSet = new ArrayList<>();
-    private ArrayList<OutputParameter> outputSet = new ArrayList<>();
+    private List<InputParameter> inputSet = new ArrayList<>();
+    private List<OutputParameter> outputSet = new ArrayList<>();
     
     //commandVerification algorithms can only be run in the context of a command verifier
     public enum Scope {GLOBAL, COMMAND_VERIFICATION, CONTAINER_PROCESSING};
@@ -69,6 +69,16 @@ public abstract class Algorithm extends NameDescription {
     public List<OutputParameter> getOutputList() {
         return outputSet;
     }
+    
+    public void setOutputSet(List<OutputParameter> outputSet) {
+        this.outputSet = outputSet;
+    }
+    
+    public void setInputSet(List<InputParameter> inputSet) {
+        this.inputSet = inputSet;
+    }
+
+    
     
     public boolean canProvide(Parameter parameter) {
         for(OutputParameter p:outputSet) {

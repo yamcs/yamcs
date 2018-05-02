@@ -46,7 +46,9 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
         ParameterValue pv = new ParameterValue(outParam);
         pv.setAcquisitionTime(acqTime);
         pv.setGenerationTime(genTime);
-        pv.setEngineeringValue(ValueUtility.getDoubleValue(evaluator.evaluate(input)));
+        double value = evaluator.evaluate(input);
+        ScriptAlgorithmExecutor.setEngValue(outParam.getParameterType(), pv, Double.valueOf(value));
+
         return Arrays.asList(pv);
     }
 

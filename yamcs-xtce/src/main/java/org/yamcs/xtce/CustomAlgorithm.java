@@ -9,7 +9,10 @@ package org.yamcs.xtce;
  *
  */
 public class CustomAlgorithm extends Algorithm {
+    private static final long serialVersionUID = 1L;
+
     private String language;
+   
     private String algorithmText;
     
     public CustomAlgorithm(String name) {
@@ -31,4 +34,10 @@ public class CustomAlgorithm extends Algorithm {
     public void setAlgorithmText(String algorithmText) {
         this.algorithmText = algorithmText;
     }
+
+    @Override
+    public String toString() {
+        return "CustomAlgorithm [language=" + language + ", algorithmText='" + algorithmText + "', inputSet: "+getInputList()+", outputSet: "+getOutputList()+"]";
+    }
+
 }

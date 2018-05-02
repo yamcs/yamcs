@@ -780,6 +780,11 @@ limitations under the License.
 							<xtce:SystemName>EPS</xtce:SystemName>
 						</xtce:ParameterProperties>
 					</xtce:Parameter>
+					<xtce:Parameter name="Battery_State_Of_Charge_Custom" parameterTypeRef="Battery_State_Of_Charge_Type">
+						<xtce:ParameterProperties dataSource="derived" readOnly="true">
+							<xtce:SystemName>EPS</xtce:SystemName>
+						</xtce:ParameterProperties>
+					</xtce:Parameter>
 					<xtce:Parameter name="Solar_Array_Voltage_1_State" parameterTypeRef="Solar_Array_Voltage_State_Type">
 						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
 							<xtce:SystemName>EPS</xtce:SystemName>
@@ -988,6 +993,20 @@ limitations under the License.
 							</xtce:TriggerSet>
 						</xtce:MathOperation>
 					</xtce:MathAlgorithm>
+					<xtce:CustomAlgorithm name="ComputeBatterySOC_Custom" shortDescription="Compute the battery state of charge with custom algorithm">
+						<xtce:AlgorithmText language="JavaScript">
+							bscc.value = bv.value - 12;
+						</xtce:AlgorithmText>
+						<xtce:InputSet>
+							<xtce:InputParameterInstanceRef parameterRef="Battery_Voltage" inputName="bv"/>
+						</xtce:InputSet>
+						<xtce:OutputSet>
+							<xtce:OutputParameterRef parameterRef="Battery_State_Of_Charge_Custom" outputName="bscc"/>
+						</xtce:OutputSet>
+						<xtce:TriggerSet>
+							<xtce:OnParameterUpdateTrigger parameterRef="Battery_Voltage"/>
+						</xtce:TriggerSet>
+					</xtce:CustomAlgorithm>
 				</xtce:AlgorithmSet>
 			</xtce:TelemetryMetaData>
 			<xtce:CommandMetaData>

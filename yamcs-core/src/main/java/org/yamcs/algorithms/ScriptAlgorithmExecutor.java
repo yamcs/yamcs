@@ -166,7 +166,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         return pval;
     }
 
-    private void setEngValue(ParameterType ptype, ParameterValue pval, Object outputValue) {
+    static void setEngValue(ParameterType ptype, ParameterValue pval, Object outputValue) {
         if (ptype instanceof IntegerParameterType) {
             setEngIntegerValue((IntegerParameterType) ptype, pval, outputValue);
         } else if (ptype instanceof FloatParameterType) {
@@ -191,7 +191,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         }
     }
 
-    private void setRawValue(DataEncoding de, ParameterValue pval, Object outputValue) {
+    void setRawValue(DataEncoding de, ParameterValue pval, Object outputValue) {
         if (de instanceof IntegerDataEncoding) {
             setRawIntegerValue((IntegerDataEncoding) de, pval, outputValue);
         } else if (de instanceof FloatDataEncoding) {
@@ -237,7 +237,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         }
     }
 
-    private void setEngIntegerValue(IntegerParameterType ptype, ParameterValue pv, Object outputValue) {
+    static void setEngIntegerValue(IntegerParameterType ptype, ParameterValue pv, Object outputValue) {
         long longValue;
         if (outputValue instanceof Number) {
             longValue = ((Number) outputValue).longValue();
@@ -279,7 +279,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         }
     }
 
-    private void setEngFloatValue(FloatParameterType ptype, ParameterValue pv, Object outputValue) {
+    static private void setEngFloatValue(FloatParameterType ptype, ParameterValue pv, Object outputValue) {
         double doubleValue;
         if (outputValue instanceof Number) {
             doubleValue = ((Number) outputValue).doubleValue();
@@ -296,11 +296,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         }
     }
 
-    @Override
-    public String toString() {
-        return algorithmDef.getName() +" executor "+invocable;
-    }
-
+  
     private static ValueBinding toValueBinding(ParameterValue pval) {
         try {
             Class<ValueBinding> clazz = getOrCreateValueBindingClass(pval);
@@ -446,6 +442,11 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         } else {
             throw new IllegalArgumentException("Unexpected value of type " + v.getType());
         }
+    }
+
+    @Override
+    public String toString() {
+        return algorithmDef.getName() +" executor "+invocable;
     }
 
 }

@@ -38,6 +38,7 @@ import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.ContextCalibrator;
+import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.DynamicIntegerValue;
@@ -234,6 +235,12 @@ public class XtceStaxReader {
     private static final String XTCE_VALUE_OPERAND = "ValueOperand";
     private static final String XTCE_MATH_OPERATION = "MathOperation";
     private static final String XTCE_TRIGGER_SET = "TriggerSet";
+    private static final String XTCE_OUTPUT_SET = "OutputSet";
+    private static final String XTCE_INPUT_SET = "InputSet";
+    private static final String XTCE_INPUT_PARAMETER_INSTANCE_REF = "InputParameterInstanceRef";
+    private static final String XTCE_CONSTANT = "Constant";
+    private static final String XTCE_OUTPUT_PARAMETER_REF = "OutputParameterRef";
+    private static final String XTCE_ALGORITHM_TEXT = "AlgorithmText";
     /**
      * Logging subsystem
      */
@@ -2359,7 +2366,7 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_MATH_ALGORITHM)) {
                 readMathAlgorithm(spaceSystem);
             } else if (isStartElementWithName(XTCE_CUSTOM_ALGORITHM)) {
-                readXtceCustomAlgorithm();
+                readCustomAlgorithm(spaceSystem);
             } else if (isEndElementWithName(XTCE_ALGORITHM_SET)) {
                 return;
             }
@@ -3004,9 +3011,123 @@ public class XtceStaxReader {
      * @throws IllegalStateException
      * @throws XMLStreamException
      */
-    private XtceNotImplemented readXtceCustomAlgorithm() throws IllegalStateException, XMLStreamException {
-        skipXtceSection(XTCE_CUSTOM_ALGORITHM);
-        return null;
+    private void readCustomAlgorithm(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+        checkStartElementPreconditions();
+        StartElement startElement = xmlEvent.asStartElement();
+        String tag = startElement.getName().getLocalPart();
+        
+        String name = readAttribute("name", startElement);
+        
+        CustomAlgorithm algo = new CustomAlgorithm(name);
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName(XTCE_ALGORITHM_TEXT)) {
+                readCustomAlgorithmText(algo);
+            } else if (isStartElementWithName(XTCE_TRIGGER_SET)) {
+                algo.setTriggerSet(readTriggerSet(spaceSystem));
+            } else if (isStartElementWithName(XTCE_OUTPUT_SET)) {
+                algo.setOutputSet(readOutputSet(spaceSystem));
+            } else if (isStartElementWithName(XTCE_INPUT_SET)) {
+                algo.setInputSet(readInputSet(spaceSystem));
+            } else if (isEndElementWithName(tag)) {
+                spaceSystem.addAlgorithm(algo);
+                return;
+            }
+        }
+    }
+
+    private void readCustomAlgorithmText(CustomAlgorithm algo) throws XMLStreamException {
+        checkStartElementPreconditions();
+        StartElement startElement = xmlEvent.asStartElement();
+        String tag = startElement.getName().getLocalPart();
+        
+        
+        String language = readAttribute("language", startElement);
+        algo.setLanguage(language);
+        
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (xmlEvent.isCharacters()) {
+                algo.setAlgorithmText(xmlEvent.asCharacters().getData());
+            } else if (isEndElementWithName(tag)) {
+                return;
+            }
+        }
+    }
+
+    private List<InputParameter> readInputSet(SpaceSystem spaceSystem) throws XMLStreamException {
+        checkStartElementPreconditions();
+        StartElement startElement = xmlEvent.asStartElement();
+        String tag = startElement.getName().getLocalPart();
+        
+       List<InputParameter> result = new ArrayList<>();
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+
+            if (isStartElementWithName(XTCE_INPUT_PARAMETER_INSTANCE_REF)) {
+                result.add(readInputParameterInstanceRef(spaceSystem));
+            } else if (isStartElementWithName(XTCE_CONSTANT)) {
+                throw new XMLStreamException("Constant input parameters not supported", xmlEvent.getLocation());
+            } else if (isEndElementWithName(tag)) {
+                return result;
+            }
+        }
+    }
+
+    private InputParameter readInputParameterInstanceRef(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(XTCE_INPUT_PARAMETER_INSTANCE_REF);
+        String paramRef = readAttribute("parameterRef", xmlEvent.asStartElement());
+        if (paramRef == null) {
+            throw new XMLStreamException("Reference to parameter is missing", xmlEvent.getLocation());
+        }
+        String inputName = readAttribute("inputName", xmlEvent.asStartElement());//could be null
+
+        final ParameterInstanceRef instanceRef = new ParameterInstanceRef(true);
+
+        NameReference nr = new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction(nd -> {
+            instanceRef.setParameter((Parameter) nd);
+            return true;
+        });
+        spaceSystem.addUnresolvedReference(nr);
+
+        return new InputParameter(instanceRef, inputName);
+    }
+
+    private List<OutputParameter> readOutputSet(SpaceSystem spaceSystem) throws XMLStreamException {
+        checkStartElementPreconditions();
+        StartElement startElement = xmlEvent.asStartElement();
+        String tag = startElement.getName().getLocalPart();
+        
+       List<OutputParameter> result = new ArrayList<>();
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+
+            if (isStartElementWithName(XTCE_OUTPUT_PARAMETER_REF)) {
+                result.add(readOutputParameterRef(spaceSystem));
+            } else if (isEndElementWithName(tag)) {
+                return result;
+            }
+        }
+    }
+
+    private OutputParameter readOutputParameterRef(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(XTCE_OUTPUT_PARAMETER_REF);
+        String paramRef = readAttribute("parameterRef", xmlEvent.asStartElement());
+        if (paramRef == null) {
+            throw new XMLStreamException("Reference to parameter is missing", xmlEvent.getLocation());
+        }
+        String outputName = readAttribute("outputName", xmlEvent.asStartElement());//could be null
+
+        OutputParameter outp = new OutputParameter();
+        outp.setOutputName(outputName);
+        
+        NameReference nr = new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction(nd -> {
+            outp.setParameter((Parameter) nd);
+            return true;
+        });
+        spaceSystem.addUnresolvedReference(nr);
+
+        return outp;
     }
 
     /**
