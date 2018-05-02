@@ -12,10 +12,8 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.MathAlgorithm;
-import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtceproc.CalibratorProc;
 import org.yamcs.xtceproc.MathOperationCalibratorFactory;
 
 /**
