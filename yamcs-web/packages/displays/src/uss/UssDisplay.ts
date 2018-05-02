@@ -60,10 +60,15 @@ export class UssDisplay implements Display {
     // Follow browser support of this spec: https://www.w3.org/TR/css-font-loading-3/
     const fontFace = 'Lucida Sans Typewriter';
     try { // Times out after 3 seconds
-      await new FontFaceObserver(fontFace).load();
+      await Promise.all([
+        new FontFaceObserver(fontFace, { weight: 'normal', style: 'normal' }).load(),
+        new FontFaceObserver(fontFace, { weight: 'normal', style: 'italic' }).load(),
+        new FontFaceObserver(fontFace, { weight: 'bold', style: 'normal' }).load(),
+        new FontFaceObserver(fontFace, { weight: 'bold', style: 'italic' }).load(),
+      ]);
     } catch {
       // tslint:disable-next-line:no-console
-      console.warn(`Failed to load font face '${fontFace}'. Font metric calculations may not be accurate.`);
+      console.warn(`Failed to load all font variants for '${fontFace}'. Font metric calculations may not be accurate.`);
     }
 
     return Promise.all([

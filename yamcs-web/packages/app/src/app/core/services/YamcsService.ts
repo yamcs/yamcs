@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { YamcsClient, InstanceClient, Instance, TimeInfo, ConnectionInfo } from '@yamcs/client';
+import { YamcsClient, InstanceClient, Instance, TimeInfo, ConnectionInfo, Processor } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Subscription } from 'rxjs/Subscription';
 
@@ -95,7 +95,7 @@ export class YamcsService {
   /**
    * Returns the currently active processor (if any).
    */
-  getProcessor() {
+  getProcessor(): Processor {
     return this.connectionInfo$.getValue()!.processor;
   }
 

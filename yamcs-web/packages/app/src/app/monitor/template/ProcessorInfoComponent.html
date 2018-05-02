@@ -4,7 +4,12 @@
       <span matTooltip="Processor">{{ connectionInfo.processor.name }}</span> /
       <span matTooltip="Mission Time">{{ timeInfo.currentTimeUTC | datetime }}</span>
       <br>
-      <mat-icon>play_arrow</mat-icon>
+      <span style="border: 1px solid #111">
+        <mat-icon>fast_rewind</mat-icon>
+        <mat-icon>pause</mat-icon>
+        <mat-icon>stop</mat-icon>
+        <mat-icon>fast_forward</mat-icon>
+      </span>
     </span>
   </div>
 </ng-container>

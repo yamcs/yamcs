@@ -9,6 +9,8 @@ html, body {
 }
 
 body {
+  background-color: #fff;
+
   /* Without this FF font are too crispy */
   -moz-osx-font-smoothing: grayscale;
 }
