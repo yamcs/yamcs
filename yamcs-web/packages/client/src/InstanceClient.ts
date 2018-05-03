@@ -69,6 +69,7 @@ import {
   IndexGroup,
   GetPacketIndexOptions,
   DownloadPacketsOptions,
+  EditReplayProcessorRequest,
 } from './types/monitoring';
 
 import {
@@ -149,6 +150,20 @@ export class InstanceClient {
     return await this.yamcs.doFetch(`${this.yamcs.apiUrl}/processors/${this.instance}`, {
       body,
       method: 'POST',
+    });
+  }
+
+  async editReplayProcessor(options: EditReplayProcessorRequest) {
+    const body = JSON.stringify(options);
+    return await this.yamcs.doFetch(`${this.yamcs.apiUrl}/processors/${this.instance}`, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async deleteReplayProcessor() {
+    return await this.yamcs.doFetch(`${this.yamcs.apiUrl}/processors/${this.instance}`, {
+      method: 'DELETE',
     });
   }
 

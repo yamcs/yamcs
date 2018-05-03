@@ -193,7 +193,7 @@ export interface CreateProcessorRequest {
 }
 
 export interface EditReplayProcessorRequest {
-  state?: 'running' | 'paused' | 'closed';
+  state?: 'running' | 'paused';
   seek?: string;
   speed?: string;
 }

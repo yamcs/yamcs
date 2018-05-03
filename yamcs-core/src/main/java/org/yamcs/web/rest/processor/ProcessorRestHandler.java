@@ -82,6 +82,19 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req, pinfo);
     }
 
+    @Route(path = "/api/processors/:instance/:processor", method = "DELETE")
+    public void deleteProcessor(RestRequest req) throws HttpException {
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlProcessor);
+
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        if (!processor.isReplay()) {
+            throw new BadRequestException("Cannot delete a non-replay processor");
+        }
+
+        processor.quit();
+        completeOK(req);
+    }
+
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
     public void editProcessor(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlProcessor);
@@ -92,7 +105,6 @@ public class ProcessorRestHandler extends RestHandler {
         }
 
         EditProcessorRequest request = req.bodyAsMessage(EditProcessorRequest.newBuilder()).build();
-        boolean quit = false;
 
         String newState = null;
         if (request.hasState()) {
@@ -109,59 +121,54 @@ public class ProcessorRestHandler extends RestHandler {
             case "paused":
                 processor.pause();
                 break;
-            case "closed":
-                processor.quit();
-                break;
             default:
                 throw new BadRequestException("Invalid processor state '" + newState + "'");
             }
         }
 
-        if (!quit) { // if the processor is closed, we ignore everything else
-            long seek = TimeEncoding.INVALID_INSTANT;
-            if (request.hasSeek()) {
-                seek = RestRequest.parseTime(request.getSeek());
-            }
-            if (req.hasQueryParameter("seek")) {
-                seek = req.getQueryParameterAsDate("seek");
-            }
-            if (seek != TimeEncoding.INVALID_INSTANT) {
-                processor.seek(seek);
-            }
+        long seek = TimeEncoding.INVALID_INSTANT;
+        if (request.hasSeek()) {
+            seek = RestRequest.parseTime(request.getSeek());
+        }
+        if (req.hasQueryParameter("seek")) {
+            seek = req.getQueryParameterAsDate("seek");
+        }
+        if (seek != TimeEncoding.INVALID_INSTANT) {
+            processor.seek(seek);
+        }
 
-            String speed = null;
-            if (request.hasSpeed()) {
-                speed = request.getSpeed().toLowerCase();
-            }
-            if (req.hasQueryParameter("speed")) {
-                speed = req.getQueryParameter("speed").toLowerCase();
-            }
-            if (speed != null) {
-                ReplaySpeed replaySpeed;
-                if ("afap".equals(speed)) {
-                    replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build();
-                } else if (speed.endsWith("x")) {
-                    try {
-                        float factor = Float.parseFloat(speed.substring(0, speed.length() - 1));
-                        replaySpeed = ReplaySpeed.newBuilder()
-                                .setType(ReplaySpeedType.REALTIME)
-                                .setParam(factor).build();
-                    } catch (NumberFormatException e) {
-                        throw new BadRequestException("Speed factor is not a valid number");
-                    }
-
-                } else {
-                    try {
-                        int fixedDelay = Integer.parseInt(speed);
-                        replaySpeed = ReplaySpeed.newBuilder()
-                                .setType(ReplaySpeedType.FIXED_DELAY)
-                                .setParam(fixedDelay).build();
-                    } catch (NumberFormatException e) {
-                        throw new BadRequestException("Fixed delay value is not an integer");
-                    }
+        String speed = null;
+        if (request.hasSpeed()) {
+            speed = request.getSpeed().toLowerCase();
+        }
+        if (req.hasQueryParameter("speed")) {
+            speed = req.getQueryParameter("speed").toLowerCase();
+        }
+        if (speed != null) {
+            ReplaySpeed replaySpeed;
+            if ("afap".equals(speed)) {
+                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build();
+            } else if (speed.endsWith("x")) {
+                try {
+                    float factor = Float.parseFloat(speed.substring(0, speed.length() - 1));
+                    replaySpeed = ReplaySpeed.newBuilder()
+                            .setType(ReplaySpeedType.REALTIME)
+                            .setParam(factor).build();
+                } catch (NumberFormatException e) {
+                    throw new BadRequestException("Speed factor is not a valid number");
                 }
-                processor.changeSpeed(replaySpeed);
+
+            } else {
+                try {
+                    int fixedDelay = Integer.parseInt(speed);
+                    replaySpeed = ReplaySpeed.newBuilder()
+                            .setType(ReplaySpeedType.FIXED_DELAY)
+                            .setParam(fixedDelay).build();
+                } catch (NumberFormatException e) {
+                    throw new BadRequestException("Fixed delay value is not an integer");
+                }
             }
+            processor.changeSpeed(replaySpeed);
         }
         completeOK(req);
     }
