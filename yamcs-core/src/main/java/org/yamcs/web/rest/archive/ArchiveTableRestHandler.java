@@ -276,7 +276,7 @@ public class ArchiveTableRestHandler extends RestHandler {
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object obj) throws Exception {
             if (obj == HttpRequestHandler.CONTENT_FINISHED_EVENT) {
-                log.debug("{} table load finished; inserted {} records ", ctx.channel().toString(), count);
+                log.debug("{} table load finished; inserted {} records ", ctx.channel(), count);
                 inputStream.close();
                 TableLoadResponse tlr = TableLoadResponse.newBuilder().setRowsLoaded(count).build();
                 HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, tlr);

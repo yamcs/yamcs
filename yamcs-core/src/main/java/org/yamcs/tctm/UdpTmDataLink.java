@@ -67,9 +67,17 @@ public class UdpTmDataLink extends AbstractTmDataLink {
 
     @Override
     public void run() {
-        while (!quitting) {
+        while (isRunning()) {
             PacketWithTime pwrt = getNextPacket();
             tmSink.processPacket(pwrt);
+            while (disabled) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
         }
     }
 
@@ -82,13 +90,7 @@ public class UdpTmDataLink extends AbstractTmDataLink {
      */
     public PacketWithTime getNextPacket() {
         ByteBuffer packet = null;
-        while (disabled) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                return null;
-            }
-        }
+        
         long rectime = TimeEncoding.INVALID_INSTANT;
         while (isRunning()) {
             try {

@@ -114,6 +114,7 @@ public class StreamResource extends AbstractWebSocketResource {
         // Sanity check. We should perhaps find a better way to do all of this
         switch (columnType.val) {
         case SHORT:
+        case INT:
             if (value.getType() != Type.SINT32)
                 throw new WebSocketException(ctx.getRequestId(), String.format(
                         "Value type for column %s should be '%s'", name, Type.SINT32));
@@ -127,12 +128,7 @@ public class StreamResource extends AbstractWebSocketResource {
             if (value.getType() != Type.BINARY)
                 throw new WebSocketException(ctx.getRequestId(), String.format(
                         "Value type for column %s should be '%s'", name, Type.BINARY));
-            return value.getBinaryValue().toByteArray();
-        case INT:
-            if (value.getType() != Type.SINT32)
-                throw new WebSocketException(ctx.getRequestId(), String.format(
-                        "Value type for column %s should be '%s'", name, Type.SINT32));
-            return value.getSint32Value();
+            return value.getBinaryValue().toByteArray();                 
         case TIMESTAMP:
             if (value.getType() != Type.TIMESTAMP)
                 throw new WebSocketException(ctx.getRequestId(), String.format(

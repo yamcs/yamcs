@@ -924,7 +924,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             if (parent == null) {
                 absoluteoffset = 0;
             } else {
-                int x = parent.indexOf(":");
+                int x = parent.indexOf(':');
                 if (x != -1) {
                     absoluteoffset = Integer.decode(parent.substring(x + 1));
                     parent = parent.substring(0, x);

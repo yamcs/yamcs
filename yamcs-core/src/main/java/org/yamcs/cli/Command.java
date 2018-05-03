@@ -31,7 +31,7 @@ public abstract class Command {
     protected JCommander jc = new JCommander(this);
     protected Map<String, Command> subCommands = new HashMap<>();
     protected Command selectedCommand;
-    final String name;
+    final private String name;
     final Command parent;
     Logger log = LoggerFactory.getLogger(this.getClass());
 

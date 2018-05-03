@@ -83,8 +83,6 @@ public class ProtobufEncoder implements WebSocketEncoder {
             responseb.setLinkEvent((LinkEvent) message);
         } else if (dataType == ProtoDataType.TIME_INFO) {
             responseb.setTimeInfo((TimeInfo) message);
-        } else if (dataType == ProtoDataType.EVENT) {
-            responseb.setEvent((Event) message);
         } else if (dataType == ProtoDataType.COMMAND_QUEUE_INFO) {
             responseb.setCommandQueueInfo((CommandQueueInfo) message);
         } else if (dataType == ProtoDataType.COMMAND_QUEUE_EVENT) {

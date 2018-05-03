@@ -159,6 +159,8 @@ public class ArrayParameterCache implements ParameterCache {
             pidlist.set(i, null);
 
             SortedIntArray sai = findLatestTableContaining(p.id);
+            if(sai==null)
+                continue;            
             ParameterValueTable table = tables.get(sai);
             List<ParameterId> sublist = new ArrayList<>();
             sublist.add(p);

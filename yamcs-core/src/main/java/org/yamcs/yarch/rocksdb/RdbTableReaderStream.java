@@ -29,7 +29,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 public class RdbTableReaderStream extends AbstractTableReaderStream implements Runnable, DbReaderStream {
     static AtomicInteger count = new AtomicInteger(0);
     final PartitioningSpec partitioningSpec;
-    final RdbPartitionManager partitionManager;
     final TableDefinition tableDefinition;
     private long numRecordsRead = 0;
     private final Tablespace tablespace;
@@ -42,7 +41,6 @@ public class RdbTableReaderStream extends AbstractTableReaderStream implements R
         this.tablespace = tablespace;
         this.tableDefinition = tblDef;
         partitioningSpec = tblDef.getPartitioningSpec();
-        this.partitionManager = partitionManager;
     }
 
 

@@ -295,7 +295,7 @@ public class ParameterTypeProcessor {
         Value v = pv.getEngValue();
         
         if(v.getType() != Type.TIMESTAMP) {
-            log.warn("{}: instance {} is of type {} instead of required TIMESTAMP", p.getQualifiedName(), ref.getParameter().getQualifiedName());
+            log.warn("{}: instance {} is of type {} instead of required TIMESTAMP", p.getQualifiedName(), ref.getParameter().getQualifiedName(), v.getType());
             return TimeEncoding.INVALID_INSTANT;
         }
         return v.getTimestampValue();

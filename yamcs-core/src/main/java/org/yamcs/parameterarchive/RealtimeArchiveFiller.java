@@ -16,7 +16,7 @@ import org.yamcs.Processor;
 public class RealtimeArchiveFiller extends ArchiveFillerTask {
     ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(1);
     int flushInterval = 300; //seconds
-    final Logger log;
+    final private Logger log;
     String processorName = "realtime";
     final String yamcsInstance;
     Processor realtimeProcessor; 

@@ -268,6 +268,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
             // TODO - send the invalid parameters in a parsable form
             throw new BadRequestException("Invalid parameters: " + e.getInvalidParameters().toString());
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new InternalServerErrorException("Interrupted while waiting for parameters");
         } catch (NoPermissionException e) {
             throw new ForbiddenException(e.getMessage(), e);

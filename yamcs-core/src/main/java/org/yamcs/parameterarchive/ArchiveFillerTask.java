@@ -20,7 +20,7 @@ import org.yamcs.utils.TimeEncoding;
 
 class ArchiveFillerTask implements ParameterConsumer {
     final ParameterArchiveV2 parameterArchive;
-    final Logger log;
+    final private Logger log;
     
     long numParams = 0;
     
@@ -145,7 +145,8 @@ class ArchiveFillerTask implements ParameterConsumer {
         while(t > nextSegmentStart + threshold) {
             Map<Integer, PGSegment> m = pgSegments.remove(collectionSegmentStart);
             if(m!=null) {
-                log.debug("Writing to archive the segment: [{} - {})", TimeEncoding.toString(collectionSegmentStart), TimeEncoding.toString(nextSegmentStart));
+                if(log.isDebugEnabled())
+                    log.debug("Writing to archive the segment: [{} - {})", TimeEncoding.toString(collectionSegmentStart), TimeEncoding.toString(nextSegmentStart));
                 consolidateAndWriteToArchive(collectionSegmentStart, m.values());
             } 
             collectionSegmentStart = nextSegmentStart;

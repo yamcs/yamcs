@@ -566,7 +566,7 @@ public class ManagementService implements ProcessorListener {
         }
 
         boolean hasChanged() {
-            if (!linkInfo.getStatus().equals(link.getLinkStatus())
+            if (!linkInfo.getStatus().equals(link.getLinkStatus().name())
                     || linkInfo.getDisabled() != link.isDisabled()
                     || linkInfo.getDataCount() != link.getDataCount()
                     || !linkInfo.getDetailedStatus().equals(link.getDetailedStatus())) {

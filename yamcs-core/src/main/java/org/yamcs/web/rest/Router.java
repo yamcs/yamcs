@@ -332,7 +332,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     private void handleException(RestRequest req, Throwable t) {
         if (t instanceof InternalServerErrorException) {
             InternalServerErrorException e = (InternalServerErrorException) t;
-            log.error(String.format("R%d: Reporting internal server error to client", req.getRequestId()), e);
+            log.error("R{}: Reporting internal server error to client", req.getRequestId(), e);
             RestHandler.sendRestError(req, e.getStatus(), e);
         } else if (t instanceof HttpException) {
             HttpException e = (HttpException) t;
