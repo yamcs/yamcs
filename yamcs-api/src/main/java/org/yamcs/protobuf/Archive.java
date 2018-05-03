@@ -11547,6 +11547,505 @@ public final class Archive {
     // @@protoc_insertion_point(class_scope:archive.IndexEntry)
   }
 
+  public interface GetPacketNamesResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:archive.GetPacketNamesResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    com.google.protobuf.ProtocolStringList
+        getNameList();
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    int getNameCount();
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    java.lang.String getName(int index);
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes(int index);
+  }
+  /**
+   * Protobuf type {@code archive.GetPacketNamesResponse}
+   */
+  public static final class GetPacketNamesResponse extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:archive.GetPacketNamesResponse)
+      GetPacketNamesResponseOrBuilder {
+    // Use GetPacketNamesResponse.newBuilder() to construct.
+    private GetPacketNamesResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private GetPacketNamesResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final GetPacketNamesResponse defaultInstance;
+    public static GetPacketNamesResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public GetPacketNamesResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private GetPacketNamesResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                name_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              name_.add(bs);
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          name_ = name_.getUnmodifiableView();
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_GetPacketNamesResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_archive_GetPacketNamesResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.GetPacketNamesResponse.class, org.yamcs.protobuf.Archive.GetPacketNamesResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<GetPacketNamesResponse> PARSER =
+        new com.google.protobuf.AbstractParser<GetPacketNamesResponse>() {
+      public GetPacketNamesResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new GetPacketNamesResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<GetPacketNamesResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public static final int NAME_FIELD_NUMBER = 1;
+    private com.google.protobuf.LazyStringList name_;
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getNameList() {
+      return name_;
+    }
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    public int getNameCount() {
+      return name_.size();
+    }
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    public java.lang.String getName(int index) {
+      return name_.get(index);
+    }
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes(int index) {
+      return name_.getByteString(index);
+    }
+
+    private void initFields() {
+      name_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < name_.size(); i++) {
+        output.writeBytes(1, name_.getByteString(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < name_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(name_.getByteString(i));
+        }
+        size += dataSize;
+        size += 1 * getNameList().size();
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Archive.GetPacketNamesResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.GetPacketNamesResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.GetPacketNamesResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.GetPacketNamesResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.GetPacketNamesResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.GetPacketNamesResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.GetPacketNamesResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.GetPacketNamesResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.GetPacketNamesResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Archive.GetPacketNamesResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.GetPacketNamesResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code archive.GetPacketNamesResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:archive.GetPacketNamesResponse)
+        org.yamcs.protobuf.Archive.GetPacketNamesResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_GetPacketNamesResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_GetPacketNamesResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.GetPacketNamesResponse.class, org.yamcs.protobuf.Archive.GetPacketNamesResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.GetPacketNamesResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        name_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_archive_GetPacketNamesResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.GetPacketNamesResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.GetPacketNamesResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.GetPacketNamesResponse build() {
+        org.yamcs.protobuf.Archive.GetPacketNamesResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.GetPacketNamesResponse buildPartial() {
+        org.yamcs.protobuf.Archive.GetPacketNamesResponse result = new org.yamcs.protobuf.Archive.GetPacketNamesResponse(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          name_ = name_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.name_ = name_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.GetPacketNamesResponse) {
+          return mergeFrom((org.yamcs.protobuf.Archive.GetPacketNamesResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.GetPacketNamesResponse other) {
+        if (other == org.yamcs.protobuf.Archive.GetPacketNamesResponse.getDefaultInstance()) return this;
+        if (!other.name_.isEmpty()) {
+          if (name_.isEmpty()) {
+            name_ = other.name_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureNameIsMutable();
+            name_.addAll(other.name_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.GetPacketNamesResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.GetPacketNamesResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private com.google.protobuf.LazyStringList name_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureNameIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          name_ = new com.google.protobuf.LazyStringArrayList(name_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getNameList() {
+        return name_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public int getNameCount() {
+        return name_.size();
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public java.lang.String getName(int index) {
+        return name_.get(index);
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes(int index) {
+        return name_.getByteString(index);
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public Builder setName(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureNameIsMutable();
+        name_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public Builder addName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureNameIsMutable();
+        name_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public Builder addAllName(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureNameIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, name_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public Builder clearName() {
+        name_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public Builder addNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureNameIsMutable();
+        name_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:archive.GetPacketNamesResponse)
+    }
+
+    static {
+      defaultInstance = new GetPacketNamesResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:archive.GetPacketNamesResponse)
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_archive_ColumnData_descriptor;
   private static
@@ -11612,6 +12111,11 @@ public final class Archive {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_archive_IndexEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_archive_GetPacketNamesResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_archive_GetPacketNamesResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -11651,7 +12155,8 @@ public final class Archive {
       "e.IndexGroup\"R\n\nIndexGroup\022 \n\002id\030\001 \001(\0132\024" +
       ".yamcs.NamedObjectId\022\"\n\005entry\030\002 \003(\0132\023.ar" +
       "chive.IndexEntry\"8\n\nIndexEntry\022\r\n\005start\030",
-      "\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\r\n\005count\030\003 \001(\005B\024\n\022or" +
+      "\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\r\n\005count\030\003 \001(\005\"&\n\026Ge" +
+      "tPacketNamesResponse\022\014\n\004name\030\001 \003(\tB\024\n\022or" +
       "g.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
@@ -11745,6 +12250,12 @@ public final class Archive {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_archive_IndexEntry_descriptor,
         new java.lang.String[] { "Start", "Stop", "Count", });
+    internal_static_archive_GetPacketNamesResponse_descriptor =
+      getDescriptor().getMessageTypes().get(12);
+    internal_static_archive_GetPacketNamesResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_archive_GetPacketNamesResponse_descriptor,
+        new java.lang.String[] { "Name", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
   }
 

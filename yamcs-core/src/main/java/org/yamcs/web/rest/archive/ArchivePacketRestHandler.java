@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.yamcs.YamcsException;
@@ -15,6 +16,7 @@ import org.yamcs.archive.GPBHelper;
 import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.archive.IndexServer;
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.protobuf.Archive.GetPacketNamesResponse;
 import org.yamcs.protobuf.Archive.IndexEntry;
 import org.yamcs.protobuf.Archive.IndexGroup;
 import org.yamcs.protobuf.Archive.IndexResponse;
@@ -39,12 +41,39 @@ import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
+
+import com.google.common.collect.BiMap;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class ArchivePacketRestHandler extends RestHandler {
+
+    @Route(path = "/api/archive/:instance/packet-names", method = "GET")
+    public void listPacketNames(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+
+        GetPacketNamesResponse.Builder responseb = GetPacketNamesResponse.newBuilder();
+        TableDefinition tableDefinition = ydb.getTable(XtceTmRecorder.TABLE_NAME);
+        BiMap<String, Short> enumValues = tableDefinition.getEnumValues(XtceTmRecorder.PNAME_COLUMN);
+        if (enumValues != null) {
+            List<String> unsortedPackets = new ArrayList<>();
+            for (Entry<String, Short> entry : enumValues.entrySet()) {
+                String packetName = entry.getKey();
+                if (Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PACKET, packetName)) {
+                    unsortedPackets.add(packetName);
+                }
+            }
+            Collections.sort(unsortedPackets);
+            responseb.addAllName(unsortedPackets);
+        }
+        completeOK(req, responseb.build());
+    }
 
     @Route(path = "/api/archive/:instance/packet-index", method = "GET")
     public void listPacketIndex(RestRequest req) throws HttpException {

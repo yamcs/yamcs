@@ -83,3 +83,7 @@ message IndexEntry {
   optional string stop = 2;
   optional int32 count = 3;
 }
+
+message GetPacketNamesResponse {
+  repeated string name = 1;
+}

@@ -24,6 +24,7 @@ import {
   CommandHistoryEntryWrapper,
   SourcesWrapper,
   IndexResult,
+  PacketNameWrapper,
 } from './types/internal';
 
 import {
@@ -376,6 +377,13 @@ export class InstanceClient {
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as RecordsWrapper;
     return wrapper.record || [];
+  }
+
+  async getPacketNames() {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/packet-names`;
+    const response = await this.yamcs.doFetch(url);
+    const wrapper = await response.json() as PacketNameWrapper;
+    return wrapper.name || [];
   }
 
   async getPacketIndex(options: GetPacketIndexOptions): Promise<IndexGroup[]> {

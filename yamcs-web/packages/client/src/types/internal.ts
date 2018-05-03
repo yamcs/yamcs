@@ -130,3 +130,7 @@ export interface SourcesWrapper {
 export interface IndexResult {
   group: IndexGroup[];
 }
+
+export interface PacketNameWrapper {
+  name: string[];
+}
