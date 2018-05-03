@@ -108,8 +108,14 @@ public class XmlLoaderTest {
         assertEquals(2, ctxc.size());
         
         mc = busElectronics.getMetaCommand("Cmd1");
-        Argument sarg = mc.getArgument("STRING_FV");
+        List<ArgumentAssignment> l = mc.getArgumentAssignmentList();
+        assertEquals(1, l.size());
+        ArgumentAssignment argasign = l.get(0);
+        assertEquals("CmdId", argasign.getArgumentName());
+        assertEquals("1", argasign.getArgumentValue());
         
+        Argument sarg = mc.getArgument("STRING_FV");
+        assertEquals("blabla", sarg.getInitialValue());
         StringArgumentType sargType = (StringArgumentType) sarg.getArgumentType();
         StringDataEncoding sencoding = (StringDataEncoding) sargType.getEncoding();
         assertEquals(SizeType.FIXED, sencoding.getSizeType());
@@ -122,6 +128,9 @@ public class XmlLoaderTest {
         assertEquals(128, bencoding.getSizeInBits());
         
     }
+    
+    
+    
     @Test
     public void testMathOpCal() throws XMLStreamException, IOException {
         XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT");

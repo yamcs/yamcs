@@ -25,6 +25,7 @@ import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.BinaryArgumentType;
@@ -241,6 +242,7 @@ public class XtceStaxReader {
     private static final String XTCE_CONSTANT = "Constant";
     private static final String XTCE_OUTPUT_PARAMETER_REF = "OutputParameterRef";
     private static final String XTCE_ALGORITHM_TEXT = "AlgorithmText";
+    private static final String XTCE_ARGUMENT_ASSIGNMENT = "ArgumentAssignment";
     /**
      * Logging subsystem
      */
@@ -1220,7 +1222,7 @@ public class XtceStaxReader {
                 if(algo!=null) {
                     throw new XMLStreamException("Cannot reference 'ThisParameter' in algorithms.", xmlEvent.getLocation());
                 }
-                skipQuietly("ThisParameterOperand");
+                skipToTheEnd("ThisParameterOperand");
                 list.add(new MathOperation.Element());
             } else if (isStartElementWithName("ParameterInstanceRefOperand")) {
                 if(algo==null) {
@@ -2720,21 +2722,20 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
                 mc.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
             } else if (isStartElementWithName(XTCE_BASE_META_COMMAND)) {
-                readXtceBaseMetaCommand(spaceSystem, mc);
+                readBaseMetaCommand(spaceSystem, mc);
             } else if (isStartElementWithName(XTCE_COMMAND_CONTAINER)) {
                 CommandContainer cc = readXtceCommandContainer(spaceSystem, mc);
                 mc.setCommandContainer(cc);
                 spaceSystem.addCommandContainer(cc);
             } else if (isStartElementWithName(XTCE_ARGUMENT_LIST)) {
-                readXtceArgumentList(spaceSystem, mc);
+                readArgumentList(spaceSystem, mc);
             } else if (isEndElementWithName(XTCE_META_COMMAND)) {
                 return mc;
             }
         }
     }
 
-    private void readXtceBaseMetaCommand(SpaceSystem spaceSystem, MetaCommand mc)
-            throws IllegalStateException, XMLStreamException {
+    private void readBaseMetaCommand(SpaceSystem spaceSystem, MetaCommand mc) throws XMLStreamException {
         log.trace(XTCE_BASE_META_COMMAND);
         checkStartElementPreconditions();
 
@@ -2758,7 +2759,7 @@ public class XtceStaxReader {
                 }
             }
         } else {
-            throw new XMLStreamException("For " + mc.getName() + ": reference to base meta command is missing", xmlEvent.getLocation());
+            throwException("For " + mc.getName() + ": reference to base meta command is missing");
         }
 
         while (true) {
@@ -2772,13 +2773,41 @@ public class XtceStaxReader {
         }
     }
 
-    private void readArgumentAssignmentList(SpaceSystem spaceSystem, MetaCommand mc) {
-        log.trace(XTCE_ARGUMENT_LIST);
+    private void readArgumentAssignmentList(SpaceSystem spaceSystem, MetaCommand mc) throws XMLStreamException {
+        log.trace(XTCE_ARGUMENT_ASSIGNMENT_LIST);
         checkStartElementPreconditions();
+
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+
+            if (isStartElementWithName(XTCE_ARGUMENT_ASSIGNMENT)) {
+                ArgumentAssignment aa = readArgumentAssignment(spaceSystem);
+                mc.addArgumentAssignment(aa);
+            } else if (isEndElementWithName(XTCE_ARGUMENT_ASSIGNMENT_LIST)) {
+                return;
+            }
+        }
 
     }
 
-    private void readXtceArgumentList(SpaceSystem spaceSystem, MetaCommand mc) throws XMLStreamException {
+    private ArgumentAssignment readArgumentAssignment(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(XTCE_ARGUMENT_ASSIGNMENT);
+        checkStartElementPreconditions();
+        
+        StartElement element = xmlEvent.asStartElement();
+        String argumentName = readAttribute("argumentName", element);
+        if(argumentName==null) {
+            throw new XMLStreamException("No argument name was provided for argument assignment", xmlEvent.getLocation());
+        }
+        String argumentValue = readAttribute("argumentValue", element);
+        if(argumentValue==null) {
+            throw new XMLStreamException("No argument value was provided for argument assignment", xmlEvent.getLocation());
+        }
+        skipToTheEnd(XTCE_ARGUMENT_ASSIGNMENT);
+        return new ArgumentAssignment(argumentName, argumentValue);
+    }
+
+    private void readArgumentList(SpaceSystem spaceSystem, MetaCommand mc) throws XMLStreamException {
         log.trace(XTCE_ARGUMENT_LIST);
         checkStartElementPreconditions();
 
@@ -2786,7 +2815,7 @@ public class XtceStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_ARGUMENT)) {
-                Argument arg = readXtceArgument(spaceSystem);
+                Argument arg = readArgument(spaceSystem);
                 mc.addArgument(arg);
             } else if (isEndElementWithName(XTCE_ARGUMENT_LIST)) {
                 return;
@@ -2800,7 +2829,7 @@ public class XtceStaxReader {
      * @throws IllegalStateException
      * @throws XMLStreamException
      */
-    private Argument readXtceArgument(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
+    private Argument readArgument(SpaceSystem spaceSystem) throws IllegalStateException, XMLStreamException {
         log.trace(XTCE_ARGUMENT);
         checkStartElementPreconditions();
 
@@ -2808,21 +2837,24 @@ public class XtceStaxReader {
 
         // name
         StartElement element = xmlEvent.asStartElement();
-        String value = readAttribute("name", element);
-        if (value != null) {
-            arg = new Argument(value);
+        String name = readAttribute("name", element);
+        if (name != null) {
+            arg = new Argument(name);
         } else {
             throw new XMLStreamException("Missing name for the argument", xmlEvent.getLocation());
         }
 
-        value = readAttribute("argumentTypeRef", element);
-        if (value != null) {
-            ArgumentType ptype = spaceSystem.getArgumentType(value);
+        String initialValue = readAttribute("initialValue", element);
+        arg.setInitialValue(initialValue);
+        
+        String argumentTypeRef  = readAttribute("argumentTypeRef", element);
+        if (argumentTypeRef != null) {
+            ArgumentType ptype = spaceSystem.getArgumentType(argumentTypeRef);
             if (ptype != null) {
                 arg.setArgumentType(ptype);
             } else {
                 final Argument a = arg;
-                NameReference nr = new UnresolvedNameReference(value, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
+                NameReference nr = new UnresolvedNameReference(argumentTypeRef, Type.ARGUMENT_TYPE).addResolvedAction(nd -> {
                     a.setArgumentType((ArgumentType) nd);
                     return true;
                 });
@@ -2833,8 +2865,7 @@ public class XtceStaxReader {
         }
 
         // shortDescription
-        value = readAttribute("shortDescription", element);
-        arg.setShortDescription(value);
+        arg.setShortDescription(readAttribute("shortDescription", element));
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -3183,7 +3214,7 @@ public class XtceStaxReader {
         }
     }
 
-    private void skipQuietly(String sectionName) throws XMLStreamException, IllegalStateException {
+    private void skipToTheEnd(String sectionName) throws XMLStreamException, IllegalStateException {
         log.trace(sectionName);
         checkStartElementPreconditions();
         while (true) {

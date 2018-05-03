@@ -1041,6 +1041,9 @@ limitations under the License.
 						<xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
 						<xtce:ValidRange minInclusive="1" maxInclusive="2"/>
 					</xtce:IntegerArgumentType>
+					<xtce:IntegerArgumentType name="CmdId_Type">
+						<xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+					</xtce:IntegerArgumentType>
 					<xtce:EnumeratedArgumentType name="RW_PWR_STATE_Type" shortDescription="Flag to indicate if power should be turned on or off">
 						<xtce:UnitSet/>
 						<xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
@@ -1063,6 +1066,16 @@ limitations under the License.
 					</xtce:EnumeratedArgumentType>
 				</xtce:ArgumentTypeSet>
 				<xtce:MetaCommandSet>
+				  <xtce:MetaCommand name="AbstractCmd" shortDescription="parent command" abstract="true">						
+						<xtce:ArgumentList>
+							<xtce:Argument name="CmdId" argumentTypeRef="CmdId_Type" shortDescription="Command Identifier"/>
+						</xtce:ArgumentList>
+						<xtce:CommandContainer name="AbstractCmd_container">							
+							<xtce:EntryList>
+								<xtce:ArgumentRefEntry argumentRef="CmdId"/>
+							</xtce:EntryList>
+						</xtce:CommandContainer>
+					</xtce:MetaCommand>
 					<!-- 
 					<xtce:MetaCommand name="Reaction_Wheel_Control" shortDescription="Power on/off reaction wheel">
 						<xtce:LongDescription>This hardware telecommand directs the hardware to power on or off either of the 2 reaction wheels</xtce:LongDescription>
@@ -1162,9 +1175,13 @@ limitations under the License.
 					</xtce:MetaCommand>
 					
 					<xtce:MetaCommand name="Cmd1" shortDescription="testing various argument types">
-						<xtce:BaseMetaCommand metaCommandRef="/BogusSAT/CCSDSPUSTelecommand"/>
+						<xtce:BaseMetaCommand metaCommandRef="AbstractCmd">
+							<ArgumentAssignmentList>
+                  				<ArgumentAssignment argumentName="CmdId" argumentValue="1" />                 				
+               				</ArgumentAssignmentList>							
+						</xtce:BaseMetaCommand>
 						<xtce:ArgumentList>
-							<xtce:Argument name="STRING_FV" argumentTypeRef="FV_String_Type" shortDescription="fixed string"/>
+							<xtce:Argument name="STRING_FV" argumentTypeRef="FV_String_Type" shortDescription="fixed string"  initialValue="blabla"/>
 						</xtce:ArgumentList>
 						<xtce:ArgumentList>
 							<xtce:Argument name="BINARY_FV" argumentTypeRef="FV_Binary_Type" shortDescription="fixed string"/>
@@ -1177,6 +1194,8 @@ limitations under the License.
 							</xtce:EntryList>
 						</xtce:CommandContainer>
 					</xtce:MetaCommand>
+					
+					
 				</xtce:MetaCommandSet>
 			</xtce:CommandMetaData>
 		</xtce:SpaceSystem>
