@@ -21,7 +21,7 @@
     "noImplicitThis": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
-    // "strictFunctionTypes": true, // TS2.6+
+    // "strictFunctionTypes": true,
 
     // This mainly to detect unused imports
     // (tslint has terrible support for this)
