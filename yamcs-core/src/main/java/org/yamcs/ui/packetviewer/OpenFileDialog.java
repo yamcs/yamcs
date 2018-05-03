@@ -28,12 +28,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
 /**
- * Select a filename and a XTCE db config version to be used in the standalone
- * packet viewer
+ * Select a filename and a XTCE db config version to be used in the standalone packet viewer
  */
 public class OpenFileDialog extends JDialog implements ActionListener {
     private static final long serialVersionUID = 1L;
-    private JComboBox dbConfigCombo;
+    private JComboBox<String> dbConfigCombo;
     private JFileChooser fileChooser;
     private Preferences prefs;
     private int returnValue;
@@ -49,12 +48,15 @@ public class OpenFileDialog extends JDialog implements ActionListener {
     public static final int APPROVE_OPTION = 0;
 
     public OpenFileDialog() throws ConfigurationException {
-        YConfiguration c = YConfiguration.getConfiguration("mdb");
-        String[] dbconfigs = c.getKeys().toArray(new String[0]);
+        String[] dbconfigs = new String[0];
+        if (YConfiguration.isDefined("mdb")) {
+            YConfiguration c = YConfiguration.getConfiguration("mdb");
+            dbconfigs = c.getKeys().toArray(new String[0]);
+        }
         Arrays.sort(dbconfigs);
         prefs = Preferences.userNodeForPackage(PacketViewer.class);
 
-        dbConfigCombo = new JComboBox(dbconfigs);
+        dbConfigCombo = new JComboBox<>(dbconfigs);
         dbConfigCombo.setSelectedItem(prefs.get("LastUsedDbConfig", null));
         dbConfigCombo.setEditable(true);
 
@@ -91,9 +93,11 @@ public class OpenFileDialog extends JDialog implements ActionListener {
 
     private void installActions() {
         JRootPane root = getRootPane();
-        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "closeDialog");
+        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                "closeDialog");
         root.getActionMap().put("closeDialog", new AbstractAction() {
             private static final long serialVersionUID = 1L;
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 dispatchEvent(new WindowEvent(OpenFileDialog.this, WindowEvent.WINDOW_CLOSING));
