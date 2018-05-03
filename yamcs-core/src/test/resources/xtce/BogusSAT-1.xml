@@ -1011,6 +1011,31 @@ limitations under the License.
 			</xtce:TelemetryMetaData>
 			<xtce:CommandMetaData>
 				<xtce:ArgumentTypeSet>
+					<xtce:BooleanArgumentType name="Bool_Arg_Type" shortDescription="boolean argument type" initialValue="true">
+						<xtce:UnitSet/>
+						<IntegerDataEncoding sizeInBits="1"/>
+					</xtce:BooleanArgumentType>
+					<xtce:StringArgumentType name="FV_String_Type" shortDescription="fixed value string argument type">
+						<xtce:UnitSet/>
+						<StringDataEncoding>
+						<SizeInBits>
+						    <Fixed>
+                     			<FixedValue>320</FixedValue>
+                  			</Fixed>
+               				</SizeInBits>
+           				 </StringDataEncoding>
+					</xtce:StringArgumentType>
+					<xtce:BinaryArgumentType name="FV_Binary_Type" shortDescription="fixed value binary argument type">
+						<xtce:UnitSet/>
+						<BinaryDataEncoding>
+						<SizeInBits>
+						    <Fixed>
+                     			<FixedValue>128</FixedValue>
+                  			</Fixed>
+               				</SizeInBits>
+           				 </BinaryDataEncoding>
+					</xtce:BinaryArgumentType>
+
 					<xtce:IntegerArgumentType name="RW_UNIT_ID_Type" shortDescription="ID number of the reaction wheel">
 						<xtce:UnitSet/>
 						<xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
@@ -1132,6 +1157,23 @@ limitations under the License.
 							<xtce:BaseContainer containerRef="/BogusSAT/CCSDSPUSCommandPacket"/>
 							<xtce:EntryList>
 								<xtce:ArgumentRefEntry argumentRef="PHASE"/>
+							</xtce:EntryList>
+						</xtce:CommandContainer>
+					</xtce:MetaCommand>
+					
+					<xtce:MetaCommand name="Cmd1" shortDescription="testing various argument types">
+						<xtce:BaseMetaCommand metaCommandRef="/BogusSAT/CCSDSPUSTelecommand"/>
+						<xtce:ArgumentList>
+							<xtce:Argument name="STRING_FV" argumentTypeRef="FV_String_Type" shortDescription="fixed string"/>
+						</xtce:ArgumentList>
+						<xtce:ArgumentList>
+							<xtce:Argument name="BINARY_FV" argumentTypeRef="FV_Binary_Type" shortDescription="fixed string"/>
+						</xtce:ArgumentList>
+						<xtce:CommandContainer name="Set_Mission_Phase_Container">
+							<xtce:BaseContainer containerRef="/BogusSAT/CCSDSPUSCommandPacket"/>
+							<xtce:EntryList>
+								<xtce:ArgumentRefEntry argumentRef="STRING_FV"/>
+								<xtce:ArgumentRefEntry argumentRef="BINARY_FV"/>
 							</xtce:EntryList>
 						</xtce:CommandContainer>
 					</xtce:MetaCommand>

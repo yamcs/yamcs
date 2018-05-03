@@ -330,8 +330,7 @@ public class XtceStaxReader {
      *            Start document event object
      */
     private void onStartDocument(StartDocument start) {
-        log.trace("XML version=\"" + start.getVersion() + "\" encoding: \""
-                + start.getCharacterEncodingScheme() + "\"");
+        log.trace("XML version='{} encoding: '{}'", start.getVersion(), start.getCharacterEncodingScheme());
     }
 
     /**
@@ -561,7 +560,7 @@ public class XtceStaxReader {
         if (name != null) {
             boolParamType = new BooleanParameterType(name);
         } else {
-            throw new XMLStreamException("Unnamed boolean parameter type");
+            throw new XMLStreamException("Unnamed boolean parameter type", xmlEvent.getLocation());
         }
 
         // read all parameters
@@ -601,7 +600,7 @@ public class XtceStaxReader {
         if (value != null) {
             ptype = new AbsoluteTimeParameterType(value);
         } else {
-            throw new XMLStreamException("Unnamed absolute time parameter type");
+            throw new XMLStreamException("Unnamed absolute time parameter type", xmlEvent.getLocation());
         }
 
         while (true) {
@@ -658,8 +657,8 @@ public class XtceStaxReader {
         // name attribute
         String units = readAttribute("units", xmlEvent.asStartElement());
         if ((units != null) && (!"seconds".equals(units))) {
-            throw new XMLStreamException(
-                    "Unsupported unit types '" + units + "' for time encoding. Only seconds (with scaling) supported");
+            throw new XMLStreamException("Unsupported unit types '" + units + "' for time encoding."
+                    + " Only seconds (with scaling) supported", xmlEvent.getLocation());
         }
         boolean needsScaling = false;
         double offset = 0d;
@@ -701,7 +700,7 @@ public class XtceStaxReader {
         if (value != null) {
             floatParamType = new FloatParameterType(value);
         } else {
-            throw new XMLStreamException("Unnamed float parameter type");
+            throwException("Unnamed float parameter type");
         }
 
         value = readAttribute("sizeInBits", xmlEvent.asStartElement());
@@ -709,8 +708,8 @@ public class XtceStaxReader {
         if (value != null) {
             int sizeInBits = Integer.parseInt(value);
             if (sizeInBits != 32 && sizeInBits != 64) {
-                throw new XMLStreamException(
-                        "Float encoding " + sizeInBits + " not supported; Only 32 and 64 bits are supported");
+                throw new XMLStreamException("Float encoding " + sizeInBits + " not supported;"
+                                + " Only 32 and 64 bits are supported", xmlEvent.getLocation());
             }
             floatParamType.setSizeInBits(sizeInBits);
         }
@@ -739,7 +738,6 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
 
         FloatDataEncoding floatDataEncoding = null;
-        String name = "";
 
         // sizeInBits attribute
         String value = readAttribute("sizeInBits", xmlEvent.asStartElement());
@@ -757,9 +755,9 @@ public class XtceStaxReader {
                 // ok, this encoding is supported by the class implicitly
             } else if ("MILSTD_1750A".equalsIgnoreCase(value)) {
                 log.error("Encoding MILSTD_1750A is not currently supported.");
-                throw new XMLStreamException("Encoding MILSTD_1750A is not currently supported.");
+                throwException("Encoding MILSTD_1750A is not currently supported.");
             } else {
-                throw new XMLStreamException();
+                throwException("Unknown encoding '"+value+"'");
             }
         } else {
             // default is IEEE754_1985
@@ -900,7 +898,7 @@ public class XtceStaxReader {
         if (name != null) {
             binaryParamType = new BinaryParameterType(name);
         } else {
-            throw new XMLStreamException("Unnamed binary parameter type");
+            throwException("Unnamed binary parameter type");
         }
 
         while (true) {
@@ -945,8 +943,7 @@ public class XtceStaxReader {
     }
 
     private void throwException(String msg) throws XMLStreamException {
-        throw new XMLStreamException(msg + " at " + xmlEvent.getLocation().getLineNumber() + ": "
-                + xmlEvent.getLocation().getColumnNumber());
+        throw new XMLStreamException(msg, xmlEvent.getLocation());
     }
 
     private int readIntegerValue() throws XMLStreamException {
@@ -972,8 +969,7 @@ public class XtceStaxReader {
             try {
                 return Integer.parseInt(value);
             } catch (NumberFormatException e) {
-                throw new XMLStreamException("Cannot parse integer '" + value + "' at "
-                        + xmlEvent.getLocation().getLineNumber() + ":" + xmlEvent.getLocation().getColumnNumber());
+                throw new XMLStreamException("Cannot parse integer '" + value + "'", xmlEvent.getLocation());
             }
         } else {
             throw new IllegalStateException();
@@ -991,7 +987,7 @@ public class XtceStaxReader {
         if (value != null) {
             stringParamType = new StringParameterType(value);
         } else {
-            throw new XMLStreamException("Unnamed string parameter type");
+            throwException("Unnamed string parameter type");
         }
 
         while (true) {
@@ -1043,8 +1039,7 @@ public class XtceStaxReader {
                 stringDataEncoding.setSizeType(SizeType.TERMINATION_CHAR);
                 byte[] x = readHexBinary();
                 if (x == null || x.length != 1) {
-                    throw new XMLStreamException(
-                            "Terminated strings have to have the size of the termination character of 1");
+                    throwException("Terminated strings have to have the size of the termination character of 1");
                 }
                 stringDataEncoding.setTerminationChar(x[0]);
             } else if (isStartElementWithName(XTCE_LEADING_SIZE)) {
@@ -1084,7 +1079,7 @@ public class XtceStaxReader {
         if (value != null) {
             integerParamType = new IntegerParameterType(value);
         } else {
-            throw new XMLStreamException("Unnamed integer parameter type");
+            throw new XMLStreamException("Unnamed integer parameter type", xmlEvent.getLocation());
         }
 
         value = readAttribute("sizeInBits", xmlEvent.asStartElement());
@@ -1213,8 +1208,7 @@ public class XtceStaxReader {
         if (algo!=null) {
             refName = readAttribute("outputParameterRef", xmlEvent.asStartElement());
             if (refName == null) {
-                throw new XMLStreamException("Invalid MathOperation for algorithm, "
-                        + "no outputParameterRef attribute defined", xmlEvent.getLocation());
+                throwException("Invalid MathOperation for algorithm, no outputParameterRef attribute defined");
             }
         }
 
@@ -2455,7 +2449,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_BINARY_ARGUMENT_TYPE)) {
                 argumentType = readXtceBinaryArgumentType(spaceSystem);
             } else if (isStartElementWithName(XTCE_STRING_ARGUMENT_TYPE)) {
-                argumentType = readXtceStringArgumentType(spaceSystem);
+                argumentType = readStringArgumentType(spaceSystem);
             }
             if (argumentType != null) {
                 spaceSystem.addArgumentType(argumentType);
@@ -2634,8 +2628,8 @@ public class XtceStaxReader {
         }
     }
 
-    private StringArgumentType readXtceStringArgumentType(SpaceSystem spaceSystem) throws XMLStreamException {
-        log.trace(XTCE_INTEGER_ARGUMENT_TYPE);
+    private StringArgumentType readStringArgumentType(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(XTCE_STRING_ARGUMENT_TYPE);
         checkStartElementPreconditions();
         StringArgumentType stringParamType = null;
 
@@ -2649,14 +2643,13 @@ public class XtceStaxReader {
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-
             if (isStartElementWithName(XTCE_UNIT_SET)) {
                 stringParamType.addAllUnits(readXtceUnitSet());
             } else if (isStartElementWithName(XTCE_STRING_DATA_ENCODING)) {
                 stringParamType.setEncoding(readXtceStringDataEncoding(spaceSystem));
             } else if (isStartElementWithName(XTCE_CONTEXT_ALARM_LIST)) {
                 skipXtceSection(XTCE_CONTEXT_ALARM_LIST);
-            } else if (isEndElementWithName(XTCE_INTEGER_ARGUMENT_TYPE)) {
+            } else if (isEndElementWithName(XTCE_STRING_ARGUMENT_TYPE)) {
                 return stringParamType;
             }
         }
@@ -2692,7 +2685,7 @@ public class XtceStaxReader {
             if (isStartElementWithName(XTCE_META_COMMAND)) {
                 MetaCommand mc = readXtceMetaCommand(spaceSystem);
                 if (excludedContainers.contains(mc.getName())) {
-                    log.debug("Not adding '" + mc.getName() + "' to the SpaceSystem because excluded by configuration");
+                    log.debug("Not adding '{}' to the SpaceSystem because excluded by configuration",  mc.getName());
                 } else {
                     spaceSystem.addMetaCommand(mc);
                 }
@@ -2748,8 +2741,7 @@ public class XtceStaxReader {
         String refName = readAttribute("metaCommandRef", xmlEvent.asStartElement());
         if (refName != null) {
             if (excludedContainers.contains(refName)) {
-                log.debug("adding " + mc.getName()
-                        + " to the list of the excluded containers because its parent is excluded");
+                log.debug("adding {} to the list of the excluded containers because its parent is excluded", mc.getName());
                 excludedContainers.add(mc.getName());
             } else {
                 // find base container in the set of already defined containers
@@ -2903,8 +2895,7 @@ public class XtceStaxReader {
         String refName = readAttribute("containerRef", xmlEvent.asStartElement());
         if (refName != null) {
             if (excludedContainers.contains(refName)) {
-                log.debug("adding " + mcContainer.getName()
-                        + " to the list of the excluded containers because its parent is excluded");
+                log.debug("adding {} to the list of the excluded containers because its parent is excluded", mcContainer.getName());
                 excludedContainers.add(mcContainer.getName());
             } else {
                 // find base container in the set of already defined containers
@@ -3153,7 +3144,7 @@ public class XtceStaxReader {
         log.info("------------------");
         log.info("Statistics of skipped elements: ");
         for (Map.Entry<String, Integer> entry : xtceSkipStatistics.entrySet()) {
-            log.info(">> " + entry.getKey() + ": " + entry.getValue());
+            log.info(">> {} : {} ", entry.getKey(),  entry.getValue());
         }
         log.info("------------------");
     }
@@ -3183,7 +3174,7 @@ public class XtceStaxReader {
                     // skip wrapped sections with the same name
                     skipXtceSection(sectionName);
                 } else if (isEndElementWithName(sectionName)) {
-                    log.info("Section <" + sectionName + "> skipped");
+                    log.info("Section <{}> skipped", sectionName);
                     return;
                 }
             } catch (NoSuchElementException e) {
@@ -3299,26 +3290,6 @@ public class XtceStaxReader {
             return attribute.getValue();
         }
         return null;
-    }
-
-    /**
-     * Test method.
-     * 
-     * @param args
-     *            XTCE document to load.
-     * @throws Exception
-     */
-    public static void main(String[] args) throws Exception {
-
-        XtceStaxReader reader = new XtceStaxReader();
-
-        if (args.length == 1) {
-            reader.readXmlDocument(args[0]);
-            reader.writeStatistics();
-        } else {
-            System.out.println("Wrong arguments, exactly one argument allowed");
-        }
-
     }
 
     public void setExcludedContainers(Set<String> excludedContainers) {

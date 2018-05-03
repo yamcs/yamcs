@@ -107,8 +107,19 @@ public class XmlLoaderTest {
         List<ContextCalibrator> ctxc = encoding.getContextCalibratorList();
         assertEquals(2, ctxc.size());
         
+        mc = busElectronics.getMetaCommand("Cmd1");
+        Argument sarg = mc.getArgument("STRING_FV");
         
-       
+        StringArgumentType sargType = (StringArgumentType) sarg.getArgumentType();
+        StringDataEncoding sencoding = (StringDataEncoding) sargType.getEncoding();
+        assertEquals(SizeType.FIXED, sencoding.getSizeType());
+        assertEquals(320, sencoding.getSizeInBits());
+        
+        Argument barg = mc.getArgument("BINARY_FV");
+        BinaryArgumentType bargType = (BinaryArgumentType) barg.getArgumentType();
+        BinaryDataEncoding bencoding = (BinaryDataEncoding) bargType.getEncoding();
+        assertEquals(SizeType.FIXED, sencoding.getSizeType());
+        assertEquals(128, bencoding.getSizeInBits());
         
     }
     @Test
