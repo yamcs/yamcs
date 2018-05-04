@@ -111,6 +111,12 @@ export interface TimeSubscriptionResponse {
   timeInfo$: Observable<TimeInfo>;
 }
 
+export interface ManagementSubscriptionRequest {
+  clientInfo?: boolean;
+  processorInfo?: boolean;
+  processorStatistics?: boolean;
+}
+
 export interface Sample {
   time: string;
   avg: number;

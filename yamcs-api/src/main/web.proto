@@ -86,6 +86,17 @@ message LinkSubscriptionRequest {
   optional string instance = 1;
 }
 
+message ProcessorSubscriptionRequest {
+  optional bool allProcessors = 1;
+  optional bool allInstances = 2;
+}
+
+message ManagementSubscriptionRequest {
+  optional bool clientInfo = 1;
+  optional bool processorInfo = 2;
+  optional bool processorStatistics = 3;
+}
+
 /*
  * Used for parameter subscription and unsubscription.
  */
@@ -129,6 +140,10 @@ message ParameterSubscriptionResponse {
 
 message TimeSubscriptionResponse {
   optional yamcs.TimeInfo timeInfo = 1;
+}
+
+message ProcessorSubscriptionResponse {
+  optional yamcsManagement.ProcessorInfo processor = 1;
 }
 
 //sent via the websocket with information about connected client

@@ -191,5 +191,4 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     public void onException(WebSocketExceptionData e) {
         yamcsMonitor.log("Exception when performing subscription:" + e.getMessage());
     }
-
 }

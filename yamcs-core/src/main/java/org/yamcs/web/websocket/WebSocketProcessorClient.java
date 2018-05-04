@@ -61,16 +61,17 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
 
         // Built-in resources, we could consider moving this to services so that
         // they register their endpoint themselves.
-        registerResource(ParameterResource.RESOURCE_NAME, new ParameterResource(this));
-        registerResource(CommandHistoryResource.RESOURCE_NAME, new CommandHistoryResource(this));
-        registerResource(ManagementResource.RESOURCE_NAME, new ManagementResource(this));
         registerResource(AlarmResource.RESOURCE_NAME, new AlarmResource(this));
+        registerResource(CommandHistoryResource.RESOURCE_NAME, new CommandHistoryResource(this));
+        registerResource(CommandQueueResource.RESOURCE_NAME, new CommandQueueResource(this));
         registerResource(EventResource.RESOURCE_NAME, new EventResource(this));
+        registerResource(LinkResource.RESOURCE_NAME, new LinkResource(this));
+        registerResource(ManagementResource.RESOURCE_NAME, new ManagementResource(this));
+        registerResource(PacketResource.RESOURCE_NAME, new PacketResource(this));
+        registerResource(ParameterResource.RESOURCE_NAME, new ParameterResource(this));
+        registerResource(ProcessorResource.RESOURCE_NAME, new ProcessorResource(this));
         registerResource(StreamResource.RESOURCE_NAME, new StreamResource(this));
         registerResource(TimeResource.RESOURCE_NAME, new TimeResource(this));
-        registerResource(LinkResource.RESOURCE_NAME, new LinkResource(this));
-        registerResource(CommandQueueResource.RESOURCE_NAME, new CommandQueueResource(this));
-        registerResource(PacketResource.RESOURCE_NAME, new PacketResource(this));
     }
 
     @Override

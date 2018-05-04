@@ -8949,6 +8949,1034 @@ public final class Web {
     // @@protoc_insertion_point(class_scope:web.LinkSubscriptionRequest)
   }
 
+  public interface ProcessorSubscriptionRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.ProcessorSubscriptionRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional bool allProcessors = 1;</code>
+     */
+    boolean hasAllProcessors();
+    /**
+     * <code>optional bool allProcessors = 1;</code>
+     */
+    boolean getAllProcessors();
+
+    /**
+     * <code>optional bool allInstances = 2;</code>
+     */
+    boolean hasAllInstances();
+    /**
+     * <code>optional bool allInstances = 2;</code>
+     */
+    boolean getAllInstances();
+  }
+  /**
+   * Protobuf type {@code web.ProcessorSubscriptionRequest}
+   */
+  public static final class ProcessorSubscriptionRequest extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:web.ProcessorSubscriptionRequest)
+      ProcessorSubscriptionRequestOrBuilder {
+    // Use ProcessorSubscriptionRequest.newBuilder() to construct.
+    private ProcessorSubscriptionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ProcessorSubscriptionRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ProcessorSubscriptionRequest defaultInstance;
+    public static ProcessorSubscriptionRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ProcessorSubscriptionRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ProcessorSubscriptionRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              allProcessors_ = input.readBool();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              allInstances_ = input.readBool();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Web.ProcessorSubscriptionRequest.class, org.yamcs.protobuf.Web.ProcessorSubscriptionRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ProcessorSubscriptionRequest> PARSER =
+        new com.google.protobuf.AbstractParser<ProcessorSubscriptionRequest>() {
+      public ProcessorSubscriptionRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ProcessorSubscriptionRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ProcessorSubscriptionRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int ALLPROCESSORS_FIELD_NUMBER = 1;
+    private boolean allProcessors_;
+    /**
+     * <code>optional bool allProcessors = 1;</code>
+     */
+    public boolean hasAllProcessors() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bool allProcessors = 1;</code>
+     */
+    public boolean getAllProcessors() {
+      return allProcessors_;
+    }
+
+    public static final int ALLINSTANCES_FIELD_NUMBER = 2;
+    private boolean allInstances_;
+    /**
+     * <code>optional bool allInstances = 2;</code>
+     */
+    public boolean hasAllInstances() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional bool allInstances = 2;</code>
+     */
+    public boolean getAllInstances() {
+      return allInstances_;
+    }
+
+    private void initFields() {
+      allProcessors_ = false;
+      allInstances_ = false;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBool(1, allProcessors_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBool(2, allInstances_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, allProcessors_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, allInstances_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.ProcessorSubscriptionRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code web.ProcessorSubscriptionRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.ProcessorSubscriptionRequest)
+        org.yamcs.protobuf.Web.ProcessorSubscriptionRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Web.ProcessorSubscriptionRequest.class, org.yamcs.protobuf.Web.ProcessorSubscriptionRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Web.ProcessorSubscriptionRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        allProcessors_ = false;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        allInstances_ = false;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Web.ProcessorSubscriptionRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Web.ProcessorSubscriptionRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Web.ProcessorSubscriptionRequest build() {
+        org.yamcs.protobuf.Web.ProcessorSubscriptionRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Web.ProcessorSubscriptionRequest buildPartial() {
+        org.yamcs.protobuf.Web.ProcessorSubscriptionRequest result = new org.yamcs.protobuf.Web.ProcessorSubscriptionRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.allProcessors_ = allProcessors_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.allInstances_ = allInstances_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Web.ProcessorSubscriptionRequest) {
+          return mergeFrom((org.yamcs.protobuf.Web.ProcessorSubscriptionRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Web.ProcessorSubscriptionRequest other) {
+        if (other == org.yamcs.protobuf.Web.ProcessorSubscriptionRequest.getDefaultInstance()) return this;
+        if (other.hasAllProcessors()) {
+          setAllProcessors(other.getAllProcessors());
+        }
+        if (other.hasAllInstances()) {
+          setAllInstances(other.getAllInstances());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Web.ProcessorSubscriptionRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private boolean allProcessors_ ;
+      /**
+       * <code>optional bool allProcessors = 1;</code>
+       */
+      public boolean hasAllProcessors() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional bool allProcessors = 1;</code>
+       */
+      public boolean getAllProcessors() {
+        return allProcessors_;
+      }
+      /**
+       * <code>optional bool allProcessors = 1;</code>
+       */
+      public Builder setAllProcessors(boolean value) {
+        bitField0_ |= 0x00000001;
+        allProcessors_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool allProcessors = 1;</code>
+       */
+      public Builder clearAllProcessors() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        allProcessors_ = false;
+        onChanged();
+        return this;
+      }
+
+      private boolean allInstances_ ;
+      /**
+       * <code>optional bool allInstances = 2;</code>
+       */
+      public boolean hasAllInstances() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional bool allInstances = 2;</code>
+       */
+      public boolean getAllInstances() {
+        return allInstances_;
+      }
+      /**
+       * <code>optional bool allInstances = 2;</code>
+       */
+      public Builder setAllInstances(boolean value) {
+        bitField0_ |= 0x00000002;
+        allInstances_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool allInstances = 2;</code>
+       */
+      public Builder clearAllInstances() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        allInstances_ = false;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:web.ProcessorSubscriptionRequest)
+    }
+
+    static {
+      defaultInstance = new ProcessorSubscriptionRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:web.ProcessorSubscriptionRequest)
+  }
+
+  public interface ManagementSubscriptionRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.ManagementSubscriptionRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional bool clientInfo = 1;</code>
+     */
+    boolean hasClientInfo();
+    /**
+     * <code>optional bool clientInfo = 1;</code>
+     */
+    boolean getClientInfo();
+
+    /**
+     * <code>optional bool processorInfo = 2;</code>
+     */
+    boolean hasProcessorInfo();
+    /**
+     * <code>optional bool processorInfo = 2;</code>
+     */
+    boolean getProcessorInfo();
+
+    /**
+     * <code>optional bool processorStatistics = 3;</code>
+     */
+    boolean hasProcessorStatistics();
+    /**
+     * <code>optional bool processorStatistics = 3;</code>
+     */
+    boolean getProcessorStatistics();
+  }
+  /**
+   * Protobuf type {@code web.ManagementSubscriptionRequest}
+   */
+  public static final class ManagementSubscriptionRequest extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:web.ManagementSubscriptionRequest)
+      ManagementSubscriptionRequestOrBuilder {
+    // Use ManagementSubscriptionRequest.newBuilder() to construct.
+    private ManagementSubscriptionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ManagementSubscriptionRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ManagementSubscriptionRequest defaultInstance;
+    public static ManagementSubscriptionRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ManagementSubscriptionRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ManagementSubscriptionRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              clientInfo_ = input.readBool();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              processorInfo_ = input.readBool();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              processorStatistics_ = input.readBool();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Web.internal_static_web_ManagementSubscriptionRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Web.internal_static_web_ManagementSubscriptionRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Web.ManagementSubscriptionRequest.class, org.yamcs.protobuf.Web.ManagementSubscriptionRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ManagementSubscriptionRequest> PARSER =
+        new com.google.protobuf.AbstractParser<ManagementSubscriptionRequest>() {
+      public ManagementSubscriptionRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ManagementSubscriptionRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ManagementSubscriptionRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int CLIENTINFO_FIELD_NUMBER = 1;
+    private boolean clientInfo_;
+    /**
+     * <code>optional bool clientInfo = 1;</code>
+     */
+    public boolean hasClientInfo() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bool clientInfo = 1;</code>
+     */
+    public boolean getClientInfo() {
+      return clientInfo_;
+    }
+
+    public static final int PROCESSORINFO_FIELD_NUMBER = 2;
+    private boolean processorInfo_;
+    /**
+     * <code>optional bool processorInfo = 2;</code>
+     */
+    public boolean hasProcessorInfo() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional bool processorInfo = 2;</code>
+     */
+    public boolean getProcessorInfo() {
+      return processorInfo_;
+    }
+
+    public static final int PROCESSORSTATISTICS_FIELD_NUMBER = 3;
+    private boolean processorStatistics_;
+    /**
+     * <code>optional bool processorStatistics = 3;</code>
+     */
+    public boolean hasProcessorStatistics() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional bool processorStatistics = 3;</code>
+     */
+    public boolean getProcessorStatistics() {
+      return processorStatistics_;
+    }
+
+    private void initFields() {
+      clientInfo_ = false;
+      processorInfo_ = false;
+      processorStatistics_ = false;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBool(1, clientInfo_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBool(2, processorInfo_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBool(3, processorStatistics_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, clientInfo_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(2, processorInfo_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(3, processorStatistics_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.ManagementSubscriptionRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code web.ManagementSubscriptionRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.ManagementSubscriptionRequest)
+        org.yamcs.protobuf.Web.ManagementSubscriptionRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Web.internal_static_web_ManagementSubscriptionRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Web.internal_static_web_ManagementSubscriptionRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Web.ManagementSubscriptionRequest.class, org.yamcs.protobuf.Web.ManagementSubscriptionRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Web.ManagementSubscriptionRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        clientInfo_ = false;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        processorInfo_ = false;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        processorStatistics_ = false;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Web.internal_static_web_ManagementSubscriptionRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Web.ManagementSubscriptionRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Web.ManagementSubscriptionRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Web.ManagementSubscriptionRequest build() {
+        org.yamcs.protobuf.Web.ManagementSubscriptionRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Web.ManagementSubscriptionRequest buildPartial() {
+        org.yamcs.protobuf.Web.ManagementSubscriptionRequest result = new org.yamcs.protobuf.Web.ManagementSubscriptionRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.clientInfo_ = clientInfo_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.processorInfo_ = processorInfo_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.processorStatistics_ = processorStatistics_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Web.ManagementSubscriptionRequest) {
+          return mergeFrom((org.yamcs.protobuf.Web.ManagementSubscriptionRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Web.ManagementSubscriptionRequest other) {
+        if (other == org.yamcs.protobuf.Web.ManagementSubscriptionRequest.getDefaultInstance()) return this;
+        if (other.hasClientInfo()) {
+          setClientInfo(other.getClientInfo());
+        }
+        if (other.hasProcessorInfo()) {
+          setProcessorInfo(other.getProcessorInfo());
+        }
+        if (other.hasProcessorStatistics()) {
+          setProcessorStatistics(other.getProcessorStatistics());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Web.ManagementSubscriptionRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Web.ManagementSubscriptionRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private boolean clientInfo_ ;
+      /**
+       * <code>optional bool clientInfo = 1;</code>
+       */
+      public boolean hasClientInfo() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional bool clientInfo = 1;</code>
+       */
+      public boolean getClientInfo() {
+        return clientInfo_;
+      }
+      /**
+       * <code>optional bool clientInfo = 1;</code>
+       */
+      public Builder setClientInfo(boolean value) {
+        bitField0_ |= 0x00000001;
+        clientInfo_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool clientInfo = 1;</code>
+       */
+      public Builder clearClientInfo() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        clientInfo_ = false;
+        onChanged();
+        return this;
+      }
+
+      private boolean processorInfo_ ;
+      /**
+       * <code>optional bool processorInfo = 2;</code>
+       */
+      public boolean hasProcessorInfo() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional bool processorInfo = 2;</code>
+       */
+      public boolean getProcessorInfo() {
+        return processorInfo_;
+      }
+      /**
+       * <code>optional bool processorInfo = 2;</code>
+       */
+      public Builder setProcessorInfo(boolean value) {
+        bitField0_ |= 0x00000002;
+        processorInfo_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool processorInfo = 2;</code>
+       */
+      public Builder clearProcessorInfo() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        processorInfo_ = false;
+        onChanged();
+        return this;
+      }
+
+      private boolean processorStatistics_ ;
+      /**
+       * <code>optional bool processorStatistics = 3;</code>
+       */
+      public boolean hasProcessorStatistics() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional bool processorStatistics = 3;</code>
+       */
+      public boolean getProcessorStatistics() {
+        return processorStatistics_;
+      }
+      /**
+       * <code>optional bool processorStatistics = 3;</code>
+       */
+      public Builder setProcessorStatistics(boolean value) {
+        bitField0_ |= 0x00000004;
+        processorStatistics_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool processorStatistics = 3;</code>
+       */
+      public Builder clearProcessorStatistics() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        processorStatistics_ = false;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:web.ManagementSubscriptionRequest)
+    }
+
+    static {
+      defaultInstance = new ManagementSubscriptionRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:web.ManagementSubscriptionRequest)
+  }
+
   public interface ParameterSubscriptionRequestOrBuilder extends
       // @@protoc_insertion_point(interface_extends:web.ParameterSubscriptionRequest)
       com.google.protobuf.MessageOrBuilder {
@@ -11985,6 +13013,526 @@ public final class Web {
     // @@protoc_insertion_point(class_scope:web.TimeSubscriptionResponse)
   }
 
+  public interface ProcessorSubscriptionResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.ProcessorSubscriptionResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    boolean hasProcessor();
+    /**
+     * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessor();
+    /**
+     * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorOrBuilder();
+  }
+  /**
+   * Protobuf type {@code web.ProcessorSubscriptionResponse}
+   */
+  public static final class ProcessorSubscriptionResponse extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:web.ProcessorSubscriptionResponse)
+      ProcessorSubscriptionResponseOrBuilder {
+    // Use ProcessorSubscriptionResponse.newBuilder() to construct.
+    private ProcessorSubscriptionResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ProcessorSubscriptionResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ProcessorSubscriptionResponse defaultInstance;
+    public static ProcessorSubscriptionResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ProcessorSubscriptionResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ProcessorSubscriptionResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = processor_.toBuilder();
+              }
+              processor_ = input.readMessage(org.yamcs.protobuf.YamcsManagement.ProcessorInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(processor_);
+                processor_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Web.ProcessorSubscriptionResponse.class, org.yamcs.protobuf.Web.ProcessorSubscriptionResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ProcessorSubscriptionResponse> PARSER =
+        new com.google.protobuf.AbstractParser<ProcessorSubscriptionResponse>() {
+      public ProcessorSubscriptionResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ProcessorSubscriptionResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ProcessorSubscriptionResponse> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    public static final int PROCESSOR_FIELD_NUMBER = 1;
+    private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processor_;
+    /**
+     * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    public boolean hasProcessor() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessor() {
+      return processor_;
+    }
+    /**
+     * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorOrBuilder() {
+      return processor_;
+    }
+
+    private void initFields() {
+      processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      if (hasProcessor()) {
+        if (!getProcessor().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, processor_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, processor_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.ProcessorSubscriptionResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code web.ProcessorSubscriptionResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.ProcessorSubscriptionResponse)
+        org.yamcs.protobuf.Web.ProcessorSubscriptionResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Web.ProcessorSubscriptionResponse.class, org.yamcs.protobuf.Web.ProcessorSubscriptionResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Web.ProcessorSubscriptionResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getProcessorFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (processorBuilder_ == null) {
+          processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+        } else {
+          processorBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Web.ProcessorSubscriptionResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Web.ProcessorSubscriptionResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Web.ProcessorSubscriptionResponse build() {
+        org.yamcs.protobuf.Web.ProcessorSubscriptionResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Web.ProcessorSubscriptionResponse buildPartial() {
+        org.yamcs.protobuf.Web.ProcessorSubscriptionResponse result = new org.yamcs.protobuf.Web.ProcessorSubscriptionResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (processorBuilder_ == null) {
+          result.processor_ = processor_;
+        } else {
+          result.processor_ = processorBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Web.ProcessorSubscriptionResponse) {
+          return mergeFrom((org.yamcs.protobuf.Web.ProcessorSubscriptionResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Web.ProcessorSubscriptionResponse other) {
+        if (other == org.yamcs.protobuf.Web.ProcessorSubscriptionResponse.getDefaultInstance()) return this;
+        if (other.hasProcessor()) {
+          mergeProcessor(other.getProcessor());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (hasProcessor()) {
+          if (!getProcessor().isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Web.ProcessorSubscriptionResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> processorBuilder_;
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public boolean hasProcessor() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessor() {
+        if (processorBuilder_ == null) {
+          return processor_;
+        } else {
+          return processorBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder setProcessor(org.yamcs.protobuf.YamcsManagement.ProcessorInfo value) {
+        if (processorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          processor_ = value;
+          onChanged();
+        } else {
+          processorBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder setProcessor(
+          org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder builderForValue) {
+        if (processorBuilder_ == null) {
+          processor_ = builderForValue.build();
+          onChanged();
+        } else {
+          processorBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder mergeProcessor(org.yamcs.protobuf.YamcsManagement.ProcessorInfo value) {
+        if (processorBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              processor_ != org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance()) {
+            processor_ =
+              org.yamcs.protobuf.YamcsManagement.ProcessorInfo.newBuilder(processor_).mergeFrom(value).buildPartial();
+          } else {
+            processor_ = value;
+          }
+          onChanged();
+        } else {
+          processorBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public Builder clearProcessor() {
+        if (processorBuilder_ == null) {
+          processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+          onChanged();
+        } else {
+          processorBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder getProcessorBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getProcessorFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorOrBuilder() {
+        if (processorBuilder_ != null) {
+          return processorBuilder_.getMessageOrBuilder();
+        } else {
+          return processor_;
+        }
+      }
+      /**
+       * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> 
+          getProcessorFieldBuilder() {
+        if (processorBuilder_ == null) {
+          processorBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder>(
+                  getProcessor(),
+                  getParentForChildren(),
+                  isClean());
+          processor_ = null;
+        }
+        return processorBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:web.ProcessorSubscriptionResponse)
+    }
+
+    static {
+      defaultInstance = new ProcessorSubscriptionResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:web.ProcessorSubscriptionResponse)
+  }
+
   public interface ConnectionInfoOrBuilder extends
       // @@protoc_insertion_point(interface_extends:web.ConnectionInfo)
       com.google.protobuf.MessageOrBuilder {
@@ -14182,6 +15730,16 @@ public final class Web {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_LinkSubscriptionRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_web_ProcessorSubscriptionRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_web_ProcessorSubscriptionRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_web_ManagementSubscriptionRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_web_ManagementSubscriptionRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ParameterSubscriptionRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -14196,6 +15754,11 @@ public final class Web {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_TimeSubscriptionResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_web_ProcessorSubscriptionResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_web_ProcessorSubscriptionResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ConnectionInfo_descriptor;
   private static
@@ -14263,25 +15826,31 @@ public final class Web {
       "ketExtensionData\022\014\n\004type\030\001 \001(\r\022\014\n\004data\030\002" +
       " \001(\014\"8\n\024RestExceptionMessage\022\014\n\004type\030\001 \001" +
       "(\t\022\013\n\003msg\030\002 \001(\t*\005\010d\020\311\001\"+\n\027LinkSubscripti" +
-      "onRequest\022\020\n\010instance\030\001 \001(\t\"\314\001\n\034Paramete" +
-      "rSubscriptionRequest\022 \n\002id\030\001 \003(\0132\024.yamcs" +
-      ".NamedObjectId\022\026\n\016abortOnInvalid\030\002 \001(\010\022\032" +
-      "\n\022updateOnExpiration\030\003 \001(\010\022\025\n\rsendFromCa" +
-      "che\030\004 \001(\010\022\026\n\016subscriptionId\030\005 \001(\005\022\'\n\004lis" +
-      "t\030\220N \003(\0132\024.yamcs.NamedObjectIdB\002\030\001\"^\n\035Pa" +
-      "rameterSubscriptionResponse\022%\n\007invalid\030\002",
-      " \003(\0132\024.yamcs.NamedObjectId\022\026\n\016subscripti" +
-      "onId\030\003 \001(\005\"=\n\030TimeSubscriptionResponse\022!" +
-      "\n\010timeInfo\030\001 \001(\0132\017.yamcs.TimeInfo\"\207\001\n\016Co" +
-      "nnectionInfo\022\020\n\010clientId\030\001 \001(\005\0220\n\010instan" +
-      "ce\030\002 \001(\0132\036.yamcsManagement.YamcsInstance" +
-      "\0221\n\tprocessor\030\003 \001(\0132\036.yamcsManagement.Pr" +
-      "ocessorInfo\")\n\010AuthInfo\022\035\n\025requireAuthen" +
-      "tication\030\001 \001(\010\"|\n\023AccessTokenResponse\022\024\n" +
-      "\014access_token\030\001 \001(\t\022\022\n\ntoken_type\030\002 \001(\t\022" +
-      "\022\n\nexpires_in\030\003 \001(\005\022\'\n\004user\030\004 \001(\0132\031.yamc",
-      "sManagement.UserInfoB\024\n\022org.yamcs.protob" +
-      "uf"
+      "onRequest\022\020\n\010instance\030\001 \001(\t\"K\n\034Processor" +
+      "SubscriptionRequest\022\025\n\rallProcessors\030\001 \001" +
+      "(\010\022\024\n\014allInstances\030\002 \001(\010\"g\n\035ManagementSu" +
+      "bscriptionRequest\022\022\n\nclientInfo\030\001 \001(\010\022\025\n" +
+      "\rprocessorInfo\030\002 \001(\010\022\033\n\023processorStatist" +
+      "ics\030\003 \001(\010\"\314\001\n\034ParameterSubscriptionReque" +
+      "st\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObjectId\022\026\n\016",
+      "abortOnInvalid\030\002 \001(\010\022\032\n\022updateOnExpirati" +
+      "on\030\003 \001(\010\022\025\n\rsendFromCache\030\004 \001(\010\022\026\n\016subsc" +
+      "riptionId\030\005 \001(\005\022\'\n\004list\030\220N \003(\0132\024.yamcs.N" +
+      "amedObjectIdB\002\030\001\"^\n\035ParameterSubscriptio" +
+      "nResponse\022%\n\007invalid\030\002 \003(\0132\024.yamcs.Named" +
+      "ObjectId\022\026\n\016subscriptionId\030\003 \001(\005\"=\n\030Time" +
+      "SubscriptionResponse\022!\n\010timeInfo\030\001 \001(\0132\017" +
+      ".yamcs.TimeInfo\"R\n\035ProcessorSubscription" +
+      "Response\0221\n\tprocessor\030\001 \001(\0132\036.yamcsManag" +
+      "ement.ProcessorInfo\"\207\001\n\016ConnectionInfo\022\020",
+      "\n\010clientId\030\001 \001(\005\0220\n\010instance\030\002 \001(\0132\036.yam" +
+      "csManagement.YamcsInstance\0221\n\tprocessor\030" +
+      "\003 \001(\0132\036.yamcsManagement.ProcessorInfo\")\n" +
+      "\010AuthInfo\022\035\n\025requireAuthentication\030\001 \001(\010" +
+      "\"|\n\023AccessTokenResponse\022\024\n\014access_token\030" +
+      "\001 \001(\t\022\022\n\ntoken_type\030\002 \001(\t\022\022\n\nexpires_in\030" +
+      "\003 \001(\005\022\'\n\004user\030\004 \001(\0132\031.yamcsManagement.Us" +
+      "erInfoB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -14349,38 +15918,56 @@ public final class Web {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_LinkSubscriptionRequest_descriptor,
         new java.lang.String[] { "Instance", });
-    internal_static_web_ParameterSubscriptionRequest_descriptor =
+    internal_static_web_ProcessorSubscriptionRequest_descriptor =
       getDescriptor().getMessageTypes().get(5);
+    internal_static_web_ProcessorSubscriptionRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_ProcessorSubscriptionRequest_descriptor,
+        new java.lang.String[] { "AllProcessors", "AllInstances", });
+    internal_static_web_ManagementSubscriptionRequest_descriptor =
+      getDescriptor().getMessageTypes().get(6);
+    internal_static_web_ManagementSubscriptionRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_ManagementSubscriptionRequest_descriptor,
+        new java.lang.String[] { "ClientInfo", "ProcessorInfo", "ProcessorStatistics", });
+    internal_static_web_ParameterSubscriptionRequest_descriptor =
+      getDescriptor().getMessageTypes().get(7);
     internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_ParameterSubscriptionRequest_descriptor,
         new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "SubscriptionId", "List", });
     internal_static_web_ParameterSubscriptionResponse_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(8);
     internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_ParameterSubscriptionResponse_descriptor,
         new java.lang.String[] { "Invalid", "SubscriptionId", });
     internal_static_web_TimeSubscriptionResponse_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(9);
     internal_static_web_TimeSubscriptionResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_TimeSubscriptionResponse_descriptor,
         new java.lang.String[] { "TimeInfo", });
+    internal_static_web_ProcessorSubscriptionResponse_descriptor =
+      getDescriptor().getMessageTypes().get(10);
+    internal_static_web_ProcessorSubscriptionResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_ProcessorSubscriptionResponse_descriptor,
+        new java.lang.String[] { "Processor", });
     internal_static_web_ConnectionInfo_descriptor =
-      getDescriptor().getMessageTypes().get(8);
+      getDescriptor().getMessageTypes().get(11);
     internal_static_web_ConnectionInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_ConnectionInfo_descriptor,
         new java.lang.String[] { "ClientId", "Instance", "Processor", });
     internal_static_web_AuthInfo_descriptor =
-      getDescriptor().getMessageTypes().get(9);
+      getDescriptor().getMessageTypes().get(12);
     internal_static_web_AuthInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_AuthInfo_descriptor,
         new java.lang.String[] { "RequireAuthentication", });
     internal_static_web_AccessTokenResponse_descriptor =
-      getDescriptor().getMessageTypes().get(10);
+      getDescriptor().getMessageTypes().get(13);
     internal_static_web_AccessTokenResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_web_AccessTokenResponse_descriptor,

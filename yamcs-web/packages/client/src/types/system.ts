@@ -102,7 +102,13 @@ export interface Processor {
   replay: boolean;
 }
 
+export interface ProcessorSubscriptionRequest {
+  allProcessors?: boolean;
+  allInstances?: boolean;
+}
+
 export interface ProcessorSubscriptionResponse {
+  processor: Processor;
   processor$: Observable<Processor>;
 }
 

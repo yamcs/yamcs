@@ -230,7 +230,7 @@ export class InstanceClient {
 
   async getProcessorUpdates() {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getProcessorUpdates(this.instance)
+    return this.webSocketClient.getProcessorUpdates()
   }
 
   async getProcessorStatistics() {
