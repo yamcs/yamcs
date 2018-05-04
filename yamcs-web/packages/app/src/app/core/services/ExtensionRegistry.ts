@@ -1,7 +1,9 @@
 import { Injectable, Type } from '@angular/core';
 import { PageContent } from './PageContent';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class ExtensionRegistry {
 
   private pageContentComponents: { [id: string]: Type<PageContent> } = {};

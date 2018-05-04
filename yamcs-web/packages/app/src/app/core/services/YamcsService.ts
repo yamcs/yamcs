@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
-import { YamcsClient, InstanceClient, Instance, TimeInfo, ConnectionInfo, Processor } from '@yamcs/client';
-import { BehaviorSubject ,  Subscription } from 'rxjs';
+import { ConnectionInfo, Instance, InstanceClient, Processor, TimeInfo, YamcsClient } from '@yamcs/client';
+import { BehaviorSubject, Subscription } from 'rxjs';
 
 
 /**
  * Singleton service for facilitating working with a websocket connection
  * to a specific instance.
  */
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class YamcsService {
 
   readonly yamcsClient = new YamcsClient();
