@@ -2,40 +2,41 @@
   <app-system-toolbar>Clients</app-system-toolbar>
 
   <div class="panel-content">
-    <mat-table [dataSource]="dataSource"
-               class="ya-data-table"
-               matSort
-               matSortActive="id"
-               matSortDirection="asc"
-               matSortDisableClear>
+    <table mat-table
+           [dataSource]="dataSource"
+           class="ya-data-table"
+           matSort
+           matSortActive="id"
+           matSortDirection="asc"
+           matSortDisableClear>
 
       <ng-container matColumnDef="id">
-        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="100px">Id</mat-header-cell>
-        <mat-cell *matCellDef="let client" fxFlex="100px">{{ client.id }}</mat-cell>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header width="100">Id</th>
+        <td mat-cell *matCellDef="let client">{{ client.id }}</td>
       </ng-container>
 
       <ng-container matColumnDef="username">
-        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="100px">User</mat-header-cell>
-        <mat-cell *matCellDef="let client" fxFlex="100px">{{ client.username }}</mat-cell>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header width="100">User</th>
+        <td mat-cell *matCellDef="let client">{{ client.username }}</td>
       </ng-container>
 
       <ng-container matColumnDef="applicationName">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>Application</mat-header-cell>
-        <mat-cell *matCellDef="let client">{{ client.applicationName }}</mat-cell>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Application</th>
+        <td mat-cell *matCellDef="let client">{{ client.applicationName }}</td>
       </ng-container>
 
       <ng-container matColumnDef="processorName">
-        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="150px">Processor</mat-header-cell>
-        <mat-cell *matCellDef="let client" fxFlex="150px">{{ client.processorName }}</mat-cell>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header width="150">Processor</th>
+        <td mat-cell *matCellDef="let client">{{ client.processorName }}</td>
       </ng-container>
 
       <ng-container matColumnDef="loginTime">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>Login Time</mat-header-cell>
-        <mat-cell *matCellDef="let client">{{ client.loginTimeUTC | datetime }}</mat-cell>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header width="160">Login Time</th>
+        <td mat-cell *matCellDef="let client">{{ client.loginTimeUTC | datetime }}</td>
       </ng-container>
 
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-    </mat-table>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
   </div>
 </app-system-page>

@@ -67,19 +67,15 @@ body {
   padding: 24px;
 }
 
-.ya-data-table mat-header-row {
-  min-height: 0;
+.ya-data-table tr.mat-row {
+  height: auto;
 }
 
-.ya-data-table mat-row:hover {
+.ya-data-table tr.mat-row:hover {
   background: #fafafa;
 }
 
-.ya-data-table mat-row {
-  min-height: 0;
-}
-
-.ya-data-table mat-cell {
+.ya-data-table td.mat-cell, .ya-data-table th.mat-cell {
   font-size: 12px;
   line-height: 16px;
   color: rgba(0, 0, 0, .654);
@@ -102,7 +98,7 @@ body {
   text-decoration: none;
 }
 
-.ya-data-table mat-row:hover a {
+.ya-data-table .mat-row:hover a {
   text-decoration: underline;
 }
 

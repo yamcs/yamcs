@@ -4,26 +4,28 @@
            style="width: 400px"
            (keyup)="applyFilter($event.target.value)">
   </div>
-  <mat-table [dataSource]="dataSource"
-             class="ya-data-table"
-             matSort
-             matSortActive="name"
-             matSortDirection="asc"
-             matSortDisableClear>
+  <table mat-table
+         [dataSource]="dataSource"
+         class="ya-data-table"
+         style="width: 100%"
+         matSort
+         matSortActive="name"
+         matSortDirection="asc"
+         matSortDisableClear>
 
     <ng-container cdkColumnDef="name">
-      <mat-header-cell *cdkHeaderCellDef mat-sort-header>Instance</mat-header-cell>
-      <mat-cell *cdkCellDef="let row">
+      <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Instance</th>
+      <td mat-cell *cdkCellDef="let row">
         <a routerLink="/monitor"
             [queryParams]="{instance: row.name}">
           {{ row.name }}
         </a>
-      </mat-cell>
+      </td>
     </ng-container>
 
-    <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *cdkRowDef="let row; columns: displayedColumns;"></mat-row>
-  </mat-table>
+    <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
 
   <mat-paginator [pageSize]="100"
                  [hidePageSize]="true"

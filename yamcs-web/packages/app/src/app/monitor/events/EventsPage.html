@@ -108,66 +108,66 @@
       </span>
     </div>
 
-    <mat-table [dataSource]="dataSource" class="ya-data-table">
+    <table mat-table [dataSource]="dataSource" class="ya-data-table" style="width: 100%">
       <ng-container cdkColumnDef="severity">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="50px"></mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="50px">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 50px"></th>
+        <td mat-cell *cdkCellDef="let row">
           <app-event-severity [severity]="row.severity"></app-event-severity>
-        </mat-cell>
+        </td>
       </ng-container>
 
       <ng-container cdkColumnDef="message">
-        <mat-header-cell *cdkHeaderCellDef>Message</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" style="white-space: pre">{{ row.message || '-' }}</mat-cell>
+        <th mat-header-cell *cdkHeaderCellDef>Message</th>
+        <td mat-cell *cdkCellDef="let row" style="white-space: pre">{{ row.message || '-' }}</td>
       </ng-container>
 
       <ng-container cdkColumnDef="type">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="150px">Type</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="150px">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 150px">Type</th>
+        <td mat-cell *cdkCellDef="let row">
           {{ row.type || '-' }}
-        </mat-cell>
+        </td>
       </ng-container>
 
       <ng-container cdkColumnDef="source">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="150px">Source</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="150px">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 150px">Source</th>
+        <td mat-cell *cdkCellDef="let row">
           {{ row.source || '-' }}
-        </mat-cell>
+        </td>
       </ng-container>
 
       <ng-container cdkColumnDef="gentime">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="200px">Generation Time</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="200px">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation Time</th>
+        <td mat-cell *cdkCellDef="let row">
           {{ (row.generationTimeUTC | datetime) || '-' }}
-        </mat-cell>
+        </td>
       </ng-container>
 
       <ng-container cdkColumnDef="rectime">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="200px">Reception Time</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="200px">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Reception Time</th>
+        <td mat-cell *cdkCellDef="let row">
           {{ (row.receptionTimeUTC | datetime) || '-' }}
-        </mat-cell>
+        </td>
       </ng-container>
 
       <ng-container cdkColumnDef="seqNumber">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="100px">Sequence Number</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="100px">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 100px">Sequence Number</th>
+        <td mat-cell *cdkCellDef="let row">
           {{ row.seqNumber || '-' }}
-        </mat-cell>
+        </td>
       </ng-container>
 
       <ng-container *ngFor="let extraColumn of extraColumns" [cdkColumnDef]="extraColumn.id">
-        <mat-header-cell *cdkHeaderCellDef [fxFlex]="extraColumn.width || '200px'">{{ extraColumn.label }}</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" [fxFlex]="extraColumn.width || '200px'">
+        <th mat-header-cell *cdkHeaderCellDef [style.width]="extraColumn.width || '200px'">{{ extraColumn.label }}</th>
+        <td mat-cell *cdkCellDef="let row">
           {{ row[extraColumn.id] || '-' }}
-        </mat-cell>
+        </td>
       </ng-container>
 
-      <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *cdkRowDef="let row; columns: displayedColumns;"
+      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"
                [@rowAnimation]="row.animate"
-               [ngClass]="row.severity"></mat-row>
-    </mat-table>
+               [ngClass]="row.severity"></tr>
+    </table>
 
     <mat-toolbar>
       <span style="flex: 1 1 auto"></span>
