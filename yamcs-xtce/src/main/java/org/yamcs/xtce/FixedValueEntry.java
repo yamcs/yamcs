@@ -15,18 +15,31 @@ public class FixedValueEntry extends SequenceEntry {
     // An optional name, this name cannot be NameReferenced and is only a form of documentation. 
     final String name;
 
-    //The fixed value
+    /**
+     * The fixed/constant value that should be encoded into the sequence. 
+     * This value provided should have sufficient bit length to accommodate the size in bits. 
+     * If the value is larger, the most significant unnecessary bits are dropped. 
+     * The value provided should be in network byte order for encoding.
+     **/
     final byte[] binaryValue;
+    
+    
     //the size in bits of the value - this should not be more than the length in bits of the binaryValue
     final int sizeInBits;
 
     public FixedValueEntry(String name, byte[] binaryValue, int sizeInBits) {
+        if(sizeInBits > binaryValue.length*8) {
+            throw new IllegalArgumentException("binaryValue has to have at least sizeInBits("+sizeInBits+") bits, instead of "+(binaryValue.length*8));
+        }
         this.name = name;
         this.binaryValue = binaryValue;
         this.sizeInBits = sizeInBits;
     }
     public FixedValueEntry(int position, CommandContainer container, int locationInContainerInBits, ReferenceLocationType location, String name, byte[] binaryValue, int sizeInBits) {
         super(position, container, locationInContainerInBits, location);
+        if(sizeInBits > binaryValue.length*8) {
+            throw new IllegalArgumentException("binaryValue has to have at least sizeInBits("+sizeInBits+") bits, instead of "+(binaryValue.length*8));
+        }
         this.name = name;
         this.binaryValue = binaryValue;
         this.sizeInBits = sizeInBits;

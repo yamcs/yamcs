@@ -144,7 +144,7 @@ public class BitBuffer {
     }
 
     /**
-     * put the least significant numBits from value into the buffer, increasing the possition with numBits
+     * put the least significant numBits from value into the buffer, increasing the position with numBits
      * 
      * @param value
      * @param numBits

@@ -286,41 +286,45 @@ public class XtceStaxReader {
         xmlEventReader = initEventReader(fileName);
         xmlEvent = null;
         SpaceSystem spaceSystem = null;
-        while (true) {
-            xmlEvent = xmlEventReader.nextEvent();
-            int eventType = xmlEvent.getEventType();
-            if (eventType == XMLStreamConstants.COMMENT) {
-                continue;
-            }
+        try {
+            while (true) {
+                xmlEvent = xmlEventReader.nextEvent();
+                int eventType = xmlEvent.getEventType();
+                if (eventType == XMLStreamConstants.COMMENT) {
+                    continue;
+                }
 
-            if (eventType == XMLStreamConstants.START_DOCUMENT) {
-                onStartDocument((StartDocument) xmlEvent);
-            } else if (eventType == XMLStreamConstants.START_ELEMENT) {
-                spaceSystem = readSpaceSystem();
-            } else if (eventType == XMLStreamConstants.END_DOCUMENT) {
-                onEndDocument();
-                break;
-            } else if (isStartElementWithName(XTCE_SPACE_SYSTEM)) {
-                SpaceSystem ss = readSpaceSystem();
-                spaceSystem.addSpaceSystem(ss);
-            } else {
-                // something went wrong, all options should be handled by the
-                // upper if-branches
-                // log.error("XML document parser error, unhandled event type."
-                // + XMLStreamConstants.CHARACTERS);
-                // throw new IllegalStateException();
-                log.error("Unhandled event: {} ", xmlEvent);
-            }
+                if (eventType == XMLStreamConstants.START_DOCUMENT) {
+                    onStartDocument((StartDocument) xmlEvent);
+                } else if (eventType == XMLStreamConstants.START_ELEMENT) {
+                    spaceSystem = readSpaceSystem();
+                } else if (eventType == XMLStreamConstants.END_DOCUMENT) {
+                    onEndDocument();
+                    break;
+                } else if (isStartElementWithName(XTCE_SPACE_SYSTEM)) {
+                    SpaceSystem ss = readSpaceSystem();
+                    spaceSystem.addSpaceSystem(ss);
+                } else {
+                    // something went wrong, all options should be handled by the
+                    // upper if-branches
+                    // log.error("XML document parser error, unhandled event type."
+                    // + XMLStreamConstants.CHARACTERS);
+                    // throw new IllegalStateException();
+                    log.error("Unhandled event: {} ", xmlEvent);
+                }
 
-            if (xmlEventReader.peek() == null) {
-                // assert false; document must be closed gracefully
-                this.xmlEvent = null;
-                this.xmlEventReader.close();
-                this.xmlEventReader = null;
-                throw new IllegalStateException("XML file parsing error");
+                if (xmlEventReader.peek() == null) {
+                    // assert false; document must be closed gracefully
+                    this.xmlEvent = null;
+                    this.xmlEventReader.close();
+                    this.xmlEventReader = null;
+                    throw new IllegalStateException("XML file parsing error");
+                }
             }
+            log.info("XTCE file parsing finished successfully");
+        } catch (IllegalArgumentException e) {
+            throw new XMLStreamException(e.getMessage(), xmlEvent.getLocation());
         }
-        log.info("XTCE file parsing finished successfully");
         return spaceSystem;
     }
 
@@ -580,13 +584,13 @@ public class XtceStaxReader {
     }
 
     private ParameterType readXtceAggregateParameterType() throws IllegalStateException,
-            XMLStreamException {
+    XMLStreamException {
         skipXtceSection(XTCE_AggregateParameterType);
         return null;
     }
 
     private ParameterType readXtceArrayParameterType() throws IllegalStateException,
-            XMLStreamException {
+    XMLStreamException {
         skipXtceSection(XTCE_ArrayParameterType);
         return null;
     }
@@ -619,7 +623,7 @@ public class XtceStaxReader {
     }
 
     private ParameterType readXtceRelativeTimeParameterType() throws IllegalStateException,
-            XMLStreamException {
+    XMLStreamException {
         skipXtceSection(XTCE_RelativeTimeParameterType);
         return null;
     }
@@ -711,7 +715,7 @@ public class XtceStaxReader {
             int sizeInBits = Integer.parseInt(value);
             if (sizeInBits != 32 && sizeInBits != 64) {
                 throw new XMLStreamException("Float encoding " + sizeInBits + " not supported;"
-                                + " Only 32 and 64 bits are supported", xmlEvent.getLocation());
+                        + " Only 32 and 64 bits are supported", xmlEvent.getLocation());
             }
             floatParamType.setSizeInBits(sizeInBits);
         }
@@ -1113,7 +1117,7 @@ public class XtceStaxReader {
     }
 
     private IntegerDataEncoding readXtceIntegerDataEncoding(SpaceSystem spaceSystem) throws IllegalStateException,
-            XMLStreamException {
+    XMLStreamException {
         log.trace(XTCE_INTEGER_DATA_ENCODING);
         checkStartElementPreconditions();
 
@@ -1138,7 +1142,7 @@ public class XtceStaxReader {
             } else if ("twosComplement".equalsIgnoreCase(value)) {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
             } else if ("twosCompliment".equalsIgnoreCase(value)) { // this is for compatibility with CD-MCS/CGS SCOE XML
-                                                                   // exporter
+                // exporter
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.TWOS_COMPLEMENT);
             } else if ("onesComplement".equalsIgnoreCase(value)) {
                 integerDataEncoding.setEncoding(IntegerDataEncoding.Encoding.ONES_COMPLEMENT);
@@ -1240,9 +1244,9 @@ public class XtceStaxReader {
                 break;
             }
         }
-        
+
         if (algo!=null) {
-            
+
             TriggeredMathOperation trigMathOp = new TriggeredMathOperation(list);
             NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
                 algo.addOutput(new OutputParameter((Parameter) nd));
@@ -1259,7 +1263,7 @@ public class XtceStaxReader {
     private TriggerSetType readTriggerSet(SpaceSystem spaceSystem) throws XMLStreamException {
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
         TriggerSetType triggerSet = new TriggerSetType();
-        
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName("OnParameterUpdateTrigger")) {
@@ -1288,7 +1292,7 @@ public class XtceStaxReader {
         spaceSystem.addUnresolvedReference(nr);
         return trigger;
     }
-    
+
     private OnPeriodicRateTrigger readOnPeriodicRateTrigger(SpaceSystem spaceSystem) throws XMLStreamException {
         String value = null;
         value = readAttribute("fireRateInSeconds", xmlEvent.asStartElement());
@@ -1298,7 +1302,7 @@ public class XtceStaxReader {
         OnPeriodicRateTrigger trigger = new OnPeriodicRateTrigger((long)(1000*parseDouble(value)));
         return trigger;
     }
-    
+
 
     private double parseDouble(String value) throws XMLStreamException {
         try {
@@ -1610,7 +1614,7 @@ public class XtceStaxReader {
                 }
                 if (label == null) {
                     throw new XMLStreamException(fileName + ": error in In definition of " + enumParamType.getName()
-                            + "EnumerationAlarm: no enumerationLabel specified", xmlEvent.getLocation());
+                    + "EnumerationAlarm: no enumerationLabel specified", xmlEvent.getLocation());
                 }
                 if (!enumParamType.hasLabel(label)) {
                     throw new XMLStreamException("Reference to invalid enumeration label '" + label + "'");
@@ -1998,7 +2002,7 @@ public class XtceStaxReader {
         if (refName != null) {
             if (excludedContainers.contains(refName)) {
                 log.debug("adding " + seqContainer.getName()
-                        + " to the list of the excluded containers because its parent is excluded");
+                + " to the list of the excluded containers because its parent is excluded");
                 excludedContainers.add(seqContainer.getName());
             } else {
                 // find base container in the set of already defined containers
@@ -2793,7 +2797,7 @@ public class XtceStaxReader {
     private ArgumentAssignment readArgumentAssignment(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_ARGUMENT_ASSIGNMENT);
         checkStartElementPreconditions();
-        
+
         StartElement element = xmlEvent.asStartElement();
         String argumentName = readAttribute("argumentName", element);
         if(argumentName==null) {
@@ -2846,7 +2850,7 @@ public class XtceStaxReader {
 
         String initialValue = readAttribute("initialValue", element);
         arg.setInitialValue(initialValue);
-        
+
         String argumentTypeRef  = readAttribute("argumentTypeRef", element);
         if (argumentTypeRef != null) {
             ArgumentType ptype = spaceSystem.getArgumentType(argumentTypeRef);
@@ -3037,9 +3041,9 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
         StartElement startElement = xmlEvent.asStartElement();
         String tag = startElement.getName().getLocalPart();
-        
+
         String name = readAttribute("name", startElement);
-        
+
         CustomAlgorithm algo = new CustomAlgorithm(name);
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
@@ -3062,11 +3066,11 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
         StartElement startElement = xmlEvent.asStartElement();
         String tag = startElement.getName().getLocalPart();
-        
-        
+
+
         String language = readAttribute("language", startElement);
         algo.setLanguage(language);
-        
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (xmlEvent.isCharacters()) {
@@ -3081,8 +3085,8 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
         StartElement startElement = xmlEvent.asStartElement();
         String tag = startElement.getName().getLocalPart();
-        
-       List<InputParameter> result = new ArrayList<>();
+
+        List<InputParameter> result = new ArrayList<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -3119,8 +3123,8 @@ public class XtceStaxReader {
         checkStartElementPreconditions();
         StartElement startElement = xmlEvent.asStartElement();
         String tag = startElement.getName().getLocalPart();
-        
-       List<OutputParameter> result = new ArrayList<>();
+
+        List<OutputParameter> result = new ArrayList<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
@@ -3142,7 +3146,7 @@ public class XtceStaxReader {
 
         OutputParameter outp = new OutputParameter();
         outp.setOutputName(outputName);
-        
+
         NameReference nr = new UnresolvedNameReference(paramRef, Type.PARAMETER).addResolvedAction(nd -> {
             outp.setParameter((Parameter) nd);
             return true;

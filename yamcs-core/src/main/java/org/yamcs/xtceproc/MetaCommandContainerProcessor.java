@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.*;
 
 public class MetaCommandContainerProcessor {
@@ -131,7 +132,7 @@ public class MetaCommandContainerProcessor {
         if (fb > 0) {
             bitbuf.putBits(v[i++], fb);
         }
-        while (i < n) {
+        while (i < v.length) {
             bitbuf.putBits(v[i++], 8);
         }
     }
