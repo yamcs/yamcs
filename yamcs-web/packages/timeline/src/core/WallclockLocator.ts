@@ -1,7 +1,7 @@
-import { Ellipse, G, Line, Rect } from '../tags';
-import Timeline from '../Timeline';
-import RenderContext from '../RenderContext';
 import Plugin, { PluginOptions } from '../Plugin';
+import RenderContext from '../RenderContext';
+import Timeline from '../Timeline';
+import { Ellipse, G, Line, Rect } from '../tags';
 
 class LocalTimeProvider {
 
@@ -93,7 +93,6 @@ export default class WallclockLocator extends Plugin {
       this.wallclockLocatorLineEl.childNodes[0].setAttribute('x1', x);
       this.wallclockLocatorLineEl.childNodes[0].setAttribute('x2', x);
       this.wallclockLocatorLineEl.childNodes[1].setAttribute('cx', x);
-      this.wallclockLocatorLineEl.childNodes[2].setAttribute('cx', x);
     }
 
     if (this.wallclockLocatorPastEl) {
@@ -128,7 +127,7 @@ export default class WallclockLocator extends Plugin {
         x: xOffset + this.timeline.positionDate(this.timeline.loadStart),
         y: 0,
         width: Math.max(this.timeline.pointsBetween(this.timeline.loadStart, time), 0),
-        height: ctx.totalHeight,
+        height: '100%',
         fill: this.style.pastBackgroundColor,
         'fill-opacity': this.style.pastBackgroundOpacity,
         'pointer-events': 'none',
@@ -142,9 +141,9 @@ export default class WallclockLocator extends Plugin {
     }).addChild(
       new Line({
         x1: ctx.x + timeX,
-        y1: this.style.knobRadius,
+        y1: 0,
         x2: ctx.x + timeX,
-        y2: ctx.totalHeight - this.style.knobRadius,
+        y2: '100%',
         stroke: this.style.lineColor,
         'stroke-width': this.style.lineWidth,
         'stroke-opacity': this.style.lineOpacity,
@@ -154,14 +153,6 @@ export default class WallclockLocator extends Plugin {
       new Ellipse({
         cx: ctx.x + timeX,
         cy: 0,
-        rx: this.style.knobRadius,
-        ry: this.style.knobRadius,
-        fill: this.style.lineColor,
-        'pointer-events': 'none',
-      }),
-      new Ellipse({
-        cx: ctx.x + timeX,
-        cy: ctx.totalHeight,
         rx: this.style.knobRadius,
         ry: this.style.knobRadius,
         fill: this.style.lineColor,

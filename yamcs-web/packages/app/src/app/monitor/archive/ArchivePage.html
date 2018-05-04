@@ -1,21 +1,7 @@
-<app-monitor-page>
+<app-monitor-page noscroll="true">
   <app-monitor-toolbar>
     TM Archive
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <button mat-button
-            color="primary"
-            (click)="zoomIn()">
-      <mat-icon>zoom_in</mat-icon>
-      ZOOM IN
-    </button>
-
-    <button mat-button
-            color="primary"
-            (click)="zoomOut()">
-      <mat-icon>zoom_out</mat-icon>
-      ZOOM OUT
-    </button>
-
     <button mat-button
             color="primary"
             (click)="replayRange()"
@@ -40,6 +26,17 @@
     <button class="ya-button" (click)="jumpTo()">Jump to...</button>
   </div>
 
-  <div #container style="line-height: 0; border-top: 1px solid #d1d5da">
+  <div #container class="timeline-container">
+  </div>
+  <div class="zoom-actions">
+    <div class="zoom-actions-inner mat-elevation-z1">
+      <button mat-button (click)="zoomIn()">
+        <mat-icon>add</mat-icon>
+      </button>
+      <span class="separator"></span>
+      <button mat-button (click)="zoomOut()">
+        <mat-icon>remove</mat-icon>
+      </button>
+    </div>
   </div>
 </app-monitor-page>

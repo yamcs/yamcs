@@ -1,8 +1,8 @@
 import Plugin from '../Plugin';
+import { Range } from '../Range';
 import RenderContext from '../RenderContext';
 import Timeline from '../Timeline';
 import { G, Line, Rect } from '../tags';
-import { Range } from '../Range';
 
 /**
  * Highlights horizontal range selections
@@ -42,7 +42,7 @@ export default class HorizontalSelection extends Plugin {
       x: ctx.x,
       y: 0,
       width: 0,
-      height: ctx.totalHeight,
+      height: '100%',
       fill: this.style.backgroundColor,
       'fill-opacity': this.style.backgroundOpacity,
       'pointer-events': 'none',
@@ -51,7 +51,7 @@ export default class HorizontalSelection extends Plugin {
       x1: ctx.x,
       y1: 0,
       x2: 0,
-      y2: ctx.totalHeight,
+      y2: '100%',
       stroke: this.style.lineColor,
       'stroke-dasharray': '4 3',
       'stroke-opacity': this.style.lineOpacity,
@@ -61,7 +61,7 @@ export default class HorizontalSelection extends Plugin {
       x1: ctx.x,
       y1: 0,
       x2: 0,
-      y2: ctx.totalHeight,
+      y2: '100%',
       stroke: this.style.lineColor,
       'stroke-opacity': this.style.lineOpacity,
       'stroke-dasharray': '4 3',

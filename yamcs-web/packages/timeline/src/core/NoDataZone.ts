@@ -1,6 +1,6 @@
-import { G, Rect } from '../tags';
-import RenderContext from '../RenderContext';
 import Plugin from '../Plugin';
+import RenderContext from '../RenderContext';
+import { G, Rect } from '../tags';
 
 /**
  * Highlights the horizontal time ranges where no data is available.
@@ -29,7 +29,7 @@ export default class NoDataZone extends Plugin {
       x: ctx.x + this.timeline.positionDate(this.timeline.loadStop),
       y: 0,
       width: 15000,
-      height: ctx.totalHeight,
+      height: '100%',
       fill: this.style.backgroundColor,
       'pointer-events': 'none',
     }));
@@ -37,7 +37,7 @@ export default class NoDataZone extends Plugin {
       x: ctx.x + this.timeline.positionDate(this.timeline.loadStop),
       y: 0,
       width: 15000,
-      height: ctx.totalHeight,
+      height: '100%',
       fill: `url(#${this.style.backgroundFilter})`,
       'pointer-events': 'none',
     }));
@@ -45,7 +45,7 @@ export default class NoDataZone extends Plugin {
       x: ctx.x + this.timeline.positionDate(this.timeline.loadStart) - 15000,
       y: 0,
       width: 15000,
-      height: ctx.totalHeight,
+      height: '100%',
       fill: this.style.backgroundColor,
       'pointer-events': 'none',
     }));
@@ -53,7 +53,7 @@ export default class NoDataZone extends Plugin {
       x: ctx.x + this.timeline.positionDate(this.timeline.loadStart) - 15000,
       y: 0,
       width: 15000,
-      height: ctx.totalHeight,
+      height: '100%',
       fill: `url(#${this.style.backgroundFilter})`,
       'pointer-events': 'none',
     }));

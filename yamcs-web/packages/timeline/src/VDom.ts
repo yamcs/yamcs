@@ -1,7 +1,7 @@
-import { Defs, G, Rect, Svg, Tag } from './tags';
-import Timeline from './Timeline';
 import Point from './Point';
 import RenderContext, { PanMode, RenderSection } from './RenderContext';
+import Timeline from './Timeline';
+import { Defs, G, Rect, Svg, Tag } from './tags';
 
 /**
  * Top-level object for a generic (empty) Timeline. The Timeline is split
@@ -61,7 +61,7 @@ export default class VDom {
     this.rootEl = new Svg({
       width: '100%',
       height: '100%',
-      style: 'width: 100%; overflow: hidden', // height is set during rebuild()
+      style: 'width: 100%; height: 100%; overflow: hidden',
       'font-family': style['fontFamily'],
     }).toDomElement() as SVGSVGElement;
 
@@ -230,8 +230,6 @@ export default class VDom {
     }
 
     // Adjust fixed elements to new reality
-    this.rootEl.style.setProperty('height', ctx.totalHeight + 'px');
-
     this.headerViewportSvgWrapperEl.setAttribute('x', String(this.style['sidebarWidth']));
 
     this.bodyViewportSvgWrapperEl.setAttribute('x', String(this.style['sidebarWidth']));

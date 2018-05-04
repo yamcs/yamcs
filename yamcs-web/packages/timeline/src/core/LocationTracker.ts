@@ -1,8 +1,8 @@
-import { G, Ellipse, Line } from '../tags';
+import Plugin from '../Plugin';
+import RenderContext from '../RenderContext';
 import Timeline from '../Timeline';
 import { ViewportHoverEvent } from '../events';
-import RenderContext from '../RenderContext';
-import Plugin from '../Plugin';
+import { Ellipse, G, Line } from '../tags';
 
 /**
  * Mouse tracker for non-mobile devices.
@@ -26,7 +26,7 @@ export default class LocationTracker extends Plugin {
     };
   }
 
-  private trackerId: string = Timeline.nextId();
+  private trackerId = Timeline.nextId();
   private hoverListener: ((event: ViewportHoverEvent) => any);
 
   renderViewportXOverlay(ctx: RenderContext) {
@@ -36,9 +36,9 @@ export default class LocationTracker extends Plugin {
     }).addChild(
       new Line({
         x1: ctx.x - this.style.knobRadius,
-        y1: this.style.knobRadius,
+        y1: 0,
         x2: 0,
-        y2: ctx.totalHeight - this.style.knobRadius,
+        y2: '100%',
         stroke: this.style.lineColor,
         'stroke-width': this.style.lineWidth,
         'stroke-opacity': this.style.lineOpacity,
@@ -48,14 +48,6 @@ export default class LocationTracker extends Plugin {
       new Ellipse({
         cx: ctx.x - this.style.knobRadius,
         cy: 0,
-        rx: this.style.knobRadius,
-        ry: this.style.knobRadius,
-        fill: this.style.lineColor,
-        'pointer-events': 'none',
-      }),
-      new Ellipse({
-        cx: ctx.x - this.style.knobRadius,
-        cy: ctx.totalHeight,
         rx: this.style.knobRadius,
         ry: this.style.knobRadius,
         fill: this.style.lineColor,
@@ -77,7 +69,6 @@ export default class LocationTracker extends Plugin {
         locationTrackerEl.childNodes[0].setAttribute('x1', x);
         locationTrackerEl.childNodes[0].setAttribute('x2', x);
         locationTrackerEl.childNodes[1].setAttribute('cx', x);
-        locationTrackerEl.childNodes[2].setAttribute('cx', x);
         locationTrackerEl.style.visibility = 'visible';
       } else {
         locationTrackerEl.style.visibility = 'hidden';

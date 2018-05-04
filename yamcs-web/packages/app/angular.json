@@ -85,11 +85,6 @@
           }
         }
       }
-    },
-    "yamcs-web-e2e": {
-      "root": "",
-      "sourceRoot": "",
-      "projectType": "application"
     }
   },
   "defaultProject": "yamcs-web",

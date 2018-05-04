@@ -3,3 +3,32 @@
   /*background-color: red;*/
   /*display: none;*/
 }
+
+.timeline-container {
+  line-height: 0;
+  border-top: 1px solid #d1d5da;
+  position: absolute;
+  top: 36px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.zoom-actions {
+  position: absolute;
+  bottom: 35px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.zoom-actions-inner {
+  display: inline-block;
+  background-color: #fafafa;
+}
+
+.zoom-actions .mat-button {
+  line-height: inherit;
+  min-width: 0;
+}
