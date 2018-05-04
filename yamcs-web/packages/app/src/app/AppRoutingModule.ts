@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes, PreloadAllModules } from '@angular/router';
-import { NotFoundPage } from './core/pages/NotFoundPage';
-import { HomePage } from './core/pages/HomePage';
-import { ProfilePage } from './core/pages/ProfilePage';
+import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/AuthGuard';
-import { LoginPage } from './core/pages/LoginPage';
-import { ForbiddenPage } from './core/pages/ForbiddenPage';
 import { UnselectInstanceGuard } from './core/guards/UnselectInstanceGuard';
+import { ForbiddenPage } from './core/pages/ForbiddenPage';
+import { HomePage } from './core/pages/HomePage';
+import { LoginPage } from './core/pages/LoginPage';
+import { NotFoundPage } from './core/pages/NotFoundPage';
+import { ProfilePage } from './core/pages/ProfilePage';
 
 /*
  * Notes that the nested modules also have AuthGuards.
@@ -25,17 +25,17 @@ const routes: Routes = [
       },
       {
         path: 'monitor',
-        loadChildren: 'app/monitor/MonitorModule#MonitorModule',
+        loadChildren: 'src/app/monitor/MonitorModule#MonitorModule',
         canActivate: [AuthGuard],
       },
       {
         path: 'mdb',
-        loadChildren: 'app/mdb/MdbModule#MdbModule',
+        loadChildren: 'src/app/mdb/MdbModule#MdbModule',
         canActivate: [AuthGuard],
       },
       {
         path: 'system',
-        loadChildren: 'app/system/SystemModule#SystemModule',
+        loadChildren: 'src/app/system/SystemModule#SystemModule',
         canActivate: [AuthGuard],
       },
       {

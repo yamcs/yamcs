@@ -3,11 +3,9 @@ import { UserInfo, ConnectionInfo } from '@yamcs/client';
 import { YamcsService } from '../services/YamcsService';
 import { MatDialog } from '@angular/material';
 import { SelectInstanceDialog } from '../../shared/template/SelectInstanceDialog';
-import { Observable } from 'rxjs/Observable';
+import { Observable ,  BehaviorSubject ,  Subscription } from 'rxjs';
 import { PreferenceStore } from '../services/PreferenceStore';
 import { AuthService } from '../services/AuthService';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-root',

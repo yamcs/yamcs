@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { YamcsClient, InstanceClient, Instance, TimeInfo, ConnectionInfo, Processor } from '@yamcs/client';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Subscription } from 'rxjs/Subscription';
+import { BehaviorSubject ,  Subscription } from 'rxjs';
 
 
 /**

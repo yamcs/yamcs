@@ -4,7 +4,7 @@ import { Alarm, Instance } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { AlarmsDataSource } from './AlarmsDataSource';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 
 @Component({

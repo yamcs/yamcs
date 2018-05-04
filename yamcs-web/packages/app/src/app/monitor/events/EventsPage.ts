@@ -5,7 +5,7 @@ import { EventsDataSource } from './EventsDataSource';
 import { Title } from '@angular/platform-browser';
 import { GetEventsOptions, DownloadEventsOptions } from '@yamcs/client';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { subtractDuration } from '../../shared/utils';
 import { rowAnimation } from '../animations';

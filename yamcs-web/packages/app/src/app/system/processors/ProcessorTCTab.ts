@@ -5,8 +5,7 @@ import { CommandQueue } from '@yamcs/client';
 import { ActivatedRoute } from '@angular/router';
 
 import { YamcsService } from '../../core/services/YamcsService';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Subscription } from 'rxjs/Subscription';
+import { BehaviorSubject ,  Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './ProcessorTCTab.html',

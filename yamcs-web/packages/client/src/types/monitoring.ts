@@ -1,5 +1,5 @@
-import { AlarmRange, Parameter, NamedObjectId } from './mdb';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
+import { AlarmRange, NamedObjectId, Parameter } from './mdb';
 
 export interface Value {
   type: 'FLOAT'

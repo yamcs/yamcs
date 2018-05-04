@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { GetParameterValuesOptions, DownloadParameterValuesOptions } from '@yamcs/client';
 import { ActivatedRoute } from '@angular/router';
 import { YamcsService } from '../../core/services/YamcsService';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ParameterDataDataSource } from './ParameterDataDataSource';
 

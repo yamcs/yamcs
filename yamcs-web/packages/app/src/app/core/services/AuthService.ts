@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { YamcsService } from './YamcsService';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { AccessTokenResponse, UserInfo } from '@yamcs/client';
 import { Router } from '@angular/router';
 

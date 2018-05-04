@@ -5,7 +5,7 @@ import { Link, LinkEvent } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
 import { Title } from '@angular/platform-browser';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 
 @Component({

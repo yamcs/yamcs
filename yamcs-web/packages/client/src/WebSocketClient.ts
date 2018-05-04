@@ -1,9 +1,6 @@
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
-import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
-import { webSocket } from 'rxjs/observable/dom/webSocket';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { delay, filter, first, map, retryWhen, take } from 'rxjs/operators';
+import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
 import { SubscriptionModel } from './SubscriptionModel';
 import { WebSocketServerMessage } from './types/internal';
 import { Alarm, AlarmSubscriptionResponse, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
@@ -417,12 +414,12 @@ export class WebSocketClient {
   }
 
   private emit(payload: { [key: string]: any, data?: {} }) {
-    this.webSocket.next(JSON.stringify([
+    this.webSocket.next([
       PROTOCOL_VERSION,
       MESSAGE_TYPE_REQUEST,
       ++this.requestSequence,
       payload,
-    ]));
+    ]);
     return this.requestSequence
   }
 

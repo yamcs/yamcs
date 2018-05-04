@@ -4,10 +4,8 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { YamcsService } from '../../core/services/YamcsService';
-import { Observable } from 'rxjs/Observable';
+import { Observable ,  BehaviorSubject ,  Subscription } from 'rxjs';
 import { TimeInfo, ConnectionInfo, Processor } from '@yamcs/client';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-processor-info',

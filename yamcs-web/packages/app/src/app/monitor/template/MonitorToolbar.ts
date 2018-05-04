@@ -5,9 +5,8 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { StartReplayDialog } from './StartReplayDialog';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject ,  Subscription } from 'rxjs';
 import { Processor } from '@yamcs/client';
-import { Subscription } from 'rxjs/Subscription';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({

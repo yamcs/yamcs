@@ -1,17 +1,23 @@
 {
-	"folders": [
-		{
-			"path": "packages/app"
-		},
-		{
-			"path": "packages/client"
-		},
-		{
-			"path": "packages/displays"
-		},
-        {
-            "path": "packages/timeline"
-        }
-	],
-	"settings": {}
+  "folders": [
+    {
+      "path": "packages/app"
+    },
+    {
+      "path": "packages/client"
+    },
+    {
+      "path": "packages/displays"
+    },
+    {
+      "path": "packages/timeline"
+    }
+  ],
+  "settings": {
+    "[typescript]": {
+      "editor.codeActionsOnSave": {
+          "source.organizeImports": true
+      }
+    }
+  }
 }

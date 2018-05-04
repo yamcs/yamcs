@@ -20,6 +20,7 @@ import io.netty.buffer.ByteBuf;
 
 public class JsonDecoder implements WebSocketDecoder {
     private static final Logger log = LoggerFactory.getLogger(JsonDecoder.class);
+
     /**
      * Decodes the first few common wrapper fields of an incoming web socket message.<br>
      * Sample: [1,1,2,{"&lt;resource&gt;":"&lt;operation&gt;", "data": &lt;undecoded remainder&gt;}]
@@ -30,7 +31,11 @@ public class JsonDecoder implements WebSocketDecoder {
         int requestId = WSConstants.NO_REQUEST_ID;
         String json = binary.toString(StandardCharsets.UTF_8);
         try {
-            JsonArray arr = new JsonParser().parse(json).getAsJsonArray();
+            JsonElement el = new JsonParser().parse(json);
+            if (!el.isJsonArray()) {
+                throw new WebSocketException(requestId, "Not a JSON array: '" + json + "'");
+            }
+            JsonArray arr = el.getAsJsonArray();
 
             // PROTOCOL VERSION
             int version = arr.get(0).getAsInt();
@@ -73,7 +78,8 @@ public class JsonDecoder implements WebSocketDecoder {
                 throw new WebSocketException(requestId, "Missing subscription");
             }
 
-            WebSocketDecodeContext ctx = new WebSocketDecodeContext(version, messageType, requestId, resource, operation);
+            WebSocketDecodeContext ctx = new WebSocketDecodeContext(version, messageType, requestId, resource,
+                    operation);
             if (data != null) {
                 ctx.setData(data);
             }

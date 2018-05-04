@@ -1,10 +1,9 @@
 import { DySample } from './DySample';
 import { YamcsService } from '../../core/services/YamcsService';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject ,  Subscription } from 'rxjs';
 import { Sample, Alarm, ParameterValue } from '@yamcs/client';
 import { DyAnnotation } from './DyAnnotation';
 import { convertValueToNumber } from '../utils';
-import { Subscription } from 'rxjs/Subscription';
 import { PlotBuffer, DyValueRange, PlotData } from './PlotBuffer';
 
 /**

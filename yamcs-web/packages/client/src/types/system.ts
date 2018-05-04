@@ -1,5 +1,5 @@
+import { Observable } from 'rxjs';
 import { CommandId, Value } from './monitoring';
-import { Observable } from 'rxjs/Observable';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
