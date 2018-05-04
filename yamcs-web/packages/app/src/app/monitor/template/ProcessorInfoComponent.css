@@ -2,7 +2,16 @@
   position: absolute;
   right: 68px;
   top: 0;
-  padding-top: 8px;
-  font: 500 15px/22px Roboto, "Helvetica Neue", sans-serif;
+  font: 500 15px/64px Roboto, "Helvetica Neue", sans-serif;
   text-align: center;
+}
+
+.wrapper.line1 {
+  padding-top: 12px;
+  line-height: 22px;
+}
+
+.controls {
+  display: inline-block;
+  line-height: 0;
 }

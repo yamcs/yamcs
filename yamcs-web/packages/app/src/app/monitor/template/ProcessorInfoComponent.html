@@ -1,17 +1,30 @@
 <ng-container *ngIf="connectionInfo$ | async as connectionInfo; else noConnection">
-  <div class="wrapper">
-    <span class="time" *ngIf="timeInfo$ | async as timeInfo">
-      <span matTooltip="Processor">{{ connectionInfo.processor.name }}</span> /
-      <span matTooltip="Mission Time">{{ timeInfo.currentTimeUTC | datetime }}</span>
-      <br>
-      <span style="border: 1px solid #111">
-        <mat-icon>fast_rewind</mat-icon>
-        <mat-icon>pause</mat-icon>
-        <mat-icon>stop</mat-icon>
-        <mat-icon>fast_forward</mat-icon>
+  <ng-container *ngIf="processor$ | async as processor">
+    <div class="wrapper" [class.line1]="processor.replay">
+      <span class="time" *ngIf="timeInfo$ | async as timeInfo">
+        <span matTooltip="Processor">{{ connectionInfo.processor.name }}</span> /
+        <span matTooltip="Mission Time">{{ timeInfo.currentTimeUTC | datetime }}</span>
+        <br>
+        <ng-container *ngIf="processor$ | async as processor">
+          <div class="controls" *ngIf="processor.replay">
+            <app-text-action><mat-icon>fast_rewind</mat-icon></app-text-action>
+
+            <app-text-action *ngIf="processor.replayState === 'RUNNING'"
+                            (click)="pauseReplay()">
+              <mat-icon>pause</mat-icon>
+            </app-text-action>
+
+            <app-text-action *ngIf="processor.replayState === 'PAUSED'"
+                            (click)="resumeReplay()">
+              <mat-icon>play_arrow</mat-icon>
+            </app-text-action>
+
+            <app-text-action><mat-icon>fast_forward</mat-icon></app-text-action>
+          </div>
+        </ng-container>
       </span>
-    </span>
-  </div>
+    </div>
+  </ng-container>
 </ng-container>
 
 <ng-template #noConnection>

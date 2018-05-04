@@ -16,6 +16,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { MatDialog } from '@angular/material';
 import { DownloadDumpDialog } from './DownloadDumpDialog';
 import { StartReplayDialog } from '../template/StartReplayDialog';
+import { JumpToDialog } from './JumpToDialog';
 
 @Component({
   templateUrl: './ArchivePage.html',
@@ -37,6 +38,8 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
   private darkModeSubscription: Subscription;
 
   private timeInfoSubscription: Subscription;
+
+  private packetNames: string[] = [];
 
   constructor(
     title: Title,
@@ -89,11 +92,17 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    // Initialize only after a timeout, because otherwise
-    // we get the wrong width from the container. Not sure why
-    // but it reports 200px too much without the timeout. Possibly
-    // comes from the sidebar which has not fully initialized yet.
-    window.setTimeout(() => this.initializeTimeline());
+    // Fetch archive packets to ensure we can always show bands
+    // even if there's no data for the visible range
+    this.yamcs.getInstanceClient()!.getPacketNames().then(packetNames => {
+      this.packetNames = packetNames;
+
+      // Initialize only after a timeout, because otherwise
+      // we get the wrong width from the container. Not sure why
+      // but it reports 200px too much without the timeout. Possibly
+      // comes from the sidebar which has not fully initialized yet.
+      window.setTimeout(() => this.initializeTimeline());
+    });
   }
 
   initializeTimeline() {
@@ -164,23 +173,31 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       this.rangeSelection$.next(evt.range || null);
     });
 
-    this.timeline.on('loadRange', () => {
+    this.timeline.on('loadRange', evt => {
       this.yamcs.getInstanceClient()!.getPacketIndex({
+        start: evt.loadStart.toISOString(),
+        stop: evt.loadStop.toISOString(),
         limit: 1000,
       }).then(groups => {
         const bands = [];
-        for (const group of groups) {
-          const events: any[] = group.entry;
-          for (const event of events) {
-            event.milestone = false;
-            if (event.count > 1) {
-              const sec = (Date.parse(event.stop) - Date.parse(event.start)) / 1000;
-              event.title = `${(event.count / sec).toFixed(1)} Hz`;
+        for (const packetName of this.packetNames) {
+          let events: any[] = [];
+          for (const group of groups) {
+            if (group.id.name !== packetName) {
+              continue;
+            }
+            events = group.entry;
+            for (const event of events) {
+              event.milestone = false;
+              if (event.count > 1) {
+                const sec = (Date.parse(event.stop) - Date.parse(event.start)) / 1000;
+                event.title = `${(event.count / sec).toFixed(1)} Hz`;
+              }
             }
           }
           bands.push({
             type: 'EventBand',
-            label: group.id.name,
+            label: packetName,
             interactive: true,
             interactiveSidebar: false,
             style: {
@@ -188,12 +205,12 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
               marginTop: 8,
               marginBottom: 8,
             },
-            events: group.entry,
+            events,
           });
         }
         this.timeline.setData({
           header: [
-            { type: 'Timescale', label: 'UTC', tz: 'UTC', grabAction: 'select' },
+            { type: 'Timescale', label: '', tz: 'UTC', grabAction: 'select' },
           ],
           body: bands,
         });
@@ -208,12 +225,35 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     this.timeline.reveal(missionTime);
   }
 
+  jumpTo() {
+    const currentDate = this.timeline.visibleCenter;
+    const dialogRef = this.dialog.open(JumpToDialog, {
+      width: '400px',
+      data: {
+        date: currentDate,
+      },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.timeline.reveal(result.date);
+      }
+    });
+  }
+
   zoomIn() {
     this.timeline.zoomIn();
   }
 
   zoomOut() {
     this.timeline.zoomOut();
+  }
+
+  goBackward() {
+    this.timeline.goBackward();
+  }
+
+  goForward() {
+    this.timeline.goForward();
   }
 
   replayRange() {

@@ -75,6 +75,8 @@ export default class Timescale extends Band {
 
   scaleBgId: string;
 
+  grabX1?: Date;
+
   constructor(timeline: Timeline, protected opts: TimescaleOptions, protected style: TimescaleStyle) {
     super(timeline, opts, style);
 
@@ -594,8 +596,6 @@ export default class Timescale extends Band {
 
     return result;
   }
-
-  grabX1?: Date;
 
   onAction(id: string, action: Action) {
     super.onAction(id, action);

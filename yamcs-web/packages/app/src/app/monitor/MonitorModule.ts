@@ -14,10 +14,12 @@ import { CreateEventDialog } from './events/CreateEventDialog';
 import { TimelineTooltip } from './archive/TimelineTooltip';
 import { DownloadDumpDialog } from './archive/DownloadDumpDialog';
 import { StartReplayDialog } from './template/StartReplayDialog';
+import { JumpToDialog } from './archive/JumpToDialog';
 
 const dialogComponents = [
   CreateEventDialog,
   DownloadDumpDialog,
+  JumpToDialog,
   SaveLayoutDialog,
   StartReplayDialog,
 ];

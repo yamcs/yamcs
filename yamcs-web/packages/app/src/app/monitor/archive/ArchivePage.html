@@ -2,13 +2,6 @@
   <app-monitor-toolbar>
     TM Archive
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <button mat-icon-button
-            matTooltip="Jump to now"
-            color="primary"
-            (click)="jumpToNow()">
-      <mat-icon>refresh</mat-icon>
-    </button>
-
     <button mat-button
             color="primary"
             (click)="zoomIn()">
@@ -40,6 +33,13 @@
     </button>
   </app-monitor-toolbar>
 
-  <div #container style="line-height: 0">
+  <div style="height: 24px; margin: 6px">
+    <button class="ya-button" style="margin-right: 0;" (click)="goBackward()">&lt;</button>
+    <button class="ya-button" style="margin-left: 0; margin-right: 0;" (click)="jumpToNow()">Now</button>
+    <button class="ya-button" style="margin-left: 0" (click)="goForward()">&gt;</button>
+    <button class="ya-button" (click)="jumpTo()">Jump to...</button>
+  </div>
+
+  <div #container style="line-height: 0; border-top: 1px solid #d1d5da">
   </div>
 </app-monitor-page>

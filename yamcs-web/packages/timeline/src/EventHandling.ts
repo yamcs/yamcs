@@ -96,8 +96,11 @@ export default class EventHandling {
           clientY: event.clientY,
           grabbing: this.grabbing,
         });
+        return;
       }
     }
+
+    this.timeline.clearSelection();
   }
 
   private onContextMenu(event: any) {

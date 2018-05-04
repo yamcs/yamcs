@@ -154,16 +154,18 @@ export class InstanceClient {
     });
   }
 
-  async editReplayProcessor(options: EditReplayProcessorRequest) {
+  async editReplayProcessor(processor: string, options: EditReplayProcessorRequest) {
     const body = JSON.stringify(options);
-    return await this.yamcs.doFetch(`${this.yamcs.apiUrl}/processors/${this.instance}`, {
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processor}`;
+    return await this.yamcs.doFetch(url, {
       body,
       method: 'PATCH',
     });
   }
 
-  async deleteReplayProcessor() {
-    return await this.yamcs.doFetch(`${this.yamcs.apiUrl}/processors/${this.instance}`, {
+  async deleteReplayProcessor(processor: string) {
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processor}`;
+    return await this.yamcs.doFetch(url, {
       method: 'DELETE',
     });
   }

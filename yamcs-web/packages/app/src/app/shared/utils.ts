@@ -62,7 +62,8 @@ const adjectives = [
   'busy', 'calm', 'caring', 'chilly', 'cool', 'curious', 'dapper', 'dazzling', 'dizzy', 'eager',
   'elite', 'energetic', 'familiar', 'famous', 'fancy', 'fast', 'festive', 'flawless', 'fresh',
   'friendly', 'funny', 'furry', 'gifted', 'groovy', 'helpful', 'hungry', 'jolly', 'jumpy', 'lucky',
-  'quick', 'quiet', 'rapid', 'rare', 'scary', 'swift', 'tall', 'tame', 'tidy', 'tough', 'wacky', 'wild'];
+  'quick', 'quiet', 'rapid', 'rare', 'scary', 'swift', 'tall', 'tame', 'tidy', 'thirsty', 'tough',
+  'wacky', 'wild'];
 
 const animals = [
   'alligator', 'ant', 'anteater', 'antelope', 'armadillo', 'badger', 'bat', 'bear', 'bee',
