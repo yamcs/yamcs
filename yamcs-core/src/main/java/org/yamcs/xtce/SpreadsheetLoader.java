@@ -972,7 +972,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             // we mark the start of the command and advance to the next line, to get to the first argument (if there is
             // one)
-            int start = i++;
+            i++;
 
             // now, we start processing the parameters (or references to aggregate containers)
             boolean end = false;
@@ -1193,7 +1193,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             // it will be added also to all absolute offsets specified
             int extraOffset = -1;
             if (parent != null) {
-                int x = parent.indexOf(":");
+                int x = parent.indexOf(':');
                 if (x != -1) {
                     extraOffset = Integer.decode(parent.substring(x + 1));
                     parent = parent.substring(0, x);
@@ -1224,7 +1224,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
 
             // we mark the start of the CMD and advance to the next line, to get to the first argument (if there is one)
-            int start = i++;
+            i++;
 
             // now, we start processing the arguments
             boolean end = false;
@@ -1829,7 +1829,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 Cell dateCell = cells[IDX_LOG_DATE];
                 if (dateCell.getType() == CellType.DATE) {
                     Date dt = ((DateCell) dateCell).getDate();
-                    date = new SimpleDateFormat("dd-MMM-YYYY").format(dt);
+                    date = new SimpleDateFormat("dd-MMM-yyyy").format(dt);
                 } else {
                     date = cells[IDX_LOG_DATE].getContents();
                 }

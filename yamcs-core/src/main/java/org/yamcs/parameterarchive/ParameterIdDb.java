@@ -146,9 +146,10 @@ public class ParameterIdDb {
     }
 
     public void print(PrintStream out) {
-        for(String pname: p2pidCache.keySet()) {
+        for(Map.Entry<String, Map<Integer, Integer>> me: p2pidCache.entrySet()) {
+            String pname = me.getKey();
+            Map<Integer, Integer> m = me.getValue();
             out.println(pname+": ");
-            Map<Integer, Integer> m = p2pidCache.get(pname);
             for(Map.Entry<Integer, Integer> e: m.entrySet()) {
                 int parameterId = e.getValue();
                 int type = e.getKey();

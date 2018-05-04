@@ -2,6 +2,7 @@ package org.yamcs.utils;
 
 import org.yamcs.protobuf.Yamcs.Value.Type;
 
+import java.util.Arrays;
 import java.util.function.DoubleConsumer;
 import java.util.function.LongConsumer;
 
@@ -190,7 +191,7 @@ public class ValueUtility {
 
         switch (a.getType()) {
         case BINARY:
-            return a.getBinaryValue().equals(b.getBinaryValue());
+            return Arrays.equals(a.getBinaryValue(), b.getBinaryValue());
         case BOOLEAN:
             return a.getBooleanValue() == b.getBooleanValue();
         case DOUBLE:

@@ -145,7 +145,7 @@ public class ObjectSegment<E> extends BaseSegment {
                 encoded = writeEnumFprof(bb);
             } 
         } catch (IndexOutOfBoundsException|BufferOverflowException e) {
-            encoded = false;
+            //ignore -> encoded = false;
         }
         //if the resulted size is bigger than raw encoding, then encode it raw
         if(!encoded) {

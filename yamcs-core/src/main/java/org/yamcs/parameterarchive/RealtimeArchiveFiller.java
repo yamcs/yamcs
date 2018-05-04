@@ -56,7 +56,10 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
             for(Map.Entry<Long, Map<Integer, PGSegment>> k:pgSegments.entrySet()) {
                 Map <Integer, PGSegment> m = k.getValue();
                 long sstart = k.getKey();
-                log.debug("Writing to archive the segment: [{} - {})", TimeEncoding.toString(sstart), TimeEncoding.toString(SortedTimeSegment.getNextSegmentStart(sstart)));
+                if(log.isDebugEnabled()) {
+                    log.debug("Writing to archive the segment: [{} - {})", 
+                            TimeEncoding.toString(sstart), TimeEncoding.toString(SortedTimeSegment.getNextSegmentStart(sstart)));
+                }
                 consolidateAndWriteToArchive(sstart, m.values());
             }
         } catch(Exception e) {

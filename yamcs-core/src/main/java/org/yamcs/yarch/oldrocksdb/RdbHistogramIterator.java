@@ -3,6 +3,7 @@ package org.yamcs.yarch.oldrocksdb;
 import static org.yamcs.yarch.oldrocksdb.CfTableWriter.zerobytes;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
@@ -187,7 +188,7 @@ class RdbHistogramIterator implements HistogramIterator {
             try {
                 readNextSegments();
             } catch (RocksDBException e) {
-               throw new RuntimeException(e);
+               throw new UncheckedIOException(new IOException(e));
             }
         }
         return r;

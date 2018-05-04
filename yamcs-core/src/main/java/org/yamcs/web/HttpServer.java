@@ -89,6 +89,7 @@ public class HttpServer extends AbstractService {
             startServer();
             notifyStarted();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             notifyFailed(e);
         }
     }

@@ -60,8 +60,8 @@ public class MergeStream extends AbstractStream implements StreamSubscriber, Run
         try {
             tupleQueues.get(s).put(tuple);
         } catch (InterruptedException e) {
-            log.info("got InterruptedException when writing data to the queue");
             Thread.currentThread().interrupt();
+            log.info("got InterruptedException when writing data to the queue");
         }
     }
 
@@ -119,6 +119,7 @@ public class MergeStream extends AbstractStream implements StreamSubscriber, Run
             }
             close();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             log.info("Got interrupted exception, quitting");
             return;
         }

@@ -1,6 +1,7 @@
 package org.yamcs.yarch.rocksdb;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -198,8 +199,10 @@ public class RdbHistogramIterator implements HistogramIterator {
         if (records.isEmpty() && !stopReached) {
             try {
                 readNextSegments();
-            } catch (RocksDBException | IOException e) {
-                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            } catch (RocksDBException e) {
+                throw new UncheckedIOException(new IOException(e));
             }
         }
         return r;
