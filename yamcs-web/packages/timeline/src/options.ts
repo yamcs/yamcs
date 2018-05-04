@@ -14,4 +14,5 @@ export interface TimelineOptions {
   domReduction?: boolean;
   data?: any;
   pannable?: boolean | PanMode;
+  sidebarWidth?: number;
 }

@@ -40,7 +40,6 @@ export interface WallclockLocatorOptions extends PluginOptions {
 }
 
 export interface WallclockLocatorStyle {
-  sidebarWidth: number;
   pastBackgroundColor: string;
   pastBackgroundOpacity: number;
   knobRadius: number;
@@ -89,7 +88,7 @@ export default class WallclockLocator extends Plugin {
     if (this.wallclockLocatorLineEl) {
       this.wallclockLocatorLineEl.style.visibility = 'visible';
       let x = this.timeline.pointsBetween(this.timeline.unpannedVisibleStart, newTime);
-      x += this.style.sidebarWidth; // overlay uses the entire space
+      x += this.timeline.getSidebarWidth(); // overlay uses the entire space
       this.wallclockLocatorLineEl.childNodes[0].setAttribute('x1', x);
       this.wallclockLocatorLineEl.childNodes[0].setAttribute('x2', x);
       this.wallclockLocatorLineEl.childNodes[1].setAttribute('cx', x);
@@ -109,7 +108,7 @@ export default class WallclockLocator extends Plugin {
   renderViewportXOverlay(ctx: RenderContext) {
     // Incoming ctx is not very useful as an origin
     // TODO try to fix the need for this xOffset
-    const xOffset = ctx.sidebarWidth - ctx.translation.x;
+    const xOffset = this.timeline.getSidebarWidth() - ctx.translation.x;
 
     const visibility = (this.time === undefined) ? 'hidden' : 'visible';
 

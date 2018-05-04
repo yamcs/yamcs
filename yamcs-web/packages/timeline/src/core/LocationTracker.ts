@@ -59,13 +59,13 @@ export default class LocationTracker extends Plugin {
   postRender(ctx: RenderContext, svgEl: any) {
     const locationTrackerEl = svgEl.getElementById(this.trackerId);
 
-    this.hoverListener = function(event: ViewportHoverEvent) {
+    this.hoverListener = (event: ViewportHoverEvent) => {
       if (!locationTrackerEl) {
         return;
       }
 
       if (event.x !== undefined) {
-        const x = event.x + ctx.sidebarWidth; // overlay uses the entire space
+        const x = event.x + this.timeline.getSidebarWidth(); // overlay uses the entire space
         locationTrackerEl.childNodes[0].setAttribute('x1', x);
         locationTrackerEl.childNodes[0].setAttribute('x2', x);
         locationTrackerEl.childNodes[1].setAttribute('cx', x);

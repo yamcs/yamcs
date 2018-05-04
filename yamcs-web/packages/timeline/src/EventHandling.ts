@@ -1,14 +1,7 @@
-import Timeline from './Timeline';
 import Point from './Point';
+import Timeline from './Timeline';
 import VDom from './VDom';
-import {
-  ViewportChangeEvent,
-  ViewportChangedEvent,
-  ViewportHoverEvent,
-  WheelViewportEvent,
-  GrabStartEvent,
-  GrabEndEvent,
-} from './events';
+import { GrabEndEvent, GrabStartEvent, ViewportChangeEvent, ViewportChangedEvent, ViewportHoverEvent, WheelViewportEvent } from './events';
 
 /**
  * Groups global DOM event listeners.
@@ -215,7 +208,7 @@ export default class EventHandling {
 
       // Output grabstart (but not on pan)
       if (this.grabTarget && !this.grabbing) {
-        const x = this.mouseDownStart!.x - this.translation.x - this.timeline.style['sidebarWidth'];
+        const x = this.mouseDownStart!.x - this.translation.x - this.timeline.getSidebarWidth();
         const date = this.timeline.toDate(x);
         this.timeline.handleUserAction(this.grabTarget!.id, {
           type: 'grabstart',
@@ -237,7 +230,7 @@ export default class EventHandling {
     }
 
     // Signal hover event
-    const hoverX = pos.x - this.translation.x - this.timeline.style['sidebarWidth'];
+    const hoverX = pos.x - this.translation.x - this.timeline.getSidebarWidth();
     const hoverDate = this.timeline.toDate(hoverX);
     if (hoverDate >= this.timeline.visibleStart) {
       this.timeline.fireEvent('viewportHover', new ViewportHoverEvent(hoverDate, hoverX));
@@ -333,7 +326,7 @@ export default class EventHandling {
         let x;
         let date;
         if (dst) {
-          x = dst!.x - this.translation.x - this.timeline.style['sidebarWidth'];
+          x = dst!.x - this.translation.x - this.timeline.getSidebarWidth();
           date = this.timeline.toDate(x);
         }
         this.timeline.fireEvent('grabEnd', new GrabEndEvent());
@@ -392,7 +385,7 @@ export default class EventHandling {
 
     // Output grabmove if grab target, otherwise just pan
     if (this.grabTarget) {
-      const x = pos.x - this.translation.x - this.timeline.style['sidebarWidth'];
+      const x = pos.x - this.translation.x - this.timeline.getSidebarWidth();
       const date = this.timeline.toDate(x);
       this.timeline.handleUserAction(this.grabTarget!.id, {
         type: 'grabmove',

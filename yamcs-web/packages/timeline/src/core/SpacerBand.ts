@@ -1,6 +1,6 @@
+import RenderContext from '../RenderContext';
 import { G, Rect } from '../tags';
 import Band from './Band';
-import RenderContext from '../RenderContext';
 
 /**
  * Separator 'band' that can be added to a timeline configuration to add space between the surrounding bands.
@@ -28,7 +28,7 @@ export default class SpacerBand extends Band {
     return new Rect({ // horizontal divider
       x: ctx.x,
       y: ctx.y + this.height,
-      width: this.style.sidebarWidth,
+      width: '100%',
       height: 1,
       fill: '#d1d5da',
     });

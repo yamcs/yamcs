@@ -5,7 +5,6 @@ export default {
   rules: {
     lineHeight: 20,
     divisionWidth: 20,  // Fixed-sized box for UI elements, not impacted by zoom
-    sidebarWidth: 100,
     fontFamily: 'Verdana, Geneva, sans-serif',
     textColor: '#000',
     textSize: '10px',

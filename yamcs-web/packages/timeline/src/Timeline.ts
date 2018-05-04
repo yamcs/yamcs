@@ -1,18 +1,13 @@
-import * as utils from './utils';
-import VDom from './VDom';
+import { Action, ActionType } from './Action';
 import EventHandling from './EventHandling';
+import { Range } from './Range';
+import VDom from './VDom';
 import * as core from './core/index';
+import { LoadRangeEvent, RangeSelectionChangedEvent, TimelineEventMap, ViewportChangedEvent } from './events';
+import { PanMode, TimelineOptions, TrackerMode } from './options';
 import * as space from './space/index';
 import { baseTheme, darkTheme } from './theme/index';
-import {
-  LoadRangeEvent,
-  TimelineEventMap,
-  ViewportChangedEvent,
-  RangeSelectionChangedEvent,
-} from './events';
-import { PanMode, TimelineOptions, TrackerMode } from './options';
-import { Action, ActionType } from './Action';
-import { Range } from './Range';
+import * as utils from './utils';
 
 export default class Timeline {
 
@@ -85,6 +80,8 @@ export default class Timeline {
     viewportChanged: [],
     viewportWheel: [],
   };
+
+  private sidebarWidth = 100;
 
   private measurerSvg: SVGElement;
 
@@ -241,6 +238,9 @@ export default class Timeline {
     }
     if (opts.domReduction !== undefined) {
       this.domReduction = !!opts.domReduction;
+    }
+    if (opts.sidebarWidth !== undefined) {
+      this.sidebarWidth = opts.sidebarWidth;
     }
     if (opts.pannable !== undefined) {
       if (opts.pannable === false) {
@@ -469,7 +469,15 @@ export default class Timeline {
   }
 
   get visibleWidth(): number {
-    return this.width - this.style.sidebarWidth;
+    return this.width - this.sidebarWidth;
+  }
+
+  getSidebarWidth() {
+    return this.sidebarWidth;
+  }
+
+  setSidebarWidth(sidebarWidth: number) {
+    this.sidebarWidth = sidebarWidth;
   }
 
   /**

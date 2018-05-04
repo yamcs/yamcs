@@ -143,10 +143,10 @@ export default class VDom {
       x: 0,
       y: 0,
       height: '100%',
-      width: style['sidebarWidth'],
+      width: this.timeline.getSidebarWidth(),
       fill: style['sidebarBackgroundColor'],
     }), new Rect({ // Divider with band area
-      x: this.style['sidebarWidth'],
+      x: this.timeline.getSidebarWidth(),
       y: 0,
       width: 1,
       height: '100%',
@@ -157,6 +157,7 @@ export default class VDom {
     this.bodySidebarSvgWrapperEl = new Svg({
       class: 'ts-body-sb',
       style: 'overflow: hidden',
+      width: this.timeline.getSidebarWidth(),
     }).toDomElement();
     this.rootEl.appendChild(this.bodySidebarSvgWrapperEl);
     this.bodySidebarEl = new G().toDomElement() as SVGGElement;
@@ -165,6 +166,7 @@ export default class VDom {
     this.headerSidebarSvgWrapperEl = new Svg({
       class: 'ts-header-sb',
       style: 'overflow: hidden',
+      width: this.timeline.getSidebarWidth(),
     }).toDomElement();
     this.rootEl.appendChild(this.headerSidebarSvgWrapperEl);
     this.headerSidebarEl = new G().toDomElement();
@@ -230,9 +232,9 @@ export default class VDom {
     }
 
     // Adjust fixed elements to new reality
-    this.headerViewportSvgWrapperEl.setAttribute('x', String(this.style['sidebarWidth']));
+    this.headerViewportSvgWrapperEl.setAttribute('x', String(this.timeline.getSidebarWidth()));
 
-    this.bodyViewportSvgWrapperEl.setAttribute('x', String(this.style['sidebarWidth']));
+    this.bodyViewportSvgWrapperEl.setAttribute('x', String(this.timeline.getSidebarWidth()));
     this.bodyViewportSvgWrapperEl.setAttribute('y', String(ctx.headerHeight));
 
     this.bodySidebarSvgWrapperEl.setAttribute('y', String(ctx.headerHeight));
@@ -245,7 +247,6 @@ export default class VDom {
    */
   private calculateContentModel(translation: Point) {
     const ctx = new RenderContext(this.timeline.contributions);
-    ctx.sidebarWidth = this.timeline.style['sidebarWidth'];
     ctx.translation = translation;
 
     // Calculate full heights, before rendering anything. Some contributions may need this information

@@ -1,10 +1,10 @@
-import { ClipPath, G, Path, Rect, Set, Text, Title, Line, Ellipse } from '../tags';
-import { toDate, isBefore, isAfter } from '../utils';
-import Band, { BandOptions } from './Band';
+import { Action } from '../Action';
+import RenderContext from '../RenderContext';
 import Timeline from '../Timeline';
 import { EventEvent } from '../events';
-import RenderContext from '../RenderContext';
-import { Action } from '../Action';
+import { ClipPath, Ellipse, G, Line, Path, Rect, Set, Text, Title } from '../tags';
+import { isAfter, isBefore, toDate } from '../utils';
+import Band, { BandOptions } from './Band';
 
 /**
  * Wraps an event with internal properties. These are intentionally not
@@ -556,7 +556,7 @@ export default class EventBand extends Band {
     if (this.opts.leakEventBackground) {
       // Incoming ctx is not very useful as an origin
       // TODO try to fix the need for this xOffset
-      const xOffset = ctx.sidebarWidth - ctx.translation.x;
+      const xOffset = this.timeline.getSidebarWidth() - ctx.translation.x;
 
       for (const line of this.lines) {
         for (const event of line) {

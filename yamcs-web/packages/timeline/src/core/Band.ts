@@ -1,9 +1,9 @@
+import { Action } from '../Action';
+import Plugin, { PluginOptions } from '../Plugin';
+import RenderContext, { RenderSection } from '../RenderContext';
+import Timeline from '../Timeline';
 import { SidebarClickEvent } from '../events';
 import { Defs, G, Rect, Set, Svg, Tag, Text } from '../tags';
-import Timeline from '../Timeline';
-import RenderContext, { RenderSection } from '../RenderContext';
-import Plugin, { PluginOptions } from '../Plugin';
-import { Action } from '../Action';
 
 export interface BandOptions extends PluginOptions {
   interactive?: boolean;
@@ -109,7 +109,7 @@ export default abstract class Band extends Plugin {
       id: this.sidebarId,
       x: ctx.x,
       y: ctx.y,
-      width: this.style.sidebarWidth,
+      width: '100%',
       height: this.height + ctx.paddingTop + ctx.paddingBottom,
       cursor: 'default',
       fill: 'transparent',
@@ -131,7 +131,7 @@ export default abstract class Band extends Plugin {
       new Rect({ // horizontal divider
         x: ctx.x,
         y: ctx.y + this.height,
-        width: this.style.sidebarWidth,
+        width: '100%',
         height: 1,
         fill: '#d1d5da',
         'pointer-events': 'none',

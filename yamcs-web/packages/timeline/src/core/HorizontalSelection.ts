@@ -77,7 +77,7 @@ export default class HorizontalSelection extends Plugin {
 
     // Incoming ctx is not very useful as an origin
     // TODO try to fix the need for this xOffset
-    const xOffset = this.ctx.sidebarWidth - this.ctx.translation.x;
+    const xOffset = this.timeline.getSidebarWidth() - this.ctx.translation.x;
     const x1 = xOffset + this.timeline.positionDate(range.start);
     const x2 = xOffset + this.timeline.positionDate(range.stop);
 

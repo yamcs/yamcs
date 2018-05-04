@@ -33,7 +33,6 @@ export default class RenderContext {
    */
   paddingBottom = 0;
 
-  sidebarWidth = 0;
   headerHeight = 0;
   bodyHeight = 0;
 

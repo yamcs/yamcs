@@ -1,21 +1,21 @@
-import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild, ElementRef, OnDestroy, HostListener } from '@angular/core';
-
-import { Instance } from '@yamcs/client';
-import { Timeline, Range } from '@yamcs/timeline';
-import { Title } from '@angular/platform-browser';
-import { YamcsService } from '../../core/services/YamcsService';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { TimelineTooltip } from './TimelineTooltip';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
-import { Subscription ,  BehaviorSubject } from 'rxjs';
-import { TimelineOptions } from '../../../../../timeline/dist/types/options';
-import { DateTimePipe } from '../../shared/pipes/DateTimePipe';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material';
-import { DownloadDumpDialog } from './DownloadDumpDialog';
+import { Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Instance } from '@yamcs/client';
+import { Range, Timeline } from '@yamcs/timeline';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { TimelineOptions } from '../../../../../timeline/dist/types/options';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { YamcsService } from '../../core/services/YamcsService';
+import { DateTimePipe } from '../../shared/pipes/DateTimePipe';
 import { StartReplayDialog } from '../template/StartReplayDialog';
+import { DownloadDumpDialog } from './DownloadDumpDialog';
 import { JumpToDialog } from './JumpToDialog';
+import { TimelineTooltip } from './TimelineTooltip';
+
 
 @Component({
   templateUrl: './ArchivePage.html',
@@ -116,9 +116,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       zoom: z || 12,
       pannable: 'X_ONLY',
       wallclock: false,
-      style: {
-        sidebarWidth: 200,
-      }
+      sidebarWidth: 200,
     };
     if (this.preferenceStore.isDarkMode()) {
       opts.theme = 'dark';
