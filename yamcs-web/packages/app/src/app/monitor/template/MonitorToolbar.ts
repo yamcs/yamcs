@@ -1,13 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
-import { StartReplayDialog } from './StartReplayDialog';
-import { BehaviorSubject ,  Subscription } from 'rxjs';
 import { Processor } from '@yamcs/client';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
+import { StartReplayDialog } from './StartReplayDialog';
 
 @Component({
   selector: 'app-monitor-toolbar',
@@ -35,9 +31,14 @@ export class MonitorToolbar implements OnDestroy {
     });
   }
 
-  stopReplay() {
+  leaveReplay() {
     const processor = this.processor$.value!;
-    this.yamcs.getInstanceClient()!.deleteReplayProcessor(processor.name);
+    const clientId = this.yamcs.getClientId();
+
+    // Switch to the 'default' processor of the currently connected instance
+    this.yamcs.yamcsClient.editClient(clientId, {
+      instance: processor.instance
+    });
   }
 
   ngOnDestroy() {

@@ -53,6 +53,11 @@ export interface ClientInfo {
   loginTimeUTC: string;
 }
 
+export interface EditClientRequest {
+  instance?: string;
+  processor?: string;
+}
+
 export interface ClientSubscriptionResponse {
   client$: Observable<ClientInfo>;
 }

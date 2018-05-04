@@ -76,6 +76,7 @@ export {
   CommandQueueSubscriptionResponse,
   ConnectionInfo,
   ConnectionInfoSubscriptionResponse,
+  EditClientRequest,
   GeneralInfo,
   Instance,
   Link,
