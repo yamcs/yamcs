@@ -68,6 +68,11 @@ export interface EventBandOptions extends BandOptions {
    * If true, events on this band may be resized. Default: true
    */
   resizable?: boolean;
+
+  /**
+   * If true, events are layed out on a single line even when there's overlap. Default: false
+   */
+  wrap?: boolean;
 }
 
 export interface EventBandStyle {
@@ -81,7 +86,6 @@ export interface EventBandStyle {
   eventHeight: number;
   lineHeight: number;
   spaceBetween: number;
-  wrap: boolean;
   lineSpacing: number;
   marginTop: number;
   marginBottom: number;
@@ -113,7 +117,6 @@ export default class EventBand extends Band {
       eventLeftMargin: 5,
       highlightOpacity: 0.7,
       spaceBetween: 0,
-      wrap: true,
       lineSpacing: 2,
       marginTop: 0,
       marginBottom: 0,
@@ -212,7 +215,7 @@ export default class EventBand extends Band {
           }
 
           textOutside = false;
-          if (this.style.wrap && availableTitleWidth < fm.width) {
+          if (this.opts.wrap && availableTitleWidth < fm.width) {
             renderStopX += fm.width + this.style.eventLeftMargin;
             textOutside = true;
           }
@@ -488,7 +491,7 @@ export default class EventBand extends Band {
           'dominant-baseline': 'middle',
           'font-size': this.style.textSize,
         }, title));
-      } else if (this.style.wrap || titleFitsInBox) { // Render text inside box
+      } else if (this.opts.wrap || titleFitsInBox) { // Render text inside box
         // A clipPath for the text, with same dimensions as background
         const pathId = Timeline.nextId();
         eventG.addChild(new ClipPath({ id: pathId }).addChild(

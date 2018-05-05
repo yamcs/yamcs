@@ -1,4 +1,5 @@
-import EventBand from '../core/EventBand';
+import Timeline from '../Timeline';
+import EventBand, { EventBandOptions, EventBandStyle } from '../core/EventBand';
 import { mergeDeep } from '../utils';
 
 /**
@@ -12,7 +13,6 @@ export default class OrbitNumberBand extends EventBand {
 
   static get rules() {
     return mergeDeep({}, EventBand.rules, {
-      wrap: false,
       cornerRadius: 0,
       textAlign: 'center',
       borderColor: '#aaa',
@@ -20,5 +20,9 @@ export default class OrbitNumberBand extends EventBand {
       textColor: 'grey',
       borders: 'vertical',
     });
+  }
+
+  constructor(timeline: Timeline, protected opts: EventBandOptions, protected style: EventBandStyle) {
+    super(timeline, { ...opts, wrap: false }, style);
   }
 }
