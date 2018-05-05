@@ -1,5 +1,5 @@
 export { default as Band } from './Band';
-export { default as EventBand } from './EventBand';
+export { default as EventBand, Event } from './EventBand';
 export { default as HorizontalSelection } from './HorizontalSelection';
 export { default as LocationTracker } from './LocationTracker';
 export { default as NoDataZone } from './NoDataZone';

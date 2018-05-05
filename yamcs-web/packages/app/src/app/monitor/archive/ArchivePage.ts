@@ -5,7 +5,7 @@ import { MatDialog } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
-import { Range, Timeline } from '@yamcs/timeline';
+import { Event, Range, Timeline } from '@yamcs/timeline';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { TimelineOptions } from '../../../../../timeline/dist/types/options';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
@@ -136,20 +136,20 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     });
 
     this.timeline.on('eventMouseEnter', evt => {
-      const userObject = evt.userObject as any;
+      const userObject = evt.userObject as Event;
       let ttText = `Start: ${this.dateTimePipe.transform(userObject.start)}<br>`;
-      ttText += `Stop:&nbsp; ${this.dateTimePipe.transform(userObject.stop)}<br>`;
-      const sec = (Date.parse(userObject.stop) - Date.parse(userObject.start)) / 1000;
-      ttText += `Count: ${userObject.count}`;
-      if (userObject.count > 1) {
-        ttText += ` (${(userObject.count / sec).toFixed(3)} Hz)`;
+      ttText += `Stop:&nbsp; ${this.dateTimePipe.transform(userObject.stop!)}<br>`;
+      const sec = (Date.parse(userObject.stop as string) - Date.parse(userObject.start as string)) / 1000;
+      ttText += `Count: ${userObject.data.count}`;
+      if (userObject.data.count > 1) {
+        ttText += ` (${(userObject.data.count / sec).toFixed(3)} Hz)`;
       }
       this.tooltipInstance.show(ttText, evt.clientX, evt.clientY);
     });
 
     this.timeline.on('eventClick', evt => {
-      const userObject = evt.userObject as any;
-      this.timeline.selectRange(userObject.start, userObject.stop);
+      const userObject = evt.userObject as Event;
+      this.timeline.selectRange(userObject.start, userObject.stop!);
     });
 
     this.timeline.on('grabStart', () => {
@@ -178,21 +178,29 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
       }).then(groups => {
         const bands = [];
         for (const packetName of this.packetNames) {
-          let events: any[] = [];
+          const events: Event[] = [];
           for (const group of groups) {
             if (group.id.name !== packetName) {
               continue;
             }
-            events = group.entry;
-            for (const event of events) {
-              event.milestone = false;
-              if (event.count > 1) {
-                const sec = (Date.parse(event.stop) - Date.parse(event.start)) / 1000;
-                event.title = `${(event.count / sec).toFixed(1)} Hz`;
+            for (const entry of group.entry) {
+              const event: Event = {
+                start: entry.start,
+                stop: entry.stop,
+                milestone: false,
+                data: {
+                  count: entry.count,
+                }
+              };
+              if (entry.count > 1) {
+                const sec = (Date.parse(entry.stop) - Date.parse(entry.start)) / 1000;
+                event.title = `${(entry.count / sec).toFixed(1)} Hz`;
               }
+              events.push(event);
             }
           }
           bands.push({
+            id: packetName,
             type: 'EventBand',
             label: packetName,
             interactive: true,

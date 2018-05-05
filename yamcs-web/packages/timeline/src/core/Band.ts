@@ -6,6 +6,7 @@ import { SidebarEvent } from '../events';
 import { Defs, G, Rect, Set, Svg, Tag, Text } from '../tags';
 
 export interface BandOptions extends PluginOptions {
+  id: string;
   interactive?: boolean;
   interactiveSidebar?: boolean;
   label?: string;

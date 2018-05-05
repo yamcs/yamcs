@@ -11,7 +11,7 @@ import Band, { BandOptions } from './Band';
  * set on the user object.
  */
 interface EventWithDrawInfo {
-  userObject: any; // Untouched user object
+  userObject: Event; // Untouched user object
   drawInfo?: DrawInfo;
 }
 
@@ -25,12 +25,26 @@ interface DrawInfo {
   offscreenStart: boolean;
 }
 
+export interface Event {
+  start: string | Date;
+  stop?: string | Date;
+  milestone?: boolean;
+  title?: string;
+  backgroundColor?: string;
+  foregroundColor?: string;
+  borderColor?: string;
+  borders?: boolean | 'vertical';
+  tooltip?: string;
+  textAlign?: string;
+  data?: any;
+}
+
 export interface EventBandOptions extends BandOptions {
 
   /**
    * Events that will be drawn in the band.
    */
-  events?: any[];
+  events?: Event[];
 
   /**
    * Whether ranges without a single overlapping event should be rendered
@@ -117,7 +131,7 @@ export default class EventBand extends Band {
   private eventHeight: number;
   private bandHeight: number;
 
-  private eventsById: { [key: string]: object } = {};
+  private eventsById: { [key: string]: Event } = {};
 
   constructor(timeline: Timeline, protected opts: EventBandOptions, protected style: EventBandStyle) {
     super(timeline, opts, style);
@@ -125,7 +139,7 @@ export default class EventBand extends Band {
     this.prepareDrawOperation(opts.events || []);
   }
 
-  private prepareDrawOperation(events: any[]) {
+  private prepareDrawOperation(events: Event[]) {
     const analyzedEvents = this.analyzeEvents(events);
 
     // Milestones are on top per band
@@ -142,7 +156,7 @@ export default class EventBand extends Band {
     // console.log('height is ', this.bandHeight)
   }
 
-  private analyzeEvents(events: any[]) {
+  private analyzeEvents(events: Event[]) {
     const analyzedEvents: EventWithDrawInfo[] = [];
     for (const event of events) {
       const start = toDate(event.start);
@@ -173,8 +187,10 @@ export default class EventBand extends Band {
           renderStartX = this.timeline.positionDate(start) - (this.eventHeight / 2);
           renderStopX = renderStartX + this.eventHeight;
 
-          const fm = this.timeline.getFontMetrics(event.title, this.style.textSize!);
-          renderStopX += fm.width + this.style.eventLeftMargin;
+          if (event.title) {
+            const fm = this.timeline.getFontMetrics(event.title, this.style.textSize!);
+            renderStopX += fm.width + this.style.eventLeftMargin;
+          }
           textOutside = true;
           availableTitleWidth = 0;
           offscreenStart = false;
@@ -188,7 +204,7 @@ export default class EventBand extends Band {
             title = '◀' + title;
           }
 
-          const fm = this.timeline.getFontMetrics(title, this.style.textSize);
+          const fm = this.timeline.getFontMetrics(title!, this.style.textSize);
 
           availableTitleWidth = renderStopX - renderStartX;
           if (offscreenStart) {
@@ -333,7 +349,10 @@ export default class EventBand extends Band {
     const bgColor = milestone.userObject.backgroundColor || this.style.backgroundColor;
     const fgColor = milestone.userObject.foregroundColor || this.style.textColor;
     const borderColor = milestone.userObject.borderColor || this.style.borderColor;
-    const borders = milestone.userObject.borders || this.style.borders;
+    let borders = milestone.userObject.borders;
+    if (borders === undefined) {
+      borders = this.style.borders;
+    }
 
     const r = this.eventHeight / 2;
     const milestoneBg = new Path({

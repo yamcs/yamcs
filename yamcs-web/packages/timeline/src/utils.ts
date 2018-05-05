@@ -1,6 +1,3 @@
-// Optional support for moment
-declare var moment: any;
-
 function leftPad(nr: number, n: number) {
   return Array(n - String(nr).length + 1).join('0') + nr;
 }
@@ -16,8 +13,6 @@ export function toDate(obj: any): Date {
     return new Date(obj);
   } else if (typeof obj === 'string') {
     return new Date(Date.parse(obj));
-  } else if (moment && moment.isMoment(obj)) {
-    return obj.toDate();
   } else {
     throw new Error(`Cannot convert '${obj}' to Date`);
   }
