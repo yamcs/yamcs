@@ -2,7 +2,7 @@ import { Action } from '../Action';
 import Plugin, { PluginOptions } from '../Plugin';
 import RenderContext, { RenderSection } from '../RenderContext';
 import Timeline from '../Timeline';
-import { SidebarClickEvent } from '../events';
+import { SidebarEvent } from '../events';
 import { Defs, G, Rect, Set, Svg, Tag, Text } from '../tags';
 
 export interface BandOptions extends PluginOptions {
@@ -124,6 +124,9 @@ export default abstract class Band extends Plugin {
         end: 'mouseout',
       }));
       this.timeline.registerActionTarget('click', this.sidebarId);
+      this.timeline.registerActionTarget('contextmenu', this.sidebarId);
+      this.timeline.registerActionTarget('mouseenter', this.sidebarId);
+      this.timeline.registerActionTarget('mouseleave', this.sidebarId);
     }
 
     const g = new G().addChild(
@@ -156,12 +159,32 @@ export default abstract class Band extends Plugin {
   onAction(id: string, action: Action) {
     if (id === this.sidebarId) {
       switch (action.type) {
-      case 'click':
-        const sidebarClickEvent = new SidebarClickEvent(this.opts, action.target);
-        sidebarClickEvent.clientX = action.clientX;
-        sidebarClickEvent.clientY = action.clientY;
-        this.timeline.fireEvent('sidebarClick', sidebarClickEvent);
-        break;
+        case 'click':
+          const sidebarClickEvent = new SidebarEvent(this.opts, action.target);
+          sidebarClickEvent.clientX = action.clientX;
+          sidebarClickEvent.clientY = action.clientY;
+          this.timeline.fireEvent('sidebarClick', sidebarClickEvent);
+          break;
+        case 'contextmenu':
+          const sidebarContextMenuEvent = new SidebarEvent(this.opts, action.target);
+          sidebarContextMenuEvent.clientX = action.clientX;
+          sidebarContextMenuEvent.clientY = action.clientY;
+          this.timeline.fireEvent('sidebarContextMenu', sidebarContextMenuEvent);
+          break;
+        case 'mouseenter':
+          if (!action.grabbing) {
+            const mouseEnterEvent = new SidebarEvent(this.opts, action.target);
+            mouseEnterEvent.clientX = action.clientX;
+            mouseEnterEvent.clientY = action.clientY;
+            this.timeline.fireEvent('sidebarMouseEnter', mouseEnterEvent);
+          }
+          break;
+        case 'mouseleave':
+          const mouseLeaveEvent = new SidebarEvent(this.opts, action.target);
+          mouseLeaveEvent.clientX = action.clientX;
+          mouseLeaveEvent.clientY = action.clientY;
+          this.timeline.fireEvent('sidebarMouseLeave', mouseLeaveEvent);
+          break;
       }
     }
   }

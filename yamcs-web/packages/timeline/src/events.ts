@@ -16,7 +16,10 @@ export interface TimelineEventMap {
   'grabStart': GrabStartEvent;
   'grabEnd': GrabEndEvent;
   'rangeSelectionChanged': RangeSelectionChangedEvent;
-  'sidebarClick': SidebarClickEvent;
+  'sidebarClick': SidebarEvent;
+  'sidebarContextMenu': SidebarEvent;
+  'sidebarMouseEnter': SidebarEvent;
+  'sidebarMouseLeave': SidebarEvent;
   'viewportHover': ViewportHoverEvent;
   'viewportChange': ViewportChangeEvent;
   'viewportChanged': ViewportChangedEvent;
@@ -39,7 +42,7 @@ export class ViewportHoverEvent implements TimelineEvent {
   }
 }
 
-export class SidebarClickEvent implements TimelineEvent {
+export class SidebarEvent implements TimelineEvent {
 
   clientX: number;
   clientY: number;
