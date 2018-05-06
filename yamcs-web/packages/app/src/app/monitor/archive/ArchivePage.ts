@@ -32,6 +32,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
   timeline: Timeline;
 
   rangeSelection$ = new BehaviorSubject<Range | null>(null);
+  viewportRange$ = new BehaviorSubject<Range | null>(null);
 
   private tooltipInstance: TimelineTooltip;
   private darkModeSubscription: Subscription;
@@ -124,6 +125,10 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     this.timeline = new Timeline(this.container.nativeElement, opts);
 
     this.timeline.on('viewportChanged', () => {
+      this.viewportRange$.next({
+        start: this.timeline.visibleStart,
+        stop: this.timeline.visibleStop,
+      });
       this.router.navigate([], {
         relativeTo: this.route,
         queryParamsHandling: 'merge',

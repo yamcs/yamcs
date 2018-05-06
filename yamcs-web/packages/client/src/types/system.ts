@@ -105,6 +105,18 @@ export interface Processor {
   persistent: boolean;
   time: string;
   replay: boolean;
+  replayRequest?: ReplayRequest;
+}
+
+export interface ReplayRequest {
+  utcStart: string;
+  utcStop: string;
+  speed: ReplaySpeed;
+}
+
+export interface ReplaySpeed {
+  type: 'AFAP' | 'FIXED_DELAY' | 'REALTIME';
+  param: number;
 }
 
 export interface ProcessorSubscriptionRequest {

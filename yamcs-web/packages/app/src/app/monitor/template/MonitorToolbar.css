@@ -10,3 +10,11 @@ mat-toolbar {
   min-width: 0;
   padding: 0 8px;
 }
+
+.hide {
+  visibility: hidden;
+}
+
+.toolbar-text {
+  font-size: 12px;
+}
