@@ -46,16 +46,20 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
+import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileFilter;
@@ -79,60 +83,54 @@ import org.yamcs.utils.TimeEncoding;
 
 import com.csvreader.CsvWriter;
 
+@SuppressWarnings("serial")
 public class EventViewer extends JFrame implements ActionListener, ItemListener, MenuListener, ConnectionListener {
-    private static final long serialVersionUID = 1L;
+
     static Logger log = LoggerFactory.getLogger(EventViewer.class);
+
     // colors taken from USS configuration
     final Color iconColorGreen = new Color(0x86B78A);
     final Color iconColorRed = new Color(0xB88687);
-    Color iconColorGrey; // obtained
-                         // during
-                         // gui
-                         // build
+    Color iconColorGrey; // obtained during gui build
 
-    EventTableModel tableModel = null;
-    TableRowSorter<EventTableModel> tableSorter = null;
-    public JTextArea logTextArea = null;
-    JMenuItem miAutoScroll = null;
-    JMenuItem miShowErrors = null;
-    JMenuItem miRetrievePast = null;
-    EventTable eventTable = null;
-    JScrollPane eventPane = null;
+    EventTableModel tableModel;
+    TableRowSorter<EventTableModel> tableSorter;
+    public JTextArea logTextArea;
+    JMenuItem miAutoScroll;
+    JMenuItem miShowErrors;
+    JMenuItem miRetrievePast;
+    EventTable eventTable;
+    JScrollPane eventPane;
 
-    JLabel labelEventCount = null;
-    Map<String, JLabel> linkLabel = null;
+    Map<String, JLabel> linkLabel;
 
-    Map<String, Icon> linkOKIcon = null;
-    Map<String, Icon> linkNOKIcon = null;
+    Map<String, Icon> linkOKIcon;
+    Map<String, Icon> linkNOKIcon;
 
-    List<JCheckBox> columnCheckbox = null;
+    List<JCheckBox> columnCheckbox;
 
-    int eventCount = 0;
+    JFileChooser filechooser;
+    PreferencesDialog preferencesDialog;
+    EventReceiver eventReceiver;
+    YamcsConnector yconnector;
 
-    JFileChooser filechooser = null;
-    PreferencesDialog preferencesDialog = null;
-    EventReceiver eventReceiver = null;
-    YamcsConnector yconnector = null;
-
-    String currentUrl = null;
-    String currentChannel = null;
+    String currentUrl;
+    String currentChannel;
     boolean connected = false;
-    Thread connectingThread = null;
-    private String soundFile = null;
-    List<Map<String, String>> extraColumns = null;
-    List<Map<String, String>> linkStatus = null;
+    Thread connectingThread;
+    private String soundFile;
+    List<Map<String, String>> extraColumns;
+    List<Map<String, String>> linkStatus;
 
-    private Clip alertClip = null;
-    private JPopupMenu popupMenu = null;
+    private Clip alertClip;
+    private JPopupMenu popupMenu;
 
-    /** Table model with filtering table */
-    private FilteringRulesTable rules = null;
+    private FilteringRulesTable rules;
 
-    /** View menu */
     private JMenu viewMenu = null;
 
     /** Mapping of filtering rules into menu */
-    private HashMap<JCheckBoxMenuItem, Integer> viewMenuFilterChkBoxes = null;
+    private HashMap<JCheckBoxMenuItem, Integer> viewMenuFilterChkBoxes;
 
     boolean authenticationEnabled = false;
 
@@ -202,12 +200,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 yconnector.disconnect();
             }
         });
-
-        eventCount = 0;
-
-        //
-        // menu
-        //
 
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -288,14 +280,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         Box panel = Box.createHorizontalBox();
         getContentPane().add(panel, BorderLayout.SOUTH);
         panel.add(Box.createHorizontalStrut(20));
-
-        panel.add(new JLabel("Total Events:"));
-        labelEventCount = new JLabel(String.valueOf(eventCount));
-        labelEventCount.setPreferredSize(new Dimension(50, labelEventCount.getPreferredSize().height));
-        labelEventCount.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        labelEventCount.setHorizontalAlignment(SwingConstants.RIGHT);
-        panel.add(labelEventCount);
-
         panel.add(Box.createHorizontalGlue());
 
         linkOKIcon = new HashMap<>();
@@ -324,7 +308,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         tableSorter = new TableRowSorter<>(tableModel);
         eventTable.setRowSorter(tableSorter);
 
-        final TableColumnModel tcm = eventTable.getColumnModel();
+        TableColumnModel tcm = eventTable.getColumnModel();
         tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.SOURCE_COL)).setMaxWidth(200);
         tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.GENERATION_TIME_COL)).setMaxWidth(200);
         tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.RECEPTION_TIME_COL)).setMaxWidth(200);
@@ -339,19 +323,42 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         eventPane = new JScrollPane(eventTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        // status log area
+        JPanel filterablePane = new JPanel(new BorderLayout());
+        filterablePane.add(eventPane, BorderLayout.CENTER);
+
+        JPanel filterPane = new JPanel(new BorderLayout());
+        JTextField filterField = new JTextField();
+        filterField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateRowFilter(filterField.getText());
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateRowFilter(filterField.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateRowFilter(filterField.getText());
+            }
+        });
+        filterPane.add(filterField, BorderLayout.CENTER);
+        filterPane.add(new JLabel("Filter:"), BorderLayout.WEST);
+
+        filterablePane.add(filterPane, BorderLayout.NORTH);
 
         logTextArea = new JTextArea(5, 20);
         logTextArea.setEditable(false);
         JScrollPane logPane = new JScrollPane(logTextArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, eventPane, logPane);
+        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, filterablePane, logPane);
         split.setResizeWeight(1.0);
         split.setContinuousLayout(true);
         getContentPane().add(split, BorderLayout.CENTER);
 
-        // popup menu
         popupMenu = new JPopupMenu();
         JMenuItem item = new JMenuItem("New filtering rule");
         item.setActionCommand("new_rule_popup");
@@ -364,8 +371,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
         eventTable.addMouseListener(new MousePopupListener());
 
-        // prepare model names
-
         // updateStatus();
         pack();
         setLocation(30, 30);
@@ -373,6 +378,21 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         eventReceiver.setEventViewer(this);
         yconnector.addConnectionListener(this);
+    }
+
+    private void updateRowFilter(String filterText) {
+        String lcFilterText = filterText.toLowerCase();
+        tableSorter.setRowFilter(new RowFilter<EventTableModel, Object>() {
+            @Override
+            public boolean include(Entry<? extends EventTableModel, ? extends Object> entry) {
+                for (int i = entry.getValueCount() - 1; i >= 0; i--) {
+                    if (entry.getStringValue(i).toLowerCase().contains(lcFilterText)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     public void populateViewMenu() {
@@ -409,19 +429,12 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         }
     }
 
-    /**
-     * Shows event in the detail dialog
-     * 
-     * @param event
-     *            Event to be presented
-     */
     private void showEventInDetailDialog(Event event) {
         EventDialog detailDialog = new EventDialog(this);
         detailDialog.setEvent(event);
         detailDialog.setVisible(true);
     }
 
-    // ***********
     // An inner class to check whether mouse events are the popup trigger
     class MousePopupListener extends MouseAdapter {
         @Override
@@ -459,8 +472,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             }
         }
     }
-
-    // ****************
 
     public ImageIcon getIcon(String imagename) {
         return new ImageIcon(getClass().getResource("/org/yamcs/images/" + imagename));
@@ -613,8 +624,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
     void clearTable() {
         tableModel.clear();
-        eventCount = 0;
-        labelEventCount.setText(String.valueOf(eventCount));
         eventTable.repaint();
     }
 
@@ -782,8 +791,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     public void addEvents(final List<Event> events) {
         javax.swing.SwingUtilities.invokeLater(() -> {
             tableModel.addEvents(events);
-            eventCount += events.size();
-            labelEventCount.setText(String.valueOf(eventCount));
             eventTable.revalidate();
             eventPane.validate();
             if (miAutoScroll.isSelected()) {
@@ -794,15 +801,9 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
     /**
      * Add event. This method is used for incoming events.
-     * 
-     * @param event
-     *            Event to be added.
      */
-    public void addEvent(final Event event) {
+    public void addEvent(Event event) {
         SwingUtilities.invokeLater(() -> {
-            ++eventCount;
-            labelEventCount.setText(String.valueOf(eventCount));
-
             tableModel.addEvent(event);
 
             // auto-resize text column (does not resize scrollview)
@@ -871,8 +872,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
     /**
      * Access to sound clip.
-     * 
-     * @return
      */
     private Clip getAlertClip() {
         if (alertClip == null) {
