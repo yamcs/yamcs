@@ -1,8 +1,9 @@
-Version 4.4.0 released
+Version 4.4.0 released 7-May-2018
 - added support for context calibrators
 - added support for XTCE MathOperationCalibrator
 - fixed the names in the spreadsheet such that additional columns can be inserted without loosing compatibility. 
 - added support for XTCE MathOperation algorithms
+- various XTCE parser fixes
 
 
 Version 4.3.1 released 25-Apr-2018
