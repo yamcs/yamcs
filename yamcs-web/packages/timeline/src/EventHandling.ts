@@ -217,9 +217,19 @@ export default class EventHandling {
           clientY,
           date,
           grabbing: true,
+          grabStart: this.untranslatePoint(this.mouseDownStart),
+          grabPosition: this.untranslatePoint(dst),
         });
       }
       this.grabbing = true;
+    }
+  }
+
+  private untranslatePoint(point?: Point) {
+    if (point && this.translation) {
+      return point.minus(this.translation);
+    } else {
+      return point;
     }
   }
 
@@ -336,7 +346,9 @@ export default class EventHandling {
           clientX: -1,
           clientY: -1,
           date,
-          grabbing: this.grabbing,
+          grabbing: false,
+          grabStart: this.untranslatePoint(this.mouseDownStart),
+          grabPosition: this.untranslatePoint(dst),
         });
       }
     }
@@ -393,7 +405,9 @@ export default class EventHandling {
         clientX: event.clientX,
         clientY: event.clientY,
         date,
-        grabbing: this.grabbing,
+        grabbing: true,
+        grabStart: this.untranslatePoint(this.mouseDownStart),
+        grabPosition: this.untranslatePoint(pos),
       });
     } else {
       this.pan(pos);

@@ -68,6 +68,7 @@ export default class Timeline {
     loadRange: [],
     eventClick: [],
     eventContextMenu: [],
+    eventChanged: [],
     eventMouseEnter: [],
     eventMouseMove: [],
     eventMouseLeave: [],

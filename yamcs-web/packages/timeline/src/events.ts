@@ -1,3 +1,4 @@
+import { Action } from './Action';
 import { Range } from './Range';
 
 /**
@@ -10,6 +11,7 @@ export interface TimelineEventMap {
   'loadRange': LoadRangeEvent;
   'eventClick': EventEvent;
   'eventContextMenu': EventEvent;
+  'eventChanged': EventChangedEvent;
   'eventMouseEnter': EventEvent;
   'eventMouseMove': EventEvent;
   'eventMouseLeave': EventEvent;
@@ -82,9 +84,23 @@ export class RangeSelectionChangedEvent implements TimelineEvent {
 
 export class EventEvent implements TimelineEvent {
 
+  target?: Element;
   clientX: number;
   clientY: number;
 
-  constructor(readonly userObject: object, readonly target?: Element) {
+  constructor(readonly userObject: object, action: Action) {
+    this.target = action.target;
+    this.clientX = action.clientX;
+    this.clientY = action.clientY;
+  }
+}
+
+export class EventChangedEvent extends EventEvent {
+
+  start: Date;
+  stop?: Date;
+
+  constructor(readonly userObject: object, action: Action) {
+    super(userObject, action);
   }
 }

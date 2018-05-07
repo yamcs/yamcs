@@ -1,3 +1,5 @@
+import Point from './Point';
+
 export type ActionType = 'click'
   | 'contextmenu' // todo remove? just use click?
   | 'grabstart'
@@ -40,4 +42,14 @@ export interface Action {
    * a click on a viewport location matches to a specific date.
    */
   date?: Date;
+
+  /**
+   * If grabbing, this indicates the point where the grab started.
+   */
+  grabStart?: Point;
+
+  /**
+   * If grabbing, this indicates the point where grab is currently positioned.
+   */
+  grabPosition?: Point;
 }

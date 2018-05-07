@@ -1,7 +1,8 @@
 import { Action } from '../Action';
+import Point from '../Point';
 import RenderContext from '../RenderContext';
 import Timeline from '../Timeline';
-import { EventEvent } from '../events';
+import { EventEvent, EventChangedEvent } from '../events';
 import { ClipPath, Ellipse, G, Line, Path, Rect, Set, Text, Title } from '../tags';
 import { isAfter, isBefore, toDate } from '../utils';
 import Band, { BandOptions } from './Band';
@@ -134,7 +135,9 @@ export default class EventBand extends Band {
   private eventHeight: number;
   private bandHeight: number;
 
-  private eventsById: { [key: string]: Event } = {};
+  private grabStart?: Point;
+
+  private eventsById: { [key: string]: EventWithDrawInfo } = {};
 
   constructor(timeline: Timeline, protected opts: EventBandOptions, protected style: EventBandStyle) {
     super(timeline, opts, style);
@@ -183,6 +186,7 @@ export default class EventBand extends Band {
       }
 
       // Only consider if somehow visible within load range
+      let analyzedEvent: EventWithDrawInfo;
       if (isBefore(start, this.timeline.loadStop) && isAfter(stop, this.timeline.loadStart)) {
 
         // Overlap is determined using render width (which may include a label)
@@ -222,7 +226,6 @@ export default class EventBand extends Band {
         }
 
         const id = Timeline.nextId();
-        this.eventsById[id] = event;
         if (this.opts.interactive) {
           this.timeline.registerActionTarget('click', id);
           this.timeline.registerActionTarget('contextmenu', id);
@@ -237,7 +240,7 @@ export default class EventBand extends Band {
           }
         }
 
-        analyzedEvents.push({
+        analyzedEvent = {
           userObject: event,
           drawInfo: {
             id,
@@ -248,12 +251,15 @@ export default class EventBand extends Band {
             availableTitleWidth,
             offscreenStart,
           }
-        });
+        };
+        this.eventsById[id] = analyzedEvent;
       } else {
-        analyzedEvents.push({
+        analyzedEvent = {
           userObject: event,
-        });
+        };
       }
+
+      analyzedEvents.push(analyzedEvent);
     }
     return analyzedEvents;
   }
@@ -618,57 +624,82 @@ export default class EventBand extends Band {
   onAction(id: string, action: Action) {
     super.onAction(id, action);
     if (this.eventsById[id]) {
+      const userObject = this.eventsById[id].userObject;
       switch (action.type) {
         case 'click':
-          const eventClickEvent = new EventEvent(this.eventsById[id], action.target);
-          eventClickEvent.clientX = action.clientX;
-          eventClickEvent.clientY = action.clientY;
+          const eventClickEvent = new EventEvent(userObject, action);
           this.timeline.fireEvent('eventClick', eventClickEvent);
           break;
         case 'contextmenu':
-          const eventContextMenuEvent = new EventEvent(this.eventsById[id], action.target);
-          eventContextMenuEvent.clientX = action.clientX;
-          eventContextMenuEvent.clientY = action.clientY;
+          const eventContextMenuEvent = new EventEvent(userObject, action);
           this.timeline.fireEvent('eventContextMenu', eventContextMenuEvent);
           break;
         case 'grabstart':
+          this.handleDragStart(this.eventsById[id], action);
           break;
         case 'grabmove':
-          this.handleDrag(id, action);
+          this.handleDrag(this.eventsById[id], action);
           break;
         case 'grabend':
+          this.handleDragEnd(this.eventsById[id], action);
           break;
         case 'mouseenter':
           if (!action.grabbing) {
-            const mouseEnterEvent = new EventEvent(this.eventsById[id], action.target);
-            mouseEnterEvent.clientX = action.clientX;
-            mouseEnterEvent.clientY = action.clientY;
+            const mouseEnterEvent = new EventEvent(userObject, action);
             this.timeline.fireEvent('eventMouseEnter', mouseEnterEvent);
           }
           break;
         case 'mousemove':
-          const mouseMoveEvent = new EventEvent(this.eventsById[id], action.target);
-          mouseMoveEvent.clientX = action.clientX;
-          mouseMoveEvent.clientY = action.clientY;
+          const mouseMoveEvent = new EventEvent(userObject, action);
           this.timeline.fireEvent('eventMouseMove', mouseMoveEvent);
           break;
         case 'mouseleave':
-          const mouseLeaveEvent = new EventEvent(this.eventsById[id], action.target);
-          mouseLeaveEvent.clientX = action.clientX;
-          mouseLeaveEvent.clientY = action.clientY;
+          const mouseLeaveEvent = new EventEvent(userObject, action);
           this.timeline.fireEvent('eventMouseLeave', mouseLeaveEvent);
           break;
       }
     }
   }
 
-  private handleDrag(id: string, action: Action) {
-    if (!!true) {
-      return;
+  private handleDragStart(event: EventWithDrawInfo, action: Action) {
+    this.grabStart = action.grabStart!;
+
+    /// There may already be an active transform on the element - add it to this drag start.
+    const el = action.target! as SVGGElement;
+    if (el.transform.baseVal.numberOfItems) {
+      const transform = el.transform.baseVal.getItem(0);
+      this.grabStart = this.grabStart.minus(new Point(transform.matrix.e, transform.matrix.f));
     }
-    // console.log('Drag2. Recalculating')
-    // this.test += 5
-    this.prepareDrawOperation(this.opts.events || []);
-    this.timeline.rebuildDOM();
+  }
+
+  private handleDrag(event: EventWithDrawInfo, action: Action) {
+    if (this.grabStart) {
+      const pt = action.grabPosition!.minus(this.grabStart);
+      action.target!.setAttribute('transform', `translate(${pt.x}, ${pt.y})`);
+
+      // this.prepareDrawOperation(this.opts.events || []);
+      // this.timeline.rebuildDOM();
+    }
+  }
+
+  private handleDragEnd(event: EventWithDrawInfo, action: Action) {
+    if (this.grabStart) {
+      const pt = action.grabPosition!.minus(this.grabStart);
+      action.target!.setAttribute('transform', `translate(${pt.x}, ${pt.y})`);
+
+      const changedEvent = new EventChangedEvent(event.userObject, action);
+
+      const xDelta = action.grabPosition!.x - this.grabStart.x - this.timeline.xTranslation;
+
+      const eventStart = this.timeline.positionDate(toDate(event.userObject.start));
+      changedEvent.start = this.timeline.toDate(eventStart + xDelta);
+
+      if (event.userObject.stop) {
+        const eventStop = this.timeline.positionDate(toDate(event.userObject.stop));
+        changedEvent.stop = this.timeline.toDate(eventStop + xDelta);
+      }
+
+      this.timeline.fireEvent('eventChanged', changedEvent);
+    }
   }
 }

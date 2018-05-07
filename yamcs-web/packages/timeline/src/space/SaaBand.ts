@@ -1,10 +1,10 @@
+import { Action } from '../Action';
+import RenderContext from '../RenderContext';
+import Timeline from '../Timeline';
 import Band, { BandOptions } from '../core/Band';
 import { EventEvent } from '../events';
 import { G, Line, Rect, Title } from '../tags';
-import Timeline from '../Timeline';
-import RenderContext from '../RenderContext';
 import { isAfter, isBefore, toDate } from '../utils';
-import { Action } from '../Action';
 
 export interface SaaBandOptions extends BandOptions {
   events?: any[];
@@ -116,35 +116,25 @@ export default class SaaBand extends Band {
     if (this.eventsById[id]) {
       switch (action.type) {
         case 'click':
-          const eventClickEvent = new EventEvent(this.eventsById[id], action.target);
-          eventClickEvent.clientX = action.clientX;
-          eventClickEvent.clientY = action.clientY;
+          const eventClickEvent = new EventEvent(this.eventsById[id], action);
           this.timeline.fireEvent('eventClick', eventClickEvent);
           break;
         case 'contextmenu':
-          const eventContextMenuEvent = new EventEvent(this.eventsById[id], action.target);
-          eventContextMenuEvent.clientX = action.clientX;
-          eventContextMenuEvent.clientY = action.clientY;
+          const eventContextMenuEvent = new EventEvent(this.eventsById[id], action);
           this.timeline.fireEvent('eventContextMenu', eventContextMenuEvent);
           break;
         case 'mouseenter':
           if (!action.grabbing) {
-            const mouseEnterEvent = new EventEvent(this.eventsById[id], action.target);
-            mouseEnterEvent.clientX = action.clientX;
-            mouseEnterEvent.clientY = action.clientY;
+            const mouseEnterEvent = new EventEvent(this.eventsById[id], action);
             this.timeline.fireEvent('eventMouseEnter', mouseEnterEvent);
           }
           break;
         case 'mousemove':
-          const mouseMoveEvent = new EventEvent(this.eventsById[id], action.target);
-          mouseMoveEvent.clientX = action.clientX;
-          mouseMoveEvent.clientY = action.clientY;
+          const mouseMoveEvent = new EventEvent(this.eventsById[id], action);
           this.timeline.fireEvent('eventMouseMove', mouseMoveEvent);
           break;
         case 'mouseleave':
-          const mouseLeaveEvent = new EventEvent(this.eventsById[id], action.target);
-          mouseLeaveEvent.clientX = action.clientX;
-          mouseLeaveEvent.clientY = action.clientY;
+          const mouseLeaveEvent = new EventEvent(this.eventsById[id], action);
           this.timeline.fireEvent('eventMouseLeave', mouseLeaveEvent);
           break;
       }
