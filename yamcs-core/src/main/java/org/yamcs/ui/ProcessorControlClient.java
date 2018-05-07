@@ -11,6 +11,8 @@ import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.WebSocketResponseHandler;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
+import org.yamcs.protobuf.Rest.EditClientRequest;
+import org.yamcs.protobuf.Rest.EditProcessorRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs;
@@ -86,8 +88,10 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
 
         for (int i = 0; i < clients.length; i++) {
             // PATCH /api/clients/:id
-            String resource = "/clients/" + clients[i] + "?processor=" + processorName + "&instance=" + instance;
-            cfs[i] = restClient.doRequest(resource, HttpMethod.PATCH);
+            String resource = "/clients/" + clients[i];
+            EditClientRequest body = EditClientRequest.newBuilder().setInstance(instance).setProcessor(processorName)
+                    .build();
+            cfs[i] = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
             cfs[i].whenComplete((result, exception) -> {
                 if (exception != null) {
                     yamcsMonitor.log("Exception connecting client to processor: " + exception.getMessage());
@@ -101,8 +105,9 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     public void pauseArchiveReplay(String instance, String name) throws YamcsException, YamcsApiException {
         RestClient restClient = yconnector.getRestClient();
         // PATCH /api/processors/:instance/:name
-        String resource = "/processors/" + instance + "/" + name + "?state=PAUSED";
-        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
+        String resource = "/processors/" + instance + "/" + name;
+        EditProcessorRequest body = EditProcessorRequest.newBuilder().setState("paused").build();
+        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
                 yamcsMonitor.log("Exception pauysing the processor: " + exception.getMessage());
@@ -113,8 +118,9 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     public void resumeArchiveReplay(String instance, String name) throws YamcsApiException, YamcsException {
         RestClient restClient = yconnector.getRestClient();
         // PATCH /api/processors/:instance/:name
-        String resource = "/processors/" + instance + "/" + name + "?state=RUNNING";
-        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
+        String resource = "/processors/" + instance + "/" + name;
+        EditProcessorRequest body = EditProcessorRequest.newBuilder().setState("running").build();
+        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
                 yamcsMonitor.log("Exception resuming the processor: " + exception.getMessage());
@@ -126,8 +132,10 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
             throws YamcsApiException, YamcsException {
         RestClient restClient = yconnector.getRestClient();
         // PATCH /api/processors/:instance/:name
-        String resource = "/processors/" + instance + "/" + name + "?seek=" + TimeEncoding.toString(newPosition);
-        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH);
+        String resource = "/processors/" + instance + "/" + name;
+        EditProcessorRequest body = EditProcessorRequest.newBuilder().setSeek(TimeEncoding.toString(newPosition))
+                .build();
+        CompletableFuture<byte[]> cf = restClient.doRequest(resource, HttpMethod.PATCH, body.toByteArray());
         cf.whenComplete((result, exception) -> {
             if (exception != null) {
                 yamcsMonitor.log("Exception seeking the processor: " + exception.getMessage());
