@@ -7,7 +7,7 @@ import GridPlugin from './GridPlugin';
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-parameter-plot',

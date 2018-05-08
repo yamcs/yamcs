@@ -1,0 +1,9 @@
+<h2 mat-dialog-title><mat-icon>help</mat-icon> {{ data.title }}</h2>
+
+<mat-dialog-content class="mat-typography" style="text-align: justify">
+  <span [innerHTML]="data.content"></span>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close color="primary">Close</button>
+</mat-dialog-actions>

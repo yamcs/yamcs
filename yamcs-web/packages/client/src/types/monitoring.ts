@@ -1,5 +1,5 @@
-import { AlarmRange, Parameter, NamedObjectId } from './mdb';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
+import { AlarmRange, NamedObjectId, Parameter } from './mdb';
 
 export interface Value {
   type: 'FLOAT'
@@ -111,6 +111,12 @@ export interface TimeSubscriptionResponse {
   timeInfo$: Observable<TimeInfo>;
 }
 
+export interface ManagementSubscriptionRequest {
+  clientInfo?: boolean;
+  processorInfo?: boolean;
+  processorStatistics?: boolean;
+}
+
 export interface Sample {
   time: string;
   avg: number;
@@ -184,6 +190,20 @@ export interface CreateEventRequest {
   time?: string;
 }
 
+export interface CreateProcessorRequest {
+  name: string;
+  type: string;
+  clientId?: number[];
+  persistent?: boolean;
+  config?: string;
+}
+
+export interface EditReplayProcessorRequest {
+  state?: 'running' | 'paused';
+  seek?: string;
+  speed?: string;
+}
+
 export interface GetEventsOptions {
   /**
    * Inclusive lower bound
@@ -253,4 +273,36 @@ export interface GetParameterRangesOptions {
   stop?: string;
   minGap?: number;
   maxGap?: number;
+}
+
+export interface GetPacketIndexOptions {
+  start?: string;
+  stop?: string;
+  mergeTime?: number;
+  limit?: number;
+}
+
+export interface DownloadPacketsOptions {
+  /**
+   * Inclusive lower bound
+   */
+  start?: string;
+  /**
+   * Exclusive upper bound
+   */
+  stop?: string;
+  name?: string | string[];
+  format?: 'raw';
+  order?: 'asc' | 'desc';
+}
+
+export interface IndexGroup {
+  id: NamedObjectId;
+  entry: IndexEntry[];
+}
+
+export interface IndexEntry {
+  start: string;
+  stop: string;
+  count: number;
 }

@@ -200,7 +200,7 @@ export class LineGraph extends AbstractWidget {
 
       const fontFamily = 'Lucida Sans Typewriter';
       const fontSize = '10px';
-      const fm = this.getFontMetrics('w', fontFamily, fontSize);
+      const fm = this.getFontMetrics('i', fontFamily, 'normal', 'normal', fontSize);
       const colSize = Math.floor(fm.width);
       const boxWidth = colSize * effectiveColumns;
 

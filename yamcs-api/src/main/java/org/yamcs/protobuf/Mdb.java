@@ -3601,6 +3601,30 @@ public final class Mdb {
      * <code>optional .mdb.CalibratorInfo defaultCalibrator = 6;</code>
      */
     org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder getDefaultCalibratorOrBuilder();
+
+    /**
+     * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo> 
+        getContextCalibratorList();
+    /**
+     * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+     */
+    org.yamcs.protobuf.Mdb.ContextCalibratorInfo getContextCalibrator(int index);
+    /**
+     * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+     */
+    int getContextCalibratorCount();
+    /**
+     * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder> 
+        getContextCalibratorOrBuilderList();
+    /**
+     * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+     */
+    org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder getContextCalibratorOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code mdb.DataEncodingInfo}
@@ -3618,6 +3642,7 @@ public final class Mdb {
       littleEndian_ = false;
       sizeInBits_ = 0;
       encoding_ = "";
+      contextCalibrator_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -3688,6 +3713,15 @@ public final class Mdb {
               bitField0_ |= 0x00000010;
               break;
             }
+            case 58: {
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+                contextCalibrator_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ContextCalibratorInfo>();
+                mutable_bitField0_ |= 0x00000020;
+              }
+              contextCalibrator_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.ContextCalibratorInfo.PARSER, extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -3696,6 +3730,9 @@ public final class Mdb {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+          contextCalibrator_ = java.util.Collections.unmodifiableList(contextCalibrator_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -3939,12 +3976,53 @@ public final class Mdb {
       return defaultCalibrator_ == null ? org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance() : defaultCalibrator_;
     }
 
+    public static final int CONTEXTCALIBRATOR_FIELD_NUMBER = 7;
+    private java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo> contextCalibrator_;
+    /**
+     * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo> getContextCalibratorList() {
+      return contextCalibrator_;
+    }
+    /**
+     * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder> 
+        getContextCalibratorOrBuilderList() {
+      return contextCalibrator_;
+    }
+    /**
+     * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+     */
+    public int getContextCalibratorCount() {
+      return contextCalibrator_.size();
+    }
+    /**
+     * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ContextCalibratorInfo getContextCalibrator(int index) {
+      return contextCalibrator_.get(index);
+    }
+    /**
+     * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder getContextCalibratorOrBuilder(
+        int index) {
+      return contextCalibrator_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
+      for (int i = 0; i < getContextCalibratorCount(); i++) {
+        if (!getContextCalibrator(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -3965,6 +4043,9 @@ public final class Mdb {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeMessage(6, getDefaultCalibrator());
+      }
+      for (int i = 0; i < contextCalibrator_.size(); i++) {
+        output.writeMessage(7, contextCalibrator_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -3992,6 +4073,10 @@ public final class Mdb {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(6, getDefaultCalibrator());
+      }
+      for (int i = 0; i < contextCalibrator_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(7, contextCalibrator_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -4034,6 +4119,8 @@ public final class Mdb {
         result = result && getDefaultCalibrator()
             .equals(other.getDefaultCalibrator());
       }
+      result = result && getContextCalibratorList()
+          .equals(other.getContextCalibratorList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -4065,6 +4152,10 @@ public final class Mdb {
       if (hasDefaultCalibrator()) {
         hash = (37 * hash) + DEFAULTCALIBRATOR_FIELD_NUMBER;
         hash = (53 * hash) + getDefaultCalibrator().hashCode();
+      }
+      if (getContextCalibratorCount() > 0) {
+        hash = (37 * hash) + CONTEXTCALIBRATOR_FIELD_NUMBER;
+        hash = (53 * hash) + getContextCalibratorList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -4181,6 +4272,7 @@ public final class Mdb {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getDefaultCalibratorFieldBuilder();
+          getContextCalibratorFieldBuilder();
         }
       }
       public Builder clear() {
@@ -4199,6 +4291,12 @@ public final class Mdb {
           defaultCalibratorBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
+        if (contextCalibratorBuilder_ == null) {
+          contextCalibrator_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000020);
+        } else {
+          contextCalibratorBuilder_.clear();
+        }
         return this;
       }
 
@@ -4246,6 +4344,15 @@ public final class Mdb {
           result.defaultCalibrator_ = defaultCalibrator_;
         } else {
           result.defaultCalibrator_ = defaultCalibratorBuilder_.build();
+        }
+        if (contextCalibratorBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) == 0x00000020)) {
+            contextCalibrator_ = java.util.Collections.unmodifiableList(contextCalibrator_);
+            bitField0_ = (bitField0_ & ~0x00000020);
+          }
+          result.contextCalibrator_ = contextCalibrator_;
+        } else {
+          result.contextCalibrator_ = contextCalibratorBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -4306,12 +4413,43 @@ public final class Mdb {
         if (other.hasDefaultCalibrator()) {
           mergeDefaultCalibrator(other.getDefaultCalibrator());
         }
+        if (contextCalibratorBuilder_ == null) {
+          if (!other.contextCalibrator_.isEmpty()) {
+            if (contextCalibrator_.isEmpty()) {
+              contextCalibrator_ = other.contextCalibrator_;
+              bitField0_ = (bitField0_ & ~0x00000020);
+            } else {
+              ensureContextCalibratorIsMutable();
+              contextCalibrator_.addAll(other.contextCalibrator_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.contextCalibrator_.isEmpty()) {
+            if (contextCalibratorBuilder_.isEmpty()) {
+              contextCalibratorBuilder_.dispose();
+              contextCalibratorBuilder_ = null;
+              contextCalibrator_ = other.contextCalibrator_;
+              bitField0_ = (bitField0_ & ~0x00000020);
+              contextCalibratorBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getContextCalibratorFieldBuilder() : null;
+            } else {
+              contextCalibratorBuilder_.addAllMessages(other.contextCalibrator_);
+            }
+          }
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
+        for (int i = 0; i < getContextCalibratorCount(); i++) {
+          if (!getContextCalibrator(i).isInitialized()) {
+            return false;
+          }
+        }
         return true;
       }
 
@@ -4627,6 +4765,246 @@ public final class Mdb {
         }
         return defaultCalibratorBuilder_;
       }
+
+      private java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo> contextCalibrator_ =
+        java.util.Collections.emptyList();
+      private void ensureContextCalibratorIsMutable() {
+        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+          contextCalibrator_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ContextCalibratorInfo>(contextCalibrator_);
+          bitField0_ |= 0x00000020;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ContextCalibratorInfo, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder, org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder> contextCalibratorBuilder_;
+
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo> getContextCalibratorList() {
+        if (contextCalibratorBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(contextCalibrator_);
+        } else {
+          return contextCalibratorBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public int getContextCalibratorCount() {
+        if (contextCalibratorBuilder_ == null) {
+          return contextCalibrator_.size();
+        } else {
+          return contextCalibratorBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo getContextCalibrator(int index) {
+        if (contextCalibratorBuilder_ == null) {
+          return contextCalibrator_.get(index);
+        } else {
+          return contextCalibratorBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public Builder setContextCalibrator(
+          int index, org.yamcs.protobuf.Mdb.ContextCalibratorInfo value) {
+        if (contextCalibratorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.set(index, value);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public Builder setContextCalibrator(
+          int index, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder builderForValue) {
+        if (contextCalibratorBuilder_ == null) {
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public Builder addContextCalibrator(org.yamcs.protobuf.Mdb.ContextCalibratorInfo value) {
+        if (contextCalibratorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.add(value);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public Builder addContextCalibrator(
+          int index, org.yamcs.protobuf.Mdb.ContextCalibratorInfo value) {
+        if (contextCalibratorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.add(index, value);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public Builder addContextCalibrator(
+          org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder builderForValue) {
+        if (contextCalibratorBuilder_ == null) {
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.add(builderForValue.build());
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public Builder addContextCalibrator(
+          int index, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder builderForValue) {
+        if (contextCalibratorBuilder_ == null) {
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public Builder addAllContextCalibrator(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ContextCalibratorInfo> values) {
+        if (contextCalibratorBuilder_ == null) {
+          ensureContextCalibratorIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, contextCalibrator_);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public Builder clearContextCalibrator() {
+        if (contextCalibratorBuilder_ == null) {
+          contextCalibrator_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000020);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public Builder removeContextCalibrator(int index) {
+        if (contextCalibratorBuilder_ == null) {
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.remove(index);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder getContextCalibratorBuilder(
+          int index) {
+        return getContextCalibratorFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder getContextCalibratorOrBuilder(
+          int index) {
+        if (contextCalibratorBuilder_ == null) {
+          return contextCalibrator_.get(index);  } else {
+          return contextCalibratorBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder> 
+           getContextCalibratorOrBuilderList() {
+        if (contextCalibratorBuilder_ != null) {
+          return contextCalibratorBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(contextCalibrator_);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder addContextCalibratorBuilder() {
+        return getContextCalibratorFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ContextCalibratorInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder addContextCalibratorBuilder(
+          int index) {
+        return getContextCalibratorFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ContextCalibratorInfo contextCalibrator = 7;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder> 
+           getContextCalibratorBuilderList() {
+        return getContextCalibratorFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ContextCalibratorInfo, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder, org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder> 
+          getContextCalibratorFieldBuilder() {
+        if (contextCalibratorBuilder_ == null) {
+          contextCalibratorBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.ContextCalibratorInfo, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder, org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder>(
+                  contextCalibrator_,
+                  ((bitField0_ & 0x00000020) == 0x00000020),
+                  getParentForChildren(),
+                  isClean());
+          contextCalibrator_ = null;
+        }
+        return contextCalibratorBuilder_;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
@@ -4671,6 +5049,962 @@ public final class Mdb {
     }
 
     public org.yamcs.protobuf.Mdb.DataEncodingInfo getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ContextCalibratorInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ContextCalibratorInfo)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> 
+        getComparisonList();
+    /**
+     * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ComparisonInfo getComparison(int index);
+    /**
+     * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+     */
+    int getComparisonCount();
+    /**
+     * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder> 
+        getComparisonOrBuilderList();
+    /**
+     * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder getComparisonOrBuilder(
+        int index);
+
+    /**
+     * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+     */
+    boolean hasCalibrator();
+    /**
+     * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+     */
+    org.yamcs.protobuf.Mdb.CalibratorInfo getCalibrator();
+    /**
+     * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+     */
+    org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder getCalibratorOrBuilder();
+  }
+  /**
+   * Protobuf type {@code mdb.ContextCalibratorInfo}
+   */
+  public  static final class ContextCalibratorInfo extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:mdb.ContextCalibratorInfo)
+      ContextCalibratorInfoOrBuilder {
+    // Use ContextCalibratorInfo.newBuilder() to construct.
+    private ContextCalibratorInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ContextCalibratorInfo() {
+      comparison_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ContextCalibratorInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                comparison_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ComparisonInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              comparison_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.ComparisonInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 18: {
+              org.yamcs.protobuf.Mdb.CalibratorInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = calibrator_.toBuilder();
+              }
+              calibrator_ = input.readMessage(org.yamcs.protobuf.Mdb.CalibratorInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(calibrator_);
+                calibrator_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          comparison_ = java.util.Collections.unmodifiableList(comparison_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ContextCalibratorInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ContextCalibratorInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.ContextCalibratorInfo.class, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int COMPARISON_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> comparison_;
+    /**
+     * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> getComparisonList() {
+      return comparison_;
+    }
+    /**
+     * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder> 
+        getComparisonOrBuilderList() {
+      return comparison_;
+    }
+    /**
+     * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+     */
+    public int getComparisonCount() {
+      return comparison_.size();
+    }
+    /**
+     * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ComparisonInfo getComparison(int index) {
+      return comparison_.get(index);
+    }
+    /**
+     * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder getComparisonOrBuilder(
+        int index) {
+      return comparison_.get(index);
+    }
+
+    public static final int CALIBRATOR_FIELD_NUMBER = 2;
+    private org.yamcs.protobuf.Mdb.CalibratorInfo calibrator_;
+    /**
+     * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+     */
+    public boolean hasCalibrator() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+     */
+    public org.yamcs.protobuf.Mdb.CalibratorInfo getCalibrator() {
+      return calibrator_ == null ? org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance() : calibrator_;
+    }
+    /**
+     * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+     */
+    public org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder getCalibratorOrBuilder() {
+      return calibrator_ == null ? org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance() : calibrator_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getComparisonCount(); i++) {
+        if (!getComparison(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < comparison_.size(); i++) {
+        output.writeMessage(1, comparison_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(2, getCalibrator());
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < comparison_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, comparison_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getCalibrator());
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.ContextCalibratorInfo)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.ContextCalibratorInfo other = (org.yamcs.protobuf.Mdb.ContextCalibratorInfo) obj;
+
+      boolean result = true;
+      result = result && getComparisonList()
+          .equals(other.getComparisonList());
+      result = result && (hasCalibrator() == other.hasCalibrator());
+      if (hasCalibrator()) {
+        result = result && getCalibrator()
+            .equals(other.getCalibrator());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getComparisonCount() > 0) {
+        hash = (37 * hash) + COMPARISON_FIELD_NUMBER;
+        hash = (53 * hash) + getComparisonList().hashCode();
+      }
+      if (hasCalibrator()) {
+        hash = (37 * hash) + CALIBRATOR_FIELD_NUMBER;
+        hash = (53 * hash) + getCalibrator().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.ContextCalibratorInfo prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code mdb.ContextCalibratorInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ContextCalibratorInfo)
+        org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ContextCalibratorInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ContextCalibratorInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.ContextCalibratorInfo.class, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.ContextCalibratorInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getComparisonFieldBuilder();
+          getCalibratorFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (comparisonBuilder_ == null) {
+          comparison_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          comparisonBuilder_.clear();
+        }
+        if (calibratorBuilder_ == null) {
+          calibrator_ = null;
+        } else {
+          calibratorBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ContextCalibratorInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.ContextCalibratorInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo build() {
+        org.yamcs.protobuf.Mdb.ContextCalibratorInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo buildPartial() {
+        org.yamcs.protobuf.Mdb.ContextCalibratorInfo result = new org.yamcs.protobuf.Mdb.ContextCalibratorInfo(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (comparisonBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            comparison_ = java.util.Collections.unmodifiableList(comparison_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.comparison_ = comparison_;
+        } else {
+          result.comparison_ = comparisonBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (calibratorBuilder_ == null) {
+          result.calibrator_ = calibrator_;
+        } else {
+          result.calibrator_ = calibratorBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.ContextCalibratorInfo) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.ContextCalibratorInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.ContextCalibratorInfo other) {
+        if (other == org.yamcs.protobuf.Mdb.ContextCalibratorInfo.getDefaultInstance()) return this;
+        if (comparisonBuilder_ == null) {
+          if (!other.comparison_.isEmpty()) {
+            if (comparison_.isEmpty()) {
+              comparison_ = other.comparison_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureComparisonIsMutable();
+              comparison_.addAll(other.comparison_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.comparison_.isEmpty()) {
+            if (comparisonBuilder_.isEmpty()) {
+              comparisonBuilder_.dispose();
+              comparisonBuilder_ = null;
+              comparison_ = other.comparison_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              comparisonBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getComparisonFieldBuilder() : null;
+            } else {
+              comparisonBuilder_.addAllMessages(other.comparison_);
+            }
+          }
+        }
+        if (other.hasCalibrator()) {
+          mergeCalibrator(other.getCalibrator());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getComparisonCount(); i++) {
+          if (!getComparison(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.ContextCalibratorInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.ContextCalibratorInfo) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> comparison_ =
+        java.util.Collections.emptyList();
+      private void ensureComparisonIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          comparison_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ComparisonInfo>(comparison_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ComparisonInfo, org.yamcs.protobuf.Mdb.ComparisonInfo.Builder, org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder> comparisonBuilder_;
+
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> getComparisonList() {
+        if (comparisonBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(comparison_);
+        } else {
+          return comparisonBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public int getComparisonCount() {
+        if (comparisonBuilder_ == null) {
+          return comparison_.size();
+        } else {
+          return comparisonBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ComparisonInfo getComparison(int index) {
+        if (comparisonBuilder_ == null) {
+          return comparison_.get(index);
+        } else {
+          return comparisonBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder setComparison(
+          int index, org.yamcs.protobuf.Mdb.ComparisonInfo value) {
+        if (comparisonBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureComparisonIsMutable();
+          comparison_.set(index, value);
+          onChanged();
+        } else {
+          comparisonBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder setComparison(
+          int index, org.yamcs.protobuf.Mdb.ComparisonInfo.Builder builderForValue) {
+        if (comparisonBuilder_ == null) {
+          ensureComparisonIsMutable();
+          comparison_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          comparisonBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder addComparison(org.yamcs.protobuf.Mdb.ComparisonInfo value) {
+        if (comparisonBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureComparisonIsMutable();
+          comparison_.add(value);
+          onChanged();
+        } else {
+          comparisonBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder addComparison(
+          int index, org.yamcs.protobuf.Mdb.ComparisonInfo value) {
+        if (comparisonBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureComparisonIsMutable();
+          comparison_.add(index, value);
+          onChanged();
+        } else {
+          comparisonBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder addComparison(
+          org.yamcs.protobuf.Mdb.ComparisonInfo.Builder builderForValue) {
+        if (comparisonBuilder_ == null) {
+          ensureComparisonIsMutable();
+          comparison_.add(builderForValue.build());
+          onChanged();
+        } else {
+          comparisonBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder addComparison(
+          int index, org.yamcs.protobuf.Mdb.ComparisonInfo.Builder builderForValue) {
+        if (comparisonBuilder_ == null) {
+          ensureComparisonIsMutable();
+          comparison_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          comparisonBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder addAllComparison(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ComparisonInfo> values) {
+        if (comparisonBuilder_ == null) {
+          ensureComparisonIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, comparison_);
+          onChanged();
+        } else {
+          comparisonBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder clearComparison() {
+        if (comparisonBuilder_ == null) {
+          comparison_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          comparisonBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder removeComparison(int index) {
+        if (comparisonBuilder_ == null) {
+          ensureComparisonIsMutable();
+          comparison_.remove(index);
+          onChanged();
+        } else {
+          comparisonBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ComparisonInfo.Builder getComparisonBuilder(
+          int index) {
+        return getComparisonFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder getComparisonOrBuilder(
+          int index) {
+        if (comparisonBuilder_ == null) {
+          return comparison_.get(index);  } else {
+          return comparisonBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder> 
+           getComparisonOrBuilderList() {
+        if (comparisonBuilder_ != null) {
+          return comparisonBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(comparison_);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ComparisonInfo.Builder addComparisonBuilder() {
+        return getComparisonFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ComparisonInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ComparisonInfo.Builder addComparisonBuilder(
+          int index) {
+        return getComparisonFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ComparisonInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo.Builder> 
+           getComparisonBuilderList() {
+        return getComparisonFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ComparisonInfo, org.yamcs.protobuf.Mdb.ComparisonInfo.Builder, org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder> 
+          getComparisonFieldBuilder() {
+        if (comparisonBuilder_ == null) {
+          comparisonBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.ComparisonInfo, org.yamcs.protobuf.Mdb.ComparisonInfo.Builder, org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder>(
+                  comparison_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          comparison_ = null;
+        }
+        return comparisonBuilder_;
+      }
+
+      private org.yamcs.protobuf.Mdb.CalibratorInfo calibrator_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.CalibratorInfo, org.yamcs.protobuf.Mdb.CalibratorInfo.Builder, org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder> calibratorBuilder_;
+      /**
+       * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+       */
+      public boolean hasCalibrator() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CalibratorInfo getCalibrator() {
+        if (calibratorBuilder_ == null) {
+          return calibrator_ == null ? org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance() : calibrator_;
+        } else {
+          return calibratorBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+       */
+      public Builder setCalibrator(org.yamcs.protobuf.Mdb.CalibratorInfo value) {
+        if (calibratorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          calibrator_ = value;
+          onChanged();
+        } else {
+          calibratorBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+       */
+      public Builder setCalibrator(
+          org.yamcs.protobuf.Mdb.CalibratorInfo.Builder builderForValue) {
+        if (calibratorBuilder_ == null) {
+          calibrator_ = builderForValue.build();
+          onChanged();
+        } else {
+          calibratorBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+       */
+      public Builder mergeCalibrator(org.yamcs.protobuf.Mdb.CalibratorInfo value) {
+        if (calibratorBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              calibrator_ != null &&
+              calibrator_ != org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance()) {
+            calibrator_ =
+              org.yamcs.protobuf.Mdb.CalibratorInfo.newBuilder(calibrator_).mergeFrom(value).buildPartial();
+          } else {
+            calibrator_ = value;
+          }
+          onChanged();
+        } else {
+          calibratorBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+       */
+      public Builder clearCalibrator() {
+        if (calibratorBuilder_ == null) {
+          calibrator_ = null;
+          onChanged();
+        } else {
+          calibratorBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CalibratorInfo.Builder getCalibratorBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getCalibratorFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder getCalibratorOrBuilder() {
+        if (calibratorBuilder_ != null) {
+          return calibratorBuilder_.getMessageOrBuilder();
+        } else {
+          return calibrator_ == null ?
+              org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance() : calibrator_;
+        }
+      }
+      /**
+       * <code>optional .mdb.CalibratorInfo calibrator = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.CalibratorInfo, org.yamcs.protobuf.Mdb.CalibratorInfo.Builder, org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder> 
+          getCalibratorFieldBuilder() {
+        if (calibratorBuilder_ == null) {
+          calibratorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.CalibratorInfo, org.yamcs.protobuf.Mdb.CalibratorInfo.Builder, org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder>(
+                  getCalibrator(),
+                  getParentForChildren(),
+                  isClean());
+          calibrator_ = null;
+        }
+        return calibratorBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:mdb.ContextCalibratorInfo)
+    }
+
+    // @@protoc_insertion_point(class_scope:mdb.ContextCalibratorInfo)
+    private static final org.yamcs.protobuf.Mdb.ContextCalibratorInfo DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.ContextCalibratorInfo();
+    }
+
+    public static org.yamcs.protobuf.Mdb.ContextCalibratorInfo getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ContextCalibratorInfo>
+        PARSER = new com.google.protobuf.AbstractParser<ContextCalibratorInfo>() {
+      public ContextCalibratorInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ContextCalibratorInfo(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ContextCalibratorInfo> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ContextCalibratorInfo> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.ContextCalibratorInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -9254,6 +10588,12 @@ public final class Mdb {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
+      if (hasDataEncoding()) {
+        if (!getDataEncoding().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       if (hasAbsoluteTimeInfo()) {
         if (!getAbsoluteTimeInfo().isInitialized()) {
           memoizedIsInitialized = 0;
@@ -9730,6 +11070,11 @@ public final class Mdb {
       }
 
       public final boolean isInitialized() {
+        if (hasDataEncoding()) {
+          if (!getDataEncoding().isInitialized()) {
+            return false;
+          }
+        }
         if (hasAbsoluteTimeInfo()) {
           if (!getAbsoluteTimeInfo().isInitialized()) {
             return false;
@@ -14094,6 +15439,12 @@ public final class Mdb {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
+      if (hasDataEncoding()) {
+        if (!getDataEncoding().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -14552,6 +15903,11 @@ public final class Mdb {
       }
 
       public final boolean isInitialized() {
+        if (hasDataEncoding()) {
+          if (!getDataEncoding().isInitialized()) {
+            return false;
+          }
+        }
         return true;
       }
 
@@ -15721,6 +17077,12 @@ public final class Mdb {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
+      if (hasType()) {
+        if (!getType().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -16065,6 +17427,11 @@ public final class Mdb {
       }
 
       public final boolean isInitialized() {
+        if (hasType()) {
+          if (!getType().isInitialized()) {
+            return false;
+          }
+        }
         return true;
       }
 
@@ -20702,6 +22069,12 @@ public final class Mdb {
           return false;
         }
       }
+      for (int i = 0; i < getArgumentCount(); i++) {
+        if (!getArgument(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       for (int i = 0; i < getConstraintCount(); i++) {
         if (!getConstraint(i).isInitialized()) {
           memoizedIsInitialized = 0;
@@ -21431,6 +22804,11 @@ public final class Mdb {
         }
         if (hasBaseCommand()) {
           if (!getBaseCommand().isInitialized()) {
+            return false;
+          }
+        }
+        for (int i = 0; i < getArgumentCount(); i++) {
+          if (!getArgument(i).isInitialized()) {
             return false;
           }
         }
@@ -24533,6 +25911,12 @@ public final class Mdb {
           return false;
         }
       }
+      if (hasArgument()) {
+        if (!getArgument().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
       if (hasRepeat()) {
         if (!getRepeat().isInitialized()) {
           memoizedIsInitialized = 0;
@@ -24997,6 +26381,11 @@ public final class Mdb {
         }
         if (hasParameter()) {
           if (!getParameter().isInitialized()) {
+            return false;
+          }
+        }
+        if (hasArgument()) {
+          if (!getArgument().isInitialized()) {
             return false;
           }
         }
@@ -36519,6 +37908,11 @@ public final class Mdb {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_mdb_DataEncodingInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mdb_ContextCalibratorInfo_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mdb_ContextCalibratorInfo_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_CalibratorInfo_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -36656,126 +38050,130 @@ public final class Mdb {
       "mLevelType\022\r\n\005label\030\003 \001(\t\"~\n\tAlarmInfo\022\025" +
       "\n\rminViolations\030\001 \001(\005\022)\n\020staticAlarmRang" +
       "e\030\002 \003(\0132\017.mdb.AlarmRange\022/\n\020enumerationA" +
-      "larm\030\003 \003(\0132\025.mdb.EnumerationAlarm\"\355\001\n\020Da",
+      "larm\030\003 \003(\0132\025.mdb.EnumerationAlarm\"\244\002\n\020Da",
       "taEncodingInfo\022(\n\004type\030\001 \001(\0162\032.mdb.DataE" +
       "ncodingInfo.Type\022\024\n\014littleEndian\030\002 \001(\010\022\022" +
       "\n\nsizeInBits\030\003 \001(\005\022\020\n\010encoding\030\004 \001(\t\022.\n\021" +
       "defaultCalibrator\030\006 \001(\0132\023.mdb.Calibrator" +
-      "Info\"C\n\004Type\022\n\n\006BINARY\020\000\022\013\n\007BOOLEAN\020\001\022\t\n" +
-      "\005FLOAT\020\002\022\013\n\007INTEGER\020\003\022\n\n\006STRING\020\004\"\325\001\n\016Ca" +
-      "libratorInfo\022\014\n\004type\030\001 \001(\t\022;\n\024polynomial" +
-      "Calibrator\030\002 \001(\0132\035.mdb.PolynomialCalibra" +
-      "torInfo\0223\n\020splineCalibrator\030\003 \001(\0132\031.mdb." +
-      "SplineCalibratorInfo\022C\n\030javaExpressionCa",
-      "librator\030\004 \001(\0132!.mdb.JavaExpressionCalib" +
-      "ratorInfo\"/\n\030PolynomialCalibratorInfo\022\023\n" +
-      "\013coefficient\030\001 \003(\001\"\204\001\n\024SplineCalibratorI" +
-      "nfo\0228\n\005point\030\001 \003(\0132).mdb.SplineCalibrato" +
-      "rInfo.SplinePointInfo\0322\n\017SplinePointInfo" +
-      "\022\013\n\003raw\030\001 \001(\001\022\022\n\ncalibrated\030\002 \001(\001\"/\n\034Jav" +
-      "aExpressionCalibratorInfo\022\017\n\007formula\030\001 \001" +
-      "(\t\")\n\tEnumValue\022\r\n\005value\030\001 \001(\003\022\r\n\005label\030" +
-      "\002 \001(\t\"\353\001\n\021ParameterTypeInfo\022\017\n\007engType\030\001" +
-      " \001(\t\022+\n\014dataEncoding\030\002 \001(\0132\025.mdb.DataEnc",
-      "odingInfo\022\036\n\007unitSet\030\003 \003(\0132\r.mdb.UnitInf" +
-      "o\022$\n\014defaultAlarm\030\004 \001(\0132\016.mdb.AlarmInfo\022" +
-      "!\n\tenumValue\030\005 \003(\0132\016.mdb.EnumValue\022/\n\020ab" +
-      "soluteTimeInfo\030\006 \001(\0132\025.mdb.AbsoluteTimeI" +
-      "nfo\"~\n\020AbsoluteTimeInfo\022\024\n\014initialValue\030" +
-      "\001 \001(\t\022\r\n\005scale\030\002 \001(\001\022\016\n\006offset\030\003 \001(\001\022&\n\n" +
-      "offsetFrom\030\004 \001(\0132\022.mdb.ParameterInfo\022\r\n\005" +
-      "epoch\030\005 \001(\t\"\350\001\n\rParameterInfo\022\014\n\004name\030\001 " +
-      "\001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescr" +
-      "iption\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022#\n",
-      "\005alias\030\005 \003(\0132\024.yamcs.NamedObjectId\022$\n\004ty" +
-      "pe\030\006 \001(\0132\026.mdb.ParameterTypeInfo\022\'\n\ndata" +
-      "Source\030\007 \001(\0162\023.mdb.DataSourceType\022\013\n\003url" +
-      "\030\010 \001(\t\"\267\001\n\020ArgumentTypeInfo\022\017\n\007engType\030\001" +
-      " \001(\t\022+\n\014dataEncoding\030\002 \001(\0132\025.mdb.DataEnc" +
-      "odingInfo\022\036\n\007unitSet\030\003 \003(\0132\r.mdb.UnitInf" +
-      "o\022!\n\tenumValue\030\005 \003(\0132\016.mdb.EnumValue\022\020\n\010" +
-      "rangeMin\030\006 \001(\001\022\020\n\010rangeMax\030\007 \001(\001\"l\n\014Argu" +
-      "mentInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013description\030\002 " +
-      "\001(\t\022\024\n\014initialValue\030\004 \001(\t\022#\n\004type\030\006 \001(\0132",
-      "\025.mdb.ArgumentTypeInfo\"5\n\026ArgumentAssign" +
-      "mentInfo\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"\326\001" +
-      "\n\020SignificanceInfo\022E\n\020consequenceLevel\030\001" +
-      " \001(\0162+.mdb.SignificanceInfo.Significance" +
-      "LevelType\022\030\n\020reasonForWarning\030\002 \001(\t\"a\n\025S" +
-      "ignificanceLevelType\022\010\n\004NONE\020\001\022\t\n\005WATCH\020" +
-      "\002\022\013\n\007WARNING\020\003\022\014\n\010DISTRESS\020\004\022\014\n\010CRITICAL" +
-      "\020\005\022\n\n\006SEVERE\020\006\"\213\002\n\016ComparisonInfo\022%\n\tpar" +
-      "ameter\030\001 \001(\0132\022.mdb.ParameterInfo\0222\n\010oper" +
-      "ator\030\002 \001(\0162 .mdb.ComparisonInfo.Operator",
-      "Type\022\r\n\005value\030\003 \001(\t\"\216\001\n\014OperatorType\022\014\n\010" +
-      "EQUAL_TO\020\001\022\020\n\014NOT_EQUAL_TO\020\002\022\020\n\014GREATER_" +
-      "THAN\020\003\022\034\n\030GREATER_THAN_OR_EQUAL_TO\020\004\022\020\n\014" +
-      "SMALLER_THAN\020\005\022\034\n\030SMALLER_THAN_OR_EQUAL_" +
-      "TO\020\006\"V\n\032TransmissionConstraintInfo\022\'\n\nco" +
-      "mparison\030\001 \003(\0132\023.mdb.ComparisonInfo\022\017\n\007t" +
-      "imeout\030\002 \001(\003\"\305\003\n\013CommandInfo\022\014\n\004name\030\001 \001" +
-      "(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescri" +
-      "ption\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022#\n\005" +
-      "alias\030\005 \003(\0132\024.yamcs.NamedObjectId\022%\n\013bas",
-      "eCommand\030\006 \001(\0132\020.mdb.CommandInfo\022\020\n\010abst" +
-      "ract\030\007 \001(\010\022#\n\010argument\030\010 \003(\0132\021.mdb.Argum" +
-      "entInfo\0227\n\022argumentAssignment\030\t \003(\0132\033.md" +
-      "b.ArgumentAssignmentInfo\022+\n\014significance" +
-      "\030\n \001(\0132\025.mdb.SignificanceInfo\0223\n\nconstra" +
-      "int\030\013 \003(\0132\037.mdb.TransmissionConstraintIn" +
-      "fo\022\013\n\003url\030\014 \001(\t\0223\n\020commandContainer\030\r \001(" +
-      "\0132\031.mdb.CommandContainerInfo\"_\n\nRepeatIn" +
-      "fo\022\022\n\nfixedCount\030\001 \001(\003\022(\n\014dynamicCount\030\002" +
-      " \001(\0132\022.mdb.ParameterInfo\022\023\n\013bitsBetween\030",
-      "\003 \001(\005\"\363\002\n\021SequenceEntryInfo\022\026\n\016locationI" +
-      "nBits\030\001 \001(\005\022G\n\021referenceLocation\030\002 \001(\0162," +
-      ".mdb.SequenceEntryInfo.ReferenceLocation" +
-      "Type\022%\n\tcontainer\030\003 \001(\0132\022.mdb.ContainerI" +
-      "nfo\022%\n\tparameter\030\004 \001(\0132\022.mdb.ParameterIn" +
-      "fo\022#\n\010argument\030\006 \001(\0132\021.mdb.ArgumentInfo\022" +
-      "\'\n\nfixedValue\030\007 \001(\0132\023.mdb.FixedValueInfo" +
-      "\022\037\n\006repeat\030\005 \001(\0132\017.mdb.RepeatInfo\"@\n\025Ref" +
-      "erenceLocationType\022\023\n\017CONTAINER_START\020\001\022" +
-      "\022\n\016PREVIOUS_ENTRY\020\002\"D\n\016FixedValueInfo\022\014\n",
-      "\004name\030\001 \001(\t\022\020\n\010hexValue\030\002 \001(\t\022\022\n\nsizeInB" +
-      "its\030\003 \001(\005\"\200\002\n\024CommandContainerInfo\022\014\n\004na" +
-      "me\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020short" +
-      "Description\030\003 \001(\t\022\027\n\017longDescription\030\004 \001" +
-      "(\t\022#\n\005alias\030\005 \003(\0132\024.yamcs.NamedObjectId\022" +
-      "\022\n\nsizeInBits\030\006 \001(\005\0220\n\rbaseContainer\030\007 \001" +
-      "(\0132\031.mdb.CommandContainerInfo\022%\n\005entry\030\010" +
-      " \003(\0132\026.mdb.SequenceEntryInfo\"\306\002\n\rContain" +
-      "erInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedName\030\002 " +
-      "\001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n\017longDes",
-      "cription\030\004 \001(\t\022#\n\005alias\030\005 \003(\0132\024.yamcs.Na" +
-      "medObjectId\022\023\n\013maxInterval\030\006 \001(\003\022\022\n\nsize" +
-      "InBits\030\007 \001(\005\022)\n\rbaseContainer\030\010 \001(\0132\022.md" +
-      "b.ContainerInfo\0220\n\023restrictionCriteria\030\t" +
-      " \003(\0132\023.mdb.ComparisonInfo\022%\n\005entry\030\n \003(\013" +
-      "2\026.mdb.SequenceEntryInfo\022\013\n\003url\030\013 \001(\t\"|\n" +
-      "\022InputParameterInfo\022%\n\tparameter\030\001 \001(\0132\022" +
-      ".mdb.ParameterInfo\022\021\n\tinputName\030\002 \001(\t\022\031\n" +
-      "\021parameterInstance\030\003 \001(\005\022\021\n\tmandatory\030\004 " +
-      "\001(\010\"P\n\023OutputParameterInfo\022%\n\tparameter\030",
-      "\001 \001(\0132\022.mdb.ParameterInfo\022\022\n\noutputName\030" +
-      "\002 \001(\t\"\274\003\n\rAlgorithmInfo\022\014\n\004name\030\001 \001(\t\022\025\n" +
-      "\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescription" +
-      "\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022#\n\005alias" +
-      "\030\005 \003(\0132\024.yamcs.NamedObjectId\022\'\n\005scope\030\006 " +
-      "\001(\0162\030.mdb.AlgorithmInfo.Scope\022\020\n\010languag" +
-      "e\030\007 \001(\t\022\014\n\004text\030\010 \001(\t\022/\n\016inputParameter\030" +
-      "\t \003(\0132\027.mdb.InputParameterInfo\0221\n\017output" +
-      "Parameter\030\n \003(\0132\030.mdb.OutputParameterInf" +
-      "o\022-\n\021onParameterUpdate\030\013 \003(\0132\022.mdb.Param",
-      "eterInfo\022\026\n\016onPeriodicRate\030\014 \003(\003\022\013\n\003url\030" +
-      "\r \001(\t\"-\n\005Scope\022\n\n\006GLOBAL\020\000\022\030\n\024COMMAND_VE" +
-      "RIFICATION\020\001*u\n\016DataSourceType\022\017\n\013TELEME" +
-      "TERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LO" +
-      "CAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAN" +
-      "D_HISTORY\020\006*\\\n\016AlarmLevelType\022\n\n\006NORMAL\020" +
-      "\000\022\t\n\005WATCH\020\001\022\013\n\007WARNING\020\002\022\014\n\010DISTRESS\020\003\022" +
-      "\014\n\010CRITICAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022org.yamcs.p" +
-      "rotobuf"
+      "Info\0225\n\021contextCalibrator\030\007 \003(\0132\032.mdb.Co" +
+      "ntextCalibratorInfo\"C\n\004Type\022\n\n\006BINARY\020\000\022" +
+      "\013\n\007BOOLEAN\020\001\022\t\n\005FLOAT\020\002\022\013\n\007INTEGER\020\003\022\n\n\006" +
+      "STRING\020\004\"i\n\025ContextCalibratorInfo\022\'\n\ncom" +
+      "parison\030\001 \003(\0132\023.mdb.ComparisonInfo\022\'\n\nca" +
+      "librator\030\002 \001(\0132\023.mdb.CalibratorInfo\"\325\001\n\016",
+      "CalibratorInfo\022\014\n\004type\030\001 \001(\t\022;\n\024polynomi" +
+      "alCalibrator\030\002 \001(\0132\035.mdb.PolynomialCalib" +
+      "ratorInfo\0223\n\020splineCalibrator\030\003 \001(\0132\031.md" +
+      "b.SplineCalibratorInfo\022C\n\030javaExpression" +
+      "Calibrator\030\004 \001(\0132!.mdb.JavaExpressionCal" +
+      "ibratorInfo\"/\n\030PolynomialCalibratorInfo\022" +
+      "\023\n\013coefficient\030\001 \003(\001\"\204\001\n\024SplineCalibrato" +
+      "rInfo\0228\n\005point\030\001 \003(\0132).mdb.SplineCalibra" +
+      "torInfo.SplinePointInfo\0322\n\017SplinePointIn" +
+      "fo\022\013\n\003raw\030\001 \001(\001\022\022\n\ncalibrated\030\002 \001(\001\"/\n\034J",
+      "avaExpressionCalibratorInfo\022\017\n\007formula\030\001" +
+      " \001(\t\")\n\tEnumValue\022\r\n\005value\030\001 \001(\003\022\r\n\005labe" +
+      "l\030\002 \001(\t\"\353\001\n\021ParameterTypeInfo\022\017\n\007engType" +
+      "\030\001 \001(\t\022+\n\014dataEncoding\030\002 \001(\0132\025.mdb.DataE" +
+      "ncodingInfo\022\036\n\007unitSet\030\003 \003(\0132\r.mdb.UnitI" +
+      "nfo\022$\n\014defaultAlarm\030\004 \001(\0132\016.mdb.AlarmInf" +
+      "o\022!\n\tenumValue\030\005 \003(\0132\016.mdb.EnumValue\022/\n\020" +
+      "absoluteTimeInfo\030\006 \001(\0132\025.mdb.AbsoluteTim" +
+      "eInfo\"~\n\020AbsoluteTimeInfo\022\024\n\014initialValu" +
+      "e\030\001 \001(\t\022\r\n\005scale\030\002 \001(\001\022\016\n\006offset\030\003 \001(\001\022&",
+      "\n\noffsetFrom\030\004 \001(\0132\022.mdb.ParameterInfo\022\r" +
+      "\n\005epoch\030\005 \001(\t\"\350\001\n\rParameterInfo\022\014\n\004name\030" +
+      "\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDes" +
+      "cription\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022" +
+      "#\n\005alias\030\005 \003(\0132\024.yamcs.NamedObjectId\022$\n\004" +
+      "type\030\006 \001(\0132\026.mdb.ParameterTypeInfo\022\'\n\nda" +
+      "taSource\030\007 \001(\0162\023.mdb.DataSourceType\022\013\n\003u" +
+      "rl\030\010 \001(\t\"\267\001\n\020ArgumentTypeInfo\022\017\n\007engType" +
+      "\030\001 \001(\t\022+\n\014dataEncoding\030\002 \001(\0132\025.mdb.DataE" +
+      "ncodingInfo\022\036\n\007unitSet\030\003 \003(\0132\r.mdb.UnitI",
+      "nfo\022!\n\tenumValue\030\005 \003(\0132\016.mdb.EnumValue\022\020" +
+      "\n\010rangeMin\030\006 \001(\001\022\020\n\010rangeMax\030\007 \001(\001\"l\n\014Ar" +
+      "gumentInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013description\030" +
+      "\002 \001(\t\022\024\n\014initialValue\030\004 \001(\t\022#\n\004type\030\006 \001(" +
+      "\0132\025.mdb.ArgumentTypeInfo\"5\n\026ArgumentAssi" +
+      "gnmentInfo\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"" +
+      "\326\001\n\020SignificanceInfo\022E\n\020consequenceLevel" +
+      "\030\001 \001(\0162+.mdb.SignificanceInfo.Significan" +
+      "ceLevelType\022\030\n\020reasonForWarning\030\002 \001(\t\"a\n" +
+      "\025SignificanceLevelType\022\010\n\004NONE\020\001\022\t\n\005WATC",
+      "H\020\002\022\013\n\007WARNING\020\003\022\014\n\010DISTRESS\020\004\022\014\n\010CRITIC" +
+      "AL\020\005\022\n\n\006SEVERE\020\006\"\213\002\n\016ComparisonInfo\022%\n\tp" +
+      "arameter\030\001 \001(\0132\022.mdb.ParameterInfo\0222\n\010op" +
+      "erator\030\002 \001(\0162 .mdb.ComparisonInfo.Operat" +
+      "orType\022\r\n\005value\030\003 \001(\t\"\216\001\n\014OperatorType\022\014" +
+      "\n\010EQUAL_TO\020\001\022\020\n\014NOT_EQUAL_TO\020\002\022\020\n\014GREATE" +
+      "R_THAN\020\003\022\034\n\030GREATER_THAN_OR_EQUAL_TO\020\004\022\020" +
+      "\n\014SMALLER_THAN\020\005\022\034\n\030SMALLER_THAN_OR_EQUA" +
+      "L_TO\020\006\"V\n\032TransmissionConstraintInfo\022\'\n\n" +
+      "comparison\030\001 \003(\0132\023.mdb.ComparisonInfo\022\017\n",
+      "\007timeout\030\002 \001(\003\"\305\003\n\013CommandInfo\022\014\n\004name\030\001" +
+      " \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDesc" +
+      "ription\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022#" +
+      "\n\005alias\030\005 \003(\0132\024.yamcs.NamedObjectId\022%\n\013b" +
+      "aseCommand\030\006 \001(\0132\020.mdb.CommandInfo\022\020\n\010ab" +
+      "stract\030\007 \001(\010\022#\n\010argument\030\010 \003(\0132\021.mdb.Arg" +
+      "umentInfo\0227\n\022argumentAssignment\030\t \003(\0132\033." +
+      "mdb.ArgumentAssignmentInfo\022+\n\014significan" +
+      "ce\030\n \001(\0132\025.mdb.SignificanceInfo\0223\n\nconst" +
+      "raint\030\013 \003(\0132\037.mdb.TransmissionConstraint",
+      "Info\022\013\n\003url\030\014 \001(\t\0223\n\020commandContainer\030\r " +
+      "\001(\0132\031.mdb.CommandContainerInfo\"_\n\nRepeat" +
+      "Info\022\022\n\nfixedCount\030\001 \001(\003\022(\n\014dynamicCount" +
+      "\030\002 \001(\0132\022.mdb.ParameterInfo\022\023\n\013bitsBetwee" +
+      "n\030\003 \001(\005\"\363\002\n\021SequenceEntryInfo\022\026\n\016locatio" +
+      "nInBits\030\001 \001(\005\022G\n\021referenceLocation\030\002 \001(\016" +
+      "2,.mdb.SequenceEntryInfo.ReferenceLocati" +
+      "onType\022%\n\tcontainer\030\003 \001(\0132\022.mdb.Containe" +
+      "rInfo\022%\n\tparameter\030\004 \001(\0132\022.mdb.Parameter" +
+      "Info\022#\n\010argument\030\006 \001(\0132\021.mdb.ArgumentInf",
+      "o\022\'\n\nfixedValue\030\007 \001(\0132\023.mdb.FixedValueIn" +
+      "fo\022\037\n\006repeat\030\005 \001(\0132\017.mdb.RepeatInfo\"@\n\025R" +
+      "eferenceLocationType\022\023\n\017CONTAINER_START\020" +
+      "\001\022\022\n\016PREVIOUS_ENTRY\020\002\"D\n\016FixedValueInfo\022" +
+      "\014\n\004name\030\001 \001(\t\022\020\n\010hexValue\030\002 \001(\t\022\022\n\nsizeI" +
+      "nBits\030\003 \001(\005\"\200\002\n\024CommandContainerInfo\022\014\n\004" +
+      "name\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020sho" +
+      "rtDescription\030\003 \001(\t\022\027\n\017longDescription\030\004" +
+      " \001(\t\022#\n\005alias\030\005 \003(\0132\024.yamcs.NamedObjectI" +
+      "d\022\022\n\nsizeInBits\030\006 \001(\005\0220\n\rbaseContainer\030\007",
+      " \001(\0132\031.mdb.CommandContainerInfo\022%\n\005entry" +
+      "\030\010 \003(\0132\026.mdb.SequenceEntryInfo\"\306\002\n\rConta" +
+      "inerInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedName\030" +
+      "\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n\017longD" +
+      "escription\030\004 \001(\t\022#\n\005alias\030\005 \003(\0132\024.yamcs." +
+      "NamedObjectId\022\023\n\013maxInterval\030\006 \001(\003\022\022\n\nsi" +
+      "zeInBits\030\007 \001(\005\022)\n\rbaseContainer\030\010 \001(\0132\022." +
+      "mdb.ContainerInfo\0220\n\023restrictionCriteria" +
+      "\030\t \003(\0132\023.mdb.ComparisonInfo\022%\n\005entry\030\n \003" +
+      "(\0132\026.mdb.SequenceEntryInfo\022\013\n\003url\030\013 \001(\t\"",
+      "|\n\022InputParameterInfo\022%\n\tparameter\030\001 \001(\013" +
+      "2\022.mdb.ParameterInfo\022\021\n\tinputName\030\002 \001(\t\022" +
+      "\031\n\021parameterInstance\030\003 \001(\005\022\021\n\tmandatory\030" +
+      "\004 \001(\010\"P\n\023OutputParameterInfo\022%\n\tparamete" +
+      "r\030\001 \001(\0132\022.mdb.ParameterInfo\022\022\n\noutputNam" +
+      "e\030\002 \001(\t\"\274\003\n\rAlgorithmInfo\022\014\n\004name\030\001 \001(\t\022" +
+      "\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescripti" +
+      "on\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022#\n\005ali" +
+      "as\030\005 \003(\0132\024.yamcs.NamedObjectId\022\'\n\005scope\030" +
+      "\006 \001(\0162\030.mdb.AlgorithmInfo.Scope\022\020\n\010langu",
+      "age\030\007 \001(\t\022\014\n\004text\030\010 \001(\t\022/\n\016inputParamete" +
+      "r\030\t \003(\0132\027.mdb.InputParameterInfo\0221\n\017outp" +
+      "utParameter\030\n \003(\0132\030.mdb.OutputParameterI" +
+      "nfo\022-\n\021onParameterUpdate\030\013 \003(\0132\022.mdb.Par" +
+      "ameterInfo\022\026\n\016onPeriodicRate\030\014 \003(\003\022\013\n\003ur" +
+      "l\030\r \001(\t\"-\n\005Scope\022\n\n\006GLOBAL\020\000\022\030\n\024COMMAND_" +
+      "VERIFICATION\020\001*u\n\016DataSourceType\022\017\n\013TELE" +
+      "METERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005" +
+      "LOCAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMM" +
+      "AND_HISTORY\020\006*\\\n\016AlarmLevelType\022\n\n\006NORMA",
+      "L\020\000\022\t\n\005WATCH\020\001\022\013\n\007WARNING\020\002\022\014\n\010DISTRESS\020" +
+      "\003\022\014\n\010CRITICAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022org.yamcs" +
+      ".protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -36819,21 +38217,27 @@ public final class Mdb {
     internal_static_mdb_DataEncodingInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_DataEncodingInfo_descriptor,
-        new java.lang.String[] { "Type", "LittleEndian", "SizeInBits", "Encoding", "DefaultCalibrator", });
-    internal_static_mdb_CalibratorInfo_descriptor =
+        new java.lang.String[] { "Type", "LittleEndian", "SizeInBits", "Encoding", "DefaultCalibrator", "ContextCalibrator", });
+    internal_static_mdb_ContextCalibratorInfo_descriptor =
       getDescriptor().getMessageTypes().get(5);
+    internal_static_mdb_ContextCalibratorInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mdb_ContextCalibratorInfo_descriptor,
+        new java.lang.String[] { "Comparison", "Calibrator", });
+    internal_static_mdb_CalibratorInfo_descriptor =
+      getDescriptor().getMessageTypes().get(6);
     internal_static_mdb_CalibratorInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_CalibratorInfo_descriptor,
         new java.lang.String[] { "Type", "PolynomialCalibrator", "SplineCalibrator", "JavaExpressionCalibrator", });
     internal_static_mdb_PolynomialCalibratorInfo_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(7);
     internal_static_mdb_PolynomialCalibratorInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_PolynomialCalibratorInfo_descriptor,
         new java.lang.String[] { "Coefficient", });
     internal_static_mdb_SplineCalibratorInfo_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(8);
     internal_static_mdb_SplineCalibratorInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_SplineCalibratorInfo_descriptor,
@@ -36845,121 +38249,121 @@ public final class Mdb {
         internal_static_mdb_SplineCalibratorInfo_SplinePointInfo_descriptor,
         new java.lang.String[] { "Raw", "Calibrated", });
     internal_static_mdb_JavaExpressionCalibratorInfo_descriptor =
-      getDescriptor().getMessageTypes().get(8);
+      getDescriptor().getMessageTypes().get(9);
     internal_static_mdb_JavaExpressionCalibratorInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_JavaExpressionCalibratorInfo_descriptor,
         new java.lang.String[] { "Formula", });
     internal_static_mdb_EnumValue_descriptor =
-      getDescriptor().getMessageTypes().get(9);
+      getDescriptor().getMessageTypes().get(10);
     internal_static_mdb_EnumValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_EnumValue_descriptor,
         new java.lang.String[] { "Value", "Label", });
     internal_static_mdb_ParameterTypeInfo_descriptor =
-      getDescriptor().getMessageTypes().get(10);
+      getDescriptor().getMessageTypes().get(11);
     internal_static_mdb_ParameterTypeInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_ParameterTypeInfo_descriptor,
         new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "DefaultAlarm", "EnumValue", "AbsoluteTimeInfo", });
     internal_static_mdb_AbsoluteTimeInfo_descriptor =
-      getDescriptor().getMessageTypes().get(11);
+      getDescriptor().getMessageTypes().get(12);
     internal_static_mdb_AbsoluteTimeInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_AbsoluteTimeInfo_descriptor,
         new java.lang.String[] { "InitialValue", "Scale", "Offset", "OffsetFrom", "Epoch", });
     internal_static_mdb_ParameterInfo_descriptor =
-      getDescriptor().getMessageTypes().get(12);
+      getDescriptor().getMessageTypes().get(13);
     internal_static_mdb_ParameterInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_ParameterInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "Type", "DataSource", "Url", });
     internal_static_mdb_ArgumentTypeInfo_descriptor =
-      getDescriptor().getMessageTypes().get(13);
+      getDescriptor().getMessageTypes().get(14);
     internal_static_mdb_ArgumentTypeInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_ArgumentTypeInfo_descriptor,
         new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "EnumValue", "RangeMin", "RangeMax", });
     internal_static_mdb_ArgumentInfo_descriptor =
-      getDescriptor().getMessageTypes().get(14);
+      getDescriptor().getMessageTypes().get(15);
     internal_static_mdb_ArgumentInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_ArgumentInfo_descriptor,
         new java.lang.String[] { "Name", "Description", "InitialValue", "Type", });
     internal_static_mdb_ArgumentAssignmentInfo_descriptor =
-      getDescriptor().getMessageTypes().get(15);
+      getDescriptor().getMessageTypes().get(16);
     internal_static_mdb_ArgumentAssignmentInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_ArgumentAssignmentInfo_descriptor,
         new java.lang.String[] { "Name", "Value", });
     internal_static_mdb_SignificanceInfo_descriptor =
-      getDescriptor().getMessageTypes().get(16);
+      getDescriptor().getMessageTypes().get(17);
     internal_static_mdb_SignificanceInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_SignificanceInfo_descriptor,
         new java.lang.String[] { "ConsequenceLevel", "ReasonForWarning", });
     internal_static_mdb_ComparisonInfo_descriptor =
-      getDescriptor().getMessageTypes().get(17);
+      getDescriptor().getMessageTypes().get(18);
     internal_static_mdb_ComparisonInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_ComparisonInfo_descriptor,
         new java.lang.String[] { "Parameter", "Operator", "Value", });
     internal_static_mdb_TransmissionConstraintInfo_descriptor =
-      getDescriptor().getMessageTypes().get(18);
+      getDescriptor().getMessageTypes().get(19);
     internal_static_mdb_TransmissionConstraintInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_TransmissionConstraintInfo_descriptor,
         new java.lang.String[] { "Comparison", "Timeout", });
     internal_static_mdb_CommandInfo_descriptor =
-      getDescriptor().getMessageTypes().get(19);
+      getDescriptor().getMessageTypes().get(20);
     internal_static_mdb_CommandInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_CommandInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "BaseCommand", "Abstract", "Argument", "ArgumentAssignment", "Significance", "Constraint", "Url", "CommandContainer", });
     internal_static_mdb_RepeatInfo_descriptor =
-      getDescriptor().getMessageTypes().get(20);
+      getDescriptor().getMessageTypes().get(21);
     internal_static_mdb_RepeatInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_RepeatInfo_descriptor,
         new java.lang.String[] { "FixedCount", "DynamicCount", "BitsBetween", });
     internal_static_mdb_SequenceEntryInfo_descriptor =
-      getDescriptor().getMessageTypes().get(21);
+      getDescriptor().getMessageTypes().get(22);
     internal_static_mdb_SequenceEntryInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_SequenceEntryInfo_descriptor,
         new java.lang.String[] { "LocationInBits", "ReferenceLocation", "Container", "Parameter", "Argument", "FixedValue", "Repeat", });
     internal_static_mdb_FixedValueInfo_descriptor =
-      getDescriptor().getMessageTypes().get(22);
+      getDescriptor().getMessageTypes().get(23);
     internal_static_mdb_FixedValueInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_FixedValueInfo_descriptor,
         new java.lang.String[] { "Name", "HexValue", "SizeInBits", });
     internal_static_mdb_CommandContainerInfo_descriptor =
-      getDescriptor().getMessageTypes().get(23);
+      getDescriptor().getMessageTypes().get(24);
     internal_static_mdb_CommandContainerInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_CommandContainerInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "SizeInBits", "BaseContainer", "Entry", });
     internal_static_mdb_ContainerInfo_descriptor =
-      getDescriptor().getMessageTypes().get(24);
+      getDescriptor().getMessageTypes().get(25);
     internal_static_mdb_ContainerInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_ContainerInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "MaxInterval", "SizeInBits", "BaseContainer", "RestrictionCriteria", "Entry", "Url", });
     internal_static_mdb_InputParameterInfo_descriptor =
-      getDescriptor().getMessageTypes().get(25);
+      getDescriptor().getMessageTypes().get(26);
     internal_static_mdb_InputParameterInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_InputParameterInfo_descriptor,
         new java.lang.String[] { "Parameter", "InputName", "ParameterInstance", "Mandatory", });
     internal_static_mdb_OutputParameterInfo_descriptor =
-      getDescriptor().getMessageTypes().get(26);
+      getDescriptor().getMessageTypes().get(27);
     internal_static_mdb_OutputParameterInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_OutputParameterInfo_descriptor,
         new java.lang.String[] { "Parameter", "OutputName", });
     internal_static_mdb_AlgorithmInfo_descriptor =
-      getDescriptor().getMessageTypes().get(27);
+      getDescriptor().getMessageTypes().get(28);
     internal_static_mdb_AlgorithmInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_AlgorithmInfo_descriptor,

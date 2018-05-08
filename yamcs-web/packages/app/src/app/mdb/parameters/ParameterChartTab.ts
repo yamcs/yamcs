@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DyDataSource } from '../../shared/widgets/DyDataSource';
 import { subtractDuration } from '../../shared/utils';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { MatDialog } from '@angular/material';
 import { SelectRangeDialog } from './SelectRangeDialog';
 import { ParameterPlot } from '../../shared/widgets/ParameterPlot';

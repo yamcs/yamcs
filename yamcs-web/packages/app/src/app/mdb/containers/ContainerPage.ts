@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Instance, Container } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Title } from '@angular/platform-browser';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   templateUrl: './ContainerPage.html',

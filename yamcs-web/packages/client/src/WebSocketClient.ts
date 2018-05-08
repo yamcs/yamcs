@@ -1,37 +1,10 @@
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { delay, filter, first, map, retryWhen, take } from 'rxjs/operators';
+import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
 import { SubscriptionModel } from './SubscriptionModel';
-import { webSocket } from 'rxjs/observable/dom/webSocket';
-import { delay, filter, map, retryWhen, first } from 'rxjs/operators';
-import { WebSocketSubject } from 'rxjs/observable/dom/WebSocketSubject';
 import { WebSocketServerMessage } from './types/internal';
-import {
-  Alarm,
-  AlarmSubscriptionResponse,
-  Event,
-  EventSubscriptionResponse,
-  ParameterData,
-  ParameterSubscriptionRequest,
-  ParameterSubscriptionResponse,
-  TimeInfo,
-  TimeSubscriptionResponse,
-} from './types/monitoring';
-import {
-  ClientInfo,
-  ClientSubscriptionResponse,
-  CommandQueueEventSubscriptionResponse,
-  CommandQueueSubscriptionResponse,
-  LinkEvent,
-  LinkSubscriptionResponse,
-  Processor,
-  ProcessorSubscriptionResponse,
-  Statistics,
-  StatisticsSubscriptionResponse,
-  CommandQueue,
-  CommandQueueEvent,
-  Link,
-} from './types/system';
-import { Observable } from 'rxjs/Observable';
-import { Subscription } from 'rxjs/Subscription';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Alarm, AlarmSubscriptionResponse, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
+import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse } from './types/system';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
@@ -53,6 +26,10 @@ export class WebSocketClient {
   private webSocketConnection$: Observable<{}>;
   private webSocketConnectionSubscription: Subscription;
 
+  // Server-controlled metadata on the connected client
+  // (clientId, instance, processor)
+  private connectionInfo$ = new BehaviorSubject<ConnectionInfo | null>(null);
+
   private requestSequence = 0;
 
   // Toggle to distinguish original open from a reconnection.
@@ -69,6 +46,7 @@ export class WebSocketClient {
     this.subscriptionModel = new SubscriptionModel();
     this.webSocket = webSocket({
       url: wsUrl,
+      protocol: 'json',
       closeObserver: {
         next: () => {
           this.connected$.next(false);
@@ -77,11 +55,9 @@ export class WebSocketClient {
       },
       openObserver: {
         next: () => {
-          console.log('Connected to Yamcs');
-          this.connected$.next(true);
-          if (this.subscribeOnOpen) {
-            this.registerSubscriptions();
-          }
+          // Note we do not set connected$ here
+          // Instead prefer to set that after
+          // receiving the initial bootstrap message
         }
       }
     });
@@ -91,13 +67,20 @@ export class WebSocketClient {
         return errors.pipe(delay(1000));
       }),
     );
-    this.webSocketConnectionSubscription = this.webSocketConnection$.subscribe((msg: WebSocketServerMessage) => {
-        if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+    this.webSocketConnectionSubscription = this.webSocketConnection$.subscribe(
+      (msg: WebSocketServerMessage) => {
+        if (!this.connected$.value && msg[1] === MESSAGE_TYPE_DATA && msg[3].dt === 'CONNECTION_INFO') {
+          const connectionInfo = msg[3].data as ConnectionInfo;
+          this.connectionInfo$.next(connectionInfo);
+          this.connected$.next(true);
+          if (this.subscribeOnOpen) {
+            this.registerSubscriptions();
+          }
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
           console.error(`Server error:  ${msg[3].et}`, msg[3].msg);
         }
       },
-      (err) => console.log(err),
-      () => console.log('complete'),
+      (err) => console.log(err)
     );
   }
 
@@ -152,6 +135,27 @@ export class WebSocketClient {
           reject('Unexpected response code');
         }
       });
+    });
+  }
+
+  async getConnectionInfoUpdates() {
+    // No need to emit anything for this, all clients receive these events.
+    return new Promise<ConnectionInfoSubscriptionResponse>((resolve, reject) => {
+      // Wait for the intial connection info data to arrive. Yamcs will always
+      // sent this as the first data packet of a new connection.
+      this.connectionInfo$.pipe(
+        filter(connectionInfo => connectionInfo != null),
+        take(1),
+      ).subscribe(connectionInfo => {
+        const response = {} as ConnectionInfoSubscriptionResponse;
+        response.connectionInfo = connectionInfo!;
+        response.connectionInfo$ = this.webSocketConnection$.pipe(
+          filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+          filter((msg: WebSocketServerMessage) => msg[3].dt === 'CONNECTION_INFO'),
+          map(msg => msg[3].data as ConnectionInfo),
+        );
+        resolve(response);
+      }, err => reject(err))
     });
   }
 
@@ -214,7 +218,12 @@ export class WebSocketClient {
 
   async getClientUpdates(instance?: string) {
     this.subscriptionModel.management = true;
-    const requestId = this.emit({ management: 'subscribe' });
+    const requestId = this.emit({
+      management: 'subscribe',
+      data: {
+        processorInfo: false // Use processor/subscribe instead
+      },
+    });
 
     return new Promise<ClientSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
@@ -242,9 +251,9 @@ export class WebSocketClient {
     });
   }
 
-  async getProcessorUpdates(instance?: string) {
-    this.subscriptionModel.management = true;
-    const requestId = this.emit({ management: 'subscribe' });
+  async getProcessorUpdates(options?: ProcessorSubscriptionRequest) {
+    this.subscriptionModel.processor = true;
+    const requestId = this.emit({ processor: 'subscribe', data: options });
 
     return new Promise<ProcessorSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
@@ -253,14 +262,11 @@ export class WebSocketClient {
         }),
       ).subscribe((msg: WebSocketServerMessage) => {
         if (msg[1] === MESSAGE_TYPE_REPLY) {
-          const response = {} as ProcessorSubscriptionResponse;
+          const response = msg[3].data as ProcessorSubscriptionResponse;
           response.processor$ = this.webSocketConnection$.pipe(
             filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
             filter((msg: WebSocketServerMessage) => msg[3].dt === 'PROCESSOR_INFO'),
             map(msg => msg[3].data as Processor),
-            filter((processor: Processor) => {
-              return !instance || (instance === processor.instance);
-            }),
           );
           resolve(response);
         } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
@@ -274,7 +280,12 @@ export class WebSocketClient {
 
   async getProcessorStatistics(instance?: string) {
     this.subscriptionModel.management = true;
-    const requestId = this.emit({ management: 'subscribe' });
+    const requestId = this.emit({
+      management: 'subscribe',
+      data: {
+        processorInfo: false // Use processor/subscribe instead
+      },
+    });
 
     return new Promise<StatisticsSubscriptionResponse>((resolve, reject) => {
       this.webSocketConnection$.pipe(
@@ -403,12 +414,12 @@ export class WebSocketClient {
   }
 
   private emit(payload: { [key: string]: any, data?: {} }) {
-    this.webSocket.next(JSON.stringify([
+    this.webSocket.next([
       PROTOCOL_VERSION,
       MESSAGE_TYPE_REQUEST,
       ++this.requestSequence,
       payload,
-    ]));
+    ]);
     return this.requestSequence
   }
 
@@ -422,8 +433,16 @@ export class WebSocketClient {
     if (this.subscriptionModel.links) {
       this.emit({ links: 'subscribe' });
     }
+    if (this.subscriptionModel.processor) {
+      this.emit({ processor: 'subscribe' });
+    }
     if (this.subscriptionModel.management) {
-      this.emit({ management: 'subscribe' });
+      const requestId = this.emit({
+        management: 'subscribe',
+        data: {
+          processorInfo: false // Use processor/subscribe instead
+        },
+      });
     }
     if (this.subscriptionModel.commandQueues) {
       this.emit({ cqueues: 'subscribe' });

@@ -5337,6 +5337,15 @@ public final class Yamcs {
      */
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getEventSourceOrBuilder(
         int index);
+
+    /**
+     * <code>optional uint32 mergeTime = 16;</code>
+     */
+    boolean hasMergeTime();
+    /**
+     * <code>optional uint32 mergeTime = 16;</code>
+     */
+    int getMergeTime();
   }
   /**
    * <pre>
@@ -5369,6 +5378,7 @@ public final class Yamcs {
       cmdName_ = java.util.Collections.emptyList();
       sendAllEvent_ = false;
       eventSource_ = java.util.Collections.emptyList();
+      mergeTime_ = 0;
     }
 
     @java.lang.Override
@@ -5492,6 +5502,11 @@ public final class Yamcs {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000010;
               utcStop_ = bs;
+              break;
+            }
+            case 128: {
+              bitField0_ |= 0x00000800;
+              mergeTime_ = input.readUInt32();
               break;
             }
           }
@@ -6003,6 +6018,21 @@ public final class Yamcs {
       return eventSource_.get(index);
     }
 
+    public static final int MERGETIME_FIELD_NUMBER = 16;
+    private int mergeTime_;
+    /**
+     * <code>optional uint32 mergeTime = 16;</code>
+     */
+    public boolean hasMergeTime() {
+      return ((bitField0_ & 0x00000800) == 0x00000800);
+    }
+    /**
+     * <code>optional uint32 mergeTime = 16;</code>
+     */
+    public int getMergeTime() {
+      return mergeTime_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -6088,6 +6118,9 @@ public final class Yamcs {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 15, utcStop_);
       }
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        output.writeUInt32(16, mergeTime_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -6151,6 +6184,10 @@ public final class Yamcs {
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(15, utcStop_);
+      }
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(16, mergeTime_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -6232,6 +6269,11 @@ public final class Yamcs {
       }
       result = result && getEventSourceList()
           .equals(other.getEventSourceList());
+      result = result && (hasMergeTime() == other.hasMergeTime());
+      if (hasMergeTime()) {
+        result = result && (getMergeTime()
+            == other.getMergeTime());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -6309,6 +6351,10 @@ public final class Yamcs {
       if (getEventSourceCount() > 0) {
         hash = (37 * hash) + EVENTSOURCE_FIELD_NUMBER;
         hash = (53 * hash) + getEventSourceList().hashCode();
+      }
+      if (hasMergeTime()) {
+        hash = (37 * hash) + MERGETIME_FIELD_NUMBER;
+        hash = (53 * hash) + getMergeTime();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -6482,6 +6528,8 @@ public final class Yamcs {
         } else {
           eventSourceBuilder_.clear();
         }
+        mergeTime_ = 0;
+        bitField0_ = (bitField0_ & ~0x00008000);
         return this;
       }
 
@@ -6586,6 +6634,10 @@ public final class Yamcs {
         } else {
           result.eventSource_ = eventSourceBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00008000) == 0x00008000)) {
+          to_bitField0_ |= 0x00000800;
+        }
+        result.mergeTime_ = mergeTime_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -6772,6 +6824,9 @@ public final class Yamcs {
               eventSourceBuilder_.addAllMessages(other.eventSource_);
             }
           }
+        }
+        if (other.hasMergeTime()) {
+          setMergeTime(other.getMergeTime());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -8428,6 +8483,38 @@ public final class Yamcs {
           eventSource_ = null;
         }
         return eventSourceBuilder_;
+      }
+
+      private int mergeTime_ ;
+      /**
+       * <code>optional uint32 mergeTime = 16;</code>
+       */
+      public boolean hasMergeTime() {
+        return ((bitField0_ & 0x00008000) == 0x00008000);
+      }
+      /**
+       * <code>optional uint32 mergeTime = 16;</code>
+       */
+      public int getMergeTime() {
+        return mergeTime_;
+      }
+      /**
+       * <code>optional uint32 mergeTime = 16;</code>
+       */
+      public Builder setMergeTime(int value) {
+        bitField0_ |= 0x00008000;
+        mergeTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 mergeTime = 16;</code>
+       */
+      public Builder clearMergeTime() {
+        bitField0_ = (bitField0_ & ~0x00008000);
+        mergeTime_ = 0;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -15788,7 +15875,7 @@ public final class Yamcs {
 
     /**
      * <pre>
-     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
      * </pre>
      *
      * <code>optional string utcStart = 13;</code>
@@ -15796,7 +15883,7 @@ public final class Yamcs {
     boolean hasUtcStart();
     /**
      * <pre>
-     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
      * </pre>
      *
      * <code>optional string utcStart = 13;</code>
@@ -15804,7 +15891,7 @@ public final class Yamcs {
     java.lang.String getUtcStart();
     /**
      * <pre>
-     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
      * </pre>
      *
      * <code>optional string utcStart = 13;</code>
@@ -16200,7 +16287,7 @@ public final class Yamcs {
     private volatile java.lang.Object utcStart_;
     /**
      * <pre>
-     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
      * </pre>
      *
      * <code>optional string utcStart = 13;</code>
@@ -16210,7 +16297,7 @@ public final class Yamcs {
     }
     /**
      * <pre>
-     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
      * </pre>
      *
      * <code>optional string utcStart = 13;</code>
@@ -16231,7 +16318,7 @@ public final class Yamcs {
     }
     /**
      * <pre>
-     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+     *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
      * </pre>
      *
      * <code>optional string utcStart = 13;</code>
@@ -17241,7 +17328,7 @@ public final class Yamcs {
       private java.lang.Object utcStart_ = "";
       /**
        * <pre>
-       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
        * </pre>
        *
        * <code>optional string utcStart = 13;</code>
@@ -17251,7 +17338,7 @@ public final class Yamcs {
       }
       /**
        * <pre>
-       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
        * </pre>
        *
        * <code>optional string utcStart = 13;</code>
@@ -17272,7 +17359,7 @@ public final class Yamcs {
       }
       /**
        * <pre>
-       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
        * </pre>
        *
        * <code>optional string utcStart = 13;</code>
@@ -17292,7 +17379,7 @@ public final class Yamcs {
       }
       /**
        * <pre>
-       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
        * </pre>
        *
        * <code>optional string utcStart = 13;</code>
@@ -17309,7 +17396,7 @@ public final class Yamcs {
       }
       /**
        * <pre>
-       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
        * </pre>
        *
        * <code>optional string utcStart = 13;</code>
@@ -17322,7 +17409,7 @@ public final class Yamcs {
       }
       /**
        * <pre>
-       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+       *alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
        * </pre>
        *
        * <code>optional string utcStart = 13;</code>
@@ -27159,6 +27246,570 @@ public final class Yamcs {
 
   }
 
+  public interface ProcessorTypeInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.ProcessorTypeInfo)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated string type = 1;</code>
+     */
+    java.util.List<java.lang.String>
+        getTypeList();
+    /**
+     * <code>repeated string type = 1;</code>
+     */
+    int getTypeCount();
+    /**
+     * <code>repeated string type = 1;</code>
+     */
+    java.lang.String getType(int index);
+    /**
+     * <code>repeated string type = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getTypeBytes(int index);
+  }
+  /**
+   * Protobuf type {@code yamcs.ProcessorTypeInfo}
+   */
+  public  static final class ProcessorTypeInfo extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.ProcessorTypeInfo)
+      ProcessorTypeInfoOrBuilder {
+    // Use ProcessorTypeInfo.newBuilder() to construct.
+    private ProcessorTypeInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ProcessorTypeInfo() {
+      type_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ProcessorTypeInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                type_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              type_.add(bs);
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          type_ = type_.getUnmodifiableView();
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ProcessorTypeInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ProcessorTypeInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Yamcs.ProcessorTypeInfo.class, org.yamcs.protobuf.Yamcs.ProcessorTypeInfo.Builder.class);
+    }
+
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private com.google.protobuf.LazyStringList type_;
+    /**
+     * <code>repeated string type = 1;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getTypeList() {
+      return type_;
+    }
+    /**
+     * <code>repeated string type = 1;</code>
+     */
+    public int getTypeCount() {
+      return type_.size();
+    }
+    /**
+     * <code>repeated string type = 1;</code>
+     */
+    public java.lang.String getType(int index) {
+      return type_.get(index);
+    }
+    /**
+     * <code>repeated string type = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTypeBytes(int index) {
+      return type_.getByteString(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < type_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, type_.getRaw(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < type_.size(); i++) {
+          dataSize += computeStringSizeNoTag(type_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getTypeList().size();
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Yamcs.ProcessorTypeInfo)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Yamcs.ProcessorTypeInfo other = (org.yamcs.protobuf.Yamcs.ProcessorTypeInfo) obj;
+
+      boolean result = true;
+      result = result && getTypeList()
+          .equals(other.getTypeList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getTypeCount() > 0) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + getTypeList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Yamcs.ProcessorTypeInfo prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code yamcs.ProcessorTypeInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.ProcessorTypeInfo)
+        org.yamcs.protobuf.Yamcs.ProcessorTypeInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ProcessorTypeInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ProcessorTypeInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Yamcs.ProcessorTypeInfo.class, org.yamcs.protobuf.Yamcs.ProcessorTypeInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Yamcs.ProcessorTypeInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        type_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Yamcs.internal_static_yamcs_ProcessorTypeInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Yamcs.ProcessorTypeInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Yamcs.ProcessorTypeInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Yamcs.ProcessorTypeInfo build() {
+        org.yamcs.protobuf.Yamcs.ProcessorTypeInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Yamcs.ProcessorTypeInfo buildPartial() {
+        org.yamcs.protobuf.Yamcs.ProcessorTypeInfo result = new org.yamcs.protobuf.Yamcs.ProcessorTypeInfo(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          type_ = type_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.type_ = type_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Yamcs.ProcessorTypeInfo) {
+          return mergeFrom((org.yamcs.protobuf.Yamcs.ProcessorTypeInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Yamcs.ProcessorTypeInfo other) {
+        if (other == org.yamcs.protobuf.Yamcs.ProcessorTypeInfo.getDefaultInstance()) return this;
+        if (!other.type_.isEmpty()) {
+          if (type_.isEmpty()) {
+            type_ = other.type_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureTypeIsMutable();
+            type_.addAll(other.type_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Yamcs.ProcessorTypeInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Yamcs.ProcessorTypeInfo) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private com.google.protobuf.LazyStringList type_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureTypeIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          type_ = new com.google.protobuf.LazyStringArrayList(type_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated string type = 1;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getTypeList() {
+        return type_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string type = 1;</code>
+       */
+      public int getTypeCount() {
+        return type_.size();
+      }
+      /**
+       * <code>repeated string type = 1;</code>
+       */
+      public java.lang.String getType(int index) {
+        return type_.get(index);
+      }
+      /**
+       * <code>repeated string type = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTypeBytes(int index) {
+        return type_.getByteString(index);
+      }
+      /**
+       * <code>repeated string type = 1;</code>
+       */
+      public Builder setType(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTypeIsMutable();
+        type_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string type = 1;</code>
+       */
+      public Builder addType(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTypeIsMutable();
+        type_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string type = 1;</code>
+       */
+      public Builder addAllType(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureTypeIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, type_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string type = 1;</code>
+       */
+      public Builder clearType() {
+        type_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string type = 1;</code>
+       */
+      public Builder addTypeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureTypeIsMutable();
+        type_.add(value);
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.ProcessorTypeInfo)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.ProcessorTypeInfo)
+    private static final org.yamcs.protobuf.Yamcs.ProcessorTypeInfo DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Yamcs.ProcessorTypeInfo();
+    }
+
+    public static org.yamcs.protobuf.Yamcs.ProcessorTypeInfo getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ProcessorTypeInfo>
+        PARSER = new com.google.protobuf.AbstractParser<ProcessorTypeInfo>() {
+      public ProcessorTypeInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ProcessorTypeInfo(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ProcessorTypeInfo> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ProcessorTypeInfo> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Yamcs.ProcessorTypeInfo getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_StringMessage_descriptor;
   private static final 
@@ -27284,6 +27935,11 @@ public final class Yamcs {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_Event_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_ProcessorTypeInfo_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_ProcessorTypeInfo_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -27308,7 +27964,7 @@ public final class Yamcs {
       "\020\007\022\n\n\006SINT64\020\010\022\013\n\007BOOLEAN\020\t\"0\n\rNamedObje" +
       "ctId\022\014\n\004name\030\001 \002(\t\022\021\n\tnamespace\030\002 \001(\t\"5\n" +
       "\017NamedObjectList\022\"\n\004list\030\001 \003(\0132\024.yamcs.N" +
-      "amedObjectId\"\255\003\n\014IndexRequest\022\020\n\010instanc" +
+      "amedObjectId\"\300\003\n\014IndexRequest\022\020\n\010instanc" +
       "e\030\001 \002(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\020\n\010" +
       "utcStart\030\016 \001(\t\022\017\n\007utcStop\030\017 \001(\t\022\030\n\020defau" +
       "ltNamespace\030\004 \001(\t\022\030\n\tsendAllTm\030\005 \001(\010:\005fa" +
@@ -27319,75 +27975,76 @@ public final class Yamcs {
       "\030\n \001(\010:\005false\022%\n\007cmdName\030\013 \003(\0132\024.yamcs.N" +
       "amedObjectId\022\033\n\014sendAllEvent\030\014 \001(\010:\005fals" +
       "e\022)\n\013eventSource\030\r \003(\0132\024.yamcs.NamedObje" +
-      "ctId\"i\n\rArchiveRecord\022 \n\002id\030\001 \002(\0132\024.yamc" +
-      "s.NamedObjectId\022\r\n\005first\030\002 \002(\003\022\014\n\004last\030\003" +
-      " \002(\003\022\013\n\003num\030\004 \002(\005\022\014\n\004info\030\005 \001(\t\"g\n\013Index" +
-      "Result\022\020\n\010instance\030\001 \002(\t\022%\n\007records\030\002 \003(",
-      "\0132\024.yamcs.ArchiveRecord\022\014\n\004type\030\003 \001(\t\022\021\n" +
-      "\ttableName\030\004 \001(\t\";\n\nTagRequest\022\020\n\010instan" +
-      "ce\030\001 \002(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\"g\n" +
-      "\nArchiveTag\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \002(\t\022\r\n" +
-      "\005start\030\003 \001(\003\022\014\n\004stop\030\004 \001(\003\022\023\n\013descriptio" +
-      "n\030\005 \001(\t\022\r\n\005color\030\006 \001(\t\"=\n\tTagResult\022\020\n\010i" +
-      "nstance\030\001 \002(\t\022\036\n\003tag\030\002 \003(\0132\021.yamcs.Archi" +
-      "veTag\"X\n\020UpsertTagRequest\022!\n\006oldTag\030\001 \001(" +
-      "\0132\021.yamcs.ArchiveTag\022!\n\006newTag\030\002 \002(\0132\021.y" +
-      "amcs.ArchiveTag\"2\n\020DeleteTagRequest\022\036\n\003t",
-      "ag\030\003 \002(\0132\021.yamcs.ArchiveTag\"\212\001\n\013ReplaySp" +
-      "eed\0220\n\004type\030\001 \002(\0162\".yamcs.ReplaySpeed.Re" +
-      "playSpeedType\022\r\n\005param\030\002 \001(\002\":\n\017ReplaySp" +
-      "eedType\022\010\n\004AFAP\020\001\022\017\n\013FIXED_DELAY\020\002\022\014\n\010RE" +
-      "ALTIME\020\003\"\271\003\n\rReplayRequest\022\r\n\005start\030\001 \001(" +
-      "\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010utcStart\030\r \001(\t\022\017\n\007utc" +
-      "Stop\030\016 \001(\t\022)\n\tendAction\030\003 \001(\0162\020.yamcs.En" +
-      "dAction:\004QUIT\022!\n\005speed\030\004 \001(\0132\022.yamcs.Rep" +
-      "laySpeed\022\017\n\007reverse\030\017 \001(\010\0227\n\020parameterRe" +
-      "quest\030\010 \001(\0132\035.yamcs.ParameterReplayReque",
-      "st\0221\n\rpacketRequest\030\t \001(\0132\032.yamcs.Packet" +
-      "ReplayRequest\022/\n\014eventRequest\030\n \001(\0132\031.ya" +
-      "mcs.EventReplayRequest\022A\n\025commandHistory" +
-      "Request\030\013 \001(\0132\".yamcs.CommandHistoryRepl" +
-      "ayRequest\022)\n\tppRequest\030\014 \001(\0132\026.yamcs.PpR" +
-      "eplayRequest\"|\n\026ParameterReplayRequest\022(" +
-      "\n\nnameFilter\030\001 \003(\0132\024.yamcs.NamedObjectId" +
-      "\022\026\n\007sendRaw\030\002 \001(\010:\005false\022 \n\021performMonit" +
-      "oring\030\003 \001(\010:\005false\"?\n\023PacketReplayReques" +
-      "t\022(\n\nnameFilter\030\001 \003(\0132\024.yamcs.NamedObjec",
-      "tId\"\024\n\022EventReplayRequest\"G\n\033CommandHist" +
-      "oryReplayRequest\022(\n\nnameFilter\030\001 \003(\0132\024.y" +
-      "amcs.NamedObjectId\"D\n\017PpReplayRequest\022\027\n" +
-      "\017groupNameFilter\030\001 \003(\t\022\030\n\020groupNameExclu" +
-      "de\030\002 \003(\t\"\333\001\n\014ReplayStatus\022.\n\005state\030\001 \002(\016" +
-      "2\037.yamcs.ReplayStatus.ReplayState\022%\n\007req" +
-      "uest\030\002 \001(\0132\024.yamcs.ReplayRequest\022\024\n\014erro" +
-      "rMessage\030\003 \001(\t\"^\n\013ReplayState\022\022\n\016INITIAL" +
-      "IZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007STOPPED\020\002\022\t\n\005E" +
-      "RROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOSED\020\005\"\207\001\n\014TmPac",
-      "ketData\022\025\n\rreceptionTime\030\001 \002(\003\022\016\n\006packet" +
-      "\030\002 \002(\014\022\026\n\016generationTime\030\003 \001(\003\022\026\n\016sequen" +
-      "ceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(\0132\024.yamcs.Named" +
-      "ObjectId\"7\n\010TimeInfo\022\023\n\013currentTime\030\001 \001(" +
-      "\003\022\026\n\016currentTimeUTC\030\002 \001(\t\"\341\002\n\005Event\022\016\n\006s" +
-      "ource\030\001 \002(\t\022\026\n\016generationTime\030\002 \002(\003\022\025\n\rr" +
-      "eceptionTime\030\003 \002(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n" +
-      "\004type\030\005 \001(\t\022\017\n\007message\030\006 \002(\t\0222\n\010severity" +
-      "\030\007 \001(\0162\032.yamcs.Event.EventSeverity:\004INFO" +
-      "\022\031\n\021generationTimeUTC\030\010 \001(\t\022\030\n\020reception",
-      "TimeUTC\030\t \001(\t\022\021\n\tcreatedBy\030\n \001(\t\"d\n\rEven" +
-      "tSeverity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERRO" +
-      "R\020\002\022\t\n\005WATCH\020\003\022\014\n\010DISTRESS\020\005\022\014\n\010CRITICAL" +
-      "\020\006\022\n\n\006SEVERE\020\007*\005\010d\020\221N*)\n\tEndAction\022\010\n\004LO" +
-      "OP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*\357\002\n\rProtoDataTy" +
-      "pe\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM" +
-      "_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_" +
-      "INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022" +
-      "\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013" +
-      "CLIENT_INFO\020\013\022\031\n\025PROCESSING_STATISTICS\020\014",
-      "\022\017\n\013STREAM_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIM" +
-      "E_INFO\020\017\022\016\n\nLINK_EVENT\020\020\022\026\n\022COMMAND_QUEU" +
-      "E_INFO\020\021\022\027\n\023COMMAND_QUEUE_EVENT\020\022\022\023\n\017CON" +
-      "NECTION_INFO\020\023\022\022\n\016EXTENSION_DATA\020dB\024\n\022or" +
-      "g.yamcs.protobuf"
+      "ctId\022\021\n\tmergeTime\030\020 \001(\r\"i\n\rArchiveRecord" +
+      "\022 \n\002id\030\001 \002(\0132\024.yamcs.NamedObjectId\022\r\n\005fi" +
+      "rst\030\002 \002(\003\022\014\n\004last\030\003 \002(\003\022\013\n\003num\030\004 \002(\005\022\014\n\004" +
+      "info\030\005 \001(\t\"g\n\013IndexResult\022\020\n\010instance\030\001 ",
+      "\002(\t\022%\n\007records\030\002 \003(\0132\024.yamcs.ArchiveReco" +
+      "rd\022\014\n\004type\030\003 \001(\t\022\021\n\ttableName\030\004 \001(\t\";\n\nT" +
+      "agRequest\022\020\n\010instance\030\001 \002(\t\022\r\n\005start\030\002 \001" +
+      "(\003\022\014\n\004stop\030\003 \001(\003\"g\n\nArchiveTag\022\n\n\002id\030\001 \001" +
+      "(\005\022\014\n\004name\030\002 \002(\t\022\r\n\005start\030\003 \001(\003\022\014\n\004stop\030" +
+      "\004 \001(\003\022\023\n\013description\030\005 \001(\t\022\r\n\005color\030\006 \001(" +
+      "\t\"=\n\tTagResult\022\020\n\010instance\030\001 \002(\t\022\036\n\003tag\030" +
+      "\002 \003(\0132\021.yamcs.ArchiveTag\"X\n\020UpsertTagReq" +
+      "uest\022!\n\006oldTag\030\001 \001(\0132\021.yamcs.ArchiveTag\022" +
+      "!\n\006newTag\030\002 \002(\0132\021.yamcs.ArchiveTag\"2\n\020De",
+      "leteTagRequest\022\036\n\003tag\030\003 \002(\0132\021.yamcs.Arch" +
+      "iveTag\"\212\001\n\013ReplaySpeed\0220\n\004type\030\001 \002(\0162\".y" +
+      "amcs.ReplaySpeed.ReplaySpeedType\022\r\n\005para" +
+      "m\030\002 \001(\002\":\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022\017\n\013" +
+      "FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003\"\271\003\n\rReplayRe" +
+      "quest\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010ut" +
+      "cStart\030\r \001(\t\022\017\n\007utcStop\030\016 \001(\t\022)\n\tendActi" +
+      "on\030\003 \001(\0162\020.yamcs.EndAction:\004QUIT\022!\n\005spee" +
+      "d\030\004 \001(\0132\022.yamcs.ReplaySpeed\022\017\n\007reverse\030\017" +
+      " \001(\010\0227\n\020parameterRequest\030\010 \001(\0132\035.yamcs.P",
+      "arameterReplayRequest\0221\n\rpacketRequest\030\t" +
+      " \001(\0132\032.yamcs.PacketReplayRequest\022/\n\014even" +
+      "tRequest\030\n \001(\0132\031.yamcs.EventReplayReques" +
+      "t\022A\n\025commandHistoryRequest\030\013 \001(\0132\".yamcs" +
+      ".CommandHistoryReplayRequest\022)\n\tppReques" +
+      "t\030\014 \001(\0132\026.yamcs.PpReplayRequest\"|\n\026Param" +
+      "eterReplayRequest\022(\n\nnameFilter\030\001 \003(\0132\024." +
+      "yamcs.NamedObjectId\022\026\n\007sendRaw\030\002 \001(\010:\005fa" +
+      "lse\022 \n\021performMonitoring\030\003 \001(\010:\005false\"?\n" +
+      "\023PacketReplayRequest\022(\n\nnameFilter\030\001 \003(\013",
+      "2\024.yamcs.NamedObjectId\"\024\n\022EventReplayReq" +
+      "uest\"G\n\033CommandHistoryReplayRequest\022(\n\nn" +
+      "ameFilter\030\001 \003(\0132\024.yamcs.NamedObjectId\"D\n" +
+      "\017PpReplayRequest\022\027\n\017groupNameFilter\030\001 \003(" +
+      "\t\022\030\n\020groupNameExclude\030\002 \003(\t\"\333\001\n\014ReplaySt" +
+      "atus\022.\n\005state\030\001 \002(\0162\037.yamcs.ReplayStatus" +
+      ".ReplayState\022%\n\007request\030\002 \001(\0132\024.yamcs.Re" +
+      "playRequest\022\024\n\014errorMessage\030\003 \001(\t\"^\n\013Rep" +
+      "layState\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUNNING\020" +
+      "\001\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n",
+      "\006CLOSED\020\005\"\207\001\n\014TmPacketData\022\025\n\rreceptionT" +
+      "ime\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016generationT" +
+      "ime\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022 \n\002id\030" +
+      "\005 \001(\0132\024.yamcs.NamedObjectId\"7\n\010TimeInfo\022" +
+      "\023\n\013currentTime\030\001 \001(\003\022\026\n\016currentTimeUTC\030\002" +
+      " \001(\t\"\341\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016genera" +
+      "tionTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n" +
+      "\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007messag" +
+      "e\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.yamcs.Event." +
+      "EventSeverity:\004INFO\022\031\n\021generationTimeUTC",
+      "\030\010 \001(\t\022\030\n\020receptionTimeUTC\030\t \001(\t\022\021\n\tcrea" +
+      "tedBy\030\n \001(\t\"d\n\rEventSeverity\022\010\n\004INFO\020\000\022\013" +
+      "\n\007WARNING\020\001\022\t\n\005ERROR\020\002\022\t\n\005WATCH\020\003\022\014\n\010DIS" +
+      "TRESS\020\005\022\014\n\010CRITICAL\020\006\022\n\n\006SEVERE\020\007*\005\010d\020\221N" +
+      "\"!\n\021ProcessorTypeInfo\022\014\n\004type\030\001 \003(\t*)\n\tE" +
+      "ndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*\357" +
+      "\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_" +
+      "CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT" +
+      "\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r" +
+      "\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCES",
+      "SOR_INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PROCESSIN" +
+      "G_STATISTICS\020\014\022\017\n\013STREAM_DATA\020\r\022\016\n\nALARM" +
+      "_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK_EVENT\020\020\022\026" +
+      "\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023COMMAND_QUEUE_" +
+      "EVENT\020\022\022\023\n\017CONNECTION_INFO\020\023\022\022\n\016EXTENSIO" +
+      "N_DATA\020dB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -27442,7 +28099,7 @@ public final class Yamcs {
     internal_static_yamcs_IndexRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_IndexRequest_descriptor,
-        new java.lang.String[] { "Instance", "Start", "Stop", "UtcStart", "UtcStop", "DefaultNamespace", "SendAllTm", "TmPacket", "SendAllPp", "PpGroup", "SendCompletenessIndex", "SendAllCmd", "CmdName", "SendAllEvent", "EventSource", });
+        new java.lang.String[] { "Instance", "Start", "Stop", "UtcStart", "UtcStop", "DefaultNamespace", "SendAllTm", "TmPacket", "SendAllPp", "PpGroup", "SendCompletenessIndex", "SendAllCmd", "CmdName", "SendAllEvent", "EventSource", "MergeTime", });
     internal_static_yamcs_ArchiveRecord_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_yamcs_ArchiveRecord_fieldAccessorTable = new
@@ -27551,6 +28208,12 @@ public final class Yamcs {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_Event_descriptor,
         new java.lang.String[] { "Source", "GenerationTime", "ReceptionTime", "SeqNumber", "Type", "Message", "Severity", "GenerationTimeUTC", "ReceptionTimeUTC", "CreatedBy", });
+    internal_static_yamcs_ProcessorTypeInfo_descriptor =
+      getDescriptor().getMessageTypes().get(25);
+    internal_static_yamcs_ProcessorTypeInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_ProcessorTypeInfo_descriptor,
+        new java.lang.String[] { "Type", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

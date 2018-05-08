@@ -1,8 +1,7 @@
 import { Component, ChangeDetectionStrategy, Input, AfterViewInit, ViewChild, OnDestroy } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable ,  Subscription } from 'rxjs';
 import { TmStatistics } from '@yamcs/client';
 import { MatSort, MatTableDataSource } from '@angular/material';
-import { Subscription } from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-tmstats-table',

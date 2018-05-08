@@ -3,6 +3,18 @@ html, body {
   padding: 0;
 }
 
+/* Disable dashed border in menus etc. Only FF does this */
+::-moz-focus-inner {
+  border:0;
+}
+
+body {
+  background-color: #fff;
+
+  /* Without this FF font are too crispy */
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .material-icons.icon12 {
   font-size: 12px !important;
   height: 12px !important;
@@ -55,19 +67,15 @@ html, body {
   padding: 24px;
 }
 
-.ya-data-table mat-header-row {
-  min-height: 0;
+.ya-data-table tr.mat-row {
+  height: auto;
 }
 
-.ya-data-table mat-row:hover {
+.ya-data-table tr.mat-row:hover {
   background: #fafafa;
 }
 
-.ya-data-table mat-row {
-  min-height: 0;
-}
-
-.ya-data-table mat-cell {
+.ya-data-table td.mat-cell, .ya-data-table th.mat-cell {
   font-size: 12px;
   line-height: 16px;
   color: rgba(0, 0, 0, .654);
@@ -90,7 +98,7 @@ html, body {
   text-decoration: none;
 }
 
-.ya-data-table mat-row:hover a {
+.ya-data-table .mat-row:hover a {
   text-decoration: underline;
 }
 

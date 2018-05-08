@@ -1,20 +1,26 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
-import { MonitorPageTemplate } from './template/MonitorPageTemplate';
-import { ProcessorInfoComponent } from './template/ProcessorInfoComponent';
-import { EventSeverity } from './events/EventSeverity';
-import { DisplayNavigator } from './displays/DisplayNavigator';
-import { SaveLayoutDialog } from './displays/SaveLayoutDialog';
-import { LayoutComponent } from './displays/LayoutComponent';
 import { AlarmDetail } from './alarms/AlarmDetail';
-import { MonitorToolbar } from './template/MonitorToolbar';
-import { PageContentHost } from './ext/PageContentHost';
+import { DownloadDumpDialog } from './archive/DownloadDumpDialog';
+import { JumpToDialog } from './archive/JumpToDialog';
+import { TimelineTooltip } from './archive/TimelineTooltip';
+import { DisplayNavigator } from './displays/DisplayNavigator';
+import { LayoutComponent } from './displays/LayoutComponent';
+import { SaveLayoutDialog } from './displays/SaveLayoutDialog';
 import { CreateEventDialog } from './events/CreateEventDialog';
+import { EventSeverity } from './events/EventSeverity';
+import { PageContentHost } from './ext/PageContentHost';
+import { MonitorPageTemplate } from './template/MonitorPageTemplate';
+import { MonitorToolbar } from './template/MonitorToolbar';
+import { StartReplayDialog } from './template/StartReplayDialog';
 
 const dialogComponents = [
   CreateEventDialog,
+  DownloadDumpDialog,
+  JumpToDialog,
   SaveLayoutDialog,
+  StartReplayDialog,
 ];
 
 @NgModule({
@@ -31,7 +37,7 @@ const dialogComponents = [
     LayoutComponent,
     MonitorPageTemplate,
     PageContentHost,
-    ProcessorInfoComponent,
+    TimelineTooltip,
   ],
   exports: [
     MonitorPageTemplate,
@@ -39,6 +45,7 @@ const dialogComponents = [
   ],
   entryComponents: [
     dialogComponents,
+    TimelineTooltip,
   ]
 })
 export class MonitorModule {

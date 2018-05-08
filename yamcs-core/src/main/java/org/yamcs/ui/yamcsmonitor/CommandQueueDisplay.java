@@ -13,7 +13,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,77 +36,74 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
 
-import org.yamcs.ui.CommandQueueControlClient;
-import org.yamcs.ui.CommandQueueListener;
-import org.yamcs.ui.YamcsConnector;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.QueueState;
+import org.yamcs.ui.CommandQueueControlClient;
+import org.yamcs.ui.CommandQueueListener;
+import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
-
 
 /**
  * Display for the telecommand queues implemented in yamcs
+ * 
  * @author nm
  *
  */
+@SuppressWarnings("serial")
 public class CommandQueueDisplay extends JSplitPane implements ActionListener, CommandQueueListener {
     DefaultTableModel commandTableModel;
-    HashMap<String,QueuesTableModel> queuesModels = new HashMap<String,QueuesTableModel>();
+    HashMap<String, QueuesTableModel> queuesModels = new HashMap<>();
     TableRowSorter<QueuesTableModel> queueSorter;
     JFrame frame;
     JTable queueTable, commandTable;
     JScrollPane queueScroll;
     QueuesTableModel currentQueuesModel, emptyQueuesModel;
     boolean isAdmin;
-    static long oldCommandWarningTime=60;
+    static long oldCommandWarningTime = 60;
 
     CommandQueueControlClient commandQueueControl;
 
-    final String[] queueStateItems = {"BLOCKED", "DISABLED", "ENABLED"};
+    final String[] queueStateItems = { "BLOCKED", "DISABLED", "ENABLED" };
     private volatile String selectedInstance;
 
-    /**
-     * 
-     * 
-     */
-    public CommandQueueDisplay(YamcsConnector yconnector, boolean isAdmin)	{
+    public CommandQueueDisplay(YamcsConnector yconnector, boolean isAdmin) {
         super(VERTICAL_SPLIT);
         this.isAdmin = isAdmin;
-        commandQueueControl=new CommandQueueControlClient(yconnector);
-        //build the table showing the queues
+        commandQueueControl = new CommandQueueControlClient(yconnector);
+        // build the table showing the queues
 
         emptyQueuesModel = new QueuesTableModel(null, null);
         queueTable = new JTable(emptyQueuesModel);
         queueTable.getTableHeader().setReorderingAllowed(false);
         queueTable.setAutoCreateColumnsFromModel(false);
-        JComboBox combo = new JComboBox(queueStateItems);
+        JComboBox<String> combo = new JComboBox<>(queueStateItems);
         combo.setEditable(false);
         queueTable.setRowHeight(combo.getPreferredSize().height);
         queueTable.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(combo));
-        queueSorter = new TableRowSorter<QueuesTableModel>(emptyQueuesModel);
-        queueSorter.setComparator(2, new Comparator<Number>() {
-            public int compare(Number o1, Number o2) {
-                return o1.intValue() < o2.intValue() ? -1 : (o1.intValue() > o2.intValue() ? 1 : 0);
-            }
-        });
+        queueSorter = new TableRowSorter<>(emptyQueuesModel);
+        queueSorter.setComparator(2,
+                (Number o1, Number o2) -> o1.intValue() < o2.intValue() ? -1 : (o1.intValue() > o2.intValue() ? 1 : 0));
         queueTable.setRowSorter(queueSorter);
         queueTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        queueTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                //Ignore extra messages.
-                if (e.getValueIsAdjusting()) return;
-                int row = queueTable.getSelectedRow();
-                if (row != -1) {
-                    row = queueTable.convertRowIndexToModel(row);
-                    if (currentQueuesModel != null) {
-                        currentQueuesModel.setQueue(row);
-                    }
+        queueTable.getSelectionModel().addListSelectionListener(e -> {
+            // Ignore extra messages.
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            int row = queueTable.getSelectedRow();
+            if (row != -1) {
+                row = queueTable.convertRowIndexToModel(row);
+                if (currentQueuesModel != null) {
+                    currentQueuesModel.setQueue(row);
                 }
             }
         });
@@ -116,7 +112,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
         queueTable.setPreferredScrollableViewportSize(new Dimension(400, 150));
         setTopComponent(queueScroll);
 
-        //build the table showing the commands from the selected queues
+        // build the table showing the commands from the selected queues
 
         final String[] columnToolTips = {
                 "The queue which contains the command",
@@ -126,20 +122,30 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
         };
 
         final CommandRenderer cRenderer = new CommandRenderer();
-        final String[] commandColumns={"Queue","User","Command String","Time"};
-        commandTableModel = new DefaultTableModel(commandColumns,0);
+        final String[] commandColumns = { "Queue", "User", "Command String", "Time" };
+        commandTableModel = new DefaultTableModel(commandColumns, 0);
         commandTable = new JTable(commandTableModel) {
+            @Override
             protected JTableHeader createDefaultTableHeader() {
                 return new JTableHeader(columnModel) {
+                    @Override
                     public String getToolTipText(MouseEvent e) {
                         int index = columnModel.getColumnIndexAtX(e.getPoint().x);
-                        if (index == -1) return "";
+                        if (index == -1) {
+                            return "";
+                        }
                         int realIndex = columnModel.getColumn(index).getModelIndex();
                         return columnToolTips[realIndex];
                     }
                 };
             }
-            public boolean isCellEditable(int row, int column) { return false; }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+
+            @Override
             public TableCellRenderer getCellRenderer(int row, int column) {
                 return column == convertColumnIndexToModel(2) ? cRenderer : super.getCellRenderer(row, column);
             }
@@ -150,7 +156,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
         commandTable.setPreferredScrollableViewportSize(new Dimension(400, 100));
         setBottomComponent(scroll);
 
-        //width of columns
+        // width of columns
         TableColumnModel model = commandTable.getTableHeader().getColumnModel();
         model.getColumn(0).setPreferredWidth(60);
         model.getColumn(1).setPreferredWidth(80);
@@ -158,11 +164,10 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
         int newWidth = new JLabel("0000-00-00T00:00:00.000").getPreferredSize().width + 20;
         model.getColumn(3).setPreferredWidth(newWidth);
 
-        //setDividerLocation(0.5);
+        // setDividerLocation(0.5);
         setResizeWeight(0.1);
 
-
-        //add right click menus
+        // add right click menus
         final JPopupMenu cmdPopup = new JPopupMenu();
         JMenuItem miSend = new JMenuItem("Send");
         miSend.addActionListener(this);
@@ -175,12 +180,22 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
         cmdPopup.add(miReject);
 
         commandTable.addMouseListener(new MouseAdapter() {
-            public void mousePressed( MouseEvent e ) { maybeShowPopup(e); }
-            public void mouseReleased( MouseEvent e ) { maybeShowPopup(e); }
-            private void maybeShowPopup( MouseEvent e ) {
-                if ( e.isPopupTrigger() ) {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            private void maybeShowPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
                     int row = commandTable.rowAtPoint(e.getPoint());
-                    if ((row != -1) && !commandTable.isRowSelected(row)) commandTable.setRowSelectionInterval(row, row);
+                    if ((row != -1) && !commandTable.isRowSelected(row)) {
+                        commandTable.setRowSelectionInterval(row, row);
+                    }
                     cmdPopup.show(e.getComponent(), e.getX(), e.getY());
                 }
             }
@@ -190,21 +205,23 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 
     public void addProcessor(String instance, String processorName) {
         QueuesTableModel model = new QueuesTableModel(instance, processorName);
-        queuesModels.put(instance+"."+processorName, model);
+        queuesModels.put(instance + "." + processorName, model);
     }
 
-    public void removeProcessor(String instance, String channelName) {
-        queuesModels.remove(instance+"."+channelName);
+    public void removeProcessor(String instance, String processorName) {
+        queuesModels.remove(instance + "." + processorName);
     }
 
     public void setProcessor(String instance, String processorName) {
-        currentQueuesModel = processorName == null ? emptyQueuesModel : queuesModels.get(instance+"."+processorName);
-        if (currentQueuesModel == null) currentQueuesModel = emptyQueuesModel;
+        currentQueuesModel = processorName == null ? emptyQueuesModel
+                : queuesModels.get(instance + "." + processorName);
+        if (currentQueuesModel == null) {
+            currentQueuesModel = emptyQueuesModel;
+        }
 
         queueTable.setModel(currentQueuesModel);
         queueSorter.setModel(currentQueuesModel);
     }
-
 
     @Override
     public void actionPerformed(ActionEvent ae) {
@@ -212,46 +229,52 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
         try {
             if (currentQueuesModel != null) {
                 if (cmd.equals("send")) {
-                    int rows[]=commandTable.getSelectedRows();
-                    for(int row:rows) {
-                        //	PreparedCommand=currentQueuesModel.queues
-                        String queueName=(String)commandTableModel.getValueAt(commandTable.convertRowIndexToModel(row), 0);
+                    int rows[] = commandTable.getSelectedRows();
+                    for (int row : rows) {
+                        // PreparedCommand=currentQueuesModel.queues
+                        String queueName = (String) commandTableModel
+                                .getValueAt(commandTable.convertRowIndexToModel(row), 0);
 
-                        int index=commandTable.convertRowIndexToModel(row);
+                        int index = commandTable.convertRowIndexToModel(row);
 
-                        CommandQueueEntry cqe=currentQueuesModel.getCommand(queueName, index);
-                        if(cqe==null) continue;
-                        long timeinthequeue=TimeEncoding.currentInstant()-cqe.getGenerationTime();
-                        if(timeinthequeue>oldCommandWarningTime*1000L) {
-                            int res=CommandFateDialog.showDialog(frame, cqe.getCmdId());
-                            switch(res) {
-                            case -1: //cancel 
+                        CommandQueueEntry cqe = currentQueuesModel.getCommand(queueName, index);
+                        if (cqe == null) {
+                            continue;
+                        }
+                        long timeinthequeue = TimeEncoding.currentInstant() - cqe.getGenerationTime();
+                        if (timeinthequeue > oldCommandWarningTime * 1000L) {
+                            int res = CommandFateDialog.showDialog(frame, cqe.getCmdId());
+                            switch (res) {
+                            case -1: // cancel
                                 return;
-                            case 0: //rebuild the command
-                                YamcsMonitor.theApp.log("sending command with updated time: "+cqe.getSource());
+                            case 0: // rebuild the command
+                                YamcsMonitor.theApp.log("sending command with updated time: " + cqe.getSource());
                                 commandQueueControl.releaseCommand(cqe, true);
                                 break;
-                            case 1: //send the command with the old generation time
-                                YamcsMonitor.theApp.log("sending command: "+cqe);
+                            case 1: // send the command with the old generation time
+                                YamcsMonitor.theApp.log("sending command: " + cqe);
                                 commandQueueControl.releaseCommand(cqe, false);
                                 break;
-                            case 2: //rejecting command
-                                System.out.println("rejecting command: "+cqe.getSource());
+                            case 2: // rejecting command
+                                System.out.println("rejecting command: " + cqe.getSource());
                                 commandQueueControl.rejectCommand(cqe);
                             }
                         } else {
-                            YamcsMonitor.theApp.log("sending command: "+cqe.getSource());
+                            YamcsMonitor.theApp.log("sending command: " + cqe.getSource());
                             commandQueueControl.releaseCommand(cqe, false);
                         }
                     }
                 } else if (cmd.equals("reject")) {
-                    int rows[]=commandTable.getSelectedRows();
-                    for (int row:rows) {
-                        String queueName=(String)commandTableModel.getValueAt(commandTable.convertRowIndexToModel(row), 0);
-                        int index=commandTable.convertRowIndexToModel(row);
-                        CommandQueueEntry cqe=currentQueuesModel.getCommand(queueName, index);
-                        if(cqe==null) continue;
-                        YamcsMonitor.theApp.log("rejecting command: "+cqe.getSource());
+                    int rows[] = commandTable.getSelectedRows();
+                    for (int row : rows) {
+                        String queueName = (String) commandTableModel
+                                .getValueAt(commandTable.convertRowIndexToModel(row), 0);
+                        int index = commandTable.convertRowIndexToModel(row);
+                        CommandQueueEntry cqe = currentQueuesModel.getCommand(queueName, index);
+                        if (cqe == null) {
+                            continue;
+                        }
+                        YamcsMonitor.theApp.log("rejecting command: " + cqe.getSource());
                         commandQueueControl.rejectCommand(cqe);
                     }
                 }
@@ -261,26 +284,22 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
         }
     }
 
-
-
     @Override
     public void log(String msg) {
         YamcsMonitor.theApp.log(msg);
     }
 
-
     @Override
     public void updateQueue(final CommandQueueInfo cqi) {
-        if(!selectedInstance.equals(cqi.getInstance())) return;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                QueuesTableModel model = queuesModels.get(cqi.getInstance()+"."+cqi.getProcessorName());
-                model.updateQueue(cqi);
-                if(cqi.getEntryCount()>0) {
-                    for(CommandQueueEntry cqe: cqi.getEntryList()) {
-                        commandAdded(cqe);
-                    }
+        if (!selectedInstance.equals(cqi.getInstance())) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            QueuesTableModel model = queuesModels.get(cqi.getInstance() + "." + cqi.getProcessorName());
+            model.updateQueue(cqi);
+            if (cqi.getEntryCount() > 0) {
+                for (CommandQueueEntry cqe : cqi.getEntryList()) {
+                    commandAdded(cqe);
                 }
             }
         });
@@ -288,37 +307,34 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 
     @Override
     public void commandAdded(final CommandQueueEntry cqe) {
-        if(!selectedInstance.equals(cqe.getInstance())) return;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                QueuesTableModel model = queuesModels.get(cqe.getInstance()+"."+cqe.getProcessorName());
-                model.commandAdded(cqe);
-            }
+        if (!selectedInstance.equals(cqe.getInstance())) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            QueuesTableModel model = queuesModels.get(cqe.getInstance() + "." + cqe.getProcessorName());
+            model.commandAdded(cqe);
         });
     }
 
     @Override
     public void commandRejected(final CommandQueueEntry cqe) {
-        if(!selectedInstance.equals(cqe.getInstance())) return;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                QueuesTableModel model=queuesModels.get(cqe.getInstance()+"."+cqe.getProcessorName());
-                model.removeCommandFromQueue(cqe);
-            }
+        if (!selectedInstance.equals(cqe.getInstance())) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            QueuesTableModel model = queuesModels.get(cqe.getInstance() + "." + cqe.getProcessorName());
+            model.removeCommandFromQueue(cqe);
         });
     }
 
     @Override
     public void commandSent(final CommandQueueEntry cqe) {
-        if(!selectedInstance.equals(cqe.getInstance())) return;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                QueuesTableModel model=queuesModels.get(cqe.getInstance()+"."+cqe.getProcessorName());
-                model.removeCommandFromQueue(cqe);
-            }
+        if (!selectedInstance.equals(cqe.getInstance())) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            QueuesTableModel model = queuesModels.get(cqe.getInstance() + "." + cqe.getProcessorName());
+            model.removeCommandFromQueue(cqe);
         });
     }
 
@@ -327,31 +343,32 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
         this.selectedInstance = newInstance;
     }
 
-
-
-    /*contains all the queues and corresponding commands for one channel*/
+    /**
+     * Contains all the queues and corresponding commands for one processor
+     */
     class QueuesTableModel extends AbstractTableModel {
-        List<CommandQueueInfo> queues=new ArrayList<CommandQueueInfo>(3);
-        Map<String, ArrayList<CommandQueueEntry>> commands=new HashMap<String, ArrayList<CommandQueueEntry>>();
-        String instance, channel;
+        List<CommandQueueInfo> queues = new ArrayList<>(3);
+        Map<String, ArrayList<CommandQueueEntry>> commands = new HashMap<>();
+        String instance;
+        String processor;
 
-        public QueuesTableModel(String instance, String channel) {
-            this.instance=instance;
-            this.channel=channel;
+        public QueuesTableModel(String instance, String processor) {
+            this.instance = instance;
+            this.processor = processor;
         }
 
         void updateQueue(CommandQueueInfo cqi) {
-            boolean found=false;
-            for(int i=0;i<queues.size();i++) {
-                CommandQueueInfo q=queues.get(i);
-                if(q.getName().equals(cqi.getName())) {
+            boolean found = false;
+            for (int i = 0; i < queues.size(); i++) {
+                CommandQueueInfo q = queues.get(i);
+                if (q.getName().equals(cqi.getName())) {
                     queues.set(i, cqi);
-                    found=true;
+                    found = true;
                     fireTableRowsUpdated(i, i);
                     break;
                 }
             }
-            if(!found) {
+            if (!found) {
                 queues.add(cqi);
                 fireTableRowsInserted(queues.size(), queues.size());
             }
@@ -359,8 +376,8 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 
         void commandAdded(final CommandQueueEntry cqe) {
             ArrayList<CommandQueueEntry> cmds = commands.get(cqe.getQueueName());
-            if(cmds==null) {
-                cmds = new ArrayList<CommandQueueEntry>();
+            if (cmds == null) {
+                cmds = new ArrayList<>();
                 commands.put(cqe.getQueueName(), cmds);
             }
             cmds.add(cqe);
@@ -368,31 +385,32 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
         }
 
         void removeCommandFromQueue(CommandQueueEntry cqe) {
-            ArrayList<CommandQueueEntry> cmds=commands.get(cqe.getQueueName());
-            if(cmds==null) {
+            ArrayList<CommandQueueEntry> cmds = commands.get(cqe.getQueueName());
+            if (cmds == null) {
                 return;
             }
-            for(int i=0;i<cmds.size();i++) {
-                if(cmds.get(i).getCmdId().equals(cqe.getCmdId())){
+            for (int i = 0; i < cmds.size(); i++) {
+                if (cmds.get(i).getCmdId().equals(cqe.getCmdId())) {
                     cmds.remove(i);
                     reloadCommandsTable();
                     break;
                 }
             }
         }
+
         /**
-         * Called when a row is selected in the queue table. 
-         *  Shows all the commands in the selected queues
+         * Called when a row is selected in the queue table. Shows all the commands in the selected queues
          */
         void setQueue(int index) {
             commandTableModel.setRowCount(0);
             CommandQueueInfo q = queues.get(index);
-            ArrayList<CommandQueueEntry> cmds=commands.get(q.getName());
-            if(cmds==null) {
+            ArrayList<CommandQueueEntry> cmds = commands.get(q.getName());
+            if (cmds == null) {
                 return;
             }
-            for(CommandQueueEntry cqe:cmds) {
-                Object[] r={q.getName(), cqe.getUsername(), cqe.getSource(), TimeEncoding.toString(cqe.getGenerationTime())};
+            for (CommandQueueEntry cqe : cmds) {
+                Object[] r = { q.getName(), cqe.getUsername(), cqe.getSource(),
+                        TimeEncoding.toString(cqe.getGenerationTime()) };
                 commandTableModel.addRow(r);
             }
         }
@@ -406,76 +424,101 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
             }
         }
 
-
         CommandQueueEntry getCommand(String queueName, int index) {
-            ArrayList<CommandQueueEntry> cmds=commands.get(queueName);
-            if(cmds==null)return null;
+            ArrayList<CommandQueueEntry> cmds = commands.get(queueName);
+            if (cmds == null) {
+                return null;
+            }
             return cmds.get(index);
         }
 
-        //private static final long serialVersionUID = 4531138066222987136L;
-        final String[] queueColumns = {"Queue", "State", "Commands"};
+        // private static final long serialVersionUID = 4531138066222987136L;
+        final String[] queueColumns = { "Queue", "State", "Commands" };
+
+        @Override
         public String getColumnName(int col) {
             return queueColumns[col];
         }
-        public int getRowCount() { return queues.size(); }
-        public int getColumnCount() { return queueColumns.length; }
+
+        @Override
+        public int getRowCount() {
+            return queues.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return queueColumns.length;
+        }
+
+        @Override
         public Object getValueAt(int row, int col) {
-            CommandQueueInfo q=queues.get(row);
-            Object o=null;
+            CommandQueueInfo q = queues.get(row);
+            Object o = null;
             switch (col) {
             case 0:
-                o=q.getName();
+                o = q.getName();
                 break;
             case 1:
-                o=q.getState().toString();
+                o = q.getState().toString();
                 break;
             case 2:
-                ArrayList<CommandQueueEntry> cmds=commands.get(q.getName());
-                if(cmds==null){
-                    o=0;
+                ArrayList<CommandQueueEntry> cmds = commands.get(q.getName());
+                if (cmds == null) {
+                    o = 0;
                 } else {
-                    o=cmds.size();
+                    o = cmds.size();
                 }
                 break;
             }
             return o;
         }
-        public boolean isCellEditable(int row, int col) { return col == 1; }
+
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            return col == 1;
+        }
+
+        @Override
         public void setValueAt(Object value, int row, int col) {
             super.setValueAt(value, row, col);
             try {
-                CommandQueueInfo q=queues.get(row);
+                CommandQueueInfo q = queues.get(row);
                 if (value.equals(queueStateItems[0])) {
-                    commandQueueControl.setQueueState(CommandQueueInfo.newBuilder(q).setState(QueueState.BLOCKED).build(), false);
+                    commandQueueControl
+                            .setQueueState(CommandQueueInfo.newBuilder(q).setState(QueueState.BLOCKED).build(), false);
                 } else if (value.equals(queueStateItems[1])) {
-                    commandQueueControl.setQueueState(CommandQueueInfo.newBuilder(q).setState(QueueState.DISABLED).build(), false);
+                    commandQueueControl
+                            .setQueueState(CommandQueueInfo.newBuilder(q).setState(QueueState.DISABLED).build(), false);
                 } else if (value.equals(queueStateItems[2])) {
-                    boolean oldcommandsfound=false;
-                    ArrayList<CommandQueueEntry> cmds=commands.get(q.getName());
-                    if(cmds!=null) {
-                        for(CommandQueueEntry cqe:cmds) {
-                            if(TimeEncoding.currentInstant()-cqe.getGenerationTime()>oldCommandWarningTime*1000L) {
-                                oldcommandsfound=true;
+                    boolean oldcommandsfound = false;
+                    ArrayList<CommandQueueEntry> cmds = commands.get(q.getName());
+                    if (cmds != null) {
+                        for (CommandQueueEntry cqe : cmds) {
+                            if (TimeEncoding.currentInstant() - cqe.getGenerationTime() > oldCommandWarningTime
+                                    * 1000L) {
+                                oldcommandsfound = true;
                                 break;
                             }
                         }
                     }
 
-                    if(oldcommandsfound) {
-                        int result=CommandFateDialog.showDialog2(frame);
-                        switch(result) {
-                        case -1://cancel
+                    if (oldcommandsfound) {
+                        int result = CommandFateDialog.showDialog2(frame);
+                        switch (result) {
+                        case -1:// cancel
                             return;
-                        case 0: //send with updated times
-                            commandQueueControl.setQueueState(CommandQueueInfo.newBuilder(q).setState(QueueState.ENABLED).build(),true);
+                        case 0: // send with updated times
+                            commandQueueControl.setQueueState(
+                                    CommandQueueInfo.newBuilder(q).setState(QueueState.ENABLED).build(), true);
                             break;
-                        case 1://send with old times
-                            commandQueueControl.setQueueState(CommandQueueInfo.newBuilder(q).setState(QueueState.ENABLED).build(),false);
+                        case 1:// send with old times
+                            commandQueueControl.setQueueState(
+                                    CommandQueueInfo.newBuilder(q).setState(QueueState.ENABLED).build(), false);
                             break;
                         }
                     } else {
-                        commandQueueControl.setQueueState(CommandQueueInfo.newBuilder(q).setState(QueueState.ENABLED).build(),false);
+                        commandQueueControl.setQueueState(
+                                CommandQueueInfo.newBuilder(q).setState(QueueState.ENABLED).build(), false);
                     }
                 }
             } catch (Exception e) {
@@ -486,15 +529,35 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
     }
 
     class CommandRenderer extends JTextArea implements TableCellRenderer {
-        public void validate() {};
-        public void invalidate(){};
-        public void revalidate() {};
-        public void repaint(){};
-        public void firePropertyChange() {};
-        public boolean isOpaque() { return true; }
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        @Override
+        public void validate() {
+        }
+
+        @Override
+        public void invalidate() {
+        }
+
+        @Override
+        public void revalidate() {
+        }
+
+        @Override
+        public void repaint() {
+        }
+
+        public void firePropertyChange() {
+        }
+
+        @Override
+        public boolean isOpaque() {
+            return true;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+                int row, int column) {
             setText(value.toString());
-            int height_wanted = (int)getPreferredSize().getHeight();
+            int height_wanted = (int) getPreferredSize().getHeight();
             table.setRowHeight(row, height_wanted);
             if (isSelected) {
                 setForeground(table.getSelectionForeground());
@@ -509,23 +572,27 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 
     static class CommandFateDialog extends JDialog implements ActionListener {
         int result;
-        static CommandFateDialog cfd1=null;
-        static CommandFateDialog cfd2=null;
+        static CommandFateDialog cfd1 = null;
+        static CommandFateDialog cfd2 = null;
 
         JRadioButton[] radioButtons;
         JLabel messageLabel;
 
-
         public static int showDialog(Frame aFrame, CommandId cmdId) {
-            if(cfd1==null) cfd1=new CommandFateDialog(aFrame,1);
-            cfd1.messageLabel.setText("The command '"+cmdId.getSequenceNumber()+"' is older than "+oldCommandWarningTime+" seconds");
+            if (cfd1 == null) {
+                cfd1 = new CommandFateDialog(aFrame, 1);
+            }
+            cfd1.messageLabel.setText("The command '" + cmdId.getSequenceNumber() + "' is older than "
+                    + oldCommandWarningTime + " seconds");
             cfd1.setLocationRelativeTo(aFrame);
             cfd1.setVisible(true);
             return cfd1.result;
         }
 
         public static int showDialog2(Frame aFrame) {
-            if(cfd2==null) cfd2=new CommandFateDialog(aFrame,2);
+            if (cfd2 == null) {
+                cfd2 = new CommandFateDialog(aFrame, 2);
+            }
             cfd2.setLocationRelativeTo(aFrame);
             cfd2.setVisible(true);
             return cfd2.result;
@@ -533,20 +600,24 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 
         public CommandFateDialog(Frame aFrame, int type) {
             super(aFrame, true);
-            if(type==1)	
-                setTitle("Command older than "+oldCommandWarningTime+" seconds");
-            else
-                setTitle("Command(s) older than "+oldCommandWarningTime+" seconds");
+            if (type == 1) {
+                setTitle("Command older than " + oldCommandWarningTime + " seconds");
+            } else {
+                setTitle("Command(s) older than " + oldCommandWarningTime + " seconds");
+            }
             JPanel box = new JPanel();
-            if(type==1)
-                messageLabel = new JLabel("The command 2009/208 17:07:17.845@255.255.255.255/123456 is older than "+oldCommandWarningTime+" seconds");
-            else 
-                messageLabel = new JLabel("Enabling the queue would cause some commands older than "+oldCommandWarningTime+" seconds to be sent.");
+            if (type == 1) {
+                messageLabel = new JLabel("The command 2009/208 17:07:17.845@255.255.255.255/123456 is older than "
+                        + oldCommandWarningTime + " seconds");
+            } else {
+                messageLabel = new JLabel("Enabling the queue would cause some commands older than "
+                        + oldCommandWarningTime + " seconds to be sent.");
+            }
             box.setLayout(new BoxLayout(box, BoxLayout.PAGE_AXIS));
             box.add(messageLabel);
             ButtonGroup group = new ButtonGroup();
 
-            if(type==1) {
+            if (type == 1) {
                 radioButtons = new JRadioButton[3];
                 radioButtons[0] = new JRadioButton("Send the command with updated generation time");
                 radioButtons[1] = new JRadioButton("Send the command with the current (old) generation time");
@@ -573,7 +644,7 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
             buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
             buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
             buttonPane.add(Box.createHorizontalGlue());
-            buttonPane.add(okButton);   
+            buttonPane.add(okButton);
             buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
             buttonPane.add(cancelButton);
             buttonPane.add(Box.createHorizontalGlue());
@@ -583,8 +654,9 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
             pack();
             setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
             addWindowListener(new WindowAdapter() {
+                @Override
                 public void windowClosing(WindowEvent we) {
-                    result=-1;
+                    result = -1;
                     setVisible(false);
                 }
             });
@@ -593,33 +665,19 @@ public class CommandQueueDisplay extends JSplitPane implements ActionListener, C
 
         @Override
         public void actionPerformed(ActionEvent ev) {
-            if(ev.getActionCommand().equalsIgnoreCase("OK")) {
-                result=-1;
-                for(int i=0;i<radioButtons.length;i++) {
-                    if(radioButtons[i].isSelected()) {
-                        result=i;
+            if (ev.getActionCommand().equalsIgnoreCase("OK")) {
+                result = -1;
+                for (int i = 0; i < radioButtons.length; i++) {
+                    if (radioButtons[i].isSelected()) {
+                        result = i;
                         break;
                     }
                 }
-                setVisible(false);				
-            } else if(ev.getActionCommand().equalsIgnoreCase("Cancel")) {
-                result=-1;
+                setVisible(false);
+            } else if (ev.getActionCommand().equalsIgnoreCase("Cancel")) {
+                result = -1;
                 setVisible(false);
             }
         }
     }
-
-    public static void main(String[] args) {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                JFrame frame = new JFrame("Name That Baby");
-                frame.pack();
-                //	int res=CommandFateDialog.showDialog(frame," abcrada da ds");
-                int res=CommandFateDialog.showDialog2(frame);
-                frame.dispose();
-            }
-        });
-    }
-
-
 }

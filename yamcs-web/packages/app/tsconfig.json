@@ -8,6 +8,7 @@
     "target": "es5",
 
     "outDir": "./dist/out-tsc",
+    "baseUrl": "./",
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
@@ -21,7 +22,7 @@
     "noImplicitThis": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
-    // "strictFunctionTypes": true, // TS2.6+
+    // "strictFunctionTypes": true,
 
     // This mainly to detect unused imports
     // (tslint has terrible support for this)

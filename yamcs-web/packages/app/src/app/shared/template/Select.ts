@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output, OnChanges } from '@angular/core';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 
 export interface Option {
   id: string;

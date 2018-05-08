@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input, AfterViewInit, ViewChild } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { CommandQueue, CommandQueueEntry } from '@yamcs/client';
 import { MatSort, MatTableDataSource } from '@angular/material';
 

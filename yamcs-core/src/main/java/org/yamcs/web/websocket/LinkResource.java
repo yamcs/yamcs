@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.management.LinkListener;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.Web.LinkSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
@@ -21,6 +22,9 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
 
+    // Instance requested by the user. This should not update when the processor changes.
+    private String instance;
+
     public LinkResource(WebSocketProcessorClient client) {
         super(client);
     }
@@ -28,6 +32,14 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     @Override
     public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
+
+        if (ctx.getData() != null) {
+            LinkSubscriptionRequest req = decoder.decodeMessageData(ctx, LinkSubscriptionRequest.newBuilder()).build();
+            if (req.hasInstance()) {
+                instance = req.getInstance();
+            }
+        }
+
         switch (ctx.getOperation()) {
         case OP_subscribe:
             return subscribe(ctx.getRequestId());
@@ -45,7 +57,9 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
             wsHandler.sendReply(WebSocketReply.ack(requestId));
 
             for (LinkInfo linkInfo : mservice.getLinkInfo()) {
-                sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
+                if (instance == null || instance.equals(linkInfo.getInstance())) {
+                    sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
+                }
             }
             mservice.addLinkListener(this);
             return null;
@@ -69,7 +83,9 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
 
     @Override
     public void linkRegistered(LinkInfo linkInfo) {
-        sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
+        if (instance == null || instance.equals(linkInfo.getInstance())) {
+            sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
+        }
     }
 
     @Override
@@ -80,18 +96,22 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
 
     @Override
     public void linkChanged(LinkInfo linkInfo) {
-        sendLinkInfo(LinkEvent.Type.UPDATED, linkInfo);
+        if (instance == null || instance.equals(linkInfo.getInstance())) {
+            sendLinkInfo(LinkEvent.Type.UPDATED, linkInfo);
+        }
     }
 
     private void sendLinkInfo(LinkEvent.Type type, LinkInfo linkInfo) {
-        try {
-            LinkEvent.Builder linkb = LinkEvent.newBuilder();
-            linkb.setType(type);
-            linkb.setLinkInfo(linkInfo);
-            wsHandler.sendData(ProtoDataType.LINK_EVENT, linkb.build());
-        } catch (Exception e) {
-            log.warn("got error when sending link event, quitting", e);
-            quit();
+        if (instance == null || instance.equals(linkInfo.getInstance())) {
+            try {
+                LinkEvent.Builder linkb = LinkEvent.newBuilder();
+                linkb.setType(type);
+                linkb.setLinkInfo(linkInfo);
+                wsHandler.sendData(ProtoDataType.LINK_EVENT, linkb.build());
+            } catch (Exception e) {
+                log.warn("got error when sending link event, quitting", e);
+                quit();
+            }
         }
     }
 }

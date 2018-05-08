@@ -84,6 +84,8 @@ message IndexRequest {
   //if sendAllEvent is true, then all events are sent, otherwise those in the eventSource list (which can be empty)
   optional bool sendAllEvent = 12 [default=false];
   repeated NamedObjectId eventSource = 13;
+  
+  optional uint32 mergeTime = 16;
 }
 
 //contains histogram data
@@ -186,7 +188,7 @@ message ReplayRequest {
   optional int64 start = 1;
   optional int64 stop = 2;
 
-  //alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+  //alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
   optional string utcStart = 13;
   optional string utcStop = 14;
 
@@ -291,4 +293,8 @@ message Event {
   optional string createdBy = 10; // Set by API when event was posted by a user
 
   extensions 100 to 10000;
+}
+
+message ProcessorTypeInfo {
+  repeated string type = 1;
 }

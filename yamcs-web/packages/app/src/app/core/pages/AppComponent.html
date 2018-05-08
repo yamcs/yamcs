@@ -5,21 +5,25 @@
         <img src="/_static/assets/yamcs-bw-30.png" style="margin-top: 12px; margin-right: 16px">
       </a>
     </div>
-    <button mat-button *ngIf="instance$ | async as instance" (click)="openInstanceDialog()">
-      <span class="selected-instance">{{ instance.name }}</span>
+    <button mat-button *ngIf="connectionInfo$ | async as connectionInfo" (click)="openInstanceDialog()">
+      <span class="selected-instance">{{ connectionInfo.instance.name }}</span>
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
     <span style="flex: 1 1 auto"></span>
-    <ng-container *ngIf="instance$ | async as instance">
-      <a mat-button routerLink="monitor/displays" [queryParams]="{instance: instance.name}">
+    <ng-container *ngIf="connectionInfo$ | async as connectionInfo">
+      <a mat-button routerLink="monitor/displays"
+         [queryParams]="{instance: connectionInfo.instance.name}">
         <mat-icon>dashboard</mat-icon>
         Monitor
       </a>
-      <a mat-button routerLink="mdb" [queryParams]="{instance: instance.name}" *ngIf="showMdbItem$ | async">
+      <a mat-button routerLink="mdb"
+         [queryParams]="{instance: connectionInfo.instance.name}"
+         *ngIf="showMdbItem$ | async">
         <mat-icon>book</mat-icon>
         MDB
       </a>
-      <a mat-button routerLink="system/dashboard" [queryParams]="{instance: instance.name}">
+      <a mat-button routerLink="system/dashboard"
+         [queryParams]="{instance: connectionInfo.instance.name}">
         <mat-icon>memory</mat-icon>
         System
       </a>

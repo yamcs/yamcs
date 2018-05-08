@@ -1,4 +1,4 @@
-import { Value } from "@yamcs/client";
+import { Value } from '@yamcs/client';
 
 /**
  * Substracts an ISO 8601 duration string from the given date.
@@ -55,4 +55,33 @@ export function convertValueToNumber(value: Value) {
     default:
       return null; // Assuming not a number
   }
+}
+
+const adjectives = [
+  'amused', 'acid', 'adaptable', 'alleged', 'agreeable', 'aspiring', 'berserk', 'bright',
+  'busy', 'calm', 'caring', 'chilly', 'cool', 'curious', 'dapper', 'dazzling', 'dizzy', 'eager',
+  'elite', 'energetic', 'familiar', 'famous', 'fancy', 'fast', 'festive', 'flawless', 'fresh',
+  'friendly', 'funny', 'furry', 'gifted', 'groovy', 'helpful', 'hungry', 'jolly', 'jumpy', 'lucky',
+  'quick', 'quiet', 'rapid', 'rare', 'scary', 'swift', 'tall', 'tame', 'tidy', 'thirsty', 'tough',
+  'wacky', 'wild'];
+
+const animals = [
+  'alligator', 'ant', 'anteater', 'antelope', 'armadillo', 'badger', 'bat', 'bear', 'bee',
+  'beetle', 'buffalo', 'butterfly', 'camel', 'cat', 'chameleon', 'cheetah', 'chicken',
+  'cicada', 'clam', 'cow', 'coyote', 'crab', 'cricket', 'crow', 'deer', 'dog', 'dolphin', 'donkey',
+  'dove', 'dragonfly', 'duck', 'eagle', 'eel', 'elephant', 'ferret', 'fish', 'fly', 'fox', 'frog',
+  'gazelle', 'goat', 'groundhog', 'hedgehog', 'hen', 'hippo', 'horse', 'hyena', 'koala', 'leopard',
+  'lion', 'llama', 'lobster', 'lynx', 'meerkat', 'mole', 'moose', 'moth', 'mouse', 'octopus',
+  'orangutan', 'orca', 'ostrich', 'otter', 'owl', 'panda', 'panther', 'parrot', 'penguin', 'pig',
+  'pigeon', 'rabbit', 'raccoon', 'reindeer', 'seagull', 'seahorse', 'seal', 'shark', 'sheep',
+  'shrimp', 'slug', 'snail', 'snake', 'sparrow', 'squid', 'squirrel', 'starfish', 'swan', 'tiger',
+  'turtle', 'wallaby', 'walrus', 'wasp', 'weasel', 'weaver', 'whale', 'wolf', 'wolverine', 'wombat'];
+
+/**
+ * Generates 'random' animal names.
+ */
+export function generateRandomName() {
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const animal = animals[Math.floor(Math.random() * animals.length)];
+  return `${adjective}_${animal}`;
 }

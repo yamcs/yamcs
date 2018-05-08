@@ -15,6 +15,7 @@ export * from './app/shared/pipes/ValuePipe';
 
 export * from './app/core/guards/AuthGuard';
 export * from './app/core/guards/InstanceExistsGuard';
+export * from './app/core/guards/UnselectInstanceGuard';
 
 export * from './app/core/pages/ForbiddenPage';
 export * from './app/core/pages/LoginPage';

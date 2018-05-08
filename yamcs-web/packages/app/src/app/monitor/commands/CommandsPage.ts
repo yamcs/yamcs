@@ -4,7 +4,7 @@ import { Instance, CommandHistoryEntry } from '@yamcs/client';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 
 @Component({

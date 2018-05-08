@@ -1,0 +1,31 @@
+@font-face {
+  font-family: 'Lucida Sans Typewriter';
+  src: url('lucida_sans_typewriter_regular.woff2') format('woff2'),
+       url('lucida_sans_typewriter_regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Lucida Sans Typewriter';
+  src: url('lucida_sans_typewriter_bold.woff2') format('woff2'),
+       url('lucida_sans_typewriter_bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Lucida Sans Typewriter';
+  src: url('lucida_sans_typewriter_oblique.woff2') format('woff2'),
+       url('lucida_sans_typewriter_oblique.woff') format('woff');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Lucida Sans Typewriter';
+  src: url('lucida_sans_typewriter_bold_oblique.woff2') format('woff2'),
+       url('lucida_sans_typewriter_bold_oblique.woff') format('woff');
+  font-weight: bold;
+  font-style: italic;
+}

@@ -46,15 +46,20 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
+import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileFilter;
@@ -78,66 +83,57 @@ import org.yamcs.utils.TimeEncoding;
 
 import com.csvreader.CsvWriter;
 
+@SuppressWarnings("serial")
 public class EventViewer extends JFrame implements ActionListener, ItemListener, MenuListener, ConnectionListener {
-    private static final long serialVersionUID = 1L;
-    static Logger log= LoggerFactory.getLogger(EventViewer.class);
+
+    static Logger log = LoggerFactory.getLogger(EventViewer.class);
+
     // colors taken from USS configuration
-    final Color                                 iconColorGreen         = new Color(0x86B78A);
-    final Color                                 iconColorRed           = new Color(0xB88687);
-    Color                                       iconColorGrey;                               // obtained
-                                                                                              // during
-                                                                                              // gui
-                                                                                              // build
+    final Color iconColorGreen = new Color(0x86B78A);
+    final Color iconColorRed = new Color(0xB88687);
+    Color iconColorGrey; // obtained during gui build
 
-    EventTableModel                             tableModel             = null;
-    TableRowSorter<EventTableModel>             tableSorter            = null;
-    public JTextArea                            logTextArea            = null;
-    JMenuItem                                   miAutoScroll           = null;
-    JMenuItem                                   miShowErrors           = null;
-    JMenuItem                                   miRetrievePast         = null;
-    EventTable                                  eventTable             = null;
-    JScrollPane                                 eventPane              = null;
+    EventTableModel tableModel;
+    TableRowSorter<EventTableModel> tableSorter;
+    public JTextArea logTextArea;
+    JMenuItem miAutoScroll;
+    JMenuItem miShowErrors;
+    JMenuItem miRetrievePast;
+    EventTable eventTable;
+    JScrollPane eventPane;
 
-    JLabel                                      labelEventCount        = null;
-    JLabel                                      labelWarnings          = null;
-    JLabel                                      labelErrors            = null;
-    Map<String,JLabel>                          linkLabel              = null;
+    Map<String, JLabel> linkLabel;
 
-    Map<String,Icon>                            linkOKIcon             = null;
-    Map<String,Icon>                            linkNOKIcon            = null;
+    Map<String, Icon> linkOKIcon;
+    Map<String, Icon> linkNOKIcon;
 
-    List<JCheckBox>                             columnCheckbox         = null;     
-    
-    int                                         eventCount             = 0;
-    int                                         warningCount           = 0;
-    int                                         errorCount             = 0;
+    List<JCheckBox> columnCheckbox;
 
-    JFileChooser                                filechooser            = null;
-    PreferencesDialog                           preferencesDialog      = null;
-    EventReceiver                               eventReceiver          = null;
-    YamcsConnector                              yconnector             = null;
+    JFileChooser filechooser;
+    PreferencesDialog preferencesDialog;
+    EventReceiver eventReceiver;
+    YamcsConnector yconnector;
 
-    String                                      currentUrl             = null;
-    String                                      currentChannel         = null;
-    boolean                                     connected              = false;
-    Thread                                      connectingThread       = null;
-    private String                              soundFile              = null;
-    List<Map<String,String>>                    extraColumns           = null;
-    List<Map<String,String>>                    linkStatus             = null;
+    String currentUrl;
+    String currentChannel;
+    boolean connected = false;
+    Thread connectingThread;
+    private String soundFile;
+    List<Map<String, String>> extraColumns;
+    List<Map<String, String>> linkStatus;
 
-    private Clip                                alertClip              = null;
-    private JPopupMenu                          popupMenu              = null;
+    private Clip alertClip;
+    private JPopupMenu popupMenu;
 
-    /** Table model with filtering table */
-    private FilteringRulesTable                 rules                  = null;
+    private FilteringRulesTable rules;
 
-    /** View menu */
-    private JMenu                               viewMenu               = null;
+    private JMenu viewMenu = null;
 
     /** Mapping of filtering rules into menu */
-    private HashMap<JCheckBoxMenuItem, Integer> viewMenuFilterChkBoxes = null;
-    
+    private HashMap<JCheckBoxMenuItem, Integer> viewMenuFilterChkBoxes;
+
     boolean authenticationEnabled = false;
+
     /**
      * Read properties from configuration file
      */
@@ -145,13 +141,13 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         YConfiguration cfg = null;
 
         cfg = YConfiguration.getConfiguration("event-viewer");
-        if(cfg.containsKey("soundfile")) {
+        if (cfg.containsKey("soundfile")) {
             soundFile = cfg.getString("soundfile");
         }
-        if(cfg.containsKey("extraColumns")) {
-            extraColumns=cfg.getList("extraColumns");
+        if (cfg.containsKey("extraColumns")) {
+            extraColumns = cfg.getList("extraColumns");
         }
-        if(cfg.containsKey("linkstatus")) {
+        if (cfg.containsKey("linkstatus")) {
             linkStatus = cfg.getList("linkstatus");
         } else {
             linkStatus = new ArrayList<>();
@@ -160,6 +156,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
     /**
      * Access to table with filtering rules
+     * 
      * @return Instance of the filtering table
      */
     public FilteringRulesTable getFilteringRulesTable() {
@@ -176,24 +173,24 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     public EventViewer(YamcsConnector yc, final EventReceiver eventReceiver) throws ConfigurationException {
         super();
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
-        if(config.containsKey("authenticationEnabled")) {
+        if (config.containsKey("authenticationEnabled")) {
             authenticationEnabled = config.getBoolean("authenticationEnabled");
         }
-        
+
         this.yconnector = yc;
         this.eventReceiver = eventReceiver;
-        
+
         readConfiguration();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
-                        @Override
-                        public void windowClosing(WindowEvent arg0) {
-                                eventTable.storePreferences();
-                                dispose();
-                        }
+            @Override
+            public void windowClosing(WindowEvent arg0) {
+                eventTable.storePreferences();
+                dispose();
+            }
         });
-        
+
         setIconImage(getIcon("yamcs-event-32.png").getImage());
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -204,23 +201,14 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             }
         });
 
-        eventCount = 0;
-        warningCount = 0;
-        errorCount = 0;
-        
-        
-        //
-        // menu
-        //
-
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
         JMenu menu = new JMenu("File");
         menu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menu);
-        
+
         // Ctrl on win/linux, Command on mac
-        int menuKey=Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        int menuKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
         JMenuItem menuItem = new JMenuItem("Connect to Yamcs...");
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, menuKey));
@@ -279,9 +267,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         menuItem.addActionListener(this);
         menuItem.setActionCommand("clear");
         viewMenu.add(menuItem);
-        
-        menuBar.add(viewMenu);
 
+        menuBar.add(viewMenu);
 
         populateViewMenu();
 
@@ -293,40 +280,16 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         Box panel = Box.createHorizontalBox();
         getContentPane().add(panel, BorderLayout.SOUTH);
         panel.add(Box.createHorizontalStrut(20));
-
-        panel.add(new JLabel("Total Events:"));
-        labelEventCount = new JLabel(String.valueOf(eventCount));
-        labelEventCount.setPreferredSize(new Dimension(50, labelEventCount.getPreferredSize().height));
-        labelEventCount.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        labelEventCount.setHorizontalAlignment(SwingConstants.RIGHT);
-        panel.add(labelEventCount);
-
-        panel.add(Box.createHorizontalStrut(20));
-        panel.add(new JLabel("Warnings:"));
-        labelWarnings = new JLabel(String.valueOf(warningCount));
-        labelWarnings.setPreferredSize(new Dimension(50, labelWarnings.getPreferredSize().height));
-        labelWarnings.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        labelWarnings.setHorizontalAlignment(SwingConstants.RIGHT);
-        panel.add(labelWarnings);
-
-        panel.add(Box.createHorizontalStrut(20));
-        panel.add(new JLabel("Errors:"));
-        labelErrors = new JLabel(String.valueOf(errorCount));
-        labelErrors.setPreferredSize(new Dimension(50, labelErrors.getPreferredSize().height));
-        labelErrors.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        labelErrors.setHorizontalAlignment(SwingConstants.RIGHT);
-        panel.add(labelErrors);
-
         panel.add(Box.createHorizontalGlue());
-        
+
         linkOKIcon = new HashMap<>();
         linkNOKIcon = new HashMap<>();
         linkLabel = new HashMap<>();
-        
-        for(Map<String,String> link: linkStatus) {
+
+        for (Map<String, String> link : linkStatus) {
             linkOKIcon.put(link.get("name"), getIcon(link.get("okicon")));
             linkNOKIcon.put(link.get("name"), getIcon(link.get("nokicon")));
-            
+
             JLabel label = new JLabel(linkNOKIcon.get(link.get("name")));
             label.setOpaque(true);
             label.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
@@ -342,10 +305,10 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         eventTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         eventTable.setPreferredScrollableViewportSize(new Dimension(920, 400));
 
-        tableSorter = new TableRowSorter<EventTableModel>(tableModel);
+        tableSorter = new TableRowSorter<>(tableModel);
         eventTable.setRowSorter(tableSorter);
 
-        final TableColumnModel tcm = eventTable.getColumnModel();
+        TableColumnModel tcm = eventTable.getColumnModel();
         tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.SOURCE_COL)).setMaxWidth(200);
         tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.GENERATION_TIME_COL)).setMaxWidth(200);
         tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.RECEPTION_TIME_COL)).setMaxWidth(200);
@@ -357,47 +320,84 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.EVENT_TYPE_COL)).setPreferredWidth(100);
         tcm.getColumn(eventTable.convertColumnIndexToView(EventTableModel.EVENT_TEXT_COL)).setPreferredWidth(400);
 
-        eventPane = new JScrollPane(eventTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        eventPane = new JScrollPane(eventTable, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        // status log area
+        JPanel filterablePane = new JPanel(new BorderLayout());
+        filterablePane.add(eventPane, BorderLayout.CENTER);
+
+        JPanel filterPane = new JPanel(new BorderLayout());
+        JTextField filterField = new JTextField();
+        filterField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateRowFilter(filterField.getText());
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateRowFilter(filterField.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateRowFilter(filterField.getText());
+            }
+        });
+        filterPane.add(filterField, BorderLayout.CENTER);
+        filterPane.add(new JLabel("Filter:"), BorderLayout.WEST);
+
+        filterablePane.add(filterPane, BorderLayout.NORTH);
 
         logTextArea = new JTextArea(5, 20);
         logTextArea.setEditable(false);
-        JScrollPane logPane = new JScrollPane(logTextArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane logPane = new JScrollPane(logTextArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, eventPane, logPane);
+        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, filterablePane, logPane);
         split.setResizeWeight(1.0);
         split.setContinuousLayout(true);
         getContentPane().add(split, BorderLayout.CENTER);
 
-        // popup menu
         popupMenu = new JPopupMenu();
         JMenuItem item = new JMenuItem("New filtering rule");
         item.setActionCommand("new_rule_popup");
         item.addActionListener(this);
         popupMenu.add(item);
-        item=new JMenuItem("Details...");
+        item = new JMenuItem("Details...");
         item.setActionCommand("show_event_details");
         item.addActionListener(this);
         popupMenu.add(item);
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
         eventTable.addMouseListener(new MousePopupListener());
 
-        
-        // prepare model names
-
-//        updateStatus();
+        // updateStatus();
         pack();
         setLocation(30, 30);
         setVisible(true);
-        
+
         eventReceiver.setEventViewer(this);
         yconnector.addConnectionListener(this);
     }
 
+    private void updateRowFilter(String filterText) {
+        String lcFilterText = filterText.toLowerCase();
+        tableSorter.setRowFilter(new RowFilter<EventTableModel, Object>() {
+            @Override
+            public boolean include(Entry<? extends EventTableModel, ? extends Object> entry) {
+                for (int i = entry.getValueCount() - 1; i >= 0; i--) {
+                    if (entry.getStringValue(i).toLowerCase().contains(lcFilterText)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
     public void populateViewMenu() {
         if (viewMenuFilterChkBoxes == null) {
-            viewMenuFilterChkBoxes = new HashMap<JCheckBoxMenuItem, Integer>(25);
+            viewMenuFilterChkBoxes = new HashMap<>(25);
         }
 
         for (JCheckBoxMenuItem item : viewMenuFilterChkBoxes.keySet()) {
@@ -429,17 +429,12 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         }
     }
 
-    /**
-     * Shows event in the detail dialog
-     * @param event Event to be presented
-     */
     private void showEventInDetailDialog(Event event) {
         EventDialog detailDialog = new EventDialog(this);
         detailDialog.setEvent(event);
         detailDialog.setVisible(true);
     }
 
-    // ***********
     // An inner class to check whether mouse events are the popup trigger
     class MousePopupListener extends MouseAdapter {
         @Override
@@ -453,7 +448,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             if (e.getClickCount() == 2) {
                 JTable target = (JTable) e.getSource();
                 int row = target.getSelectedRow();
-                showEventInDetailDialog(((EventTableModel)target.getModel()).getEvent(
+                showEventInDetailDialog(((EventTableModel) target.getModel()).getEvent(
                         tableSorter.convertRowIndexToModel(row)));
             }
         }
@@ -469,7 +464,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 // If multiple rows are selected keep them selected, unless the right
                 // click landed on a previously unselected row.
                 int row = eventTable.rowAtPoint(e.getPoint());
-                if(!eventTable.getSelectionModel().isSelectedIndex(row)) {
+                if (!eventTable.getSelectionModel().isSelectedIndex(row)) {
                     eventTable.getSelectionModel().setSelectionInterval(row, row);
                 } else {
                     popupMenu.show(eventTable, e.getX(), e.getY());
@@ -478,69 +473,69 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         }
     }
 
-    // ****************
-
     public ImageIcon getIcon(String imagename) {
         return new ImageIcon(getClass().getResource("/org/yamcs/images/" + imagename));
     }
 
-    public void updateStatus(String name, String status)  {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                StringBuffer title = new StringBuffer("Event Viewer");
-                JLabel label = linkLabel.get(name);
-                if (yconnector.isConnected()) {
-                    if (miRetrievePast != null) miRetrievePast.setEnabled(true);
-                    title.append(" (connected)");
-                    if(status.equals("OK")) {
-                        label.setBackground(iconColorGreen);
-                        label.setIcon(linkOKIcon.get(name));
-                    } else if (status.equals("DISABLED")) {
-                        label.setBackground(iconColorRed);
-                        label.setIcon(linkNOKIcon.get(name));
-                    } else {
-                        title.append(" (not connected)");
-                        label.setBackground(iconColorGrey);
-                        label.setIcon(linkOKIcon.get(name));
-                    }
-                } else if (yconnector.isConnecting()) {
-                    if (miRetrievePast != null)
-                        miRetrievePast.setEnabled(false);
-                    title.append(" (connecting)");
-                    label.setBackground(iconColorGrey);
+    public void updateStatus(String name, String status) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            StringBuffer title = new StringBuffer("Event Viewer");
+            JLabel label = linkLabel.get(name);
+            if (yconnector.isConnected()) {
+                if (miRetrievePast != null) {
+                    miRetrievePast.setEnabled(true);
+                }
+                title.append(" (connected)");
+                if (status.equals("OK")) {
+                    label.setBackground(iconColorGreen);
+                    label.setIcon(linkOKIcon.get(name));
+                } else if (status.equals("DISABLED")) {
+                    label.setBackground(iconColorRed);
+                    label.setIcon(linkNOKIcon.get(name));
                 } else {
-                    if (miRetrievePast != null)
-                        miRetrievePast.setEnabled(false);
                     title.append(" (not connected)");
                     label.setBackground(iconColorGrey);
+                    label.setIcon(linkOKIcon.get(name));
                 }
-                setTitle(title.toString());
+            } else if (yconnector.isConnecting()) {
+                if (miRetrievePast != null) {
+                    miRetrievePast.setEnabled(false);
+                }
+                title.append(" (connecting)");
+                label.setBackground(iconColorGrey);
+            } else {
+                if (miRetrievePast != null) {
+                    miRetrievePast.setEnabled(false);
+                }
+                title.append(" (not connected)");
+                label.setBackground(iconColorGrey);
             }
+            setTitle(title.toString());
         });
     }
+
     @Override
     public void connected(String url) {
-        log("Connected to "+url);
-       // updateStatus();
+        log("Connected to " + url);
+        // updateStatus();
     }
 
     @Override
     public void connecting(String url) {
-        log("Connecting to "+url);
-       // updateStatus();
+        log("Connecting to " + url);
+        // updateStatus();
     }
 
     @Override
     public void disconnected() {
         log("Disconnected");
-        //updateStatus();
+        // updateStatus();
     }
 
     @Override
     public void connectionFailed(String url, YamcsException exception) {
-        log("Connection to "+url+" failed: "+exception);
-       // updateStatus();
+        log("Connection to " + url + " failed: " + exception);
+        // updateStatus();
     }
 
     @Override
@@ -548,7 +543,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         String cmd = e.getActionCommand();
         if (cmd.equals("connect")) {
             YamcsConnectDialogResult r = YamcsConnectDialog.showDialog(this, true, authenticationEnabled);
-            if( r.isOk() ) {
+            if (r.isOk()) {
                 yconnector.connect(r.getConnectionProperties());
             }
 
@@ -562,8 +557,9 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         } else if (cmd.equals("clear")) {
             clearTable();
         } else if (cmd.equals("save")) {
-            if(getColumnsCheckBox() ==0)
+            if (getColumnsCheckBox() == 0) {
                 saveTableAs();
+            }
         } else if (cmd.equals("exit")) {
             processWindowEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         } else if (cmd.equals("preferences")) {
@@ -582,7 +578,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
             getPreferencesDialog().setVisible(true);
         } else if (cmd.equals("show_event_details")) {
-            showEventInDetailDialog(((EventTableModel)eventTable.getModel()).getEvent(
+            showEventInDetailDialog(((EventTableModel) eventTable.getModel()).getEvent(
                     tableSorter.convertRowIndexToModel(eventTable.getSelectedRow())));
         }
     }
@@ -616,29 +612,18 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         return preferencesDialog;
     }
 
-
     @Override
     public void itemStateChanged(ItemEvent arg0) {
     }
 
     @Override
-    public void log(final String s) {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                logTextArea.append(TimeEncoding.toCombinedFormat(TimeEncoding.currentInstant()) + " " + s + "\n");
-            }
-        });
+    public void log(String s) {
+        SwingUtilities.invokeLater(() -> logTextArea
+                .append(TimeEncoding.toCombinedFormat(TimeEncoding.currentInstant()) + " " + s + "\n"));
     }
 
     void clearTable() {
         tableModel.clear();
-        eventCount = 0;
-        warningCount = 0;
-        errorCount = 0;
-        labelEventCount.setText(String.valueOf(eventCount));
-        labelWarnings.setText(String.valueOf(warningCount));
-        labelErrors.setText(String.valueOf(errorCount));
         eventTable.repaint();
     }
 
@@ -647,7 +632,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     }
 
     class ExtendedFileFilter extends FileFilter {
-        public String  ext;
+        public String ext;
         private String desc;
 
         public ExtendedFileFilter(String ext, String desc) {
@@ -669,21 +654,21 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             return accept(f) ? f : new File(f.getPath() + "." + ext);
         }
     }
-    
+
     private int getColumnsCheckBox() {
-        
+
         String[] colNames = new String[eventTable.getColumnCount()];
-        
+
         int i = 0;
-        for(int col =0; col < eventTable.getColumnCount(); col ++) {
+        for (int col = 0; col < eventTable.getColumnCount(); col++) {
             colNames[i] = getColumnName(col);
             i++;
         }
         Object[] obj = new Object[eventTable.getColumnCount() + 1];
         obj[0] = "Select columns to be saved:";
-        columnCheckbox = new ArrayList<JCheckBox>();
+        columnCheckbox = new ArrayList<>();
         i = 1;
-        for (String  mc : colNames){
+        for (String mc : colNames) {
             JCheckBox box = new JCheckBox(mc);
             box.setSelected(true);
             columnCheckbox.add(box);
@@ -691,7 +676,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             i++;
         }
         return JOptionPane.showConfirmDialog(this, obj, "Save", JOptionPane.OK_CANCEL_OPTION);
-        
+
     }
 
     void saveTableAs() {
@@ -707,13 +692,15 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                     }
                     return file;
                 }
-                
+
                 @Override
                 public void approveSelection() {
-                    File file=getSelectedFile();
-                    if(file.exists()) {
-                        int response=JOptionPane.showConfirmDialog(filechooser, "The file "+file+" already exists. Do you want to replace the existing file?", "Overwrite file", JOptionPane.YES_NO_OPTION);
-                        if(response!=JOptionPane.YES_OPTION) {
+                    File file = getSelectedFile();
+                    if (file.exists()) {
+                        int response = JOptionPane.showConfirmDialog(filechooser,
+                                "The file " + file + " already exists. Do you want to replace the existing file?",
+                                "Overwrite file", JOptionPane.YES_NO_OPTION);
+                        if (response != JOptionPane.YES_OPTION) {
                             return;
                         }
                     }
@@ -721,48 +708,48 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
                 }
             };
             filechooser.setMultiSelectionEnabled(false);
-            FileFilter csvFilter=new ExtendedFileFilter("csv", "CSV File");
+            FileFilter csvFilter = new ExtendedFileFilter("csv", "CSV File");
             filechooser.addChoosableFileFilter(csvFilter);
-            FileFilter txtFilter=new ExtendedFileFilter("txt", "Text File");
+            FileFilter txtFilter = new ExtendedFileFilter("txt", "Text File");
             filechooser.addChoosableFileFilter(txtFilter);
             filechooser.setFileFilter(csvFilter); // By default, choose CSV
         }
         int ret = filechooser.showSaveDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            File file=filechooser.getSelectedFile();
-            CsvWriter writer=null;
+            File file = filechooser.getSelectedFile();
+            CsvWriter writer = null;
             try {
-                writer=new CsvWriter(new FileOutputStream(file), '\t', Charset.forName("UTF-8"));
-                
+                writer = new CsvWriter(new FileOutputStream(file), '\t', Charset.forName("UTF-8"));
+
                 List<Integer> selectedColumns = new ArrayList<>();
-                for(int i = 0; i < columnCheckbox.size(); i ++) {
-                    if(columnCheckbox.get(i).isSelected()) {
+                for (int i = 0; i < columnCheckbox.size(); i++) {
+                    if (columnCheckbox.get(i).isSelected()) {
                         selectedColumns.add(i);
                     }
                 }
-     
+
                 String[] colNames = new String[selectedColumns.size()];
-                
+
                 int i = 0;
-                for(int col : selectedColumns) {
+                for (int col : selectedColumns) {
                     colNames[i] = getColumnName(col);
                     i++;
                 }
 
                 writer.writeRecord(colNames);
                 writer.setForceQualifier(true);
-                
-                for(int row = 0; row < eventTable.getRowCount(); row++) {
+
+                for (int row = 0; row < eventTable.getRowCount(); row++) {
                     String[] rec = new String[selectedColumns.size()];
                     i = 0;
-                    for(int col: selectedColumns) {
+                    for (int col : selectedColumns) {
                         rec[i] = getColumnValue(col, row);
                         i++;
-                       
+
                     }
                     writer.writeRecord(rec);
                 }
-                
+
             } catch (IOException e) {
                 e.printStackTrace();
                 showMessage("Could not export events to file '" + file.getPath() + "': " + e.getMessage());
@@ -772,7 +759,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             log("Saved table to " + file.getAbsolutePath());
         }
     }
-    
+
     private String getColumnName(int col) {
         switch (col) {
         case 0:
@@ -789,7 +776,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             return tableModel.getColumnName(col);
         }
     }
-    
+
     private String getColumnValue(int col, int row) {
         row = tableSorter.convertRowIndexToModel(row);
         switch (col) {
@@ -798,103 +785,69 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         default:
             return (String) tableModel.getValueAt(row, col);
         }
-        
+
     }
-    
 
     public void addEvents(final List<Event> events) {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                tableModel.addEvents(events);
-                for (Event event : events)  {
-                    switch (event.getSeverity())  {
-                    case WARNING:
-                        ++warningCount;
-                        break;
-                    case ERROR:
-                        ++errorCount;
-                        break;
-                    }
-                    ++eventCount;
-                }
-                labelEventCount.setText(String.valueOf(eventCount));
-                labelWarnings.setText(String.valueOf(warningCount));
-                labelErrors.setText(String.valueOf(errorCount));
-                eventTable.revalidate();
-                eventPane.validate();
-                if (miAutoScroll.isSelected()) {
-                    updateVerticalScrollPosition();
-                }
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            tableModel.addEvents(events);
+            eventTable.revalidate();
+            eventPane.validate();
+            if (miAutoScroll.isSelected()) {
+                updateVerticalScrollPosition();
             }
         });
     }
 
     /**
      * Add event. This method is used for incoming events.
-     * @param event Event to be added.
      */
-    public void addEvent(final Event event) {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                switch (event.getSeverity()) {
-                case WARNING:
-                    ++warningCount;
-                    labelWarnings.setText(String.valueOf(warningCount));
-                    break;
-                case ERROR:
-                    ++errorCount;
-                    labelErrors.setText(String.valueOf(errorCount));
-                    break;
-                }
-                ++eventCount;
-                labelEventCount.setText(String.valueOf(eventCount));
+    public void addEvent(Event event) {
+        SwingUtilities.invokeLater(() -> {
+            tableModel.addEvent(event);
 
-                tableModel.addEvent(event);
+            // auto-resize text column (does not resize scrollview)
+            /*
+             * TableColumn col = eventTable.getColumnModel().getColumn(4);
+             * Component cell = eventTable.getCellRenderer(0,
+             * 4).getTableCellRendererComponent(eventTable, event, false,
+             * false, 0, 4); int w = cell.getPreferredSize().width + 10; if
+             * (w > col.getPreferredWidth()) { col.setPreferredWidth(w); }
+             */
 
-                // auto-resize text column (does not resize scrollview)
-                /*
-                 * TableColumn col = eventTable.getColumnModel().getColumn(4);
-                 * Component cell = eventTable.getCellRenderer(0,
-                 * 4).getTableCellRendererComponent(eventTable, event, false,
-                 * false, 0, 4); int w = cell.getPreferredSize().width + 10; if
-                 * (w > col.getPreferredWidth()) { col.setPreferredWidth(w); }
-                 */
+            eventTable.revalidate();
+            eventPane.validate();
 
-                eventTable.revalidate();
-                eventPane.validate();
+            if (miAutoScroll.isSelected()) {
+                updateVerticalScrollPosition();
+            }
 
-                if (miAutoScroll.isSelected()) {
-                    updateVerticalScrollPosition();
-                }
-
-                // alert the user if necessary
-                AlertType alert = getFilteringRulesTable().getAlertType(event);
-                if (alert.alertSound) {
-                    playAlertSound();
-                }
-                if (alert.alertPopup) {
-                    showAlertPopupDialog(event);
-                }
+            // alert the user if necessary
+            AlertType alert = getFilteringRulesTable().getAlertType(event);
+            if (alert.alertSound) {
+                playAlertSound();
+            }
+            if (alert.alertPopup) {
+                showAlertPopupDialog(event);
             }
         });
     }
-    
+
     /**
-     * Adjusts vertical scroll position
-     * (horizontal position remains unchanged)
+     * Adjusts vertical scroll position (horizontal position remains unchanged)
      */
     private void updateVerticalScrollPosition() {
-        if(eventTable.getRowCount()<=0) return;
-        
-        int row = eventTable.convertRowIndexToView(eventTable.getRowCount()-1);
+        if (eventTable.getRowCount() <= 0) {
+            return;
+        }
+
+        int row = eventTable.convertRowIndexToView(eventTable.getRowCount() - 1);
         int col = eventTable.convertColumnIndexToView(0);
         Rectangle rect = eventTable.getCellRect(row, col, true);
-        
+
         // Retain view's x position
         int x = eventTable.getVisibleRect().x;
-        
+
         // y should correctly show full contents of multiline text cells.
         int y = rect.y;
         int textViewColumn = eventTable.convertColumnIndexToView(EventTableModel.EVENT_TEXT_COL);
@@ -902,10 +855,10 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         if (renderer instanceof EventTableRenderer) {
             Object value = eventTable.getValueAt(row, textViewColumn);
             // Trigger an update of the row height
-            int actualHeight = ((EventTableRenderer)renderer).updateCalculatedHeight(eventTable, value, row);
+            int actualHeight = ((EventTableRenderer) renderer).updateCalculatedHeight(eventTable, value, row);
             y += (actualHeight - rect.height);
         }
-        
+
         rect.setLocation(new Point(x, y));
         eventTable.scrollRectToVisible(rect);
     }
@@ -914,32 +867,26 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
      * Play the sound
      */
     private void playAlertSound() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                playSoundFile();
-            }
-        }).start();
+        new Thread(() -> playSoundFile()).start();
     }
 
     /**
      * Access to sound clip.
-     * 
-     * @return
      */
     private Clip getAlertClip() {
-        if (alertClip == null)  {
+        if (alertClip == null) {
             String defFileName = "/org/yamcs/sounds/alert.wav";
             try {
                 AudioInputStream inputStream = null;
                 if (soundFile == null) {
-                    inputStream = AudioSystem.getAudioInputStream(new BufferedInputStream(getClass().getResourceAsStream(defFileName)));
+                    inputStream = AudioSystem
+                            .getAudioInputStream(new BufferedInputStream(getClass().getResourceAsStream(defFileName)));
                 } else {
                     inputStream = AudioSystem.getAudioInputStream(new File(soundFile));
                 }
                 AudioFormat format = inputStream.getFormat();
                 DataLine.Info info = new DataLine.Info(Clip.class, format);
-                alertClip = (Clip)AudioSystem.getLine(info);
+                alertClip = (Clip) AudioSystem.getLine(info);
                 alertClip.open(inputStream);
             } catch (Exception e) {
                 log.warn("Error occured while playing sound clip ", e);
@@ -952,7 +899,8 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     /**
      * Plays file. This method is not synchronized.
      * 
-     * @param fileName File with the sound resource
+     * @param fileName
+     *            File with the sound resource
      * @todo This method should be accessed only by one thread.....
      */
     private void playSoundFile() {
@@ -960,8 +908,9 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
         try {
             clip = getAlertClip();
-            if (clip == null)
+            if (clip == null) {
                 return;
+            }
 
             clip.stop();
             clip.setFramePosition(0);
@@ -978,7 +927,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
             if (clip != null) {
                 clip.stop();
                 clip.setFramePosition(0);
-                
+
             }
         }
     }
@@ -1019,35 +968,28 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         }
     }
 
-    /**
-     * Application entry point.
-     * 
-     * @param args
-     * @throws IOException
-     * @throws ConfigurationException
-     * @throws URISyntaxException 
-     * @throws IllegalAccessException 
-     * @throws InstantiationException 
-     * @throws ClassNotFoundException 
-     */
-    public static void main(String[] args) throws IOException, ConfigurationException, URISyntaxException, ClassNotFoundException, InstantiationException, IllegalAccessException  {
-        if (args.length > 1)  printUsageAndExit();
+    public static void main(String[] args) throws IOException, ConfigurationException, URISyntaxException,
+            ClassNotFoundException, InstantiationException, IllegalAccessException {
+        if (args.length > 1) {
+            printUsageAndExit();
+        }
         YConfiguration.setup();
         YamcsConnectionProperties ycd = null;
-        if(args.length==1) {
+        if (args.length == 1) {
             if (args[0].startsWith("http")) {
                 ycd = YamcsConnectionProperties.parse(args[0]);
             } else {
                 printUsageAndExit();
-            }        
-        } 
-        YamcsConnector yconnector=new YamcsConnector("EventViewer");
+            }
+        }
+        YamcsConnector yconnector = new YamcsConnector("EventViewer");
         YamcsEventReceiver eventReceiver = new YamcsEventReceiver(yconnector);
-        
-        EventViewer ev = new EventViewer(yconnector, eventReceiver);
-        if(ycd!=null) yconnector.connect(ycd);
-        
-        
+
+        new EventViewer(yconnector, eventReceiver);
+        if (ycd != null) {
+            yconnector.connect(ycd);
+        }
+
     }
 
     @Override
@@ -1067,10 +1009,10 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
     public List<String> getParameterLinkStatus() {
         List<String> parameterLinks = new ArrayList<>();
-        for(Map<String, String> link: linkStatus) {
+        for (Map<String, String> link : linkStatus) {
             parameterLinks.add(link.get("name"));
         }
         return parameterLinks;
-        
+
     }
 }

@@ -61,6 +61,12 @@ message DataEncodingInfo {
   optional int32 sizeInBits = 3;
   optional string encoding = 4;
   optional CalibratorInfo defaultCalibrator = 6;
+  repeated ContextCalibratorInfo contextCalibrator = 7;
+}
+
+message ContextCalibratorInfo {
+  repeated ComparisonInfo comparison = 1;
+  optional CalibratorInfo calibrator = 2;
 }
 
 message CalibratorInfo {

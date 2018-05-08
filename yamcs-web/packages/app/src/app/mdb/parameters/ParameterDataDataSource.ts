@@ -1,4 +1,4 @@
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { DataSource } from '@angular/cdk/table';
 import { GetParameterValuesOptions, ParameterValue } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';

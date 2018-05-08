@@ -6,8 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { YamcsService } from '../../core/services/YamcsService';
 import { filter, map } from 'rxjs/operators';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { Subscription } from 'rxjs/Subscription';
+import { BehaviorSubject ,  Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './ProcessorTMTab.html',

@@ -255,8 +255,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         // Add websocket-specific handlers to channel pipeline
         String webSocketPath = req.uri();
-        ctx.pipeline().addLast(
-                new WebSocketServerProtocolHandler(webSocketPath, null, false, webConfig.getWebSocketMaxFrameLength()));
+        String subprotocols = "json, protobuf";
+        ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, false,
+                webConfig.getWebSocketMaxFrameLength()));
 
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);

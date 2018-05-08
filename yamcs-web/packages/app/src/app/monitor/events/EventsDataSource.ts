@@ -1,9 +1,8 @@
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject ,  Subscription } from 'rxjs';
 import { DataSource } from '@angular/cdk/table';
 import { Event, GetEventsOptions } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CollectionViewer } from '@angular/cdk/collections';
-import { Subscription } from 'rxjs/Subscription';
 
 export interface AnimatableEvent extends Event {
   animate?: boolean;

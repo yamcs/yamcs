@@ -49,19 +49,22 @@ public final class ManagementGpbHelper {
         return statsb.build();
     }
 
-    public static ProcessorInfo toProcessorInfo(Processor yproc) {
-        ProcessorInfo.Builder cib = ProcessorInfo.newBuilder().setInstance(yproc.getInstance())
-                .setName(yproc.getName()).setType(yproc.getType())
-                .setCreator(yproc.getCreator())
-                .setHasCommanding(yproc.hasCommanding())
-                .setHasAlarms(yproc.hasAlarmServer())
-                .setState(yproc.getState());
+    public static ProcessorInfo toProcessorInfo(Processor processor) {
+        ProcessorInfo.Builder processorb = ProcessorInfo.newBuilder().setInstance(processor.getInstance())
+                .setName(processor.getName()).setType(processor.getType())
+                .setCreator(processor.getCreator())
+                .setHasCommanding(processor.hasCommanding())
+                .setHasAlarms(processor.hasAlarmServer())
+                .setState(processor.getState())
+                .setPersistent(processor.isPersistent())
+                .setTime(TimeEncoding.toString(processor.getCurrentTime()))
+                .setReplay(processor.isReplay());
 
-        if (yproc.isReplay()) {
-            cib.setReplayRequest(yproc.getReplayRequest());
-            cib.setReplayState(yproc.getReplayState());
+        if (processor.isReplay()) {
+            processorb.setReplayRequest(processor.getReplayRequest());
+            processorb.setReplayState(processor.getReplayState());
         }
-        return cib.build();
+        return processorb.build();
     }
 
     public static CommandQueueEntry toCommandQueueEntry(CommandQueue q, PreparedCommand pc) {

@@ -1,5 +1,5 @@
+import { Observable } from 'rxjs';
 import { CommandId, Value } from './monitoring';
-import { Observable } from 'rxjs/Observable';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
@@ -31,6 +31,17 @@ export interface Instance {
   processor: Processor[];
 }
 
+export interface ConnectionInfo {
+  clientId: number;
+  instance: Instance;
+  processor: Processor;
+}
+
+export interface ConnectionInfoSubscriptionResponse {
+  connectionInfo: ConnectionInfo;
+  connectionInfo$: Observable<ConnectionInfo>;
+}
+
 export interface ClientInfo {
   instance: string;
   id: number;
@@ -40,6 +51,11 @@ export interface ClientInfo {
   state: 'CONNECTED' | 'DISCONNECTED';
   currentClient: boolean;
   loginTimeUTC: string;
+}
+
+export interface EditClientRequest {
+  instance?: string;
+  processor?: string;
 }
 
 export interface ClientSubscriptionResponse {
@@ -86,9 +102,30 @@ export interface Processor {
   hasAlarms: boolean;
   hasCommanding: boolean;
   state: ServiceState;
+  persistent: boolean;
+  time: string;
+  replay: boolean;
+  replayRequest?: ReplayRequest;
+}
+
+export interface ReplayRequest {
+  utcStart: string;
+  utcStop: string;
+  speed: ReplaySpeed;
+}
+
+export interface ReplaySpeed {
+  type: 'AFAP' | 'FIXED_DELAY' | 'REALTIME';
+  param: number;
+}
+
+export interface ProcessorSubscriptionRequest {
+  allProcessors?: boolean;
+  allInstances?: boolean;
 }
 
 export interface ProcessorSubscriptionResponse {
+  processor: Processor;
   processor$: Observable<Processor>;
 }
 

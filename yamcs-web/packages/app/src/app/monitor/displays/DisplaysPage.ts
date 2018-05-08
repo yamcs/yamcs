@@ -8,7 +8,7 @@ import { MatDialog } from '@angular/material';
 import { SaveLayoutDialog } from './SaveLayoutDialog';
 import { LayoutComponent } from './LayoutComponent';
 import { LayoutState } from '@yamcs/displays';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { Instance } from '@yamcs/client';
 import { Title } from '@angular/platform-browser';
 import { YamcsService } from '../../core/services/YamcsService';

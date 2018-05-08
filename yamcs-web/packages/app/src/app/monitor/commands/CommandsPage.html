@@ -19,17 +19,18 @@
 
   <div class="table-wrapper">
     <div class="panel-content">
-      <mat-table *ngIf="!dataSource.isEmpty(); else empty"
-                [dataSource]="dataSource"
-                class="ya-data-table"
-                matSort
-                matSortActive="generationTimeUTC"
-                matSortDirection="desc"
-                matSortDisableClear>
+      <table mat-table
+             *ngIf="!dataSource.isEmpty(); else empty"
+             [dataSource]="dataSource"
+             class="ya-data-table"
+             matSort
+             matSortActive="generationTimeUTC"
+             matSortDirection="desc"
+             matSortDisableClear>
 
         <ng-container matColumnDef="completion">
-          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="32px"></mat-header-cell>
-          <mat-cell *matCellDef="let entry" fxFlex="32px">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 32px"></th>
+          <td mat-cell *matCellDef="let entry">
             <ng-container *ngIf="isCompleted(entry)">
               <mat-icon style="color: green" matTooltip="Completed">
                 check_circle
@@ -40,50 +41,50 @@
                 highlight_off
               </mat-icon>
             </ng-container>
-          </mat-cell>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="generationTimeUTC">
-          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="200px">Time</mat-header-cell>
-          <mat-cell *matCellDef="let entry" fxFlex="200px">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Time</th>
+          <td mat-cell *matCellDef="let entry">
             {{ entry.generationTimeUTC | datetime }}
-          </mat-cell>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="command">
-          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="350px">Command</mat-header-cell>
-          <mat-cell *matCellDef="let entry" fxFlex="350px">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Command</th>
+          <td mat-cell *matCellDef="let entry">
             {{ getCommandString(entry) || '-' }}
-          </mat-cell>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="source">
-          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="300px">Src</mat-header-cell>
-          <mat-cell *matCellDef="let entry" fxFlex="300px">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 300px">Src</th>
+          <td mat-cell *matCellDef="let entry">
             {{ getUsername(entry) }}@{{ entry.commandId.origin }}
-          </mat-cell>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="sourceID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="70px">Src.ID</mat-header-cell>
-          <mat-cell *matCellDef="let entry" fxFlex="70px">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 70px">Src.ID</th>
+          <td mat-cell *matCellDef="let entry">
             {{ entry.commandId.sequenceNumber || '-' }}
-          </mat-cell>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="sequenceNumber">
-          <mat-header-cell *matHeaderCellDef mat-sort-header matTooltip="Final Sequence Count" fxFlex="70px">Seq.ID</mat-header-cell>
-          <mat-cell *matCellDef="let entry" fxFlex="70px">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header matTooltip="Final Sequence Count" style="width: 70px">Seq.ID</th>
+          <td mat-cell *matCellDef="let entry">
             {{ getFinalSequenceCount(entry) || '-' }}
-          </mat-cell>
+          </td>
         </ng-container>
 
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns;"
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <td mat-row *matRowDef="let row; columns: displayedColumns;"
                  (click)="selectEntry(row)"
                  [class.selected]="false">
-        </mat-row>
-      </mat-table>
+        </td>
+      </table>
 
       <ng-template #empty>
         <app-empty-message *ngIf="!(dataSource.loading$ | async)">

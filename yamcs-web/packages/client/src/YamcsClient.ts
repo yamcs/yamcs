@@ -1,21 +1,10 @@
-import {
-  InstancesWrapper,
-  ServicesWrapper,
-} from './types/internal';
-
-import {
-  AuthInfo,
-  GeneralInfo,
-  Instance,
-  Service,
-  UserInfo,
-  AccessTokenResponse,
-} from './types/system';
-
-import { InstanceClient } from './InstanceClient';
-import { access } from 'fs';
 import { HttpError } from './HttpError';
 import { HttpInterceptor } from './HttpInterceptor';
+import { InstanceClient } from './InstanceClient';
+import { InstancesWrapper, ServicesWrapper } from './types/internal';
+import { AccessTokenResponse, AuthInfo, EditClientRequest, GeneralInfo, Instance, Service, UserInfo } from './types/system';
+
+
 
 export default class YamcsClient {
 
@@ -113,7 +102,7 @@ export default class YamcsClient {
     return await response.json() as Instance;
   }
 
-  async getServices() {
+  async getServices(): Promise<Service[]> {
     const response = await this.doFetch(`${this.apiUrl}/services/_global`);
     const wrapper = await response.json() as ServicesWrapper;
     return wrapper.service || [];
@@ -134,6 +123,15 @@ export default class YamcsClient {
       state: 'stopped'
     })
     return this.doFetch(`${this.apiUrl}/services/_global/service/${name}`, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async editClient(clientId: number, options: EditClientRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.apiUrl}/clients/${clientId}`;
+    return await this.doFetch(url, {
       body,
       method: 'PATCH',
     });

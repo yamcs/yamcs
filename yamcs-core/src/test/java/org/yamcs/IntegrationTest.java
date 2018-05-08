@@ -78,8 +78,9 @@ public class IntegrationTest extends AbstractIntegrationTest {
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", invalidSubscrList);
         wsClient.sendRequest(wsr);
 
-        for (int i = 0; i < 1000000; i++)
+        for (int i = 0; i < 1000000; i++) {
             packetGenerator.generate_PKT1_1();
+        }
         System.out.println("total time: " + (System.currentTimeMillis() - t0));
     }
 
@@ -155,17 +156,17 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testWsParameterUnsubscription() throws Exception {
-        ParameterSubscriptionRequest.Builder subscr1 = ParameterSubscriptionRequest.newBuilder().setSendFromCache(false);
-        subscr1.addId(NamedObjectId.newBuilder().setName( "/REFMDB/SUBSYS1/IntegerPara1_1_6").build());
-        subscr1.addId(NamedObjectId.newBuilder().setName( "/REFMDB/SUBSYS1/IntegerPara1_1_7").build());
-        subscr1.addId(NamedObjectId.newBuilder().setNamespace("MDB:AliasParam").setName( "para6alias").build());
+        ParameterSubscriptionRequest.Builder subscr1 = ParameterSubscriptionRequest.newBuilder()
+                .setSendFromCache(false);
+        subscr1.addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_6").build());
+        subscr1.addId(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/IntegerPara1_1_7").build());
+        subscr1.addId(NamedObjectId.newBuilder().setNamespace("MDB:AliasParam").setName("para6alias").build());
 
         WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscr1.build());
         WebSocketReplyData wsrd = wsClient.sendRequest(wsr).get();
 
         ParameterSubscriptionResponse psr = ParameterSubscriptionResponse.parseFrom(wsrd.getData());
         int subscrId1 = psr.getSubscriptionId();
-
 
         packetGenerator.generate_PKT1_1();
         ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
@@ -177,12 +178,11 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr).get();
         packetGenerator.generate_PKT1_1();
 
-        
         pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
         checkPvals(2, pdata.getParameterList(), packetGenerator);
-        
-        
-        wsr = new WebSocketRequest("parameter", "unsubscribeAll",  ParameterSubscriptionRequest.newBuilder().setSubscriptionId(subscrId1).build());
+
+        wsr = new WebSocketRequest("parameter", "unsubscribeAll",
+                ParameterSubscriptionRequest.newBuilder().setSubscriptionId(subscrId1).build());
         wsClient.sendRequest(wsr).get();
 
         // we subscribe again and should get a different subscription id
@@ -191,7 +191,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         psr = ParameterSubscriptionResponse.parseFrom(wsrd.getData());
         int subscrId2 = psr.getSubscriptionId();
-        assertTrue(subscrId1!=subscrId2);
+        assertTrue(subscrId1 != subscrId2);
     }
 
     @Test
@@ -204,7 +204,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         try {
             restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget", HttpMethod.GET, toJson(req))
-            .get();
+                    .get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
             String err = e.getMessage();
@@ -347,7 +347,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
     public void testValidateCommand() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
-
+    
         ValidateCommandRequest cmdreq = getValidateCommand("/REFMDB/SUBSYS1/CRITICAL_TC1", 10, "p1", "2");
         String resp = doRequest("/commanding/validator", HttpMethod.POST, cmdreq, SchemaRest.ValidateCommandRequest.WRITE);
         ValidateCommandResponse vcr = (fromJson(resp, SchemaRest.ValidateCommandResponse.MERGE)).build();
@@ -356,7 +356,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(10, significance.getSequenceNumber());
         assertEquals(SignificanceLevelType.CRITICAL, significance.getSignificance().getConsequenceLevel());
         assertEquals("this is a critical command, pay attention", significance.getSignificance().getReasonForWarning());
-
+    
     }*/
 
     @Test
@@ -390,7 +390,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         cha = cmdhist.getAttr(0);
         assertEquals(CommandHistoryPublisher.CommandFailed_KEY, cha.getName());
         assertEquals("Transmission constraints check failed", cha.getValue().getStringValue());
-        
+
         cmdhist = wsListener.cmdHistoryDataList.poll(1, TimeUnit.SECONDS);
         assertNotNull(cmdhist);
         assertEquals(1, cmdhist.getAttrCount());
@@ -536,23 +536,24 @@ public class IntegrationTest extends AbstractIntegrationTest {
     private void checkPvals(List<ParameterValue> pvals, RefMdbPacketGenerator packetProvider) {
         checkPvals(2, pvals, packetProvider);
     }
+
     private void checkPvals(int expectedNumParams, List<ParameterValue> pvals, RefMdbPacketGenerator packetProvider) {
 
         assertNotNull(pvals);
 
         assertEquals(expectedNumParams, pvals.size());
 
-        for(ParameterValue p: pvals) {
+        for (ParameterValue p : pvals) {
             assertEquals(AcquisitionStatus.ACQUIRED, p.getAcquisitionStatus());
             Value praw = p.getRawValue();
             assertNotNull(praw);
             Value peng = p.getEngValue();
-            
+
             if ("/REFMDB/SUBSYS1/IntegerPara1_1_6".equals(p.getId().getName())
-                    ||"para6alias".equals(p.getId().getName())) {
+                    || "para6alias".equals(p.getId().getName())) {
                 assertEquals(Type.UINT32, praw.getType());
                 assertEquals(packetProvider.pIntegerPara1_1_6, praw.getUint32Value());
-                
+
                 assertEquals(Type.UINT32, peng.getType());
                 assertEquals(packetProvider.pIntegerPara1_1_6, peng.getUint32Value());
 
@@ -560,11 +561,10 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 assertEquals(Type.UINT32, praw.getType());
                 assertEquals(packetProvider.pIntegerPara1_1_7, praw.getUint32Value());
 
-             
                 assertEquals(Type.UINT32, peng.getType());
                 assertEquals(packetProvider.pIntegerPara1_1_7, peng.getUint32Value());
             } else {
-                fail("Unkonwn parameter "+p.getId());
+                fail("Unkonwn parameter " + p.getId());
             }
         }
     }
@@ -613,9 +613,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         ProcessorInfo pi2 = getProcessorInfo();
         Yamcs.ReplaySpeed speed2 = pi2.getReplayRequest().getSpeed();
         assertEquals(speed2.getParam(), 2.0f, 1e-6);
-        epr = Rest.EditProcessorRequest.newBuilder().setState("closed").build();
-        String resp3 = restClient.doRequest("/processors/IntegrationTest/replay_test", HttpMethod.POST, toJson(epr))
-                .get();
+        restClient.doRequest("/processors/IntegrationTest/replay_test", HttpMethod.DELETE).get();
         Thread.sleep(2000);
     }
 

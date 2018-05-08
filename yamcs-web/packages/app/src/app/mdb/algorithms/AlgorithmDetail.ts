@@ -5,7 +5,7 @@ import 'brace/mode/javascript';
 import 'brace/mode/python';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 
 @Component({

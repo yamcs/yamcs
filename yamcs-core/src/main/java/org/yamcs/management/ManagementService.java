@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.ProcessorFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.ProcessorListener;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
@@ -51,10 +51,12 @@ import com.google.common.util.concurrent.Service.State;
 
 /**
  * Responsible for providing to interested listeners info related to creation/removal/update of:
- * - instances, processors and clients - see {@link ManagementListener}
- * - links - see {@link LinkListener}
- * - streams and tables - see {@link TableStreamListener}
- * - command queues - see {@link CommandQueueListener}
+ * <ul>
+ * <li>instances, processors and clients - see {@link ManagementListener}
+ * <li>links - see {@link LinkListener}
+ * <li>streams and tables - see {@link TableStreamListener}
+ * <li>command queues - see {@link CommandQueueListener}
+ * </ul>
  */
 public class ManagementService implements ProcessorListener {
     static Logger log = LoggerFactory.getLogger(ManagementService.class.getName());
@@ -69,25 +71,17 @@ public class ManagementService implements ProcessorListener {
     // Used to update TM-statistics, and Link State
     ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
-    Set<ManagementListener> managementListeners = new CopyOnWriteArraySet<>(); // Processors & Clients. Should maybe
-                                                                               // split up
+    // Processors & Clients. Should maybe split up
+    Set<ManagementListener> managementListeners = new CopyOnWriteArraySet<>();
+
     Set<LinkListener> linkListeners = new CopyOnWriteArraySet<>();
     Set<CommandQueueListener> commandQueueListeners = new CopyOnWriteArraySet<>();
     Set<TableStreamListener> tableStreamListeners = new CopyOnWriteArraySet<>();
 
     Map<Processor, Statistics> yprocs = new ConcurrentHashMap<>();
 
-    static final Statistics STATS_NULL = Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();// we
-                                                                                                                       // use
-                                                                                                                       // this
-                                                                                                                       // one
-                                                                                                                       // because
-                                                                                                                       // ConcurrentHashMap
-                                                                                                                       // does
-                                                                                                                       // not
-                                                                                                                       // support
-                                                                                                                       // null
-                                                                                                                       // values
+    // we use this one because ConcurrentHashMap does not support null values
+    static final Statistics STATS_NULL = Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();
 
     static public ManagementService getInstance() {
         return managementService;
@@ -177,6 +171,11 @@ public class ManagementService implements ProcessorListener {
         ClientWithInfo cwi = clients.remove(id);
         if (cwi == null) {
             return;
+        }
+        ProcessorClient client = cwi.client;
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            processor.disconnect(client);
         }
         ClientInfo ci = cwi.clientInfo;
         try {
@@ -336,18 +335,16 @@ public class ManagementService implements ProcessorListener {
     }
 
     /**
-     * Adds a listener that is to be notified when any processor, or any client
-     * is updated. Calling this multiple times has no extra effects. Either you
-     * listen, or you don't.
+     * Adds a listener that is to be notified when any processor, or any client is updated. Calling this multiple times
+     * has no extra effects. Either you listen, or you don't.
      */
     public boolean addManagementListener(ManagementListener l) {
         return managementListeners.add(l);
     }
 
     /**
-     * Adds a listener that is to be notified when any processor, or any client
-     * is updated. Calling this multiple times has no extra effects. Either you
-     * listen, or you don't.
+     * Adds a listener that is to be notified when any processor, or any client is updated. Calling this multiple times
+     * has no extra effects. Either you listen, or you don't.
      */
     public boolean addLinkListener(LinkListener l) {
         return linkListeners.add(l);
@@ -381,6 +378,13 @@ public class ManagementService implements ProcessorListener {
 
     public List<LinkInfo> getLinkInfo() {
         return links.stream().map(lwi -> lwi.linkInfo).collect(Collectors.toList());
+    }
+
+    public List<LinkInfo> getLinkInfo(String instance) {
+        return links.stream()
+                .map(lwi -> lwi.linkInfo)
+                .filter(li -> li.getInstance().equals(instance))
+                .collect(Collectors.toList());
     }
 
     public LinkInfo getLinkInfo(String instance, String name) {
@@ -495,8 +499,8 @@ public class ManagementService implements ProcessorListener {
     }
 
     /**
-     * Restarts a yamcs instance.
-     * It is not possible to restart an instance - so the old one is stopped and a new one is created and started.
+     * Restarts a yamcs instance. It is not possible to restart an instance - so the old one is stopped and a new one is
+     * created and started.
      * 
      * @param instanceName
      *            the name of the instance to be restarted

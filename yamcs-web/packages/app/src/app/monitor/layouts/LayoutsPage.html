@@ -4,20 +4,23 @@
   </app-monitor-toolbar>
 
   <div class="panel-content">
-    <mat-table *ngIf="dataSource && dataSource.data.length; else empty"
-               [dataSource]="dataSource"
-               class="ya-data-table">
+    <table mat-table
+           *ngIf="dataSource && dataSource.data.length; else empty"
+           [dataSource]="dataSource"
+           class="ya-data-table"
+           style="width: 100%">
+
       <ng-container cdkColumnDef="name">
-        <mat-header-cell *cdkHeaderCellDef>Name</mat-header-cell>
-        <mat-cell *cdkCellDef="let layout">
+        <th mat-header-cell *cdkHeaderCellDef>Name</th>
+        <td mat-cell *cdkCellDef="let layout">
           <a [routerLink]="layout.name"
              [queryParams]="{instance: instance.name}">{{ layout.name }}</a>
-        </mat-cell>
+        </td>
       </ng-container>
 
-      <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *cdkRowDef="let row; columns: displayedColumns;"></mat-row>
-    </mat-table>
+      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
 
     <ng-template #empty>
       <app-empty-message>You did not yet save any layouts.</app-empty-message>

@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.ws.WSConstants;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.web.HttpRequestHandler;
@@ -18,8 +17,6 @@ import org.yamcs.web.HttpRequestInfo;
 import org.yamcs.web.HttpServer;
 import org.yamcs.web.WebConfig;
 
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSyntaxException;
 import com.google.protobuf.Message;
 
 import io.netty.buffer.ByteBuf;
@@ -31,7 +28,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.ServerHandshakeStateEvent;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.HandshakeComplete;
 import io.netty.util.AttributeKey;
 
 /**
@@ -99,12 +96,41 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt == ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
+        if (evt instanceof HandshakeComplete) {
             log.info("{} {} {}", originalRequestInfo.getMethod(), originalRequestInfo.getUri(),
                     HttpResponseStatus.SWITCHING_PROTOCOLS.code());
 
+            HandshakeComplete handshakeEvt = (HandshakeComplete) evt;
+            String subprotocol = handshakeEvt.selectedSubprotocol();
+
+            // TODO We should allow subprotocol to be null, but currently this triggers
+            // autodetection rather than defaulting to json. So warn for now to give
+            // clients time to upgrade.
+            if (subprotocol == null) {
+                log.warn("Detected a WebSocket client that does not specify "
+                        + "'Sec-WebSocket-Protocol: protobuf' "
+                        + "or 'Sec-WebSocket-Protocol: json'. Defaulting to deprecated frame detection.");
+            }
+
+            // TODO eventually uncomment below comment. But first the deprecated incoming frame
+            // detection in channelRead0 should be removed.
+            if (/*subprotocol == null ||*/ "json".equals(subprotocol)) {
+                decoder = new JsonDecoder();
+                encoder = new JsonEncoder();
+            } else if ("protobuf".equals(subprotocol)) {
+                decoder = new ProtobufDecoder();
+                encoder = new ProtobufEncoder(ctx);
+            }
+
             // After upgrade, no further HTTP messages will be received
             ctx.pipeline().remove(HttpRequestHandler.class);
+
+            // Send data with server-assigned connection state (clientId, instance, processor)
+            // TODO remove the if-condition once frame detection is removed from channelRead0.
+            // The 'if' was added to prevent sending an early json message to an old gpb client
+            if (subprotocol != null) {
+                processorClient.sendConnectionInfo();
+            }
         } else {
             super.userEventTriggered(ctx, evt);
         }
@@ -115,44 +141,36 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         try {
             try {
                 log.debug("Received frame {}", frame);
-                if (frame instanceof TextWebSocketFrame) {
-                    // We could do something more clever here, but only need to support json and gpb for now
-                    if (decoder == null) {
+
+                // TODO this type of frame detection is deprecated. Use the new mechanism
+                // via a Sec-WebSocket-Protocol header directly on the upgrade request.
+                if (encoder == null) {
+                    if (frame instanceof TextWebSocketFrame) {
                         decoder = new JsonDecoder();
-                    }
-                    if (encoder == null) {
                         encoder = new JsonEncoder();
-                    }
-                } else if (frame instanceof BinaryWebSocketFrame) {
-                    if (decoder == null) {
+                    } else if (frame instanceof BinaryWebSocketFrame) {
                         decoder = new ProtobufDecoder();
-                    }
-                    if (encoder == null) {
                         encoder = new ProtobufEncoder(ctx);
                     }
-                } else {
-                    // Pong, ping, continuation and close should already be handled by netty's handler
-                    return;
                 }
 
                 ByteBuf binary = frame.content();
                 if (binary != null) {
                     if (log.isTraceEnabled()) {
-                        log.debug("Websocket data: {}", frame);
+                        log.debug("WebSocket data: {}", frame);
                     }
-                        WebSocketDecodeContext msg = decoder.decodeMessage(binary);
+                    WebSocketDecodeContext msg = decoder.decodeMessage(binary);
 
-                        AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
-                        if (resource != null) {
-                            WebSocketReply reply = resource.processRequest(msg, decoder);
-                            if (reply != null) {
-                                sendReply(reply);
-                            }
-                        } else {
-                            throw new WebSocketException(msg.getRequestId(),
-                                    "Invalid message (unsupported resource: '" + msg.getResource() + "')");
+                    AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
+                    if (resource != null) {
+                        WebSocketReply reply = resource.processRequest(msg, decoder);
+                        if (reply != null) {
+                            sendReply(reply);
                         }
-                    
+                    } else {
+                        throw new WebSocketException(msg.getRequestId(),
+                                "Invalid message (unsupported resource: '" + msg.getResource() + "')");
+                    }
                 }
             } catch (WebSocketException e) {
                 log.debug("Returning nominal exception back to the client: {}", e.getMessage());

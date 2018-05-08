@@ -499,10 +499,11 @@ public class Processor extends AbstractService {
         }
         boolean hasToQuit = false;
         synchronized (this) {
-            connectedClients.remove(s);
-            log.info("Processor {} has one less user: connectedUsers: {}", name, connectedClients.size());
-            if ((connectedClients.isEmpty()) && (!persistent)) {
-                hasToQuit = true;
+            if (connectedClients.remove(s)) {
+                log.info("Processor {} has one less user: connectedUsers: {}", name, connectedClients.size());
+                if ((connectedClients.isEmpty()) && (!persistent)) {
+                    hasToQuit = true;
+                }
             }
         }
         if (hasToQuit) {

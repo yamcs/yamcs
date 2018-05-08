@@ -48,42 +48,34 @@ public class ClientRestHandler extends RestHandler {
         ClientInfo ci = verifyClient(restReq, restReq.getIntegerRouteParam("id"));
 
         EditClientRequest request = restReq.bodyAsMessage(EditClientRequest.newBuilder()).build();
-        String newProcessorName = null;
-        String newInstance = ci.getInstance(); // By default, use same instance
-        if (request.hasInstance()) {
-            newInstance = request.getInstance();
-        }
-        if (request.hasProcessor()) {
-            newProcessorName = request.getProcessor();
-        }
-        if (restReq.hasQueryParameter("processor")) {
-            newProcessorName = restReq.getQueryParameter("processor");
-        }
-        if (restReq.hasQueryParameter("instance")) {
-            newInstance = restReq.getQueryParameter("instance");
-        }
 
-        if (newProcessorName != null) {
-            Processor newProcessor = Processor.getInstance(newInstance, newProcessorName);
+        if (request.hasInstance() || request.hasProcessor()) {
+            String newInstance;
+            Processor newProcessor;
+            if (request.hasProcessor()) {
+                newInstance = (request.hasInstance()) ? request.getInstance() : ci.getInstance();
+                newProcessor = Processor.getInstance(newInstance, request.getProcessor());
+            } else { // Switch to default processor of the instance
+                newInstance = request.getInstance();
+                newProcessor = Processor.getFirstProcessor(request.getInstance());
+            }
+
             if (newProcessor == null) {
-                throw new BadRequestException("Cannot switch user to non-existing processor '" + newProcessorName
-                        + "' (instance: '" + newInstance + "')");
-            } else {
-                verifyPermission(newProcessor, ci.getId(), restReq.getAuthToken());
+                throw new BadRequestException(String.format("Cannot switch user to non-existing processor %s/%s",
+                        newInstance, request.getProcessor()));
+            }
+            verifyPermission(newProcessor, ci.getId(), restReq.getAuthToken());
 
-                ManagementService mservice = ManagementService.getInstance();
-                ProcessorManagementRequest.Builder procReq = ProcessorManagementRequest.newBuilder();
-                procReq.setInstance(newInstance);
-                procReq.setName(newProcessorName);
-                procReq.setOperation(Operation.CONNECT_TO_PROCESSOR);
-                procReq.addClientId(ci.getId());
-                try {
-                    mservice.connectToProcessor(procReq.build());
-                    completeOK(restReq);
-                    return;
-                } catch (YamcsException e) {
-                    throw new BadRequestException(e.getMessage());
-                }
+            ManagementService mservice = ManagementService.getInstance();
+            ProcessorManagementRequest.Builder procReq = ProcessorManagementRequest.newBuilder();
+            procReq.setInstance(newInstance);
+            procReq.setName(newProcessor.getName());
+            procReq.setOperation(Operation.CONNECT_TO_PROCESSOR);
+            procReq.addClientId(ci.getId());
+            try {
+                mservice.connectToProcessor(procReq.build());
+            } catch (YamcsException e) {
+                throw new BadRequestException(e.getMessage());
             }
         }
 

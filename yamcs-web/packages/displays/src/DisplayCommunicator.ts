@@ -10,5 +10,7 @@ export interface DisplayCommunicator {
 
   retrieveXML(path: string): Promise<XMLDocument>;
 
+  retrieveDisplayResource(path: string): Promise<string>;
+
   retrieveXMLDisplayResource(path: string): Promise<XMLDocument>;
 }

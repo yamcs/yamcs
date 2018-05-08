@@ -46,6 +46,8 @@ import io.netty.util.concurrent.Future;
 public class WebSocketClient {
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketClient.class);
+    private static final String SUBPROTOCOL_JSON = "json";
+    private static final String SUBPROTOCOL_PROTOBUF = "protobuf";
 
     private WebSocketClientCallback callback;
 
@@ -165,13 +167,15 @@ public class WebSocketClient {
                 throw new RuntimeException("authentication token of type " + authToken.getClass() + " not supported");
             }
         }
+        String subprotocol = SUBPROTOCOL_JSON;
         if (useProtobuf) {
             header.add(HttpHeaderNames.ACCEPT, MediaType.PROTOBUF);
+            subprotocol = SUBPROTOCOL_PROTOBUF;
         }
         URI uri = yprops.webSocketURI(legacyMode);
 
         WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13,
-                null, false, header, maxFramePayloadLength);
+                subprotocol, false, header, maxFramePayloadLength);
         WebSocketClientHandler webSocketHandler = new WebSocketClientHandler(handshaker, this, callback);
 
         Bootstrap bootstrap = new Bootstrap()

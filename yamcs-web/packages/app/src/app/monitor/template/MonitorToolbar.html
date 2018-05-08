@@ -1,7 +1,62 @@
-<mat-toolbar>
+<mat-toolbar *ngIf="processor$ | async as processor">
   <mat-toolbar-row>
     <ng-content></ng-content>
+
     <span style="flex: 1 1 auto"></span>
-    <app-processor-info></app-processor-info>
+
+    <ng-container *ngIf="connectionInfo$ | async as connectionInfo; else noConnection">
+      <button mat-button class="toolbar-text" *ngIf="timeInfo$ | async as timeInfo" [matMenuTriggerFor]="processorMenu">
+        <mat-icon *ngIf="!processor.replay" class="success icon16">check_circle</mat-icon>
+        <mat-icon *ngIf="processor.replayState === 'RUNNING'" class="success icon16">check_circle</mat-icon>
+        <mat-icon *ngIf="processor.replayState === 'PAUSED'" class="down icon16">lens</mat-icon>
+        {{ connectionInfo.processor.name }} / {{ timeInfo.currentTimeUTC | datetime }}
+      </button>
+    </ng-container>
+
+    <ng-template #noConnection>
+      <button mat-button class="toolbar-text" color="warn">
+        <mat-icon>warning</mat-icon>
+        Attempting reconnection to Yamcs <app-dots color="#f44336"></app-dots>
+      </button>
+    </ng-template>
+
+    <mat-menu #processorMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before" yPosition="below">
+      <button mat-menu-item (click)="startReplay()" *ngIf="!processor.replay">
+        <mat-icon class="icon14">replay</mat-icon>
+        Replay from date
+      </button>
+      <ng-container *ngIf="processor.replay">
+        <button mat-menu-item *ngIf="processor.replayState === 'RUNNING'" (click)="pauseReplay()">
+          Pause
+        </button>
+        <button mat-menu-item *ngIf="processor.replayState === 'PAUSED'" (click)="resumeReplay()">
+          Resume
+        </button>
+        <button mat-menu-item [matMenuTriggerFor]="replaySpeed">
+          Replay speed
+        </button>
+        <button mat-menu-item (click)="leaveReplay()">
+          Leave replay
+        </button>
+      </ng-container>
+    </mat-menu>
+
+    <mat-menu #replaySpeed="matMenu" class="ya-menu">
+      <button mat-menu-item (click)="changeSpeed('1x')">
+        <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 1">check</mat-icon> 1x (original speed)
+      </button>
+      <button mat-menu-item (click)="changeSpeed('2x')">
+        <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 2">check</mat-icon> 2x
+      </button>
+      <button mat-menu-item (click)="changeSpeed('4x')">
+        <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 4">check</mat-icon> 4x
+      </button>
+      <button mat-menu-item (click)="changeSpeed('8x')">
+        <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 8">check</mat-icon> 8x
+      </button>
+      <button mat-menu-item (click)="changeSpeed('16x')">
+        <mat-icon [class.hide]="processor.replayRequest?.speed.param !== 16">check</mat-icon> 16x
+      </button>
+    </mat-menu>
   </mat-toolbar-row>
 </mat-toolbar>

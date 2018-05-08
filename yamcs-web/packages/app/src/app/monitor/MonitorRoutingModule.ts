@@ -13,6 +13,7 @@ import { CommandsPage } from './commands/CommandsPage';
 import { ExtensionPage } from './ext/ExtensionPage';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
+import { ArchivePage } from './archive/ArchivePage';
 
 const routes: Routes = [
   {
@@ -30,6 +31,10 @@ const routes: Routes = [
       {
         path: 'alarms',
         component: AlarmsPage,
+      },
+      {
+        path: 'archive',
+        component: ArchivePage,
       },
       {
         path: 'commands',
@@ -69,6 +74,7 @@ export class MonitorRoutingModule { }
 
 export const routingComponents = [
   AlarmsPage,
+  ArchivePage,
   CommandsPage,
   DisplaysPage,
   EventsPage,
