@@ -17,7 +17,6 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.SpeedLimitStream;
@@ -63,19 +62,18 @@ public class YarchReplay implements StreamSubscriber {
     volatile boolean ignoreClose;
     ReplayListener listener;
 
-    public YarchReplay(ReplayServer replayServer, ReplayRequest rr, ReplayListener listener, XtceDb xtceDb,
-            AuthenticationToken authToken)
+    public YarchReplay(ReplayServer replayServer, ReplayRequest rr, ReplayListener listener, XtceDb xtceDb)
             throws IOException, YamcsException, YamcsApiException {
         this.listener = listener;
         this.replayServer = replayServer;
         this.xtceDb = xtceDb;
         this.instance = replayServer.instance;
 
-        setRequest(rr, authToken);
+        setRequest(rr);
 
     }
 
-    private void setRequest(ReplayRequest newRequest, AuthenticationToken authToken) throws YamcsException {
+    private void setRequest(ReplayRequest newRequest) throws YamcsException {
         if (state != ReplayState.INITIALIZATION && state != ReplayState.STOPPED) {
             throw new YamcsException("changing the request only supported in the INITIALIZATION and STOPPED states");
         }

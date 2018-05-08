@@ -1,8 +1,5 @@
 package org.yamcs.archive;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,16 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.EventReplayRequest;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.protobuf.Yamcs.PpReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.InvalidAuthenticationToken;
-import org.yamcs.security.Privilege;
-import org.yamcs.security.PrivilegeType;
-import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -60,8 +51,8 @@ public class ReplayServer extends AbstractService {
      * @throws YamcsException
      * @throws InvalidAuthenticationToken
      */
-    public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener,
-            AuthenticationToken authToken) throws YamcsException, InvalidAuthenticationToken {
+    public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener)
+            throws YamcsException, InvalidAuthenticationToken {
         if (replayCount.get() >= MAX_REPLAYS) {
             throw new YamcsException("maximum number of replays reached");
         }
@@ -82,59 +73,9 @@ public class ReplayServer extends AbstractService {
                     .setCommandHistoryRequest(CommandHistoryReplayRequest.newBuilder())
                     .build();
         }
-
-        if (Privilege.getInstance().isEnabled()) {
-            Privilege priv = Privilege.getInstance();
-
-            // Check privileges for requested parameters
-            if (replayRequest.hasParameterRequest()) {
-                List<NamedObjectId> invalidParameters = new ArrayList<>();
-                for (NamedObjectId noi : replayRequest.getParameterRequest().getNameFilterList()) {
-                    if (!priv.hasPrivilege(authToken, PrivilegeType.TM_PARAMETER, noi.getName())) {
-                        invalidParameters.add(noi);
-                    }
-                }
-                if (!invalidParameters.isEmpty()) {
-                    NamedObjectList nol = NamedObjectList.newBuilder().addAllList(invalidParameters).build();
-                    log.warn("Cannot create replay - No privilege for parameters: {}", invalidParameters);
-                    throw new YamcsException("InvalidIdentification", "No privilege", nol);
-                }
-            }
-
-            // Check privileges for requested packets
-            if (replayRequest.hasPacketRequest()) {
-                Collection<String> allowedPackets = priv.getTmPacketNames(instance, authToken, MdbMappings.MDB_OPSNAME);
-
-                List<NamedObjectId> invalidPackets = new ArrayList<>();
-
-                for (NamedObjectId noi : replayRequest.getPacketRequest().getNameFilterList()) {
-                    // TODO: fix and not comment
-                    // if (! allowedPackets.contains(noi.getName())) {
-                    // invalidPackets.add(noi);
-                    // }
-                }
-                if (!invalidPackets.isEmpty()) {
-                    NamedObjectList nol = NamedObjectList.newBuilder().addAllList(invalidPackets).build();
-                    log.warn("Cannot create replay - InvalidIdentification for packets: {}", invalidPackets);
-                    throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
-                }
-
-                // Even when no filter is specified, limit request to authorized
-                // packets only
-                if (replayRequest.getPacketRequest().getNameFilterList().isEmpty()) {
-                    PacketReplayRequest.Builder prr = PacketReplayRequest.newBuilder(replayRequest.getPacketRequest());
-                    for (String allowedPacket : allowedPackets) {
-                        prr.addNameFilter(NamedObjectId.newBuilder().setName(allowedPacket)
-                                .setNamespace(MdbMappings.MDB_OPSNAME));
-                    }
-                    replayRequest = ReplayRequest.newBuilder(replayRequest).setPacketRequest(prr).build();
-                }
-            }
-        }
-
+      
         try {
-            YarchReplay yr = new YarchReplay(this, replayRequest, replayListener, XtceDbFactory.getInstance(instance),
-                    authToken);
+            YarchReplay yr = new YarchReplay(this, replayRequest, replayListener, XtceDbFactory.getInstance(instance));
             replayCount.incrementAndGet();
             return yr;
         } catch (YamcsException e) {

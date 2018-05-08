@@ -80,7 +80,7 @@ public class ReplayService extends AbstractService
 
     private final String yamcsInstance;
     YarchReplay yarchReplay;
-    Processor yprocessor;
+    Processor processor;
     // the originalReplayRequest contains possibly only parameters.
     // the modified one sent to the ReplayServer contains the raw data required for extracting/processing those
     // parameters
@@ -99,7 +99,7 @@ public class ReplayService extends AbstractService
 
     @Override
     public void init(Processor proc, Object spec) {
-        this.yprocessor = proc;
+        this.processor = proc;
         this.tmProcessor = proc.getTmProcessor();
         proc.setCommandHistoryProvider(this);
         parameterRequestManager = proc.getParameterRequestManager();
@@ -159,7 +159,7 @@ public class ReplayService extends AbstractService
     }
     
     private List<ParameterValue> calibrate(List<ParameterValue> pvlist) {
-        ParameterTypeProcessor ptypeProcessor = yprocessor.getProcessorData().getParameterTypeProcessor();
+        ParameterTypeProcessor ptypeProcessor = processor.getProcessorData().getParameterTypeProcessor();
 
         for (ParameterValue pv : pvlist) {
             if (pv.getEngValue() == null && pv.getRawValue() != null) {
@@ -176,7 +176,7 @@ public class ReplayService extends AbstractService
             notifyStopped();
             tmProcessor.finished();
         } else {
-            yprocessor.notifyStateChange();
+            processor.notifyStateChange();
         }
     }
 
@@ -217,7 +217,7 @@ public class ReplayService extends AbstractService
             throw new IllegalStateException("Unexpected No permission");
         }
 
-        XtceTmProcessor tmproc = yprocessor.getTmProcessor();
+        XtceTmProcessor tmproc = processor.getTmProcessor();
         Subscription subscription = tmproc.getSubscription();
         Collection<SequenceContainer> containers = subscription.getContainers();
 
@@ -266,7 +266,7 @@ public class ReplayService extends AbstractService
             throw new ProcessorException("ReplayServer not configured for this instance");
         }
         try {
-            yarchReplay = replayServer.createReplay(rawDataRequest.build(), this, new SystemToken());
+            yarchReplay = replayServer.createReplay(rawDataRequest.build(), this);
         } catch (YamcsException e) {
             log.error("Exception creating the replay", e);
             throw new ProcessorException("Exception creating the replay: " + e.getMessage(), e);

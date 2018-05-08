@@ -123,6 +123,14 @@ public class Processor extends AbstractService {
         log.info("Creating new processor '{}' of type '{}'", name, type);
     }
 
+    /**
+     * 
+     * @param serviceList
+     * @param config - configuration from processor.yaml
+     * @param spec - configuration passed from the client when creating the processor
+     * @throws ProcessorException
+     * @throws ConfigurationException
+     */
     @SuppressWarnings("unchecked")
     void init(List<ServiceWithConfig> serviceList, Map<String, Object> config, Object spec)
             throws ProcessorException, ConfigurationException {
