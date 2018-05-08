@@ -56,23 +56,6 @@ public class ReplayServer extends AbstractService {
         if (replayCount.get() >= MAX_REPLAYS) {
             throw new YamcsException("maximum number of replays reached");
         }
-
-        // As described in yamcs.proto, by default everything is replayed unless
-        // at least one filter is specified.
-        boolean replayAll = !replayRequest.hasPacketRequest()
-                && !replayRequest.hasParameterRequest()
-                && !replayRequest.hasEventRequest()
-                && !replayRequest.hasPpRequest()
-                && !replayRequest.hasCommandHistoryRequest();
-
-        if (replayAll) {
-            replayRequest = ReplayRequest.newBuilder(replayRequest)
-                    .setPacketRequest(PacketReplayRequest.newBuilder())
-                    .setEventRequest(EventReplayRequest.newBuilder())
-                    .setPpRequest(PpReplayRequest.newBuilder())
-                    .setCommandHistoryRequest(CommandHistoryReplayRequest.newBuilder())
-                    .build();
-        }
       
         try {
             YarchReplay yr = new YarchReplay(this, replayRequest, replayListener, XtceDbFactory.getInstance(instance));

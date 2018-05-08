@@ -108,7 +108,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
      * could filter on the histoColumn values, not done for the moment
      */
     @Override
-    public boolean addInFilter(ColumnExpression cexpr, Set<Object> values) {
+    public boolean addInFilter(ColumnExpression cexpr, boolean negation, Set<Object> values) {
         return false;
     }
 

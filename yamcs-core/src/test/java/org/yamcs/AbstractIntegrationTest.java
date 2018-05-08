@@ -101,10 +101,6 @@ public abstract class AbstractIntegrationTest {
         restClient.setAutoclose(false);
         packetGenerator = packetProvider.mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
-
-        // ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
-        // System.out.println("got cinfo:"+cinfo);
-        // assertNotNull(cinfo);
     }
 
     protected ClientInfo getClientInfo() throws InterruptedException {
@@ -175,7 +171,7 @@ public abstract class AbstractIntegrationTest {
     }
 
     
-    void generatePkt13(String utcStart, int numPackets) {
+    void generatePkt13AndPps(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i = 0; i < numPackets; i++) {
             packetGenerator.setGenerationTime(t0 + 1000 * i);
@@ -429,7 +425,7 @@ public abstract class AbstractIntegrationTest {
                     .setGenerationTime(generationTime + 20)
                     .setEngValue(ValueUtility.getUint32GbpValue(x))
                     .build();
-            ppListener.updateParams(generationTime + 20, "IntegrationTest", seqNum, Arrays.asList(pv4));
+            ppListener.updateParams(generationTime + 20, "IntegrationTest2", seqNum, Arrays.asList(pv4));
 
             seqNum++;
         }

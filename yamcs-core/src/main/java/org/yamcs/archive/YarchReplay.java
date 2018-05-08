@@ -68,9 +68,7 @@ public class YarchReplay implements StreamSubscriber {
         this.replayServer = replayServer;
         this.xtceDb = xtceDb;
         this.instance = replayServer.instance;
-
         setRequest(rr);
-
     }
 
     private void setRequest(ReplayRequest newRequest) throws YamcsException {

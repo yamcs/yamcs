@@ -63,8 +63,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testReplay() throws Exception {
-        Long t0 = System.currentTimeMillis();
-        generatePkt13("2015-01-01T10:00:00", 300);
+        generatePkt13AndPps("2015-01-01T10:00:00", 300);
 
         restClient.setAcceptMediaType(MediaType.JSON);
         restClient.setSendMediaType(MediaType.JSON);
@@ -145,6 +144,63 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         cinfo = getClientInfo();
         assertEquals("realtime", cinfo.getProcessorName());
     }
+    
+    @Test
+    public void testReplayWithPpExclusion() throws Exception {
+        generatePkt13AndPps("2015-02-01T10:00:00", 300);
+
+        restClient.setAcceptMediaType(MediaType.JSON);
+        restClient.setSendMediaType(MediaType.JSON);
+
+        ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_7",
+                "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double",
+                "/REFMDB/SUBSYS1/processed_para_enum_nc");
+        WebSocketRequest wsr = new WebSocketRequest("parameter", ParameterResource.WSR_SUBSCRIBE, subscrList);
+        wsClient.sendRequest(wsr);
+
+        // these are from the realtime processor cache
+        ParameterData pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertEquals(5, pdata.getParameterCount());
+        ParameterValue p1_1_6 = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
+        // assertEquals("2015-01-01T10:59:59.000", p1_1_6.getGenerationTimeUTC());
+
+        ClientInfo cinfo = getClientInfo();
+
+        // create a parameter replay via REST
+        CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
+                .addClientId(cinfo.getId())
+                .setName("testReplayWithPpExclusion")
+                .setType("ArchiveWithPpExclusion")
+                .setConfig("{\"utcStart\": \"2015-02-01T10:01:00\", \"utcStop\": \"2015-02-01T10:05:00\"}")
+                .build();
+
+        restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(prequest)).get();
+
+        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+
+        assertEquals(2, pdata.getParameterCount());
+        p1_1_6 = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
+        assertEquals("2015-02-01T10:01:00.000Z", p1_1_6.getGenerationTimeUTC());
+
+        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+        assertEquals(1, pdata.getParameterCount());
+        ParameterValue pp_para_uint = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/processed_para_uint", pp_para_uint.getId().getName());
+        assertEquals("2015-02-01T10:01:00.030Z", pp_para_uint.getGenerationTimeUTC());
+
+        pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+
+        assertEquals(2, pdata.getParameterCount());
+        p1_1_6 = pdata.getParameter(0);
+        assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
+        assertEquals("2015-02-01T10:01:01.000Z", p1_1_6.getGenerationTimeUTC());
+    }
 
     @Test
     public void testEmptyIndex() throws Exception {
@@ -156,7 +212,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testIndexWithRestClient() throws Exception {
-        generatePkt13("2015-02-01T10:00:00", 3600);
+        generatePkt13AndPps("2015-02-01T10:00:00", 3600);
         List<ArchiveRecord> arlist = new ArrayList<>();
         restClient.setAcceptMediaType(MediaType.PROTOBUF);
         CompletableFuture<Void> f = restClient.doBulkGetRequest(
@@ -184,7 +240,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testParameterHistory() throws Exception {
-        generatePkt13("2015-02-02T10:00:00", 3600);
+        generatePkt13AndPps("2015-02-02T10:00:00", 3600);
         String respDl = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=true&limit=3",
                 HttpMethod.GET, "").get();

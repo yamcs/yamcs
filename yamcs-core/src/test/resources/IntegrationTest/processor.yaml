@@ -44,6 +44,18 @@ Archive:
             enabled: true
             cacheAll: true
 
+#used for archive replays (to displays, etc)
+ArchiveWithPpExclusion:
+    services: 
+       - class: org.yamcs.tctm.ReplayService
+         args: 
+             #do not replay these parameters
+            excludeParameterGroups: ["IntegrationTest"]
+    config:
+        parameterCache:
+            enabled: true
+            cacheAll: true
+
 
             
 #used for performing archive retrievals (e.g. parameter-extractor.sh)

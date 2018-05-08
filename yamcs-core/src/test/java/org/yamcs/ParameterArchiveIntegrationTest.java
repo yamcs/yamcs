@@ -30,7 +30,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
     
     @Test
     public void testRestRetrieval() throws Exception {
-        generatePkt13("2015-01-02T10:00:00", 2 * 3600);
+        generatePkt13AndPps("2015-01-02T10:00:00", 2 * 3600);
 
         String resp;
         Value engValue;
@@ -108,7 +108,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(AcquisitionStatus.ACQUIRED, acqs);
 
         // add some realtime data
-        generatePkt13("2015-01-02T12:00:00", 10);
+        generatePkt13AndPps("2015-01-02T12:00:00", 10);
 
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?stop=2015-01-03T11:59:00&limit=20",
@@ -158,7 +158,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
     
     @Test
     public void testRestRanges() throws Exception {
-        generatePkt13("2018-01-01T10:00:00", 2 * 3600);
+        generatePkt13AndPps("2018-01-01T10:00:00", 2 * 3600);
 
         String resp;
         Ranges vals;
@@ -189,7 +189,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(0.167291805148, r0.getEngValue().getFloatValue(), 1e-5);
 
         
-        generatePkt13("2018-01-01T13:00:00", 3600);
+        generatePkt13AndPps("2018-01-01T13:00:00", 3600);
         
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/ranges?start=2018-01-01T10:00:00&stop=2018-01-02T11:00:00",
