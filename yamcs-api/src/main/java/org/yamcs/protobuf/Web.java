@@ -8,10 +8,10 @@ public final class Web {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
-  public interface WebSocketClientMessageOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface WebSocketClientMessageOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.WebSocketClientMessage)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional uint32 protocolVersion = 1;
     /**
      * <code>optional uint32 protocolVersion = 1;</code>
      */
@@ -21,7 +21,6 @@ public final class Web {
      */
     int getProtocolVersion();
 
-    // optional uint32 sequenceNumber = 2;
     /**
      * <code>optional uint32 sequenceNumber = 2;</code>
      */
@@ -31,7 +30,6 @@ public final class Web {
      */
     int getSequenceNumber();
 
-    // optional string resource = 3;
     /**
      * <code>optional string resource = 3;</code>
      */
@@ -46,7 +44,6 @@ public final class Web {
     com.google.protobuf.ByteString
         getResourceBytes();
 
-    // optional string operation = 4;
     /**
      * <code>optional string operation = 4;</code>
      */
@@ -61,7 +58,6 @@ public final class Web {
     com.google.protobuf.ByteString
         getOperationBytes();
 
-    // optional bytes data = 5;
     /**
      * <code>optional bytes data = 5;</code>
      */
@@ -75,8 +71,9 @@ public final class Web {
    * Protobuf type {@code web.WebSocketClientMessage}
    */
   public static final class WebSocketClientMessage extends
-      com.google.protobuf.GeneratedMessage
-      implements WebSocketClientMessageOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:web.WebSocketClientMessage)
+      WebSocketClientMessageOrBuilder {
     // Use WebSocketClientMessage.newBuilder() to construct.
     private WebSocketClientMessage(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -133,13 +130,15 @@ public final class Web {
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              resource_ = input.readBytes();
+              resource_ = bs;
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
-              operation_ = input.readBytes();
+              operation_ = bs;
               break;
             }
             case 42: {
@@ -187,7 +186,6 @@ public final class Web {
     }
 
     private int bitField0_;
-    // optional uint32 protocolVersion = 1;
     public static final int PROTOCOLVERSION_FIELD_NUMBER = 1;
     private int protocolVersion_;
     /**
@@ -203,7 +201,6 @@ public final class Web {
       return protocolVersion_;
     }
 
-    // optional uint32 sequenceNumber = 2;
     public static final int SEQUENCENUMBER_FIELD_NUMBER = 2;
     private int sequenceNumber_;
     /**
@@ -219,7 +216,6 @@ public final class Web {
       return sequenceNumber_;
     }
 
-    // optional string resource = 3;
     public static final int RESOURCE_FIELD_NUMBER = 3;
     private java.lang.Object resource_;
     /**
@@ -262,7 +258,6 @@ public final class Web {
       }
     }
 
-    // optional string operation = 4;
     public static final int OPERATION_FIELD_NUMBER = 4;
     private java.lang.Object operation_;
     /**
@@ -305,7 +300,6 @@ public final class Web {
       }
     }
 
-    // optional bytes data = 5;
     public static final int DATA_FIELD_NUMBER = 5;
     private com.google.protobuf.ByteString data_;
     /**
@@ -331,7 +325,8 @@ public final class Web {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -466,8 +461,9 @@ public final class Web {
      * Protobuf type {@code web.WebSocketClientMessage}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Web.WebSocketClientMessageOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.WebSocketClientMessage)
+        org.yamcs.protobuf.Web.WebSocketClientMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketClientMessage_descriptor;
@@ -620,7 +616,6 @@ public final class Web {
       }
       private int bitField0_;
 
-      // optional uint32 protocolVersion = 1;
       private int protocolVersion_ ;
       /**
        * <code>optional uint32 protocolVersion = 1;</code>
@@ -653,7 +648,6 @@ public final class Web {
         return this;
       }
 
-      // optional uint32 sequenceNumber = 2;
       private int sequenceNumber_ ;
       /**
        * <code>optional uint32 sequenceNumber = 2;</code>
@@ -686,7 +680,6 @@ public final class Web {
         return this;
       }
 
-      // optional string resource = 3;
       private java.lang.Object resource_ = "";
       /**
        * <code>optional string resource = 3;</code>
@@ -700,9 +693,12 @@ public final class Web {
       public java.lang.String getResource() {
         java.lang.Object ref = resource_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          resource_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            resource_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -760,7 +756,6 @@ public final class Web {
         return this;
       }
 
-      // optional string operation = 4;
       private java.lang.Object operation_ = "";
       /**
        * <code>optional string operation = 4;</code>
@@ -774,9 +769,12 @@ public final class Web {
       public java.lang.String getOperation() {
         java.lang.Object ref = operation_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          operation_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            operation_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -834,7 +832,6 @@ public final class Web {
         return this;
       }
 
-      // optional bytes data = 5;
       private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <code>optional bytes data = 5;</code>
@@ -881,10 +878,10 @@ public final class Web {
     // @@protoc_insertion_point(class_scope:web.WebSocketClientMessage)
   }
 
-  public interface WebSocketServerMessageOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface WebSocketServerMessageOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.WebSocketServerMessage)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional .web.WebSocketServerMessage.MessageType type = 1;
     /**
      * <code>optional .web.WebSocketServerMessage.MessageType type = 1;</code>
      */
@@ -894,7 +891,6 @@ public final class Web {
      */
     org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType getType();
 
-    // optional .web.WebSocketServerMessage.WebSocketReplyData reply = 2;
     /**
      * <code>optional .web.WebSocketServerMessage.WebSocketReplyData reply = 2;</code>
      */
@@ -908,7 +904,6 @@ public final class Web {
      */
     org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyDataOrBuilder getReplyOrBuilder();
 
-    // optional .web.WebSocketServerMessage.WebSocketExceptionData exception = 3;
     /**
      * <code>optional .web.WebSocketServerMessage.WebSocketExceptionData exception = 3;</code>
      */
@@ -922,7 +917,6 @@ public final class Web {
      */
     org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionDataOrBuilder getExceptionOrBuilder();
 
-    // optional .web.WebSocketServerMessage.WebSocketSubscriptionData data = 4;
     /**
      * <code>optional .web.WebSocketServerMessage.WebSocketSubscriptionData data = 4;</code>
      */
@@ -940,8 +934,9 @@ public final class Web {
    * Protobuf type {@code web.WebSocketServerMessage}
    */
   public static final class WebSocketServerMessage extends
-      com.google.protobuf.GeneratedMessage
-      implements WebSocketServerMessageOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:web.WebSocketServerMessage)
+      WebSocketServerMessageOrBuilder {
     // Use WebSocketServerMessage.newBuilder() to construct.
     private WebSocketServerMessage(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -1191,10 +1186,10 @@ public final class Web {
       // @@protoc_insertion_point(enum_scope:web.WebSocketServerMessage.MessageType)
     }
 
-    public interface WebSocketReplyDataOrBuilder
-        extends com.google.protobuf.MessageOrBuilder {
+    public interface WebSocketReplyDataOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:web.WebSocketServerMessage.WebSocketReplyData)
+        com.google.protobuf.MessageOrBuilder {
 
-      // optional uint32 protocolVersion = 1;
       /**
        * <code>optional uint32 protocolVersion = 1;</code>
        */
@@ -1204,7 +1199,6 @@ public final class Web {
        */
       int getProtocolVersion();
 
-      // optional int32 sequenceNumber = 2;
       /**
        * <code>optional int32 sequenceNumber = 2;</code>
        *
@@ -1222,7 +1216,6 @@ public final class Web {
        */
       int getSequenceNumber();
 
-      // optional string type = 3;
       /**
        * <code>optional string type = 3;</code>
        */
@@ -1237,7 +1230,6 @@ public final class Web {
       com.google.protobuf.ByteString
           getTypeBytes();
 
-      // optional string message = 4;
       /**
        * <code>optional string message = 4;</code>
        */
@@ -1252,7 +1244,6 @@ public final class Web {
       com.google.protobuf.ByteString
           getMessageBytes();
 
-      // optional bytes data = 5;
       /**
        * <code>optional bytes data = 5;</code>
        *
@@ -1274,8 +1265,9 @@ public final class Web {
      * Protobuf type {@code web.WebSocketServerMessage.WebSocketReplyData}
      */
     public static final class WebSocketReplyData extends
-        com.google.protobuf.GeneratedMessage
-        implements WebSocketReplyDataOrBuilder {
+        com.google.protobuf.GeneratedMessage implements
+        // @@protoc_insertion_point(message_implements:web.WebSocketServerMessage.WebSocketReplyData)
+        WebSocketReplyDataOrBuilder {
       // Use WebSocketReplyData.newBuilder() to construct.
       private WebSocketReplyData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
         super(builder);
@@ -1332,13 +1324,15 @@ public final class Web {
                 break;
               }
               case 26: {
+                com.google.protobuf.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000004;
-                type_ = input.readBytes();
+                type_ = bs;
                 break;
               }
               case 34: {
+                com.google.protobuf.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000008;
-                message_ = input.readBytes();
+                message_ = bs;
                 break;
               }
               case 42: {
@@ -1386,7 +1380,6 @@ public final class Web {
       }
 
       private int bitField0_;
-      // optional uint32 protocolVersion = 1;
       public static final int PROTOCOLVERSION_FIELD_NUMBER = 1;
       private int protocolVersion_;
       /**
@@ -1402,7 +1395,6 @@ public final class Web {
         return protocolVersion_;
       }
 
-      // optional int32 sequenceNumber = 2;
       public static final int SEQUENCENUMBER_FIELD_NUMBER = 2;
       private int sequenceNumber_;
       /**
@@ -1426,7 +1418,6 @@ public final class Web {
         return sequenceNumber_;
       }
 
-      // optional string type = 3;
       public static final int TYPE_FIELD_NUMBER = 3;
       private java.lang.Object type_;
       /**
@@ -1469,7 +1460,6 @@ public final class Web {
         }
       }
 
-      // optional string message = 4;
       public static final int MESSAGE_FIELD_NUMBER = 4;
       private java.lang.Object message_;
       /**
@@ -1512,7 +1502,6 @@ public final class Web {
         }
       }
 
-      // optional bytes data = 5;
       public static final int DATA_FIELD_NUMBER = 5;
       private com.google.protobuf.ByteString data_;
       /**
@@ -1546,7 +1535,8 @@ public final class Web {
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
-        if (isInitialized != -1) return isInitialized == 1;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
 
         memoizedIsInitialized = 1;
         return true;
@@ -1681,8 +1671,9 @@ public final class Web {
        * Protobuf type {@code web.WebSocketServerMessage.WebSocketReplyData}
        */
       public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder>
-         implements org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyDataOrBuilder {
+          com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:web.WebSocketServerMessage.WebSocketReplyData)
+          org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyDataOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
           return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor;
@@ -1835,7 +1826,6 @@ public final class Web {
         }
         private int bitField0_;
 
-        // optional uint32 protocolVersion = 1;
         private int protocolVersion_ ;
         /**
          * <code>optional uint32 protocolVersion = 1;</code>
@@ -1868,7 +1858,6 @@ public final class Web {
           return this;
         }
 
-        // optional int32 sequenceNumber = 2;
         private int sequenceNumber_ ;
         /**
          * <code>optional int32 sequenceNumber = 2;</code>
@@ -1917,7 +1906,6 @@ public final class Web {
           return this;
         }
 
-        // optional string type = 3;
         private java.lang.Object type_ = "";
         /**
          * <code>optional string type = 3;</code>
@@ -1931,9 +1919,12 @@ public final class Web {
         public java.lang.String getType() {
           java.lang.Object ref = type_;
           if (!(ref instanceof java.lang.String)) {
-            java.lang.String s = ((com.google.protobuf.ByteString) ref)
-                .toStringUtf8();
-            type_ = s;
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              type_ = s;
+            }
             return s;
           } else {
             return (java.lang.String) ref;
@@ -1991,7 +1982,6 @@ public final class Web {
           return this;
         }
 
-        // optional string message = 4;
         private java.lang.Object message_ = "";
         /**
          * <code>optional string message = 4;</code>
@@ -2005,9 +1995,12 @@ public final class Web {
         public java.lang.String getMessage() {
           java.lang.Object ref = message_;
           if (!(ref instanceof java.lang.String)) {
-            java.lang.String s = ((com.google.protobuf.ByteString) ref)
-                .toStringUtf8();
-            message_ = s;
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              message_ = s;
+            }
             return s;
           } else {
             return (java.lang.String) ref;
@@ -2065,7 +2058,6 @@ public final class Web {
           return this;
         }
 
-        // optional bytes data = 5;
         private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
         /**
          * <code>optional bytes data = 5;</code>
@@ -2128,10 +2120,10 @@ public final class Web {
       // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage.WebSocketReplyData)
     }
 
-    public interface WebSocketExceptionDataOrBuilder
-        extends com.google.protobuf.MessageOrBuilder {
+    public interface WebSocketExceptionDataOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:web.WebSocketServerMessage.WebSocketExceptionData)
+        com.google.protobuf.MessageOrBuilder {
 
-      // optional uint32 protocolVersion = 1;
       /**
        * <code>optional uint32 protocolVersion = 1;</code>
        */
@@ -2141,7 +2133,6 @@ public final class Web {
        */
       int getProtocolVersion();
 
-      // optional int32 sequenceNumber = 2;
       /**
        * <code>optional int32 sequenceNumber = 2;</code>
        *
@@ -2159,7 +2150,6 @@ public final class Web {
        */
       int getSequenceNumber();
 
-      // optional string type = 3;
       /**
        * <code>optional string type = 3;</code>
        */
@@ -2174,7 +2164,6 @@ public final class Web {
       com.google.protobuf.ByteString
           getTypeBytes();
 
-      // optional string message = 4;
       /**
        * <code>optional string message = 4;</code>
        */
@@ -2189,7 +2178,6 @@ public final class Web {
       com.google.protobuf.ByteString
           getMessageBytes();
 
-      // optional bytes data = 5;
       /**
        * <code>optional bytes data = 5;</code>
        *
@@ -2211,8 +2199,9 @@ public final class Web {
      * Protobuf type {@code web.WebSocketServerMessage.WebSocketExceptionData}
      */
     public static final class WebSocketExceptionData extends
-        com.google.protobuf.GeneratedMessage
-        implements WebSocketExceptionDataOrBuilder {
+        com.google.protobuf.GeneratedMessage implements
+        // @@protoc_insertion_point(message_implements:web.WebSocketServerMessage.WebSocketExceptionData)
+        WebSocketExceptionDataOrBuilder {
       // Use WebSocketExceptionData.newBuilder() to construct.
       private WebSocketExceptionData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
         super(builder);
@@ -2269,13 +2258,15 @@ public final class Web {
                 break;
               }
               case 26: {
+                com.google.protobuf.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000004;
-                type_ = input.readBytes();
+                type_ = bs;
                 break;
               }
               case 34: {
+                com.google.protobuf.ByteString bs = input.readBytes();
                 bitField0_ |= 0x00000008;
-                message_ = input.readBytes();
+                message_ = bs;
                 break;
               }
               case 42: {
@@ -2323,7 +2314,6 @@ public final class Web {
       }
 
       private int bitField0_;
-      // optional uint32 protocolVersion = 1;
       public static final int PROTOCOLVERSION_FIELD_NUMBER = 1;
       private int protocolVersion_;
       /**
@@ -2339,7 +2329,6 @@ public final class Web {
         return protocolVersion_;
       }
 
-      // optional int32 sequenceNumber = 2;
       public static final int SEQUENCENUMBER_FIELD_NUMBER = 2;
       private int sequenceNumber_;
       /**
@@ -2363,7 +2352,6 @@ public final class Web {
         return sequenceNumber_;
       }
 
-      // optional string type = 3;
       public static final int TYPE_FIELD_NUMBER = 3;
       private java.lang.Object type_;
       /**
@@ -2406,7 +2394,6 @@ public final class Web {
         }
       }
 
-      // optional string message = 4;
       public static final int MESSAGE_FIELD_NUMBER = 4;
       private java.lang.Object message_;
       /**
@@ -2449,7 +2436,6 @@ public final class Web {
         }
       }
 
-      // optional bytes data = 5;
       public static final int DATA_FIELD_NUMBER = 5;
       private com.google.protobuf.ByteString data_;
       /**
@@ -2483,7 +2469,8 @@ public final class Web {
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
-        if (isInitialized != -1) return isInitialized == 1;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
 
         memoizedIsInitialized = 1;
         return true;
@@ -2618,8 +2605,9 @@ public final class Web {
        * Protobuf type {@code web.WebSocketServerMessage.WebSocketExceptionData}
        */
       public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder>
-         implements org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionDataOrBuilder {
+          com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:web.WebSocketServerMessage.WebSocketExceptionData)
+          org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionDataOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
           return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor;
@@ -2772,7 +2760,6 @@ public final class Web {
         }
         private int bitField0_;
 
-        // optional uint32 protocolVersion = 1;
         private int protocolVersion_ ;
         /**
          * <code>optional uint32 protocolVersion = 1;</code>
@@ -2805,7 +2792,6 @@ public final class Web {
           return this;
         }
 
-        // optional int32 sequenceNumber = 2;
         private int sequenceNumber_ ;
         /**
          * <code>optional int32 sequenceNumber = 2;</code>
@@ -2854,7 +2840,6 @@ public final class Web {
           return this;
         }
 
-        // optional string type = 3;
         private java.lang.Object type_ = "";
         /**
          * <code>optional string type = 3;</code>
@@ -2868,9 +2853,12 @@ public final class Web {
         public java.lang.String getType() {
           java.lang.Object ref = type_;
           if (!(ref instanceof java.lang.String)) {
-            java.lang.String s = ((com.google.protobuf.ByteString) ref)
-                .toStringUtf8();
-            type_ = s;
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              type_ = s;
+            }
             return s;
           } else {
             return (java.lang.String) ref;
@@ -2928,7 +2916,6 @@ public final class Web {
           return this;
         }
 
-        // optional string message = 4;
         private java.lang.Object message_ = "";
         /**
          * <code>optional string message = 4;</code>
@@ -2942,9 +2929,12 @@ public final class Web {
         public java.lang.String getMessage() {
           java.lang.Object ref = message_;
           if (!(ref instanceof java.lang.String)) {
-            java.lang.String s = ((com.google.protobuf.ByteString) ref)
-                .toStringUtf8();
-            message_ = s;
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              message_ = s;
+            }
             return s;
           } else {
             return (java.lang.String) ref;
@@ -3002,7 +2992,6 @@ public final class Web {
           return this;
         }
 
-        // optional bytes data = 5;
         private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
         /**
          * <code>optional bytes data = 5;</code>
@@ -3065,10 +3054,10 @@ public final class Web {
       // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage.WebSocketExceptionData)
     }
 
-    public interface WebSocketSubscriptionDataOrBuilder
-        extends com.google.protobuf.MessageOrBuilder {
+    public interface WebSocketSubscriptionDataOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:web.WebSocketServerMessage.WebSocketSubscriptionData)
+        com.google.protobuf.MessageOrBuilder {
 
-      // optional uint32 sequenceNumber = 1;
       /**
        * <code>optional uint32 sequenceNumber = 1;</code>
        */
@@ -3078,7 +3067,6 @@ public final class Web {
        */
       int getSequenceNumber();
 
-      // optional .yamcs.ProtoDataType type = 2;
       /**
        * <code>optional .yamcs.ProtoDataType type = 2;</code>
        */
@@ -3088,7 +3076,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Yamcs.ProtoDataType getType();
 
-      // optional .pvalue.ParameterData parameterData = 3;
       /**
        * <code>optional .pvalue.ParameterData parameterData = 3;</code>
        */
@@ -3102,7 +3089,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder getParameterDataOrBuilder();
 
-      // optional .commanding.CommandHistoryEntry command = 4;
       /**
        * <code>optional .commanding.CommandHistoryEntry command = 4;</code>
        */
@@ -3116,7 +3102,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder getCommandOrBuilder();
 
-      // optional .yamcsManagement.ProcessorInfo processorInfo = 5;
       /**
        * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
        */
@@ -3130,7 +3115,6 @@ public final class Web {
        */
       org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorInfoOrBuilder();
 
-      // optional .yamcsManagement.ClientInfo clientInfo = 6;
       /**
        * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
        */
@@ -3144,7 +3128,6 @@ public final class Web {
        */
       org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder();
 
-      // optional .yamcsManagement.Statistics statistics = 7;
       /**
        * <code>optional .yamcsManagement.Statistics statistics = 7;</code>
        */
@@ -3158,7 +3141,6 @@ public final class Web {
        */
       org.yamcs.protobuf.YamcsManagement.StatisticsOrBuilder getStatisticsOrBuilder();
 
-      // optional .yamcs.Event event = 8;
       /**
        * <code>optional .yamcs.Event event = 8;</code>
        */
@@ -3172,7 +3154,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Yamcs.EventOrBuilder getEventOrBuilder();
 
-      // optional .archive.StreamData streamData = 9;
       /**
        * <code>optional .archive.StreamData streamData = 9;</code>
        */
@@ -3186,7 +3167,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Archive.StreamDataOrBuilder getStreamDataOrBuilder();
 
-      // optional .alarms.AlarmData alarmData = 10;
       /**
        * <code>optional .alarms.AlarmData alarmData = 10;</code>
        */
@@ -3200,7 +3180,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Alarms.AlarmDataOrBuilder getAlarmDataOrBuilder();
 
-      // optional .yamcs.TimeInfo timeInfo = 11;
       /**
        * <code>optional .yamcs.TimeInfo timeInfo = 11;</code>
        */
@@ -3214,7 +3193,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder getTimeInfoOrBuilder();
 
-      // optional .yamcsManagement.LinkEvent linkEvent = 12;
       /**
        * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
        */
@@ -3228,7 +3206,6 @@ public final class Web {
        */
       org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder getLinkEventOrBuilder();
 
-      // optional .commanding.CommandQueueInfo commandQueueInfo = 13;
       /**
        * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
        */
@@ -3242,7 +3219,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder getCommandQueueInfoOrBuilder();
 
-      // optional .commanding.CommandQueueEvent commandQueueEvent = 14;
       /**
        * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
        */
@@ -3256,7 +3232,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder getCommandQueueEventOrBuilder();
 
-      // optional .yamcs.TmPacketData tmPacket = 15;
       /**
        * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
        */
@@ -3270,7 +3245,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder getTmPacketOrBuilder();
 
-      // optional .web.ConnectionInfo connectionInfo = 16;
       /**
        * <code>optional .web.ConnectionInfo connectionInfo = 16;</code>
        */
@@ -3284,7 +3258,6 @@ public final class Web {
        */
       org.yamcs.protobuf.Web.ConnectionInfoOrBuilder getConnectionInfoOrBuilder();
 
-      // optional .web.WebSocketExtensionData extensionData = 100;
       /**
        * <code>optional .web.WebSocketExtensionData extensionData = 100;</code>
        */
@@ -3306,8 +3279,9 @@ public final class Web {
      * </pre>
      */
     public static final class WebSocketSubscriptionData extends
-        com.google.protobuf.GeneratedMessage
-        implements WebSocketSubscriptionDataOrBuilder {
+        com.google.protobuf.GeneratedMessage implements
+        // @@protoc_insertion_point(message_implements:web.WebSocketServerMessage.WebSocketSubscriptionData)
+        WebSocketSubscriptionDataOrBuilder {
       // Use WebSocketSubscriptionData.newBuilder() to construct.
       private WebSocketSubscriptionData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
         super(builder);
@@ -3604,7 +3578,6 @@ public final class Web {
       }
 
       private int bitField0_;
-      // optional uint32 sequenceNumber = 1;
       public static final int SEQUENCENUMBER_FIELD_NUMBER = 1;
       private int sequenceNumber_;
       /**
@@ -3620,7 +3593,6 @@ public final class Web {
         return sequenceNumber_;
       }
 
-      // optional .yamcs.ProtoDataType type = 2;
       public static final int TYPE_FIELD_NUMBER = 2;
       private org.yamcs.protobuf.Yamcs.ProtoDataType type_;
       /**
@@ -3636,7 +3608,6 @@ public final class Web {
         return type_;
       }
 
-      // optional .pvalue.ParameterData parameterData = 3;
       public static final int PARAMETERDATA_FIELD_NUMBER = 3;
       private org.yamcs.protobuf.Pvalue.ParameterData parameterData_;
       /**
@@ -3658,7 +3629,6 @@ public final class Web {
         return parameterData_;
       }
 
-      // optional .commanding.CommandHistoryEntry command = 4;
       public static final int COMMAND_FIELD_NUMBER = 4;
       private org.yamcs.protobuf.Commanding.CommandHistoryEntry command_;
       /**
@@ -3680,7 +3650,6 @@ public final class Web {
         return command_;
       }
 
-      // optional .yamcsManagement.ProcessorInfo processorInfo = 5;
       public static final int PROCESSORINFO_FIELD_NUMBER = 5;
       private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processorInfo_;
       /**
@@ -3702,7 +3671,6 @@ public final class Web {
         return processorInfo_;
       }
 
-      // optional .yamcsManagement.ClientInfo clientInfo = 6;
       public static final int CLIENTINFO_FIELD_NUMBER = 6;
       private org.yamcs.protobuf.YamcsManagement.ClientInfo clientInfo_;
       /**
@@ -3724,7 +3692,6 @@ public final class Web {
         return clientInfo_;
       }
 
-      // optional .yamcsManagement.Statistics statistics = 7;
       public static final int STATISTICS_FIELD_NUMBER = 7;
       private org.yamcs.protobuf.YamcsManagement.Statistics statistics_;
       /**
@@ -3746,7 +3713,6 @@ public final class Web {
         return statistics_;
       }
 
-      // optional .yamcs.Event event = 8;
       public static final int EVENT_FIELD_NUMBER = 8;
       private org.yamcs.protobuf.Yamcs.Event event_;
       /**
@@ -3768,7 +3734,6 @@ public final class Web {
         return event_;
       }
 
-      // optional .archive.StreamData streamData = 9;
       public static final int STREAMDATA_FIELD_NUMBER = 9;
       private org.yamcs.protobuf.Archive.StreamData streamData_;
       /**
@@ -3790,7 +3755,6 @@ public final class Web {
         return streamData_;
       }
 
-      // optional .alarms.AlarmData alarmData = 10;
       public static final int ALARMDATA_FIELD_NUMBER = 10;
       private org.yamcs.protobuf.Alarms.AlarmData alarmData_;
       /**
@@ -3812,7 +3776,6 @@ public final class Web {
         return alarmData_;
       }
 
-      // optional .yamcs.TimeInfo timeInfo = 11;
       public static final int TIMEINFO_FIELD_NUMBER = 11;
       private org.yamcs.protobuf.Yamcs.TimeInfo timeInfo_;
       /**
@@ -3834,7 +3797,6 @@ public final class Web {
         return timeInfo_;
       }
 
-      // optional .yamcsManagement.LinkEvent linkEvent = 12;
       public static final int LINKEVENT_FIELD_NUMBER = 12;
       private org.yamcs.protobuf.YamcsManagement.LinkEvent linkEvent_;
       /**
@@ -3856,7 +3818,6 @@ public final class Web {
         return linkEvent_;
       }
 
-      // optional .commanding.CommandQueueInfo commandQueueInfo = 13;
       public static final int COMMANDQUEUEINFO_FIELD_NUMBER = 13;
       private org.yamcs.protobuf.Commanding.CommandQueueInfo commandQueueInfo_;
       /**
@@ -3878,7 +3839,6 @@ public final class Web {
         return commandQueueInfo_;
       }
 
-      // optional .commanding.CommandQueueEvent commandQueueEvent = 14;
       public static final int COMMANDQUEUEEVENT_FIELD_NUMBER = 14;
       private org.yamcs.protobuf.Commanding.CommandQueueEvent commandQueueEvent_;
       /**
@@ -3900,7 +3860,6 @@ public final class Web {
         return commandQueueEvent_;
       }
 
-      // optional .yamcs.TmPacketData tmPacket = 15;
       public static final int TMPACKET_FIELD_NUMBER = 15;
       private org.yamcs.protobuf.Yamcs.TmPacketData tmPacket_;
       /**
@@ -3922,7 +3881,6 @@ public final class Web {
         return tmPacket_;
       }
 
-      // optional .web.ConnectionInfo connectionInfo = 16;
       public static final int CONNECTIONINFO_FIELD_NUMBER = 16;
       private org.yamcs.protobuf.Web.ConnectionInfo connectionInfo_;
       /**
@@ -3944,7 +3902,6 @@ public final class Web {
         return connectionInfo_;
       }
 
-      // optional .web.WebSocketExtensionData extensionData = 100;
       public static final int EXTENSIONDATA_FIELD_NUMBER = 100;
       private org.yamcs.protobuf.Web.WebSocketExtensionData extensionData_;
       /**
@@ -3988,7 +3945,8 @@ public final class Web {
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
-        if (isInitialized != -1) return isInitialized == 1;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
 
         if (hasParameterData()) {
           if (!getParameterData().isInitialized()) {
@@ -4289,8 +4247,9 @@ public final class Web {
        * </pre>
        */
       public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder>
-         implements org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionDataOrBuilder {
+          com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:web.WebSocketServerMessage.WebSocketSubscriptionData)
+          org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionDataOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
           return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor;
@@ -4760,7 +4719,6 @@ public final class Web {
         }
         private int bitField0_;
 
-        // optional uint32 sequenceNumber = 1;
         private int sequenceNumber_ ;
         /**
          * <code>optional uint32 sequenceNumber = 1;</code>
@@ -4793,7 +4751,6 @@ public final class Web {
           return this;
         }
 
-        // optional .yamcs.ProtoDataType type = 2;
         private org.yamcs.protobuf.Yamcs.ProtoDataType type_ = org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR;
         /**
          * <code>optional .yamcs.ProtoDataType type = 2;</code>
@@ -4829,7 +4786,6 @@ public final class Web {
           return this;
         }
 
-        // optional .pvalue.ParameterData parameterData = 3;
         private org.yamcs.protobuf.Pvalue.ParameterData parameterData_ = org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Pvalue.ParameterData, org.yamcs.protobuf.Pvalue.ParameterData.Builder, org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder> parameterDataBuilder_;
@@ -4938,7 +4894,7 @@ public final class Web {
           if (parameterDataBuilder_ == null) {
             parameterDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Pvalue.ParameterData, org.yamcs.protobuf.Pvalue.ParameterData.Builder, org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder>(
-                    parameterData_,
+                    getParameterData(),
                     getParentForChildren(),
                     isClean());
             parameterData_ = null;
@@ -4946,7 +4902,6 @@ public final class Web {
           return parameterDataBuilder_;
         }
 
-        // optional .commanding.CommandHistoryEntry command = 4;
         private org.yamcs.protobuf.Commanding.CommandHistoryEntry command_ = org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Commanding.CommandHistoryEntry, org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder, org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder> commandBuilder_;
@@ -5055,7 +5010,7 @@ public final class Web {
           if (commandBuilder_ == null) {
             commandBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Commanding.CommandHistoryEntry, org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder, org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder>(
-                    command_,
+                    getCommand(),
                     getParentForChildren(),
                     isClean());
             command_ = null;
@@ -5063,7 +5018,6 @@ public final class Web {
           return commandBuilder_;
         }
 
-        // optional .yamcsManagement.ProcessorInfo processorInfo = 5;
         private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processorInfo_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> processorInfoBuilder_;
@@ -5172,7 +5126,7 @@ public final class Web {
           if (processorInfoBuilder_ == null) {
             processorInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder>(
-                    processorInfo_,
+                    getProcessorInfo(),
                     getParentForChildren(),
                     isClean());
             processorInfo_ = null;
@@ -5180,7 +5134,6 @@ public final class Web {
           return processorInfoBuilder_;
         }
 
-        // optional .yamcsManagement.ClientInfo clientInfo = 6;
         private org.yamcs.protobuf.YamcsManagement.ClientInfo clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> clientInfoBuilder_;
@@ -5289,7 +5242,7 @@ public final class Web {
           if (clientInfoBuilder_ == null) {
             clientInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder>(
-                    clientInfo_,
+                    getClientInfo(),
                     getParentForChildren(),
                     isClean());
             clientInfo_ = null;
@@ -5297,7 +5250,6 @@ public final class Web {
           return clientInfoBuilder_;
         }
 
-        // optional .yamcsManagement.Statistics statistics = 7;
         private org.yamcs.protobuf.YamcsManagement.Statistics statistics_ = org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.YamcsManagement.Statistics, org.yamcs.protobuf.YamcsManagement.Statistics.Builder, org.yamcs.protobuf.YamcsManagement.StatisticsOrBuilder> statisticsBuilder_;
@@ -5406,7 +5358,7 @@ public final class Web {
           if (statisticsBuilder_ == null) {
             statisticsBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.YamcsManagement.Statistics, org.yamcs.protobuf.YamcsManagement.Statistics.Builder, org.yamcs.protobuf.YamcsManagement.StatisticsOrBuilder>(
-                    statistics_,
+                    getStatistics(),
                     getParentForChildren(),
                     isClean());
             statistics_ = null;
@@ -5414,7 +5366,6 @@ public final class Web {
           return statisticsBuilder_;
         }
 
-        // optional .yamcs.Event event = 8;
         private org.yamcs.protobuf.Yamcs.Event event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Yamcs.Event, org.yamcs.protobuf.Yamcs.Event.Builder, org.yamcs.protobuf.Yamcs.EventOrBuilder> eventBuilder_;
@@ -5523,7 +5474,7 @@ public final class Web {
           if (eventBuilder_ == null) {
             eventBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Yamcs.Event, org.yamcs.protobuf.Yamcs.Event.Builder, org.yamcs.protobuf.Yamcs.EventOrBuilder>(
-                    event_,
+                    getEvent(),
                     getParentForChildren(),
                     isClean());
             event_ = null;
@@ -5531,7 +5482,6 @@ public final class Web {
           return eventBuilder_;
         }
 
-        // optional .archive.StreamData streamData = 9;
         private org.yamcs.protobuf.Archive.StreamData streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Archive.StreamData, org.yamcs.protobuf.Archive.StreamData.Builder, org.yamcs.protobuf.Archive.StreamDataOrBuilder> streamDataBuilder_;
@@ -5640,7 +5590,7 @@ public final class Web {
           if (streamDataBuilder_ == null) {
             streamDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Archive.StreamData, org.yamcs.protobuf.Archive.StreamData.Builder, org.yamcs.protobuf.Archive.StreamDataOrBuilder>(
-                    streamData_,
+                    getStreamData(),
                     getParentForChildren(),
                     isClean());
             streamData_ = null;
@@ -5648,7 +5598,6 @@ public final class Web {
           return streamDataBuilder_;
         }
 
-        // optional .alarms.AlarmData alarmData = 10;
         private org.yamcs.protobuf.Alarms.AlarmData alarmData_ = org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder> alarmDataBuilder_;
@@ -5757,7 +5706,7 @@ public final class Web {
           if (alarmDataBuilder_ == null) {
             alarmDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder>(
-                    alarmData_,
+                    getAlarmData(),
                     getParentForChildren(),
                     isClean());
             alarmData_ = null;
@@ -5765,7 +5714,6 @@ public final class Web {
           return alarmDataBuilder_;
         }
 
-        // optional .yamcs.TimeInfo timeInfo = 11;
         private org.yamcs.protobuf.Yamcs.TimeInfo timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder> timeInfoBuilder_;
@@ -5874,7 +5822,7 @@ public final class Web {
           if (timeInfoBuilder_ == null) {
             timeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder>(
-                    timeInfo_,
+                    getTimeInfo(),
                     getParentForChildren(),
                     isClean());
             timeInfo_ = null;
@@ -5882,7 +5830,6 @@ public final class Web {
           return timeInfoBuilder_;
         }
 
-        // optional .yamcsManagement.LinkEvent linkEvent = 12;
         private org.yamcs.protobuf.YamcsManagement.LinkEvent linkEvent_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.YamcsManagement.LinkEvent, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder, org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder> linkEventBuilder_;
@@ -5991,7 +5938,7 @@ public final class Web {
           if (linkEventBuilder_ == null) {
             linkEventBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.YamcsManagement.LinkEvent, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder, org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder>(
-                    linkEvent_,
+                    getLinkEvent(),
                     getParentForChildren(),
                     isClean());
             linkEvent_ = null;
@@ -5999,7 +5946,6 @@ public final class Web {
           return linkEventBuilder_;
         }
 
-        // optional .commanding.CommandQueueInfo commandQueueInfo = 13;
         private org.yamcs.protobuf.Commanding.CommandQueueInfo commandQueueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder> commandQueueInfoBuilder_;
@@ -6108,7 +6054,7 @@ public final class Web {
           if (commandQueueInfoBuilder_ == null) {
             commandQueueInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder>(
-                    commandQueueInfo_,
+                    getCommandQueueInfo(),
                     getParentForChildren(),
                     isClean());
             commandQueueInfo_ = null;
@@ -6116,7 +6062,6 @@ public final class Web {
           return commandQueueInfoBuilder_;
         }
 
-        // optional .commanding.CommandQueueEvent commandQueueEvent = 14;
         private org.yamcs.protobuf.Commanding.CommandQueueEvent commandQueueEvent_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Commanding.CommandQueueEvent, org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder, org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder> commandQueueEventBuilder_;
@@ -6225,7 +6170,7 @@ public final class Web {
           if (commandQueueEventBuilder_ == null) {
             commandQueueEventBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Commanding.CommandQueueEvent, org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder, org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder>(
-                    commandQueueEvent_,
+                    getCommandQueueEvent(),
                     getParentForChildren(),
                     isClean());
             commandQueueEvent_ = null;
@@ -6233,7 +6178,6 @@ public final class Web {
           return commandQueueEventBuilder_;
         }
 
-        // optional .yamcs.TmPacketData tmPacket = 15;
         private org.yamcs.protobuf.Yamcs.TmPacketData tmPacket_ = org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Yamcs.TmPacketData, org.yamcs.protobuf.Yamcs.TmPacketData.Builder, org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder> tmPacketBuilder_;
@@ -6342,7 +6286,7 @@ public final class Web {
           if (tmPacketBuilder_ == null) {
             tmPacketBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Yamcs.TmPacketData, org.yamcs.protobuf.Yamcs.TmPacketData.Builder, org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder>(
-                    tmPacket_,
+                    getTmPacket(),
                     getParentForChildren(),
                     isClean());
             tmPacket_ = null;
@@ -6350,7 +6294,6 @@ public final class Web {
           return tmPacketBuilder_;
         }
 
-        // optional .web.ConnectionInfo connectionInfo = 16;
         private org.yamcs.protobuf.Web.ConnectionInfo connectionInfo_ = org.yamcs.protobuf.Web.ConnectionInfo.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Web.ConnectionInfo, org.yamcs.protobuf.Web.ConnectionInfo.Builder, org.yamcs.protobuf.Web.ConnectionInfoOrBuilder> connectionInfoBuilder_;
@@ -6459,7 +6402,7 @@ public final class Web {
           if (connectionInfoBuilder_ == null) {
             connectionInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Web.ConnectionInfo, org.yamcs.protobuf.Web.ConnectionInfo.Builder, org.yamcs.protobuf.Web.ConnectionInfoOrBuilder>(
-                    connectionInfo_,
+                    getConnectionInfo(),
                     getParentForChildren(),
                     isClean());
             connectionInfo_ = null;
@@ -6467,7 +6410,6 @@ public final class Web {
           return connectionInfoBuilder_;
         }
 
-        // optional .web.WebSocketExtensionData extensionData = 100;
         private org.yamcs.protobuf.Web.WebSocketExtensionData extensionData_ = org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance();
         private com.google.protobuf.SingleFieldBuilder<
             org.yamcs.protobuf.Web.WebSocketExtensionData, org.yamcs.protobuf.Web.WebSocketExtensionData.Builder, org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder> extensionDataBuilder_;
@@ -6576,7 +6518,7 @@ public final class Web {
           if (extensionDataBuilder_ == null) {
             extensionDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
                 org.yamcs.protobuf.Web.WebSocketExtensionData, org.yamcs.protobuf.Web.WebSocketExtensionData.Builder, org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder>(
-                    extensionData_,
+                    getExtensionData(),
                     getParentForChildren(),
                     isClean());
             extensionData_ = null;
@@ -6596,7 +6538,6 @@ public final class Web {
     }
 
     private int bitField0_;
-    // optional .web.WebSocketServerMessage.MessageType type = 1;
     public static final int TYPE_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType type_;
     /**
@@ -6612,7 +6553,6 @@ public final class Web {
       return type_;
     }
 
-    // optional .web.WebSocketServerMessage.WebSocketReplyData reply = 2;
     public static final int REPLY_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData reply_;
     /**
@@ -6634,7 +6574,6 @@ public final class Web {
       return reply_;
     }
 
-    // optional .web.WebSocketServerMessage.WebSocketExceptionData exception = 3;
     public static final int EXCEPTION_FIELD_NUMBER = 3;
     private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData exception_;
     /**
@@ -6656,7 +6595,6 @@ public final class Web {
       return exception_;
     }
 
-    // optional .web.WebSocketServerMessage.WebSocketSubscriptionData data = 4;
     public static final int DATA_FIELD_NUMBER = 4;
     private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData data_;
     /**
@@ -6687,7 +6625,8 @@ public final class Web {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasData()) {
         if (!getData().isInitialized()) {
@@ -6821,8 +6760,9 @@ public final class Web {
      * Protobuf type {@code web.WebSocketServerMessage}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Web.WebSocketServerMessageOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.WebSocketServerMessage)
+        org.yamcs.protobuf.Web.WebSocketServerMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_descriptor;
@@ -6995,7 +6935,6 @@ public final class Web {
       }
       private int bitField0_;
 
-      // optional .web.WebSocketServerMessage.MessageType type = 1;
       private org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType type_ = org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.REPLY;
       /**
        * <code>optional .web.WebSocketServerMessage.MessageType type = 1;</code>
@@ -7031,7 +6970,6 @@ public final class Web {
         return this;
       }
 
-      // optional .web.WebSocketServerMessage.WebSocketReplyData reply = 2;
       private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData reply_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyDataOrBuilder> replyBuilder_;
@@ -7140,7 +7078,7 @@ public final class Web {
         if (replyBuilder_ == null) {
           replyBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyDataOrBuilder>(
-                  reply_,
+                  getReply(),
                   getParentForChildren(),
                   isClean());
           reply_ = null;
@@ -7148,7 +7086,6 @@ public final class Web {
         return replyBuilder_;
       }
 
-      // optional .web.WebSocketServerMessage.WebSocketExceptionData exception = 3;
       private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData exception_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionDataOrBuilder> exceptionBuilder_;
@@ -7257,7 +7194,7 @@ public final class Web {
         if (exceptionBuilder_ == null) {
           exceptionBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionDataOrBuilder>(
-                  exception_,
+                  getException(),
                   getParentForChildren(),
                   isClean());
           exception_ = null;
@@ -7265,7 +7202,6 @@ public final class Web {
         return exceptionBuilder_;
       }
 
-      // optional .web.WebSocketServerMessage.WebSocketSubscriptionData data = 4;
       private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData data_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionDataOrBuilder> dataBuilder_;
@@ -7374,7 +7310,7 @@ public final class Web {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionDataOrBuilder>(
-                  data_,
+                  getData(),
                   getParentForChildren(),
                   isClean());
           data_ = null;
@@ -7393,10 +7329,10 @@ public final class Web {
     // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage)
   }
 
-  public interface WebSocketExtensionDataOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface WebSocketExtensionDataOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.WebSocketExtensionData)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional uint32 type = 1;
     /**
      * <code>optional uint32 type = 1;</code>
      */
@@ -7406,7 +7342,6 @@ public final class Web {
      */
     int getType();
 
-    // optional bytes data = 2;
     /**
      * <code>optional bytes data = 2;</code>
      */
@@ -7424,8 +7359,9 @@ public final class Web {
    * </pre>
    */
   public static final class WebSocketExtensionData extends
-      com.google.protobuf.GeneratedMessage
-      implements WebSocketExtensionDataOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:web.WebSocketExtensionData)
+      WebSocketExtensionDataOrBuilder {
     // Use WebSocketExtensionData.newBuilder() to construct.
     private WebSocketExtensionData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -7521,7 +7457,6 @@ public final class Web {
     }
 
     private int bitField0_;
-    // optional uint32 type = 1;
     public static final int TYPE_FIELD_NUMBER = 1;
     private int type_;
     /**
@@ -7537,7 +7472,6 @@ public final class Web {
       return type_;
     }
 
-    // optional bytes data = 2;
     public static final int DATA_FIELD_NUMBER = 2;
     private com.google.protobuf.ByteString data_;
     /**
@@ -7560,7 +7494,8 @@ public final class Web {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -7678,8 +7613,9 @@ public final class Web {
      * </pre>
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.WebSocketExtensionData)
+        org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketExtensionData_descriptor;
@@ -7801,7 +7737,6 @@ public final class Web {
       }
       private int bitField0_;
 
-      // optional uint32 type = 1;
       private int type_ ;
       /**
        * <code>optional uint32 type = 1;</code>
@@ -7834,7 +7769,6 @@ public final class Web {
         return this;
       }
 
-      // optional bytes data = 2;
       private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <code>optional bytes data = 2;</code>
@@ -7882,10 +7816,10 @@ public final class Web {
   }
 
   public interface RestExceptionMessageOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.RestExceptionMessage)
       com.google.protobuf.GeneratedMessage.
           ExtendableMessageOrBuilder<RestExceptionMessage> {
 
-    // optional string type = 1;
     /**
      * <code>optional string type = 1;</code>
      */
@@ -7900,7 +7834,6 @@ public final class Web {
     com.google.protobuf.ByteString
         getTypeBytes();
 
-    // optional string msg = 2;
     /**
      * <code>optional string msg = 2;</code>
      */
@@ -7924,7 +7857,9 @@ public final class Web {
    */
   public static final class RestExceptionMessage extends
       com.google.protobuf.GeneratedMessage.ExtendableMessage<
-        RestExceptionMessage> implements RestExceptionMessageOrBuilder {
+        RestExceptionMessage> implements
+      // @@protoc_insertion_point(message_implements:web.RestExceptionMessage)
+      RestExceptionMessageOrBuilder {
     // Use RestExceptionMessage.newBuilder() to construct.
     private RestExceptionMessage(com.google.protobuf.GeneratedMessage.ExtendableBuilder<org.yamcs.protobuf.Web.RestExceptionMessage, ?> builder) {
       super(builder);
@@ -7971,13 +7906,15 @@ public final class Web {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              type_ = input.readBytes();
+              type_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              msg_ = input.readBytes();
+              msg_ = bs;
               break;
             }
           }
@@ -8020,7 +7957,6 @@ public final class Web {
     }
 
     private int bitField0_;
-    // optional string type = 1;
     public static final int TYPE_FIELD_NUMBER = 1;
     private java.lang.Object type_;
     /**
@@ -8063,7 +7999,6 @@ public final class Web {
       }
     }
 
-    // optional string msg = 2;
     public static final int MSG_FIELD_NUMBER = 2;
     private java.lang.Object msg_;
     /**
@@ -8113,7 +8048,8 @@ public final class Web {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (!extensionsAreInitialized()) {
         memoizedIsInitialized = 0;
@@ -8241,7 +8177,9 @@ public final class Web {
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.ExtendableBuilder<
-          org.yamcs.protobuf.Web.RestExceptionMessage, Builder> implements org.yamcs.protobuf.Web.RestExceptionMessageOrBuilder {
+          org.yamcs.protobuf.Web.RestExceptionMessage, Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.RestExceptionMessage)
+        org.yamcs.protobuf.Web.RestExceptionMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Web.internal_static_web_RestExceptionMessage_descriptor;
@@ -8372,7 +8310,6 @@ public final class Web {
       }
       private int bitField0_;
 
-      // optional string type = 1;
       private java.lang.Object type_ = "";
       /**
        * <code>optional string type = 1;</code>
@@ -8386,9 +8323,12 @@ public final class Web {
       public java.lang.String getType() {
         java.lang.Object ref = type_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          type_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            type_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -8446,7 +8386,6 @@ public final class Web {
         return this;
       }
 
-      // optional string msg = 2;
       private java.lang.Object msg_ = "";
       /**
        * <code>optional string msg = 2;</code>
@@ -8460,9 +8399,12 @@ public final class Web {
       public java.lang.String getMsg() {
         java.lang.Object ref = msg_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          msg_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            msg_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -8531,10 +8473,10 @@ public final class Web {
     // @@protoc_insertion_point(class_scope:web.RestExceptionMessage)
   }
 
-  public interface ParameterSubscriptionRequestOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ParameterSubscriptionRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.ParameterSubscriptionRequest)
+      com.google.protobuf.MessageOrBuilder {
 
-    // repeated .yamcs.NamedObjectId id = 1;
     /**
      * <code>repeated .yamcs.NamedObjectId id = 1;</code>
      */
@@ -8559,7 +8501,6 @@ public final class Web {
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
         int index);
 
-    // optional bool abortOnInvalid = 2;
     /**
      * <code>optional bool abortOnInvalid = 2;</code>
      *
@@ -8579,7 +8520,6 @@ public final class Web {
      */
     boolean getAbortOnInvalid();
 
-    // optional bool updateOnExpiration = 3;
     /**
      * <code>optional bool updateOnExpiration = 3;</code>
      *
@@ -8601,7 +8541,6 @@ public final class Web {
      */
     boolean getUpdateOnExpiration();
 
-    // optional bool sendFromCache = 4;
     /**
      * <code>optional bool sendFromCache = 4;</code>
      *
@@ -8621,7 +8560,6 @@ public final class Web {
      */
     boolean getSendFromCache();
 
-    // repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];
     /**
      * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      *
@@ -8680,8 +8618,9 @@ public final class Web {
    * Protobuf type {@code web.ParameterSubscriptionRequest}
    */
   public static final class ParameterSubscriptionRequest extends
-      com.google.protobuf.GeneratedMessage
-      implements ParameterSubscriptionRequestOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:web.ParameterSubscriptionRequest)
+      ParameterSubscriptionRequestOrBuilder {
     // Use ParameterSubscriptionRequest.newBuilder() to construct.
     private ParameterSubscriptionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -8804,7 +8743,6 @@ public final class Web {
     }
 
     private int bitField0_;
-    // repeated .yamcs.NamedObjectId id = 1;
     public static final int ID_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_;
     /**
@@ -8840,7 +8778,6 @@ public final class Web {
       return id_.get(index);
     }
 
-    // optional bool abortOnInvalid = 2;
     public static final int ABORTONINVALID_FIELD_NUMBER = 2;
     private boolean abortOnInvalid_;
     /**
@@ -8866,7 +8803,6 @@ public final class Web {
       return abortOnInvalid_;
     }
 
-    // optional bool updateOnExpiration = 3;
     public static final int UPDATEONEXPIRATION_FIELD_NUMBER = 3;
     private boolean updateOnExpiration_;
     /**
@@ -8894,7 +8830,6 @@ public final class Web {
       return updateOnExpiration_;
     }
 
-    // optional bool sendFromCache = 4;
     public static final int SENDFROMCACHE_FIELD_NUMBER = 4;
     private boolean sendFromCache_;
     /**
@@ -8920,7 +8855,6 @@ public final class Web {
       return sendFromCache_;
     }
 
-    // repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];
     public static final int LIST_FIELD_NUMBER = 10000;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_;
     /**
@@ -8996,7 +8930,8 @@ public final class Web {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       for (int i = 0; i < getIdCount(); i++) {
         if (!getId(i).isInitialized()) {
@@ -9143,8 +9078,9 @@ public final class Web {
      * Protobuf type {@code web.ParameterSubscriptionRequest}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Web.ParameterSubscriptionRequestOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.ParameterSubscriptionRequest)
+        org.yamcs.protobuf.Web.ParameterSubscriptionRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Web.internal_static_web_ParameterSubscriptionRequest_descriptor;
@@ -9371,7 +9307,6 @@ public final class Web {
       }
       private int bitField0_;
 
-      // repeated .yamcs.NamedObjectId id = 1;
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_ =
         java.util.Collections.emptyList();
       private void ensureIdIsMutable() {
@@ -9513,7 +9448,8 @@ public final class Web {
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
         if (idBuilder_ == null) {
           ensureIdIsMutable();
-          super.addAll(values, id_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, id_);
           onChanged();
         } else {
           idBuilder_.addAllMessages(values);
@@ -9611,7 +9547,6 @@ public final class Web {
         return idBuilder_;
       }
 
-      // optional bool abortOnInvalid = 2;
       private boolean abortOnInvalid_ ;
       /**
        * <code>optional bool abortOnInvalid = 2;</code>
@@ -9664,7 +9599,6 @@ public final class Web {
         return this;
       }
 
-      // optional bool updateOnExpiration = 3;
       private boolean updateOnExpiration_ ;
       /**
        * <code>optional bool updateOnExpiration = 3;</code>
@@ -9721,7 +9655,6 @@ public final class Web {
         return this;
       }
 
-      // optional bool sendFromCache = 4;
       private boolean sendFromCache_ ;
       /**
        * <code>optional bool sendFromCache = 4;</code>
@@ -9774,7 +9707,6 @@ public final class Web {
         return this;
       }
 
-      // repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_ =
         java.util.Collections.emptyList();
       private void ensureListIsMutable() {
@@ -9976,7 +9908,8 @@ public final class Web {
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
         if (listBuilder_ == null) {
           ensureListIsMutable();
-          super.addAll(values, list_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, list_);
           onChanged();
         } else {
           listBuilder_.addAllMessages(values);
@@ -10133,10 +10066,10 @@ public final class Web {
     // @@protoc_insertion_point(class_scope:web.ParameterSubscriptionRequest)
   }
 
-  public interface ParameterSubscriptionResponseOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ParameterSubscriptionResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.ParameterSubscriptionResponse)
+      com.google.protobuf.MessageOrBuilder {
 
-    // repeated .yamcs.NamedObjectId valid = 1;
     /**
      * <code>repeated .yamcs.NamedObjectId valid = 1;</code>
      */
@@ -10161,7 +10094,6 @@ public final class Web {
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getValidOrBuilder(
         int index);
 
-    // repeated .yamcs.NamedObjectId invalid = 2;
     /**
      * <code>repeated .yamcs.NamedObjectId invalid = 2;</code>
      */
@@ -10190,8 +10122,9 @@ public final class Web {
    * Protobuf type {@code web.ParameterSubscriptionResponse}
    */
   public static final class ParameterSubscriptionResponse extends
-      com.google.protobuf.GeneratedMessage
-      implements ParameterSubscriptionResponseOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:web.ParameterSubscriptionResponse)
+      ParameterSubscriptionResponseOrBuilder {
     // Use ParameterSubscriptionResponse.newBuilder() to construct.
     private ParameterSubscriptionResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -10298,7 +10231,6 @@ public final class Web {
       return PARSER;
     }
 
-    // repeated .yamcs.NamedObjectId valid = 1;
     public static final int VALID_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> valid_;
     /**
@@ -10334,7 +10266,6 @@ public final class Web {
       return valid_.get(index);
     }
 
-    // repeated .yamcs.NamedObjectId invalid = 2;
     public static final int INVALID_FIELD_NUMBER = 2;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> invalid_;
     /**
@@ -10377,7 +10308,8 @@ public final class Web {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       for (int i = 0; i < getValidCount(); i++) {
         if (!getValid(i).isInitialized()) {
@@ -10503,8 +10435,9 @@ public final class Web {
      * Protobuf type {@code web.ParameterSubscriptionResponse}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Web.ParameterSubscriptionResponseOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.ParameterSubscriptionResponse)
+        org.yamcs.protobuf.Web.ParameterSubscriptionResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Web.internal_static_web_ParameterSubscriptionResponse_descriptor;
@@ -10702,7 +10635,6 @@ public final class Web {
       }
       private int bitField0_;
 
-      // repeated .yamcs.NamedObjectId valid = 1;
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> valid_ =
         java.util.Collections.emptyList();
       private void ensureValidIsMutable() {
@@ -10844,7 +10776,8 @@ public final class Web {
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
         if (validBuilder_ == null) {
           ensureValidIsMutable();
-          super.addAll(values, valid_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, valid_);
           onChanged();
         } else {
           validBuilder_.addAllMessages(values);
@@ -10942,7 +10875,6 @@ public final class Web {
         return validBuilder_;
       }
 
-      // repeated .yamcs.NamedObjectId invalid = 2;
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> invalid_ =
         java.util.Collections.emptyList();
       private void ensureInvalidIsMutable() {
@@ -11084,7 +11016,8 @@ public final class Web {
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
         if (invalidBuilder_ == null) {
           ensureInvalidIsMutable();
-          super.addAll(values, invalid_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, invalid_);
           onChanged();
         } else {
           invalidBuilder_.addAllMessages(values);
@@ -11193,10 +11126,10 @@ public final class Web {
     // @@protoc_insertion_point(class_scope:web.ParameterSubscriptionResponse)
   }
 
-  public interface ConnectionInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ConnectionInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.ConnectionInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional int32 clientId = 1;
     /**
      * <code>optional int32 clientId = 1;</code>
      */
@@ -11206,7 +11139,6 @@ public final class Web {
      */
     int getClientId();
 
-    // optional .yamcsManagement.YamcsInstance instance = 2;
     /**
      * <code>optional .yamcsManagement.YamcsInstance instance = 2;</code>
      */
@@ -11220,7 +11152,6 @@ public final class Web {
      */
     org.yamcs.protobuf.YamcsManagement.YamcsInstanceOrBuilder getInstanceOrBuilder();
 
-    // optional .yamcsManagement.ProcessorInfo processor = 3;
     /**
      * <code>optional .yamcsManagement.ProcessorInfo processor = 3;</code>
      */
@@ -11242,8 +11173,9 @@ public final class Web {
    * </pre>
    */
   public static final class ConnectionInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements ConnectionInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:web.ConnectionInfo)
+      ConnectionInfoOrBuilder {
     // Use ConnectionInfo.newBuilder() to construct.
     private ConnectionInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -11360,7 +11292,6 @@ public final class Web {
     }
 
     private int bitField0_;
-    // optional int32 clientId = 1;
     public static final int CLIENTID_FIELD_NUMBER = 1;
     private int clientId_;
     /**
@@ -11376,7 +11307,6 @@ public final class Web {
       return clientId_;
     }
 
-    // optional .yamcsManagement.YamcsInstance instance = 2;
     public static final int INSTANCE_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.YamcsManagement.YamcsInstance instance_;
     /**
@@ -11398,7 +11328,6 @@ public final class Web {
       return instance_;
     }
 
-    // optional .yamcsManagement.ProcessorInfo processor = 3;
     public static final int PROCESSOR_FIELD_NUMBER = 3;
     private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processor_;
     /**
@@ -11428,7 +11357,8 @@ public final class Web {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasInstance()) {
         if (!getInstance().isInitialized()) {
@@ -11565,8 +11495,9 @@ public final class Web {
      * </pre>
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Web.ConnectionInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.ConnectionInfo)
+        org.yamcs.protobuf.Web.ConnectionInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Web.internal_static_web_ConnectionInfo_descriptor;
@@ -11727,7 +11658,6 @@ public final class Web {
       }
       private int bitField0_;
 
-      // optional int32 clientId = 1;
       private int clientId_ ;
       /**
        * <code>optional int32 clientId = 1;</code>
@@ -11760,7 +11690,6 @@ public final class Web {
         return this;
       }
 
-      // optional .yamcsManagement.YamcsInstance instance = 2;
       private org.yamcs.protobuf.YamcsManagement.YamcsInstance instance_ = org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.YamcsManagement.YamcsInstance, org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder, org.yamcs.protobuf.YamcsManagement.YamcsInstanceOrBuilder> instanceBuilder_;
@@ -11869,7 +11798,7 @@ public final class Web {
         if (instanceBuilder_ == null) {
           instanceBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.YamcsManagement.YamcsInstance, org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder, org.yamcs.protobuf.YamcsManagement.YamcsInstanceOrBuilder>(
-                  instance_,
+                  getInstance(),
                   getParentForChildren(),
                   isClean());
           instance_ = null;
@@ -11877,7 +11806,6 @@ public final class Web {
         return instanceBuilder_;
       }
 
-      // optional .yamcsManagement.ProcessorInfo processor = 3;
       private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> processorBuilder_;
@@ -11986,7 +11914,7 @@ public final class Web {
         if (processorBuilder_ == null) {
           processorBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder>(
-                  processor_,
+                  getProcessor(),
                   getParentForChildren(),
                   isClean());
           processor_ = null;
@@ -12005,52 +11933,52 @@ public final class Web {
     // @@protoc_insertion_point(class_scope:web.ConnectionInfo)
   }
 
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketClientMessage_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_WebSocketClientMessage_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketServerMessage_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_WebSocketServerMessage_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_WebSocketServerMessage_WebSocketReplyData_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_WebSocketServerMessage_WebSocketExceptionData_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketExtensionData_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_WebSocketExtensionData_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_RestExceptionMessage_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_RestExceptionMessage_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ParameterSubscriptionRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ParameterSubscriptionResponse_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ConnectionInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -12120,73 +12048,13 @@ public final class Web {
       "rocessorInfoB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-      new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-        public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
-          descriptor = root;
-          internal_static_web_WebSocketClientMessage_descriptor =
-            getDescriptor().getMessageTypes().get(0);
-          internal_static_web_WebSocketClientMessage_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_web_WebSocketClientMessage_descriptor,
-              new java.lang.String[] { "ProtocolVersion", "SequenceNumber", "Resource", "Operation", "Data", });
-          internal_static_web_WebSocketServerMessage_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_web_WebSocketServerMessage_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_web_WebSocketServerMessage_descriptor,
-              new java.lang.String[] { "Type", "Reply", "Exception", "Data", });
-          internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor =
-            internal_static_web_WebSocketServerMessage_descriptor.getNestedTypes().get(0);
-          internal_static_web_WebSocketServerMessage_WebSocketReplyData_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor,
-              new java.lang.String[] { "ProtocolVersion", "SequenceNumber", "Type", "Message", "Data", });
-          internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor =
-            internal_static_web_WebSocketServerMessage_descriptor.getNestedTypes().get(1);
-          internal_static_web_WebSocketServerMessage_WebSocketExceptionData_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor,
-              new java.lang.String[] { "ProtocolVersion", "SequenceNumber", "Type", "Message", "Data", });
-          internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor =
-            internal_static_web_WebSocketServerMessage_descriptor.getNestedTypes().get(2);
-          internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor,
-              new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmData", "TimeInfo", "LinkEvent", "CommandQueueInfo", "CommandQueueEvent", "TmPacket", "ConnectionInfo", "ExtensionData", });
-          internal_static_web_WebSocketExtensionData_descriptor =
-            getDescriptor().getMessageTypes().get(2);
-          internal_static_web_WebSocketExtensionData_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_web_WebSocketExtensionData_descriptor,
-              new java.lang.String[] { "Type", "Data", });
-          internal_static_web_RestExceptionMessage_descriptor =
-            getDescriptor().getMessageTypes().get(3);
-          internal_static_web_RestExceptionMessage_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_web_RestExceptionMessage_descriptor,
-              new java.lang.String[] { "Type", "Msg", });
-          internal_static_web_ParameterSubscriptionRequest_descriptor =
-            getDescriptor().getMessageTypes().get(4);
-          internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_web_ParameterSubscriptionRequest_descriptor,
-              new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "List", });
-          internal_static_web_ParameterSubscriptionResponse_descriptor =
-            getDescriptor().getMessageTypes().get(5);
-          internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_web_ParameterSubscriptionResponse_descriptor,
-              new java.lang.String[] { "Valid", "Invalid", });
-          internal_static_web_ConnectionInfo_descriptor =
-            getDescriptor().getMessageTypes().get(6);
-          internal_static_web_ConnectionInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_web_ConnectionInfo_descriptor,
-              new java.lang.String[] { "ClientId", "Instance", "Processor", });
-          return null;
-        }
-      };
+        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+          public com.google.protobuf.ExtensionRegistry assignDescriptors(
+              com.google.protobuf.Descriptors.FileDescriptor root) {
+            descriptor = root;
+            return null;
+          }
+        };
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
@@ -12197,6 +12065,72 @@ public final class Web {
           org.yamcs.protobuf.Alarms.getDescriptor(),
           org.yamcs.protobuf.YamcsManagement.getDescriptor(),
         }, assigner);
+    internal_static_web_WebSocketClientMessage_descriptor =
+      getDescriptor().getMessageTypes().get(0);
+    internal_static_web_WebSocketClientMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_WebSocketClientMessage_descriptor,
+        new java.lang.String[] { "ProtocolVersion", "SequenceNumber", "Resource", "Operation", "Data", });
+    internal_static_web_WebSocketServerMessage_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_web_WebSocketServerMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_WebSocketServerMessage_descriptor,
+        new java.lang.String[] { "Type", "Reply", "Exception", "Data", });
+    internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor =
+      internal_static_web_WebSocketServerMessage_descriptor.getNestedTypes().get(0);
+    internal_static_web_WebSocketServerMessage_WebSocketReplyData_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor,
+        new java.lang.String[] { "ProtocolVersion", "SequenceNumber", "Type", "Message", "Data", });
+    internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor =
+      internal_static_web_WebSocketServerMessage_descriptor.getNestedTypes().get(1);
+    internal_static_web_WebSocketServerMessage_WebSocketExceptionData_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor,
+        new java.lang.String[] { "ProtocolVersion", "SequenceNumber", "Type", "Message", "Data", });
+    internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor =
+      internal_static_web_WebSocketServerMessage_descriptor.getNestedTypes().get(2);
+    internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor,
+        new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmData", "TimeInfo", "LinkEvent", "CommandQueueInfo", "CommandQueueEvent", "TmPacket", "ConnectionInfo", "ExtensionData", });
+    internal_static_web_WebSocketExtensionData_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_web_WebSocketExtensionData_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_WebSocketExtensionData_descriptor,
+        new java.lang.String[] { "Type", "Data", });
+    internal_static_web_RestExceptionMessage_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_web_RestExceptionMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_RestExceptionMessage_descriptor,
+        new java.lang.String[] { "Type", "Msg", });
+    internal_static_web_ParameterSubscriptionRequest_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_ParameterSubscriptionRequest_descriptor,
+        new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "List", });
+    internal_static_web_ParameterSubscriptionResponse_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_ParameterSubscriptionResponse_descriptor,
+        new java.lang.String[] { "Valid", "Invalid", });
+    internal_static_web_ConnectionInfo_descriptor =
+      getDescriptor().getMessageTypes().get(6);
+    internal_static_web_ConnectionInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_web_ConnectionInfo_descriptor,
+        new java.lang.String[] { "ClientId", "Instance", "Processor", });
+    org.yamcs.protobuf.Yamcs.getDescriptor();
+    org.yamcs.protobuf.Archive.getDescriptor();
+    org.yamcs.protobuf.Commanding.getDescriptor();
+    org.yamcs.protobuf.Pvalue.getDescriptor();
+    org.yamcs.protobuf.Alarms.getDescriptor();
+    org.yamcs.protobuf.YamcsManagement.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

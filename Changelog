@@ -1,3 +1,6 @@
+Version 3.4.4 released 
+- added the possibility to exclude parameter groups from replays
+
 Version 3.4.3  released 28-Mar-2017
  - fixed the replay not starting at the correct time
  - change the serialized databae filenames to limit their length

@@ -253,10 +253,10 @@ public final class Mdb {
     // @@protoc_insertion_point(enum_scope:mdb.AlarmLevelType)
   }
 
-  public interface UnitInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface UnitInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.UnitInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string unit = 1;
     /**
      * <code>optional string unit = 1;</code>
      */
@@ -275,8 +275,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.UnitInfo}
    */
   public static final class UnitInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements UnitInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.UnitInfo)
+      UnitInfoOrBuilder {
     // Use UnitInfo.newBuilder() to construct.
     private UnitInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -323,8 +324,9 @@ public final class Mdb {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              unit_ = input.readBytes();
+              unit_ = bs;
               break;
             }
           }
@@ -367,7 +369,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional string unit = 1;
     public static final int UNIT_FIELD_NUMBER = 1;
     private java.lang.Object unit_;
     /**
@@ -416,7 +417,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -523,8 +525,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.UnitInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.UnitInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.UnitInfo)
+        org.yamcs.protobuf.Mdb.UnitInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_UnitInfo_descriptor;
@@ -639,7 +642,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional string unit = 1;
       private java.lang.Object unit_ = "";
       /**
        * <code>optional string unit = 1;</code>
@@ -653,9 +655,12 @@ public final class Mdb {
       public java.lang.String getUnit() {
         java.lang.Object ref = unit_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          unit_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            unit_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -724,10 +729,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.UnitInfo)
   }
 
-  public interface AlarmRangeOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface AlarmRangeOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.AlarmRange)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional .mdb.AlarmLevelType level = 1;
     /**
      * <code>optional .mdb.AlarmLevelType level = 1;</code>
      */
@@ -737,7 +742,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.AlarmLevelType getLevel();
 
-    // optional double minInclusive = 2;
     /**
      * <code>optional double minInclusive = 2;</code>
      */
@@ -747,7 +751,6 @@ public final class Mdb {
      */
     double getMinInclusive();
 
-    // optional double maxInclusive = 3;
     /**
      * <code>optional double maxInclusive = 3;</code>
      */
@@ -757,7 +760,6 @@ public final class Mdb {
      */
     double getMaxInclusive();
 
-    // optional double minExclusive = 4;
     /**
      * <code>optional double minExclusive = 4;</code>
      */
@@ -767,7 +769,6 @@ public final class Mdb {
      */
     double getMinExclusive();
 
-    // optional double maxExclusive = 5;
     /**
      * <code>optional double maxExclusive = 5;</code>
      */
@@ -781,8 +782,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.AlarmRange}
    */
   public static final class AlarmRange extends
-      com.google.protobuf.GeneratedMessage
-      implements AlarmRangeOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.AlarmRange)
+      AlarmRangeOrBuilder {
     // Use AlarmRange.newBuilder() to construct.
     private AlarmRange(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -899,7 +901,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional .mdb.AlarmLevelType level = 1;
     public static final int LEVEL_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Mdb.AlarmLevelType level_;
     /**
@@ -915,7 +916,6 @@ public final class Mdb {
       return level_;
     }
 
-    // optional double minInclusive = 2;
     public static final int MININCLUSIVE_FIELD_NUMBER = 2;
     private double minInclusive_;
     /**
@@ -931,7 +931,6 @@ public final class Mdb {
       return minInclusive_;
     }
 
-    // optional double maxInclusive = 3;
     public static final int MAXINCLUSIVE_FIELD_NUMBER = 3;
     private double maxInclusive_;
     /**
@@ -947,7 +946,6 @@ public final class Mdb {
       return maxInclusive_;
     }
 
-    // optional double minExclusive = 4;
     public static final int MINEXCLUSIVE_FIELD_NUMBER = 4;
     private double minExclusive_;
     /**
@@ -963,7 +961,6 @@ public final class Mdb {
       return minExclusive_;
     }
 
-    // optional double maxExclusive = 5;
     public static final int MAXEXCLUSIVE_FIELD_NUMBER = 5;
     private double maxExclusive_;
     /**
@@ -989,7 +986,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -1124,8 +1122,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.AlarmRange}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.AlarmRange)
+        org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_AlarmRange_descriptor;
@@ -1274,7 +1273,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional .mdb.AlarmLevelType level = 1;
       private org.yamcs.protobuf.Mdb.AlarmLevelType level_ = org.yamcs.protobuf.Mdb.AlarmLevelType.NORMAL;
       /**
        * <code>optional .mdb.AlarmLevelType level = 1;</code>
@@ -1310,7 +1308,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional double minInclusive = 2;
       private double minInclusive_ ;
       /**
        * <code>optional double minInclusive = 2;</code>
@@ -1343,7 +1340,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional double maxInclusive = 3;
       private double maxInclusive_ ;
       /**
        * <code>optional double maxInclusive = 3;</code>
@@ -1376,7 +1372,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional double minExclusive = 4;
       private double minExclusive_ ;
       /**
        * <code>optional double minExclusive = 4;</code>
@@ -1409,7 +1404,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional double maxExclusive = 5;
       private double maxExclusive_ ;
       /**
        * <code>optional double maxExclusive = 5;</code>
@@ -1453,10 +1447,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.AlarmRange)
   }
 
-  public interface EnumerationAlarmOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface EnumerationAlarmOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.EnumerationAlarm)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional .mdb.AlarmLevelType level = 1;
     /**
      * <code>optional .mdb.AlarmLevelType level = 1;</code>
      */
@@ -1466,7 +1460,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.AlarmLevelType getLevel();
 
-    // optional string label = 3;
     /**
      * <code>optional string label = 3;</code>
      *
@@ -1497,8 +1490,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.EnumerationAlarm}
    */
   public static final class EnumerationAlarm extends
-      com.google.protobuf.GeneratedMessage
-      implements EnumerationAlarmOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.EnumerationAlarm)
+      EnumerationAlarmOrBuilder {
     // Use EnumerationAlarm.newBuilder() to construct.
     private EnumerationAlarm(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -1556,8 +1550,9 @@ public final class Mdb {
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              label_ = input.readBytes();
+              label_ = bs;
               break;
             }
           }
@@ -1600,7 +1595,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional .mdb.AlarmLevelType level = 1;
     public static final int LEVEL_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Mdb.AlarmLevelType level_;
     /**
@@ -1616,7 +1610,6 @@ public final class Mdb {
       return level_;
     }
 
-    // optional string label = 3;
     public static final int LABEL_FIELD_NUMBER = 3;
     private java.lang.Object label_;
     /**
@@ -1678,7 +1671,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -1792,8 +1786,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.EnumerationAlarm}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.EnumerationAlarmOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.EnumerationAlarm)
+        org.yamcs.protobuf.Mdb.EnumerationAlarmOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_EnumerationAlarm_descriptor;
@@ -1917,7 +1912,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional .mdb.AlarmLevelType level = 1;
       private org.yamcs.protobuf.Mdb.AlarmLevelType level_ = org.yamcs.protobuf.Mdb.AlarmLevelType.NORMAL;
       /**
        * <code>optional .mdb.AlarmLevelType level = 1;</code>
@@ -1953,7 +1947,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string label = 3;
       private java.lang.Object label_ = "";
       /**
        * <code>optional string label = 3;</code>
@@ -1975,9 +1968,12 @@ public final class Mdb {
       public java.lang.String getLabel() {
         java.lang.Object ref = label_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          label_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            label_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -2062,10 +2058,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.EnumerationAlarm)
   }
 
-  public interface AlarmInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface AlarmInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.AlarmInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional int32 minViolations = 1;
     /**
      * <code>optional int32 minViolations = 1;</code>
      */
@@ -2075,7 +2071,6 @@ public final class Mdb {
      */
     int getMinViolations();
 
-    // repeated .mdb.AlarmRange staticAlarmRange = 2;
     /**
      * <code>repeated .mdb.AlarmRange staticAlarmRange = 2;</code>
      */
@@ -2100,7 +2095,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder getStaticAlarmRangeOrBuilder(
         int index);
 
-    // repeated .mdb.EnumerationAlarm enumerationAlarm = 3;
     /**
      * <code>repeated .mdb.EnumerationAlarm enumerationAlarm = 3;</code>
      */
@@ -2129,8 +2123,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.AlarmInfo}
    */
   public static final class AlarmInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements AlarmInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.AlarmInfo)
+      AlarmInfoOrBuilder {
     // Use AlarmInfo.newBuilder() to construct.
     private AlarmInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -2243,7 +2238,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional int32 minViolations = 1;
     public static final int MINVIOLATIONS_FIELD_NUMBER = 1;
     private int minViolations_;
     /**
@@ -2259,7 +2253,6 @@ public final class Mdb {
       return minViolations_;
     }
 
-    // repeated .mdb.AlarmRange staticAlarmRange = 2;
     public static final int STATICALARMRANGE_FIELD_NUMBER = 2;
     private java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> staticAlarmRange_;
     /**
@@ -2295,7 +2288,6 @@ public final class Mdb {
       return staticAlarmRange_.get(index);
     }
 
-    // repeated .mdb.EnumerationAlarm enumerationAlarm = 3;
     public static final int ENUMERATIONALARM_FIELD_NUMBER = 3;
     private java.util.List<org.yamcs.protobuf.Mdb.EnumerationAlarm> enumerationAlarm_;
     /**
@@ -2339,7 +2331,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -2460,8 +2453,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.AlarmInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.AlarmInfo)
+        org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_AlarmInfo_descriptor;
@@ -2658,7 +2652,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional int32 minViolations = 1;
       private int minViolations_ ;
       /**
        * <code>optional int32 minViolations = 1;</code>
@@ -2691,7 +2684,6 @@ public final class Mdb {
         return this;
       }
 
-      // repeated .mdb.AlarmRange staticAlarmRange = 2;
       private java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> staticAlarmRange_ =
         java.util.Collections.emptyList();
       private void ensureStaticAlarmRangeIsMutable() {
@@ -2833,7 +2825,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.AlarmRange> values) {
         if (staticAlarmRangeBuilder_ == null) {
           ensureStaticAlarmRangeIsMutable();
-          super.addAll(values, staticAlarmRange_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, staticAlarmRange_);
           onChanged();
         } else {
           staticAlarmRangeBuilder_.addAllMessages(values);
@@ -2931,7 +2924,6 @@ public final class Mdb {
         return staticAlarmRangeBuilder_;
       }
 
-      // repeated .mdb.EnumerationAlarm enumerationAlarm = 3;
       private java.util.List<org.yamcs.protobuf.Mdb.EnumerationAlarm> enumerationAlarm_ =
         java.util.Collections.emptyList();
       private void ensureEnumerationAlarmIsMutable() {
@@ -3073,7 +3065,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.EnumerationAlarm> values) {
         if (enumerationAlarmBuilder_ == null) {
           ensureEnumerationAlarmIsMutable();
-          super.addAll(values, enumerationAlarm_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, enumerationAlarm_);
           onChanged();
         } else {
           enumerationAlarmBuilder_.addAllMessages(values);
@@ -3182,10 +3175,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.AlarmInfo)
   }
 
-  public interface DataEncodingInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface DataEncodingInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.DataEncodingInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional .mdb.DataEncodingInfo.Type type = 1;
     /**
      * <code>optional .mdb.DataEncodingInfo.Type type = 1;</code>
      */
@@ -3195,7 +3188,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.DataEncodingInfo.Type getType();
 
-    // optional bool littleEndian = 2;
     /**
      * <code>optional bool littleEndian = 2;</code>
      */
@@ -3205,7 +3197,6 @@ public final class Mdb {
      */
     boolean getLittleEndian();
 
-    // optional int32 sizeInBits = 3;
     /**
      * <code>optional int32 sizeInBits = 3;</code>
      */
@@ -3215,7 +3206,6 @@ public final class Mdb {
      */
     int getSizeInBits();
 
-    // optional string encoding = 4;
     /**
      * <code>optional string encoding = 4;</code>
      */
@@ -3230,7 +3220,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getEncodingBytes();
 
-    // optional string defaultCalibrator = 5;
     /**
      * <code>optional string defaultCalibrator = 5;</code>
      */
@@ -3249,8 +3238,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.DataEncodingInfo}
    */
   public static final class DataEncodingInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements DataEncodingInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.DataEncodingInfo)
+      DataEncodingInfoOrBuilder {
     // Use DataEncodingInfo.newBuilder() to construct.
     private DataEncodingInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -3318,13 +3308,15 @@ public final class Mdb {
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
-              encoding_ = input.readBytes();
+              encoding_ = bs;
               break;
             }
             case 42: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000010;
-              defaultCalibrator_ = input.readBytes();
+              defaultCalibrator_ = bs;
               break;
             }
           }
@@ -3476,7 +3468,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional .mdb.DataEncodingInfo.Type type = 1;
     public static final int TYPE_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Mdb.DataEncodingInfo.Type type_;
     /**
@@ -3492,7 +3483,6 @@ public final class Mdb {
       return type_;
     }
 
-    // optional bool littleEndian = 2;
     public static final int LITTLEENDIAN_FIELD_NUMBER = 2;
     private boolean littleEndian_;
     /**
@@ -3508,7 +3498,6 @@ public final class Mdb {
       return littleEndian_;
     }
 
-    // optional int32 sizeInBits = 3;
     public static final int SIZEINBITS_FIELD_NUMBER = 3;
     private int sizeInBits_;
     /**
@@ -3524,7 +3513,6 @@ public final class Mdb {
       return sizeInBits_;
     }
 
-    // optional string encoding = 4;
     public static final int ENCODING_FIELD_NUMBER = 4;
     private java.lang.Object encoding_;
     /**
@@ -3567,7 +3555,6 @@ public final class Mdb {
       }
     }
 
-    // optional string defaultCalibrator = 5;
     public static final int DEFAULTCALIBRATOR_FIELD_NUMBER = 5;
     private java.lang.Object defaultCalibrator_;
     /**
@@ -3620,7 +3607,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -3755,8 +3743,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.DataEncodingInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.DataEncodingInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.DataEncodingInfo)
+        org.yamcs.protobuf.Mdb.DataEncodingInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_DataEncodingInfo_descriptor;
@@ -3909,7 +3898,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional .mdb.DataEncodingInfo.Type type = 1;
       private org.yamcs.protobuf.Mdb.DataEncodingInfo.Type type_ = org.yamcs.protobuf.Mdb.DataEncodingInfo.Type.BINARY;
       /**
        * <code>optional .mdb.DataEncodingInfo.Type type = 1;</code>
@@ -3945,7 +3933,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional bool littleEndian = 2;
       private boolean littleEndian_ ;
       /**
        * <code>optional bool littleEndian = 2;</code>
@@ -3978,7 +3965,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional int32 sizeInBits = 3;
       private int sizeInBits_ ;
       /**
        * <code>optional int32 sizeInBits = 3;</code>
@@ -4011,7 +3997,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string encoding = 4;
       private java.lang.Object encoding_ = "";
       /**
        * <code>optional string encoding = 4;</code>
@@ -4025,9 +4010,12 @@ public final class Mdb {
       public java.lang.String getEncoding() {
         java.lang.Object ref = encoding_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          encoding_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            encoding_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -4085,7 +4073,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string defaultCalibrator = 5;
       private java.lang.Object defaultCalibrator_ = "";
       /**
        * <code>optional string defaultCalibrator = 5;</code>
@@ -4099,9 +4086,12 @@ public final class Mdb {
       public java.lang.String getDefaultCalibrator() {
         java.lang.Object ref = defaultCalibrator_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          defaultCalibrator_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            defaultCalibrator_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -4170,10 +4160,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.DataEncodingInfo)
   }
 
-  public interface EnumValueOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface EnumValueOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.EnumValue)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional int64 value = 1;
     /**
      * <code>optional int64 value = 1;</code>
      */
@@ -4183,7 +4173,6 @@ public final class Mdb {
      */
     long getValue();
 
-    // optional string label = 2;
     /**
      * <code>optional string label = 2;</code>
      */
@@ -4202,8 +4191,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.EnumValue}
    */
   public static final class EnumValue extends
-      com.google.protobuf.GeneratedMessage
-      implements EnumValueOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.EnumValue)
+      EnumValueOrBuilder {
     // Use EnumValue.newBuilder() to construct.
     private EnumValue(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -4255,8 +4245,9 @@ public final class Mdb {
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              label_ = input.readBytes();
+              label_ = bs;
               break;
             }
           }
@@ -4299,7 +4290,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional int64 value = 1;
     public static final int VALUE_FIELD_NUMBER = 1;
     private long value_;
     /**
@@ -4315,7 +4305,6 @@ public final class Mdb {
       return value_;
     }
 
-    // optional string label = 2;
     public static final int LABEL_FIELD_NUMBER = 2;
     private java.lang.Object label_;
     /**
@@ -4365,7 +4354,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -4479,8 +4469,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.EnumValue}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.EnumValueOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.EnumValue)
+        org.yamcs.protobuf.Mdb.EnumValueOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_EnumValue_descriptor;
@@ -4604,7 +4595,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional int64 value = 1;
       private long value_ ;
       /**
        * <code>optional int64 value = 1;</code>
@@ -4637,7 +4627,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string label = 2;
       private java.lang.Object label_ = "";
       /**
        * <code>optional string label = 2;</code>
@@ -4651,9 +4640,12 @@ public final class Mdb {
       public java.lang.String getLabel() {
         java.lang.Object ref = label_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          label_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            label_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -4722,10 +4714,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.EnumValue)
   }
 
-  public interface ParameterTypeInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ParameterTypeInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ParameterTypeInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string engType = 1;
     /**
      * <code>optional string engType = 1;</code>
      */
@@ -4740,7 +4732,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getEngTypeBytes();
 
-    // optional .mdb.DataEncodingInfo dataEncoding = 2;
     /**
      * <code>optional .mdb.DataEncodingInfo dataEncoding = 2;</code>
      */
@@ -4754,7 +4745,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.DataEncodingInfoOrBuilder getDataEncodingOrBuilder();
 
-    // repeated .mdb.UnitInfo unitSet = 3;
     /**
      * <code>repeated .mdb.UnitInfo unitSet = 3;</code>
      */
@@ -4779,7 +4769,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.UnitInfoOrBuilder getUnitSetOrBuilder(
         int index);
 
-    // optional .mdb.AlarmInfo defaultAlarm = 4;
     /**
      * <code>optional .mdb.AlarmInfo defaultAlarm = 4;</code>
      */
@@ -4793,7 +4782,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder getDefaultAlarmOrBuilder();
 
-    // repeated .mdb.EnumValue enumValue = 5;
     /**
      * <code>repeated .mdb.EnumValue enumValue = 5;</code>
      */
@@ -4822,8 +4810,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.ParameterTypeInfo}
    */
   public static final class ParameterTypeInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements ParameterTypeInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.ParameterTypeInfo)
+      ParameterTypeInfoOrBuilder {
     // Use ParameterTypeInfo.newBuilder() to construct.
     private ParameterTypeInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -4870,8 +4859,9 @@ public final class Mdb {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              engType_ = input.readBytes();
+              engType_ = bs;
               break;
             }
             case 18: {
@@ -4962,7 +4952,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional string engType = 1;
     public static final int ENGTYPE_FIELD_NUMBER = 1;
     private java.lang.Object engType_;
     /**
@@ -5005,7 +4994,6 @@ public final class Mdb {
       }
     }
 
-    // optional .mdb.DataEncodingInfo dataEncoding = 2;
     public static final int DATAENCODING_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Mdb.DataEncodingInfo dataEncoding_;
     /**
@@ -5027,7 +5015,6 @@ public final class Mdb {
       return dataEncoding_;
     }
 
-    // repeated .mdb.UnitInfo unitSet = 3;
     public static final int UNITSET_FIELD_NUMBER = 3;
     private java.util.List<org.yamcs.protobuf.Mdb.UnitInfo> unitSet_;
     /**
@@ -5063,7 +5050,6 @@ public final class Mdb {
       return unitSet_.get(index);
     }
 
-    // optional .mdb.AlarmInfo defaultAlarm = 4;
     public static final int DEFAULTALARM_FIELD_NUMBER = 4;
     private org.yamcs.protobuf.Mdb.AlarmInfo defaultAlarm_;
     /**
@@ -5085,7 +5071,6 @@ public final class Mdb {
       return defaultAlarm_;
     }
 
-    // repeated .mdb.EnumValue enumValue = 5;
     public static final int ENUMVALUE_FIELD_NUMBER = 5;
     private java.util.List<org.yamcs.protobuf.Mdb.EnumValue> enumValue_;
     /**
@@ -5131,7 +5116,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -5266,8 +5252,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.ParameterTypeInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ParameterTypeInfo)
+        org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_ParameterTypeInfo_descriptor;
@@ -5502,7 +5489,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional string engType = 1;
       private java.lang.Object engType_ = "";
       /**
        * <code>optional string engType = 1;</code>
@@ -5516,9 +5502,12 @@ public final class Mdb {
       public java.lang.String getEngType() {
         java.lang.Object ref = engType_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          engType_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            engType_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -5576,7 +5565,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional .mdb.DataEncodingInfo dataEncoding = 2;
       private org.yamcs.protobuf.Mdb.DataEncodingInfo dataEncoding_ = org.yamcs.protobuf.Mdb.DataEncodingInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.DataEncodingInfo, org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder, org.yamcs.protobuf.Mdb.DataEncodingInfoOrBuilder> dataEncodingBuilder_;
@@ -5685,7 +5673,7 @@ public final class Mdb {
         if (dataEncodingBuilder_ == null) {
           dataEncodingBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.DataEncodingInfo, org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder, org.yamcs.protobuf.Mdb.DataEncodingInfoOrBuilder>(
-                  dataEncoding_,
+                  getDataEncoding(),
                   getParentForChildren(),
                   isClean());
           dataEncoding_ = null;
@@ -5693,7 +5681,6 @@ public final class Mdb {
         return dataEncodingBuilder_;
       }
 
-      // repeated .mdb.UnitInfo unitSet = 3;
       private java.util.List<org.yamcs.protobuf.Mdb.UnitInfo> unitSet_ =
         java.util.Collections.emptyList();
       private void ensureUnitSetIsMutable() {
@@ -5835,7 +5822,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.UnitInfo> values) {
         if (unitSetBuilder_ == null) {
           ensureUnitSetIsMutable();
-          super.addAll(values, unitSet_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, unitSet_);
           onChanged();
         } else {
           unitSetBuilder_.addAllMessages(values);
@@ -5933,7 +5921,6 @@ public final class Mdb {
         return unitSetBuilder_;
       }
 
-      // optional .mdb.AlarmInfo defaultAlarm = 4;
       private org.yamcs.protobuf.Mdb.AlarmInfo defaultAlarm_ = org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.AlarmInfo, org.yamcs.protobuf.Mdb.AlarmInfo.Builder, org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder> defaultAlarmBuilder_;
@@ -6042,7 +6029,7 @@ public final class Mdb {
         if (defaultAlarmBuilder_ == null) {
           defaultAlarmBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.AlarmInfo, org.yamcs.protobuf.Mdb.AlarmInfo.Builder, org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder>(
-                  defaultAlarm_,
+                  getDefaultAlarm(),
                   getParentForChildren(),
                   isClean());
           defaultAlarm_ = null;
@@ -6050,7 +6037,6 @@ public final class Mdb {
         return defaultAlarmBuilder_;
       }
 
-      // repeated .mdb.EnumValue enumValue = 5;
       private java.util.List<org.yamcs.protobuf.Mdb.EnumValue> enumValue_ =
         java.util.Collections.emptyList();
       private void ensureEnumValueIsMutable() {
@@ -6192,7 +6178,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.EnumValue> values) {
         if (enumValueBuilder_ == null) {
           ensureEnumValueIsMutable();
-          super.addAll(values, enumValue_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, enumValue_);
           onChanged();
         } else {
           enumValueBuilder_.addAllMessages(values);
@@ -6301,10 +6288,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.ParameterTypeInfo)
   }
 
-  public interface ParameterInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ParameterInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ParameterInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -6319,7 +6306,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional string qualifiedName = 2;
     /**
      * <code>optional string qualifiedName = 2;</code>
      */
@@ -6334,7 +6320,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getQualifiedNameBytes();
 
-    // optional string shortDescription = 3;
     /**
      * <code>optional string shortDescription = 3;</code>
      */
@@ -6349,7 +6334,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getShortDescriptionBytes();
 
-    // optional string longDescription = 4;
     /**
      * <code>optional string longDescription = 4;</code>
      */
@@ -6364,7 +6348,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getLongDescriptionBytes();
 
-    // repeated .yamcs.NamedObjectId alias = 5;
     /**
      * <code>repeated .yamcs.NamedObjectId alias = 5;</code>
      */
@@ -6389,7 +6372,6 @@ public final class Mdb {
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getAliasOrBuilder(
         int index);
 
-    // optional .mdb.ParameterTypeInfo type = 6;
     /**
      * <code>optional .mdb.ParameterTypeInfo type = 6;</code>
      */
@@ -6403,7 +6385,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder getTypeOrBuilder();
 
-    // optional .mdb.DataSourceType dataSource = 7;
     /**
      * <code>optional .mdb.DataSourceType dataSource = 7;</code>
      */
@@ -6413,7 +6394,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.DataSourceType getDataSource();
 
-    // optional string url = 8;
     /**
      * <code>optional string url = 8;</code>
      */
@@ -6432,8 +6412,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.ParameterInfo}
    */
   public static final class ParameterInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements ParameterInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.ParameterInfo)
+      ParameterInfoOrBuilder {
     // Use ParameterInfo.newBuilder() to construct.
     private ParameterInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -6480,23 +6461,27 @@ public final class Mdb {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              qualifiedName_ = input.readBytes();
+              qualifiedName_ = bs;
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              shortDescription_ = input.readBytes();
+              shortDescription_ = bs;
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
-              longDescription_ = input.readBytes();
+              longDescription_ = bs;
               break;
             }
             case 42: {
@@ -6532,8 +6517,9 @@ public final class Mdb {
               break;
             }
             case 66: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000040;
-              url_ = input.readBytes();
+              url_ = bs;
               break;
             }
           }
@@ -6579,7 +6565,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -6622,7 +6607,6 @@ public final class Mdb {
       }
     }
 
-    // optional string qualifiedName = 2;
     public static final int QUALIFIEDNAME_FIELD_NUMBER = 2;
     private java.lang.Object qualifiedName_;
     /**
@@ -6665,7 +6649,6 @@ public final class Mdb {
       }
     }
 
-    // optional string shortDescription = 3;
     public static final int SHORTDESCRIPTION_FIELD_NUMBER = 3;
     private java.lang.Object shortDescription_;
     /**
@@ -6708,7 +6691,6 @@ public final class Mdb {
       }
     }
 
-    // optional string longDescription = 4;
     public static final int LONGDESCRIPTION_FIELD_NUMBER = 4;
     private java.lang.Object longDescription_;
     /**
@@ -6751,7 +6733,6 @@ public final class Mdb {
       }
     }
 
-    // repeated .yamcs.NamedObjectId alias = 5;
     public static final int ALIAS_FIELD_NUMBER = 5;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> alias_;
     /**
@@ -6787,7 +6768,6 @@ public final class Mdb {
       return alias_.get(index);
     }
 
-    // optional .mdb.ParameterTypeInfo type = 6;
     public static final int TYPE_FIELD_NUMBER = 6;
     private org.yamcs.protobuf.Mdb.ParameterTypeInfo type_;
     /**
@@ -6809,7 +6789,6 @@ public final class Mdb {
       return type_;
     }
 
-    // optional .mdb.DataSourceType dataSource = 7;
     public static final int DATASOURCE_FIELD_NUMBER = 7;
     private org.yamcs.protobuf.Mdb.DataSourceType dataSource_;
     /**
@@ -6825,7 +6804,6 @@ public final class Mdb {
       return dataSource_;
     }
 
-    // optional string url = 8;
     public static final int URL_FIELD_NUMBER = 8;
     private java.lang.Object url_;
     /**
@@ -6881,7 +6859,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       for (int i = 0; i < getAliasCount(); i++) {
         if (!getAlias(i).isInitialized()) {
@@ -7043,8 +7022,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.ParameterInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ParameterInfo)
+        org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_ParameterInfo_descriptor;
@@ -7278,7 +7258,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -7292,9 +7271,12 @@ public final class Mdb {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -7352,7 +7334,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string qualifiedName = 2;
       private java.lang.Object qualifiedName_ = "";
       /**
        * <code>optional string qualifiedName = 2;</code>
@@ -7366,9 +7347,12 @@ public final class Mdb {
       public java.lang.String getQualifiedName() {
         java.lang.Object ref = qualifiedName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          qualifiedName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            qualifiedName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -7426,7 +7410,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string shortDescription = 3;
       private java.lang.Object shortDescription_ = "";
       /**
        * <code>optional string shortDescription = 3;</code>
@@ -7440,9 +7423,12 @@ public final class Mdb {
       public java.lang.String getShortDescription() {
         java.lang.Object ref = shortDescription_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          shortDescription_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            shortDescription_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -7500,7 +7486,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string longDescription = 4;
       private java.lang.Object longDescription_ = "";
       /**
        * <code>optional string longDescription = 4;</code>
@@ -7514,9 +7499,12 @@ public final class Mdb {
       public java.lang.String getLongDescription() {
         java.lang.Object ref = longDescription_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          longDescription_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            longDescription_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -7574,7 +7562,6 @@ public final class Mdb {
         return this;
       }
 
-      // repeated .yamcs.NamedObjectId alias = 5;
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> alias_ =
         java.util.Collections.emptyList();
       private void ensureAliasIsMutable() {
@@ -7716,7 +7703,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
         if (aliasBuilder_ == null) {
           ensureAliasIsMutable();
-          super.addAll(values, alias_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, alias_);
           onChanged();
         } else {
           aliasBuilder_.addAllMessages(values);
@@ -7814,7 +7802,6 @@ public final class Mdb {
         return aliasBuilder_;
       }
 
-      // optional .mdb.ParameterTypeInfo type = 6;
       private org.yamcs.protobuf.Mdb.ParameterTypeInfo type_ = org.yamcs.protobuf.Mdb.ParameterTypeInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.ParameterTypeInfo, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder, org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> typeBuilder_;
@@ -7923,7 +7910,7 @@ public final class Mdb {
         if (typeBuilder_ == null) {
           typeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.ParameterTypeInfo, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder, org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder>(
-                  type_,
+                  getType(),
                   getParentForChildren(),
                   isClean());
           type_ = null;
@@ -7931,7 +7918,6 @@ public final class Mdb {
         return typeBuilder_;
       }
 
-      // optional .mdb.DataSourceType dataSource = 7;
       private org.yamcs.protobuf.Mdb.DataSourceType dataSource_ = org.yamcs.protobuf.Mdb.DataSourceType.TELEMETERED;
       /**
        * <code>optional .mdb.DataSourceType dataSource = 7;</code>
@@ -7967,7 +7953,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string url = 8;
       private java.lang.Object url_ = "";
       /**
        * <code>optional string url = 8;</code>
@@ -7981,9 +7966,12 @@ public final class Mdb {
       public java.lang.String getUrl() {
         java.lang.Object ref = url_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          url_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            url_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -8052,10 +8040,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.ParameterInfo)
   }
 
-  public interface ArgumentTypeInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ArgumentTypeInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ArgumentTypeInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string engType = 1;
     /**
      * <code>optional string engType = 1;</code>
      */
@@ -8070,7 +8058,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getEngTypeBytes();
 
-    // optional .mdb.DataEncodingInfo dataEncoding = 2;
     /**
      * <code>optional .mdb.DataEncodingInfo dataEncoding = 2;</code>
      */
@@ -8084,7 +8071,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.DataEncodingInfoOrBuilder getDataEncodingOrBuilder();
 
-    // repeated .mdb.UnitInfo unitSet = 3;
     /**
      * <code>repeated .mdb.UnitInfo unitSet = 3;</code>
      */
@@ -8109,7 +8095,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.UnitInfoOrBuilder getUnitSetOrBuilder(
         int index);
 
-    // repeated .mdb.EnumValue enumValue = 5;
     /**
      * <code>repeated .mdb.EnumValue enumValue = 5;</code>
      */
@@ -8134,7 +8119,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.EnumValueOrBuilder getEnumValueOrBuilder(
         int index);
 
-    // optional double rangeMin = 6;
     /**
      * <code>optional double rangeMin = 6;</code>
      */
@@ -8144,7 +8128,6 @@ public final class Mdb {
      */
     double getRangeMin();
 
-    // optional double rangeMax = 7;
     /**
      * <code>optional double rangeMax = 7;</code>
      */
@@ -8158,8 +8141,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.ArgumentTypeInfo}
    */
   public static final class ArgumentTypeInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements ArgumentTypeInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.ArgumentTypeInfo)
+      ArgumentTypeInfoOrBuilder {
     // Use ArgumentTypeInfo.newBuilder() to construct.
     private ArgumentTypeInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -8206,8 +8190,9 @@ public final class Mdb {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              engType_ = input.readBytes();
+              engType_ = bs;
               break;
             }
             case 18: {
@@ -8295,7 +8280,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional string engType = 1;
     public static final int ENGTYPE_FIELD_NUMBER = 1;
     private java.lang.Object engType_;
     /**
@@ -8338,7 +8322,6 @@ public final class Mdb {
       }
     }
 
-    // optional .mdb.DataEncodingInfo dataEncoding = 2;
     public static final int DATAENCODING_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Mdb.DataEncodingInfo dataEncoding_;
     /**
@@ -8360,7 +8343,6 @@ public final class Mdb {
       return dataEncoding_;
     }
 
-    // repeated .mdb.UnitInfo unitSet = 3;
     public static final int UNITSET_FIELD_NUMBER = 3;
     private java.util.List<org.yamcs.protobuf.Mdb.UnitInfo> unitSet_;
     /**
@@ -8396,7 +8378,6 @@ public final class Mdb {
       return unitSet_.get(index);
     }
 
-    // repeated .mdb.EnumValue enumValue = 5;
     public static final int ENUMVALUE_FIELD_NUMBER = 5;
     private java.util.List<org.yamcs.protobuf.Mdb.EnumValue> enumValue_;
     /**
@@ -8432,7 +8413,6 @@ public final class Mdb {
       return enumValue_.get(index);
     }
 
-    // optional double rangeMin = 6;
     public static final int RANGEMIN_FIELD_NUMBER = 6;
     private double rangeMin_;
     /**
@@ -8448,7 +8428,6 @@ public final class Mdb {
       return rangeMin_;
     }
 
-    // optional double rangeMax = 7;
     public static final int RANGEMAX_FIELD_NUMBER = 7;
     private double rangeMax_;
     /**
@@ -8475,7 +8454,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -8617,8 +8597,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.ArgumentTypeInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ArgumentTypeInfo)
+        org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_ArgumentTypeInfo_descriptor;
@@ -8853,7 +8834,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional string engType = 1;
       private java.lang.Object engType_ = "";
       /**
        * <code>optional string engType = 1;</code>
@@ -8867,9 +8847,12 @@ public final class Mdb {
       public java.lang.String getEngType() {
         java.lang.Object ref = engType_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          engType_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            engType_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -8927,7 +8910,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional .mdb.DataEncodingInfo dataEncoding = 2;
       private org.yamcs.protobuf.Mdb.DataEncodingInfo dataEncoding_ = org.yamcs.protobuf.Mdb.DataEncodingInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.DataEncodingInfo, org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder, org.yamcs.protobuf.Mdb.DataEncodingInfoOrBuilder> dataEncodingBuilder_;
@@ -9036,7 +9018,7 @@ public final class Mdb {
         if (dataEncodingBuilder_ == null) {
           dataEncodingBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.DataEncodingInfo, org.yamcs.protobuf.Mdb.DataEncodingInfo.Builder, org.yamcs.protobuf.Mdb.DataEncodingInfoOrBuilder>(
-                  dataEncoding_,
+                  getDataEncoding(),
                   getParentForChildren(),
                   isClean());
           dataEncoding_ = null;
@@ -9044,7 +9026,6 @@ public final class Mdb {
         return dataEncodingBuilder_;
       }
 
-      // repeated .mdb.UnitInfo unitSet = 3;
       private java.util.List<org.yamcs.protobuf.Mdb.UnitInfo> unitSet_ =
         java.util.Collections.emptyList();
       private void ensureUnitSetIsMutable() {
@@ -9186,7 +9167,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.UnitInfo> values) {
         if (unitSetBuilder_ == null) {
           ensureUnitSetIsMutable();
-          super.addAll(values, unitSet_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, unitSet_);
           onChanged();
         } else {
           unitSetBuilder_.addAllMessages(values);
@@ -9284,7 +9266,6 @@ public final class Mdb {
         return unitSetBuilder_;
       }
 
-      // repeated .mdb.EnumValue enumValue = 5;
       private java.util.List<org.yamcs.protobuf.Mdb.EnumValue> enumValue_ =
         java.util.Collections.emptyList();
       private void ensureEnumValueIsMutable() {
@@ -9426,7 +9407,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.EnumValue> values) {
         if (enumValueBuilder_ == null) {
           ensureEnumValueIsMutable();
-          super.addAll(values, enumValue_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, enumValue_);
           onChanged();
         } else {
           enumValueBuilder_.addAllMessages(values);
@@ -9524,7 +9506,6 @@ public final class Mdb {
         return enumValueBuilder_;
       }
 
-      // optional double rangeMin = 6;
       private double rangeMin_ ;
       /**
        * <code>optional double rangeMin = 6;</code>
@@ -9557,7 +9538,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional double rangeMax = 7;
       private double rangeMax_ ;
       /**
        * <code>optional double rangeMax = 7;</code>
@@ -9601,10 +9581,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.ArgumentTypeInfo)
   }
 
-  public interface ArgumentInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ArgumentInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ArgumentInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -9619,7 +9599,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional string description = 2;
     /**
      * <code>optional string description = 2;</code>
      */
@@ -9634,7 +9613,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getDescriptionBytes();
 
-    // optional string initialValue = 4;
     /**
      * <code>optional string initialValue = 4;</code>
      *
@@ -9661,7 +9639,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getInitialValueBytes();
 
-    // optional .mdb.ArgumentTypeInfo type = 6;
     /**
      * <code>optional .mdb.ArgumentTypeInfo type = 6;</code>
      *
@@ -9691,8 +9668,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.ArgumentInfo}
    */
   public static final class ArgumentInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements ArgumentInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.ArgumentInfo)
+      ArgumentInfoOrBuilder {
     // Use ArgumentInfo.newBuilder() to construct.
     private ArgumentInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -9739,18 +9717,21 @@ public final class Mdb {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              description_ = input.readBytes();
+              description_ = bs;
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              initialValue_ = input.readBytes();
+              initialValue_ = bs;
               break;
             }
             case 50: {
@@ -9806,7 +9787,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -9849,7 +9829,6 @@ public final class Mdb {
       }
     }
 
-    // optional string description = 2;
     public static final int DESCRIPTION_FIELD_NUMBER = 2;
     private java.lang.Object description_;
     /**
@@ -9892,7 +9871,6 @@ public final class Mdb {
       }
     }
 
-    // optional string initialValue = 4;
     public static final int INITIALVALUE_FIELD_NUMBER = 4;
     private java.lang.Object initialValue_;
     /**
@@ -9947,7 +9925,6 @@ public final class Mdb {
       }
     }
 
-    // optional .mdb.ArgumentTypeInfo type = 6;
     public static final int TYPE_FIELD_NUMBER = 6;
     private org.yamcs.protobuf.Mdb.ArgumentTypeInfo type_;
     /**
@@ -9990,7 +9967,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -10118,8 +10096,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.ArgumentInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.ArgumentInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ArgumentInfo)
+        org.yamcs.protobuf.Mdb.ArgumentInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_ArgumentInfo_descriptor;
@@ -10274,7 +10253,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -10288,9 +10266,12 @@ public final class Mdb {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -10348,7 +10329,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string description = 2;
       private java.lang.Object description_ = "";
       /**
        * <code>optional string description = 2;</code>
@@ -10362,9 +10342,12 @@ public final class Mdb {
       public java.lang.String getDescription() {
         java.lang.Object ref = description_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          description_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            description_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -10422,7 +10405,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string initialValue = 4;
       private java.lang.Object initialValue_ = "";
       /**
        * <code>optional string initialValue = 4;</code>
@@ -10444,9 +10426,12 @@ public final class Mdb {
       public java.lang.String getInitialValue() {
         java.lang.Object ref = initialValue_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          initialValue_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            initialValue_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -10520,7 +10505,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional .mdb.ArgumentTypeInfo type = 6;
       private org.yamcs.protobuf.Mdb.ArgumentTypeInfo type_ = org.yamcs.protobuf.Mdb.ArgumentTypeInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.ArgumentTypeInfo, org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder> typeBuilder_;
@@ -10665,7 +10649,7 @@ public final class Mdb {
         if (typeBuilder_ == null) {
           typeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.ArgumentTypeInfo, org.yamcs.protobuf.Mdb.ArgumentTypeInfo.Builder, org.yamcs.protobuf.Mdb.ArgumentTypeInfoOrBuilder>(
-                  type_,
+                  getType(),
                   getParentForChildren(),
                   isClean());
           type_ = null;
@@ -10684,10 +10668,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.ArgumentInfo)
   }
 
-  public interface ArgumentAssignmentInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ArgumentAssignmentInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ArgumentAssignmentInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -10702,7 +10686,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional string value = 2;
     /**
      * <code>optional string value = 2;</code>
      */
@@ -10721,8 +10704,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.ArgumentAssignmentInfo}
    */
   public static final class ArgumentAssignmentInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements ArgumentAssignmentInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.ArgumentAssignmentInfo)
+      ArgumentAssignmentInfoOrBuilder {
     // Use ArgumentAssignmentInfo.newBuilder() to construct.
     private ArgumentAssignmentInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -10769,13 +10753,15 @@ public final class Mdb {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              value_ = input.readBytes();
+              value_ = bs;
               break;
             }
           }
@@ -10818,7 +10804,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -10861,7 +10846,6 @@ public final class Mdb {
       }
     }
 
-    // optional string value = 2;
     public static final int VALUE_FIELD_NUMBER = 2;
     private java.lang.Object value_;
     /**
@@ -10911,7 +10895,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -11025,8 +11010,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.ArgumentAssignmentInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ArgumentAssignmentInfo)
+        org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_ArgumentAssignmentInfo_descriptor;
@@ -11152,7 +11138,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -11166,9 +11151,12 @@ public final class Mdb {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -11226,7 +11214,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string value = 2;
       private java.lang.Object value_ = "";
       /**
        * <code>optional string value = 2;</code>
@@ -11240,9 +11227,12 @@ public final class Mdb {
       public java.lang.String getValue() {
         java.lang.Object ref = value_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          value_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            value_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -11311,10 +11301,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.ArgumentAssignmentInfo)
   }
 
-  public interface SignificanceInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface SignificanceInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.SignificanceInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional .mdb.SignificanceInfo.SignificanceLevelType consequenceLevel = 1;
     /**
      * <code>optional .mdb.SignificanceInfo.SignificanceLevelType consequenceLevel = 1;</code>
      */
@@ -11324,7 +11314,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType getConsequenceLevel();
 
-    // optional string reasonForWarning = 2;
     /**
      * <code>optional string reasonForWarning = 2;</code>
      */
@@ -11343,8 +11332,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.SignificanceInfo}
    */
   public static final class SignificanceInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements SignificanceInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.SignificanceInfo)
+      SignificanceInfoOrBuilder {
     // Use SignificanceInfo.newBuilder() to construct.
     private SignificanceInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -11402,8 +11392,9 @@ public final class Mdb {
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              reasonForWarning_ = input.readBytes();
+              reasonForWarning_ = bs;
               break;
             }
           }
@@ -11564,7 +11555,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional .mdb.SignificanceInfo.SignificanceLevelType consequenceLevel = 1;
     public static final int CONSEQUENCELEVEL_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType consequenceLevel_;
     /**
@@ -11580,7 +11570,6 @@ public final class Mdb {
       return consequenceLevel_;
     }
 
-    // optional string reasonForWarning = 2;
     public static final int REASONFORWARNING_FIELD_NUMBER = 2;
     private java.lang.Object reasonForWarning_;
     /**
@@ -11630,7 +11619,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -11744,8 +11734,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.SignificanceInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.SignificanceInfo)
+        org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_SignificanceInfo_descriptor;
@@ -11869,7 +11860,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional .mdb.SignificanceInfo.SignificanceLevelType consequenceLevel = 1;
       private org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType consequenceLevel_ = org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType.NONE;
       /**
        * <code>optional .mdb.SignificanceInfo.SignificanceLevelType consequenceLevel = 1;</code>
@@ -11905,7 +11895,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string reasonForWarning = 2;
       private java.lang.Object reasonForWarning_ = "";
       /**
        * <code>optional string reasonForWarning = 2;</code>
@@ -11919,9 +11908,12 @@ public final class Mdb {
       public java.lang.String getReasonForWarning() {
         java.lang.Object ref = reasonForWarning_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          reasonForWarning_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            reasonForWarning_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -11990,10 +11982,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.SignificanceInfo)
   }
 
-  public interface ComparisonInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ComparisonInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ComparisonInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional .mdb.ParameterInfo parameter = 1;
     /**
      * <code>optional .mdb.ParameterInfo parameter = 1;</code>
      */
@@ -12007,7 +11999,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder();
 
-    // optional .mdb.ComparisonInfo.OperatorType operator = 2;
     /**
      * <code>optional .mdb.ComparisonInfo.OperatorType operator = 2;</code>
      */
@@ -12017,7 +12008,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType getOperator();
 
-    // optional string value = 3;
     /**
      * <code>optional string value = 3;</code>
      */
@@ -12036,8 +12026,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.ComparisonInfo}
    */
   public static final class ComparisonInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements ComparisonInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.ComparisonInfo)
+      ComparisonInfoOrBuilder {
     // Use ComparisonInfo.newBuilder() to construct.
     private ComparisonInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -12108,8 +12099,9 @@ public final class Mdb {
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              value_ = input.readBytes();
+              value_ = bs;
               break;
             }
           }
@@ -12270,7 +12262,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional .mdb.ParameterInfo parameter = 1;
     public static final int PARAMETER_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Mdb.ParameterInfo parameter_;
     /**
@@ -12292,7 +12283,6 @@ public final class Mdb {
       return parameter_;
     }
 
-    // optional .mdb.ComparisonInfo.OperatorType operator = 2;
     public static final int OPERATOR_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType operator_;
     /**
@@ -12308,7 +12298,6 @@ public final class Mdb {
       return operator_;
     }
 
-    // optional string value = 3;
     public static final int VALUE_FIELD_NUMBER = 3;
     private java.lang.Object value_;
     /**
@@ -12359,7 +12348,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasParameter()) {
         if (!getParameter().isInitialized()) {
@@ -12486,8 +12476,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.ComparisonInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ComparisonInfo)
+        org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_ComparisonInfo_descriptor;
@@ -12635,7 +12626,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional .mdb.ParameterInfo parameter = 1;
       private org.yamcs.protobuf.Mdb.ParameterInfo parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> parameterBuilder_;
@@ -12744,7 +12734,7 @@ public final class Mdb {
         if (parameterBuilder_ == null) {
           parameterBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder>(
-                  parameter_,
+                  getParameter(),
                   getParentForChildren(),
                   isClean());
           parameter_ = null;
@@ -12752,7 +12742,6 @@ public final class Mdb {
         return parameterBuilder_;
       }
 
-      // optional .mdb.ComparisonInfo.OperatorType operator = 2;
       private org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType operator_ = org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType.EQUAL_TO;
       /**
        * <code>optional .mdb.ComparisonInfo.OperatorType operator = 2;</code>
@@ -12788,7 +12777,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string value = 3;
       private java.lang.Object value_ = "";
       /**
        * <code>optional string value = 3;</code>
@@ -12802,9 +12790,12 @@ public final class Mdb {
       public java.lang.String getValue() {
         java.lang.Object ref = value_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          value_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            value_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -12873,10 +12864,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.ComparisonInfo)
   }
 
-  public interface TransmissionConstraintInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface TransmissionConstraintInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.TransmissionConstraintInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // repeated .mdb.ComparisonInfo comparison = 1;
     /**
      * <code>repeated .mdb.ComparisonInfo comparison = 1;</code>
      */
@@ -12901,7 +12892,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder getComparisonOrBuilder(
         int index);
 
-    // optional int64 timeout = 2;
     /**
      * <code>optional int64 timeout = 2;</code>
      */
@@ -12915,8 +12905,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.TransmissionConstraintInfo}
    */
   public static final class TransmissionConstraintInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements TransmissionConstraintInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.TransmissionConstraintInfo)
+      TransmissionConstraintInfoOrBuilder {
     // Use TransmissionConstraintInfo.newBuilder() to construct.
     private TransmissionConstraintInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -13018,7 +13009,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // repeated .mdb.ComparisonInfo comparison = 1;
     public static final int COMPARISON_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> comparison_;
     /**
@@ -13054,7 +13044,6 @@ public final class Mdb {
       return comparison_.get(index);
     }
 
-    // optional int64 timeout = 2;
     public static final int TIMEOUT_FIELD_NUMBER = 2;
     private long timeout_;
     /**
@@ -13077,7 +13066,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       for (int i = 0; i < getComparisonCount(); i++) {
         if (!getComparison(i).isInitialized()) {
@@ -13197,8 +13187,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.TransmissionConstraintInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.TransmissionConstraintInfo)
+        org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_TransmissionConstraintInfo_descriptor;
@@ -13359,7 +13350,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // repeated .mdb.ComparisonInfo comparison = 1;
       private java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> comparison_ =
         java.util.Collections.emptyList();
       private void ensureComparisonIsMutable() {
@@ -13501,7 +13491,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ComparisonInfo> values) {
         if (comparisonBuilder_ == null) {
           ensureComparisonIsMutable();
-          super.addAll(values, comparison_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, comparison_);
           onChanged();
         } else {
           comparisonBuilder_.addAllMessages(values);
@@ -13599,7 +13590,6 @@ public final class Mdb {
         return comparisonBuilder_;
       }
 
-      // optional int64 timeout = 2;
       private long timeout_ ;
       /**
        * <code>optional int64 timeout = 2;</code>
@@ -13643,10 +13633,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.TransmissionConstraintInfo)
   }
 
-  public interface CommandInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface CommandInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.CommandInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -13661,7 +13651,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional string qualifiedName = 2;
     /**
      * <code>optional string qualifiedName = 2;</code>
      */
@@ -13676,7 +13665,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getQualifiedNameBytes();
 
-    // optional string shortDescription = 3;
     /**
      * <code>optional string shortDescription = 3;</code>
      */
@@ -13691,7 +13679,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getShortDescriptionBytes();
 
-    // optional string longDescription = 4;
     /**
      * <code>optional string longDescription = 4;</code>
      */
@@ -13706,7 +13693,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getLongDescriptionBytes();
 
-    // repeated .yamcs.NamedObjectId alias = 5;
     /**
      * <code>repeated .yamcs.NamedObjectId alias = 5;</code>
      */
@@ -13731,7 +13717,6 @@ public final class Mdb {
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getAliasOrBuilder(
         int index);
 
-    // optional .mdb.CommandInfo baseCommand = 6;
     /**
      * <code>optional .mdb.CommandInfo baseCommand = 6;</code>
      */
@@ -13745,7 +13730,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.CommandInfoOrBuilder getBaseCommandOrBuilder();
 
-    // optional bool abstract = 7;
     /**
      * <code>optional bool abstract = 7;</code>
      */
@@ -13755,7 +13739,6 @@ public final class Mdb {
      */
     boolean getAbstract();
 
-    // repeated .mdb.ArgumentInfo argument = 8;
     /**
      * <code>repeated .mdb.ArgumentInfo argument = 8;</code>
      */
@@ -13780,7 +13763,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.ArgumentInfoOrBuilder getArgumentOrBuilder(
         int index);
 
-    // repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 9;
     /**
      * <code>repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 9;</code>
      */
@@ -13805,7 +13787,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.ArgumentAssignmentInfoOrBuilder getArgumentAssignmentOrBuilder(
         int index);
 
-    // optional .mdb.SignificanceInfo significance = 10;
     /**
      * <code>optional .mdb.SignificanceInfo significance = 10;</code>
      */
@@ -13819,7 +13800,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder getSignificanceOrBuilder();
 
-    // repeated .mdb.TransmissionConstraintInfo constraint = 11;
     /**
      * <code>repeated .mdb.TransmissionConstraintInfo constraint = 11;</code>
      */
@@ -13844,7 +13824,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.TransmissionConstraintInfoOrBuilder getConstraintOrBuilder(
         int index);
 
-    // optional string url = 12;
     /**
      * <code>optional string url = 12;</code>
      */
@@ -13863,8 +13842,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.CommandInfo}
    */
   public static final class CommandInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements CommandInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.CommandInfo)
+      CommandInfoOrBuilder {
     // Use CommandInfo.newBuilder() to construct.
     private CommandInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -13911,23 +13891,27 @@ public final class Mdb {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              qualifiedName_ = input.readBytes();
+              qualifiedName_ = bs;
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              shortDescription_ = input.readBytes();
+              shortDescription_ = bs;
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
-              longDescription_ = input.readBytes();
+              longDescription_ = bs;
               break;
             }
             case 42: {
@@ -13994,8 +13978,9 @@ public final class Mdb {
               break;
             }
             case 98: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000080;
-              url_ = input.readBytes();
+              url_ = bs;
               break;
             }
           }
@@ -14050,7 +14035,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -14093,7 +14077,6 @@ public final class Mdb {
       }
     }
 
-    // optional string qualifiedName = 2;
     public static final int QUALIFIEDNAME_FIELD_NUMBER = 2;
     private java.lang.Object qualifiedName_;
     /**
@@ -14136,7 +14119,6 @@ public final class Mdb {
       }
     }
 
-    // optional string shortDescription = 3;
     public static final int SHORTDESCRIPTION_FIELD_NUMBER = 3;
     private java.lang.Object shortDescription_;
     /**
@@ -14179,7 +14161,6 @@ public final class Mdb {
       }
     }
 
-    // optional string longDescription = 4;
     public static final int LONGDESCRIPTION_FIELD_NUMBER = 4;
     private java.lang.Object longDescription_;
     /**
@@ -14222,7 +14203,6 @@ public final class Mdb {
       }
     }
 
-    // repeated .yamcs.NamedObjectId alias = 5;
     public static final int ALIAS_FIELD_NUMBER = 5;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> alias_;
     /**
@@ -14258,7 +14238,6 @@ public final class Mdb {
       return alias_.get(index);
     }
 
-    // optional .mdb.CommandInfo baseCommand = 6;
     public static final int BASECOMMAND_FIELD_NUMBER = 6;
     private org.yamcs.protobuf.Mdb.CommandInfo baseCommand_;
     /**
@@ -14280,7 +14259,6 @@ public final class Mdb {
       return baseCommand_;
     }
 
-    // optional bool abstract = 7;
     public static final int ABSTRACT_FIELD_NUMBER = 7;
     private boolean abstract_;
     /**
@@ -14296,7 +14274,6 @@ public final class Mdb {
       return abstract_;
     }
 
-    // repeated .mdb.ArgumentInfo argument = 8;
     public static final int ARGUMENT_FIELD_NUMBER = 8;
     private java.util.List<org.yamcs.protobuf.Mdb.ArgumentInfo> argument_;
     /**
@@ -14332,7 +14309,6 @@ public final class Mdb {
       return argument_.get(index);
     }
 
-    // repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 9;
     public static final int ARGUMENTASSIGNMENT_FIELD_NUMBER = 9;
     private java.util.List<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo> argumentAssignment_;
     /**
@@ -14368,7 +14344,6 @@ public final class Mdb {
       return argumentAssignment_.get(index);
     }
 
-    // optional .mdb.SignificanceInfo significance = 10;
     public static final int SIGNIFICANCE_FIELD_NUMBER = 10;
     private org.yamcs.protobuf.Mdb.SignificanceInfo significance_;
     /**
@@ -14390,7 +14365,6 @@ public final class Mdb {
       return significance_;
     }
 
-    // repeated .mdb.TransmissionConstraintInfo constraint = 11;
     public static final int CONSTRAINT_FIELD_NUMBER = 11;
     private java.util.List<org.yamcs.protobuf.Mdb.TransmissionConstraintInfo> constraint_;
     /**
@@ -14426,7 +14400,6 @@ public final class Mdb {
       return constraint_.get(index);
     }
 
-    // optional string url = 12;
     public static final int URL_FIELD_NUMBER = 12;
     private java.lang.Object url_;
     /**
@@ -14486,7 +14459,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       for (int i = 0; i < getAliasCount(); i++) {
         if (!getAlias(i).isInitialized()) {
@@ -14688,8 +14662,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.CommandInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.CommandInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.CommandInfo)
+        org.yamcs.protobuf.Mdb.CommandInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_CommandInfo_descriptor;
@@ -15079,7 +15054,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -15093,9 +15067,12 @@ public final class Mdb {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -15153,7 +15130,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string qualifiedName = 2;
       private java.lang.Object qualifiedName_ = "";
       /**
        * <code>optional string qualifiedName = 2;</code>
@@ -15167,9 +15143,12 @@ public final class Mdb {
       public java.lang.String getQualifiedName() {
         java.lang.Object ref = qualifiedName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          qualifiedName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            qualifiedName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -15227,7 +15206,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string shortDescription = 3;
       private java.lang.Object shortDescription_ = "";
       /**
        * <code>optional string shortDescription = 3;</code>
@@ -15241,9 +15219,12 @@ public final class Mdb {
       public java.lang.String getShortDescription() {
         java.lang.Object ref = shortDescription_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          shortDescription_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            shortDescription_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -15301,7 +15282,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string longDescription = 4;
       private java.lang.Object longDescription_ = "";
       /**
        * <code>optional string longDescription = 4;</code>
@@ -15315,9 +15295,12 @@ public final class Mdb {
       public java.lang.String getLongDescription() {
         java.lang.Object ref = longDescription_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          longDescription_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            longDescription_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -15375,7 +15358,6 @@ public final class Mdb {
         return this;
       }
 
-      // repeated .yamcs.NamedObjectId alias = 5;
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> alias_ =
         java.util.Collections.emptyList();
       private void ensureAliasIsMutable() {
@@ -15517,7 +15499,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
         if (aliasBuilder_ == null) {
           ensureAliasIsMutable();
-          super.addAll(values, alias_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, alias_);
           onChanged();
         } else {
           aliasBuilder_.addAllMessages(values);
@@ -15615,7 +15598,6 @@ public final class Mdb {
         return aliasBuilder_;
       }
 
-      // optional .mdb.CommandInfo baseCommand = 6;
       private org.yamcs.protobuf.Mdb.CommandInfo baseCommand_ = org.yamcs.protobuf.Mdb.CommandInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.CommandInfo, org.yamcs.protobuf.Mdb.CommandInfo.Builder, org.yamcs.protobuf.Mdb.CommandInfoOrBuilder> baseCommandBuilder_;
@@ -15724,7 +15706,7 @@ public final class Mdb {
         if (baseCommandBuilder_ == null) {
           baseCommandBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.CommandInfo, org.yamcs.protobuf.Mdb.CommandInfo.Builder, org.yamcs.protobuf.Mdb.CommandInfoOrBuilder>(
-                  baseCommand_,
+                  getBaseCommand(),
                   getParentForChildren(),
                   isClean());
           baseCommand_ = null;
@@ -15732,7 +15714,6 @@ public final class Mdb {
         return baseCommandBuilder_;
       }
 
-      // optional bool abstract = 7;
       private boolean abstract_ ;
       /**
        * <code>optional bool abstract = 7;</code>
@@ -15765,7 +15746,6 @@ public final class Mdb {
         return this;
       }
 
-      // repeated .mdb.ArgumentInfo argument = 8;
       private java.util.List<org.yamcs.protobuf.Mdb.ArgumentInfo> argument_ =
         java.util.Collections.emptyList();
       private void ensureArgumentIsMutable() {
@@ -15907,7 +15887,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ArgumentInfo> values) {
         if (argumentBuilder_ == null) {
           ensureArgumentIsMutable();
-          super.addAll(values, argument_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, argument_);
           onChanged();
         } else {
           argumentBuilder_.addAllMessages(values);
@@ -16005,7 +15986,6 @@ public final class Mdb {
         return argumentBuilder_;
       }
 
-      // repeated .mdb.ArgumentAssignmentInfo argumentAssignment = 9;
       private java.util.List<org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo> argumentAssignment_ =
         java.util.Collections.emptyList();
       private void ensureArgumentAssignmentIsMutable() {
@@ -16147,7 +16127,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ArgumentAssignmentInfo> values) {
         if (argumentAssignmentBuilder_ == null) {
           ensureArgumentAssignmentIsMutable();
-          super.addAll(values, argumentAssignment_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, argumentAssignment_);
           onChanged();
         } else {
           argumentAssignmentBuilder_.addAllMessages(values);
@@ -16245,7 +16226,6 @@ public final class Mdb {
         return argumentAssignmentBuilder_;
       }
 
-      // optional .mdb.SignificanceInfo significance = 10;
       private org.yamcs.protobuf.Mdb.SignificanceInfo significance_ = org.yamcs.protobuf.Mdb.SignificanceInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.SignificanceInfo, org.yamcs.protobuf.Mdb.SignificanceInfo.Builder, org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder> significanceBuilder_;
@@ -16354,7 +16334,7 @@ public final class Mdb {
         if (significanceBuilder_ == null) {
           significanceBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.SignificanceInfo, org.yamcs.protobuf.Mdb.SignificanceInfo.Builder, org.yamcs.protobuf.Mdb.SignificanceInfoOrBuilder>(
-                  significance_,
+                  getSignificance(),
                   getParentForChildren(),
                   isClean());
           significance_ = null;
@@ -16362,7 +16342,6 @@ public final class Mdb {
         return significanceBuilder_;
       }
 
-      // repeated .mdb.TransmissionConstraintInfo constraint = 11;
       private java.util.List<org.yamcs.protobuf.Mdb.TransmissionConstraintInfo> constraint_ =
         java.util.Collections.emptyList();
       private void ensureConstraintIsMutable() {
@@ -16504,7 +16483,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.TransmissionConstraintInfo> values) {
         if (constraintBuilder_ == null) {
           ensureConstraintIsMutable();
-          super.addAll(values, constraint_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, constraint_);
           onChanged();
         } else {
           constraintBuilder_.addAllMessages(values);
@@ -16602,7 +16582,6 @@ public final class Mdb {
         return constraintBuilder_;
       }
 
-      // optional string url = 12;
       private java.lang.Object url_ = "";
       /**
        * <code>optional string url = 12;</code>
@@ -16616,9 +16595,12 @@ public final class Mdb {
       public java.lang.String getUrl() {
         java.lang.Object ref = url_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          url_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            url_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -16687,10 +16669,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.CommandInfo)
   }
 
-  public interface RepeatInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface RepeatInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.RepeatInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional int64 fixedCount = 1;
     /**
      * <code>optional int64 fixedCount = 1;</code>
      */
@@ -16700,7 +16682,6 @@ public final class Mdb {
      */
     long getFixedCount();
 
-    // optional .mdb.ParameterInfo dynamicCount = 2;
     /**
      * <code>optional .mdb.ParameterInfo dynamicCount = 2;</code>
      */
@@ -16714,7 +16695,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getDynamicCountOrBuilder();
 
-    // optional int32 bitsBetween = 3;
     /**
      * <code>optional int32 bitsBetween = 3;</code>
      */
@@ -16728,8 +16708,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.RepeatInfo}
    */
   public static final class RepeatInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements RepeatInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.RepeatInfo)
+      RepeatInfoOrBuilder {
     // Use RepeatInfo.newBuilder() to construct.
     private RepeatInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -16838,7 +16819,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional int64 fixedCount = 1;
     public static final int FIXEDCOUNT_FIELD_NUMBER = 1;
     private long fixedCount_;
     /**
@@ -16854,7 +16834,6 @@ public final class Mdb {
       return fixedCount_;
     }
 
-    // optional .mdb.ParameterInfo dynamicCount = 2;
     public static final int DYNAMICCOUNT_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Mdb.ParameterInfo dynamicCount_;
     /**
@@ -16876,7 +16855,6 @@ public final class Mdb {
       return dynamicCount_;
     }
 
-    // optional int32 bitsBetween = 3;
     public static final int BITSBETWEEN_FIELD_NUMBER = 3;
     private int bitsBetween_;
     /**
@@ -16900,7 +16878,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasDynamicCount()) {
         if (!getDynamicCount().isInitialized()) {
@@ -17027,8 +17006,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.RepeatInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.RepeatInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.RepeatInfo)
+        org.yamcs.protobuf.Mdb.RepeatInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_RepeatInfo_descriptor;
@@ -17174,7 +17154,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional int64 fixedCount = 1;
       private long fixedCount_ ;
       /**
        * <code>optional int64 fixedCount = 1;</code>
@@ -17207,7 +17186,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional .mdb.ParameterInfo dynamicCount = 2;
       private org.yamcs.protobuf.Mdb.ParameterInfo dynamicCount_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> dynamicCountBuilder_;
@@ -17316,7 +17294,7 @@ public final class Mdb {
         if (dynamicCountBuilder_ == null) {
           dynamicCountBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder>(
-                  dynamicCount_,
+                  getDynamicCount(),
                   getParentForChildren(),
                   isClean());
           dynamicCount_ = null;
@@ -17324,7 +17302,6 @@ public final class Mdb {
         return dynamicCountBuilder_;
       }
 
-      // optional int32 bitsBetween = 3;
       private int bitsBetween_ ;
       /**
        * <code>optional int32 bitsBetween = 3;</code>
@@ -17368,10 +17345,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.RepeatInfo)
   }
 
-  public interface SequenceEntryInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface SequenceEntryInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.SequenceEntryInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional int32 locationInBits = 1;
     /**
      * <code>optional int32 locationInBits = 1;</code>
      */
@@ -17381,7 +17358,6 @@ public final class Mdb {
      */
     int getLocationInBits();
 
-    // optional .mdb.SequenceEntryInfo.ReferenceLocationType referenceLocation = 2;
     /**
      * <code>optional .mdb.SequenceEntryInfo.ReferenceLocationType referenceLocation = 2;</code>
      */
@@ -17391,7 +17367,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.SequenceEntryInfo.ReferenceLocationType getReferenceLocation();
 
-    // optional .mdb.ContainerInfo container = 3;
     /**
      * <code>optional .mdb.ContainerInfo container = 3;</code>
      */
@@ -17405,7 +17380,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder getContainerOrBuilder();
 
-    // optional .mdb.ParameterInfo parameter = 4;
     /**
      * <code>optional .mdb.ParameterInfo parameter = 4;</code>
      */
@@ -17419,7 +17393,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder();
 
-    // optional .mdb.RepeatInfo repeat = 5;
     /**
      * <code>optional .mdb.RepeatInfo repeat = 5;</code>
      */
@@ -17437,8 +17410,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.SequenceEntryInfo}
    */
   public static final class SequenceEntryInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements SequenceEntryInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.SequenceEntryInfo)
+      SequenceEntryInfoOrBuilder {
     // Use SequenceEntryInfo.newBuilder() to construct.
     private SequenceEntryInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -17661,7 +17635,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional int32 locationInBits = 1;
     public static final int LOCATIONINBITS_FIELD_NUMBER = 1;
     private int locationInBits_;
     /**
@@ -17677,7 +17650,6 @@ public final class Mdb {
       return locationInBits_;
     }
 
-    // optional .mdb.SequenceEntryInfo.ReferenceLocationType referenceLocation = 2;
     public static final int REFERENCELOCATION_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Mdb.SequenceEntryInfo.ReferenceLocationType referenceLocation_;
     /**
@@ -17693,7 +17665,6 @@ public final class Mdb {
       return referenceLocation_;
     }
 
-    // optional .mdb.ContainerInfo container = 3;
     public static final int CONTAINER_FIELD_NUMBER = 3;
     private org.yamcs.protobuf.Mdb.ContainerInfo container_;
     /**
@@ -17715,7 +17686,6 @@ public final class Mdb {
       return container_;
     }
 
-    // optional .mdb.ParameterInfo parameter = 4;
     public static final int PARAMETER_FIELD_NUMBER = 4;
     private org.yamcs.protobuf.Mdb.ParameterInfo parameter_;
     /**
@@ -17737,7 +17707,6 @@ public final class Mdb {
       return parameter_;
     }
 
-    // optional .mdb.RepeatInfo repeat = 5;
     public static final int REPEAT_FIELD_NUMBER = 5;
     private org.yamcs.protobuf.Mdb.RepeatInfo repeat_;
     /**
@@ -17769,7 +17738,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasContainer()) {
         if (!getContainer().isInitialized()) {
@@ -17922,8 +17892,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.SequenceEntryInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.SequenceEntryInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.SequenceEntryInfo)
+        org.yamcs.protobuf.Mdb.SequenceEntryInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_SequenceEntryInfo_descriptor;
@@ -18117,7 +18088,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional int32 locationInBits = 1;
       private int locationInBits_ ;
       /**
        * <code>optional int32 locationInBits = 1;</code>
@@ -18150,7 +18120,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional .mdb.SequenceEntryInfo.ReferenceLocationType referenceLocation = 2;
       private org.yamcs.protobuf.Mdb.SequenceEntryInfo.ReferenceLocationType referenceLocation_ = org.yamcs.protobuf.Mdb.SequenceEntryInfo.ReferenceLocationType.CONTAINER_START;
       /**
        * <code>optional .mdb.SequenceEntryInfo.ReferenceLocationType referenceLocation = 2;</code>
@@ -18186,7 +18155,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional .mdb.ContainerInfo container = 3;
       private org.yamcs.protobuf.Mdb.ContainerInfo container_ = org.yamcs.protobuf.Mdb.ContainerInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.ContainerInfo, org.yamcs.protobuf.Mdb.ContainerInfo.Builder, org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder> containerBuilder_;
@@ -18295,7 +18263,7 @@ public final class Mdb {
         if (containerBuilder_ == null) {
           containerBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.ContainerInfo, org.yamcs.protobuf.Mdb.ContainerInfo.Builder, org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder>(
-                  container_,
+                  getContainer(),
                   getParentForChildren(),
                   isClean());
           container_ = null;
@@ -18303,7 +18271,6 @@ public final class Mdb {
         return containerBuilder_;
       }
 
-      // optional .mdb.ParameterInfo parameter = 4;
       private org.yamcs.protobuf.Mdb.ParameterInfo parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> parameterBuilder_;
@@ -18412,7 +18379,7 @@ public final class Mdb {
         if (parameterBuilder_ == null) {
           parameterBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder>(
-                  parameter_,
+                  getParameter(),
                   getParentForChildren(),
                   isClean());
           parameter_ = null;
@@ -18420,7 +18387,6 @@ public final class Mdb {
         return parameterBuilder_;
       }
 
-      // optional .mdb.RepeatInfo repeat = 5;
       private org.yamcs.protobuf.Mdb.RepeatInfo repeat_ = org.yamcs.protobuf.Mdb.RepeatInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.RepeatInfo, org.yamcs.protobuf.Mdb.RepeatInfo.Builder, org.yamcs.protobuf.Mdb.RepeatInfoOrBuilder> repeatBuilder_;
@@ -18529,7 +18495,7 @@ public final class Mdb {
         if (repeatBuilder_ == null) {
           repeatBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.RepeatInfo, org.yamcs.protobuf.Mdb.RepeatInfo.Builder, org.yamcs.protobuf.Mdb.RepeatInfoOrBuilder>(
-                  repeat_,
+                  getRepeat(),
                   getParentForChildren(),
                   isClean());
           repeat_ = null;
@@ -18548,10 +18514,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.SequenceEntryInfo)
   }
 
-  public interface ContainerInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface ContainerInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ContainerInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -18566,7 +18532,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional string qualifiedName = 2;
     /**
      * <code>optional string qualifiedName = 2;</code>
      */
@@ -18581,7 +18546,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getQualifiedNameBytes();
 
-    // optional string shortDescription = 3;
     /**
      * <code>optional string shortDescription = 3;</code>
      */
@@ -18596,7 +18560,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getShortDescriptionBytes();
 
-    // optional string longDescription = 4;
     /**
      * <code>optional string longDescription = 4;</code>
      */
@@ -18611,7 +18574,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getLongDescriptionBytes();
 
-    // repeated .yamcs.NamedObjectId alias = 5;
     /**
      * <code>repeated .yamcs.NamedObjectId alias = 5;</code>
      */
@@ -18636,7 +18598,6 @@ public final class Mdb {
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getAliasOrBuilder(
         int index);
 
-    // optional int64 maxInterval = 6;
     /**
      * <code>optional int64 maxInterval = 6;</code>
      */
@@ -18646,7 +18607,6 @@ public final class Mdb {
      */
     long getMaxInterval();
 
-    // optional int32 sizeInBits = 7;
     /**
      * <code>optional int32 sizeInBits = 7;</code>
      */
@@ -18656,7 +18616,6 @@ public final class Mdb {
      */
     int getSizeInBits();
 
-    // optional .mdb.ContainerInfo baseContainer = 8;
     /**
      * <code>optional .mdb.ContainerInfo baseContainer = 8;</code>
      */
@@ -18670,7 +18629,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder getBaseContainerOrBuilder();
 
-    // repeated .mdb.ComparisonInfo restrictionCriteria = 9;
     /**
      * <code>repeated .mdb.ComparisonInfo restrictionCriteria = 9;</code>
      */
@@ -18695,7 +18653,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder getRestrictionCriteriaOrBuilder(
         int index);
 
-    // repeated .mdb.SequenceEntryInfo entry = 10;
     /**
      * <code>repeated .mdb.SequenceEntryInfo entry = 10;</code>
      */
@@ -18720,7 +18677,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.SequenceEntryInfoOrBuilder getEntryOrBuilder(
         int index);
 
-    // optional string url = 11;
     /**
      * <code>optional string url = 11;</code>
      */
@@ -18739,8 +18695,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.ContainerInfo}
    */
   public static final class ContainerInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements ContainerInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.ContainerInfo)
+      ContainerInfoOrBuilder {
     // Use ContainerInfo.newBuilder() to construct.
     private ContainerInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -18787,23 +18744,27 @@ public final class Mdb {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              qualifiedName_ = input.readBytes();
+              qualifiedName_ = bs;
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              shortDescription_ = input.readBytes();
+              shortDescription_ = bs;
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
-              longDescription_ = input.readBytes();
+              longDescription_ = bs;
               break;
             }
             case 42: {
@@ -18854,8 +18815,9 @@ public final class Mdb {
               break;
             }
             case 90: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000080;
-              url_ = input.readBytes();
+              url_ = bs;
               break;
             }
           }
@@ -18907,7 +18869,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -18950,7 +18911,6 @@ public final class Mdb {
       }
     }
 
-    // optional string qualifiedName = 2;
     public static final int QUALIFIEDNAME_FIELD_NUMBER = 2;
     private java.lang.Object qualifiedName_;
     /**
@@ -18993,7 +18953,6 @@ public final class Mdb {
       }
     }
 
-    // optional string shortDescription = 3;
     public static final int SHORTDESCRIPTION_FIELD_NUMBER = 3;
     private java.lang.Object shortDescription_;
     /**
@@ -19036,7 +18995,6 @@ public final class Mdb {
       }
     }
 
-    // optional string longDescription = 4;
     public static final int LONGDESCRIPTION_FIELD_NUMBER = 4;
     private java.lang.Object longDescription_;
     /**
@@ -19079,7 +19037,6 @@ public final class Mdb {
       }
     }
 
-    // repeated .yamcs.NamedObjectId alias = 5;
     public static final int ALIAS_FIELD_NUMBER = 5;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> alias_;
     /**
@@ -19115,7 +19072,6 @@ public final class Mdb {
       return alias_.get(index);
     }
 
-    // optional int64 maxInterval = 6;
     public static final int MAXINTERVAL_FIELD_NUMBER = 6;
     private long maxInterval_;
     /**
@@ -19131,7 +19087,6 @@ public final class Mdb {
       return maxInterval_;
     }
 
-    // optional int32 sizeInBits = 7;
     public static final int SIZEINBITS_FIELD_NUMBER = 7;
     private int sizeInBits_;
     /**
@@ -19147,7 +19102,6 @@ public final class Mdb {
       return sizeInBits_;
     }
 
-    // optional .mdb.ContainerInfo baseContainer = 8;
     public static final int BASECONTAINER_FIELD_NUMBER = 8;
     private org.yamcs.protobuf.Mdb.ContainerInfo baseContainer_;
     /**
@@ -19169,7 +19123,6 @@ public final class Mdb {
       return baseContainer_;
     }
 
-    // repeated .mdb.ComparisonInfo restrictionCriteria = 9;
     public static final int RESTRICTIONCRITERIA_FIELD_NUMBER = 9;
     private java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> restrictionCriteria_;
     /**
@@ -19205,7 +19158,6 @@ public final class Mdb {
       return restrictionCriteria_.get(index);
     }
 
-    // repeated .mdb.SequenceEntryInfo entry = 10;
     public static final int ENTRY_FIELD_NUMBER = 10;
     private java.util.List<org.yamcs.protobuf.Mdb.SequenceEntryInfo> entry_;
     /**
@@ -19241,7 +19193,6 @@ public final class Mdb {
       return entry_.get(index);
     }
 
-    // optional string url = 11;
     public static final int URL_FIELD_NUMBER = 11;
     private java.lang.Object url_;
     /**
@@ -19300,7 +19251,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       for (int i = 0; i < getAliasCount(); i++) {
         if (!getAlias(i).isInitialized()) {
@@ -19501,8 +19453,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.ContainerInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ContainerInfo)
+        org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_ContainerInfo_descriptor;
@@ -19847,7 +19800,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -19861,9 +19813,12 @@ public final class Mdb {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -19921,7 +19876,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string qualifiedName = 2;
       private java.lang.Object qualifiedName_ = "";
       /**
        * <code>optional string qualifiedName = 2;</code>
@@ -19935,9 +19889,12 @@ public final class Mdb {
       public java.lang.String getQualifiedName() {
         java.lang.Object ref = qualifiedName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          qualifiedName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            qualifiedName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -19995,7 +19952,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string shortDescription = 3;
       private java.lang.Object shortDescription_ = "";
       /**
        * <code>optional string shortDescription = 3;</code>
@@ -20009,9 +19965,12 @@ public final class Mdb {
       public java.lang.String getShortDescription() {
         java.lang.Object ref = shortDescription_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          shortDescription_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            shortDescription_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -20069,7 +20028,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string longDescription = 4;
       private java.lang.Object longDescription_ = "";
       /**
        * <code>optional string longDescription = 4;</code>
@@ -20083,9 +20041,12 @@ public final class Mdb {
       public java.lang.String getLongDescription() {
         java.lang.Object ref = longDescription_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          longDescription_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            longDescription_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -20143,7 +20104,6 @@ public final class Mdb {
         return this;
       }
 
-      // repeated .yamcs.NamedObjectId alias = 5;
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> alias_ =
         java.util.Collections.emptyList();
       private void ensureAliasIsMutable() {
@@ -20285,7 +20245,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
         if (aliasBuilder_ == null) {
           ensureAliasIsMutable();
-          super.addAll(values, alias_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, alias_);
           onChanged();
         } else {
           aliasBuilder_.addAllMessages(values);
@@ -20383,7 +20344,6 @@ public final class Mdb {
         return aliasBuilder_;
       }
 
-      // optional int64 maxInterval = 6;
       private long maxInterval_ ;
       /**
        * <code>optional int64 maxInterval = 6;</code>
@@ -20416,7 +20376,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional int32 sizeInBits = 7;
       private int sizeInBits_ ;
       /**
        * <code>optional int32 sizeInBits = 7;</code>
@@ -20449,7 +20408,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional .mdb.ContainerInfo baseContainer = 8;
       private org.yamcs.protobuf.Mdb.ContainerInfo baseContainer_ = org.yamcs.protobuf.Mdb.ContainerInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.ContainerInfo, org.yamcs.protobuf.Mdb.ContainerInfo.Builder, org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder> baseContainerBuilder_;
@@ -20558,7 +20516,7 @@ public final class Mdb {
         if (baseContainerBuilder_ == null) {
           baseContainerBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.ContainerInfo, org.yamcs.protobuf.Mdb.ContainerInfo.Builder, org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder>(
-                  baseContainer_,
+                  getBaseContainer(),
                   getParentForChildren(),
                   isClean());
           baseContainer_ = null;
@@ -20566,7 +20524,6 @@ public final class Mdb {
         return baseContainerBuilder_;
       }
 
-      // repeated .mdb.ComparisonInfo restrictionCriteria = 9;
       private java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> restrictionCriteria_ =
         java.util.Collections.emptyList();
       private void ensureRestrictionCriteriaIsMutable() {
@@ -20708,7 +20665,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ComparisonInfo> values) {
         if (restrictionCriteriaBuilder_ == null) {
           ensureRestrictionCriteriaIsMutable();
-          super.addAll(values, restrictionCriteria_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, restrictionCriteria_);
           onChanged();
         } else {
           restrictionCriteriaBuilder_.addAllMessages(values);
@@ -20806,7 +20764,6 @@ public final class Mdb {
         return restrictionCriteriaBuilder_;
       }
 
-      // repeated .mdb.SequenceEntryInfo entry = 10;
       private java.util.List<org.yamcs.protobuf.Mdb.SequenceEntryInfo> entry_ =
         java.util.Collections.emptyList();
       private void ensureEntryIsMutable() {
@@ -20948,7 +20905,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.SequenceEntryInfo> values) {
         if (entryBuilder_ == null) {
           ensureEntryIsMutable();
-          super.addAll(values, entry_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, entry_);
           onChanged();
         } else {
           entryBuilder_.addAllMessages(values);
@@ -21046,7 +21004,6 @@ public final class Mdb {
         return entryBuilder_;
       }
 
-      // optional string url = 11;
       private java.lang.Object url_ = "";
       /**
        * <code>optional string url = 11;</code>
@@ -21060,9 +21017,12 @@ public final class Mdb {
       public java.lang.String getUrl() {
         java.lang.Object ref = url_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          url_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            url_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -21131,10 +21091,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.ContainerInfo)
   }
 
-  public interface InputParameterInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface InputParameterInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.InputParameterInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional .mdb.ParameterInfo parameter = 1;
     /**
      * <code>optional .mdb.ParameterInfo parameter = 1;</code>
      */
@@ -21148,7 +21108,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder();
 
-    // optional string inputName = 2;
     /**
      * <code>optional string inputName = 2;</code>
      */
@@ -21163,7 +21122,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getInputNameBytes();
 
-    // optional int32 parameterInstance = 3;
     /**
      * <code>optional int32 parameterInstance = 3;</code>
      */
@@ -21173,7 +21131,6 @@ public final class Mdb {
      */
     int getParameterInstance();
 
-    // optional bool mandatory = 4;
     /**
      * <code>optional bool mandatory = 4;</code>
      */
@@ -21187,8 +21144,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.InputParameterInfo}
    */
   public static final class InputParameterInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements InputParameterInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.InputParameterInfo)
+      InputParameterInfoOrBuilder {
     // Use InputParameterInfo.newBuilder() to construct.
     private InputParameterInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -21248,8 +21206,9 @@ public final class Mdb {
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              inputName_ = input.readBytes();
+              inputName_ = bs;
               break;
             }
             case 24: {
@@ -21302,7 +21261,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional .mdb.ParameterInfo parameter = 1;
     public static final int PARAMETER_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Mdb.ParameterInfo parameter_;
     /**
@@ -21324,7 +21282,6 @@ public final class Mdb {
       return parameter_;
     }
 
-    // optional string inputName = 2;
     public static final int INPUTNAME_FIELD_NUMBER = 2;
     private java.lang.Object inputName_;
     /**
@@ -21367,7 +21324,6 @@ public final class Mdb {
       }
     }
 
-    // optional int32 parameterInstance = 3;
     public static final int PARAMETERINSTANCE_FIELD_NUMBER = 3;
     private int parameterInstance_;
     /**
@@ -21383,7 +21339,6 @@ public final class Mdb {
       return parameterInstance_;
     }
 
-    // optional bool mandatory = 4;
     public static final int MANDATORY_FIELD_NUMBER = 4;
     private boolean mandatory_;
     /**
@@ -21408,7 +21363,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasParameter()) {
         if (!getParameter().isInitialized()) {
@@ -21542,8 +21498,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.InputParameterInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.InputParameterInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.InputParameterInfo)
+        org.yamcs.protobuf.Mdb.InputParameterInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_InputParameterInfo_descriptor;
@@ -21700,7 +21657,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional .mdb.ParameterInfo parameter = 1;
       private org.yamcs.protobuf.Mdb.ParameterInfo parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> parameterBuilder_;
@@ -21809,7 +21765,7 @@ public final class Mdb {
         if (parameterBuilder_ == null) {
           parameterBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder>(
-                  parameter_,
+                  getParameter(),
                   getParentForChildren(),
                   isClean());
           parameter_ = null;
@@ -21817,7 +21773,6 @@ public final class Mdb {
         return parameterBuilder_;
       }
 
-      // optional string inputName = 2;
       private java.lang.Object inputName_ = "";
       /**
        * <code>optional string inputName = 2;</code>
@@ -21831,9 +21786,12 @@ public final class Mdb {
       public java.lang.String getInputName() {
         java.lang.Object ref = inputName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          inputName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            inputName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -21891,7 +21849,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional int32 parameterInstance = 3;
       private int parameterInstance_ ;
       /**
        * <code>optional int32 parameterInstance = 3;</code>
@@ -21924,7 +21881,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional bool mandatory = 4;
       private boolean mandatory_ ;
       /**
        * <code>optional bool mandatory = 4;</code>
@@ -21968,10 +21924,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.InputParameterInfo)
   }
 
-  public interface OutputParameterInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface OutputParameterInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.OutputParameterInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional .mdb.ParameterInfo parameter = 1;
     /**
      * <code>optional .mdb.ParameterInfo parameter = 1;</code>
      */
@@ -21985,7 +21941,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder();
 
-    // optional string outputName = 2;
     /**
      * <code>optional string outputName = 2;</code>
      */
@@ -22004,8 +21959,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.OutputParameterInfo}
    */
   public static final class OutputParameterInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements OutputParameterInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.OutputParameterInfo)
+      OutputParameterInfoOrBuilder {
     // Use OutputParameterInfo.newBuilder() to construct.
     private OutputParameterInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -22065,8 +22021,9 @@ public final class Mdb {
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              outputName_ = input.readBytes();
+              outputName_ = bs;
               break;
             }
           }
@@ -22109,7 +22066,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional .mdb.ParameterInfo parameter = 1;
     public static final int PARAMETER_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Mdb.ParameterInfo parameter_;
     /**
@@ -22131,7 +22087,6 @@ public final class Mdb {
       return parameter_;
     }
 
-    // optional string outputName = 2;
     public static final int OUTPUTNAME_FIELD_NUMBER = 2;
     private java.lang.Object outputName_;
     /**
@@ -22181,7 +22136,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasParameter()) {
         if (!getParameter().isInitialized()) {
@@ -22301,8 +22257,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.OutputParameterInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.OutputParameterInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.OutputParameterInfo)
+        org.yamcs.protobuf.Mdb.OutputParameterInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_OutputParameterInfo_descriptor;
@@ -22441,7 +22398,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional .mdb.ParameterInfo parameter = 1;
       private org.yamcs.protobuf.Mdb.ParameterInfo parameter_ = org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> parameterBuilder_;
@@ -22550,7 +22506,7 @@ public final class Mdb {
         if (parameterBuilder_ == null) {
           parameterBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder>(
-                  parameter_,
+                  getParameter(),
                   getParentForChildren(),
                   isClean());
           parameter_ = null;
@@ -22558,7 +22514,6 @@ public final class Mdb {
         return parameterBuilder_;
       }
 
-      // optional string outputName = 2;
       private java.lang.Object outputName_ = "";
       /**
        * <code>optional string outputName = 2;</code>
@@ -22572,9 +22527,12 @@ public final class Mdb {
       public java.lang.String getOutputName() {
         java.lang.Object ref = outputName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          outputName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            outputName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -22643,10 +22601,10 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.OutputParameterInfo)
   }
 
-  public interface AlgorithmInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface AlgorithmInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.AlgorithmInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string name = 1;
     /**
      * <code>optional string name = 1;</code>
      */
@@ -22661,7 +22619,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getNameBytes();
 
-    // optional string qualifiedName = 2;
     /**
      * <code>optional string qualifiedName = 2;</code>
      */
@@ -22676,7 +22633,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getQualifiedNameBytes();
 
-    // optional string shortDescription = 3;
     /**
      * <code>optional string shortDescription = 3;</code>
      */
@@ -22691,7 +22647,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getShortDescriptionBytes();
 
-    // optional string longDescription = 4;
     /**
      * <code>optional string longDescription = 4;</code>
      */
@@ -22706,7 +22661,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getLongDescriptionBytes();
 
-    // repeated .yamcs.NamedObjectId alias = 5;
     /**
      * <code>repeated .yamcs.NamedObjectId alias = 5;</code>
      */
@@ -22731,7 +22685,6 @@ public final class Mdb {
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getAliasOrBuilder(
         int index);
 
-    // optional .mdb.AlgorithmInfo.Scope scope = 6;
     /**
      * <code>optional .mdb.AlgorithmInfo.Scope scope = 6;</code>
      */
@@ -22741,7 +22694,6 @@ public final class Mdb {
      */
     org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope getScope();
 
-    // optional string language = 7;
     /**
      * <code>optional string language = 7;</code>
      */
@@ -22756,7 +22708,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getLanguageBytes();
 
-    // optional string text = 8;
     /**
      * <code>optional string text = 8;</code>
      */
@@ -22771,7 +22722,6 @@ public final class Mdb {
     com.google.protobuf.ByteString
         getTextBytes();
 
-    // repeated .mdb.InputParameterInfo inputParameter = 9;
     /**
      * <code>repeated .mdb.InputParameterInfo inputParameter = 9;</code>
      */
@@ -22796,7 +22746,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.InputParameterInfoOrBuilder getInputParameterOrBuilder(
         int index);
 
-    // repeated .mdb.OutputParameterInfo outputParameter = 10;
     /**
      * <code>repeated .mdb.OutputParameterInfo outputParameter = 10;</code>
      */
@@ -22821,7 +22770,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.OutputParameterInfoOrBuilder getOutputParameterOrBuilder(
         int index);
 
-    // repeated .mdb.ParameterInfo onParameterUpdate = 11;
     /**
      * <code>repeated .mdb.ParameterInfo onParameterUpdate = 11;</code>
      */
@@ -22846,7 +22794,6 @@ public final class Mdb {
     org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getOnParameterUpdateOrBuilder(
         int index);
 
-    // repeated int64 onPeriodicRate = 12;
     /**
      * <code>repeated int64 onPeriodicRate = 12;</code>
      */
@@ -22860,7 +22807,6 @@ public final class Mdb {
      */
     long getOnPeriodicRate(int index);
 
-    // optional string url = 13;
     /**
      * <code>optional string url = 13;</code>
      */
@@ -22879,8 +22825,9 @@ public final class Mdb {
    * Protobuf type {@code mdb.AlgorithmInfo}
    */
   public static final class AlgorithmInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements AlgorithmInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:mdb.AlgorithmInfo)
+      AlgorithmInfoOrBuilder {
     // Use AlgorithmInfo.newBuilder() to construct.
     private AlgorithmInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -22927,23 +22874,27 @@ public final class Mdb {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              name_ = input.readBytes();
+              name_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              qualifiedName_ = input.readBytes();
+              qualifiedName_ = bs;
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              shortDescription_ = input.readBytes();
+              shortDescription_ = bs;
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
-              longDescription_ = input.readBytes();
+              longDescription_ = bs;
               break;
             }
             case 42: {
@@ -22966,13 +22917,15 @@ public final class Mdb {
               break;
             }
             case 58: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000020;
-              language_ = input.readBytes();
+              language_ = bs;
               break;
             }
             case 66: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000040;
-              text_ = input.readBytes();
+              text_ = bs;
               break;
             }
             case 74: {
@@ -23021,8 +22974,9 @@ public final class Mdb {
               break;
             }
             case 106: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000080;
-              url_ = input.readBytes();
+              url_ = bs;
               break;
             }
           }
@@ -23162,7 +23116,6 @@ public final class Mdb {
     }
 
     private int bitField0_;
-    // optional string name = 1;
     public static final int NAME_FIELD_NUMBER = 1;
     private java.lang.Object name_;
     /**
@@ -23205,7 +23158,6 @@ public final class Mdb {
       }
     }
 
-    // optional string qualifiedName = 2;
     public static final int QUALIFIEDNAME_FIELD_NUMBER = 2;
     private java.lang.Object qualifiedName_;
     /**
@@ -23248,7 +23200,6 @@ public final class Mdb {
       }
     }
 
-    // optional string shortDescription = 3;
     public static final int SHORTDESCRIPTION_FIELD_NUMBER = 3;
     private java.lang.Object shortDescription_;
     /**
@@ -23291,7 +23242,6 @@ public final class Mdb {
       }
     }
 
-    // optional string longDescription = 4;
     public static final int LONGDESCRIPTION_FIELD_NUMBER = 4;
     private java.lang.Object longDescription_;
     /**
@@ -23334,7 +23284,6 @@ public final class Mdb {
       }
     }
 
-    // repeated .yamcs.NamedObjectId alias = 5;
     public static final int ALIAS_FIELD_NUMBER = 5;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> alias_;
     /**
@@ -23370,7 +23319,6 @@ public final class Mdb {
       return alias_.get(index);
     }
 
-    // optional .mdb.AlgorithmInfo.Scope scope = 6;
     public static final int SCOPE_FIELD_NUMBER = 6;
     private org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope scope_;
     /**
@@ -23386,7 +23334,6 @@ public final class Mdb {
       return scope_;
     }
 
-    // optional string language = 7;
     public static final int LANGUAGE_FIELD_NUMBER = 7;
     private java.lang.Object language_;
     /**
@@ -23429,7 +23376,6 @@ public final class Mdb {
       }
     }
 
-    // optional string text = 8;
     public static final int TEXT_FIELD_NUMBER = 8;
     private java.lang.Object text_;
     /**
@@ -23472,7 +23418,6 @@ public final class Mdb {
       }
     }
 
-    // repeated .mdb.InputParameterInfo inputParameter = 9;
     public static final int INPUTPARAMETER_FIELD_NUMBER = 9;
     private java.util.List<org.yamcs.protobuf.Mdb.InputParameterInfo> inputParameter_;
     /**
@@ -23508,7 +23453,6 @@ public final class Mdb {
       return inputParameter_.get(index);
     }
 
-    // repeated .mdb.OutputParameterInfo outputParameter = 10;
     public static final int OUTPUTPARAMETER_FIELD_NUMBER = 10;
     private java.util.List<org.yamcs.protobuf.Mdb.OutputParameterInfo> outputParameter_;
     /**
@@ -23544,7 +23488,6 @@ public final class Mdb {
       return outputParameter_.get(index);
     }
 
-    // repeated .mdb.ParameterInfo onParameterUpdate = 11;
     public static final int ONPARAMETERUPDATE_FIELD_NUMBER = 11;
     private java.util.List<org.yamcs.protobuf.Mdb.ParameterInfo> onParameterUpdate_;
     /**
@@ -23580,7 +23523,6 @@ public final class Mdb {
       return onParameterUpdate_.get(index);
     }
 
-    // repeated int64 onPeriodicRate = 12;
     public static final int ONPERIODICRATE_FIELD_NUMBER = 12;
     private java.util.List<java.lang.Long> onPeriodicRate_;
     /**
@@ -23603,7 +23545,6 @@ public final class Mdb {
       return onPeriodicRate_.get(index);
     }
 
-    // optional string url = 13;
     public static final int URL_FIELD_NUMBER = 13;
     private java.lang.Object url_;
     /**
@@ -23664,7 +23605,8 @@ public final class Mdb {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       for (int i = 0; i < getAliasCount(); i++) {
         if (!getAlias(i).isInitialized()) {
@@ -23884,8 +23826,9 @@ public final class Mdb {
      * Protobuf type {@code mdb.AlgorithmInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.AlgorithmInfo)
+        org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Mdb.internal_static_mdb_AlgorithmInfo_descriptor;
@@ -24284,7 +24227,6 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      // optional string name = 1;
       private java.lang.Object name_ = "";
       /**
        * <code>optional string name = 1;</code>
@@ -24298,9 +24240,12 @@ public final class Mdb {
       public java.lang.String getName() {
         java.lang.Object ref = name_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          name_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -24358,7 +24303,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string qualifiedName = 2;
       private java.lang.Object qualifiedName_ = "";
       /**
        * <code>optional string qualifiedName = 2;</code>
@@ -24372,9 +24316,12 @@ public final class Mdb {
       public java.lang.String getQualifiedName() {
         java.lang.Object ref = qualifiedName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          qualifiedName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            qualifiedName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -24432,7 +24379,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string shortDescription = 3;
       private java.lang.Object shortDescription_ = "";
       /**
        * <code>optional string shortDescription = 3;</code>
@@ -24446,9 +24392,12 @@ public final class Mdb {
       public java.lang.String getShortDescription() {
         java.lang.Object ref = shortDescription_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          shortDescription_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            shortDescription_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -24506,7 +24455,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string longDescription = 4;
       private java.lang.Object longDescription_ = "";
       /**
        * <code>optional string longDescription = 4;</code>
@@ -24520,9 +24468,12 @@ public final class Mdb {
       public java.lang.String getLongDescription() {
         java.lang.Object ref = longDescription_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          longDescription_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            longDescription_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -24580,7 +24531,6 @@ public final class Mdb {
         return this;
       }
 
-      // repeated .yamcs.NamedObjectId alias = 5;
       private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> alias_ =
         java.util.Collections.emptyList();
       private void ensureAliasIsMutable() {
@@ -24722,7 +24672,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
         if (aliasBuilder_ == null) {
           ensureAliasIsMutable();
-          super.addAll(values, alias_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, alias_);
           onChanged();
         } else {
           aliasBuilder_.addAllMessages(values);
@@ -24820,7 +24771,6 @@ public final class Mdb {
         return aliasBuilder_;
       }
 
-      // optional .mdb.AlgorithmInfo.Scope scope = 6;
       private org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope scope_ = org.yamcs.protobuf.Mdb.AlgorithmInfo.Scope.GLOBAL;
       /**
        * <code>optional .mdb.AlgorithmInfo.Scope scope = 6;</code>
@@ -24856,7 +24806,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string language = 7;
       private java.lang.Object language_ = "";
       /**
        * <code>optional string language = 7;</code>
@@ -24870,9 +24819,12 @@ public final class Mdb {
       public java.lang.String getLanguage() {
         java.lang.Object ref = language_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          language_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            language_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -24930,7 +24882,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string text = 8;
       private java.lang.Object text_ = "";
       /**
        * <code>optional string text = 8;</code>
@@ -24944,9 +24895,12 @@ public final class Mdb {
       public java.lang.String getText() {
         java.lang.Object ref = text_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          text_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            text_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -25004,7 +24958,6 @@ public final class Mdb {
         return this;
       }
 
-      // repeated .mdb.InputParameterInfo inputParameter = 9;
       private java.util.List<org.yamcs.protobuf.Mdb.InputParameterInfo> inputParameter_ =
         java.util.Collections.emptyList();
       private void ensureInputParameterIsMutable() {
@@ -25146,7 +25099,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.InputParameterInfo> values) {
         if (inputParameterBuilder_ == null) {
           ensureInputParameterIsMutable();
-          super.addAll(values, inputParameter_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, inputParameter_);
           onChanged();
         } else {
           inputParameterBuilder_.addAllMessages(values);
@@ -25244,7 +25198,6 @@ public final class Mdb {
         return inputParameterBuilder_;
       }
 
-      // repeated .mdb.OutputParameterInfo outputParameter = 10;
       private java.util.List<org.yamcs.protobuf.Mdb.OutputParameterInfo> outputParameter_ =
         java.util.Collections.emptyList();
       private void ensureOutputParameterIsMutable() {
@@ -25386,7 +25339,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.OutputParameterInfo> values) {
         if (outputParameterBuilder_ == null) {
           ensureOutputParameterIsMutable();
-          super.addAll(values, outputParameter_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, outputParameter_);
           onChanged();
         } else {
           outputParameterBuilder_.addAllMessages(values);
@@ -25484,7 +25438,6 @@ public final class Mdb {
         return outputParameterBuilder_;
       }
 
-      // repeated .mdb.ParameterInfo onParameterUpdate = 11;
       private java.util.List<org.yamcs.protobuf.Mdb.ParameterInfo> onParameterUpdate_ =
         java.util.Collections.emptyList();
       private void ensureOnParameterUpdateIsMutable() {
@@ -25626,7 +25579,8 @@ public final class Mdb {
           java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ParameterInfo> values) {
         if (onParameterUpdateBuilder_ == null) {
           ensureOnParameterUpdateIsMutable();
-          super.addAll(values, onParameterUpdate_);
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, onParameterUpdate_);
           onChanged();
         } else {
           onParameterUpdateBuilder_.addAllMessages(values);
@@ -25724,7 +25678,6 @@ public final class Mdb {
         return onParameterUpdateBuilder_;
       }
 
-      // repeated int64 onPeriodicRate = 12;
       private java.util.List<java.lang.Long> onPeriodicRate_ = java.util.Collections.emptyList();
       private void ensureOnPeriodicRateIsMutable() {
         if (!((bitField0_ & 0x00000800) == 0x00000800)) {
@@ -25776,7 +25729,8 @@ public final class Mdb {
       public Builder addAllOnPeriodicRate(
           java.lang.Iterable<? extends java.lang.Long> values) {
         ensureOnPeriodicRateIsMutable();
-        super.addAll(values, onPeriodicRate_);
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, onPeriodicRate_);
         onChanged();
         return this;
       }
@@ -25790,7 +25744,6 @@ public final class Mdb {
         return this;
       }
 
-      // optional string url = 13;
       private java.lang.Object url_ = "";
       /**
        * <code>optional string url = 13;</code>
@@ -25804,9 +25757,12 @@ public final class Mdb {
       public java.lang.String getUrl() {
         java.lang.Object ref = url_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          url_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            url_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -25875,107 +25831,107 @@ public final class Mdb {
     // @@protoc_insertion_point(class_scope:mdb.AlgorithmInfo)
   }
 
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_UnitInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_UnitInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_AlarmRange_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_AlarmRange_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_EnumerationAlarm_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_EnumerationAlarm_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_AlarmInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_AlarmInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_DataEncodingInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_DataEncodingInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_EnumValue_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_EnumValue_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_ParameterTypeInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_ParameterTypeInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_ParameterInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_ParameterInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_ArgumentTypeInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_ArgumentTypeInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_ArgumentInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_ArgumentInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_ArgumentAssignmentInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_ArgumentAssignmentInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_SignificanceInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_SignificanceInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_ComparisonInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_ComparisonInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_TransmissionConstraintInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_TransmissionConstraintInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_CommandInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_CommandInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_RepeatInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_RepeatInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_SequenceEntryInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_SequenceEntryInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_ContainerInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_ContainerInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_InputParameterInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_InputParameterInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_OutputParameterInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mdb_OutputParameterInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_AlgorithmInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -26092,144 +26048,145 @@ public final class Mdb {
       "\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-      new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-        public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
-          descriptor = root;
-          internal_static_mdb_UnitInfo_descriptor =
-            getDescriptor().getMessageTypes().get(0);
-          internal_static_mdb_UnitInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_UnitInfo_descriptor,
-              new java.lang.String[] { "Unit", });
-          internal_static_mdb_AlarmRange_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_mdb_AlarmRange_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_AlarmRange_descriptor,
-              new java.lang.String[] { "Level", "MinInclusive", "MaxInclusive", "MinExclusive", "MaxExclusive", });
-          internal_static_mdb_EnumerationAlarm_descriptor =
-            getDescriptor().getMessageTypes().get(2);
-          internal_static_mdb_EnumerationAlarm_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_EnumerationAlarm_descriptor,
-              new java.lang.String[] { "Level", "Label", });
-          internal_static_mdb_AlarmInfo_descriptor =
-            getDescriptor().getMessageTypes().get(3);
-          internal_static_mdb_AlarmInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_AlarmInfo_descriptor,
-              new java.lang.String[] { "MinViolations", "StaticAlarmRange", "EnumerationAlarm", });
-          internal_static_mdb_DataEncodingInfo_descriptor =
-            getDescriptor().getMessageTypes().get(4);
-          internal_static_mdb_DataEncodingInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_DataEncodingInfo_descriptor,
-              new java.lang.String[] { "Type", "LittleEndian", "SizeInBits", "Encoding", "DefaultCalibrator", });
-          internal_static_mdb_EnumValue_descriptor =
-            getDescriptor().getMessageTypes().get(5);
-          internal_static_mdb_EnumValue_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_EnumValue_descriptor,
-              new java.lang.String[] { "Value", "Label", });
-          internal_static_mdb_ParameterTypeInfo_descriptor =
-            getDescriptor().getMessageTypes().get(6);
-          internal_static_mdb_ParameterTypeInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_ParameterTypeInfo_descriptor,
-              new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "DefaultAlarm", "EnumValue", });
-          internal_static_mdb_ParameterInfo_descriptor =
-            getDescriptor().getMessageTypes().get(7);
-          internal_static_mdb_ParameterInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_ParameterInfo_descriptor,
-              new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "Type", "DataSource", "Url", });
-          internal_static_mdb_ArgumentTypeInfo_descriptor =
-            getDescriptor().getMessageTypes().get(8);
-          internal_static_mdb_ArgumentTypeInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_ArgumentTypeInfo_descriptor,
-              new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "EnumValue", "RangeMin", "RangeMax", });
-          internal_static_mdb_ArgumentInfo_descriptor =
-            getDescriptor().getMessageTypes().get(9);
-          internal_static_mdb_ArgumentInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_ArgumentInfo_descriptor,
-              new java.lang.String[] { "Name", "Description", "InitialValue", "Type", });
-          internal_static_mdb_ArgumentAssignmentInfo_descriptor =
-            getDescriptor().getMessageTypes().get(10);
-          internal_static_mdb_ArgumentAssignmentInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_ArgumentAssignmentInfo_descriptor,
-              new java.lang.String[] { "Name", "Value", });
-          internal_static_mdb_SignificanceInfo_descriptor =
-            getDescriptor().getMessageTypes().get(11);
-          internal_static_mdb_SignificanceInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_SignificanceInfo_descriptor,
-              new java.lang.String[] { "ConsequenceLevel", "ReasonForWarning", });
-          internal_static_mdb_ComparisonInfo_descriptor =
-            getDescriptor().getMessageTypes().get(12);
-          internal_static_mdb_ComparisonInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_ComparisonInfo_descriptor,
-              new java.lang.String[] { "Parameter", "Operator", "Value", });
-          internal_static_mdb_TransmissionConstraintInfo_descriptor =
-            getDescriptor().getMessageTypes().get(13);
-          internal_static_mdb_TransmissionConstraintInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_TransmissionConstraintInfo_descriptor,
-              new java.lang.String[] { "Comparison", "Timeout", });
-          internal_static_mdb_CommandInfo_descriptor =
-            getDescriptor().getMessageTypes().get(14);
-          internal_static_mdb_CommandInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_CommandInfo_descriptor,
-              new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "BaseCommand", "Abstract", "Argument", "ArgumentAssignment", "Significance", "Constraint", "Url", });
-          internal_static_mdb_RepeatInfo_descriptor =
-            getDescriptor().getMessageTypes().get(15);
-          internal_static_mdb_RepeatInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_RepeatInfo_descriptor,
-              new java.lang.String[] { "FixedCount", "DynamicCount", "BitsBetween", });
-          internal_static_mdb_SequenceEntryInfo_descriptor =
-            getDescriptor().getMessageTypes().get(16);
-          internal_static_mdb_SequenceEntryInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_SequenceEntryInfo_descriptor,
-              new java.lang.String[] { "LocationInBits", "ReferenceLocation", "Container", "Parameter", "Repeat", });
-          internal_static_mdb_ContainerInfo_descriptor =
-            getDescriptor().getMessageTypes().get(17);
-          internal_static_mdb_ContainerInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_ContainerInfo_descriptor,
-              new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "MaxInterval", "SizeInBits", "BaseContainer", "RestrictionCriteria", "Entry", "Url", });
-          internal_static_mdb_InputParameterInfo_descriptor =
-            getDescriptor().getMessageTypes().get(18);
-          internal_static_mdb_InputParameterInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_InputParameterInfo_descriptor,
-              new java.lang.String[] { "Parameter", "InputName", "ParameterInstance", "Mandatory", });
-          internal_static_mdb_OutputParameterInfo_descriptor =
-            getDescriptor().getMessageTypes().get(19);
-          internal_static_mdb_OutputParameterInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_OutputParameterInfo_descriptor,
-              new java.lang.String[] { "Parameter", "OutputName", });
-          internal_static_mdb_AlgorithmInfo_descriptor =
-            getDescriptor().getMessageTypes().get(20);
-          internal_static_mdb_AlgorithmInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_mdb_AlgorithmInfo_descriptor,
-              new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "Scope", "Language", "Text", "InputParameter", "OutputParameter", "OnParameterUpdate", "OnPeriodicRate", "Url", });
-          return null;
-        }
-      };
+        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+          public com.google.protobuf.ExtensionRegistry assignDescriptors(
+              com.google.protobuf.Descriptors.FileDescriptor root) {
+            descriptor = root;
+            return null;
+          }
+        };
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Yamcs.getDescriptor(),
         }, assigner);
+    internal_static_mdb_UnitInfo_descriptor =
+      getDescriptor().getMessageTypes().get(0);
+    internal_static_mdb_UnitInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_UnitInfo_descriptor,
+        new java.lang.String[] { "Unit", });
+    internal_static_mdb_AlarmRange_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_mdb_AlarmRange_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_AlarmRange_descriptor,
+        new java.lang.String[] { "Level", "MinInclusive", "MaxInclusive", "MinExclusive", "MaxExclusive", });
+    internal_static_mdb_EnumerationAlarm_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_mdb_EnumerationAlarm_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_EnumerationAlarm_descriptor,
+        new java.lang.String[] { "Level", "Label", });
+    internal_static_mdb_AlarmInfo_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_mdb_AlarmInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_AlarmInfo_descriptor,
+        new java.lang.String[] { "MinViolations", "StaticAlarmRange", "EnumerationAlarm", });
+    internal_static_mdb_DataEncodingInfo_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_mdb_DataEncodingInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_DataEncodingInfo_descriptor,
+        new java.lang.String[] { "Type", "LittleEndian", "SizeInBits", "Encoding", "DefaultCalibrator", });
+    internal_static_mdb_EnumValue_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_mdb_EnumValue_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_EnumValue_descriptor,
+        new java.lang.String[] { "Value", "Label", });
+    internal_static_mdb_ParameterTypeInfo_descriptor =
+      getDescriptor().getMessageTypes().get(6);
+    internal_static_mdb_ParameterTypeInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_ParameterTypeInfo_descriptor,
+        new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "DefaultAlarm", "EnumValue", });
+    internal_static_mdb_ParameterInfo_descriptor =
+      getDescriptor().getMessageTypes().get(7);
+    internal_static_mdb_ParameterInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_ParameterInfo_descriptor,
+        new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "Type", "DataSource", "Url", });
+    internal_static_mdb_ArgumentTypeInfo_descriptor =
+      getDescriptor().getMessageTypes().get(8);
+    internal_static_mdb_ArgumentTypeInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_ArgumentTypeInfo_descriptor,
+        new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "EnumValue", "RangeMin", "RangeMax", });
+    internal_static_mdb_ArgumentInfo_descriptor =
+      getDescriptor().getMessageTypes().get(9);
+    internal_static_mdb_ArgumentInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_ArgumentInfo_descriptor,
+        new java.lang.String[] { "Name", "Description", "InitialValue", "Type", });
+    internal_static_mdb_ArgumentAssignmentInfo_descriptor =
+      getDescriptor().getMessageTypes().get(10);
+    internal_static_mdb_ArgumentAssignmentInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_ArgumentAssignmentInfo_descriptor,
+        new java.lang.String[] { "Name", "Value", });
+    internal_static_mdb_SignificanceInfo_descriptor =
+      getDescriptor().getMessageTypes().get(11);
+    internal_static_mdb_SignificanceInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_SignificanceInfo_descriptor,
+        new java.lang.String[] { "ConsequenceLevel", "ReasonForWarning", });
+    internal_static_mdb_ComparisonInfo_descriptor =
+      getDescriptor().getMessageTypes().get(12);
+    internal_static_mdb_ComparisonInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_ComparisonInfo_descriptor,
+        new java.lang.String[] { "Parameter", "Operator", "Value", });
+    internal_static_mdb_TransmissionConstraintInfo_descriptor =
+      getDescriptor().getMessageTypes().get(13);
+    internal_static_mdb_TransmissionConstraintInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_TransmissionConstraintInfo_descriptor,
+        new java.lang.String[] { "Comparison", "Timeout", });
+    internal_static_mdb_CommandInfo_descriptor =
+      getDescriptor().getMessageTypes().get(14);
+    internal_static_mdb_CommandInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_CommandInfo_descriptor,
+        new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "BaseCommand", "Abstract", "Argument", "ArgumentAssignment", "Significance", "Constraint", "Url", });
+    internal_static_mdb_RepeatInfo_descriptor =
+      getDescriptor().getMessageTypes().get(15);
+    internal_static_mdb_RepeatInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_RepeatInfo_descriptor,
+        new java.lang.String[] { "FixedCount", "DynamicCount", "BitsBetween", });
+    internal_static_mdb_SequenceEntryInfo_descriptor =
+      getDescriptor().getMessageTypes().get(16);
+    internal_static_mdb_SequenceEntryInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_SequenceEntryInfo_descriptor,
+        new java.lang.String[] { "LocationInBits", "ReferenceLocation", "Container", "Parameter", "Repeat", });
+    internal_static_mdb_ContainerInfo_descriptor =
+      getDescriptor().getMessageTypes().get(17);
+    internal_static_mdb_ContainerInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_ContainerInfo_descriptor,
+        new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "MaxInterval", "SizeInBits", "BaseContainer", "RestrictionCriteria", "Entry", "Url", });
+    internal_static_mdb_InputParameterInfo_descriptor =
+      getDescriptor().getMessageTypes().get(18);
+    internal_static_mdb_InputParameterInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_InputParameterInfo_descriptor,
+        new java.lang.String[] { "Parameter", "InputName", "ParameterInstance", "Mandatory", });
+    internal_static_mdb_OutputParameterInfo_descriptor =
+      getDescriptor().getMessageTypes().get(19);
+    internal_static_mdb_OutputParameterInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_OutputParameterInfo_descriptor,
+        new java.lang.String[] { "Parameter", "OutputName", });
+    internal_static_mdb_AlgorithmInfo_descriptor =
+      getDescriptor().getMessageTypes().get(20);
+    internal_static_mdb_AlgorithmInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_mdb_AlgorithmInfo_descriptor,
+        new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "Scope", "Language", "Text", "InputParameter", "OutputParameter", "OnParameterUpdate", "OnPeriodicRate", "Url", });
+    org.yamcs.protobuf.Yamcs.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

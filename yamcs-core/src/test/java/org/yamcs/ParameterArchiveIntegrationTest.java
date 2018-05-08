@@ -50,9 +50,8 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testRestRetrieval() throws Exception {
-        //  Logger.getLogger("org.yamcs").setLevel(Level.INFO);
-        //Logger.getLogger("org.yamcs.parameterarchive").setLevel(Level.ALL);
-        generateData("2015-01-02T10:00:00", 2*3600);
+
+        generatePkt13AndPps("2015-01-02T10:00:00", 2 * 3600);
 
         String resp;
         Value engValue;
@@ -116,9 +115,8 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         AcquisitionStatus acqs = pdata.getParameter(0).getAcquisitionStatus();
         assertEquals(AcquisitionStatus.ACQUIRED, acqs);
 
-
-        //add some realtime data
-        generateData("2015-01-02T12:00:00", 10);
+        // add some realtime data
+        generatePkt13AndPps("2015-01-02T12:00:00", 10);
 
         resp = restClient.doRequest("/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T11:59:00&limit=20", HttpMethod.GET, "").get();
         pdata = fromJson(resp, SchemaPvalue.ParameterData.MERGE).build();
@@ -160,5 +158,4 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
             t+=1000;
         }
     }
-
 }

@@ -23,11 +23,13 @@ import org.yamcs.yarch.Tuple;
  *
  */
 public class ParameterReplayHandler implements ReplayHandler {
-    Set<String> currentGroups = new HashSet<>();
+    Set<String> includeGroups = new HashSet<>();
+    Set<String> excludeGroups = new HashSet<>();
     final XtceDb xtceDb;
     ReplayRequest request;
     static final Logger log = LoggerFactory.getLogger(ParameterReplayHandler.class);
-
+    boolean emptyReplay;
+    
     public ParameterReplayHandler(XtceDb xtceDb) {
         this.xtceDb = xtceDb;
     }
@@ -35,9 +37,19 @@ public class ParameterReplayHandler implements ReplayHandler {
     @Override
     public void setRequest(ReplayRequest newRequest) {
         this.request = newRequest;
-        currentGroups.clear();
-
-        currentGroups.addAll(newRequest.getPpRequest().getGroupNameFilterList());
+        includeGroups.clear();
+        excludeGroups.clear();
+        
+        includeGroups.addAll(newRequest.getPpRequest().getGroupNameFilterList());
+        excludeGroups.addAll(newRequest.getPpRequest().getGroupNameExcludeList());
+        emptyReplay = false;
+        if(!includeGroups.isEmpty() && !excludeGroups.isEmpty()) {
+            includeGroups.removeAll(excludeGroups);
+            if(includeGroups.isEmpty()) {
+                log.info("No group remaining after removing the exclusion, this is an empty replay");
+                emptyReplay = true;
+            }
+        }
     }
 
     /**
@@ -53,12 +65,26 @@ public class ParameterReplayHandler implements ReplayHandler {
      */
     @Override
     public String getSelectCmd() {
+        if(emptyReplay) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         sb.append("SELECT ").append(ProtoDataType.PP.getNumber()).append(",* from pp ");
-        if (!currentGroups.isEmpty()) {
+        if (!includeGroups.isEmpty()) {
             sb.append("WHERE group in(");
-            for (String g : currentGroups) {
+            for (String g : includeGroups) {
+                if (first) {
+                    first = false;
+                } else
+                    sb.append(", ");
+                sb.append("'").append(g).append("'");
+            }
+            sb.append(")");
+            XtceTmReplayHandler.appendTimeClause(sb, request, false);
+        } else  if (!excludeGroups.isEmpty()) {
+            sb.append("WHERE group not in(");
+            for (String g : excludeGroups) {
                 if (first) {
                     first = false;
                 } else

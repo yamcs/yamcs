@@ -8,10 +8,10 @@ public final class Alarms {
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
   }
-  public interface AcknowledgeInfoOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface AcknowledgeInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:alarms.AcknowledgeInfo)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional string acknowledgedBy = 1;
     /**
      * <code>optional string acknowledgedBy = 1;</code>
      */
@@ -26,7 +26,6 @@ public final class Alarms {
     com.google.protobuf.ByteString
         getAcknowledgedByBytes();
 
-    // optional string acknowledgeMessage = 2;
     /**
      * <code>optional string acknowledgeMessage = 2;</code>
      */
@@ -41,7 +40,6 @@ public final class Alarms {
     com.google.protobuf.ByteString
         getAcknowledgeMessageBytes();
 
-    // optional int64 acknowledgeTime = 3;
     /**
      * <code>optional int64 acknowledgeTime = 3;</code>
      */
@@ -51,7 +49,6 @@ public final class Alarms {
      */
     long getAcknowledgeTime();
 
-    // optional string acknowledgeTimeUTC = 4;
     /**
      * <code>optional string acknowledgeTimeUTC = 4;</code>
      */
@@ -70,8 +67,9 @@ public final class Alarms {
    * Protobuf type {@code alarms.AcknowledgeInfo}
    */
   public static final class AcknowledgeInfo extends
-      com.google.protobuf.GeneratedMessage
-      implements AcknowledgeInfoOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:alarms.AcknowledgeInfo)
+      AcknowledgeInfoOrBuilder {
     // Use AcknowledgeInfo.newBuilder() to construct.
     private AcknowledgeInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -118,13 +116,15 @@ public final class Alarms {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              acknowledgedBy_ = input.readBytes();
+              acknowledgedBy_ = bs;
               break;
             }
             case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
-              acknowledgeMessage_ = input.readBytes();
+              acknowledgeMessage_ = bs;
               break;
             }
             case 24: {
@@ -133,8 +133,9 @@ public final class Alarms {
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
-              acknowledgeTimeUTC_ = input.readBytes();
+              acknowledgeTimeUTC_ = bs;
               break;
             }
           }
@@ -177,7 +178,6 @@ public final class Alarms {
     }
 
     private int bitField0_;
-    // optional string acknowledgedBy = 1;
     public static final int ACKNOWLEDGEDBY_FIELD_NUMBER = 1;
     private java.lang.Object acknowledgedBy_;
     /**
@@ -220,7 +220,6 @@ public final class Alarms {
       }
     }
 
-    // optional string acknowledgeMessage = 2;
     public static final int ACKNOWLEDGEMESSAGE_FIELD_NUMBER = 2;
     private java.lang.Object acknowledgeMessage_;
     /**
@@ -263,7 +262,6 @@ public final class Alarms {
       }
     }
 
-    // optional int64 acknowledgeTime = 3;
     public static final int ACKNOWLEDGETIME_FIELD_NUMBER = 3;
     private long acknowledgeTime_;
     /**
@@ -279,7 +277,6 @@ public final class Alarms {
       return acknowledgeTime_;
     }
 
-    // optional string acknowledgeTimeUTC = 4;
     public static final int ACKNOWLEDGETIMEUTC_FIELD_NUMBER = 4;
     private java.lang.Object acknowledgeTimeUTC_;
     /**
@@ -331,7 +328,8 @@ public final class Alarms {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -459,8 +457,9 @@ public final class Alarms {
      * Protobuf type {@code alarms.AcknowledgeInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:alarms.AcknowledgeInfo)
+        org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Alarms.internal_static_alarms_AcknowledgeInfo_descriptor;
@@ -606,7 +605,6 @@ public final class Alarms {
       }
       private int bitField0_;
 
-      // optional string acknowledgedBy = 1;
       private java.lang.Object acknowledgedBy_ = "";
       /**
        * <code>optional string acknowledgedBy = 1;</code>
@@ -620,9 +618,12 @@ public final class Alarms {
       public java.lang.String getAcknowledgedBy() {
         java.lang.Object ref = acknowledgedBy_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          acknowledgedBy_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            acknowledgedBy_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -680,7 +681,6 @@ public final class Alarms {
         return this;
       }
 
-      // optional string acknowledgeMessage = 2;
       private java.lang.Object acknowledgeMessage_ = "";
       /**
        * <code>optional string acknowledgeMessage = 2;</code>
@@ -694,9 +694,12 @@ public final class Alarms {
       public java.lang.String getAcknowledgeMessage() {
         java.lang.Object ref = acknowledgeMessage_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          acknowledgeMessage_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            acknowledgeMessage_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -754,7 +757,6 @@ public final class Alarms {
         return this;
       }
 
-      // optional int64 acknowledgeTime = 3;
       private long acknowledgeTime_ ;
       /**
        * <code>optional int64 acknowledgeTime = 3;</code>
@@ -787,7 +789,6 @@ public final class Alarms {
         return this;
       }
 
-      // optional string acknowledgeTimeUTC = 4;
       private java.lang.Object acknowledgeTimeUTC_ = "";
       /**
        * <code>optional string acknowledgeTimeUTC = 4;</code>
@@ -801,9 +802,12 @@ public final class Alarms {
       public java.lang.String getAcknowledgeTimeUTC() {
         java.lang.Object ref = acknowledgeTimeUTC_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          acknowledgeTimeUTC_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            acknowledgeTimeUTC_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -872,10 +876,10 @@ public final class Alarms {
     // @@protoc_insertion_point(class_scope:alarms.AcknowledgeInfo)
   }
 
-  public interface AlarmDataOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface AlarmDataOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:alarms.AlarmData)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional uint32 seqNum = 1;
     /**
      * <code>optional uint32 seqNum = 1;</code>
      */
@@ -885,7 +889,6 @@ public final class Alarms {
      */
     int getSeqNum();
 
-    // optional .alarms.AlarmData.Type type = 2;
     /**
      * <code>optional .alarms.AlarmData.Type type = 2;</code>
      */
@@ -895,7 +898,6 @@ public final class Alarms {
      */
     org.yamcs.protobuf.Alarms.AlarmData.Type getType();
 
-    // optional .pvalue.ParameterValue triggerValue = 3;
     /**
      * <code>optional .pvalue.ParameterValue triggerValue = 3;</code>
      */
@@ -909,7 +911,6 @@ public final class Alarms {
      */
     org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getTriggerValueOrBuilder();
 
-    // optional .pvalue.ParameterValue mostSevereValue = 4;
     /**
      * <code>optional .pvalue.ParameterValue mostSevereValue = 4;</code>
      */
@@ -923,7 +924,6 @@ public final class Alarms {
      */
     org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getMostSevereValueOrBuilder();
 
-    // optional .pvalue.ParameterValue currentValue = 5;
     /**
      * <code>optional .pvalue.ParameterValue currentValue = 5;</code>
      */
@@ -937,7 +937,6 @@ public final class Alarms {
      */
     org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder getCurrentValueOrBuilder();
 
-    // optional uint32 violations = 6;
     /**
      * <code>optional uint32 violations = 6;</code>
      */
@@ -947,7 +946,6 @@ public final class Alarms {
      */
     int getViolations();
 
-    // optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;
     /**
      * <code>optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;</code>
      */
@@ -965,8 +963,9 @@ public final class Alarms {
    * Protobuf type {@code alarms.AlarmData}
    */
   public static final class AlarmData extends
-      com.google.protobuf.GeneratedMessage
-      implements AlarmDataOrBuilder {
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:alarms.AlarmData)
+      AlarmDataOrBuilder {
     // Use AlarmData.newBuilder() to construct.
     private AlarmData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
       super(builder);
@@ -1291,7 +1290,6 @@ public final class Alarms {
     }
 
     private int bitField0_;
-    // optional uint32 seqNum = 1;
     public static final int SEQNUM_FIELD_NUMBER = 1;
     private int seqNum_;
     /**
@@ -1307,7 +1305,6 @@ public final class Alarms {
       return seqNum_;
     }
 
-    // optional .alarms.AlarmData.Type type = 2;
     public static final int TYPE_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Alarms.AlarmData.Type type_;
     /**
@@ -1323,7 +1320,6 @@ public final class Alarms {
       return type_;
     }
 
-    // optional .pvalue.ParameterValue triggerValue = 3;
     public static final int TRIGGERVALUE_FIELD_NUMBER = 3;
     private org.yamcs.protobuf.Pvalue.ParameterValue triggerValue_;
     /**
@@ -1345,7 +1341,6 @@ public final class Alarms {
       return triggerValue_;
     }
 
-    // optional .pvalue.ParameterValue mostSevereValue = 4;
     public static final int MOSTSEVEREVALUE_FIELD_NUMBER = 4;
     private org.yamcs.protobuf.Pvalue.ParameterValue mostSevereValue_;
     /**
@@ -1367,7 +1362,6 @@ public final class Alarms {
       return mostSevereValue_;
     }
 
-    // optional .pvalue.ParameterValue currentValue = 5;
     public static final int CURRENTVALUE_FIELD_NUMBER = 5;
     private org.yamcs.protobuf.Pvalue.ParameterValue currentValue_;
     /**
@@ -1389,7 +1383,6 @@ public final class Alarms {
       return currentValue_;
     }
 
-    // optional uint32 violations = 6;
     public static final int VIOLATIONS_FIELD_NUMBER = 6;
     private int violations_;
     /**
@@ -1405,7 +1398,6 @@ public final class Alarms {
       return violations_;
     }
 
-    // optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;
     public static final int ACKNOWLEDGEINFO_FIELD_NUMBER = 7;
     private org.yamcs.protobuf.Alarms.AcknowledgeInfo acknowledgeInfo_;
     /**
@@ -1439,7 +1431,8 @@ public final class Alarms {
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       if (hasTriggerValue()) {
         if (!getTriggerValue().isInitialized()) {
@@ -1606,8 +1599,9 @@ public final class Alarms {
      * Protobuf type {@code alarms.AlarmData}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.protobuf.Alarms.AlarmDataOrBuilder {
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:alarms.AlarmData)
+        org.yamcs.protobuf.Alarms.AlarmDataOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.protobuf.Alarms.internal_static_alarms_AlarmData_descriptor;
@@ -1828,7 +1822,6 @@ public final class Alarms {
       }
       private int bitField0_;
 
-      // optional uint32 seqNum = 1;
       private int seqNum_ ;
       /**
        * <code>optional uint32 seqNum = 1;</code>
@@ -1861,7 +1854,6 @@ public final class Alarms {
         return this;
       }
 
-      // optional .alarms.AlarmData.Type type = 2;
       private org.yamcs.protobuf.Alarms.AlarmData.Type type_ = org.yamcs.protobuf.Alarms.AlarmData.Type.ACTIVE;
       /**
        * <code>optional .alarms.AlarmData.Type type = 2;</code>
@@ -1897,7 +1889,6 @@ public final class Alarms {
         return this;
       }
 
-      // optional .pvalue.ParameterValue triggerValue = 3;
       private org.yamcs.protobuf.Pvalue.ParameterValue triggerValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> triggerValueBuilder_;
@@ -2006,7 +1997,7 @@ public final class Alarms {
         if (triggerValueBuilder_ == null) {
           triggerValueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder>(
-                  triggerValue_,
+                  getTriggerValue(),
                   getParentForChildren(),
                   isClean());
           triggerValue_ = null;
@@ -2014,7 +2005,6 @@ public final class Alarms {
         return triggerValueBuilder_;
       }
 
-      // optional .pvalue.ParameterValue mostSevereValue = 4;
       private org.yamcs.protobuf.Pvalue.ParameterValue mostSevereValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> mostSevereValueBuilder_;
@@ -2123,7 +2113,7 @@ public final class Alarms {
         if (mostSevereValueBuilder_ == null) {
           mostSevereValueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder>(
-                  mostSevereValue_,
+                  getMostSevereValue(),
                   getParentForChildren(),
                   isClean());
           mostSevereValue_ = null;
@@ -2131,7 +2121,6 @@ public final class Alarms {
         return mostSevereValueBuilder_;
       }
 
-      // optional .pvalue.ParameterValue currentValue = 5;
       private org.yamcs.protobuf.Pvalue.ParameterValue currentValue_ = org.yamcs.protobuf.Pvalue.ParameterValue.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder> currentValueBuilder_;
@@ -2240,7 +2229,7 @@ public final class Alarms {
         if (currentValueBuilder_ == null) {
           currentValueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Pvalue.ParameterValue, org.yamcs.protobuf.Pvalue.ParameterValue.Builder, org.yamcs.protobuf.Pvalue.ParameterValueOrBuilder>(
-                  currentValue_,
+                  getCurrentValue(),
                   getParentForChildren(),
                   isClean());
           currentValue_ = null;
@@ -2248,7 +2237,6 @@ public final class Alarms {
         return currentValueBuilder_;
       }
 
-      // optional uint32 violations = 6;
       private int violations_ ;
       /**
        * <code>optional uint32 violations = 6;</code>
@@ -2281,7 +2269,6 @@ public final class Alarms {
         return this;
       }
 
-      // optional .alarms.AcknowledgeInfo acknowledgeInfo = 7;
       private org.yamcs.protobuf.Alarms.AcknowledgeInfo acknowledgeInfo_ = org.yamcs.protobuf.Alarms.AcknowledgeInfo.getDefaultInstance();
       private com.google.protobuf.SingleFieldBuilder<
           org.yamcs.protobuf.Alarms.AcknowledgeInfo, org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder, org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder> acknowledgeInfoBuilder_;
@@ -2390,7 +2377,7 @@ public final class Alarms {
         if (acknowledgeInfoBuilder_ == null) {
           acknowledgeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
               org.yamcs.protobuf.Alarms.AcknowledgeInfo, org.yamcs.protobuf.Alarms.AcknowledgeInfo.Builder, org.yamcs.protobuf.Alarms.AcknowledgeInfoOrBuilder>(
-                  acknowledgeInfo_,
+                  getAcknowledgeInfo(),
                   getParentForChildren(),
                   isClean());
           acknowledgeInfo_ = null;
@@ -2409,12 +2396,12 @@ public final class Alarms {
     // @@protoc_insertion_point(class_scope:alarms.AlarmData)
   }
 
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_alarms_AcknowledgeInfo_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_alarms_AcknowledgeInfo_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_alarms_AlarmData_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -2445,30 +2432,31 @@ public final class Alarms {
       ".protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-      new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-        public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
-          descriptor = root;
-          internal_static_alarms_AcknowledgeInfo_descriptor =
-            getDescriptor().getMessageTypes().get(0);
-          internal_static_alarms_AcknowledgeInfo_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_alarms_AcknowledgeInfo_descriptor,
-              new java.lang.String[] { "AcknowledgedBy", "AcknowledgeMessage", "AcknowledgeTime", "AcknowledgeTimeUTC", });
-          internal_static_alarms_AlarmData_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_alarms_AlarmData_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_alarms_AlarmData_descriptor,
-              new java.lang.String[] { "SeqNum", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "AcknowledgeInfo", });
-          return null;
-        }
-      };
+        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+          public com.google.protobuf.ExtensionRegistry assignDescriptors(
+              com.google.protobuf.Descriptors.FileDescriptor root) {
+            descriptor = root;
+            return null;
+          }
+        };
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           org.yamcs.protobuf.Pvalue.getDescriptor(),
         }, assigner);
+    internal_static_alarms_AcknowledgeInfo_descriptor =
+      getDescriptor().getMessageTypes().get(0);
+    internal_static_alarms_AcknowledgeInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_alarms_AcknowledgeInfo_descriptor,
+        new java.lang.String[] { "AcknowledgedBy", "AcknowledgeMessage", "AcknowledgeTime", "AcknowledgeTimeUTC", });
+    internal_static_alarms_AlarmData_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_alarms_AlarmData_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_alarms_AlarmData_descriptor,
+        new java.lang.String[] { "SeqNum", "Type", "TriggerValue", "MostSevereValue", "CurrentValue", "Violations", "AcknowledgeInfo", });
+    org.yamcs.protobuf.Pvalue.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -228,9 +228,13 @@ message CommandHistoryReplayRequest {
   repeated NamedObjectId nameFilter = 1;
 }
 
+//Request to replay parameters - they can be filtered by the parameter group
 message PpReplayRequest {
   // No filter, means all pp groups are sent
   repeated string groupNameFilter = 1;
+  // exclude the parameters from these groups
+  //   this takes precedence over the filter above (i.e. if a group is part of both, it will be excluded)
+  repeated string groupNameExclude = 2;
 }
 
 message ReplayStatus {

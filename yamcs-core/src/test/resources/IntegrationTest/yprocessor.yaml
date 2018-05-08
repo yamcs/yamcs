@@ -67,6 +67,17 @@ ArchiveRetrieval:
         parameterCache:
             enabled: false
             
+                        
+ArchiveWithPpExclusion:
+    telemetryProvider: 
+        class: org.yamcs.tctm.ReplayService
+        args: 
+            excludeParameterGroups: ["IntegrationTest"] 
+    config:
+        parameterCache:
+            enabled: true
+            cacheAll: true
+            
             
 #used for performing archive retrievals (e.g. parameter-extractor.sh)
 ParameterArchive:

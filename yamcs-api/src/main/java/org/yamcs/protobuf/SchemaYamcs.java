@@ -2659,6 +2659,8 @@ public final class SchemaYamcs
             {
                 for(String groupNameFilter : message.getGroupNameFilterList())
                     output.writeString(1, groupNameFilter, true);
+                for(String groupNameExclude : message.getGroupNameExcludeList())
+                    output.writeString(2, groupNameExclude, true);
             }
             public boolean isInitialized(org.yamcs.protobuf.Yamcs.PpReplayRequest message)
             {
@@ -2701,6 +2703,9 @@ public final class SchemaYamcs
                         case 1:
                             builder.addGroupNameFilter(input.readString());
                             break;
+                        case 2:
+                            builder.addGroupNameExclude(input.readString());
+                            break;
                         default:
                             input.handleUnknownField(number, this);
                     }
@@ -2742,6 +2747,7 @@ public final class SchemaYamcs
             switch(number)
             {
                 case 1: return "groupNameFilter";
+                case 2: return "groupNameExclude";
                 default: return null;
             }
         }
@@ -2754,6 +2760,7 @@ public final class SchemaYamcs
         static
         {
             fieldMap.put("groupNameFilter", 1);
+            fieldMap.put("groupNameExclude", 2);
         }
     }
 

@@ -112,9 +112,6 @@ public abstract class AbstractIntegrationTest {
         packetGenerator = packetProvider.mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
 
-        //        ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
-        //        System.out.println("got cinfo:"+cinfo);
-        //        assertNotNull(cinfo);
     }
 
     protected ClientInfo getClientInfo() throws InterruptedException {
@@ -204,8 +201,21 @@ public abstract class AbstractIntegrationTest {
             MessageLite.Builder msgb = (Builder) schema.newMessage();
             schema.mergeFrom(input, msgb);
             r.add((T)msgb.build());
+           
         }
         return r;
+    }
+    void generatePkt13AndPps(String utcStart, int numPackets) {
+        long t0 = TimeEncoding.parse(utcStart);
+        for (int i = 0; i < numPackets; i++) {
+            packetGenerator.setGenerationTime(t0 + 1000 * i);
+            packetGenerator.generate_PKT1_1();
+            packetGenerator.generate_PKT1_3();
+            
+            // parameters are 10ms later than packets to make sure that we have a predictable order during replay
+            parameterProvider.setGenerationTime(t0 + 1000 * i + 10);
+            parameterProvider.generateParameters(i);
+        }
     }
 
     static class MyWsListener implements WebSocketClientCallback {
@@ -439,10 +449,8 @@ public abstract class AbstractIntegrationTest {
                     .setGenerationTime(generationTime+20)
                     .setEngValue(ValueUtility.getUint32GbpValue(x))
                     .build();
-            ppListener.updateParams(generationTime+20, "IntegrationTest", seqNum, Arrays.asList(pv4));
-            
-           
-            
+            ppListener.updateParams(generationTime + 20, "IntegrationTest2", seqNum, Arrays.asList(pv4));
+
             seqNum++;
         }
     }

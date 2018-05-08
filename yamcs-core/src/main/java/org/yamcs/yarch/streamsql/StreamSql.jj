@@ -575,11 +575,12 @@ Expression RelationalExpression(): {
     RelOp relOp;
     List<Expression> list;
     LikeClause likeClause;
+    InClause inClause;
 } {
     expr=SimpleExpression(){retExpr=expr;}
     ( relOp=RelOp() expr=SimpleExpression() {retExpr=new RelationalExpression(retExpr,expr,relOp);}
       |
-      LOOKAHEAD(2) list=InClause() {retExpr=new InExpression(expr, list);}
+      LOOKAHEAD(2) inClause=InClause() {retExpr=new InExpression(expr, inClause);}
       |
       LOOKAHEAD(2) BetweenClause()
       |
@@ -602,12 +603,15 @@ List<Expression> ExpressionList(): {
     }
 }
 
-List<Expression> InClause(): {
+
+InClause InClause():  {
     List<Expression> list;
+    InClause inClause = new InClause();
 } {
-    "IN" "(" list=ExpressionList()")"
+    ["NOT" {inClause.setNegation(true);}] 
+    "IN" "(" list=ExpressionList()")" {inClause.setList(list);}
     {
-    return list;
+    return inClause;
     }
 }
 

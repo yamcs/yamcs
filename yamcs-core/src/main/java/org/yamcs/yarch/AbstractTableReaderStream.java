@@ -220,17 +220,33 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
      * currently adds only filters on value based partitions
      */
     @Override
-    public boolean addInFilter(ColumnExpression cexpr, Set<Object> values) throws StreamSqlException {
-        if(!tableDefinition.hasPartitioning()) return false;
-        PartitioningSpec pspec=tableDefinition.getPartitioningSpec();
+    public boolean addInFilter(ColumnExpression cexpr, boolean negation, Set<Object> values) throws StreamSqlException {
+        if (!tableDefinition.hasPartitioning())
+            return false;
+        PartitioningSpec pspec = tableDefinition.getPartitioningSpec();
 
-        if((pspec.valueColumn==null) || (!pspec.valueColumn.equals(cexpr.getName()))) return false;
+        if ((pspec.valueColumn == null) || (!pspec.valueColumn.equals(cexpr.getName())))
+            return false;
+        
         values = transformEnums(values);
-
-        if(partitionValueFilter==null) {
-            partitionValueFilter=values;
+        if (partitionValueFilter == null) {
+            if(negation) {
+                ColumnDefinition cd = tableDefinition.getColumnDefinition(pspec.valueColumn);
+                if (cd.getType() != DataType.ENUM) { //we don't know all the possible values so we cannot exclude
+                    return false;
+                }
+                BiMap<String, Short> enumValues = tableDefinition.getEnumValues(pspec.valueColumn);
+                partitionValueFilter = new HashSet<>(enumValues.values());
+                partitionValueFilter.removeAll(values);
+            } else {
+                partitionValueFilter = values;
+            }
         } else {
-            partitionValueFilter.retainAll(values);
+            if(negation) {
+                partitionValueFilter.removeAll(values);
+            } else {
+                partitionValueFilter.retainAll(values);
+            }
         }
         return true;
     }

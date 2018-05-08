@@ -48,7 +48,8 @@ public class PermissionsTest extends AbstractIntegrationTest {
         // testuser is allowed to replay integer parameters but no string parameters
         RestClient restClient1 = getRestClient("testuser", "password");
         // Check that integer parameter replay is ok
-        generateData("2015-03-02T10:00:00", 3600);
+        generatePkt13AndPps("2015-03-02T10:00:00", 3600);
+
         String resource = "/archive/IntegrationTest/parameters";
         resource += "/REFMDB/SUBSYS1/IntegerPara1_1_6";
         resource += "?start=2015-03-02T10:10:00&stop=2015-03-02T10:10:02&order=asc";

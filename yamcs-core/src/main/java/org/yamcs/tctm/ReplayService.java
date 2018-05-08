@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.TmProcessor;
+import org.yamcs.YConfiguration;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.YamcsException;
@@ -31,9 +33,11 @@ import org.yamcs.parameter.ParameterRequestManagerImpl;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
-import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
+import org.yamcs.protobuf.Commanding.CommandHistoryEntry;       
+import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.Event;
+import org.yamcs.protobuf.Yamcs.EventReplayRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
@@ -66,8 +70,10 @@ import io.protostuff.JsonIOUtil;
  * @author nm
  * 
  */
-public class ReplayService extends AbstractService implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHistoryProvider {
-    static final long timeout=10000;
+
+public class ReplayService extends AbstractService
+implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHistoryProvider {
+    static final long timeout = 10000;
 
     EndAction endAction;
     static Logger log=LoggerFactory.getLogger(ReplayService.class.getName());
@@ -88,14 +94,20 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     ReplayRequest.Builder rawDataRequest;
     CommandHistoryRequestManager commandHistoryRequestManager;
 
-    
-    public ReplayService(String instance, ReplayRequest spec) throws ConfigurationException {
+    //this can be set in the config (in processor.yaml) to exclude certain paramter groups from replay
+    List<String> excludeParameterGroups = null;
+
+    public ReplayService(String instance,Map<String, Object> args, ReplayRequest spec) throws ConfigurationException {
         this.yamcsInstance = instance;
         this.originalReplayRequest = spec;
         xtceDb = XtceDbFactory.getInstance(instance);
     }
     
-    public ReplayService(String instance, String config) throws ConfigurationException {
+    public ReplayService(String instance, ReplayRequest spec) throws ConfigurationException {
+        this(instance, null, spec);
+    }
+    
+    public ReplayService(String instance, Map<String, Object> args, String config) throws ConfigurationException {
         this.yamcsInstance = instance;
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder(); 
         try {
@@ -111,9 +123,14 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
         }
         this.originalReplayRequest = rrb.build();
         xtceDb = XtceDbFactory.getInstance(instance);
+        if((args!=null) && args.containsKey("excludeParameterGroups")) {
+            excludeParameterGroups = YConfiguration.getList(args, "excludeParameterGroups");
+        }
     }
-
-
+    public ReplayService(String instance, String config) throws ConfigurationException {
+        this(instance, null, config);
+    }
+    
     @Override
     public void init(Processor proc) throws ConfigurationException {
         this.yprocessor = proc;
@@ -159,7 +176,7 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             log.error("Unexpected data type {} received", type);            
         }
     }
-    
+
     private List<ParameterValue> calibrate(List<ParameterValue> pvlist) {
         ParameterTypeProcessor ptypeProcessor = yprocessor.getProcessorData().getParameterTypeProcessor();
         
@@ -194,16 +211,68 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
     // in order to do this, subscribe to all parameters from the list, then check in the tmProcessor subscription which containers are needed
     // and in the subscribedParameters which PPs may be required
     private void createRawSubscription() throws YamcsException {
-        rawDataRequest = originalReplayRequest.toBuilder().clearParameterRequest();
-                
+        // As described in yamcs.proto, by default everything is replayed unless
+        // at least one filter is specified.
+        boolean replayAll = !originalReplayRequest.hasPacketRequest()
+                && !originalReplayRequest.hasParameterRequest()
+                && !originalReplayRequest.hasEventRequest()
+                && !originalReplayRequest.hasPpRequest()
+                && !originalReplayRequest.hasCommandHistoryRequest();
+
+        if (replayAll) {
+            rawDataRequest = ReplayRequest.newBuilder(originalReplayRequest)
+                    .setPacketRequest(PacketReplayRequest.newBuilder())
+                    .setEventRequest(EventReplayRequest.newBuilder())
+                    .setPpRequest(PpReplayRequest.newBuilder())
+                    .setCommandHistoryRequest(CommandHistoryReplayRequest.newBuilder());
+        } else {
+            rawDataRequest = originalReplayRequest.toBuilder().clearParameterRequest();
+        }
+
+        if(!replayAll) {
+            addPacketsRequiredForParams();
+        }
+
+        // now check for PPs
+        Set<String> pprecordings = new HashSet<>();
+
+        for (Parameter p : subscribedParameters) {
+            pprecordings.add(p.getRecordingGroup());
+        }
+        if (pprecordings.isEmpty() && excludeParameterGroups==null ) {
+            log.debug("No aadditional pp group added or removed to/from the subscription");
+        } else {
+            PpReplayRequest ppreq = originalReplayRequest.getPpRequest();
+            PpReplayRequest.Builder pprr = ppreq.toBuilder();
+            pprr.addAllGroupNameFilter(pprecordings);
+            if(excludeParameterGroups!=null) {
+                pprr.addAllGroupNameExclude(excludeParameterGroups);
+            }
+            rawDataRequest.setPpRequest(pprr.build());
+
+        }
+        if (!rawDataRequest.hasPacketRequest() && !rawDataRequest.hasPpRequest()) {
+            if (originalReplayRequest.hasParameterRequest()) {
+                throw new YamcsException("Cannot find a replay source for any parmeters from request: "
+                        + originalReplayRequest.getParameterRequest().toString());
+            } else {
+                throw new YamcsException("Refusing to create an empty replay request");
+            }
+        }
+    }
+
+    private void addPacketsRequiredForParams() throws YamcsException {
         List<NamedObjectId> plist = originalReplayRequest.getParameterRequest().getNameFilterList();
         if(plist.isEmpty()) {
             return; 
         }
 
-        ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(parameterRequestManager, new ParameterWithIdConsumer() {
+        ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(parameterRequestManager,
+                new ParameterWithIdConsumer() {
             @Override
-            public void update(int subscriptionId, List<ParameterValueWithId> params) {//ignore data, we create this subscription just to get the list of dependent containers and PPs
+            public void update(int subscriptionId, List<ParameterValueWithId> params) {
+                // ignore data, we create this subscription just to get the list of
+                // dependent containers and PPs
             }
         });
         int subscriptionId;
@@ -231,32 +300,9 @@ public class ReplayService extends AbstractService implements ReplayListener, Ar
             log.debug("after TM subscription, the request contains the following packets: "+rawPacketRequest.getNameFilterList());
             rawDataRequest.setPacketRequest(rawPacketRequest);
         }
-        
-        pidrm.removeRequest(subscriptionId);
-        
-        //now check for PPs
-        
-        Set<String> pprecordings = new HashSet<>();
-        
-        for(Parameter p: subscribedParameters) {
-            pprecordings.add(p.getRecordingGroup());
-        }
-        if(pprecordings.isEmpty()) {
-            log.debug("No aadditional pp group added to the subscription");
-        } else {
-            PpReplayRequest.Builder pprr = originalReplayRequest.getPpRequest().toBuilder();
-            pprr.addAllGroupNameFilter(pprecordings);
-            rawDataRequest.setPpRequest(pprr.build());
-        }
-        if(!rawDataRequest.hasPacketRequest() && !rawDataRequest.hasPpRequest()) {
-            if(originalReplayRequest.hasParameterRequest()) {
-                throw new YamcsException("Cannot find a replay source for any parmeters from request: "+originalReplayRequest.getParameterRequest().toString());
-            } else {
-                throw new YamcsException("Refusing to create an empty replay request");
-            }
-        }
     }
-
+    
+    
     private void createReplay() throws ProcessorException {
         ReplayServer replayServer = YamcsServer.getService(yamcsInstance, ReplayServer.class);
         if(replayServer==null) {
