@@ -33,6 +33,12 @@ export class MyDisplayCommunicator implements DisplayCommunicator {
     return this.yamcs.yamcsClient.getStaticXML(path);
   }
 
+  retrieveDisplayResource(path: string) {
+    const instance = this.yamcs.getInstanceClient()!.instance;
+    const displayPath = `${instance}/displays/${path}`;
+    return this.yamcs.yamcsClient.getStaticText(displayPath);
+  }
+
   retrieveXMLDisplayResource(path: string) {
     const instance = this.yamcs.getInstanceClient()!.instance;
     const displayPath = `${instance}/displays/${path}`;

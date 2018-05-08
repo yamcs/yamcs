@@ -1,7 +1,7 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Instance } from '@yamcs/client';
-import { YamcsService } from '../../core/services/YamcsService';
 import { AuthService } from '../../core/services/AuthService';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './SystemPage.html',
@@ -25,6 +25,9 @@ export class SystemPage {
   }
 
   showStreamsItem() {
+    if (!this.authService.authRequired$.value) {
+      return true;
+    }
     const userInfo = this.authService.getUserInfo();
     if (userInfo && userInfo.streamPrivileges) {
       return userInfo.streamPrivileges.length > 0;

@@ -76,7 +76,6 @@ message MissionDatabaseRequest {
   optional string instance = 2;
 }
 
-/************** Yamcs Processor Control *********************/
 message ProcessorInfo {
   optional string instance = 1; //yamcs instance
   optional string name = 2;
@@ -94,6 +93,9 @@ message ProcessorInfo {
   optional string commandsUrl = 14;
   optional string commandQueuesUrl = 15;
   repeated ServiceInfo service = 16;
+  optional bool persistent = 17;
+  optional string time = 18;
+  optional bool replay = 19;
 }
 
 message ClientInfo {

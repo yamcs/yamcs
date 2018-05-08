@@ -1,0 +1,53 @@
+<app-monitor-page noscroll="true">
+  <app-monitor-toolbar>
+    TM Archive
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            (click)="replayRange()"
+            [disabled]="!(rangeSelection$ | async)">
+      <mat-icon>replay</mat-icon>
+      REPLAY RANGE
+    </button>
+
+    <button mat-button
+            color="primary"
+            (click)="downloadDump()"
+            [disabled]="!(rangeSelection$ | async)">
+      <mat-icon>file_download</mat-icon>
+      DOWNLOAD DUMP
+    </button>
+  </app-monitor-toolbar>
+
+  <div style="height: 24px; margin: 6px">
+    <button class="ya-button" style="margin-right: 0;" (click)="goBackward()">&lt;</button>
+    <button class="ya-button" style="margin-left: 0; margin-right: 0;" (click)="jumpToNow()">Now</button>
+    <button class="ya-button" style="margin-left: 0" (click)="goForward()">&gt;</button>
+    <button class="ya-button" (click)="jumpTo()">Jump to...</button>
+  </div>
+
+  <div #container class="timeline-container">
+  </div>
+  <div class="zoom-actions">
+    <div class="zoom-actions-inner mat-elevation-z1">
+      <button mat-button (click)="zoomIn()">
+        <mat-icon>add</mat-icon>
+      </button>
+      <span class="separator"></span>
+      <button mat-button (click)="zoomOut()">
+        <mat-icon>remove</mat-icon>
+      </button>
+    </div>
+  </div>
+  <div class="info">
+    <span *ngIf="viewportRange$ | async as viewportRange">
+      {{ viewportRange.start | datetime:false }} &ndash; {{ viewportRange.stop | datetime }}
+    </span>
+    &nbsp;&nbsp;
+    <app-help>
+      <p>This view allows inspecting the content of the TM Archive, as well as retrieving data as packets. Data is grouped by packet name in bands. For each band, index blocks indicate the presence of data at a particular time range. Note that a single index block does not necessarily mean that there was no gap in the data. When zooming in, more gaps may appear.</p>
+      <p>Pan around by grabbing the canvas.</p>
+      <p>Some actions require you to make a selection. To do so either select an index block or start a selection by clicking on the timescale band. </p>
+    </app-help>
+  </div>
+</app-monitor-page>

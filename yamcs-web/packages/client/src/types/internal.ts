@@ -22,6 +22,7 @@ import {
   Alarm,
   CommandHistoryEntry,
   Event,
+  IndexGroup,
   Range,
   Sample,
 } from './monitoring';
@@ -124,4 +125,12 @@ export interface RangesWrapper {
 
 export interface SourcesWrapper {
   source: string[];
+}
+
+export interface IndexResult {
+  group: IndexGroup[];
+}
+
+export interface PacketNameWrapper {
+  name: string[];
 }

@@ -1,91 +1,10 @@
-import { catchError, filter, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { WebSocketClient } from './WebSocketClient';
-
 import YamcsClient from './YamcsClient';
-
-import {
-  AlarmsWrapper,
-  AlgorithmsWrapper,
-  CommandsWrapper,
-  CommandQueuesWrapper,
-  ContainersWrapper,
-  EventsWrapper,
-  LinksWrapper,
-  ParametersWrapper,
-  ProcessorsWrapper,
-  RangesWrapper,
-  RecordsWrapper,
-  ServicesWrapper,
-  SpaceSystemsWrapper,
-  StreamsWrapper,
-  TablesWrapper,
-  ClientsWrapper,
-  SamplesWrapper,
-  CommandHistoryEntryWrapper,
-  SourcesWrapper,
-} from './types/internal';
-
-import {
-  Algorithm,
-  Command,
-  Container,
-  GetAlgorithmsOptions,
-  GetCommandsOptions,
-  GetContainersOptions,
-  GetParametersOptions,
-  MissionDatabase,
-  Parameter,
-  SpaceSystem,
-  NamedObjectId,
-} from './types/mdb';
-
-import {
-  Alarm,
-  DisplayFolder,
-  DownloadEventsOptions,
-  DownloadParameterValuesOptions,
-  Event,
-  EventSubscriptionResponse,
-  GetAlarmsOptions,
-  GetEventsOptions,
-  GetParameterRangesOptions,
-  GetParameterSamplesOptions,
-  GetParameterValuesOptions,
-  ParameterData,
-  ParameterSubscriptionRequest,
-  ParameterSubscriptionResponse,
-  ParameterValue,
-  Range,
-  Sample,
-  TimeInfo,
-  GetCommandHistoryOptions,
-  CommandHistoryEntry,
-  TimeSubscriptionResponse,
-  AlarmSubscriptionResponse,
-  CreateEventRequest,
-  Value,
-} from './types/monitoring';
-
-import {
-  ClientInfo,
-  CommandQueueEvent,
-  Link,
-  LinkEvent,
-  Processor,
-  Record,
-  Service,
-  Statistics,
-  Stream,
-  Table,
-  CommandQueue,
-  LinkSubscriptionResponse,
-  ProcessorSubscriptionResponse,
-  StatisticsSubscriptionResponse,
-  CommandQueueEventSubscriptionResponse,
-  ClientSubscriptionResponse,
-  CommandQueueSubscriptionResponse,
-} from './types/system';
-import { Observable } from 'rxjs/Observable';
+import { AlarmsWrapper, AlgorithmsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
+import { Algorithm, Command, Container, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, SpaceSystem } from './types/mdb';
+import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DisplayFolder, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
+import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
 
 export class InstanceClient {
 
@@ -97,7 +16,7 @@ export class InstanceClient {
     private yamcs: YamcsClient) {
   }
 
-  async getTimeUpdates() {
+  async getTimeUpdates(): Promise<TimeSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getTimeUpdates();
   }
@@ -124,7 +43,7 @@ export class InstanceClient {
     return url + this.queryString(options);
   }
 
-  async getEventUpdates() {
+  async getEventUpdates(): Promise<EventSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getEventUpdates();
   }
@@ -138,14 +57,53 @@ export class InstanceClient {
     return await response.json() as Event;
   }
 
-  async getLinks() {
+  async createProcessor(options: CreateProcessorRequest) {
+    const body = JSON.stringify(options);
+    return await this.yamcs.doFetch(`${this.yamcs.apiUrl}/processors/${this.instance}`, {
+      body,
+      method: 'POST',
+    });
+  }
+
+  async editReplayProcessor(processor: string, options: EditReplayProcessorRequest) {
+    const body = JSON.stringify(options);
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processor}`;
+    return await this.yamcs.doFetch(url, {
+      body,
+      method: 'PATCH',
+    });
+  }
+
+  async deleteReplayProcessor(processor: string) {
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processor}`;
+    return await this.yamcs.doFetch(url, {
+      method: 'DELETE',
+    });
+  }
+
+  async getLinks(): Promise<Link[]> {
     const url = `${this.yamcs.apiUrl}/links/${this.instance}`
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as LinksWrapper;
     return wrapper.link || [];
   }
 
-  async getLinkUpdates() {
+  /**
+   * Returns Connection Info messages whenever a major event on
+   * the websocket connection happens. This includes:
+   * - Changed active instance
+   * - Changed active processor
+   * - Restart of connected instance
+   *
+   * Note especially that this does not provide info about the connection
+   * state itself (e.g. no disconnect event).
+   */
+  async getConnectionInfoUpdates(): Promise<ConnectionInfoSubscriptionResponse> {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getConnectionInfoUpdates();
+  }
+
+  async getLinkUpdates(): Promise<LinkSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getLinkUpdates(this.instance);
   }
@@ -183,17 +141,17 @@ export class InstanceClient {
     return await response.json() as Processor;
   }
 
-  async getProcessorUpdates() {
+  async getProcessorUpdates(): Promise<ProcessorSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getProcessorUpdates(this.instance)
+    return this.webSocketClient.getProcessorUpdates()
   }
 
-  async getProcessorStatistics() {
+  async getProcessorStatistics(): Promise<StatisticsSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getProcessorStatistics(this.instance);
   }
 
-  async getCommandHistoryEntries(options: GetCommandHistoryOptions = {}) {
+  async getCommandHistoryEntries(options: GetCommandHistoryOptions = {}): Promise<CommandHistoryEntry[]> {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/commands`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as CommandHistoryEntryWrapper;
@@ -220,12 +178,12 @@ export class InstanceClient {
     return await response.json() as CommandQueue;
   }
 
-  async getCommandQueueUpdates(processorName?: string) {
+  async getCommandQueueUpdates(processorName?: string): Promise<CommandQueueSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getCommandQueueUpdates(this.instance, processorName);
   }
 
-  async getCommandQueueEventUpdates() {
+  async getCommandQueueEventUpdates(): Promise<CommandQueueEventSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getCommandQueueEventUpdates(this.instance);
   }
@@ -243,12 +201,12 @@ export class InstanceClient {
     return await response.json() as ClientInfo;
   }
 
-  async getClientUpdates() {
+  async getClientUpdates(): Promise<ClientSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getClientUpdates(this.instance);
   }
 
-  async getServices() {
+  async getServices(): Promise<Service[]> {
     const url = `${this.yamcs.apiUrl}/services/${this.instance}`;
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as ServicesWrapper;
@@ -275,7 +233,7 @@ export class InstanceClient {
     });
   }
 
-  async getActiveAlarms(processorName: string, options: GetAlarmsOptions = {}) {
+  async getActiveAlarms(processorName: string, options: GetAlarmsOptions = {}): Promise<Alarm[]> {
     const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/alarms`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as AlarmsWrapper;
@@ -289,7 +247,7 @@ export class InstanceClient {
     return wrapper.alarm || [];
   }
 
-  async getAlarmUpdates() {
+  async getAlarmUpdates(): Promise<AlarmSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getAlarmUpdates();
   }
@@ -327,11 +285,30 @@ export class InstanceClient {
     return await response.json() as Table;
   }
 
-  async getTableData(name: string) {
+  async getTableData(name: string): Promise<Record[]> {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/tables/${name}/data`;
     const response = await this.yamcs.doFetch(url);
     const wrapper = await response.json() as RecordsWrapper;
     return wrapper.record || [];
+  }
+
+  async getPacketNames() {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/packet-names`;
+    const response = await this.yamcs.doFetch(url);
+    const wrapper = await response.json() as PacketNameWrapper;
+    return wrapper.name || [];
+  }
+
+  async getPacketIndex(options: GetPacketIndexOptions): Promise<IndexGroup[]> {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/packet-index`;
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as IndexResult;
+    return wrapper.group || [];
+  }
+
+  getPacketsDownloadURL(options: DownloadPacketsOptions = {}) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/downloads/packets`;
+    return url + this.queryString(options);
   }
 
   async getRootSpaceSystems() {
@@ -379,7 +356,7 @@ export class InstanceClient {
     }
   }
 
-  async getParameterValues(qualifiedName: string, options: GetParameterValuesOptions = {}) {
+  async getParameterValues(qualifiedName: string, options: GetParameterValuesOptions = {}): Promise<ParameterValue[]> {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameters${qualifiedName}`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as ParameterData;
@@ -391,7 +368,7 @@ export class InstanceClient {
     return url + this.queryString(options);
   }
 
-  async getParameterValueUpdates(options: ParameterSubscriptionRequest) {
+  async getParameterValueUpdates(options: ParameterSubscriptionRequest): Promise<ParameterSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getParameterValueUpdates(options);
   }
@@ -404,14 +381,14 @@ export class InstanceClient {
     });
   }
 
-  async getParameterSamples(qualifiedName: string, options: GetParameterSamplesOptions = {}) {
+  async getParameterSamples(qualifiedName: string, options: GetParameterSamplesOptions = {}): Promise<Sample[]> {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameters${qualifiedName}/samples`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as SamplesWrapper;
     return wrapper.sample || [];
   }
 
-  async getParameterRanges(qualifiedName: string, options: GetParameterRangesOptions = {}) {
+  async getParameterRanges(qualifiedName: string, options: GetParameterRangesOptions = {}): Promise<Range[]> {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/parameters${qualifiedName}/ranges`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as RangesWrapper;

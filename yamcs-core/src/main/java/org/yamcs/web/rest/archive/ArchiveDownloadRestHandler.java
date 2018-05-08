@@ -215,7 +215,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         String filename = "packets";
         if (req.asksFor(MediaType.OCTET_STREAM)) {
             RestStreams.stream(instance, sql, sqlb.getQueryArguments(),
-                    new StreamToChunkedTransferEncoder(req, MediaType.OCTET_STREAM, filename) {
+                    new StreamToChunkedTransferEncoder(req, MediaType.OCTET_STREAM, filename + ".raw") {
                         @Override
                         public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
                             byte[] raw = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
@@ -372,7 +372,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
     private void transferChunkedCSVEvents(RestRequest req, String instance, String sql, List<Object> sqlArgs)
             throws HttpException {
-        RestStreams.stream(instance, sql, sqlArgs, new StreamToChunkedCSVEncoder(req, "events") {
+        RestStreams.stream(instance, sql, sqlArgs, new StreamToChunkedCSVEncoder(req, "events.csv") {
 
             @Override
             public String[] getCSVHeader() {

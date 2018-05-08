@@ -1,7 +1,9 @@
 package org.yamcs.web.rest.mdb;
 
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -23,6 +25,7 @@ import org.yamcs.protobuf.Mdb.CommandContainerInfo;
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Mdb.ComparisonInfo;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.ContextCalibratorInfo;
 import org.yamcs.protobuf.Mdb.DataEncodingInfo;
 import org.yamcs.protobuf.Mdb.DataEncodingInfo.Type;
 import org.yamcs.protobuf.Mdb.DataSourceType;
@@ -63,6 +66,7 @@ import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.ContainerEntry;
+import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DataSource;
@@ -83,6 +87,8 @@ import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.JavaExpressionCalibrator;
+import org.yamcs.xtce.MatchCriteria;
+import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
@@ -498,8 +504,9 @@ public class XtceToGpbAssembler {
                     throw new IllegalStateException("Unexpected data source " + xtceDs);
                 }
             }
-            if (p.getParameterType() != null)
+            if (p.getParameterType() != null) {
                 b.setType(toParameterTypeInfo(p.getParameterType(), detail));
+            }
         }
 
         if (detail == DetailLevel.FULL) {
@@ -578,8 +585,9 @@ public class XtceToGpbAssembler {
     }
 
     private static String getArgumentTypeInitialValue(ArgumentType argumentType) {
-        if (argumentType == null)
+        if (argumentType == null) {
             return null;
+        }
         if (argumentType instanceof IntegerArgumentType) {
             return ((IntegerArgumentType) argumentType).getInitialValue();
         } else if (argumentType instanceof FloatArgumentType) {
@@ -634,6 +642,21 @@ public class XtceToGpbAssembler {
         return infob.build();
     }
 
+    public static List<ComparisonInfo> toComparisons(MatchCriteria matchCriteria) {
+        List<ComparisonInfo> comparisons = new ArrayList<>(2);
+        if (matchCriteria instanceof Comparison) {
+            comparisons.add(toComparisonInfo((Comparison) matchCriteria, null, false));
+        } else if (matchCriteria instanceof ComparisonList) {
+            ComparisonList xtceList = (ComparisonList) matchCriteria;
+            for (Comparison xtceComparison : xtceList.getComparisonList()) {
+                comparisons.add(toComparisonInfo(xtceComparison, null, false));
+            }
+        } else {
+            throw new IllegalStateException("Unexpected match criteria " + matchCriteria);
+        }
+        return comparisons;
+    }
+
     // Simplifies the XTCE structure a bit for outside use.
     // String-encoded numeric types see some sort of two-step conversion from raw to eng
     // with the first to interpret the string (stored in a nested StringDataEncoding)
@@ -662,6 +685,14 @@ public class XtceToGpbAssembler {
                 Calibrator calibrator = fde.getDefaultCalibrator();
                 infob.setDefaultCalibrator(toCalibratorInfo(calibrator));
             }
+            if (fde.getContextCalibratorList() != null) {
+                for (ContextCalibrator contextCalibrator : fde.getContextCalibratorList()) {
+                    ContextCalibratorInfo.Builder contextCalibratorb = ContextCalibratorInfo.newBuilder();
+                    MatchCriteria matchCriteria = contextCalibrator.getContextMatch();
+                    contextCalibratorb.addAllComparison(toComparisons(matchCriteria));
+                    contextCalibratorb.setCalibrator(toCalibratorInfo(contextCalibrator.getCalibrator()));
+                }
+            }
         } else if (xtceDataEncoding instanceof IntegerDataEncoding) {
             IntegerDataEncoding ide = (IntegerDataEncoding) xtceDataEncoding;
             if (ide.getEncoding() == IntegerDataEncoding.Encoding.STRING) {
@@ -674,6 +705,14 @@ public class XtceToGpbAssembler {
             if (ide.getDefaultCalibrator() != null) {
                 Calibrator calibrator = ide.getDefaultCalibrator();
                 infob.setDefaultCalibrator(toCalibratorInfo(calibrator));
+            }
+            if (ide.getContextCalibratorList() != null) {
+                for (ContextCalibrator contextCalibrator : ide.getContextCalibratorList()) {
+                    ContextCalibratorInfo.Builder contextCalibratorb = ContextCalibratorInfo.newBuilder();
+                    MatchCriteria matchCriteria = contextCalibrator.getContextMatch();
+                    contextCalibratorb.addAllComparison(toComparisons(matchCriteria));
+                    contextCalibratorb.setCalibrator(toCalibratorInfo(contextCalibrator.getCalibrator()));
+                }
             }
         } else if (xtceDataEncoding instanceof StringDataEncoding) {
             infob.setType(Type.STRING);
@@ -694,8 +733,9 @@ public class XtceToGpbAssembler {
             break;
         case TERMINATION_CHAR:
             String hexChar = Integer.toHexString(sde.getTerminationChar()).toUpperCase();
-            if (hexChar.length() == 1)
+            if (hexChar.length() == 1) {
                 hexChar = "0" + hexChar;
+            }
             result += "0x" + hexChar;
             break;
         default:
@@ -741,6 +781,9 @@ public class XtceToGpbAssembler {
             JavaExpressionCalibratorInfo.Builder javab = JavaExpressionCalibratorInfo.newBuilder();
             javab.setFormula(javaCalibrator.getFormula());
             calibratorInfob.setJavaExpressionCalibrator(javab);
+        } else if (calibrator instanceof MathOperationCalibrator) {
+            calibratorInfob.setType("Math Operation");
+            // MathOperationCalibrator mathOperationCalibrator = (MathOperationCalibrator) calibrator;
         } else {
             throw new IllegalArgumentException("Unexpected calibrator type " + calibrator.getClass());
         }
@@ -924,14 +967,18 @@ public class XtceToGpbAssembler {
             Arrays.sort(sortedHistory);
             for (History history : sortedHistory) {
                 HistoryInfo.Builder historyb = HistoryInfo.newBuilder();
-                if (history.getVersion() != null)
+                if (history.getVersion() != null) {
                     historyb.setVersion(history.getVersion());
-                if (history.getDate() != null)
+                }
+                if (history.getDate() != null) {
                     historyb.setDate(history.getDate());
-                if (history.getMessage() != null)
+                }
+                if (history.getMessage() != null) {
                     historyb.setMessage(history.getMessage());
-                if (history.getAuthor() != null)
+                }
+                if (history.getAuthor() != null) {
                     historyb.setAuthor(history.getAuthor());
+                }
                 b.addHistory(historyb);
             }
         }

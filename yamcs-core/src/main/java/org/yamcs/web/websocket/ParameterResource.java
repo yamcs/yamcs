@@ -168,7 +168,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             throw new WebSocketException(requestId, "internal error: " + e.toString(), e);
         } catch (InvalidRequestIdentification e) {
             log.warn("got invalid subscription id for {}", subscriptionId);
-            throw new WebSocketException(requestId, "invalid subscription id "+e.getSubscriptionId());
+            throw new WebSocketException(requestId, "invalid subscription id " + e.getSubscriptionId());
         } catch (NoPermissionException e) {
             log.warn("no permission for parameters: {}", e.getMessage());
             throw new WebSocketException(requestId, "internal error: " + e.toString(), e);

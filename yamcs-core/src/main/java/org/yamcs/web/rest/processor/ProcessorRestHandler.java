@@ -1,12 +1,15 @@
 package org.yamcs.web.rest.processor;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorFactory;
 import org.yamcs.ServiceWithConfig;
 import org.yamcs.YamcsException;
 import org.yamcs.alarms.ActiveAlarm;
@@ -19,6 +22,7 @@ import org.yamcs.protobuf.Rest.EditProcessorRequest;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListProcessorsResponse;
+import org.yamcs.protobuf.Yamcs.ProcessorTypeInfo;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
@@ -40,6 +44,15 @@ import org.yamcs.web.rest.ServiceHelper;
 public class ProcessorRestHandler extends RestHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ProcessorRestHandler.class);
+
+    @Route(path = "/api/processor-types", method = "GET")
+    public void listProcessorTypes(RestRequest req) throws HttpException {
+        ProcessorTypeInfo.Builder response = ProcessorTypeInfo.newBuilder();
+        List<String> processorTypes = ProcessorFactory.getProcessorTypes();
+        Collections.sort(processorTypes);
+        response.addAllType(processorTypes);
+        completeOK(req, response.build());
+    }
 
     @Route(path = "/api/processors", method = "GET")
     public void listProcessors(RestRequest req) throws HttpException {
@@ -69,6 +82,19 @@ public class ProcessorRestHandler extends RestHandler {
         completeOK(req, pinfo);
     }
 
+    @Route(path = "/api/processors/:instance/:processor", method = "DELETE")
+    public void deleteProcessor(RestRequest req) throws HttpException {
+        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlProcessor);
+
+        Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
+        if (!processor.isReplay()) {
+            throw new BadRequestException("Cannot delete a non-replay processor");
+        }
+
+        processor.quit();
+        completeOK(req);
+    }
+
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
     public void editProcessor(RestRequest req) throws HttpException {
         verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlProcessor);
@@ -79,7 +105,6 @@ public class ProcessorRestHandler extends RestHandler {
         }
 
         EditProcessorRequest request = req.bodyAsMessage(EditProcessorRequest.newBuilder()).build();
-        boolean quit = false;
 
         String newState = null;
         if (request.hasState()) {
@@ -96,59 +121,54 @@ public class ProcessorRestHandler extends RestHandler {
             case "paused":
                 processor.pause();
                 break;
-            case "closed":
-                processor.quit();
-                break;
             default:
                 throw new BadRequestException("Invalid processor state '" + newState + "'");
             }
         }
 
-        if (!quit) { // if the processor is closed, we ignore everything else
-            long seek = TimeEncoding.INVALID_INSTANT;
-            if (request.hasSeek()) {
-                seek = RestRequest.parseTime(request.getSeek());
-            }
-            if (req.hasQueryParameter("seek")) {
-                seek = req.getQueryParameterAsDate("seek");
-            }
-            if (seek != TimeEncoding.INVALID_INSTANT) {
-                processor.seek(seek);
-            }
+        long seek = TimeEncoding.INVALID_INSTANT;
+        if (request.hasSeek()) {
+            seek = RestRequest.parseTime(request.getSeek());
+        }
+        if (req.hasQueryParameter("seek")) {
+            seek = req.getQueryParameterAsDate("seek");
+        }
+        if (seek != TimeEncoding.INVALID_INSTANT) {
+            processor.seek(seek);
+        }
 
-            String speed = null;
-            if (request.hasSpeed()) {
-                speed = request.getSpeed().toLowerCase();
-            }
-            if (req.hasQueryParameter("speed")) {
-                speed = req.getQueryParameter("speed").toLowerCase();
-            }
-            if (speed != null) {
-                ReplaySpeed replaySpeed;
-                if ("afap".equals(speed)) {
-                    replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build();
-                } else if (speed.endsWith("x")) {
-                    try {
-                        float factor = Float.parseFloat(speed.substring(0, speed.length() - 1));
-                        replaySpeed = ReplaySpeed.newBuilder()
-                                .setType(ReplaySpeedType.REALTIME)
-                                .setParam(factor).build();
-                    } catch (NumberFormatException e) {
-                        throw new BadRequestException("Speed factor is not a valid number");
-                    }
-
-                } else {
-                    try {
-                        int fixedDelay = Integer.parseInt(speed);
-                        replaySpeed = ReplaySpeed.newBuilder()
-                                .setType(ReplaySpeedType.FIXED_DELAY)
-                                .setParam(fixedDelay).build();
-                    } catch (NumberFormatException e) {
-                        throw new BadRequestException("Fixed delay value is not an integer");
-                    }
+        String speed = null;
+        if (request.hasSpeed()) {
+            speed = request.getSpeed().toLowerCase();
+        }
+        if (req.hasQueryParameter("speed")) {
+            speed = req.getQueryParameter("speed").toLowerCase();
+        }
+        if (speed != null) {
+            ReplaySpeed replaySpeed;
+            if ("afap".equals(speed)) {
+                replaySpeed = ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP).build();
+            } else if (speed.endsWith("x")) {
+                try {
+                    float factor = Float.parseFloat(speed.substring(0, speed.length() - 1));
+                    replaySpeed = ReplaySpeed.newBuilder()
+                            .setType(ReplaySpeedType.REALTIME)
+                            .setParam(factor).build();
+                } catch (NumberFormatException e) {
+                    throw new BadRequestException("Speed factor is not a valid number");
                 }
-                processor.changeSpeed(replaySpeed);
+
+            } else {
+                try {
+                    int fixedDelay = Integer.parseInt(speed);
+                    replaySpeed = ReplaySpeed.newBuilder()
+                            .setType(ReplaySpeedType.FIXED_DELAY)
+                            .setParam(fixedDelay).build();
+                } catch (NumberFormatException e) {
+                    throw new BadRequestException("Fixed delay value is not an integer");
+                }
             }
+            processor.changeSpeed(replaySpeed);
         }
         completeOK(req);
     }
@@ -185,23 +205,17 @@ public class ProcessorRestHandler extends RestHandler {
     public void createProcessorForInstance(RestRequest restReq) throws HttpException {
         CreateProcessorRequest request = restReq.bodyAsMessage(CreateProcessorRequest.newBuilder()).build();
         String yamcsInstance = verifyInstance(restReq, restReq.getRouteParam("instance"));
-        String processorName;
-        if (request.hasName()) {
-            processorName = request.getName();
-        } else if (restReq.hasQueryParameter("name")) {
-            processorName = restReq.getQueryParameter("name");
-        } else {
+
+        if (!request.hasName()) {
             throw new BadRequestException("No processor name was specified");
         }
+        String processorName = request.getName();
 
-        String processorType = null;
-        if (request.hasType()) {
-            processorType = request.getType();
-        } else if (restReq.hasQueryParameter("type")) {
-            processorName = restReq.getQueryParameter("type");
-        } else {
+        if (!request.hasType()) {
             throw new BadRequestException("No processor type was specified");
         }
+        String processorType = request.getType();
+
         ProcessorManagementRequest.Builder reqb = ProcessorManagementRequest.newBuilder();
         reqb.setInstance(yamcsInstance);
         reqb.setName(processorName);
@@ -258,7 +272,7 @@ public class ProcessorRestHandler extends RestHandler {
             } else {
                 if (!username.equals(ci.getUsername())) {
                     log.warn("User {} is not allowed to connect {} to new processor", username, ci.getUsername());
-                    throw new ForbiddenException("Not allowed to connect other client than your own");
+                    throw new ForbiddenException("Not allowed to connect clients other than your own");
                 }
             }
         }
@@ -278,14 +292,6 @@ public class ProcessorRestHandler extends RestHandler {
 
         for (ServiceWithConfig serviceWithConfig : processor.getServices()) {
             b.addService(ServiceHelper.toServiceInfo(serviceWithConfig, instance, name));
-        }
-        if (req.getQueryParameterAsBoolean("links", false)) {
-            String apiURL = req.getApiURL();
-            b.setUrl(apiURL + "/processors/" + instance + "/" + name);
-            b.setClientsUrl(apiURL + "/processors/" + instance + "/" + name + "/clients");
-            b.setParametersUrl(apiURL + "/processors/" + instance + "/" + name + "/parameters{/namespace}{/name}");
-            b.setCommandsUrl(apiURL + "/processors/" + instance + "/" + name + "/commands{/namespace}{/name}");
-            b.setCommandQueuesUrl(apiURL + "/processors/" + instance + "/" + name + "/cqueues{/name}");
         }
         return b.build();
     }

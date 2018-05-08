@@ -12,23 +12,21 @@ export class InstanceExistsGuard implements CanActivate {
     const instanceId = route.queryParams['instance'];
 
     return new Promise<boolean>((resolve, reject) => {
-      this.yamcsService.yamcsClient.getInstance(instanceId).then(instance => {
-        this.yamcsService.selectInstance(instance)
+      this.yamcsService.selectInstance(instanceId)
           .then(() => resolve(true))
-          .catch(() => resolve(false));
-      }).catch(err => {
-        this.router.navigate(['/404'], {
-          queryParams: {
-            page: state.url,
-          },
-          // Would prefer the attempted URL stays in the browser address bar
-          // but unfortunately below property does not work. Follow this issue:
-          // https://github.com/angular/angular/issues/17004
-          //
-          // skipLocationChange: true
-        });
-        resolve(false);
-      });
+          .catch(err => {
+            this.router.navigate(['/404'], {
+              queryParams: {
+                page: state.url,
+              },
+              // Would prefer the attempted URL stays in the browser address bar
+              // but unfortunately below property does not work. Follow this issue:
+              // https://github.com/angular/angular/issues/17004
+              //
+              // skipLocationChange: true
+            });
+            resolve(false);
+          });
     });
   }
 }

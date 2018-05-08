@@ -62,12 +62,15 @@ export class Label extends AbstractWidget {
     // ascends and descends.
     let fontSize = text.attributes['font-size'];
     const fontFamily = text.attributes['font-family'];
+    const fontStyle = text.attributes['font-style'] || 'normal';
+    const fontWeight = text.attributes['font-weight'] || 'normal';
     if (utils.parseBooleanChild(this.node, 'AutoSize')) {
-      fontSize = this.autoscale(innerText, fontFamily, fontSize);
+      fontSize = this.autoscale(innerText, fontFamily, fontStyle, fontWeight, fontSize);
       text.setAttribute('font-size', fontSize);
     }
 
-    const fm = this.getFontMetrics(innerText, fontFamily, fontSize);
+
+    const fm = this.getFontMetrics(innerText, fontFamily, fontStyle, fontWeight, fontSize);
 
     const vertAlignment = utils.parseStringChild(textStyleNode, 'VerticalAlignment');
     if (vertAlignment === 'CENTER') {
@@ -88,21 +91,21 @@ export class Label extends AbstractWidget {
     console.warn('Unsupported binding to property: ' + binding.dynamicProperty);
   }
 
-  private autoscale(text: string, fontFamily: string, fontSizeStart: string) {
-    const fm = this.getFontMetrics(text, fontFamily, fontSizeStart);
+  private autoscale(text: string, fontFamily: string, fontStyle: string, fontWeight: string, fontSizeStart: string) {
+    const fm = this.getFontMetrics(text, fontFamily, fontStyle, fontWeight, fontSizeStart);
     const ptStart = Math.floor(Number(fontSizeStart.replace('pt', '')));
     if (fm.width > this.width || fm.height > this.height) {
-      return this.scaleDown(text, fontFamily, ptStart - 1);
+      return this.scaleDown(text, fontFamily, fontStyle, fontWeight, ptStart - 1);
     } else {
-      return this.scaleUp(text, fontFamily, ptStart);
+      return this.scaleUp(text, fontFamily, fontStyle, fontWeight, ptStart);
     }
   }
 
-  private scaleUp(text: string, fontFamily: string, pt: number) {
+  private scaleUp(text: string, fontFamily: string, fontStyle: string, fontWeight: string, pt: number) {
     let fm;
     let size = pt;
     while (true) {
-      fm = this.getFontMetrics(text, fontFamily, `${size}pt`);
+      fm = this.getFontMetrics(text, fontFamily, fontStyle, fontWeight, `${size}pt`);
       if (fm.width > this.width || fm.height > this.height) {
         return `${size - 1}pt`;
       } else {
@@ -111,11 +114,11 @@ export class Label extends AbstractWidget {
     }
   }
 
-  private scaleDown(text: string, fontFamily: string, pt: number) {
+  private scaleDown(text: string, fontFamily: string, fontStyle: string, fontWeight: string, pt: number) {
     let fm;
     let size = pt;
     while (true) {
-      fm = this.getFontMetrics(text, fontFamily, `${size}pt`);
+      fm = this.getFontMetrics(text, fontFamily, fontStyle, fontWeight, `${size}pt`);
       if (fm.width <= this.width && fm.height <= this.height) {
         return `${size}pt`;
       } else {

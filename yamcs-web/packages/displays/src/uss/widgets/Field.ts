@@ -90,16 +90,15 @@ export class Field extends AbstractWidget {
     const textStyle = utils.parseTextStyle(textStyleNode);
     const fontFamily = textStyle['font-family'];
     const fontSize = textStyle['font-size'];
-    const fm = this.getFontMetrics('w', fontFamily, fontSize);
+
+    const fontStyle = textStyle['font-style'] || 'normal';
+    const fontWeight = textStyle['font-weight'] || 'normal';
+
+    // Even though lucida is monospace, for some reason the letter 'i' gives better
+    // results than 'w' in both Chrome and Firefox.
+    const fm = this.getFontMetrics('i', fontFamily, fontStyle, fontWeight, fontSize);
 
     this.colSize = Math.floor(fm.width);
-
-    // FIXME In firefox the colSize is not correctly calculated
-    if (navigator.userAgent.indexOf('Firefox') > 0) {
-      if (fontFamily === 'Lucida Sans Typewriter') {
-        this.colSize = this.colSize - 2;
-      }
-    }
 
     if (utils.hasChild(this.node, 'Unit') && utils.parseBooleanChild(this.node, 'ShowUnit')) {
       const unit = utils.parseStringChild(this.node, 'Unit');
@@ -107,7 +106,10 @@ export class Field extends AbstractWidget {
       const unitTextStyle = utils.parseTextStyle(unitTextStyleNode);
       const unitFontFamily = unitTextStyle['font-family'];
       const unitFontSize = unitTextStyle['font-size'];
-      const unitFm = this.getFontMetrics('w', unitFontFamily, unitFontSize);
+
+      const unitFontStyle = unitTextStyle['font-style'] || 'normal';
+      const unitFontWeight = unitTextStyle['font-weight'] || 'normal';
+      const unitFm = this.getFontMetrics('i', unitFontFamily, unitFontStyle, unitFontWeight, unitFontSize);
 
       const unitVertAlignment = utils.parseStringChild(unitTextStyleNode, 'VerticalAlignment');
       let unitY;
@@ -246,6 +248,7 @@ export class Field extends AbstractWidget {
         this.fillColorBinding = binding;
         break;
       default:
+        // tslint:disable-next-line:no-console
         console.warn('Unsupported dynamic property: ' + binding.dynamicProperty);
     }
   }

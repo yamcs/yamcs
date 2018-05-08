@@ -10,12 +10,28 @@ public class LaunchAndLandingSimulator extends Simulator {
 
     private static final Logger log = LoggerFactory.getLogger(LaunchAndLandingSimulator.class);
 
+    private static enum BatteryCommand {
+        BATTERY1_ON(1, true),
+        BATTERY1_OFF(1, false),
+        BATTERY2_ON(2, true),
+        BATTERY2_OFF(2, false),
+        BATTERY3_ON(3, true),
+        BATTERY3_OFF(3, false);
+
+        int batteryNumber;
+        boolean batteryOn;
+
+        private BatteryCommand(int batteryNumber, boolean batteryOn) {
+            this.batteryNumber = batteryNumber;
+            this.batteryOn = batteryOn;
+        }
+    }
+
     final private FlightDataHandler flightDataHandler;
     final private DHSHandler dhsHandler;
     final private PowerHandler powerDataHandler;
     final private RCSHandler rcsHandler;
     final private EpsLvpduHandler epslvpduHandler;
-    final private AckHandler ackDataHandler = new AckHandler();
 
     private boolean engageHoldOneCycle = false;
     private boolean unengageHoldOneCycle = false;
@@ -24,9 +40,8 @@ public class LaunchAndLandingSimulator extends Simulator {
     private boolean engaged = false;
     private boolean unengaged = true;
     private boolean exeTransmitted = true;
-    private int battOneCommand;
-    private int battTwoCommand;
-    private int battThreeCommand;
+
+    private BatteryCommand batteryCommand;
 
     public LaunchAndLandingSimulator(SimulationConfiguration simConfig) {
         super(simConfig);
@@ -41,7 +56,7 @@ public class LaunchAndLandingSimulator extends Simulator {
     public void run() {
         super.run();
         new Thread(() -> {
-            while(true) {
+            while (true) {
                 try {
                     executePendingCommands();
                 } catch (InterruptedException e) {
@@ -53,73 +68,34 @@ public class LaunchAndLandingSimulator extends Simulator {
         CCSDSPacket packet = null;
         try {
             for (int i = 0;;) {
-                CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
                 CCSDSPacket flightpacket = new CCSDSPacket(60, 33);
                 flightDataHandler.fillPacket(flightpacket);
                 transmitTM(flightpacket);
 
-                if (i < 30) ++i;
-                else {
+                if (i < 30) {
+                    ++i;
+                } else {
                     if (waitToEngage == 2 || engaged) {
                         engaged = true;
-                        //unengaged = false;
+                        // unengaged = false;
                         CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
 
                         powerDataHandler.fillPacket(powerpacket);
-
-                        switch (battOneCommand) {
-                        case 1: 
+                        if (batteryCommand.batteryOn) {
+                            if (!exeTransmitted) {
+                                CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
+                                AckHandler.fillExeCompPacket(exeCompPacket, batteryCommand.batteryNumber, 1);
+                                transmitTM(exeCompPacket);
+                                exeTransmitted = true;
+                            }
+                        } else {
                             powerDataHandler.setBattOneOff(powerpacket);
-                            ackDataHandler.fillExeCompPacket(exeCompPacket, 1, 0);
                             if (!exeTransmitted) {
+                                CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
+                                AckHandler.fillExeCompPacket(exeCompPacket, batteryCommand.batteryNumber, 0);
                                 transmitTM(exeCompPacket);
                                 exeTransmitted = true;
                             }
-                            break;
-
-                        case 2:
-                            ackDataHandler.fillExeCompPacket(exeCompPacket, 1, 1);
-                            if (!exeTransmitted) {
-                                transmitTM(exeCompPacket);
-                                exeTransmitted = true;
-                            }
-                            break;
-                        }
-                        switch (battTwoCommand) {
-                        case 1:
-                            powerDataHandler.setBattTwoOff(powerpacket);
-                            ackDataHandler.fillExeCompPacket(exeCompPacket, 2, 0);
-                            if (!exeTransmitted) {
-                                transmitTM(exeCompPacket);
-                                exeTransmitted = true;
-                            }
-                            break;
-
-                        case 2:
-                            ackDataHandler.fillExeCompPacket(exeCompPacket, 2, 1);
-                            if (!exeTransmitted) {
-                                transmitTM(exeCompPacket);
-                                exeTransmitted = true;
-                            }
-                            break;
-                        }
-                        switch (battThreeCommand) {
-                        case 1:
-                            powerDataHandler.setBattThreeOff(powerpacket);
-                            ackDataHandler.fillExeCompPacket(exeCompPacket, 3, 0);
-                            if (!exeTransmitted) {
-                                transmitTM(exeCompPacket);
-                                exeTransmitted = true;
-                            }
-                            break;
-
-                        case 2:
-                            ackDataHandler.fillExeCompPacket(exeCompPacket, 3, 1);
-                            if (!exeTransmitted) {
-                                transmitTM(exeCompPacket);
-                                exeTransmitted = true;
-                            }
-                            break;
                         }
 
                         transmitTM(powerpacket);
@@ -132,7 +108,7 @@ public class LaunchAndLandingSimulator extends Simulator {
                         powerDataHandler.fillPacket(powerpacket);
                         transmitTM(powerpacket);
                         unengaged = true;
-                        //engaged = false;
+                        // engaged = false;
 
                         unengageHoldOneCycle = false;
                         waitToUnengage = 0;
@@ -163,23 +139,24 @@ public class LaunchAndLandingSimulator extends Simulator {
                 }
                 Thread.sleep(4000 / 20);
             }
-        } catch (InterruptedException e) {
+        } catch (
+
+        InterruptedException e) {
             e.printStackTrace();
-        } 
+        }
 
     }
 
     /**
      * runs in the main TM thread, executes commands from the queue (if any)
-     * @throws InterruptedException 
      */
     private void executePendingCommands() throws InterruptedException {
 
         CCSDSPacket commandPacket = pendingCommands.take();
         if (commandPacket.getPacketType() == 10) {
-            log.info("BATT COMMAND: " + commandPacket.getPacketId()); 
+            log.info("BATT COMMAND: " + commandPacket.getPacketId());
 
-            switch(commandPacket.getPacketId()){
+            switch (commandPacket.getPacketId()) {
             case 1:
                 switchBatteryOn(commandPacket);
                 break;
@@ -198,7 +175,6 @@ public class LaunchAndLandingSimulator extends Simulator {
             default:
                 log.error("Invalid command packet id: {}", commandPacket.getPacketId());
             }
-
         }
     }
 
@@ -206,24 +182,24 @@ public class LaunchAndLandingSimulator extends Simulator {
         getTMLink().ackPacketSend(ackPacket(commandPacket, 1, 0));
         commandPacket.setPacketId(1);
         int batNum = commandPacket.getUserDataBuffer().get(0);
-        switch(batNum) {
+        switch (batNum) {
         case 1:
             unengageHoldOneCycle = true;
-            //engaged = false;
+            // engaged = false;
             exeTransmitted = false;
-            battOneCommand = 2;
+            batteryCommand = BatteryCommand.BATTERY1_ON;
             break;
         case 2:
             unengageHoldOneCycle = true;
-            //engaged = false;
+            // engaged = false;
             exeTransmitted = false;
-            battTwoCommand = 2;
+            batteryCommand = BatteryCommand.BATTERY2_ON;
             break;
         case 3:
             unengageHoldOneCycle = true;
-            //engaged = false;
-            battThreeCommand = 2;
+            // engaged = false;
             exeTransmitted = false;
+            batteryCommand = BatteryCommand.BATTERY3_ON;
         }
         getTMLink().ackPacketSend(ackPacket(commandPacket, 2, 0));
     }
@@ -233,27 +209,27 @@ public class LaunchAndLandingSimulator extends Simulator {
         commandPacket.setPacketId(2);
         int batNum = commandPacket.getUserDataBuffer().get(0);
         CCSDSPacket ackPacket;
-        switch(batNum) {
+        switch (batNum) {
         case 1:
             engageHoldOneCycle = true;
             exeTransmitted = false;
-            battOneCommand = 1;
+            batteryCommand = BatteryCommand.BATTERY1_OFF;
             ackPacket = new CCSDSPacket(1, 2, 7);
-            ackDataHandler.fillAckPacket(ackPacket, 1);
+            AckHandler.fillAckPacket(ackPacket, 1);
             break;
         case 2:
             engageHoldOneCycle = true;
             exeTransmitted = false;
-            battTwoCommand = 1;
+            batteryCommand = BatteryCommand.BATTERY2_OFF;
             ackPacket = new CCSDSPacket(1, 2, 7);
-            ackDataHandler.fillAckPacket(ackPacket, 1);
+            AckHandler.fillAckPacket(ackPacket, 1);
             break;
         case 3:
             engageHoldOneCycle = true;
             exeTransmitted = false;
-            battThreeCommand = 1;
+            batteryCommand = BatteryCommand.BATTERY3_OFF;
             ackPacket = new CCSDSPacket(1, 2, 7);
-            ackDataHandler.fillAckPacket(ackPacket, 1);
+            AckHandler.fillAckPacket(ackPacket, 1);
         }
         getTMLink().ackPacketSend(ackPacket(commandPacket, 2, 0));
     }
@@ -270,9 +246,8 @@ public class LaunchAndLandingSimulator extends Simulator {
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
         int indexStartOfString = 16;
         int indexEndOfString = indexStartOfString;
-        for(int i = indexStartOfString; i< fileNameArray.length; i++)
-        {
-            if(fileNameArray[i] == 0) {
+        for (int i = indexStartOfString; i < fileNameArray.length; i++) {
+            if (fileNameArray[i] == 0) {
                 indexEndOfString = i;
                 break;
             }
@@ -291,6 +266,5 @@ public class LaunchAndLandingSimulator extends Simulator {
         deleteLosDataFile(fileName);
         getTMLink().ackPacketSend(ackPacket(commandPacket, 2, 0));
     }
-
 
 }

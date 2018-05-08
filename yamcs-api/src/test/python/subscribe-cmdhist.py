@@ -1,6 +1,6 @@
 import websocket
 ws = websocket.WebSocket()
-wsaddr = "ws://localhost:8090/simulator/_websocket"
+wsaddr = "ws://localhost:8090/_websocket/simulator"
 print "Connecting to "+wsaddr + "...",
 ws.connect(wsaddr)
 print "connected"

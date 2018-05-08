@@ -5,7 +5,7 @@ import { Processor, Instance } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MatTableDataSource, MatSort } from '@angular/material';
 import { Title } from '@angular/platform-browser';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './ProcessorsPage.html',
@@ -16,7 +16,7 @@ export class ProcessorsPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  displayedColumns = ['name', 'type', 'creator', 'state'];
+  displayedColumns = ['name', 'type', 'creator', 'persistent', 'time', 'state'];
 
   instance: Instance;
   dataSource = new MatTableDataSource<Processor>();

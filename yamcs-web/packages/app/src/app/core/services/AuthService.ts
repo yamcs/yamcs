@@ -1,8 +1,8 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { YamcsService } from './YamcsService';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { AccessTokenResponse, UserInfo } from '@yamcs/client';
 import { Router } from '@angular/router';
+import { AccessTokenResponse, UserInfo } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs';
+import { YamcsService } from './YamcsService';
 
 export interface Claims {
   iss: string;
@@ -15,7 +15,9 @@ export interface Claims {
 // Could also use setTimeout instead of setInterval i guess.
 const TOKEN_CHECK_INTERVAL = 10000;
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class AuthService implements OnDestroy {
 
   public authRequired$ = new BehaviorSubject<boolean | null>(null);

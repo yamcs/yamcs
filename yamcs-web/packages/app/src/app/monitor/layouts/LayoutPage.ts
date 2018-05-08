@@ -3,7 +3,7 @@ import { Instance } from '@yamcs/client';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LayoutState } from '@yamcs/displays';
 import { LayoutComponent } from '../displays/LayoutComponent';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { NamedLayout, LayoutStorage } from '../displays/LayoutStorage';
 import { Title } from '@angular/platform-browser';
 import { YamcsService } from '../../core/services/YamcsService';

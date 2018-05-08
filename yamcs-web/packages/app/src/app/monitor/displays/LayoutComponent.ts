@@ -20,7 +20,7 @@ import {
 } from '@yamcs/displays';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DisplayFolder } from '@yamcs/client';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { MyDisplayCommunicator } from './MyDisplayCommunicator';
 import { Router } from '@angular/router';
 

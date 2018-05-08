@@ -1,0 +1,24 @@
+<h2 mat-dialog-title>Download Packet Dump</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <mat-form-field style="width: 100%">
+      <input matInput formControlName="start" placeholder="Start">
+    </mat-form-field>
+    <mat-form-field style="width: 100%">
+      <input matInput formControlName="stop" placeholder="Stop">
+    </mat-form-field>
+    <p>&nbsp;</p>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <a mat-button
+     (click)="closeDialog()"
+     color="primary"
+     [disabled]="!form.valid"
+     [href]="downloadURL$ | async">
+    Download
+  </a>
+</mat-dialog-actions>

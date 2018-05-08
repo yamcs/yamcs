@@ -9,7 +9,7 @@ import org.yamcs.Processor;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
+import org.yamcs.protobuf.Web.ManagementSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
@@ -27,8 +27,12 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     public static final String OP_getProcessorInfo = "getProcessorInfo";
     public static final String OP_getClientInfo = "getClientInfo";
     public static final String OP_subscribe = "subscribe";
+    public static final String OP_unsubscribe = "unsubscribe";
 
     private int clientId;
+    private boolean emitClientInfo;
+    private boolean emitProcessorInfo;
+    private boolean emitProcessorStatistics;
 
     public ManagementResource(WebSocketProcessorClient client) {
         super(client);
@@ -45,6 +49,8 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             return processGetClientInfoRequest(ctx, decoder);
         case OP_subscribe:
             return processSubscribeRequest(ctx, decoder);
+        case OP_unsubscribe:
+            return processUnsubscribeRequest(ctx, decoder);
         default:
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
         }
@@ -54,7 +60,11 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
         int requestId = ctx.getRequestId();
         ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
         try {
-            wsHandler.sendReply(WebSocketReply.ack(requestId));
+            WebSocketReply reply = new WebSocketReply(requestId);
+            reply.attachData("ProcessorInfo", pinfo);
+            wsHandler.sendReply(reply);
+
+            // TODO Should probably remove this line, now that we sent this already in the response.
             wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo);
         } catch (IOException e) {
             log.warn("Exception when sending data", e);
@@ -69,7 +79,11 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
         ClientInfo cinfo = ManagementService.getInstance().getClientInfo(clientId);
         cinfo = ClientInfo.newBuilder(cinfo).setState(ClientState.CONNECTED).setCurrentClient(true).build();
         try {
-            wsHandler.sendReply(WebSocketReply.ack(requestId));
+            WebSocketReply reply = new WebSocketReply(requestId);
+            reply.attachData("ClientInfo", cinfo);
+            wsHandler.sendReply(reply);
+
+            // TODO Should probably remove this line, now that we sent this already in the response.
             wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
@@ -85,28 +99,54 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
      * Calling this multiple times, will cause the current set of data to be sent again. Further updates will still
      * arrive one-time only.
      */
-    private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
+    private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+            throws WebSocketException {
+        emitClientInfo = true;
+        emitProcessorInfo = true;
+        emitProcessorStatistics = true;
+        if (ctx.getData() != null) {
+            ManagementSubscriptionRequest req = decoder
+                    .decodeMessageData(ctx, ManagementSubscriptionRequest.newBuilder()).build();
+            emitClientInfo = !req.hasClientInfo() || req.getClientInfo();
+            emitProcessorInfo = !req.hasProcessorInfo() || req.getProcessorInfo();
+            emitProcessorStatistics = !req.hasProcessorStatistics() || req.getProcessorStatistics();
+        }
         try {
             wsHandler.sendReply(WebSocketReply.ack(ctx.getRequestId()));
 
             // Send current set of processors
-            for (Processor processor : Processor.getProcessors()) {
-                ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
-                wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo);
+            if (emitProcessorInfo) {
+                for (Processor processor : Processor.getProcessors()) {
+                    ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
+                    wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo);
+                }
             }
 
             // Send current set of clients
-            Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
-            for (ClientInfo client : clients) {
-                ClientInfo cinfo = ClientInfo.newBuilder(client)
-                        .setState(ClientState.CONNECTED).setCurrentClient(client.getId() == clientId).build();
-                wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
+            if (emitClientInfo) {
+                Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
+                for (ClientInfo client : clients) {
+                    ClientInfo cinfo = ClientInfo.newBuilder(client)
+                            .setState(ClientState.CONNECTED).setCurrentClient(client.getId() == clientId).build();
+                    wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
+                }
             }
         } catch (IOException e) {
             log.error("Exception when sending data", e);
             return null;
         }
         ManagementService.getInstance().addManagementListener(this);
+        return null;
+    }
+
+    private WebSocketReply processUnsubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
+        ManagementService.getInstance().removeManagementListener(this);
+        try {
+            wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
+        } catch (IOException e) {
+            log.error("Exception when sending data", e);
+            return null;
+        }
         return null;
     }
 
@@ -117,50 +157,60 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
 
     @Override
     public void processorAdded(ProcessorInfo processorInfo) {
-        try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
+        if (emitProcessorInfo) {
+            try {
+                wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
+            } catch (IOException e) {
+                log.error("Exception when sending data", e);
+            }
         }
     }
 
     @Override
     public void processorStateChanged(ProcessorInfo processorInfo) {
-        try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
+        if (emitProcessorInfo) {
+            try {
+                wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
+            } catch (IOException e) {
+                log.error("Exception when sending data", e);
+            }
         }
     }
 
     @Override
     public void processorClosed(ProcessorInfo processorInfo) {
-        try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
+        if (emitProcessorInfo) {
+            try {
+                wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
+            } catch (IOException e) {
+                log.error("Exception when sending data", e);
+            }
         }
     }
 
     @Override
     public void clientRegistered(ClientInfo ci) {
-        ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED)
-                .setCurrentClient(ci.getId() == clientId).build();
-        try {
-            wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
+        if (emitClientInfo) {
+            ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED)
+                    .setCurrentClient(ci.getId() == clientId).build();
+            try {
+                wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
+            } catch (IOException e) {
+                log.error("Exception when sending data", e);
+            }
         }
     }
 
     @Override
     public void clientInfoChanged(ClientInfo ci) {
-        ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED)
-                .setCurrentClient(ci.getId() == clientId).build();
-        try {
-            wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
+        if (emitClientInfo) {
+            ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED)
+                    .setCurrentClient(ci.getId() == clientId).build();
+            try {
+                wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
+            } catch (IOException e) {
+                log.error("Exception when sending data", e);
+            }
         }
     }
 
@@ -170,20 +220,25 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             return;
         }
 
-        ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.DISCONNECTED).setCurrentClient(false).build();
-        try {
-            wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
+        if (emitClientInfo) {
+            ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.DISCONNECTED).setCurrentClient(false)
+                    .build();
+            try {
+                wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
+            } catch (IOException e) {
+                log.error("Exception when sending data", e);
+            }
         }
     }
 
     @Override
     public void statisticsUpdated(Processor processor, Statistics stats) {
-        try {
-            wsHandler.sendData(ProtoDataType.PROCESSING_STATISTICS, stats);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
+        if (emitProcessorStatistics) {
+            try {
+                wsHandler.sendData(ProtoDataType.PROCESSING_STATISTICS, stats);
+            } catch (IOException e) {
+                log.error("Exception when sending data", e);
+            }
         }
     }
 }

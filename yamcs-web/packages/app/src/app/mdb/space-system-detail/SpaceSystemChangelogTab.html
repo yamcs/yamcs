@@ -6,38 +6,38 @@
             (keyup)="applyFilter($event.target.value)">
     </div>
 
-    <mat-table [dataSource]="historyDataSource" class="ya-data-table">
+    <table mat-table [dataSource]="historyDataSource" class="ya-data-table">
       <ng-container cdkColumnDef="version">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="100px">Version</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="100px">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 100px">Version</th>
+        <td mat-cell *cdkCellDef="let row">
           {{ row.version || '-' }}
-        </mat-cell>
+        </td>
       </ng-container>
 
       <ng-container cdkColumnDef="date">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="150px">Date</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="150px">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 150px">Date</th>
+        <td mat-cell *cdkCellDef="let row">
           {{ row.date || '-' }}
-        </mat-cell>
+        </td>
       </ng-container>
 
       <ng-container cdkColumnDef="message">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="400px">Message</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="400px">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Message</th>
+        <td mat-cell *cdkCellDef="let row" style="white-space: pre-wrap">
           {{ row.message || '-' }}
-        </mat-cell>
+        </td>
       </ng-container>
 
       <ng-container cdkColumnDef="author">
-        <mat-header-cell *cdkHeaderCellDef fxFlex="100px">Author</mat-header-cell>
-        <mat-cell *cdkCellDef="let row" fxFlex="100px">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 100px">Author</th>
+        <td mat-cell *cdkCellDef="let row">
           {{ row.author || '-' }}
-        </mat-cell>
+        </td>
       </ng-container>
 
-      <mat-header-row *cdkHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *cdkRowDef="let row; columns: displayedColumns;"></mat-row>
-    </mat-table>
+      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
   </ng-container>
 
   <ng-template #empty>
