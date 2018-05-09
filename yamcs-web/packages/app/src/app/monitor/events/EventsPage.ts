@@ -312,6 +312,10 @@ export class EventsPage {
     const dialogInstance = this.dialog.open(CreateEventDialog, {
       width: '400px',
     });
-    dialogInstance.afterClosed().subscribe(() => this.jumpToNow());
+    dialogInstance.afterClosed().subscribe(result => {
+      if (result) {
+        this.jumpToNow();
+      }
+    });
   }
 }
