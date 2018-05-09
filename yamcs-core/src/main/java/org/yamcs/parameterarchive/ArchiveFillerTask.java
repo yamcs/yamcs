@@ -110,7 +110,7 @@ class ArchiveFillerTask implements ParameterConsumer {
     }
 
     void flush() {
-        log.info("Starting a consolidation process, number of intervals: {}", pgSegments.size());
+        log.debug("Starting a consolidation process, number of intervals: {}", pgSegments.size());
         for(Map<Integer, PGSegment> m: pgSegments.values()) {
             consolidateAndWriteToArchive(m.values());
         }
@@ -144,7 +144,7 @@ class ArchiveFillerTask implements ParameterConsumer {
         while(t > nextSegmentStart + threshold) {
             Map<Integer, PGSegment> m = pgSegments.remove(collectionSegmentStart);
             if(m!=null) {
-                log.debug("Writing to archive the segment: [{} - {})", TimeEncoding.toString(collectionSegmentStart), TimeEncoding.toString(nextSegmentStart));
+                log.debug("Writing to archive the segment: [{} - {}) with {} groups", TimeEncoding.toString(collectionSegmentStart), TimeEncoding.toString(nextSegmentStart), m.size());
                 consolidateAndWriteToArchive(m.values());
             } 
             collectionSegmentStart = nextSegmentStart;
