@@ -74,10 +74,10 @@ public class ObjectSegment<E> extends BaseSegment {
         this.objSerializer = objSerializer;
 
         if(buildForSerialisation) {
-            objectList = new ArrayList<E>();
-            serializedObjectList = new ArrayList<HashableByteArray>();
-            unique = new ArrayList<HashableByteArray>();
-            valuemap = new HashMap<>();
+            objectList = new ArrayList<E>(1);
+            serializedObjectList = new ArrayList<HashableByteArray>(1);
+            unique = new ArrayList<HashableByteArray>(1);
+            valuemap = new HashMap<>(1);
             enumValues = new IntArray();
         } //else in the parseFrom will construct the necessary fields 
     }
