@@ -1,6 +1,9 @@
 package org.yamcs.web.rest.mdb;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -112,7 +115,7 @@ public class MDBParameterRestHandler extends RestHandler {
             }
         }
 
-        ListParameterInfoResponse.Builder responseb = ListParameterInfoResponse.newBuilder();
+        List<Parameter> matchedParameters = new ArrayList<>();
         if (req.hasQueryParameter("namespace")) {
             String namespace = req.getQueryParameter("namespace");
 
@@ -128,8 +131,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 String alias = p.getAlias(namespace);
                 if (alias != null || (recurse && p.getQualifiedName().startsWith(namespace))) {
                     if (parameterTypeMatches(p, types)) {
-                        responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL,
-                                details ? DetailLevel.FULL : DetailLevel.SUMMARY, addLinks));
+                        matchedParameters.add(p);
                     }
                 }
             }
@@ -139,12 +141,27 @@ public class MDBParameterRestHandler extends RestHandler {
                     continue;
                 }
                 if (parameterTypeMatches(p, types)) {
-                    responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL,
-                            details ? DetailLevel.FULL : DetailLevel.SUMMARY, addLinks));
+                    matchedParameters.add(p);
                 }
             }
         }
 
+        Collections.sort(matchedParameters, (p1, p2) -> {
+            return p1.getQualifiedName().compareTo(p2.getQualifiedName());
+        });
+
+        if (req.hasQueryParameter("limit")) {
+            int limit = req.getQueryParameterAsInt("limit");
+            if (limit < matchedParameters.size()) {
+                matchedParameters = matchedParameters.subList(0, limit);
+            }
+        }
+
+        ListParameterInfoResponse.Builder responseb = ListParameterInfoResponse.newBuilder();
+        for (Parameter p : matchedParameters) {
+            responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL,
+                    details ? DetailLevel.FULL : DetailLevel.SUMMARY, addLinks));
+        }
         completeOK(req, responseb.build());
     }
 

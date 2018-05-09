@@ -22,7 +22,6 @@ import org.yamcs.oldparchive.ParameterGroupIdDb;
 import org.yamcs.oldparchive.ParameterIdDb;
 import org.yamcs.oldparchive.ParameterIdDb.ParameterId;
 import org.yamcs.oldparchive.ParameterIdValueList;
-import org.yamcs.oldparchive.ParameterValueArray;
 import org.yamcs.oldparchive.SingleParameterDataRetrieval;
 import org.yamcs.oldparchive.SingleParameterValueRequest;
 import org.yamcs.parameter.ParameterCache;
@@ -97,11 +96,14 @@ public class OldArchiveParameterRestHandler extends RestHandler {
          * BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getTypeAsString()); }
          */
 
-        long start = req.getQueryParameterAsDate("start", 0);
-        long stop = req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime());
+        long defaultStop = TimeEncoding.getWallclockTime();
+        long defaultStart = defaultStop - (1000 * 60 * 60); // 1 hour
+
+        long start = req.getQueryParameterAsDate("start", defaultStart);
+        long stop = req.getQueryParameterAsDate("stop", defaultStop);
         int intervalCount = req.getQueryParameterAsInt("count", 500);
 
-        RestDownsampler sampler = new RestDownsampler(stop, intervalCount);
+        RestDownsampler sampler = new RestDownsampler(start, stop, intervalCount);
         ParameterArchive parchive = getParameterArchive(instance);
         ParameterIdDb piddb = parchive.getParameterIdDb();
 
@@ -176,46 +178,43 @@ public class OldArchiveParameterRestHandler extends RestHandler {
         spvr.setRetrieveRawValues(false);
         SingleParameterDataRetrieval spdr = new SingleParameterDataRetrieval(parchive, spvr);
         try {
-            spdr.retrieve(new Consumer<ParameterValueArray>() {
-                @Override
-                public void accept(ParameterValueArray t) {
+            spdr.retrieve(t -> {
 
-                    Object o = t.getEngValues();
-                    long[] timestamps = t.getTimestamps();
-                    int n = timestamps.length;
-                    if (o instanceof float[]) {
-                        float[] values = (float[]) o;
-                        for (int i = 0; i < n; i++) {
-                            sampler.process(timestamps[i], values[i]);
-                        }
-                    } else if (o instanceof double[]) {
-                        double[] values = (double[]) o;
-                        for (int i = 0; i < n; i++) {
-                            sampler.process(timestamps[i], values[i]);
-                        }
-                    } else if (o instanceof long[]) {
-                        long[] values = (long[]) o;
-                        for (int i = 0; i < n; i++) {
-                            if (engType == Type.UINT64) {
-                                sampler.process(timestamps[i], unsignedLongToDouble(values[i]));
-                            } else {
-                                sampler.process(timestamps[i], values[i]);
-                            }
-                        }
-                    } else if (o instanceof int[]) {
-                        int[] values = (int[]) o;
-                        for (int i = 0; i < n; i++) {
-                            if (engType == Type.UINT32) {
-                                sampler.process(timestamps[i], values[i] & 0xFFFFFFFFL);
-                            } else {
-                                sampler.process(timestamps[i], values[i]);
-                            }
-                        }
-                    } else {
-                        log.warn("Unexpected value type {}", o.getClass());
+                Object o = t.getEngValues();
+                long[] timestamps = t.getTimestamps();
+                int n = timestamps.length;
+                if (o instanceof float[]) {
+                    float[] values1 = (float[]) o;
+                    for (int i1 = 0; i1 < n; i1++) {
+                        sampler.process(timestamps[i1], values1[i1]);
                     }
-
+                } else if (o instanceof double[]) {
+                    double[] values2 = (double[]) o;
+                    for (int i2 = 0; i2 < n; i2++) {
+                        sampler.process(timestamps[i2], values2[i2]);
+                    }
+                } else if (o instanceof long[]) {
+                    long[] values3 = (long[]) o;
+                    for (int i3 = 0; i3 < n; i3++) {
+                        if (engType == Type.UINT64) {
+                            sampler.process(timestamps[i3], unsignedLongToDouble(values3[i3]));
+                        } else {
+                            sampler.process(timestamps[i3], values3[i3]);
+                        }
+                    }
+                } else if (o instanceof int[]) {
+                    int[] values4 = (int[]) o;
+                    for (int i4 = 0; i4 < n; i4++) {
+                        if (engType == Type.UINT32) {
+                            sampler.process(timestamps[i4], values4[i4] & 0xFFFFFFFFL);
+                        } else {
+                            sampler.process(timestamps[i4], values4[i4]);
+                        }
+                    }
+                } else {
+                    log.warn("Unexpected value type {}", o.getClass());
                 }
+
             });
         } catch (RocksDBException e) {
             log.warn("Received exception during parmaeter retrieval ", e);

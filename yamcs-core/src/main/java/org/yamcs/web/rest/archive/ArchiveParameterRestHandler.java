@@ -101,11 +101,14 @@ public class ArchiveParameterRestHandler extends RestHandler {
          * BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getTypeAsString()); }
          */
 
-        long start = req.getQueryParameterAsDate("start", 0);
-        long stop = req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime());
-        int intervalCount = req.getQueryParameterAsInt("count", 500);
+        long defaultStop = TimeEncoding.getWallclockTime();
+        long defaultStart = defaultStop - (1000 * 60 * 60); // 1 hour
 
-        RestDownsampler sampler = new RestDownsampler(stop, intervalCount);
+        long start = req.getQueryParameterAsDate("start", defaultStart);
+        long stop = req.getQueryParameterAsDate("stop", defaultStop);
+        int sampleCount = req.getQueryParameterAsInt("count", 500);
+
+        RestDownsampler sampler = new RestDownsampler(start, stop, sampleCount);
         ParameterArchiveV2 parchive = getParameterArchive(instance);
         ParameterCache pcache = getParameterCache(instance, req);
 
@@ -126,7 +129,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, series.build());
     }
 
-    
     /**
      * A series is a list of samples that are determined in one-pass while processing a stream result. Final API
      * unstable.
@@ -152,10 +154,10 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
         long minGap = req.getQueryParameterAsLong("minGap", 0);
         long maxGap = req.getQueryParameterAsLong("maxGap", Long.MAX_VALUE);
-       
+
         ParameterArchiveV2 parchive = getParameterArchive(instance);
         ParameterCache pcache = getParameterCache(instance, req);
-       
+
         ParameterRanger ranger = new ParameterRanger(minGap, maxGap);
 
         ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, true);
@@ -167,7 +169,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
             throw new InternalServerErrorException(e.getMessage());
         }
 
-        
         Ranges.Builder ranges = Ranges.newBuilder();
         for (Range r : ranger.getRanges()) {
             ranges.addRange(ArchiveHelper.toGPBRange(r));
@@ -176,8 +177,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, ranges.build());
     }
 
-
-    
     private boolean isOldParameterArchive(String instance) throws BadRequestException {
         ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
 
@@ -195,7 +194,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         return (ParameterArchiveV2) parameterArchive.getParchive();
     }
 
- 
     @Route(path = "/api/archive/:instance/parameters/:name*")
     public void listParameterHistory(RestRequest req) throws HttpException {
         if (isReplayAsked(req)) {
@@ -352,9 +350,10 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 long start = (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) ? mpvr.getStart() - 1
                         : lastParameterTime.getLong();
                 sendFromCache(p, id, pcache, true, start, mpvr.getStop(), replayListener);
-            } else if (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) { // no data retrieved from archive, but
-                                                                              // maybe there is still something in the
-                                                                              // cache to send
+            } else if (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) { // no data retrieved from archive,
+                                                                                      // but
+                // maybe there is still something in the
+                // cache to send
                 sendFromCache(p, id, pcache, false, mpvr.getStart(), mpvr.getStop(), replayListener);
             }
         }
@@ -397,7 +396,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
             }
         }
     }
-    
+
     private static ParameterCache getParameterCache(String instance, RestRequest req) throws NotFoundException {
         ParameterCache pcache = null;
         Processor realtimeProcessor = getRealtimeProc(instance, req);
@@ -406,7 +405,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
         return pcache;
     }
-
 
     private static Processor getRealtimeProc(String instance, RestRequest req) throws NotFoundException {
         String processorName;
