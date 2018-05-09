@@ -26,11 +26,7 @@ public class NamedDescriptionIndex<T extends NameDescription> implements Seriali
         XtceAliasSet aliases = o.getAliasSet();
         if (aliases != null) {
             for (String ns : aliases.getNamespaces()) {
-                LinkedHashMap<String, T> m = aliasIndex.get(ns);
-                if (m == null) {
-                    m = new LinkedHashMap<String, T>();
-                    aliasIndex.put(ns, m);
-                }
+                LinkedHashMap<String, T> m = aliasIndex.computeIfAbsent(ns, k -> new LinkedHashMap<String, T>());
                 m.put(aliases.getAlias(ns).toUpperCase(), o);
             }
         }

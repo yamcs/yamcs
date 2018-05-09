@@ -31,12 +31,7 @@ public class StreamConfig {
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
     public static synchronized StreamConfig getInstance(String yamcsInstance) throws ConfigurationException {
-        StreamConfig sc = instances.get(yamcsInstance);
-        if (sc == null) {
-            sc = new StreamConfig(yamcsInstance);
-            instances.put(yamcsInstance, sc);
-        }
-        return sc;
+        return instances.computeIfAbsent(yamcsInstance, k -> new StreamConfig(k));
     }
 
     private StreamConfig(String yamcsInstance) {

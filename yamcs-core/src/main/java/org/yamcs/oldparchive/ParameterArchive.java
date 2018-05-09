@@ -126,11 +126,7 @@ public class ParameterArchive  extends AbstractService {
             String cn = (String)o;
             if(cn.startsWith(CF_NAME_DATA_PREFIX)) {
                 long partitionId = decodePartitionId(CF_NAME_DATA_PREFIX, cn);
-                Partition p = partitions.get(partitionId);
-                if(p==null) {
-                    p = new Partition(partitionId);
-                    partitions.put(partitionId, p);
-                }
+                Partition p = partitions.computeIfAbsent(partitionId, k-> new Partition(k));
                 p.dataCfh = yrdb.getColumnFamilyHandle(o);
             } else if(!"default".equals(cn) && !CF_NAME_META_P2PID.equals(cn) && !CF_NAME_META_PGID2PG.equals(cn)){
                 log.warn("Unknown column family '{}'", cn);

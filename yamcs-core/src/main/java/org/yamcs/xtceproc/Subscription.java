@@ -131,20 +131,12 @@ public class Subscription {
     }
 
     private void addContainer2Entry(SequenceContainer sc, SequenceEntry se) {
-        TreeSet<SequenceEntry> ts = container2EntryMap.get(sc);
-        if (ts == null) {
-            ts = new TreeSet<SequenceEntry>();
-            container2EntryMap.put(sc, ts);
-        }
+        TreeSet<SequenceEntry> ts = container2EntryMap.computeIfAbsent(sc, k-> new TreeSet<SequenceEntry>());
         ts.add(se);
     }
 
     private void addContainer2InheritingContainer(SequenceContainer container, SequenceContainer inheritedContainer) {
-        HashSet<SequenceContainer> hs = container2InheritingContainerMap.get(container);
-        if (hs == null) {
-            hs = new HashSet<>();
-            container2InheritingContainerMap.put(container, hs);
-        }
+        HashSet<SequenceContainer> hs = container2InheritingContainerMap.computeIfAbsent(container, k -> new HashSet<>());
         hs.add(inheritedContainer);
     }
 

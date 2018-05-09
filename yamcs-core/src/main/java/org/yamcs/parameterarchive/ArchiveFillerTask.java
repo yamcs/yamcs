@@ -146,7 +146,8 @@ class ArchiveFillerTask implements ParameterConsumer {
             Map<Integer, PGSegment> m = pgSegments.remove(collectionSegmentStart);
             if(m!=null) {
                 if(log.isDebugEnabled())
-                    log.debug("Writing to archive the segment: [{} - {})", TimeEncoding.toString(collectionSegmentStart), TimeEncoding.toString(nextSegmentStart));
+                    log.debug("Writing to archive the segment: [{} - {}) with {} groups",
+                            TimeEncoding.toString(collectionSegmentStart), TimeEncoding.toString(nextSegmentStart), m.size());
                 consolidateAndWriteToArchive(collectionSegmentStart, m.values());
             } 
             collectionSegmentStart = nextSegmentStart;

@@ -41,12 +41,7 @@ public class RDBFactory implements Runnable {
     public static FlushOptions flushOptions = new FlushOptions();
 
     public static synchronized RDBFactory getInstance(String dataDir) {
-        RDBFactory rdbFactory = instances.get(dataDir); 
-        if(rdbFactory==null) {
-            rdbFactory = new RDBFactory(dataDir);
-            instances.put(dataDir, rdbFactory);
-        }
-        return rdbFactory;
+        return instances.computeIfAbsent(dataDir, k -> new RDBFactory(k)); 
     }
 
     /**

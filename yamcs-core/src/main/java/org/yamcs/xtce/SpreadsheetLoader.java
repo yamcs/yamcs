@@ -346,11 +346,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
             calibrators.put(name, c);
         } else {
-            List<ContextCalibrator> l = contextCalibrators.get(name);
-            if(l==null) {
-                l = new ArrayList<>();
-                contextCalibrators.put(name, l);
-            }
+            
+            List<ContextCalibrator> l = contextCalibrators.computeIfAbsent(name, k -> new ArrayList<>());
             l.add(new ContextCalibrator(context, c));
         }
     }

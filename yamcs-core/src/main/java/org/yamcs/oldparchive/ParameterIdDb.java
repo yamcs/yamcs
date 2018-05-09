@@ -59,11 +59,8 @@ public class ParameterIdDb {
     public synchronized int createAndGet(String paramFqn, Value.Type engType, Value.Type rawType) throws ParameterArchiveException {
         int type = numericType(engType, rawType);
 
-        Map<Integer, Integer> m = p2pidCache.get(paramFqn);
-        if(m==null) {
-            m = new HashMap<>();
-            p2pidCache.put(paramFqn, m);
-        }
+        Map<Integer, Integer> m = p2pidCache.computeIfAbsent(paramFqn, k-> new HashMap<>());
+        
         Integer pid = m.get(type);
         if(pid==null) {
             pid = ++highestParaId;

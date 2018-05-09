@@ -554,20 +554,10 @@ public class XtceDbFactory {
         return db;
     }
 
-    public static synchronized XtceDb getInstanceByConfig(String yamcsInstance, String config)
-            throws ConfigurationException {
-        Map<String, XtceDb> dbConfigs = instance2DbConfigs.get(yamcsInstance);
-        if (dbConfigs == null) {
-            dbConfigs = new HashMap<>();
-            instance2DbConfigs.put(yamcsInstance, dbConfigs);
-        }
+    public static synchronized XtceDb getInstanceByConfig(String yamcsInstance, String config) {
+        Map<String, XtceDb> dbConfigs = instance2DbConfigs.computeIfAbsent(yamcsInstance, k -> new HashMap<>());
 
-        XtceDb db = dbConfigs.get(config);
-        if (db == null) {
-            db = createInstanceByConfig(config);
-            dbConfigs.put(config, db);
-        }
-        return db;
+        return dbConfigs.computeIfAbsent(config, k-> createInstanceByConfig(config));
     }
 
     /**

@@ -44,12 +44,7 @@ public class RDBFactory implements Runnable {
     DummyColumnFamilySerializer dummyCfSerializer = new DummyColumnFamilySerializer();
 
     public static synchronized RDBFactory getInstance(String instance) {
-        RDBFactory rdbFactory = instances.get(instance); 
-        if(rdbFactory==null) {
-            rdbFactory = new RDBFactory(instance);
-            instances.put(instance, rdbFactory);
-        }
-        return rdbFactory;
+        return instances.computeIfAbsent(instance, k-> new RDBFactory(k)); 
     }
 
     /**
