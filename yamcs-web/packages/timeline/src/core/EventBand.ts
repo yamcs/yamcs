@@ -2,7 +2,7 @@ import { Action } from '../Action';
 import Point from '../Point';
 import RenderContext from '../RenderContext';
 import Timeline from '../Timeline';
-import { EventEvent, EventChangedEvent } from '../events';
+import { EventChangedEvent, EventEvent } from '../events';
 import { ClipPath, Ellipse, G, Line, Path, Rect, Set, Text, Title } from '../tags';
 import { isAfter, isBefore, toDate } from '../utils';
 import Band, { BandOptions } from './Band';
@@ -124,9 +124,9 @@ export default class EventBand extends Band {
       // eventHeight: 15, // defaults to lineHeight
       borders: false, // false, true, 'vertical'
       dark: {
-        backgroundColor: '#4c4c4c',
-        borderColor: '',
-        textColor: '#bbb',
+        // backgroundColor: '#4c4c4c',
+        // borderColor: '',
+        // textColor: '#bbb',
       },
     };
   }
@@ -421,8 +421,6 @@ export default class EventBand extends Band {
   test = 0;
 
   private renderEvent(event: EventWithDrawInfo, x: number, y: number) {
-    // console.log('render..' + this.test)
-    // x = x + this.test
     const start = toDate(event.userObject.start);
     const stop = toDate(event.userObject.stop);
 

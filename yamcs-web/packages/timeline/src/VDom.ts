@@ -144,14 +144,14 @@ export default class VDom {
       y: 0,
       height: '100%',
       width: this.timeline.getSidebarWidth(),
-      fill: style['sidebarBackgroundColor'],
+      fill: style.sidebarBackgroundColor,
     }), new Rect({ // Divider with band area
       x: this.timeline.getSidebarWidth(),
       y: 0,
       width: 1,
       height: '100%',
-      fill: '#d1d5da',
-      }));
+      fill: style.dividerColor,
+    }));
     this.rootEl.appendChild(sidebarBg.toDomElement());
 
     this.bodySidebarSvgWrapperEl = new Svg({
