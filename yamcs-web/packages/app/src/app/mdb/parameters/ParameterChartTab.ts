@@ -30,7 +30,8 @@ export class ParameterChartTab implements OnDestroy {
   constructor(route: ActivatedRoute, private yamcs: YamcsService, private dialog: MatDialog) {
     this.missionTime = yamcs.getMissionTime();
     const qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
-    this.dataSource = new DyDataSource(yamcs, qualifiedName);
+    this.dataSource = new DyDataSource(yamcs);
+    this.dataSource.addParameter(qualifiedName);
     this.dataSource.connectRealtime();
     this.parameter$ = yamcs.getInstanceClient()!.getParameter(qualifiedName);
   }

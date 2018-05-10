@@ -23,6 +23,12 @@ export class ParameterSeries implements OnInit {
   @Input()
   alarmRanges: 'line' | 'fill' | 'none' = 'line';
 
+  @Input()
+  color = '#1b61b9';
+
+  @Input()
+  private label: string;
+
   /**
    * Disjoint set of OOL alarm zones
    */
@@ -91,6 +97,10 @@ export class ParameterSeries implements OnInit {
       valueRange[1] = this.maxHigh;
     }
     return valueRange;
+  }
+
+  public getLabel() {
+    return this.label || this.parameter.qualifiedName;
   }
 
   private colorForLevel(level: string) {

@@ -25,24 +25,35 @@
       </div>
 
       <div fxFlex="33.33">
-        <mat-card *ngIf="jvmMemoryUsedParameter$ | async as parameter">
-          <mat-card-subtitle>JVM Memory Used</mat-card-subtitle>
-          <div style="height: 300px">
-            <app-parameter-plot [dataSource]="jvmMemoryUsedDataSource" duration="PT20M">
-              <app-parameter-series [parameter]="parameter"
-                                    [grid]="true"
-                                    [axisLineWidth]="0">
-              </app-parameter-series>
-            </app-parameter-plot>
-          </div>
-        </mat-card>
+        <ng-container *ngIf="jvmTotalMemoryParameter$ | async as totalMemory">
+          <mat-card *ngIf="jvmMemoryUsedParameter$ | async as memoryUsed">
+            <mat-card-subtitle>JVM Memory (KiB)</mat-card-subtitle>
+            <div style="height: 300px">
+              <app-parameter-plot [dataSource]="jvmMemoryUsedDataSource"
+                                  duration="PT20M"
+                                  lightAxisBackgroundColor="white">
+                <app-parameter-series [parameter]="memoryUsed"
+                                      [grid]="true"
+                                      [axisLineWidth]="0"
+                                      label="Used">
+                </app-parameter-series>
+                <app-parameter-series [parameter]="totalMemory"
+                                      [grid]="true"
+                                      [axisLineWidth]="0"
+                                      color="purple"
+                                      label="Total">
+                </app-parameter-series>
+              </app-parameter-plot>
+            </div>
+          </mat-card>
+        </ng-container>
       </div>
 
       <div fxFlex="33.33">
         <mat-card *ngIf="jvmThreadCountParameter$ | async as parameter">
           <mat-card-subtitle>JVM Thread Count</mat-card-subtitle>
           <div style="height: 300px">
-            <app-parameter-plot [dataSource]="jvmThreadCountDataSource" duration="PT20M">
+            <app-parameter-plot [dataSource]="jvmThreadCountDataSource" duration="PT20M" lightAxisBackgroundColor="white">
               <app-parameter-series [parameter]="parameter"
                                     [grid]="true"
                                     [axisLineWidth]="0">

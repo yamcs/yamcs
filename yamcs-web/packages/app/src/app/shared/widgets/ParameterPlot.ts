@@ -1,13 +1,13 @@
-import { Component, ViewChild, AfterViewInit, ElementRef, Input, QueryList, ContentChildren, OnDestroy } from '@angular/core';
-import Dygraph from 'dygraphs';
+import { AfterViewInit, Component, ContentChildren, ElementRef, Input, OnDestroy, QueryList, ViewChild } from '@angular/core';
 import { Parameter } from '@yamcs/client';
-import { DyDataSource } from './DyDataSource';
-import { ParameterSeries } from './ParameterSeries';
-import GridPlugin from './GridPlugin';
+import Dygraph from 'dygraphs';
+import { Subscription } from 'rxjs';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
-import { Subscription } from 'rxjs';
+import { DyDataSource } from './DyDataSource';
+import GridPlugin from './GridPlugin';
+import { ParameterSeries } from './ParameterSeries';
 
 @Component({
   selector: 'app-parameter-plot',
@@ -49,27 +49,23 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   @Input()
   width = '100%';
 
-  lightColors = {
-    axisBackgroundColor: '#fafafa',
-    axisLineColor: '#e1e1e1',
-    gridLineColor: '#f2f2f2',
-    plotAreaBackgroundColor: '#fff',
-    highlightColor: '#e1e1e1',
-  };
+  @Input() lightAxisBackgroundColor = '#fafafa';
+  @Input() lightAxisLineColor = '#e1e1e1';
+  @Input() lightGridLineColor = '#f2f2f2';
+  @Input() lightPlotAreaBackgroundColor = '#fff';
+  @Input() lightHighlightColor = '#e1e1e1';
 
-  darkColors = {
-    axisBackgroundColor: '#191919',
-    axisLineColor: '#2e2e2e',
-    gridLineColor: '#212121',
-    plotAreaBackgroundColor: '#111',
-    highlightColor: '#2e2e2e',
-  };
+  @Input() darkAxisBackgroundColor = '#191919';
+  @Input() darkAxisLineColor = '#2e2e2e';
+  @Input() darkGridLineColor = '#212121';
+  @Input() darkPlotAreaBackgroundColor = '#111';
+  @Input() darkHighlightColor = '#2e2e2e';
 
-  axisBackgroundColor = this.lightColors.axisBackgroundColor;
-  axisLineColor = this.lightColors.axisLineColor;
-  gridLineColor = this.lightColors.gridLineColor;
-  plotAreaBackgroundColor = this.lightColors.plotAreaBackgroundColor;
-  highlightColor = this.lightColors.highlightColor;
+  axisBackgroundColor = this.lightAxisBackgroundColor;
+  axisLineColor = this.lightAxisLineColor;
+  gridLineColor = this.lightGridLineColor;
+  plotAreaBackgroundColor = this.lightPlotAreaBackgroundColor;
+  highlightColor = this.lightHighlightColor;
 
   @Input()
   stop = new Date();
@@ -110,8 +106,9 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     const containingDiv = this.graphContainer.nativeElement as HTMLDivElement;
 
-    // TODO should have endpoint on rest for multiple parameters sampled together
-    this.parameters.push(this.seriesComponents.first.parameter);
+    this.seriesComponents.forEach(series => {
+      this.parameters.push(series.parameter);
+    });
 
     this.initDygraphs(containingDiv);
     this.dataSource.data$.subscribe(data => {
@@ -179,9 +176,12 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
   private initDygraphs(containingDiv: HTMLDivElement) {
     const series: { [key: string]: any } = {};
-    series[this.parameters[0].qualifiedName] = {
-      color: '#1b61b9',
-    };
+
+    this.seriesComponents.forEach(s => {
+      series[s.getLabel()] = {
+        color: s.color,
+      };
+    });
 
     const alarmZones = this.seriesComponents.first.staticAlarmZones;
     const alarmRangeMode = this.seriesComponents.first.alarmRanges;
@@ -200,7 +200,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
       axisLineColor: this.axisLineColor,
       axisLabelFontSize: 11,
       digitsAfterDecimal: 6,
-      labels: ['Generation Time', this.parameters[0].qualifiedName],
+      labels: ['Generation Time', ...this.seriesComponents.map(s => s.getLabel())],
       rightGap: 0,
       labelsUTC: this.utc,
       series,
@@ -352,7 +352,6 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
             );
           }
         }
-
         ctx.restore();
       },
       drawHighlightPointCallback: (
@@ -364,33 +363,43 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         color: any,
         radius: number,
       ) => {
-        ctx.clearRect(0, 0, g.width_, g.height_);
-        ctx.setLineDash([5, 5]);
-        ctx.strokeStyle = this.highlightColor;
+        // Only draw for point of first series, because otherwise the line may
+        // get drawn on top of other points.
+        if (this.seriesComponents.first.getLabel() === seriesName) {
+          // ctx.clearRect(0, 0, g.width_, g.height_);
+          ctx.setLineDash([5, 5]);
+          ctx.strokeStyle = this.highlightColor;
+
+          ctx.beginPath();
+          const canvasx = Math.floor(g.selPoints_[0].canvasx) + 0.5; // crisper rendering
+          if (this.crosshair === 'vertical' || this.crosshair === 'both') {
+            ctx.moveTo(canvasx, 0);
+            ctx.lineTo(canvasx, g.height_);
+          }
+          if (this.crosshair === 'horizontal' || this.crosshair === 'both') {
+            for (const point of g.selPoints_) {
+              const canvasy = Math.floor(point.canvasy) + 0.5; // crisper rendering
+              ctx.moveTo(0, canvasy);
+              ctx.lineTo(g.width_, canvasy);
+            }
+          }
+          ctx.stroke();
+          ctx.closePath();
+        }
 
         ctx.beginPath();
-        const canvasx = Math.floor(g.selPoints_[0].canvasx) + 0.5; // crisper rendering
-        if (this.crosshair === 'vertical' || this.crosshair === 'both') {
-          ctx.moveTo(canvasx, 0);
-          ctx.lineTo(canvasx, g.height_);
-        }
-        if (this.crosshair === 'horizontal' || this.crosshair === 'both') {
-          for (const point of g.selPoints_) {
-            const canvasy = Math.floor(point.canvasy) + 0.5; // crisper rendering
-            ctx.moveTo(0, canvasy);
-            ctx.lineTo(g.width_, canvasy);
-          }
-        }
-        ctx.stroke();
-        ctx.closePath();
-
         ctx.arc(cx, cy, radius, 0, 2 * Math.PI, false);
         ctx.fill();
       },
       legendFormatter: (data: any) => {
         let legend = '';
         for (const trace of data.series) {
-          legend += `${trace.dashHTML} ${trace.yHTML}`;
+          legend += `<div class="legend-box" style="background-color: ${this.plotAreaBackgroundColor}; border: 1px solid ${this.gridLineColor}; border-left: 3px solid ${trace.color}">
+                     ${trace.label}`;
+          if (trace.yHTML) {
+            legend += ' ' + trace.yHTML;
+          }
+          legend += '</div>&nbsp;&nbsp;&nbsp;';
         }
         return legend;
       },
@@ -426,17 +435,17 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   private applyTheme(dark: boolean) {
     // Update model
     if (dark) {
-      this.axisBackgroundColor = this.darkColors.axisBackgroundColor;
-      this.axisLineColor = this.darkColors.axisLineColor;
-      this.gridLineColor = this.darkColors.gridLineColor;
-      this.plotAreaBackgroundColor = this.darkColors.plotAreaBackgroundColor;
-      this.highlightColor = this.darkColors.highlightColor;
+      this.axisBackgroundColor = this.darkAxisBackgroundColor;
+      this.axisLineColor = this.darkAxisLineColor;
+      this.gridLineColor = this.darkGridLineColor;
+      this.plotAreaBackgroundColor = this.darkPlotAreaBackgroundColor;
+      this.highlightColor = this.darkHighlightColor;
     } else {
-      this.axisBackgroundColor = this.lightColors.axisBackgroundColor;
-      this.axisLineColor = this.lightColors.axisLineColor;
-      this.gridLineColor = this.lightColors.gridLineColor;
-      this.plotAreaBackgroundColor = this.lightColors.plotAreaBackgroundColor;
-      this.highlightColor = this.lightColors.highlightColor;
+      this.axisBackgroundColor = this.lightAxisBackgroundColor;
+      this.axisLineColor = this.lightAxisLineColor;
+      this.gridLineColor = this.lightGridLineColor;
+      this.plotAreaBackgroundColor = this.lightPlotAreaBackgroundColor;
+      this.highlightColor = this.lightHighlightColor;
     }
 
     // Apply model

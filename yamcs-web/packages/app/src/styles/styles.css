@@ -67,6 +67,10 @@ body {
   padding: 24px;
 }
 
+.ya-data-table tr.mat-header-row {
+  height: auto;
+}
+
 .ya-data-table tr.mat-row {
   height: auto;
 }

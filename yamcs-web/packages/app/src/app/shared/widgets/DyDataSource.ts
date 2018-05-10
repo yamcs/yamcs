@@ -1,10 +1,10 @@
-import { DySample } from './DySample';
+import { Alarm, ParameterValue, Sample } from '@yamcs/client';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { BehaviorSubject ,  Subscription } from 'rxjs';
-import { Sample, Alarm, ParameterValue } from '@yamcs/client';
-import { DyAnnotation } from './DyAnnotation';
 import { convertValueToNumber } from '../utils';
-import { PlotBuffer, DyValueRange, PlotData } from './PlotBuffer';
+import { DyAnnotation } from './DyAnnotation';
+import { CustomBarsValue, DySample } from './DySample';
+import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
 
 /**
  * Stores sample data for use in a ParameterPlot directly
@@ -27,6 +27,7 @@ export class DyDataSource {
   visibleStart: Date;
   visibleStop: Date;
 
+  private qualifiedNames: string[] = [];
   private plotBuffer: PlotBuffer;
 
   private lastLoadPromise: Promise<any> | null;
@@ -34,8 +35,11 @@ export class DyDataSource {
   // Realtime
   private realtimeSynchronizer: number;
   private realtimeSubscription: Subscription;
+  // Added due to multi-param plots where realtime values are not guaranteed to arrive in the
+  // same delivery. Should probably have a server-side solution for this use cause though.
+  private latestRealtimeValues = new Map<string, CustomBarsValue>();
 
-  constructor(private yamcs: YamcsService, private qname: string) {
+  constructor(private yamcs: YamcsService) {
     this.realtimeSynchronizer = window.setInterval(() => {
       if (this.plotBuffer.dirty && !this.loading$.getValue()) {
         const plotData = this.plotBuffer.snapshot();
@@ -51,6 +55,10 @@ export class DyDataSource {
     this.plotBuffer = new PlotBuffer(() => {
       this.reloadVisibleRange();
     });
+  }
+
+  public addParameter(qname: string) {
+    this.qualifiedNames.push(qname);
   }
 
   /**
@@ -74,25 +82,39 @@ export class DyDataSource {
     const loadStop = new Date(stop.getTime() + delta);
 
     const instanceClient = this.yamcs.getInstanceClient()!;
-    const loadPromise = Promise.all([
-      instanceClient.getParameterSamples(this.qname, {
-        start: loadStart.toISOString(),
-        stop: loadStop.toISOString(),
-        count: 2000,
-      }),
-      instanceClient.getAlarmsForParameter(this.qname, {
-        start: loadStart.toISOString(),
-        stop: loadStop.toISOString(),
-      })
-    ]);
+    const promises: Promise<any>[] = [];
+    for (const qualifiedName of this.qualifiedNames) {
+      promises.push(
+        instanceClient.getParameterSamples(qualifiedName, {
+          start: loadStart.toISOString(),
+          stop: loadStop.toISOString(),
+          count: 2000,
+        }),
+        instanceClient.getAlarmsForParameter(qualifiedName, {
+          start: loadStart.toISOString(),
+          stop: loadStop.toISOString(),
+        })
+      );
+    }
+
+    const loadPromise = Promise.all(promises);
     this.lastLoadPromise = loadPromise;
     return loadPromise.then(results => {
       // Effectively cancels past requests
       if (this.lastLoadPromise === loadPromise) {
         this.loading$.next(false);
         this.plotBuffer.reset();
-        const dySamples = this.processSamples(results[0], start, stop);
-        const dyAnnotations = this.spliceAlarmAnnotations(results[1], dySamples);
+        this.latestRealtimeValues.clear();
+        this.visibleStart = start;
+        this.visibleStop = stop;
+        this.minValue = undefined;
+        this.maxValue = undefined;
+        const dySamples = this.processSamples(results[0]);
+        const dyAnnotations = this.spliceAlarmAnnotations([] /*results[1] TODO */, dySamples);
+        for (let i = 1; i < this.qualifiedNames.length; i++) {
+          this.mergeSeries(dySamples, this.processSamples(results[2 * i]));
+          // const seriesAnnotations = this.spliceAlarmAnnotations(results[2 * i + 1], seriesSamples);
+        }
         this.plotBuffer.setArchiveData(dySamples, dyAnnotations);
         this.plotBuffer.setValueRange(valueRange);
         this.lastLoadPromise = null;
@@ -101,20 +123,49 @@ export class DyDataSource {
   }
 
   connectRealtime() {
+    const ids = this.qualifiedNames.map(qualifiedName => ({ name: qualifiedName }));
     this.yamcs.getInstanceClient()!.getParameterValueUpdates({
-      id: [{ name: this.qname }],
+      id: ids,
       sendFromCache: false,
       subscriptionId: -1,
       updateOnExpiration: true,
       abortOnInvalid: true,
     }).then(response => {
       this.realtimeSubscription = response.parameterValues$.subscribe(pvals => {
-        const dySample = this.convertParameterValueToSample(pvals[0]);
-        if (dySample) {
-          this.plotBuffer.addRealtimeValue(dySample);
-        }
+        this.processRealtimeDelivery(pvals);
       });
     });
+  }
+
+  /**
+   * Emit merged snapsnot (may include values from a previous delivery)
+   */
+  private processRealtimeDelivery(pvals: ParameterValue[]) {
+    for (const pval of pvals) {
+      let dyValue: CustomBarsValue = null;
+      const value = convertValueToNumber(pval.engValue);
+      if (value !== null) {
+        if (pval.acquisitionStatus === 'EXPIRED') {
+          // We get the last received timestamp.
+          // Consider gap to be just after that
+          /// t.setTime(t.getTime() + 1); // TODO Commented out because we need identical timestamps in case of multi param plots
+          dyValue = null; // Display as gap
+        } else if (pval.acquisitionStatus === 'ACQUIRED') {
+          dyValue = [value, value, value];
+        }
+      }
+      this.latestRealtimeValues.set(pval.id.name, dyValue);
+    }
+
+    const t = new Date();
+    t.setTime(Date.parse(pvals[0].generationTimeUTC));
+
+    const dyValues: CustomBarsValue[] = this.qualifiedNames.map(qualifiedName => {
+      return this.latestRealtimeValues.get(qualifiedName) || null;
+    });
+
+    const sample: any = [t, ...dyValues];
+    this.plotBuffer.addRealtimeValue(sample);
   }
 
   disconnect() {
@@ -128,12 +179,8 @@ export class DyDataSource {
     }
   }
 
-  private processSamples(samples: Sample[], start: Date, stop: Date) {
+  private processSamples(samples: Sample[]) {
     const dySamples: DySample[] = [];
-    this.minValue = undefined;
-    this.maxValue = undefined;
-    this.visibleStart = start;
-    this.visibleStop = stop;
     for (const sample of samples) {
       const t = new Date();
       t.setTime(Date.parse(sample['time']));
@@ -161,24 +208,7 @@ export class DyDataSource {
     return dySamples;
   }
 
-  private convertParameterValueToSample(pval: ParameterValue): DySample | null {
-    const value = convertValueToNumber(pval.engValue);
-    if (value !== null) {
-      const t = new Date();
-      t.setTime(Date.parse(pval.generationTimeUTC));
-      if (pval.acquisitionStatus === 'EXPIRED') {
-        // We get the last received timestamp.
-        // Consider gap to be just after that
-        t.setTime(t.getTime() + 1);
-        return [t, null]; // Display as gap
-      } else if (pval.acquisitionStatus === 'ACQUIRED') {
-        return [t, [value, value, value]];
-      }
-    }
-    return null;
-  }
-
-  private spliceAlarmAnnotations(alarms: Alarm[], dySamples: DySample[]) {
+  spliceAlarmAnnotations(alarms: Alarm[], dySamples: DySample[]) {
     const dyAnnotations: DyAnnotation[] = [];
     for (const alarm of alarms) {
       const t = new Date();
@@ -189,7 +219,7 @@ export class DyDataSource {
         const idx = this.findInsertPosition(t, dySamples);
         dySamples.splice(idx, 0, sample);
         dyAnnotations.push({
-          series: this.qname,
+          series: this.qualifiedNames[0],
           x: t.getTime(),
           shortText: 'A',
           text: 'Alarm triggered at ' + alarm.triggerValue.generationTimeUTC,
@@ -214,5 +244,19 @@ export class DyDataSource {
       }
     }
     return dySamples.length - 1;
+  }
+
+  /**
+   * Merges two DySample[] series together. This assumes that timestamps between
+   * the two series are identical, which is the case if server requests are done
+   * with the same date range.
+   */
+  private mergeSeries(samples1: DySample[], samples2: DySample[]) {
+    if (samples1.length !== samples2.length) {
+      throw new Error('Cannot merge two sample arrays of unequal length');
+    }
+    for (let i = 0; i < samples1.length; i++) {
+      samples1[i].push(samples2[i][1]);
+    }
   }
 }
