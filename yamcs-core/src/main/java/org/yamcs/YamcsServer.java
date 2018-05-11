@@ -26,7 +26,6 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
@@ -284,11 +283,13 @@ public class YamcsServer {
                 String configName = c.getString("mdb");
                 mdb.setConfigName(configName);
             }
-            XtceDb xtcedb = XtceDbFactory.getInstance(name);
-            mdb.setName(xtcedb.getRootSpaceSystem().getName());
-            Header h = xtcedb.getRootSpaceSystem().getHeader();
-            if ((h != null) && (h.getVersion() != null)) {
-                mdb.setVersion(h.getVersion());
+            XtceDb xtcedb = ysi.getXtceDb();
+            if(xtcedb!=null) { //if the instance is in a failed state, it could be that it doesn't have a XtceDB (the failure might be due to the load of the XtceDb)
+                mdb.setName(xtcedb.getRootSpaceSystem().getName());
+                Header h = xtcedb.getRootSpaceSystem().getHeader();
+                if ((h != null) && (h.getVersion() != null)) {
+                    mdb.setVersion(h.getVersion());
+                }
             }
             aib.setMissionDatabase(mdb.build());
         } catch (ConfigurationException | DatabaseLoadException e) {

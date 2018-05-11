@@ -14,6 +14,7 @@ import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -34,6 +35,7 @@ public class YamcsServerInstance extends AbstractService {
     private CrashHandler crashHandler;
     // instance specific services
     List<ServiceWithConfig> serviceList;
+    private XtceDb xtceDb;
 
     YamcsServerInstance(String instance) throws IOException {
         this.instanceName = instance;
@@ -49,13 +51,17 @@ public class YamcsServerInstance extends AbstractService {
             crashHandler = YamcsServer.globalCrashHandler;
         }
         // first load the XtceDB (if there is an error in it, we don't want to load any other service)
-        XtceDbFactory.getInstance(instanceName);
+        xtceDb = XtceDbFactory.getInstance(instanceName);
 
         StreamInitializer.createStreams(instanceName);
         List<Object> services = conf.getList("services");
         serviceList = YamcsServer.createServices(instanceName, services);
     }
 
+    public XtceDb getXtceDb() {
+        return xtceDb;
+    }
+    
     private void loadTimeService() throws ConfigurationException, IOException {
         YConfiguration conf = YConfiguration.getConfiguration("yamcs." + instanceName);
         if (conf.containsKey("timeService")) {
