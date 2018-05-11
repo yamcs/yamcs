@@ -76,7 +76,6 @@ public class SystemParametersCollector extends AbstractService implements Runnab
             throw new ConfigurationException("Stream '" + STREAM_NAME + "' does not exist");
         }
         stream = s;
-        timeService = YamcsServer.getInstance(instance).getTimeService();
 
         serverId = YamcsServer.getServerId();
         namespace = XtceDb.YAMCS_SPACESYSTEM_NAME + NameDescription.PATH_SEPARATOR + serverId;
@@ -113,6 +112,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
 
     @Override
     public void doStart() {
+        timeService = YamcsServer.getInstance(instance).getTimeService();
         timer = new ScheduledThreadPoolExecutor(1);
         timer.scheduleAtFixedRate(this, 1000L, frequencyMillisec, TimeUnit.MILLISECONDS);
         notifyStarted();

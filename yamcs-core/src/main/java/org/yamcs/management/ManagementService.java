@@ -513,22 +513,8 @@ public class ManagementService implements ProcessorListener {
         }
 
         return CompletableFuture.runAsync(() -> {
-            ysi.stopAsync();
-            try {
-                ysi.awaitTerminated();
-            } catch (IllegalStateException e) {
-                log.error("Instance did not terminate normally", e);
-            }
-            XtceDbFactory.remove(instanceName);
-            YamcsServerInstance ysi1;
-            try {
-                log.info("Creating new instance {}", instanceName);
-                ysi1 = YamcsServer.createYamcsInstance(instanceName);
-            } catch (IOException e) {
-                throw new CompletionException(e);
-            }
-            log.info("Starting new instance {}", instanceName);
-            ysi1.startAsync();
+            log.info("Restarting the instance {}", instanceName);
+            YamcsServer.restartYamcsInstance(instanceName);
         });
 
     }

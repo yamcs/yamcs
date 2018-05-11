@@ -39,8 +39,8 @@ public class YamcsServerInstance extends AbstractService {
 
     //guava doesn't allow to fail inside the init so we save the exception and we fail in the start
     private Exception initFailed;
- 
-    YamcsServerInstance(String instance) throws IOException {
+
+    YamcsServerInstance(String instance) {
         this.instanceName = instance;
         log = LoggingUtils.getLogger(YamcsServer.class, instance);
         loadTimeService();
@@ -71,16 +71,20 @@ public class YamcsServerInstance extends AbstractService {
         return xtceDb;
     }
 
-    private void loadTimeService() throws ConfigurationException, IOException {
+    private void loadTimeService() throws ConfigurationException {
         YConfiguration conf = YConfiguration.getConfiguration("yamcs." + instanceName);
         if (conf.containsKey("timeService")) {
             Map<String, Object> m = conf.getMap("timeService");
             String servclass = YConfiguration.getString(m, "class");
             Object args = m.get("args");
-            if (args == null) {
-                timeService = YObjectLoader.loadObject(servclass, instanceName);
-            } else {
-                timeService = YObjectLoader.loadObject(servclass, instanceName, args);
+            try  {
+                if (args == null) {
+                    timeService = YObjectLoader.loadObject(servclass, instanceName);
+                } else {
+                    timeService = YObjectLoader.loadObject(servclass, instanceName, args);
+                }
+            } catch (IOException e) {
+                throw new ConfigurationException("Failed to load time service :"+e.getMessage(), e);
             }
         } else {
             timeService = new RealtimeTimeService();

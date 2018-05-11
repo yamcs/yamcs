@@ -26,6 +26,7 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
@@ -218,11 +219,46 @@ public class YamcsServer {
         if (System.getenv("YAMCS_DAEMON") == null) {
             staticlog.info("Server running... press ctrl-c to stop");
         } else {// the init.d/yamcs-server depends on this line on the standard output, do not change it (without
-                // changing the script also)!
+            // changing the script also)!
             System.out.println("yamcsstartup success");
         }
     }
 
+    /**
+     * Restarts a yamcs instance. As we cannot restart instances, we create a new one and replace the old one.
+     * 
+     * @param name
+     *            the name of the instance
+     * 
+     * @return the newly created instance
+     * @throws IOException
+     */
+    public static YamcsServerInstance restartYamcsInstance(String instanceName) {
+        YamcsServerInstance ysi = instances.get(instanceName);
+        
+        if(ysi.isRunning()) {
+            ysi.stopAsync();
+            try {
+                ysi.awaitTerminated();
+            } catch (IllegalStateException e) {
+                staticlog.error("Instance did not terminate normally", e);
+            }
+        }
+        XtceDbFactory.remove(instanceName);
+        staticlog.info("Re-loading instance '{}'", instanceName);
+
+        ysi = new YamcsServerInstance(instanceName);
+        try {
+            ysi.init();
+            ysi.startAsync();
+        } catch (IOException e) {
+            staticlog.error("Failed to init/start instance '{}'", instanceName, e);
+        }
+        instances.put(instanceName, ysi);
+        ManagementService.getInstance().registerYamcsInstance(ysi);
+
+        return ysi;
+    }
     /**
      * Creates a new yamcs instance without starting it. If the instance already exist and not in the state FAILED or
      * TERMINATED a ConfigurationException is thrown
@@ -246,10 +282,9 @@ public class YamcsServer {
             staticlog.info("Loading instance '{}'", name);
         }
         ysi = new YamcsServerInstance(name);
+        ysi.init();
         instances.put(name, ysi);
         ManagementService.getInstance().registerYamcsInstance(ysi);
-        ysi.init();
-
         return ysi;
     }
 
