@@ -6,7 +6,7 @@ Version 4.4.1 released
 - bugfix: in /api/instances do not reload the XtceDb from disk, instead
 provide information about the db already loaded
 - bugfix: when an instance fails to init - force it to the FAILED state
-(rather than NEW)
+(rather than NEW), also do not store the instances that failed to init in the instance list 
 
 
 Version 4.4.0 released 7-May-2018

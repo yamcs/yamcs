@@ -39,13 +39,16 @@ import com.google.common.util.concurrent.RateLimiter;
  *
  */
 public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLink, SystemParametersProducer {
+    static final String CONFIG_KEY_ERROR_DETECTION_WORD = "errorDetectionWord";
     protected SocketChannel socketChannel = null;
     protected String host = "whirl";
     protected int port = 10003;
     protected CommandHistoryPublisher commandHistoryListener;
     protected Selector selector;
     SelectionKey selectionKey;
-    protected CcsdsSeqAndChecksumFiller seqAndChecksumFiller = new CcsdsSeqAndChecksumFiller();
+    protected CcsdsSeqCountFiller seqFiller = new CcsdsSeqCountFiller();
+    ErrorDetectionWordCalculator errorDetectionCalculator;
+    
     protected ScheduledThreadPoolExecutor timer;
     protected volatile boolean disabled = false;
     protected int minimumTcPacketLength = -1; // the minimum size of the CCSDS packets uplinked
@@ -63,6 +66,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     TimeService timeService;
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
     TcDequeueAndSend tcSender;
+    
     
     public TcpTcDataLink(String yamcsInstance, String name, Map<String, Object> config) throws ConfigurationException {
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
@@ -91,6 +95,19 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         }
         if (config.containsKey("tcMaxRate")) {
             rateLimiter = RateLimiter.create( YConfiguration.getInt(config, "tcMaxRate"));
+        }
+        if(config.containsKey(CONFIG_KEY_ERROR_DETECTION_WORD)) {
+            Map<String, Object> c = YConfiguration.getMap(config, CONFIG_KEY_ERROR_DETECTION_WORD);
+            String type = YConfiguration.getString(c, "type");
+            if("16-SUM".equalsIgnoreCase(type)) {
+                errorDetectionCalculator = new Running16BitChecksumCalculator();
+            } else if("CRC-16-CCIIT".equalsIgnoreCase(type)) {
+                errorDetectionCalculator = new CrcCciitCalculator(c);
+            } else {
+                throw new ConfigurationException("Unknown errorDetectionWord type '"+type+"': supported types are 16-SUM and CRC-16-CCIIT");
+            }
+        } else {
+            errorDetectionCalculator = new Running16BitChecksumCalculator();
         }
         
     }
@@ -314,25 +331,25 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             }
         }
         public void send() {
-            ByteBuffer bb = null;
-            if (pc.getBinary().length < minimumTcPacketLength) { // enforce the minimum packet length
-                bb = ByteBuffer.allocate(minimumTcPacketLength);
-                bb.put(pc.getBinary());
-                bb.putShort(4, (short) (minimumTcPacketLength - 7)); // fix packet length
-            } else {
-                int checksumIndicator = pc.getBinary()[2] & 0x04;
-                if (checksumIndicator == 1) {
-                    bb = ByteBuffer.allocate(pc.getBinary().length + 2); // extra slots for check sum
-                } else {
-                    bb = ByteBuffer.wrap(pc.getBinary());
-                }
-                bb.putShort(4, (short) (pc.getBinary().length - 7));
-
+          
+            byte[] binary = pc.getBinary();
+            int checksumIndicator = binary[2] & 0x04;
+            if (checksumIndicator == 1) { //2 extra bytes for the checksum
+                binary = Arrays.copyOf(binary, binary.length+2);
             }
+            
+            if (binary.length < minimumTcPacketLength) { // enforce the minimum packet length
+                binary = Arrays.copyOf(binary, minimumTcPacketLength);
+            }
+            ByteBuffer bb = ByteBuffer.wrap(binary);
+            bb.putShort(4, (short) (binary.length - 7)); // fix packet length
 
             int retries = 5;
             boolean sent = false;
-            int seqCount = seqAndChecksumFiller.fill(bb, pc.getCommandId().getGenerationTime());
+            int seqCount = seqFiller.fill(bb, pc.getCommandId().getGenerationTime());
+            int checksum = errorDetectionCalculator.compute(binary, 0, binary.length-2);
+            bb.putShort(binary.length-2, (short)checksum);
+            
             commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
             
             bb.rewind();
