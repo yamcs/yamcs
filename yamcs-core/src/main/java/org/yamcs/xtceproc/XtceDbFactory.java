@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,14 +55,14 @@ public class XtceDbFactory {
      * Creates a new instance of the database in memory. configSection is the
      * top heading under which this appears in the mdb.yaml
      *
-     * @throws ConfigurationException
+     * @throws DatabaseLoadException
      */
-    public static synchronized XtceDb createInstanceByConfig(String configSection) throws ConfigurationException {
+    public static synchronized XtceDb createInstanceByConfig(String configSection) throws DatabaseLoadException {
         return createInstanceByConfig(configSection, true);
     }
 
     public static synchronized XtceDb createInstanceByConfig(String configSection, boolean attemptToLoadSerialized)
-            throws ConfigurationException {
+            throws ConfigurationException, DatabaseLoadException {
         YConfiguration c = YConfiguration.getConfiguration("mdb");
 
         if (configSection == null) {
@@ -91,7 +90,7 @@ public class XtceDbFactory {
      */
     @SuppressWarnings("unchecked")
     public static synchronized XtceDb createInstance(List<Object> treeConfig, boolean attemptToLoadSerialized,
-            boolean saveSerialized) throws ConfigurationException {
+            boolean saveSerialized) throws ConfigurationException, DatabaseLoadException {
         LoaderTree loaderTree = new LoaderTree(new RootSpaceSystemLoader());
 
         for (Object o : treeConfig) {
@@ -150,7 +149,7 @@ public class XtceDbFactory {
             StringBuilder sb = new StringBuilder();
             collectUnresolvedReferences(rootSs, sb);
             if (n == 0) {
-                throw new ConfigurationException("Cannot resolve (circular?) references: " + sb.toString());
+                throw new DatabaseLoadException("Cannot resolve (circular?) references: " + sb.toString());
             }
             setQualifiedNames(rootSs, "");
             db = new XtceDb(rootSs);
@@ -198,7 +197,7 @@ public class XtceDbFactory {
      * @param sysDb
      * @return the number of references resolved or -1 if there was no reference to be resolved
      */
-    private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss) throws ConfigurationException {
+    private static int resolveReferences(SpaceSystem rootSs, SpaceSystem ss) throws DatabaseLoadException {
         List<NameReference> refs = ss.getUnresolvedReferences();
 
         // This can happen when we deserialise the SpaceSystem since the unresolved references is a transient list.
@@ -240,7 +239,7 @@ public class XtceDbFactory {
                 nd = findAliasReference(rootSs, nr, ss);
             }
             if (nd == null) {
-                throw new ConfigurationException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
+                throw new DatabaseLoadException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
             }
             if (nr.resolved(nd)) {
                 n++;
@@ -416,7 +415,7 @@ public class XtceDbFactory {
     }
 
     @SuppressWarnings({ "unchecked" })
-    private static LoaderTree getLoaderTree(Map<String, Object> m) throws ConfigurationException {
+    private static LoaderTree getLoaderTree(Map<String, Object> m) throws ConfigurationException, DatabaseLoadException {
         String type = YConfiguration.getString(m, "type");
         Object args = null;
         if (m.containsKey("args")) {
@@ -435,9 +434,11 @@ public class XtceDbFactory {
         }
         try {
             l = YObjectLoader.loadObject(type, args);
+        } catch (DatabaseLoadException|ConfigurationException e) {
+            throw e;
         } catch (Exception e) {
             log.warn(e.toString());
-            throw new ConfigurationException("Cannot load xtce database: " + e.getMessage(), e);
+            throw new DatabaseLoadException("Cannot load xtce database: " + e.getMessage(), e);
         }
 
         ltree = new LoaderTree(l);

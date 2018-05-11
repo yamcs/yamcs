@@ -2,6 +2,11 @@ Version 4.4.1 released
 - added the possibility to exclude parameter groups from replays
 - yamcs-web: added a view for the archive index
 - yamcs-web: support replays
+- fixed the retrieval of static files when zeroCopy was disabled
+- bugfix: in /api/instances do not reload the XtceDb from disk, instead
+provide information about the db already loaded
+- bugfix: when an instance fails to init - force it to the FAILED state
+(rather than NEW)
 
 
 Version 4.4.0 released 7-May-2018

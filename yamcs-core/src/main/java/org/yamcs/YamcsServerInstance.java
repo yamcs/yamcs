@@ -37,6 +37,9 @@ public class YamcsServerInstance extends AbstractService {
     List<ServiceWithConfig> serviceList;
     private XtceDb xtceDb;
 
+    //guava doesn't allow to fail inside the init so we save the exception and we fail in the start
+    private Exception initFailed;
+ 
     YamcsServerInstance(String instance) throws IOException {
         this.instanceName = instance;
         log = LoggingUtils.getLogger(YamcsServer.class, instance);
@@ -50,18 +53,24 @@ public class YamcsServerInstance extends AbstractService {
         } else {
             crashHandler = YamcsServer.globalCrashHandler;
         }
-        // first load the XtceDB (if there is an error in it, we don't want to load any other service)
-        xtceDb = XtceDbFactory.getInstance(instanceName);
-
-        StreamInitializer.createStreams(instanceName);
-        List<Object> services = conf.getList("services");
-        serviceList = YamcsServer.createServices(instanceName, services);
+        try {
+            // first load the XtceDB (if there is an error in it, we don't want to load any other service)
+            xtceDb = XtceDbFactory.getInstance(instanceName);
+            StreamInitializer.createStreams(instanceName);
+            List<Object> services = conf.getList("services");
+            serviceList = YamcsServer.createServices(instanceName, services);
+        } catch (Exception e) {
+            initFailed = e;
+            //trick to get it to the FAILED state
+            startAsync();
+            throw e;
+        }
     }
 
     public XtceDb getXtceDb() {
         return xtceDb;
     }
-    
+
     private void loadTimeService() throws ConfigurationException, IOException {
         YConfiguration conf = YConfiguration.getConfiguration("yamcs." + instanceName);
         if (conf.containsKey("timeService")) {
@@ -128,8 +137,12 @@ public class YamcsServerInstance extends AbstractService {
 
     @Override
     protected void doStart() {
-        YamcsServer.startServices(serviceList);
-        notifyStarted();
+        if(initFailed != null) {
+            notifyFailed(initFailed);
+        } else {
+            YamcsServer.startServices(serviceList);
+            notifyStarted();
+        }
     }
 
     @Override

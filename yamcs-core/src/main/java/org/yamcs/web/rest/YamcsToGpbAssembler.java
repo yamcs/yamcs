@@ -10,7 +10,6 @@ import org.yamcs.web.rest.mdb.XtceToGpbAssembler;
 import org.yamcs.web.rest.processor.ProcessorRestHandler;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtceproc.XtceDbFactory;
 
 public class YamcsToGpbAssembler {
 
@@ -38,8 +37,10 @@ public class YamcsToGpbAssembler {
 
         // Override MDB with a version that has URLs too
         if (yamcsInstance.hasMissionDatabase()) {
-            XtceDb mdb = XtceDbFactory.getInstance(yamcsInstance.getName());
-            instanceb.setMissionDatabase(YamcsToGpbAssembler.toMissionDatabase(req, yamcsInstance.getName(), mdb));
+            XtceDb mdb = YamcsServer.getInstance(yamcsInstance.getName()).getXtceDb();
+            if(mdb!=null) {
+                instanceb.setMissionDatabase(YamcsToGpbAssembler.toMissionDatabase(req, yamcsInstance.getName(), mdb));
+            }
         }
 
         if (req.getQueryParameterAsBoolean("links", false)) {
