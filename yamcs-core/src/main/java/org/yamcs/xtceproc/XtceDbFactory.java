@@ -359,7 +359,7 @@ public class XtceDbFactory {
             return ss.getParameter(name);
         case PARAMETER_TYPE:
             return (NameDescription) ss.getParameterType(name);
-        case SEQUENCE_CONTAINTER:
+        case SEQUENCE_CONTAINER:
             return ss.getSequenceContainer(name);
         case COMMAND_CONTAINER:
             Container c = ss.getCommandContainer(name);
@@ -396,7 +396,7 @@ public class XtceDbFactory {
         case PARAMETER:
             l = ss.getParameterByAlias(alias);
             break;
-        case SEQUENCE_CONTAINTER:
+        case SEQUENCE_CONTAINER:
             l = ss.getSequenceContainerByAlias(alias);
             break;
         case META_COMMAND:

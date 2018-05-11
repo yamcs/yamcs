@@ -1097,7 +1097,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         container.useAsArchivePartition(true);
                     }
                 } else {
-                    NameReference nr = new UnresolvedNameReference(parent, Type.SEQUENCE_CONTAINTER)
+                    NameReference nr = new UnresolvedNameReference(parent, Type.SEQUENCE_CONTAINER)
                             .addResolvedAction(nd -> {
                                 SequenceContainer sc1 = (SequenceContainer) nd;
                                 container.setBaseContainer(sc1);

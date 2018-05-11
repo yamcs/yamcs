@@ -149,7 +149,7 @@ public class SpaceSystem extends NameDescription {
         case META_COMMAND:
             nd = getMetaCommand(nr.getReference());
             break;
-        case SEQUENCE_CONTAINTER:
+        case SEQUENCE_CONTAINER:
             nd = getSequenceContainer(nr.getReference());
             break;
         default:

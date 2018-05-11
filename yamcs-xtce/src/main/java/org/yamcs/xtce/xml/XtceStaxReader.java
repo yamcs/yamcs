@@ -2011,7 +2011,7 @@ public class XtceStaxReader {
                     seqContainer.setBaseContainer(baseContainer);
                 } else { // must come from somewhere else
                     final SequenceContainer finalsc = seqContainer;
-                    NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINTER)
+                    NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINER)
                             .addResolvedAction(nd -> {
                                 finalsc.setBaseContainer((SequenceContainer) nd);
                                 return true;
@@ -2127,7 +2127,7 @@ public class XtceStaxReader {
         } else {
             containerEntry = new ContainerEntry(-1, null, 0, locationType);
             final ContainerEntry finalce = containerEntry;
-            NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINTER).addResolvedAction(nd -> {
+            NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINER).addResolvedAction(nd -> {
                 finalce.setRefContainer((SequenceContainer) nd);
                 return true;
             });
