@@ -240,8 +240,6 @@ public class XtceDbFactory {
                 nd = findAliasReference(rootSs, nr, ss);
             }
             if (nd == null) {
-                System.out.println("parameters: "
-                        + ss.getParameters().stream().map(p -> p.getName()).collect(Collectors.toList()));
                 throw new ConfigurationException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
             }
             if (nr.resolved(nd)) {
