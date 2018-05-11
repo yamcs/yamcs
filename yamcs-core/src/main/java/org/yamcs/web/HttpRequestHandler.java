@@ -53,7 +53,6 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
@@ -364,11 +363,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * Sends base HTTP response indicating the use of chunked transfer encoding
+     * NM 11-May-2018: We do not put the ChunckedWriteHandler on the pipeline because the input is already chunked.
+     * 
      */
     public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType,
             String filename) {
         log.info("{} {} {} 200 starting chunked transfer", ctx.channel().id().asShortText(), req.method(), req.uri());
-        ctx.pipeline().addBefore(HANDLER_NAME_COMPRESSOR, HANDLER_NAME_CHUNKED_WRITER, new ChunkedWriteHandler());
         ctx.channel().attr(CTX_CHUNK_STATS).set(new ChunkedTransferStats(req.method(), req.uri()));
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
         response.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
