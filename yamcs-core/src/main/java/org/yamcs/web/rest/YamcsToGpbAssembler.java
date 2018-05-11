@@ -16,18 +16,9 @@ public class YamcsToGpbAssembler {
     public static MissionDatabase toMissionDatabase(RestRequest req, String instance, XtceDb mdb) {
         YamcsInstance yamcsInstance = YamcsServer.getYamcsInstance(instance);
         MissionDatabase.Builder b = MissionDatabase.newBuilder(yamcsInstance.getMissionDatabase());
-        if (req.getQueryParameterAsBoolean("links", false)) {
-            String apiUrl = req.getApiURL();
-            b.setUrl(apiUrl + "/mdb/" + instance);
-            b.setParametersUrl(b.getUrl() + "/parameters{/namespace}{/name}");
-            b.setContainersUrl(b.getUrl() + "/containers{/namespace}{/name}");
-            b.setCommandsUrl(b.getUrl() + "/commands{/namespace}{/name}");
-            b.setAlgorithmsUrl(b.getUrl() + "/algorithms{/namespace}{/name}");
-        }
-
         SpaceSystem ss = mdb.getRootSpaceSystem();
         for (SpaceSystem sub : ss.getSubSystems()) {
-            b.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, instance, sub));
+            b.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, sub));
         }
         return b.build();
     }
@@ -41,14 +32,6 @@ public class YamcsToGpbAssembler {
             if(mdb!=null) {
                 instanceb.setMissionDatabase(YamcsToGpbAssembler.toMissionDatabase(req, yamcsInstance.getName(), mdb));
             }
-        }
-
-        if (req.getQueryParameterAsBoolean("links", false)) {
-            String apiUrl = req.getApiURL();
-            String instanceUrl = apiUrl + "/instances/" + instanceb.getName();
-            instanceb.setUrl(instanceUrl);
-            instanceb.setEventsUrl(instanceUrl + "{/processor}/events");
-            instanceb.setClientsUrl(instanceUrl + "{/processor}/clients");
         }
 
         for (Processor processor : Processor.getProcessors(instanceb.getName())) {

@@ -35,9 +35,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         Algorithm algo = verifyAlgorithm(req, mdb, req.getRouteParam("name"));
 
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
-        AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.FULL, addLinks);
+        AlgorithmInfo cinfo = XtceToGpbAssembler.toAlgorithmInfo(algo, DetailLevel.FULL);
         completeOK(req, cinfo);
     }
 
@@ -51,30 +49,28 @@ public class MDBAlgorithmRestHandler extends RestHandler {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));
         }
 
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
-        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         ListAlgorithmInfoResponse.Builder responseb = ListAlgorithmInfoResponse.newBuilder();
         if (req.hasQueryParameter("namespace")) {
             String namespace = req.getQueryParameter("namespace");
 
             for (Algorithm algo : mdb.getAlgorithms()) {
-                if (matcher != null && !matcher.matches(algo))
+                if (matcher != null && !matcher.matches(algo)) {
                     continue;
+                }
 
                 String alias = algo.getAlias(namespace);
                 if (alias != null || (recurse && algo.getQualifiedName().startsWith(namespace))) {
-                    responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.SUMMARY,
-                            addLinks));
+                    responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(algo, DetailLevel.SUMMARY));
                 }
             }
         } else { // List all
             for (Algorithm algo : mdb.getAlgorithms()) {
-                if (matcher != null && !matcher.matches(algo))
+                if (matcher != null && !matcher.matches(algo)) {
                     continue;
-                responseb.addAlgorithm(
-                        XtceToGpbAssembler.toAlgorithmInfo(algo, instanceURL, DetailLevel.SUMMARY, addLinks));
+                }
+                responseb.addAlgorithm(XtceToGpbAssembler.toAlgorithmInfo(algo, DetailLevel.SUMMARY));
             }
         }
 

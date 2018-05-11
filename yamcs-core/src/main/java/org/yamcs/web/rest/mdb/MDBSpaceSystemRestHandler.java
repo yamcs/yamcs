@@ -34,8 +34,7 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         SpaceSystem spaceSystem = verifySpaceSystem(req, mdb, req.getRouteParam("name"));
 
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        SpaceSystemInfo info = XtceToGpbAssembler.toSpaceSystemInfo(req, instanceURL, spaceSystem);
+        SpaceSystemInfo info = XtceToGpbAssembler.toSpaceSystemInfo(req, spaceSystem);
         completeOK(req, info);
     }
 
@@ -49,7 +48,6 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));
         }
 
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
 
         ListSpaceSystemInfoResponse.Builder responseb = ListSpaceSystemInfoResponse.newBuilder();
@@ -57,19 +55,21 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
             String namespace = req.getQueryParameter("namespace");
 
             for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
-                if (matcher != null && !matcher.matches(spaceSystem))
+                if (matcher != null && !matcher.matches(spaceSystem)) {
                     continue;
+                }
 
                 String alias = spaceSystem.getAlias(namespace);
                 if (alias != null || (recurse && spaceSystem.getQualifiedName().startsWith(namespace))) {
-                    responseb.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, instanceURL, spaceSystem));
+                    responseb.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, spaceSystem));
                 }
             }
         } else { // List all
             for (SpaceSystem spaceSystem : mdb.getSpaceSystems()) {
-                if (matcher != null && !matcher.matches(spaceSystem))
+                if (matcher != null && !matcher.matches(spaceSystem)) {
                     continue;
-                responseb.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, instanceURL, spaceSystem));
+                }
+                responseb.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, spaceSystem));
             }
         }
 

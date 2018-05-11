@@ -39,7 +39,6 @@ public class MDBParameterRestHandler extends RestHandler {
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
-        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         BulkGetParameterInfoRequest request = req.bodyAsMessage(BulkGetParameterInfoRequest.newBuilder()).build();
         BulkGetParameterInfoResponse.Builder responseb = BulkGetParameterInfoResponse.newBuilder();
@@ -57,9 +56,7 @@ public class MDBParameterRestHandler extends RestHandler {
 
             GetParameterInfoResponse.Builder response = GetParameterInfoResponse.newBuilder();
             response.setId(id);
-            String instanceURL = req.getApiURL() + "/mdb/" + instance;
-            response.setParameter(
-                    XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.SUMMARY, addLinks));
+            response.setParameter(XtceToGpbAssembler.toParameterInfo(p, DetailLevel.SUMMARY));
             responseb.addResponse(response);
         }
 
@@ -82,9 +79,7 @@ public class MDBParameterRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
 
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
-        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, instanceURL, DetailLevel.FULL, addLinks);
+        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, DetailLevel.FULL);
         completeOK(req, pinfo);
     }
 
@@ -98,10 +93,8 @@ public class MDBParameterRestHandler extends RestHandler {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));
         }
 
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
         boolean details = req.getQueryParameterAsBoolean("details", false);
-        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         // Support both type[]=float&type[]=integer and type=float,integer
         Set<String> types = new HashSet<>();
@@ -159,8 +152,8 @@ public class MDBParameterRestHandler extends RestHandler {
 
         ListParameterInfoResponse.Builder responseb = ListParameterInfoResponse.newBuilder();
         for (Parameter p : matchedParameters) {
-            responseb.addParameter(XtceToGpbAssembler.toParameterInfo(p, instanceURL,
-                    details ? DetailLevel.FULL : DetailLevel.SUMMARY, addLinks));
+            responseb.addParameter(
+                    XtceToGpbAssembler.toParameterInfo(p, details ? DetailLevel.FULL : DetailLevel.SUMMARY));
         }
         completeOK(req, responseb.build());
     }

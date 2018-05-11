@@ -25,7 +25,7 @@ public class XtceToGpbAssemblerTest {
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/FLOAT_ARG_TC");
 
         // Act
-        CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, "url", DetailLevel.FULL, false);
+        CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, DetailLevel.FULL);
 
         // Assert
         assertEquals("FLOAT_ARG_TC", commandInfo.getName());
@@ -44,7 +44,7 @@ public class XtceToGpbAssemblerTest {
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
 
         // Act
-        CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, "url", DetailLevel.FULL, false);
+        CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, DetailLevel.FULL);
 
         // Assert
         assertEquals("CCSDS_TC", commandInfo.getName());
@@ -63,7 +63,7 @@ public class XtceToGpbAssemblerTest {
         MetaCommand cmd1 = db.getMetaCommand("/REFMDB/SUBSYS1/CALIB_TC");
 
         // Act
-        CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, "url", DetailLevel.FULL, false);
+        CommandInfo commandInfo = XtceToGpbAssembler.toCommandInfo(cmd1, DetailLevel.FULL);
 
         // Assert
         assertEquals("CALIB_TC", commandInfo.getName());

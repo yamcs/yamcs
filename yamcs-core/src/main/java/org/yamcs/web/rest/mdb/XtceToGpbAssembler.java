@@ -121,15 +121,11 @@ public class XtceToGpbAssembler {
         LINK, SUMMARY, FULL
     }
 
-    public static ContainerInfo toContainerInfo(SequenceContainer c, String instanceURL, DetailLevel detail,
-            boolean addLinks) {
+    public static ContainerInfo toContainerInfo(SequenceContainer c, DetailLevel detail) {
         ContainerInfo.Builder cb = ContainerInfo.newBuilder();
 
         cb.setName(c.getName());
         cb.setQualifiedName(c.getQualifiedName());
-        if (addLinks) {
-            cb.setUrl(instanceURL + "/containers" + c.getQualifiedName());
-        }
 
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (c.getShortDescription() != null) {
@@ -152,27 +148,26 @@ public class XtceToGpbAssembler {
             }
             if (c.getBaseContainer() != null) {
                 if (detail == DetailLevel.SUMMARY) {
-                    cb.setBaseContainer(toContainerInfo(c.getBaseContainer(), instanceURL, DetailLevel.LINK, addLinks));
+                    cb.setBaseContainer(toContainerInfo(c.getBaseContainer(), DetailLevel.LINK));
                 } else if (detail == DetailLevel.FULL) {
-                    cb.setBaseContainer(toContainerInfo(c.getBaseContainer(), instanceURL, DetailLevel.FULL, addLinks));
+                    cb.setBaseContainer(toContainerInfo(c.getBaseContainer(), DetailLevel.FULL));
                 }
             }
             if (c.getRestrictionCriteria() != null) {
                 if (c.getRestrictionCriteria() instanceof ComparisonList) {
                     ComparisonList xtceList = (ComparisonList) c.getRestrictionCriteria();
                     for (Comparison comparison : xtceList.getComparisonList()) {
-                        cb.addRestrictionCriteria(toComparisonInfo(comparison, instanceURL, addLinks));
+                        cb.addRestrictionCriteria(toComparisonInfo(comparison));
                     }
                 } else if (c.getRestrictionCriteria() instanceof Comparison) {
-                    cb.addRestrictionCriteria(
-                            toComparisonInfo((Comparison) c.getRestrictionCriteria(), instanceURL, addLinks));
+                    cb.addRestrictionCriteria(toComparisonInfo((Comparison) c.getRestrictionCriteria()));
                 }
             }
             for (SequenceEntry entry : c.getEntryList()) {
                 if (detail == DetailLevel.SUMMARY) {
-                    cb.addEntry(toSequenceEntryInfo(entry, instanceURL, DetailLevel.LINK, addLinks));
+                    cb.addEntry(toSequenceEntryInfo(entry, DetailLevel.LINK));
                 } else if (detail == DetailLevel.FULL) {
-                    cb.addEntry(toSequenceEntryInfo(entry, instanceURL, DetailLevel.FULL, addLinks));
+                    cb.addEntry(toSequenceEntryInfo(entry, DetailLevel.FULL));
                 }
             }
         }
@@ -180,8 +175,7 @@ public class XtceToGpbAssembler {
         return cb.build();
     }
 
-    public static SequenceEntryInfo toSequenceEntryInfo(SequenceEntry e, String instanceURL, DetailLevel detail,
-            boolean addLinks) {
+    public static SequenceEntryInfo toSequenceEntryInfo(SequenceEntry e, DetailLevel detail) {
         SequenceEntryInfo.Builder b = SequenceEntryInfo.newBuilder();
         b.setLocationInBits(e.getLocationInContainerInBits());
 
@@ -199,16 +193,16 @@ public class XtceToGpbAssembler {
         if (e instanceof ContainerEntry) {
             ContainerEntry ce = (ContainerEntry) e;
             if (detail == DetailLevel.LINK || detail == DetailLevel.SUMMARY) {
-                b.setContainer(toContainerInfo(ce.getRefContainer(), instanceURL, DetailLevel.LINK, addLinks));
+                b.setContainer(toContainerInfo(ce.getRefContainer(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
-                b.setContainer(toContainerInfo(ce.getRefContainer(), instanceURL, DetailLevel.FULL, addLinks));
+                b.setContainer(toContainerInfo(ce.getRefContainer(), DetailLevel.FULL));
             }
         } else if (e instanceof ParameterEntry) {
             ParameterEntry pe = (ParameterEntry) e;
             if (detail == DetailLevel.LINK || detail == DetailLevel.SUMMARY) {
-                b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.LINK, addLinks));
+                b.setParameter(toParameterInfo(pe.getParameter(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
-                b.setParameter(toParameterInfo(pe.getParameter(), instanceURL, DetailLevel.FULL, addLinks));
+                b.setParameter(toParameterInfo(pe.getParameter(), DetailLevel.FULL));
             }
         } else if (e instanceof ArgumentEntry) {
             ArgumentEntry ae = (ArgumentEntry) e;
@@ -243,7 +237,7 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
-    public static RepeatInfo toRepeatInfo(Repeat xtceRepeat, String instanceURL, DetailLevel detail, boolean addLinks) {
+    public static RepeatInfo toRepeatInfo(Repeat xtceRepeat, DetailLevel detail) {
         RepeatInfo.Builder b = RepeatInfo.newBuilder();
         b.setBitsBetween(xtceRepeat.getOffsetSizeInBits());
         if (xtceRepeat.getCount() instanceof FixedIntegerValue) {
@@ -252,11 +246,9 @@ public class XtceToGpbAssembler {
         } else if (xtceRepeat.getCount() instanceof DynamicIntegerValue) {
             DynamicIntegerValue val = (DynamicIntegerValue) xtceRepeat.getCount();
             if (detail == DetailLevel.SUMMARY) {
-                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), instanceURL,
-                        DetailLevel.LINK, addLinks));
+                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
-                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), instanceURL,
-                        DetailLevel.FULL, addLinks));
+                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), DetailLevel.FULL));
             }
         } else {
             throw new IllegalStateException("Unexpected repeat count " + xtceRepeat.getCount());
@@ -265,8 +257,7 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
-    public static CommandContainerInfo toCommandContainerInfo(CommandContainer container, String instanceURL,
-            DetailLevel detail, boolean addLinks) {
+    public static CommandContainerInfo toCommandContainerInfo(CommandContainer container, DetailLevel detail) {
         CommandContainerInfo.Builder ccb = CommandContainerInfo.newBuilder();
         ccb.setName(container.getName());
         if (container.getQualifiedName() != null) {
@@ -286,7 +277,7 @@ public class XtceToGpbAssembler {
         }
 
         for (SequenceEntry entry : container.getEntryList()) {
-            ccb.addEntry(toSequenceEntryInfo(entry, instanceURL, detail, addLinks));
+            ccb.addEntry(toSequenceEntryInfo(entry, detail));
         }
 
         return ccb.build();
@@ -296,14 +287,11 @@ public class XtceToGpbAssembler {
      * @param detail
      *            whether base commands should be expanded
      */
-    public static CommandInfo toCommandInfo(MetaCommand cmd, String instanceURL, DetailLevel detail, boolean addLinks) {
+    public static CommandInfo toCommandInfo(MetaCommand cmd, DetailLevel detail) {
         CommandInfo.Builder cb = CommandInfo.newBuilder();
 
         cb.setName(cmd.getName());
         cb.setQualifiedName(cmd.getQualifiedName());
-        if (addLinks) {
-            cb.setUrl(instanceURL + "/commands" + cmd.getQualifiedName());
-        }
 
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (cmd.getShortDescription() != null) {
@@ -335,22 +323,22 @@ public class XtceToGpbAssembler {
             cb.setAbstract(cmd.isAbstract());
             if (cmd.getTransmissionConstraintList() != null) {
                 for (TransmissionConstraint xtceConstraint : cmd.getTransmissionConstraintList()) {
-                    cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint, instanceURL, addLinks));
+                    cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint));
                 }
             }
 
             if (cmd.getCommandContainer() != null) {
                 CommandContainer container = cmd.getCommandContainer();
-                cb.setCommandContainer(toCommandContainerInfo(container, instanceURL, DetailLevel.FULL, addLinks));
+                cb.setCommandContainer(toCommandContainerInfo(container, DetailLevel.FULL));
             }
 
             if (detail == DetailLevel.SUMMARY) {
                 if (cmd.getBaseMetaCommand() != null) {
-                    cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, DetailLevel.LINK, addLinks));
+                    cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), DetailLevel.LINK));
                 }
             } else if (detail == DetailLevel.FULL) {
                 if (cmd.getBaseMetaCommand() != null) {
-                    cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), instanceURL, DetailLevel.FULL, addLinks));
+                    cb.setBaseCommand(toCommandInfo(cmd.getBaseMetaCommand(), DetailLevel.FULL));
                 }
             }
         }
@@ -388,15 +376,14 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
-    public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint,
-            String instanceURL, boolean addLinks) {
+    public static TransmissionConstraintInfo toTransmissionConstraintInfo(TransmissionConstraint xtceConstraint) {
         TransmissionConstraintInfo.Builder b = TransmissionConstraintInfo.newBuilder();
         if (xtceConstraint.getMatchCriteria() instanceof Comparison) {
-            b.addComparison(toComparisonInfo((Comparison) xtceConstraint.getMatchCriteria(), instanceURL, addLinks));
+            b.addComparison(toComparisonInfo((Comparison) xtceConstraint.getMatchCriteria()));
         } else if (xtceConstraint.getMatchCriteria() instanceof ComparisonList) {
             ComparisonList xtceList = (ComparisonList) xtceConstraint.getMatchCriteria();
             for (Comparison xtceComparison : xtceList.getComparisonList()) {
-                b.addComparison(toComparisonInfo(xtceComparison, instanceURL, addLinks));
+                b.addComparison(toComparisonInfo(xtceComparison));
             }
         } else {
             throw new IllegalStateException("Unexpected match criteria " + xtceConstraint.getMatchCriteria());
@@ -405,9 +392,9 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
-    public static ComparisonInfo toComparisonInfo(Comparison xtceComparison, String instanceURL, boolean addLinks) {
+    public static ComparisonInfo toComparisonInfo(Comparison xtceComparison) {
         ComparisonInfo.Builder b = ComparisonInfo.newBuilder();
-        b.setParameter(toParameterInfo(xtceComparison.getParameter(), instanceURL, DetailLevel.LINK, addLinks));
+        b.setParameter(toParameterInfo(xtceComparison.getParameter(), DetailLevel.LINK));
         b.setOperator(toOperatorType(xtceComparison.getComparisonOperator()));
         b.setValue(xtceComparison.getStringValue());
         return b.build();
@@ -463,14 +450,11 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
-    public static ParameterInfo toParameterInfo(Parameter p, String mdbURL, DetailLevel detail, boolean addLinks) {
+    public static ParameterInfo toParameterInfo(Parameter p, DetailLevel detail) {
         ParameterInfo.Builder b = ParameterInfo.newBuilder();
 
         b.setName(p.getName());
         b.setQualifiedName(p.getQualifiedName());
-        if (addLinks && mdbURL != null) {
-            b.setUrl(mdbURL + "/parameters" + p.getQualifiedName());
-        }
 
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (p.getShortDescription() != null) {
@@ -575,7 +559,7 @@ public class XtceToGpbAssembler {
                     }
                     if (referenceTime.getOffsetFrom() != null) {
                         Parameter p = referenceTime.getOffsetFrom().getParameter();
-                        timeb.setOffsetFrom(toParameterInfo(p, null, DetailLevel.LINK, false));
+                        timeb.setOffsetFrom(toParameterInfo(p, DetailLevel.LINK));
                     }
                 }
                 infob.setAbsoluteTimeInfo(timeb);
@@ -645,11 +629,11 @@ public class XtceToGpbAssembler {
     public static List<ComparisonInfo> toComparisons(MatchCriteria matchCriteria) {
         List<ComparisonInfo> comparisons = new ArrayList<>(2);
         if (matchCriteria instanceof Comparison) {
-            comparisons.add(toComparisonInfo((Comparison) matchCriteria, null, false));
+            comparisons.add(toComparisonInfo((Comparison) matchCriteria));
         } else if (matchCriteria instanceof ComparisonList) {
             ComparisonList xtceList = (ComparisonList) matchCriteria;
             for (Comparison xtceComparison : xtceList.getComparisonList()) {
-                comparisons.add(toComparisonInfo(xtceComparison, null, false));
+                comparisons.add(toComparisonInfo(xtceComparison));
             }
         } else {
             throw new IllegalStateException("Unexpected match criteria " + matchCriteria);
@@ -859,14 +843,11 @@ public class XtceToGpbAssembler {
         return resultb.build();
     }
 
-    public static AlgorithmInfo toAlgorithmInfo(Algorithm a, String mdbURL, DetailLevel detail, boolean addLinks) {
+    public static AlgorithmInfo toAlgorithmInfo(Algorithm a, DetailLevel detail) {
         AlgorithmInfo.Builder b = AlgorithmInfo.newBuilder();
 
         b.setName(a.getName());
         b.setQualifiedName(a.getQualifiedName());
-        if (addLinks) {
-            b.setUrl(mdbURL + "/algorithms" + a.getQualifiedName());
-        }
 
         if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
             if (a.getShortDescription() != null) {
@@ -905,15 +886,15 @@ public class XtceToGpbAssembler {
 
         if (detail == DetailLevel.FULL) {
             for (InputParameter p : a.getInputSet()) {
-                b.addInputParameter(toInputParameterInfo(p, mdbURL, addLinks));
+                b.addInputParameter(toInputParameterInfo(p));
             }
             for (OutputParameter p : a.getOutputSet()) {
-                b.addOutputParameter(toOutputParameterInfo(p, mdbURL, addLinks));
+                b.addOutputParameter(toOutputParameterInfo(p));
             }
             TriggerSetType triggerSet = a.getTriggerSet();
             if (triggerSet != null) {
                 for (OnParameterUpdateTrigger trig : triggerSet.getOnParameterUpdateTriggers()) {
-                    b.addOnParameterUpdate(toParameterInfo(trig.getParameter(), mdbURL, DetailLevel.SUMMARY, addLinks));
+                    b.addOnParameterUpdate(toParameterInfo(trig.getParameter(), DetailLevel.SUMMARY));
                 }
                 for (OnPeriodicRateTrigger trig : triggerSet.getOnPeriodicRateTriggers()) {
                     b.addOnPeriodicRate(trig.getFireRate());
@@ -924,11 +905,9 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
-    public static InputParameterInfo toInputParameterInfo(InputParameter xtceInput, String mdbURL, boolean addLinks) {
+    public static InputParameterInfo toInputParameterInfo(InputParameter xtceInput) {
         InputParameterInfo.Builder resultb = InputParameterInfo.newBuilder();
-        resultb.setParameter(
-                toParameterInfo(xtceInput.getParameterInstance().getParameter(), mdbURL, DetailLevel.SUMMARY,
-                        addLinks));
+        resultb.setParameter(toParameterInfo(xtceInput.getParameterInstance().getParameter(), DetailLevel.SUMMARY));
         if (xtceInput.getInputName() != null) {
             resultb.setInputName(xtceInput.getInputName());
         }
@@ -937,17 +916,16 @@ public class XtceToGpbAssembler {
         return resultb.build();
     }
 
-    public static OutputParameterInfo toOutputParameterInfo(OutputParameter xtceOutput, String mdbUrl,
-            boolean addLinks) {
+    public static OutputParameterInfo toOutputParameterInfo(OutputParameter xtceOutput) {
         OutputParameterInfo.Builder resultb = OutputParameterInfo.newBuilder();
-        resultb.setParameter(toParameterInfo(xtceOutput.getParameter(), mdbUrl, DetailLevel.SUMMARY, addLinks));
+        resultb.setParameter(toParameterInfo(xtceOutput.getParameter(), DetailLevel.SUMMARY));
         if (xtceOutput.getOutputName() != null) {
             resultb.setOutputName(xtceOutput.getOutputName());
         }
         return resultb.build();
     }
 
-    public static SpaceSystemInfo toSpaceSystemInfo(RestRequest req, String instance, SpaceSystem ss) {
+    public static SpaceSystemInfo toSpaceSystemInfo(RestRequest req, SpaceSystem ss) {
         SpaceSystemInfo.Builder b = SpaceSystemInfo.newBuilder();
         b.setName(ss.getName());
         b.setQualifiedName(ss.getQualifiedName());
@@ -989,14 +967,7 @@ public class XtceToGpbAssembler {
         b.setAlgorithmCount(ss.getAlgorithmCount(aggregate));
 
         for (SpaceSystem sub : ss.getSubSystems()) {
-            b.addSub(toSpaceSystemInfo(req, instance, sub));
-        }
-        if (req.getQueryParameterAsBoolean("links", false)) {
-            String url = req.getApiURL() + "/mdb/" + instance;
-            b.setParametersUrl(url + "/parameters" + ss.getQualifiedName());
-            b.setContainersUrl(url + "/containers" + ss.getQualifiedName());
-            b.setCommandsUrl(url + "/commands" + ss.getQualifiedName());
-            b.setAlgorithmsUrl(url + "/algorithms" + ss.getQualifiedName());
+            b.addSub(toSpaceSystemInfo(req, sub));
         }
         return b.build();
     }

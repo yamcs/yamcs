@@ -37,9 +37,7 @@ public class MDBCommandRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
 
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
-        CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.FULL, addLinks);
+        CommandInfo cinfo = XtceToGpbAssembler.toCommandInfo(cmd, DetailLevel.FULL);
         completeOK(req, cinfo);
     }
 
@@ -53,9 +51,7 @@ public class MDBCommandRestHandler extends RestHandler {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));
         }
 
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
-        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         ListCommandInfoResponse.Builder responseb = ListCommandInfoResponse.newBuilder();
         if (req.hasQueryParameter("namespace")) {
@@ -63,23 +59,24 @@ public class MDBCommandRestHandler extends RestHandler {
 
             Privilege privilege = Privilege.getInstance();
             for (MetaCommand cmd : mdb.getMetaCommands()) {
-                if (!privilege.hasPrivilege1(req.getAuthToken(), PrivilegeType.TC, cmd.getQualifiedName()))
+                if (!privilege.hasPrivilege1(req.getAuthToken(), PrivilegeType.TC, cmd.getQualifiedName())) {
                     continue;
-                if (matcher != null && !matcher.matches(cmd))
+                }
+                if (matcher != null && !matcher.matches(cmd)) {
                     continue;
+                }
 
                 String alias = cmd.getAlias(namespace);
                 if (alias != null || (recurse && cmd.getQualifiedName().startsWith(namespace))) {
-                    responseb.addCommand(
-                            XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, addLinks));
+                    responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, DetailLevel.SUMMARY));
                 }
             }
         } else { // List all
             for (MetaCommand cmd : mdb.getMetaCommands()) {
-                if (matcher != null && !matcher.matches(cmd))
+                if (matcher != null && !matcher.matches(cmd)) {
                     continue;
-                responseb.addCommand(
-                        XtceToGpbAssembler.toCommandInfo(cmd, instanceURL, DetailLevel.SUMMARY, addLinks));
+                }
+                responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, DetailLevel.SUMMARY));
             }
         }
 

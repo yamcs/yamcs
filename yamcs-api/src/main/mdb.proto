@@ -122,7 +122,6 @@ message ParameterInfo {
   repeated yamcs.NamedObjectId alias = 5;
   optional ParameterTypeInfo type = 6;
   optional DataSourceType dataSource = 7;
-  optional string url = 8;
 }
 
 message ArgumentTypeInfo {
@@ -192,7 +191,6 @@ message CommandInfo {
   repeated ArgumentAssignmentInfo argumentAssignment = 9;
   optional SignificanceInfo significance = 10;
   repeated TransmissionConstraintInfo constraint = 11;
-  optional string url = 12;
   optional CommandContainerInfo commandContainer = 13;
 }
 
@@ -249,7 +247,6 @@ message ContainerInfo {
   optional ContainerInfo baseContainer = 8;
   repeated ComparisonInfo restrictionCriteria = 9;
   repeated SequenceEntryInfo entry = 10;
-  optional string url = 11;
 }
 
 message InputParameterInfo {
@@ -281,5 +278,4 @@ message AlgorithmInfo {
   repeated OutputParameterInfo outputParameter = 10;
   repeated ParameterInfo onParameterUpdate = 11;
   repeated int64 onPeriodicRate = 12;
-  optional string url = 13;
 }
