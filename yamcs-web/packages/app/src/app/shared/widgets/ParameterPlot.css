@@ -14,12 +14,12 @@
 }
 
 ::ng-deep .dygraph-legend {
-  left: 60px !important;
+  left: 63px !important;
   background-color: transparent;
 }
 
 ::ng-deep .legend-box {
-  margin-top: 2px;
+  margin-top: 5px;
   padding: 3px;
   border-radius: 2px;
   display: inline-block;

@@ -29,25 +29,7 @@
         </mat-form-field>
       </ng-container>
 
-      <ng-container *ngSwitchCase="'uint32'">
-        <mat-form-field style="width: 100%">
-          <input type="number" matInput formControlName="value" placeholder="Value">
-        </mat-form-field>
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'sint32'">
-        <mat-form-field style="width: 100%">
-          <input type="number" matInput formControlName="value" placeholder="Value">
-        </mat-form-field>
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'uint64'">
-        <mat-form-field style="width: 100%">
-          <input type="number" matInput formControlName="value" placeholder="Value">
-        </mat-form-field>
-      </ng-container>
-
-      <ng-container *ngSwitchCase="'sint64'">
+      <ng-container *ngSwitchCase="'integer'">
         <mat-form-field style="width: 100%">
           <input type="number" matInput formControlName="value" placeholder="Value">
         </mat-form-field>

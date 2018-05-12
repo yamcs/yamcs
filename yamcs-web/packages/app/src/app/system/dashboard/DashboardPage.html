@@ -2,29 +2,27 @@
   <app-system-toolbar>Dashboard</app-system-toolbar>
 
   <div class="panel-content">
+    <mat-card>
+      <mat-card-subtitle>Server Info</mat-card-subtitle>
+      <mat-list dense>
+        <mat-list-item>
+          <h3 matLine>Yamcs Version</h3>
+          <p matLine>
+            {{ info.yamcsVersion }}
+          </p>
+        </mat-list-item>
+
+        <mat-list-item>
+          <h3 matLine>Server ID</h3>
+          <p matLine>
+            {{ info.serverId }}
+          </p>
+        </mat-list-item>
+      </mat-list>
+    </mat-card>
+
     <div fxLayout="row" fxLayoutGap="16px">
-      <div fxFlex="33.33" fxFill>
-        <mat-card>
-          <mat-card-subtitle>Server Info</mat-card-subtitle>
-          <mat-list dense>
-            <mat-list-item>
-              <h3 matLine>Yamcs Version</h3>
-              <p matLine>
-                {{ info.yamcsVersion }}
-              </p>
-            </mat-list-item>
-
-            <mat-list-item>
-              <h3 matLine>Server ID</h3>
-              <p matLine>
-                {{ info.serverId }}
-              </p>
-            </mat-list-item>
-          </mat-list>
-        </mat-card>
-      </div>
-
-      <div fxFlex="33.33">
+      <div fxFlex="50">
         <ng-container *ngIf="jvmTotalMemoryParameter$ | async as totalMemory">
           <mat-card *ngIf="jvmMemoryUsedParameter$ | async as memoryUsed">
             <mat-card-subtitle>JVM Memory (KiB)</mat-card-subtitle>
@@ -34,14 +32,12 @@
                                   lightAxisBackgroundColor="white">
                 <app-parameter-series [parameter]="memoryUsed"
                                       [grid]="true"
-                                      [axisLineWidth]="0"
-                                      label="Used">
+                                      [axisLineWidth]="0">
                 </app-parameter-series>
                 <app-parameter-series [parameter]="totalMemory"
                                       [grid]="true"
                                       [axisLineWidth]="0"
-                                      color="purple"
-                                      label="Total">
+                                      color="purple">
                 </app-parameter-series>
               </app-parameter-plot>
             </div>
@@ -49,7 +45,7 @@
         </ng-container>
       </div>
 
-      <div fxFlex="33.33">
+      <div fxFlex="50">
         <mat-card *ngIf="jvmThreadCountParameter$ | async as parameter">
           <mat-card-subtitle>JVM Thread Count</mat-card-subtitle>
           <div style="height: 300px">

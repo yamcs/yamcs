@@ -27,37 +27,29 @@ export class DashboardPage implements OnDestroy {
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
 
     this.jvmMemoryUsedParameter$ = this.info$.then(info => {
-      const jvmMemoryUsedId = `/yamcs/${info.serverId}/jvmMemoryUsed`;
-      const jvmTotalMemoryId = `/yamcs/${info.serverId}/jvmTotalMemory`;
-      if (authService.hasParameterPrivilege(jvmMemoryUsedId)) {
-        this.jvmMemoryUsedDataSource = new DyDataSource(yamcs);
-        this.jvmMemoryUsedDataSource.addParameter(jvmMemoryUsedId);
-        this.jvmMemoryUsedDataSource.addParameter(jvmTotalMemoryId);
-        this.jvmMemoryUsedDataSource.connectRealtime();
-        return yamcs.getInstanceClient()!.getParameter(jvmMemoryUsedId);
-      } else {
-        return Promise.resolve(null);
-      }
+       return yamcs.getInstanceClient()!.getParameter(`/yamcs/${info.serverId}/jvmMemoryUsed`);
     });
-
     this.jvmTotalMemoryParameter$ = this.info$.then(info => {
-      const jvmTotalMemoryId = `/yamcs/${info.serverId}/jvmTotalMemory`;
-      if (authService.hasParameterPrivilege(jvmTotalMemoryId)) {
-        return yamcs.getInstanceClient()!.getParameter(jvmTotalMemoryId);
-      } else {
-        return Promise.resolve(null);
+      return yamcs.getInstanceClient()!.getParameter(`/yamcs/${info.serverId}/jvmTotalMemory`);
+    });
+    this.jvmThreadCountParameter$ = this.info$.then(info => {
+      return yamcs.getInstanceClient()!.getParameter(`/yamcs/${info.serverId}/jvmThreadCount`);
+    });
+
+    Promise.all([this.jvmMemoryUsedParameter$, this.jvmTotalMemoryParameter$]).then(results => {
+      if (results[0] && results[1]) {
+        this.jvmMemoryUsedDataSource = new DyDataSource(yamcs);
+        this.jvmMemoryUsedDataSource.addParameter(results[0]!);
+        this.jvmMemoryUsedDataSource.addParameter(results[1]!);
+        this.jvmMemoryUsedDataSource.connectRealtime();
       }
     });
 
-    this.jvmThreadCountParameter$ = this.info$.then(info => {
-      const jvmThreadCountId = `/yamcs/${info.serverId}/jvmThreadCount`;
-      if (authService.hasParameterPrivilege(jvmThreadCountId)) {
+    this.jvmThreadCountParameter$.then(parameter => {
+      if (parameter) {
         this.jvmThreadCountDataSource = new DyDataSource(yamcs);
-        this.jvmThreadCountDataSource.addParameter(jvmThreadCountId);
+        this.jvmThreadCountDataSource.addParameter(parameter);
         this.jvmThreadCountDataSource.connectRealtime();
-        return yamcs.getInstanceClient()!.getParameter(jvmThreadCountId);
-      } else {
-        return Promise.resolve(null);
       }
     });
   }

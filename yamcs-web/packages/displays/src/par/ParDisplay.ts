@@ -1,7 +1,7 @@
 import { Svg, Rect, Tag, Defs, Pattern } from '../tags';
 import { DisplayCommunicator } from '../DisplayCommunicator';
 import { DisplayFrame } from '../DisplayFrame';
-import { ParameterValue, NamedObjectId } from '@yamcs/client';
+import { ParameterValue, NamedObjectId, Value } from '@yamcs/client';
 import { Display } from '../Display';
 
 export class ParDisplay implements Display {
@@ -9,6 +9,10 @@ export class ParDisplay implements Display {
   title: string;
   width: number;
   height: number;
+
+  // Element is an array because we don't explictly forbid a qualified name
+  // to appear only once.
+  rowElementsByQualifiedName = new Map<string, HTMLTableRowElement[]>();
 
   constructor(
     readonly frame: DisplayFrame,
@@ -21,7 +25,7 @@ export class ParDisplay implements Display {
       const obj = JSON.parse(json);
       // console.log('got back', obj);
 
-      this.title = 'Parameter Table2';
+      this.title = 'Parameter Table';
       this.width = 300;
       this.height = 300;
 
@@ -32,11 +36,25 @@ export class ParDisplay implements Display {
       const tbodyEl = document.createElement('tbody');
       for (const qualifiedName of obj.parameters) {
         const tr = document.createElement('tr');
-        const td = document.createElement('td');
-        td.style.lineHeight = '12px';
-        td.appendChild(document.createTextNode(qualifiedName));
-        tr.appendChild(td);
+
+        const nameCell = document.createElement('td');
+        nameCell.style.lineHeight = '12px';
+        nameCell.appendChild(document.createTextNode(qualifiedName));
+        tr.appendChild(nameCell);
+
+        const valueCell = document.createElement('td');
+        valueCell.style.lineHeight = '12px';
+        valueCell.appendChild(document.createTextNode('value'));
+        tr.appendChild(valueCell);
+
         tbodyEl.appendChild(tr);
+
+        const elements = this.rowElementsByQualifiedName.get(qualifiedName);
+        if (elements) {
+          elements.push(tr);
+        } else {
+          this.rowElementsByQualifiedName.set(qualifiedName, [tr]);
+        }
       }
       tableEl.appendChild(tbodyEl);
       rootEl.appendChild(tableEl);
@@ -45,11 +63,14 @@ export class ParDisplay implements Display {
   }
 
   public getBackgroundColor() {
-    return 'red';
+    return 'white';
   }
 
   getParameterIds() {
-    const ids: NamedObjectId[] = [];
+    const ids: NamedObjectId[] = [
+      { name: '/YSS/SIMULATOR/Alpha' },
+      { name: '/YSS/SIMULATOR/Beta' },
+    ];
     return ids;
   }
 
@@ -61,8 +82,47 @@ export class ParDisplay implements Display {
   }
 
   processParameterValues(pvals: ParameterValue[]) {
+    for (const pval of pvals) {
+      const rows = this.rowElementsByQualifiedName.get(pval.id.name);
+      if (rows) {
+        for (const tr of rows) {
+          tr.cells[1].innerHTML = this.valueToString(pval.engValue);
+        }
+      }
+    }
   }
 
   digest() {
+  }
+
+  private valueToString(value: Value) {
+    if (!value) {
+      return '';
+    }
+    switch (value.type) {
+      case 'FLOAT':
+        return '' + value.floatValue;
+      case 'DOUBLE':
+        return '' + value.doubleValue;
+      case 'UINT32':
+        return '' + value.uint32Value;
+      case 'SINT32':
+        return '' + value.sint32Value;
+      case 'BINARY':
+        return '<binary>';
+      case 'STRING':
+        return value.stringValue!;
+      case 'TIMESTAMP':
+        const stringValue = value.stringValue!;
+        return stringValue.replace('T', ' ').replace('Z', '');
+      case 'UINT64':
+        return '' + value.uint64Value;
+      case 'SINT64':
+        return '' + value.sint64Value;
+      case 'BOOLEAN':
+        return '' + value.booleanValue;
+      default:
+        return 'Unsupported data type';
+    }
   }
 }

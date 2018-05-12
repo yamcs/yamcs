@@ -1,0 +1,18 @@
+<h2 mat-dialog-title>Enum States</h2>
+
+<mat-dialog-content>
+  <table yaDataTable class="mat-typography" style="width: 100%">
+    <tr>
+      <th>Value</th>
+      <th>Label</th>
+    </tr>
+    <tr *ngFor="let enumValue of data.argument.type.enumValue">
+      <td>{{ enumValue.value }}</td>
+      <td>{{ enumValue.label }}</td>
+    </tr>
+  </table>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

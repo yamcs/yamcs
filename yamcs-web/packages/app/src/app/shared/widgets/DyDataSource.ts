@@ -1,4 +1,4 @@
-import { Alarm, ParameterValue, Sample } from '@yamcs/client';
+import { Alarm, Parameter, ParameterValue, Sample } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { convertValueToNumber } from '../utils';
@@ -27,7 +27,7 @@ export class DyDataSource {
   visibleStart: Date;
   visibleStop: Date;
 
-  private qualifiedNames: string[] = [];
+  private parameters: Parameter[] = [];
   private plotBuffer: PlotBuffer;
 
   private lastLoadPromise: Promise<any> | null;
@@ -57,8 +57,8 @@ export class DyDataSource {
     });
   }
 
-  public addParameter(qname: string) {
-    this.qualifiedNames.push(qname);
+  public addParameter(parameter: Parameter) {
+    this.parameters.push(parameter);
   }
 
   /**
@@ -83,14 +83,14 @@ export class DyDataSource {
 
     const instanceClient = this.yamcs.getInstanceClient()!;
     const promises: Promise<any>[] = [];
-    for (const qualifiedName of this.qualifiedNames) {
+    for (const parameter of this.parameters) {
       promises.push(
-        instanceClient.getParameterSamples(qualifiedName, {
+        instanceClient.getParameterSamples(parameter.qualifiedName, {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
-          count: 2000,
+          count: 6000,
         }),
-        instanceClient.getAlarmsForParameter(qualifiedName, {
+        instanceClient.getAlarmsForParameter(parameter.qualifiedName, {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
         })
@@ -111,7 +111,7 @@ export class DyDataSource {
         this.maxValue = undefined;
         const dySamples = this.processSamples(results[0]);
         const dyAnnotations = this.spliceAlarmAnnotations([] /*results[1] TODO */, dySamples);
-        for (let i = 1; i < this.qualifiedNames.length; i++) {
+        for (let i = 1; i < this.parameters.length; i++) {
           this.mergeSeries(dySamples, this.processSamples(results[2 * i]));
           // const seriesAnnotations = this.spliceAlarmAnnotations(results[2 * i + 1], seriesSamples);
         }
@@ -123,7 +123,7 @@ export class DyDataSource {
   }
 
   connectRealtime() {
-    const ids = this.qualifiedNames.map(qualifiedName => ({ name: qualifiedName }));
+    const ids = this.parameters.map(parameter => ({ name: parameter.qualifiedName }));
     this.yamcs.getInstanceClient()!.getParameterValueUpdates({
       id: ids,
       sendFromCache: false,
@@ -160,8 +160,8 @@ export class DyDataSource {
     const t = new Date();
     t.setTime(Date.parse(pvals[0].generationTimeUTC));
 
-    const dyValues: CustomBarsValue[] = this.qualifiedNames.map(qualifiedName => {
-      return this.latestRealtimeValues.get(qualifiedName) || null;
+    const dyValues: CustomBarsValue[] = this.parameters.map(parameter => {
+      return this.latestRealtimeValues.get(parameter.qualifiedName) || null;
     });
 
     const sample: any = [t, ...dyValues];
@@ -208,7 +208,7 @@ export class DyDataSource {
     return dySamples;
   }
 
-  spliceAlarmAnnotations(alarms: Alarm[], dySamples: DySample[]) {
+  private spliceAlarmAnnotations(alarms: Alarm[], dySamples: DySample[]) {
     const dyAnnotations: DyAnnotation[] = [];
     for (const alarm of alarms) {
       const t = new Date();
@@ -219,7 +219,7 @@ export class DyDataSource {
         const idx = this.findInsertPosition(t, dySamples);
         dySamples.splice(idx, 0, sample);
         dyAnnotations.push({
-          series: this.qualifiedNames[0],
+          series: this.parameters[0].qualifiedName,
           x: t.getTime(),
           shortText: 'A',
           text: 'Alarm triggered at ' + alarm.triggerValue.generationTimeUTC,
