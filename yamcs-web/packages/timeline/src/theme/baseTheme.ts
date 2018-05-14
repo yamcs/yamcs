@@ -13,6 +13,7 @@ export default {
     sidebarBackgroundColor: '#fff',
     sidebarForegroundColor: 'grey',
     sidebarHoverBackgroundColor: '#e9e9e9',
+    dividerColor: '#d1d5da',
     hatchFill: 'url(#crossHatch)',
     highlightCursor: 'pointer',
   },

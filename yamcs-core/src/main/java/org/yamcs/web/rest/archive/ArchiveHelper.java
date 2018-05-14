@@ -274,7 +274,7 @@ public final class ArchiveHelper {
 
     final static TimeSeries.Sample toGPBSample(Sample sample) {
         TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
-        b.setTime(TimeEncoding.toString(sample.avgt));
+        b.setTime(TimeEncoding.toString(sample.t));
         b.setN(sample.n);
 
         if (sample.n > 0) {

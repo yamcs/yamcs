@@ -1,7 +1,7 @@
 <ng-container *ngIf="parameter$ | async as parameter">
   <div style="padding-left: 12px; padding-right: 12px; padding-top: 12px">
     <div class="plot-top-actions" *ngIf="range$ | async as range">
-      <app-text-action icon="add_circle_outline" [disabled]="true">
+      <app-text-action icon="add_circle_outline" (click)="compareParameter()" disabled>
         Comparison
       </app-text-action>
       <span class="separator"></span>

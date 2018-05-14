@@ -23,9 +23,6 @@ message YamcsInstance {
   required string name = 1;
   optional MissionDatabase missionDatabase = 3;
   repeated ProcessorInfo processor = 4;
-  optional string url = 5;
-  optional string clientsUrl = 6;
-  optional string eventsUrl = 7;
   optional ServiceState state = 8;
   //in case the state=FAILED, this field will indicate the cause of the failure
   // the missionDatabase and other fields may not be filled when this happens
@@ -50,10 +47,6 @@ message SpaceSystemInfo {
   optional int32 containerCount = 7;
   optional int32 commandCount = 8;
   optional int32 algorithmCount = 9;
-  optional string parametersUrl = 10;
-  optional string containersUrl = 11;
-  optional string commandsUrl = 12;
-  optional string algorithmsUrl = 13;
   repeated HistoryInfo history = 14;
   repeated SpaceSystemInfo sub = 15;
 }
@@ -63,11 +56,6 @@ message MissionDatabase {
   optional string name = 2; //XTCE root SpaceSystem name
   optional string version = 3; //XTCE root SpaceSystem header version
   repeated SpaceSystemInfo spaceSystem = 4;
-  optional string url = 5;
-  optional string parametersUrl = 6;
-  optional string containersUrl = 7;
-  optional string commandsUrl = 8;
-  optional string algorithmsUrl = 9;
 }
 
 //used as parameter for the GetMissionDatabase, specify one of the instance or dbConfigName but not both
@@ -87,11 +75,6 @@ message ProcessorInfo {
   optional ServiceState state = 8;
   optional yamcs.ReplayRequest replayRequest = 9; //in case of replay
   optional yamcs.ReplayStatus.ReplayState replayState = 10; //in case of replay
-  optional string url = 11;
-  optional string clientsUrl = 12;
-  optional string parametersUrl = 13;
-  optional string commandsUrl = 14;
-  optional string commandQueuesUrl = 15;
   repeated ServiceInfo service = 16;
   optional bool persistent = 17;
   optional string time = 18;

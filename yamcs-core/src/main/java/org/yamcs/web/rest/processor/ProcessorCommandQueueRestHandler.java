@@ -156,10 +156,6 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
                 b.addEntry(qEntry);
             }
         }
-        if (req.getQueryParameterAsBoolean("links", false)) {
-            b.setUrl(req.getApiURL() + "/processors/" + queue.getChannel().getInstance()
-                    + "/" + queue.getChannel().getName() + "/cqueues/" + queue.getName());
-        }
         return b.build();
     }
 

@@ -12,3 +12,16 @@
 ::ng-deep .dygraph-axis-label {
   color: #aaa;
 }
+
+::ng-deep .dygraph-legend {
+  left: 63px !important;
+  background-color: transparent;
+}
+
+::ng-deep .legend-box {
+  margin-top: 5px;
+  padding: 3px;
+  border-radius: 2px;
+  display: inline-block;
+  font-size: 10px;
+}

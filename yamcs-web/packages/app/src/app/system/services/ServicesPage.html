@@ -53,12 +53,12 @@
             <button mat-menu-item
                     (click)="startService(service.name)"
                     [disabled]="service.state !== 'TERMINATED'">
-              Start Service
+              Start service
             </button>
             <button mat-menu-item
                     (click)="stopService(service.name)"
                     [disabled]="service.state !== 'RUNNING'">
-              Stop Service
+              Stop service
             </button>
           </mat-menu>
           <button mat-button [matMenuTriggerFor]="serviceMenu">

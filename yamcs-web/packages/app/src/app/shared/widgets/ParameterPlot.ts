@@ -1,13 +1,13 @@
-import { Component, ViewChild, AfterViewInit, ElementRef, Input, QueryList, ContentChildren, OnDestroy } from '@angular/core';
-import Dygraph from 'dygraphs';
+import { AfterViewInit, Component, ContentChildren, ElementRef, Input, OnDestroy, QueryList, ViewChild } from '@angular/core';
 import { Parameter } from '@yamcs/client';
-import { DyDataSource } from './DyDataSource';
-import { ParameterSeries } from './ParameterSeries';
-import GridPlugin from './GridPlugin';
+import Dygraph from 'dygraphs';
+import { Subscription } from 'rxjs';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
-import { Subscription } from 'rxjs';
+import { DyDataSource } from './DyDataSource';
+import GridPlugin from './GridPlugin';
+import { ParameterSeries } from './ParameterSeries';
 
 @Component({
   selector: 'app-parameter-plot',
@@ -49,27 +49,23 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   @Input()
   width = '100%';
 
-  lightColors = {
-    axisBackgroundColor: '#fafafa',
-    axisLineColor: '#e1e1e1',
-    gridLineColor: '#f2f2f2',
-    plotAreaBackgroundColor: '#fff',
-    highlightColor: '#e1e1e1',
-  };
+  @Input() lightAxisBackgroundColor = '#fafafa';
+  @Input() lightAxisLineColor = '#e1e1e1';
+  @Input() lightGridLineColor = '#f2f2f2';
+  @Input() lightPlotAreaBackgroundColor = '#fff';
+  @Input() lightHighlightColor = '#e1e1e1';
 
-  darkColors = {
-    axisBackgroundColor: '#191919',
-    axisLineColor: '#2e2e2e',
-    gridLineColor: '#212121',
-    plotAreaBackgroundColor: '#111',
-    highlightColor: '#2e2e2e',
-  };
+  @Input() darkAxisBackgroundColor = '#191919';
+  @Input() darkAxisLineColor = '#2e2e2e';
+  @Input() darkGridLineColor = '#212121';
+  @Input() darkPlotAreaBackgroundColor = '#111';
+  @Input() darkHighlightColor = '#2e2e2e';
 
-  axisBackgroundColor = this.lightColors.axisBackgroundColor;
-  axisLineColor = this.lightColors.axisLineColor;
-  gridLineColor = this.lightColors.gridLineColor;
-  plotAreaBackgroundColor = this.lightColors.plotAreaBackgroundColor;
-  highlightColor = this.lightColors.highlightColor;
+  axisBackgroundColor = this.lightAxisBackgroundColor;
+  axisLineColor = this.lightAxisLineColor;
+  gridLineColor = this.lightGridLineColor;
+  plotAreaBackgroundColor = this.lightPlotAreaBackgroundColor;
+  highlightColor = this.lightHighlightColor;
 
   @Input()
   stop = new Date();
@@ -110,8 +106,9 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     const containingDiv = this.graphContainer.nativeElement as HTMLDivElement;
 
-    // TODO should have endpoint on rest for multiple parameters sampled together
-    this.parameters.push(this.seriesComponents.first.parameter);
+    this.seriesComponents.forEach(series => {
+      this.parameters.push(series.parameter);
+    });
 
     this.initDygraphs(containingDiv);
     this.dataSource.data$.subscribe(data => {
@@ -133,7 +130,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
           y: { valueRange: data.valueRange }
         };
       } else {
-        const valueRange = this.seriesComponents.first.getStaticValueRange();
+        const valueRange = this.analyzeStaticValueRanges(this.parameters[0]).valueRange;
         let lo = valueRange[0];
         if (this.dataSource.minValue !== undefined) {
           lo = (lo !== null) ? Math.min(lo, this.dataSource.minValue) : this.dataSource.minValue;
@@ -179,12 +176,16 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
   private initDygraphs(containingDiv: HTMLDivElement) {
     const series: { [key: string]: any } = {};
-    series[this.parameters[0].qualifiedName] = {
-      color: '#1b61b9',
-    };
 
-    const alarmZones = this.seriesComponents.first.staticAlarmZones;
-    const alarmRangeMode = this.seriesComponents.first.alarmRanges;
+    this.seriesComponents.forEach(s => {
+      series[s.label || s.parameter.qualifiedName] = {
+        color: s.color,
+      };
+    });
+
+    const primaryParameter = this.parameters[0];
+    const rangeAnalysis = this.analyzeStaticValueRanges(primaryParameter);
+    const alarmZones = rangeAnalysis.staticAlarmZones;
 
     let lastClickedGraph: any = null;
 
@@ -200,7 +201,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
       axisLineColor: this.axisLineColor,
       axisLabelFontSize: 11,
       digitsAfterDecimal: 6,
-      labels: ['Generation Time', this.parameters[0].qualifiedName],
+      labels: ['Generation Time', ...this.seriesComponents.map(s => s.label || s.parameter.qualifiedName)],
       rightGap: 0,
       labelsUTC: this.utc,
       series,
@@ -216,7 +217,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
           drawGrid: this.seriesComponents.first.grid,
           axisLineWidth: this.seriesComponents.first.axisLineWidth || 0.0000001, // Dygraphs does not handle 0 correctly
           // includeZero: true,
-          valueRange: this.seriesComponents.first.getStaticValueRange(),
+          valueRange: this.analyzeStaticValueRanges(primaryParameter).valueRange,
         }
       },
       interactionModel: {
@@ -313,7 +314,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         ctx.fillRect(area.x, area.y, area.w, area.h);
 
         // Colorize plot area
-        if (alarmRangeMode === 'line') {
+        if (this.seriesComponents.first.alarmRanges === 'line') {
           for (const zone of alarmZones) {
             const zoneY = zone.y1IsLimit ? zone.y1 : zone.y2;
             const y = g.toDomCoords(0, zoneY)[1];
@@ -325,7 +326,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
             ctx.lineTo(area.x + area.w, y);
             ctx.stroke();
           }
-        } else if (alarmRangeMode === 'fill') {
+        } else if (this.seriesComponents.first.alarmRanges === 'fill') {
           ctx.globalAlpha = 0.2;
           for (const zone of alarmZones) {
             if (zone.y2 === null) {
@@ -352,7 +353,6 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
             );
           }
         }
-
         ctx.restore();
       },
       drawHighlightPointCallback: (
@@ -364,33 +364,43 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         color: any,
         radius: number,
       ) => {
-        ctx.clearRect(0, 0, g.width_, g.height_);
-        ctx.setLineDash([5, 5]);
-        ctx.strokeStyle = this.highlightColor;
+        // Only draw for point of first series, because otherwise the line may
+        // get drawn on top of other points.
+        if ((this.seriesComponents.first.label || this.seriesComponents.first.parameter.qualifiedName) === seriesName) {
+          // ctx.clearRect(0, 0, g.width_, g.height_);
+          ctx.setLineDash([5, 5]);
+          ctx.strokeStyle = this.highlightColor;
+
+          ctx.beginPath();
+          const canvasx = Math.floor(g.selPoints_[0].canvasx) + 0.5; // crisper rendering
+          if (this.crosshair === 'vertical' || this.crosshair === 'both') {
+            ctx.moveTo(canvasx, 0);
+            ctx.lineTo(canvasx, g.height_);
+          }
+          if (this.crosshair === 'horizontal' || this.crosshair === 'both') {
+            for (const point of g.selPoints_) {
+              const canvasy = Math.floor(point.canvasy) + 0.5; // crisper rendering
+              ctx.moveTo(0, canvasy);
+              ctx.lineTo(g.width_, canvasy);
+            }
+          }
+          ctx.stroke();
+          ctx.closePath();
+        }
 
         ctx.beginPath();
-        const canvasx = Math.floor(g.selPoints_[0].canvasx) + 0.5; // crisper rendering
-        if (this.crosshair === 'vertical' || this.crosshair === 'both') {
-          ctx.moveTo(canvasx, 0);
-          ctx.lineTo(canvasx, g.height_);
-        }
-        if (this.crosshair === 'horizontal' || this.crosshair === 'both') {
-          for (const point of g.selPoints_) {
-            const canvasy = Math.floor(point.canvasy) + 0.5; // crisper rendering
-            ctx.moveTo(0, canvasy);
-            ctx.lineTo(g.width_, canvasy);
-          }
-        }
-        ctx.stroke();
-        ctx.closePath();
-
         ctx.arc(cx, cy, radius, 0, 2 * Math.PI, false);
         ctx.fill();
       },
       legendFormatter: (data: any) => {
         let legend = '';
         for (const trace of data.series) {
-          legend += `${trace.dashHTML} ${trace.yHTML}`;
+          legend += `<div class="legend-box" style="background-color: ${this.plotAreaBackgroundColor}; border: 1px solid ${this.gridLineColor}; border-left: 3px solid ${trace.color}">
+                     ${trace.label}`;
+          if (trace.yHTML) {
+            legend += '&nbsp;&nbsp;&nbsp;' + trace.yHTML;
+          }
+          legend += '</div>&nbsp;&nbsp;&nbsp;';
         }
         return legend;
       },
@@ -426,17 +436,17 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   private applyTheme(dark: boolean) {
     // Update model
     if (dark) {
-      this.axisBackgroundColor = this.darkColors.axisBackgroundColor;
-      this.axisLineColor = this.darkColors.axisLineColor;
-      this.gridLineColor = this.darkColors.gridLineColor;
-      this.plotAreaBackgroundColor = this.darkColors.plotAreaBackgroundColor;
-      this.highlightColor = this.darkColors.highlightColor;
+      this.axisBackgroundColor = this.darkAxisBackgroundColor;
+      this.axisLineColor = this.darkAxisLineColor;
+      this.gridLineColor = this.darkGridLineColor;
+      this.plotAreaBackgroundColor = this.darkPlotAreaBackgroundColor;
+      this.highlightColor = this.darkHighlightColor;
     } else {
-      this.axisBackgroundColor = this.lightColors.axisBackgroundColor;
-      this.axisLineColor = this.lightColors.axisLineColor;
-      this.gridLineColor = this.lightColors.gridLineColor;
-      this.plotAreaBackgroundColor = this.lightColors.plotAreaBackgroundColor;
-      this.highlightColor = this.lightColors.highlightColor;
+      this.axisBackgroundColor = this.lightAxisBackgroundColor;
+      this.axisLineColor = this.lightAxisLineColor;
+      this.gridLineColor = this.lightGridLineColor;
+      this.plotAreaBackgroundColor = this.lightPlotAreaBackgroundColor;
+      this.highlightColor = this.lightHighlightColor;
     }
 
     // Apply model
@@ -511,6 +521,81 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
     // Percentage from the left.
     return w === 0 ? 0 : (x / w);
+  }
+
+  private analyzeStaticValueRanges(parameter: Parameter) {
+    let minLow;
+    let maxHigh;
+    const staticAlarmZones = []; // Disjoint set of OOL alarm zones
+    if (parameter.type && parameter.type.defaultAlarm) {
+      const defaultAlarm = parameter.type.defaultAlarm;
+      if (defaultAlarm.staticAlarmRange) {
+        let last_y = -Infinity;
+
+        // LOW LIMITS
+        for (let i = defaultAlarm.staticAlarmRange.length - 1; i >= 0; i--) {
+          const range = defaultAlarm.staticAlarmRange[i];
+          if (range.minInclusive !== undefined) {
+            const zone = {
+              y1: last_y,
+              y2: range.minInclusive,
+              y1IsLimit: false,
+              color: this.colorForLevel(range.level) || 'black',
+            };
+            staticAlarmZones.push(zone);
+            last_y = zone.y2;
+
+            if (minLow === undefined) {
+              minLow = range.minInclusive;
+            } else {
+              minLow = Math.min(minLow, range.minInclusive);
+            }
+          }
+        }
+
+        // HIGH LIMITS
+        last_y = Infinity;
+        for (let i = defaultAlarm.staticAlarmRange.length - 1; i >= 0; i--) {
+          const range = defaultAlarm.staticAlarmRange[i];
+          if (range.maxInclusive) {
+            const zone = {
+              y1: range.maxInclusive,
+              y2: last_y,
+              y1IsLimit: true,
+              color: this.colorForLevel(range.level) || 'black',
+            };
+            staticAlarmZones.push(zone);
+            last_y = zone.y1;
+
+            if (maxHigh === undefined) {
+              maxHigh = range.maxInclusive;
+            } else {
+              maxHigh = Math.max(maxHigh, range.maxInclusive);
+            }
+          }
+        }
+      }
+    }
+
+    const valueRange: [number|null, number|null] = [null, null]; // Null makes Dygraph choose
+    if (minLow !== undefined) {
+      valueRange[0] = minLow;
+    }
+    if (maxHigh !== undefined) {
+      valueRange[1] = maxHigh;
+    }
+    return { valueRange, staticAlarmZones };
+  }
+
+  private colorForLevel(level: string) {
+    switch (level) {
+      case 'WATCH': return '#ffdddb';
+      case 'WARNING': return '#ffc3c1';
+      case 'DISTRESS': return '#ffaaa8';
+      case 'CRITICAL': return '#c35e5c';
+      case 'SEVERE': return '#a94442';
+      default: console.error('Unknown level ' + level);
+    }
   }
 
   ngOnDestroy() {

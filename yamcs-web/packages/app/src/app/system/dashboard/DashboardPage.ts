@@ -1,11 +1,10 @@
-import { Component, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
-
-import { YamcsService } from '../../core/services/YamcsService';
-import { Parameter } from '@yamcs/client';
-import { GeneralInfo } from '@yamcs/client';
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { DyDataSource } from '../../shared/widgets/DyDataSource';
+import { GeneralInfo, Parameter } from '@yamcs/client';
 import { AuthService } from '../../core/services/AuthService';
+import { YamcsService } from '../../core/services/YamcsService';
+import { DyDataSource } from '../../shared/widgets/DyDataSource';
+
 
 @Component({
   templateUrl: './DashboardPage.html',
@@ -21,7 +20,6 @@ export class DashboardPage implements OnDestroy {
   jvmThreadCountParameter$: Promise<Parameter | null>;
 
   jvmMemoryUsedDataSource: DyDataSource;
-  jvmTotalMemoryDataSource: DyDataSource;
   jvmThreadCountDataSource: DyDataSource;
 
   constructor(yamcs: YamcsService, title: Title, private authService: AuthService) {
@@ -29,35 +27,29 @@ export class DashboardPage implements OnDestroy {
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
 
     this.jvmMemoryUsedParameter$ = this.info$.then(info => {
-      const jvmMemoryUsedId = `/yamcs/${info.serverId}/jvmMemoryUsed`;
-      if (authService.hasParameterPrivilege(jvmMemoryUsedId)) {
-        this.jvmMemoryUsedDataSource = new DyDataSource(yamcs, jvmMemoryUsedId);
-        this.jvmMemoryUsedDataSource.connectRealtime();
-        return yamcs.getInstanceClient()!.getParameter(jvmMemoryUsedId);
-      } else {
-        return Promise.resolve(null);
-      }
+       return yamcs.getInstanceClient()!.getParameter(`/yamcs/${info.serverId}/jvmMemoryUsed`);
     });
-
     this.jvmTotalMemoryParameter$ = this.info$.then(info => {
-      const jvmTotalMemoryId = `/yamcs/${info.serverId}/jvmTotalMemory`;
-      if (authService.hasParameterPrivilege(jvmTotalMemoryId)) {
-        this.jvmTotalMemoryDataSource = new DyDataSource(yamcs, jvmTotalMemoryId);
-        this.jvmTotalMemoryDataSource.connectRealtime();
-        return yamcs.getInstanceClient()!.getParameter(jvmTotalMemoryId);
-      } else {
-        return Promise.resolve(null);
+      return yamcs.getInstanceClient()!.getParameter(`/yamcs/${info.serverId}/jvmTotalMemory`);
+    });
+    this.jvmThreadCountParameter$ = this.info$.then(info => {
+      return yamcs.getInstanceClient()!.getParameter(`/yamcs/${info.serverId}/jvmThreadCount`);
+    });
+
+    Promise.all([this.jvmMemoryUsedParameter$, this.jvmTotalMemoryParameter$]).then(results => {
+      if (results[0] && results[1]) {
+        this.jvmMemoryUsedDataSource = new DyDataSource(yamcs);
+        this.jvmMemoryUsedDataSource.addParameter(results[0]!);
+        this.jvmMemoryUsedDataSource.addParameter(results[1]!);
+        this.jvmMemoryUsedDataSource.connectRealtime();
       }
     });
 
-    this.jvmThreadCountParameter$ = this.info$.then(info => {
-      const jvmThreadCountId = `/yamcs/${info.serverId}/jvmThreadCount`;
-      if (authService.hasParameterPrivilege(jvmThreadCountId)) {
-        this.jvmThreadCountDataSource = new DyDataSource(yamcs, jvmThreadCountId);
+    this.jvmThreadCountParameter$.then(parameter => {
+      if (parameter) {
+        this.jvmThreadCountDataSource = new DyDataSource(yamcs);
+        this.jvmThreadCountDataSource.addParameter(parameter);
         this.jvmThreadCountDataSource.connectRealtime();
-        return yamcs.getInstanceClient()!.getParameter(jvmThreadCountId);
-      } else {
-        return Promise.resolve(null);
       }
     });
   }
@@ -69,9 +61,6 @@ export class DashboardPage implements OnDestroy {
   ngOnDestroy() {
     if (this.jvmMemoryUsedDataSource) {
       this.jvmMemoryUsedDataSource.disconnect();
-    }
-    if (this.jvmTotalMemoryDataSource) {
-      this.jvmTotalMemoryDataSource.disconnect();
     }
     if (this.jvmThreadCountDataSource) {
       this.jvmThreadCountDataSource.disconnect();

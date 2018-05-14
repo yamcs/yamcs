@@ -85,7 +85,7 @@ export default class Timeline {
     viewportWheel: [],
   };
 
-  private sidebarWidth = 100;
+  private sidebarWidth = 200;
 
   private measurerSvg: SVGElement;
 

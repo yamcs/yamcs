@@ -4,7 +4,7 @@
       <dt>Command</dt>
       <dd>{{ alias.name }}</dd>
 
-      <dt>Space System</dt>
+      <dt>Space system</dt>
       <dd>
         <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'commands']"
             [queryParams]="{instance: instance.name}"
@@ -22,16 +22,26 @@
     </ng-container>
   </ng-container>
 
-  <dt>Short Description</dt>
+  <dt>Short description</dt>
   <dd>{{ command.shortDescription || '-' }}</dd>
 
-  <dt>Long Description</dt>
+  <dt>Long description</dt>
   <dd>{{ command.longDescription || '-' }}</dd>
 </dl>
 
 <mat-divider></mat-divider>
 
 <dl class="dl-horizontal">
+  <dt>Base command</dt>
+  <dd *ngIf="command.baseCommand">
+    <a [routerLink]="['/mdb/commands/', command.baseCommand?.qualifiedName]"
+       [queryParams]="{instance: instance.name}"
+       class="ya-link">
+      {{ command.baseCommand?.qualifiedName }}
+    </a>
+  </dd>
+  <dd *ngIf="!command.baseCommand">-</dd>
+
   <dt>Abstract</dt>
   <dd>{{ command.abstract }}</dd>
 
@@ -42,7 +52,7 @@
   </dd>
   <dd *ngIf="!command.significance">-</dd>
 
-  <dt>Argument Assignments</dt>
+  <dt>Argument assignments</dt>
   <dd *ngIf="command.argumentAssignment">
     <ng-container *ngFor="let assignment of command.argumentAssignment">
       {{ assignment.name}} = {{ assignment.value }}<br>
@@ -57,12 +67,19 @@
         <th>Name</th>
         <th>Description</th>
         <th>Type</th>
-        <th>Initial Value</th>
+        <th>Initial value</th>
       </tr>
       <tr *ngFor="let argument of command.argument">
         <td>{{ argument.name || '-' }}</td>
         <td>{{ argument.description || '-' }}</td>
-        <td>{{ argument.type?.engType || '-' }}</td>
+        <td>
+          <ng-container *ngIf="argument.type?.engType === 'enumeration'">
+            <span (click)="showEnum(argument)" matTooltip="Show enum states" class="enum">{{ argument.type?.engType }}</span>
+          </ng-container>
+          <ng-container *ngIf="argument.type?.engType !== 'enumeration'">
+            {{ argument.type?.engType || '-' }}
+          </ng-container>
+        </td>
         <td>{{ argument.initialValue || '-'}}</td>
       </tr>
     </table>
@@ -99,14 +116,14 @@
 <mat-divider></mat-divider>
 
 <dl class="dl-horizontal">
-  <dt>Sequence Entries</dt>
+  <dt>Sequence entries</dt>
   <dd>
-    <table yaDataTable>
+    <table *ngIf="command.commandContainer.entry" yaDataTable>
       <tr>
         <th>Type</th>
         <th>Ref</th>
-        <th>Location in Bits</th>
-        <th>Reference Location</th>
+        <th>Location in bits</th>
+        <th>Reference location</th>
       </tr>
       <tr *ngFor="let entry of command.commandContainer.entry">
         <ng-container *ngIf="entry.argument">
@@ -116,12 +133,13 @@
           </td>
         </ng-container>
         <ng-container *ngIf="entry.fixedValue">
-          <td>Fixed Value</td>
+          <td>Fixed value</td>
           <td>0x{{ entry.fixedValue?.hexValue }}</td>
         </ng-container>
         <td>{{ entry.locationInBits }}</td>
         <td>{{ entry.referenceLocation }}</td>
       </tr>
     </table>
+    <span *ngIf="!command.commandContainer.entry">-</span>
   </dd>
 </dl>

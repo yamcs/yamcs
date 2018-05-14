@@ -22,7 +22,7 @@ import io.netty.handler.codec.http.HttpMethod;
 
 public class ComVerifIntegrationTest extends AbstractIntegrationTest {
     @Test
-    public void testCommandVerificationContainter() throws Exception {
+    public void testCommandVerificationContainer() throws Exception {
         WebSocketRequest wsr = new WebSocketRequest("cmdhistory", "subscribe");
         wsClient.sendRequest(wsr);
 
@@ -30,7 +30,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         String resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/CONT_VERIF_TC",
                 HttpMethod.POST, toJson(cmdreq)).get();
         IssueCommandResponse response = fromJson(resp, IssueCommandResponse.newBuilder()).build();
-        assertEquals("REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
+        assertEquals("/REFMDB/SUBSYS1/CONT_VERIF_TC()", response.getSource());
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 
@@ -90,7 +90,7 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         String resp = restClient.doRequest("/processors/IntegrationTest/realtime/commands/REFMDB/SUBSYS1/ALG_VERIF_TC",
                 HttpMethod.POST, toJson(cmdreq)).get();
         IssueCommandResponse response = fromJson(resp, IssueCommandResponse.newBuilder()).build();
-        assertEquals("REFMDB/SUBSYS1/ALG_VERIF_TC(p1: 10, p2: 20)", response.getSource());
+        assertEquals("/REFMDB/SUBSYS1/ALG_VERIF_TC(p1: 10, p2: 20)", response.getSource());
 
         CommandHistoryEntry cmdhist = wsListener.cmdHistoryDataList.poll(3, TimeUnit.SECONDS);
 

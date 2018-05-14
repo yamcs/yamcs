@@ -208,6 +208,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
             id: packetName,
             type: 'EventBand',
             label: packetName,
+            // draggable: true,
             interactive: true,
             interactiveSidebar: false,
             style: {

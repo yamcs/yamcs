@@ -1,21 +1,21 @@
-import { Component, ChangeDetectionStrategy, Inject, ViewChild } from '@angular/core';
-
-import { YamcsService } from '../../core/services/YamcsService';
-import { EventsDataSource } from './EventsDataSource';
+import { ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material';
 import { Title } from '@angular/platform-browser';
-import { GetEventsOptions, DownloadEventsOptions } from '@yamcs/client';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { DownloadEventsOptions, GetEventsOptions } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { APP_CONFIG, AppConfig, ExtraColumnInfo } from '../../core/config/AppConfig';
+import { AuthService } from '../../core/services/AuthService';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { YamcsService } from '../../core/services/YamcsService';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { Option, Select } from '../../shared/template/Select';
 import { subtractDuration } from '../../shared/utils';
 import { rowAnimation } from '../animations';
-import { PreferenceStore } from '../../core/services/PreferenceStore';
-import { debounceTime } from 'rxjs/operators';
-import { Option, Select } from '../../shared/template/Select';
-import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../../core/config/AppConfig';
 import { CreateEventDialog } from './CreateEventDialog';
-import { MatDialog } from '@angular/material';
-import { AuthService } from '../../core/services/AuthService';
+import { EventsDataSource } from './EventsDataSource';
+
 
 const defaultInterval = 'PT1H';
 
@@ -312,6 +312,10 @@ export class EventsPage {
     const dialogInstance = this.dialog.open(CreateEventDialog, {
       width: '400px',
     });
-    dialogInstance.afterClosed().subscribe(() => this.jumpToNow());
+    dialogInstance.afterClosed().subscribe(result => {
+      if (result) {
+        this.jumpToNow();
+      }
+    });
   }
 }

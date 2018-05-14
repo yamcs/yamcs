@@ -1,11 +1,11 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
-
-import { Instance, CommandHistoryEntry } from '@yamcs/client';
-
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { CommandHistoryEntry, Instance } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
-import { BehaviorSubject } from 'rxjs';
-import { Title } from '@angular/platform-browser';
+
+
 
 @Component({
   templateUrl: './CommandsPage.html',

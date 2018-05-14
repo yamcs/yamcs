@@ -7,7 +7,15 @@
         Command Detail
       </app-detail-toolbar>
       <div style="padding: 0 16px">
-        <!--app-alarm-detail [alarm]="selectedAlarm"></app-alarm-detail-->
+        <h6>Source</h6>
+        <div class="block">
+          {{ getCommandString(selectedEntry) || '-' }}
+        </div>
+
+        <h6>Binary</h6>
+        <div class="block">
+          <app-hex [base64String]="getCommandBinary(selectedEntry)"></app-hex>
+        </div>
       </div>
     </ng-container>
     <ng-template #noSelection>
@@ -23,6 +31,7 @@
              *ngIf="!dataSource.isEmpty(); else empty"
              [dataSource]="dataSource"
              class="ya-data-table"
+             style="width: 100%"
              matSort
              matSortActive="generationTimeUTC"
              matSortDirection="desc"
@@ -61,7 +70,7 @@
         <ng-container matColumnDef="source">
           <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 300px">Src</th>
           <td mat-cell *matCellDef="let entry">
-            {{ getUsername(entry) }}@{{ entry.commandId.origin }}
+            {{ getUsername(entry) }}<span *ngIf="entry.commandId.origin">@{{ entry.commandId.origin }}</span>
           </td>
         </ng-container>
 
@@ -80,10 +89,10 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <td mat-row *matRowDef="let row; columns: displayedColumns;"
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
                  (click)="selectEntry(row)"
                  [class.selected]="false">
-        </td>
+        </tr>
       </table>
 
       <ng-template #empty>

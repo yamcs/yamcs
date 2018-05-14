@@ -1,10 +1,10 @@
-import { Component, ChangeDetectionStrategy, ViewChild, Input, AfterViewInit } from '@angular/core';
-
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
+import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
 import { Command } from '@yamcs/client';
-
-import { MatSort, MatTableDataSource, MatPaginator } from '@angular/material';
-import { ColumnInfo } from '../../shared/template/ColumnChooser';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { ColumnInfo } from '../../shared/template/ColumnChooser';
+
+
 
 @Component({
   selector: 'app-commands-table',
@@ -32,11 +32,13 @@ export class CommandsTable implements AfterViewInit {
 
   columns: ColumnInfo[] = [
     { id: 'name', label: 'Name', alwaysVisible: true },
+    { id: 'abstract', label: 'Abstract' },
     { id: 'shortDescription', label: 'Description' },
   ];
 
   displayedColumns = [
     'name',
+    'abstract',
   ];
 
   constructor(private preferenceStore: PreferenceStore) {

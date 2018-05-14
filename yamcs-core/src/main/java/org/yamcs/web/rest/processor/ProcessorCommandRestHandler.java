@@ -112,7 +112,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
             // make the source - should perhaps come from the client
             StringBuilder sb = new StringBuilder();
-            sb.append(requestCommandName);
+            sb.append(cmd.getQualifiedName());
             sb.append("(");
             boolean first = true;
             for (ArgumentAssignment aa : assignments) {

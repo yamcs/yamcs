@@ -43,7 +43,7 @@ public class ProcessorHelper {
             alarmb.setAcknowledgeInfo(acknowledgeb.build());
         }
 
-        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(parameter, null, DetailLevel.SUMMARY, false);
+        ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(parameter, DetailLevel.SUMMARY);
         alarmb.setParameter(pinfo);
 
         return alarmb.build();

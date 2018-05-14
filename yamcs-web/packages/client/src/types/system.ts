@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { CommandId, Value } from './monitoring';
+import { CommandQueueEntry, Value } from './monitoring';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
@@ -217,6 +217,10 @@ export interface CommandQueueSubscriptionResponse {
   commandQueue$: Observable<CommandQueue>;
 }
 
+export interface EditCommandQueueOptions {
+  state: 'enabled' | 'disabled' | 'blocked';
+}
+
 export interface CommandQueueEvent {
   type: 'COMMAND_ADDED' | 'COMMAND_REJECTED' | 'COMMAND_SENT';
   data: CommandQueueEntry;
@@ -226,14 +230,6 @@ export interface CommandQueueEventSubscriptionResponse {
   commandQueueEvent$: Observable<CommandQueueEvent>;
 }
 
-export interface CommandQueueEntry {
-  instance: string;
-  processorName: string;
-  queueName: string;
-  cmdId: CommandId;
-  source: string;
-  binary: string;
-  username: string;
-  generationTimeUTC: string;
-  uuid: string;
+export interface EditCommandQueueEntryOptions {
+  state: 'released' | 'rejected';
 }

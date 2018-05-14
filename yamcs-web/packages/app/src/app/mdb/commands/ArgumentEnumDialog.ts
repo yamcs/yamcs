@@ -2,10 +2,10 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material';
 
 @Component({
-  selector: 'app-show-enum-dialog',
-  templateUrl: './ShowEnumDialog.html',
+  selector: 'app-argument-enum-dialog',
+  templateUrl: './ArgumentEnumDialog.html',
 })
-export class ShowEnumDialog {
+export class ArgumentEnumDialog {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) readonly data: any) {

@@ -53,14 +53,7 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
     /**
      * A series is a list of samples that are determined in one-pass while processing a stream result. Final API
      * unstable.
-     * <p>
-     * If no query parameters are defined, the series covers *all* data.
-     * 
-     * @param req
-     *            rest request
-     * @throws HttpException
      */
-
     public void getParameterSamples(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -78,13 +71,14 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
         NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         rr.setParameterRequest(ParameterReplayRequest.newBuilder().addNameFilter(id));
 
-        if (req.hasQueryParameter("start")) {
-            rr.setStart(req.getQueryParameterAsDate("start"));
-        }
-        rr.setStop(req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime()));
-        int intervalCount = req.getQueryParameterAsInt("count", 500);
+        long defaultStop = TimeEncoding.getWallclockTime();
+        long defaultStart = defaultStop - (1000 * 60 * 60); // 1 hour
 
-        RestDownsampler sampler = new RestDownsampler(rr.getStop(), intervalCount);
+        rr.setStart(req.getQueryParameterAsDate("start", defaultStart));
+        rr.setStop(req.getQueryParameterAsDate("stop", defaultStop));
+        int sampleCount = req.getQueryParameterAsInt("count", 500);
+
+        RestDownsampler sampler = new RestDownsampler(rr.getStart(), rr.getStop(), sampleCount);
 
         RestReplays.replay(instance, req.getAuthToken(), rr.build(), new RestReplayListener() {
             @Override
