@@ -25,6 +25,10 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
     public int getSecondaryHeaderFlag() {
         return (bb.getShort(0)>>11)&1;
     }
+    
+    static public boolean getSecondaryHeaderFlag(byte[] packet) {
+        return (packet[0] &0x8) == 0x8;
+    }
 
     public int getSequenceCount() {
         return bb.getShort(2)&0x3FFF;
@@ -119,7 +123,11 @@ public class CcsdsPacket implements Comparable<CcsdsPacket>{
     public boolean getChecksumIndicator() {
         return (bb.get(11) & 0x20) == 0x20;
     }
-
+    
+    static public boolean getChecksumIndicator(byte[] packet) {
+        return (packet[11] & 0x20) == 0x20;
+    }
+    
     public int getPacketID() {
         if(getSecondaryHeaderFlag() != 0)
             return bb.getInt(12);

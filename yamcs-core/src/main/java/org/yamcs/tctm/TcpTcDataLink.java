@@ -27,6 +27,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
 import com.google.common.util.concurrent.AbstractService;
@@ -333,8 +334,12 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         public void send() {
           
             byte[] binary = pc.getBinary();
-            int checksumIndicator = binary[2] & 0x04;
-            if (checksumIndicator == 1) { //2 extra bytes for the checksum
+            boolean secHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(binary);
+            boolean checksumIndicator = false;
+            if(secHeaderFlag) {
+                checksumIndicator = CcsdsPacket.getChecksumIndicator(binary);
+            }
+            if (checksumIndicator) { //2 extra bytes for the checkword
                 binary = Arrays.copyOf(binary, binary.length+2);
             }
             
@@ -347,8 +352,19 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             int retries = 5;
             boolean sent = false;
             int seqCount = seqFiller.fill(bb, pc.getCommandId().getGenerationTime());
-            int checksum = errorDetectionCalculator.compute(binary, 0, binary.length-2);
-            bb.putShort(binary.length-2, (short)checksum);
+            if (checksumIndicator) { 
+                int pos = binary.length - 2;
+                int checkword = errorDetectionCalculator.compute(binary, 0, pos);
+                log.debug("Appending checkword on position {}: {}", pos, Integer.toHexString(checkword));
+                bb.putShort(pos, (short)checkword);
+            } else {
+                if(!secHeaderFlag) {
+                    log.debug("Not appending a checkword since there is no secondary header to configure a checksum indicator");
+                } else {
+                    log.debug("Not appending a checkword since checksumIndicator is false");
+                }
+            }
+        
             
             commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
             
