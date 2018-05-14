@@ -98,7 +98,7 @@ export default abstract class Band extends Plugin {
         y: ctx.y + this.height,
         width: loadWidth,
         height: 1,
-        fill: '#d1d5da',
+        fill: this.style.dividerColor,
         'pointer-events': 'none'
       })
     );
@@ -137,7 +137,7 @@ export default abstract class Band extends Plugin {
         y: ctx.y + this.height,
         width: '100%',
         height: 1,
-        fill: '#d1d5da',
+        fill: this.style.dividerColor,
         'pointer-events': 'none',
       })
     );
@@ -146,11 +146,11 @@ export default abstract class Band extends Plugin {
       g.addChild(new Text({
         x: ctx.x + 5,
         y: ctx.y + ctx.paddingTop + (this.height / 2),
-        fill: this.style['sidebarForegroundColor'],
+        fill: this.style.sidebarForegroundColor,
         'pointer-events': 'none',
         'text-anchor': 'left',
         'dominant-baseline': 'middle',
-        'font-size': this.style['textSize'],
+        'font-size': this.style.textSize,
       }, this.opts.label || 'Untitled'));
     }
 

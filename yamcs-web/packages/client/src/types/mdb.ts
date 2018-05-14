@@ -240,6 +240,7 @@ export interface GetParametersOptions {
   recurse?: boolean;
   type?: string;
   q?: string;
+  limit?: number;
 }
 
 export interface GetAlgorithmsOptions {

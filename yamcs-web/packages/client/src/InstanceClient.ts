@@ -3,8 +3,8 @@ import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
 import { AlarmsWrapper, AlgorithmsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, Command, Container, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, SpaceSystem } from './types/mdb';
-import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DisplayFolder, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
-import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
+import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DisplayFolder, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
+import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
 
 export class InstanceClient {
 
@@ -151,6 +151,15 @@ export class InstanceClient {
     return this.webSocketClient.getProcessorStatistics(this.instance);
   }
 
+  async issueCommand(processorName: string, qualifiedName: string, options?: IssueCommandOptions): Promise<IssueCommandResponse> {
+    const body = JSON.stringify(options);
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/commands${qualifiedName}`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as IssueCommandResponse;
+  }
+
   async getCommandHistoryEntries(options: GetCommandHistoryOptions = {}): Promise<CommandHistoryEntry[]> {
     const url = `${this.yamcs.apiUrl}/archive/${this.instance}/commands`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
@@ -183,9 +192,28 @@ export class InstanceClient {
     return this.webSocketClient.getCommandQueueUpdates(this.instance, processorName);
   }
 
+  async editCommandQueue(processorName: string, queueName: string, options: EditCommandQueueOptions) {
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues/${queueName}`;
+    const body = JSON.stringify(options);
+    const response = await this.yamcs.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as CommandQueue;
+  }
+
   async getCommandQueueEventUpdates(): Promise<CommandQueueEventSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getCommandQueueEventUpdates(this.instance);
+  }
+
+  async editCommandQueueEntry(processorName: string, queueName: string, uuid: string, options: EditCommandQueueEntryOptions) {
+    const url = `${this.yamcs.apiUrl}/processors/${this.instance}/${processorName}/cqueues/${queueName}/entries/${uuid}`;
+    const body = JSON.stringify(options);
+    const response = await this.yamcs.doFetch(url, {
+      body,
+      method: 'POST',
+    });
   }
 
   async getClients() {

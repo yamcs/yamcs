@@ -3,10 +3,11 @@ import { Path, Pattern } from '../tags';
 export default {
   type: 'dark',
   rules: {
-    bandBackgroundColor: '#2b2b2b',
-    sidebarBackgroundColor: '#3c3f41',
+    bandBackgroundColor: '#111111',
+    sidebarBackgroundColor: '#1c1c1c',
     sidebarForegroundColor: 'grey',
     sidebarHoverBackgroundColor: '#3c3f41',
+    dividerColor: '#2e2e2e',
     textColor: '#bbb',
     hatchFill: 'url(#darkHatch)',
   },

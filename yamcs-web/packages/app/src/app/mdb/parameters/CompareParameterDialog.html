@@ -1,0 +1,19 @@
+<mat-dialog-content>
+  <mat-form-field style="width: 100%">
+    <input matInput
+           [formControl]="parameter"
+           placeholder="Search parameter for comparison"
+           [matAutocomplete]="auto">
+  </mat-form-field>
+  <mat-autocomplete #auto>
+    <mat-option *ngFor="let option of filteredOptions | async" [value]="option.qualifiedName">
+      {{ option.qualifiedName }}
+    </mat-option>
+  </mat-autocomplete>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button (click)="select()" color="primary" [disabled]="!parameter.valid">Add</button>
+</mat-dialog-actions>

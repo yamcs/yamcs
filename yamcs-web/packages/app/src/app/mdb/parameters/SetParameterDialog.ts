@@ -1,8 +1,8 @@
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Component, Inject } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { YamcsService } from '../../core/services/YamcsService';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { Parameter, Value } from '@yamcs/client';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-set-parameter-dialog',
@@ -25,10 +25,7 @@ export class SetParameterDialog {
       case 'boolean':
       case 'float':
       case 'double':
-      case 'uint32':
-      case 'sint32':
-      case 'uint64':
-      case 'sint64':
+      case 'integer':
       case 'string':
         this.form = formBuilder.group({
           value: [null, Validators.required]
@@ -57,17 +54,8 @@ export class SetParameterDialog {
       case 'double':
         value = { type: 'DOUBLE', doubleValue: userValue };
         break;
-      case 'uint32':
-        value = { type: 'UINT32', uint32Value: userValue };
-        break;
-      case 'sint32':
+      case 'integer':
         value = { type: 'SINT32', sint32Value: userValue };
-        break;
-      case 'uint64':
-        value = { type: 'UINT64', uint64Value: userValue };
-        break;
-      case 'sint64':
-        value = { type: 'SINT64', sint64Value: userValue };
         break;
       case 'string':
         value = { type: 'STRING', stringValue: userValue };
@@ -76,7 +64,7 @@ export class SetParameterDialog {
         value = { type: 'TIMESTAMP', timestampValue: Date.parse(userValue) };
         break;
       default:
-        console.warn(`Unexpected type: ${userValue}`);
+        console.warn(`Unexpected type: ${this.parameter.type!.engType}`);
         return;
     }
     this.yamcs.getInstanceClient()!.setParameterValue('realtime', this.parameter.qualifiedName, value)

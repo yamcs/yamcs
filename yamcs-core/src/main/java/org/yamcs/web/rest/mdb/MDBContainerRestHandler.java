@@ -35,9 +35,7 @@ public class MDBContainerRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         SequenceContainer c = verifyContainer(req, mdb, req.getRouteParam("name"));
 
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
-        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
-        ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.FULL, addLinks);
+        ContainerInfo cinfo = XtceToGpbAssembler.toContainerInfo(c, DetailLevel.FULL);
         completeOK(req, cinfo);
     }
 
@@ -51,9 +49,7 @@ public class MDBContainerRestHandler extends RestHandler {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));
         }
 
-        String instanceURL = req.getApiURL() + "/mdb/" + instance;
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
-        boolean addLinks = req.getQueryParameterAsBoolean("links", false);
 
         ListContainerInfoResponse.Builder responseb = ListContainerInfoResponse.newBuilder();
         if (req.hasQueryParameter("namespace")) {
@@ -66,8 +62,7 @@ public class MDBContainerRestHandler extends RestHandler {
 
                 String alias = c.getAlias(namespace);
                 if (alias != null || (recurse && c.getQualifiedName().startsWith(namespace))) {
-                    responseb.addContainer(
-                            XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, addLinks));
+                    responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, DetailLevel.SUMMARY));
                 }
             }
         } else { // List all
@@ -75,8 +70,7 @@ public class MDBContainerRestHandler extends RestHandler {
                 if (matcher != null && !matcher.matches(c)) {
                     continue;
                 }
-                responseb.addContainer(
-                        XtceToGpbAssembler.toContainerInfo(c, instanceURL, DetailLevel.SUMMARY, addLinks));
+                responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, DetailLevel.SUMMARY));
             }
         }
 

@@ -188,8 +188,9 @@ public class RestRequest {
     public String getQueryParameter(String name) {
         List<String> param = qsDecoder.parameters().get(name);
 
-        if (param == null || param.isEmpty())
+        if (param == null || param.isEmpty()) {
             return null;
+        }
         return param.get(0);
     }
 
@@ -424,10 +425,6 @@ public class RestRequest {
 
     public IntervalResult scanForInterval() throws HttpException {
         return new IntervalResult(this);
-    }
-
-    public String getApiURL() {
-        return getBaseURL() + "/api";
     }
 
     public static class IntervalResult {

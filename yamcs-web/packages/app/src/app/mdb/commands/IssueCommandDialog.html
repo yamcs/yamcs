@@ -1,0 +1,27 @@
+<h2 mat-dialog-title>Issue command</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <ng-container *ngFor="let argument of arguments">
+      <ng-container [ngSwitch]="argument.type?.engType">
+
+        <mat-form-field *ngSwitchCase="'enumeration'" style="width: 100%">
+          <mat-select [formControlName]="argument.name" [placeholder]="argument.name">
+            <mat-option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.value">{{ enumValue.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field *ngSwitchDefault style="width: 100%">
+          <input matInput [formControlName]="argument.name" [placeholder]="argument.name">
+        </mat-form-field>
+
+      </ng-container>
+    </ng-container>
+  </form>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button (click)="issue()" color="primary" [disabled]="!form.valid">Issue</button>
+</mat-dialog-actions>

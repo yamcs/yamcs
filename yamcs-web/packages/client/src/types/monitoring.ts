@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { AlarmRange, NamedObjectId, Parameter } from './mdb';
+import { AlarmRange, ArgumentAssignment, NamedObjectId, Parameter } from './mdb';
 
 export interface Value {
   type: 'FLOAT'
@@ -137,6 +137,21 @@ export interface CommandId {
   origin: string;
   sequenceNumber: number;
   commandName: string;
+}
+
+export interface IssueCommandOptions {
+  origin?: string;
+  sequenceNumber?: number;
+  dryRun?: boolean;
+  assignment?: ArgumentAssignment[];
+  comment?: string;
+}
+
+export interface IssueCommandResponse {
+  commandQueueEntry: CommandQueueEntry;
+  source: string;
+  hex: string;
+  binary: string;
 }
 
 export interface CommandHistoryAttribute {
@@ -305,4 +320,16 @@ export interface IndexEntry {
   start: string;
   stop: string;
   count: number;
+}
+
+export interface CommandQueueEntry {
+  instance: string;
+  processorName: string;
+  queueName: string;
+  cmdId: CommandId;
+  source: string;
+  binary: string;
+  username: string;
+  generationTimeUTC: string;
+  uuid: string;
 }

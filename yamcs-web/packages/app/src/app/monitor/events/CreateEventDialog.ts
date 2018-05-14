@@ -26,6 +26,6 @@ export class CreateEventDialog {
 
   save() {
     this.yamcs.getInstanceClient()!.createEvent(this.form.value)
-      .then(() => this.dialogRef.close());
+      .then(event => this.dialogRef.close(event));
   }
 }

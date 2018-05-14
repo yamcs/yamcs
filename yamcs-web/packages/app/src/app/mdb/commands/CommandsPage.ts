@@ -1,9 +1,9 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-
-import { Command, Instance } from '@yamcs/client';
-
-import { YamcsService } from '../../core/services/YamcsService';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { Command, Instance } from '@yamcs/client';
+import { YamcsService } from '../../core/services/YamcsService';
+
+
 
 @Component({
   templateUrl: './CommandsPage.html',

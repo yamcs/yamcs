@@ -67,6 +67,10 @@ body {
   padding: 24px;
 }
 
+.ya-data-table tr.mat-header-row {
+  height: auto;
+}
+
 .ya-data-table tr.mat-row {
   height: auto;
 }
@@ -177,10 +181,10 @@ a.ya-link.ya-header-link {
   color: green;
 }
 
-.warning, .WATCH mat-cell, .WARNING mat-cell {
+.warning, .WATCH td, .WARNING td {
   color: orange !important;
 }
 
-.alert, .ERROR mat-cell, .DISTRESS mat-cell, .CRITICAL mat-cell, .SEVERE mat-cell {
+.alert, .ERROR td, .DISTRESS td, .CRITICAL td, .SEVERE td {
   color: red !important;
 }

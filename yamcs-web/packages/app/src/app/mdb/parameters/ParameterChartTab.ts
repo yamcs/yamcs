@@ -1,13 +1,14 @@
-import { Component, ChangeDetectionStrategy, ViewChild, OnDestroy } from '@angular/core';
-import { Parameter } from '@yamcs/client';
-import { ActivatedRoute } from '@angular/router';
-import { YamcsService } from '../../core/services/YamcsService';
-import { DyDataSource } from '../../shared/widgets/DyDataSource';
-import { subtractDuration } from '../../shared/utils';
-import { BehaviorSubject } from 'rxjs';
+import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material';
-import { SelectRangeDialog } from './SelectRangeDialog';
+import { ActivatedRoute } from '@angular/router';
+import { Parameter } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs';
+import { YamcsService } from '../../core/services/YamcsService';
+import { subtractDuration } from '../../shared/utils';
+import { DyDataSource } from '../../shared/widgets/DyDataSource';
 import { ParameterPlot } from '../../shared/widgets/ParameterPlot';
+import { CompareParameterDialog } from './CompareParameterDialog';
+import { SelectRangeDialog } from './SelectRangeDialog';
 
 @Component({
   templateUrl: './ParameterChartTab.html',
@@ -30,9 +31,12 @@ export class ParameterChartTab implements OnDestroy {
   constructor(route: ActivatedRoute, private yamcs: YamcsService, private dialog: MatDialog) {
     this.missionTime = yamcs.getMissionTime();
     const qualifiedName = route.parent!.snapshot.paramMap.get('qualifiedName')!;
-    this.dataSource = new DyDataSource(yamcs, qualifiedName);
-    this.dataSource.connectRealtime();
+    this.dataSource = new DyDataSource(yamcs);
     this.parameter$ = yamcs.getInstanceClient()!.getParameter(qualifiedName);
+    this.parameter$.then(parameter => {
+      this.dataSource.addParameter(parameter);
+      this.dataSource.connectRealtime();
+    });
   }
 
   loadLatest(range: string) {
@@ -67,6 +71,15 @@ export class ParameterChartTab implements OnDestroy {
         }
       });
     }
+  }
+
+  compareParameter() {
+    const dialogRef = this.dialog.open(CompareParameterDialog, {
+      width: '600px',
+    });
+    dialogRef.afterClosed().subscribe(val => {
+      console.log('value', val);
+    });
   }
 
   ngOnDestroy() {

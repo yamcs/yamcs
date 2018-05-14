@@ -92,14 +92,14 @@ mat-table {
   color: white;
 }
 
-.ya-data-table mat-row:hover {
-  background: #000;
+.ya-data-table tr:hover td {
+  background: #000 !important;
 }
 
-.ya-data-table th,
-.ya-data-table td,
-.ya-data-table mat-row {
+.ya-data-table th.mat-header-cell,
+.ya-data-table td.mat-cell {
   border-bottom-color: rgba(255, 255, 255, 0.12);
+  background-color: #111;
 }
 
 .mat-header-cell {
@@ -110,13 +110,11 @@ mat-table {
   background-color: #191919;
 }
 
-.ya-data-table td,
-.ya-data-table mat-cell {
+.ya-data-table td {
   color: #888;
 }
 
-.ya-data-table th,
-.ya-data-table header-cell {
+.ya-data-table th {
   color: rgba(255, 255, 255, 0.7);
 }
 

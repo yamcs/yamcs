@@ -1,7 +1,8 @@
-import { Component, ChangeDetectionStrategy, Input, AfterViewInit, ViewChild } from '@angular/core';
-import { Observable } from 'rxjs';
-import { CommandQueue, CommandQueueEntry } from '@yamcs/client';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
 import { MatSort, MatTableDataSource } from '@angular/material';
+import { CommandQueue, CommandQueueEntry } from '@yamcs/client';
+import { Observable } from 'rxjs';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   selector: 'app-queued-commands-table',
@@ -24,7 +25,11 @@ export class QueuedCommandsTable implements AfterViewInit {
     'cmdId.origin',
     'queueName',
     'username',
+    'actions',
   ];
+
+  constructor(private yamcs: YamcsService) {
+  }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
@@ -39,6 +44,19 @@ export class QueuedCommandsTable implements AfterViewInit {
         }
       }
       this.dataSource.data = entries;
+      console.log('entries', entries);
+    });
+  }
+
+  releaseEntry(entry: CommandQueueEntry) {
+    this.yamcs.getInstanceClient()!.editCommandQueueEntry(entry.processorName, entry.queueName, entry.uuid, {
+      state: 'released',
+    });
+  }
+
+  rejectEntry(entry: CommandQueueEntry) {
+    this.yamcs.getInstanceClient()!.editCommandQueueEntry(entry.processorName, entry.queueName, entry.uuid, {
+      state: 'rejected',
     });
   }
 }

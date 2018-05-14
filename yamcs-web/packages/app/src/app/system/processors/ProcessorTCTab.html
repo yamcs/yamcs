@@ -1,9 +1,24 @@
 <div class="panel-content">
-  <h2>Queues</h2>
+  <h2>
+    Queues
+    <app-help>
+      A command queue can be in three states:
+      <dl>
+        <dt><mat-icon class="success icon16">check_circle</mat-icon> Enabled</dt>
+        <dd>The queue accepts and releases commands.</dd>
+
+        <dt><mat-icon class="alert icon16">highlight_off</mat-icon>Blocked</dt>
+        <dd>The queue accepts commands but does not release them. These commands may be released manually, or automatically as soon as the queue moves to the <em>enabled</em> state.</dd>
+
+        <dt><mat-icon class="down icon16">lens</mat-icon>Disabled</dt>
+        <dd>The queue does not accept commands. Any attempt to issue a command linked to a disabled queue will fail immediately.</dd>
+      </dl>
+    </app-help>
+  </h2>
   <app-command-queues-table [cqueues$]="cqueues$"></app-command-queues-table>
 
   <p>&nbsp;</p>
-  <h2>Queued Commands</h2>
+  <h2>Queued commands</h2>
   <app-queued-commands-table *ngIf="hasEntries(); else empty"
                              [cqueues$]="cqueues$">
   </app-queued-commands-table>

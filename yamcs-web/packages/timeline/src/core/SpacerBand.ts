@@ -18,7 +18,7 @@ export default class SpacerBand extends Band {
         y: ctx.y + this.height,
         width: this.timeline.pointsBetween(this.timeline.loadStart, this.timeline.loadStop),
         height: 1,
-        fill: '#d1d5da',
+        fill: this.style.dividerColor,
         'pointer-events': 'none'
       })
     );
@@ -30,7 +30,7 @@ export default class SpacerBand extends Band {
       y: ctx.y + this.height,
       width: '100%',
       height: 1,
-      fill: '#d1d5da',
+      fill: this.style.dividerColor,
     });
   }
 }
