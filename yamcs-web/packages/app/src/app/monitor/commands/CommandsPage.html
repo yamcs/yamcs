@@ -7,7 +7,15 @@
         Command Detail
       </app-detail-toolbar>
       <div style="padding: 0 16px">
-        <!--app-alarm-detail [alarm]="selectedAlarm"></app-alarm-detail-->
+        <h6>Source</h6>
+        <div class="block">
+          {{ getCommandString(selectedEntry) || '-' }}
+        </div>
+
+        <h6>Binary</h6>
+        <div class="block">
+          <app-hex [base64String]="getCommandBinary(selectedEntry)"></app-hex>
+        </div>
       </div>
     </ng-container>
     <ng-template #noSelection>

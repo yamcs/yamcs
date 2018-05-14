@@ -37,6 +37,7 @@ import { YaTableComponent } from './template/TableDirective';
 import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { Help } from './widgets/Help';
+import { Hex } from './widgets/Hex';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
 
@@ -91,6 +92,7 @@ const sharedComponents = [
   Expirable,
   Help,
   HelpDialog,
+  Hex,
   SidebarNavItem,
   ParameterPlot,
   SelectInstanceDialog,

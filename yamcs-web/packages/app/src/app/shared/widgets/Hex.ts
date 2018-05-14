@@ -2,9 +2,9 @@ import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-hex',
-  templateUrl: './HexComponent.html'
+  templateUrl: './Hex.html'
 })
-export class HexComponent {
+export class Hex {
 
   @Input()
   base64String: string;
