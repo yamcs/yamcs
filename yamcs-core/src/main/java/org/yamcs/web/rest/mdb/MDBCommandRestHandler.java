@@ -51,7 +51,10 @@ public class MDBCommandRestHandler extends RestHandler {
             matcher = new NameDescriptionSearchMatcher(req.getQueryParameter("q"));
         }
 
+        boolean details = req.getQueryParameterAsBoolean("details", false);
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
+
+        DetailLevel detailLevel = details ? DetailLevel.FULL : DetailLevel.SUMMARY;
 
         ListCommandInfoResponse.Builder responseb = ListCommandInfoResponse.newBuilder();
         if (req.hasQueryParameter("namespace")) {
@@ -68,7 +71,7 @@ public class MDBCommandRestHandler extends RestHandler {
 
                 String alias = cmd.getAlias(namespace);
                 if (alias != null || (recurse && cmd.getQualifiedName().startsWith(namespace))) {
-                    responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, DetailLevel.SUMMARY));
+                    responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, detailLevel));
                 }
             }
         } else { // List all
@@ -76,7 +79,7 @@ public class MDBCommandRestHandler extends RestHandler {
                 if (matcher != null && !matcher.matches(cmd)) {
                     continue;
                 }
-                responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, DetailLevel.SUMMARY));
+                responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, detailLevel));
             }
         }
 
