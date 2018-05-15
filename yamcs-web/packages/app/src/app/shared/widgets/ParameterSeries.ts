@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { Parameter } from '@yamcs/client';
 
 @Component({
   selector: 'app-parameter-series',
@@ -8,7 +7,7 @@ import { Parameter } from '@yamcs/client';
 export class ParameterSeries {
 
   @Input()
-  parameter: Parameter;
+  parameter: string;
 
   @Input()
   grid = false;

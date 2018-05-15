@@ -7,6 +7,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { subtractDuration } from '../../shared/utils';
 import { DyDataSource } from '../../shared/widgets/DyDataSource';
 import { ParameterPlot } from '../../shared/widgets/ParameterPlot';
+import { ParameterSeries } from '../../shared/widgets/ParameterSeries';
 import { CompareParameterDialog } from './CompareParameterDialog';
 import { SelectRangeDialog } from './SelectRangeDialog';
 
@@ -35,7 +36,6 @@ export class ParameterChartTab implements OnDestroy {
     this.parameter$ = yamcs.getInstanceClient()!.getParameter(qualifiedName);
     this.parameter$.then(parameter => {
       this.dataSource.addParameter(parameter);
-      this.dataSource.connectRealtime();
     });
   }
 
@@ -77,8 +77,17 @@ export class ParameterChartTab implements OnDestroy {
     const dialogRef = this.dialog.open(CompareParameterDialog, {
       width: '600px',
     });
-    dialogRef.afterClosed().subscribe(val => {
-      console.log('value', val);
+    dialogRef.afterClosed().subscribe(qualifiedName => {
+      if (qualifiedName) {
+        this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
+          this.dataSource.addParameter(parameter);
+          const parameterConfig = new ParameterSeries();
+          parameterConfig.parameter = parameter.qualifiedName;
+          parameterConfig.color = 'green';
+          this.plot.addParameter(parameter, parameterConfig);
+          this.dataSource.reloadVisibleRange();
+        });
+      }
     });
   }
 

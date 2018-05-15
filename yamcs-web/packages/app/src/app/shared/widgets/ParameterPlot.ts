@@ -8,6 +8,7 @@ import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
 import GridPlugin from './GridPlugin';
 import { ParameterSeries } from './ParameterSeries';
+import { analyzeStaticValueRanges } from './dygraphs';
 
 @Component({
   selector: 'app-parameter-plot',
@@ -91,6 +92,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   dygraph: any;
 
   private parameters: Parameter[] = [];
+  private parameterConfig = new Map<string, ParameterSeries>();
 
   // Flag to prevent from reloading while the user is busy with a pan or zoom operation
   private disableDataReload = false;
@@ -104,11 +106,15 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    const containingDiv = this.graphContainer.nativeElement as HTMLDivElement;
+    this.dataSource.parameters$.value.forEach(p => {
+      this.parameters.push(p);
+    });
 
     this.seriesComponents.forEach(series => {
-      this.parameters.push(series.parameter);
+      this.parameterConfig.set(series.parameter, series);
     });
+
+    const containingDiv = this.graphContainer.nativeElement as HTMLDivElement;
 
     this.initDygraphs(containingDiv);
     this.dataSource.data$.subscribe(data => {
@@ -130,7 +136,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
           y: { valueRange: data.valueRange }
         };
       } else {
-        const valueRange = this.analyzeStaticValueRanges(this.parameters[0]).valueRange;
+        const valueRange = analyzeStaticValueRanges(this.parameters[0]).valueRange;
         let lo = valueRange[0];
         if (this.dataSource.minValue !== undefined) {
           lo = (lo !== null) ? Math.min(lo, this.dataSource.minValue) : this.dataSource.minValue;
@@ -175,16 +181,18 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   }
 
   private initDygraphs(containingDiv: HTMLDivElement) {
-    const series: { [key: string]: any } = {};
+    const seriesByLabel: { [key: string]: any } = {};
 
-    this.seriesComponents.forEach(s => {
-      series[s.label || s.parameter.qualifiedName] = {
-        color: s.color,
+    const configs = this.parameters.map(p => this.parameterConfig.get(p.qualifiedName)!);
+    configs.forEach(config => {
+      seriesByLabel[config.label || config.parameter] = {
+        color: config.color,
       };
     });
 
     const primaryParameter = this.parameters[0];
-    const rangeAnalysis = this.analyzeStaticValueRanges(primaryParameter);
+    const primaryConfig = configs[0];
+    const rangeAnalysis = analyzeStaticValueRanges(primaryParameter);
     const alarmZones = rangeAnalysis.staticAlarmZones;
 
     let lastClickedGraph: any = null;
@@ -201,10 +209,10 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
       axisLineColor: this.axisLineColor,
       axisLabelFontSize: 11,
       digitsAfterDecimal: 6,
-      labels: ['Generation Time', ...this.seriesComponents.map(s => s.label || s.parameter.qualifiedName)],
+      labels: ['Generation Time', ...configs.map(s => s.label || s.parameter)],
       rightGap: 0,
       labelsUTC: this.utc,
-      series,
+      series: seriesByLabel,
       axes: {
         x: {
           drawAxis: this.xAxis,
@@ -213,11 +221,11 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         },
         y: {
           axisLabelWidth: 50,
-          drawAxis: this.seriesComponents.first.axis,
-          drawGrid: this.seriesComponents.first.grid,
-          axisLineWidth: this.seriesComponents.first.axisLineWidth || 0.0000001, // Dygraphs does not handle 0 correctly
+          drawAxis: primaryConfig.axis,
+          drawGrid: primaryConfig.grid,
+          axisLineWidth: primaryConfig.axisLineWidth || 0.0000001, // Dygraphs does not handle 0 correctly
           // includeZero: true,
-          valueRange: this.analyzeStaticValueRanges(primaryParameter).valueRange,
+          valueRange: analyzeStaticValueRanges(primaryParameter).valueRange,
         }
       },
       interactionModel: {
@@ -314,7 +322,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         ctx.fillRect(area.x, area.y, area.w, area.h);
 
         // Colorize plot area
-        if (this.seriesComponents.first.alarmRanges === 'line') {
+        if (primaryConfig.alarmRanges === 'line') {
           for (const zone of alarmZones) {
             const zoneY = zone.y1IsLimit ? zone.y1 : zone.y2;
             const y = g.toDomCoords(0, zoneY)[1];
@@ -326,7 +334,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
             ctx.lineTo(area.x + area.w, y);
             ctx.stroke();
           }
-        } else if (this.seriesComponents.first.alarmRanges === 'fill') {
+        } else if (primaryConfig.alarmRanges === 'fill') {
           ctx.globalAlpha = 0.2;
           for (const zone of alarmZones) {
             if (zone.y2 === null) {
@@ -366,7 +374,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
       ) => {
         // Only draw for point of first series, because otherwise the line may
         // get drawn on top of other points.
-        if ((this.seriesComponents.first.label || this.seriesComponents.first.parameter.qualifiedName) === seriesName) {
+        if ((primaryConfig.label || primaryConfig.parameter) === seriesName) {
           // ctx.clearRect(0, 0, g.width_, g.height_);
           ctx.setLineDash([5, 5]);
           ctx.strokeStyle = this.highlightColor;
@@ -431,6 +439,27 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
     const gridPluginInstance = this.dygraph.getPluginInstance_(GridPlugin) as GridPlugin;
     gridPluginInstance.setAlarmZones(alarmZones);
+  }
+
+  addParameter(parameter: Parameter, parameterConfig: ParameterSeries) {
+    this.parameters.push(parameter);
+    this.parameterConfig.set(parameter.qualifiedName, parameterConfig);
+
+    const seriesByLabel: { [key: string]: any } = {};
+
+    const configs = this.parameters.map(p => this.parameterConfig.get(p.qualifiedName)!);
+    configs.forEach(config => {
+      seriesByLabel[config.label || config.parameter] = {
+        color: config.color,
+      };
+    });
+
+    const dyOptions: { [key: string]: any } = {
+      labels: ['Generation Time', ...configs.map(s => s.label || s.parameter)],
+      series: seriesByLabel,
+    };
+
+    this.dygraph.updateOptions(dyOptions);
   }
 
   private applyTheme(dark: boolean) {
@@ -521,81 +550,6 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
     // Percentage from the left.
     return w === 0 ? 0 : (x / w);
-  }
-
-  private analyzeStaticValueRanges(parameter: Parameter) {
-    let minLow;
-    let maxHigh;
-    const staticAlarmZones = []; // Disjoint set of OOL alarm zones
-    if (parameter.type && parameter.type.defaultAlarm) {
-      const defaultAlarm = parameter.type.defaultAlarm;
-      if (defaultAlarm.staticAlarmRange) {
-        let last_y = -Infinity;
-
-        // LOW LIMITS
-        for (let i = defaultAlarm.staticAlarmRange.length - 1; i >= 0; i--) {
-          const range = defaultAlarm.staticAlarmRange[i];
-          if (range.minInclusive !== undefined) {
-            const zone = {
-              y1: last_y,
-              y2: range.minInclusive,
-              y1IsLimit: false,
-              color: this.colorForLevel(range.level) || 'black',
-            };
-            staticAlarmZones.push(zone);
-            last_y = zone.y2;
-
-            if (minLow === undefined) {
-              minLow = range.minInclusive;
-            } else {
-              minLow = Math.min(minLow, range.minInclusive);
-            }
-          }
-        }
-
-        // HIGH LIMITS
-        last_y = Infinity;
-        for (let i = defaultAlarm.staticAlarmRange.length - 1; i >= 0; i--) {
-          const range = defaultAlarm.staticAlarmRange[i];
-          if (range.maxInclusive) {
-            const zone = {
-              y1: range.maxInclusive,
-              y2: last_y,
-              y1IsLimit: true,
-              color: this.colorForLevel(range.level) || 'black',
-            };
-            staticAlarmZones.push(zone);
-            last_y = zone.y1;
-
-            if (maxHigh === undefined) {
-              maxHigh = range.maxInclusive;
-            } else {
-              maxHigh = Math.max(maxHigh, range.maxInclusive);
-            }
-          }
-        }
-      }
-    }
-
-    const valueRange: [number|null, number|null] = [null, null]; // Null makes Dygraph choose
-    if (minLow !== undefined) {
-      valueRange[0] = minLow;
-    }
-    if (maxHigh !== undefined) {
-      valueRange[1] = maxHigh;
-    }
-    return { valueRange, staticAlarmZones };
-  }
-
-  private colorForLevel(level: string) {
-    switch (level) {
-      case 'WATCH': return '#ffdddb';
-      case 'WARNING': return '#ffc3c1';
-      case 'DISTRESS': return '#ffaaa8';
-      case 'CRITICAL': return '#c35e5c';
-      case 'SEVERE': return '#a94442';
-      default: console.error('Unknown level ' + level);
-    }
   }
 
   ngOnDestroy() {
