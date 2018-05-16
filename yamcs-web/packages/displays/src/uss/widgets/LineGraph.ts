@@ -1,11 +1,12 @@
+import { ParameterValue } from '@yamcs/client';
 import Dygraph from 'dygraphs';
 import { Circle, G, Rect, Text } from '../../tags';
 import { CircularBuffer } from '../CircularBuffer';
 import { Color } from '../Color';
 import { DataSourceBinding } from '../DataSourceBinding';
-import { DataSourceSample } from '../DataSourceSample';
 import { ExpirationBuffer } from '../ExpirationBuffer';
 import { ParameterBinding } from '../ParameterBinding';
+import { ParameterSample } from '../ParameterSample';
 import { Sample, SampleBuffer } from '../SampleBuffer';
 import { DEFAULT_STYLE } from '../StyleSet';
 import * as utils from '../utils';
@@ -17,6 +18,11 @@ const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 const PLOT_COLORS = [
   Color.BLACK,
   new Color(0, 0, 255, 255),
+  // FIXME Below colors are made up and not same as uss
+  new Color(0, 210, 213, 255),
+  new Color(231, 41, 138, 255),
+  new Color(65, 171, 93, 255),
+  new Color(102, 194, 165, 255),
 ];
 
 const indicatorChars = 2;
@@ -314,11 +320,24 @@ export class LineGraph extends AbstractWidget {
 
     const series: {[key: string]: any} = {};
     series[this.yLabel] = {
-      color: 'black',
+      color: PLOT_COLORS[0],
       drawPoints: false,
       strokeWidth: 1,
       pointSize: 3,
     };
+
+    const extraLabels: string[] = [];
+    for (let i = 1; i < this.valueBindings.length; i++) {
+      // Exact name doesn't matter, as long as it's unique
+      const label = this.valueBindings[i].opsName!;
+      extraLabels.push(label);
+      series[label] = {
+        color: PLOT_COLORS[i],
+        drawPoints: false,
+        strokeWidth: 1,
+        pointSize: 3,
+      };
+    }
 
     this.graph = new Dygraph(graphWrapper, 'X\n', {
       title: this.title,
@@ -329,7 +348,7 @@ export class LineGraph extends AbstractWidget {
       height: this.height - this.legendHeight,
       xlabel: this.xLabel,
       ylabel: this.yLabel,
-      labels: [this.xLabel, this.yLabel],
+      labels: [this.xLabel, this.yLabel, ...extraLabels],
       series,
       labelsUTC: this.utc,
       axes: {
@@ -430,13 +449,35 @@ export class LineGraph extends AbstractWidget {
     }
   }
 
-  onBindingUpdate(binding: DataSourceBinding, sample: DataSourceSample) {
-    if (binding.dynamicProperty === 'VALUE') {
-      if (sample.acquisitionStatus === 'EXPIRED') {
-        this.buffer.push([sample.generationTime, null]);
-      } else {
-        this.buffer.push([sample.generationTime, binding.value]);
+  // Don't use onBindingUpdate because that gets triggered for every parameter
+  // separately whereas our plot buffer needs combined data.
+  onDelivery(pvals: ParameterValue[]) {
+    let generationTime;
+    const values: Array<number | null> = [];
+    for (const binding of this.valueBindings) {
+      let inDelivery = false;
+      for (const pval of pvals) {
+        if (binding.opsName === pval.id.name) {
+          const sample = new ParameterSample(pval);
+          generationTime = sample.generationTime;
+          if (sample.acquisitionStatus === 'EXPIRED') {
+            values.push(null);
+          } else {
+            values.push(binding.usingRaw ? sample.rawValue : sample.engValue);
+          }
+          inDelivery = true;
+          break;
+        }
       }
+
+      if (!inDelivery) {
+        values.push(binding.value);
+      }
+    }
+
+    if (generationTime) {
+      this.buffer.push([generationTime, ...values] as Sample);
+      // console.log('values', values);
     }
   }
 
