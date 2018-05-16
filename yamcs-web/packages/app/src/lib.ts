@@ -9,7 +9,7 @@ export * from './app/shared/SharedModule';
 export * from './app/system/SystemModule';
 
 export * from './app/shared/template/ColumnChooser';
-export * from './app/shared/template/SelectInstanceDialog';
+export * from './app/shared/dialogs/SelectInstanceDialog';
 export * from './app/shared/pipes/UnitsPipe';
 export * from './app/shared/pipes/ValuePipe';
 
