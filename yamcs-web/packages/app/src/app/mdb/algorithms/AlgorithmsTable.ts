@@ -1,10 +1,10 @@
-import { Component, ChangeDetectionStrategy, ViewChild, Input, AfterViewInit } from '@angular/core';
-
-import { Algorithm } from '@yamcs/client';
-
-import { MatSort, MatTableDataSource, MatPaginator } from '@angular/material';
-import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
+import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
+import { Algorithm, Instance } from '@yamcs/client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { ColumnInfo } from '../../shared/template/ColumnChooser';
+
+
 
 @Component({
   selector: 'app-algorithms-table',
@@ -14,7 +14,7 @@ import { PreferenceStore } from '../../core/services/PreferenceStore';
 export class AlgorithmsTable implements AfterViewInit {
 
   @Input()
-  instance: string;
+  instance: Instance;
 
   @Input()
   algorithms$: Promise<Algorithm[]>;

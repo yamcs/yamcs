@@ -1,4 +1,4 @@
-import { ModuleWithProviders, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
@@ -115,11 +115,8 @@ const routes = [{
   }]
 }];
 
-// FIXME workaround for ng-packagr 2.4.x
-export const routerModuleForChild: ModuleWithProviders = RouterModule.forChild(routes);
-
 @NgModule({
-  imports: [ routerModuleForChild /*RouterModule.forChild(routes)*/ ],
+  imports: [ RouterModule.forChild(routes) ],
   exports: [ RouterModule ],
 })
 export class MdbRoutingModule { }

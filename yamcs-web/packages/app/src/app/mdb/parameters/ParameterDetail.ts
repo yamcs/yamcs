@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import { Parameter, ParameterValue } from '@yamcs/client';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Instance, Parameter, ParameterValue } from '@yamcs/client';
 
 @Component({
   selector: 'app-parameter-detail',
@@ -10,7 +10,7 @@ import { Parameter, ParameterValue } from '@yamcs/client';
 export class ParameterDetail {
 
   @Input()
-  instance: string;
+  instance: Instance;
 
   @Input()
   parameter: Parameter;
