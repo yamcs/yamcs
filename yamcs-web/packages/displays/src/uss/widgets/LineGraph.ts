@@ -1,18 +1,16 @@
-import * as utils from '../utils';
-
-import { AbstractWidget } from './AbstractWidget';
-import { Color } from '../Color';
-import { G, Rect, Text, Circle } from '../../tags';
-
 import Dygraph from 'dygraphs';
-import { DataSourceSample } from '../DataSourceSample';
-import { SampleBuffer, Sample } from '../SampleBuffer';
+import { Circle, G, Rect, Text } from '../../tags';
 import { CircularBuffer } from '../CircularBuffer';
-import { ExpirationBuffer } from '../ExpirationBuffer';
+import { Color } from '../Color';
 import { DataSourceBinding } from '../DataSourceBinding';
-import { convertMonitoringResult } from './Field';
-import { DEFAULT_STYLE } from '../StyleSet';
+import { DataSourceSample } from '../DataSourceSample';
+import { ExpirationBuffer } from '../ExpirationBuffer';
 import { ParameterBinding } from '../ParameterBinding';
+import { Sample, SampleBuffer } from '../SampleBuffer';
+import { DEFAULT_STYLE } from '../StyleSet';
+import * as utils from '../utils';
+import { AbstractWidget } from './AbstractWidget';
+import { convertMonitoringResult } from './Field';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -22,6 +20,16 @@ const PLOT_COLORS = [
 ];
 
 const indicatorChars = 2;
+
+interface LegendData {
+  valueBinding: ParameterBinding;
+
+  elId: string;
+  el?: Element;
+
+  backgroundElId: string;
+  backgroundEl?: Element;
+}
 
 /**
  * TODO
@@ -53,8 +61,7 @@ export class LineGraph extends AbstractWidget {
   private valueBindings: ParameterBinding[];
   private buffer: SampleBuffer;
 
-  private legendEl: Element;
-  private legendBackgroundEl: Element;
+  private legendDataSet: LegendData[] = [];
 
   parseAndDraw() {
     this.title = utils.parseStringChild(this.node, 'Title');
@@ -208,8 +215,10 @@ export class LineGraph extends AbstractWidget {
         const valueBinding = this.valueBindings[i];
         this.legendHeight += 10;
         const boxHeight = 10;
+
+        const backgroundElId = this.generateChildId();
         g.addChild(new Rect({
-          id: `${this.id}-legendbg`,
+          id: backgroundElId,
           x: this.x + this.width - boxWidth,
           y: this.y + (i * boxHeight),
           width: boxWidth,
@@ -235,8 +244,9 @@ export class LineGraph extends AbstractWidget {
           fill: Color.BLACK.toString(),
         }, valueBinding.opsName));
 
+        const elId = this.generateChildId();
         g.addChild(new Text({
-          id: `${this.id}-legend`,
+          id: elId,
           x: this.x + this.width - (colSize * indicatorChars),
           y: this.y + (i * boxHeight) + Math.ceil(boxHeight / 2),
           'dominant-baseline': 'middle',
@@ -245,14 +255,19 @@ export class LineGraph extends AbstractWidget {
           'text-anchor': 'end',
           fill: this.styleSet.getStyle('NOT_RECEIVED').fg.toString(),
         }));
+
+        this.legendDataSet.push({ valueBinding, elId, backgroundElId });
       }
     }
     return g;
   }
 
   afterDomAttachment() {
-    this.legendBackgroundEl = this.svg.getElementById(`${this.id}-legendbg`);
-    this.legendEl = this.svg.getElementById(`${this.id}-legend`);
+    for (const legendData of this.legendDataSet) {
+      legendData.el = this.svg.getElementById(legendData.elId);
+      legendData.backgroundEl = this.svg.getElementById(legendData.backgroundElId);
+    }
+
     // First wrapper positions within the display
     // (LineGraphs are rendered outside of SVG)
     const container = document.createElement('div');
@@ -429,11 +444,19 @@ export class LineGraph extends AbstractWidget {
     if (this.legendHeight) {
       for (const valueBinding of this.valueBindings) {
         if (valueBinding.sample) {
+          let legendEl: Element;
+          let legendBackgroundEl: Element;
+          for (const legendData of this.legendDataSet) {
+            if (legendData.valueBinding === valueBinding) {
+              legendEl = legendData.el!;
+              legendBackgroundEl = legendData.backgroundEl!;
+            }
+          }
           const sample = valueBinding.sample;
           const cdmcsMonitoringResult = convertMonitoringResult(sample);
           let v = valueBinding.value;
           v = v.toFixed(this.legendDecimals);
-          this.legendEl.textContent = v;
+          legendEl!.textContent = v;
           let style = DEFAULT_STYLE;
           switch (sample.acquisitionStatus) {
             case 'ACQUIRED':
@@ -449,8 +472,8 @@ export class LineGraph extends AbstractWidget {
               style = this.styleSet.getStyle('STATIC', cdmcsMonitoringResult);
               break;
           }
-          this.legendBackgroundEl.setAttribute('fill', style.bg.toString());
-          this.legendEl.setAttribute('fill', style.fg.toString());
+          legendBackgroundEl!.setAttribute('fill', style.bg.toString());
+          legendEl!.setAttribute('fill', style.fg.toString());
         }
       }
     }
