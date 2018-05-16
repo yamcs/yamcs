@@ -77,7 +77,6 @@ import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.ui.PrefsObject;
@@ -145,6 +144,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
     boolean authenticationEnabled = false;
     String streamName;
     private String defaultNamespace;
+    TcpServer tcpServer;
 
 
     public PacketViewer(int maxLines) throws ConfigurationException {
@@ -372,7 +372,10 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             setTitle(title.toString());
         });
     }
-
+    void setTcpServer(TcpServer tcpServer) {
+        this.tcpServer = tcpServer;
+    }
+    
     void updateMenuWithRecentFiles() {
         List<String[]> recentFiles = getRecentFiles();
         int i;
@@ -897,7 +900,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         try {
             currentPacket.load(lastFile);
             byte[] b = currentPacket.getBuffer();
-            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.currentInstant(), currentPacket.getGenerationTime(), b));
+            tmProcessor.processPacket(new PacketWithTime(TimeEncoding.getWallclockTime(), currentPacket.getGenerationTime(), b));
         } catch (IOException x) {
             final String msg = String.format("Error while loading %s: %s", lastFile.getName(), x.getMessage());
             log(msg);
@@ -963,6 +966,9 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                         if(data.hasTmPacket()) {
                             TmPacketData tm = data.getTmPacket();
                             packetsTable.packetReceived(tm);
+                            if(tcpServer!=null) {
+                                tcpServer.send(tm);
+                            }
                         }
                     }, e-> {
                         showError("Error subscribing to "+streamName+": "+e.getMessage());
@@ -1051,6 +1057,8 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
             System.err.println("               Defaults to 1000 for realtime connections. There is no");
             System.err.println("               default limitation for viewing offline files.");
             System.err.println();
+            System.err.println("    -t  port   listen to the TCP <port> for connections and send the packets to all connected clients.");
+            System.err.println();
             System.err.println("    -x  name   Name of the applicable XTCE DB as specified in the");
             System.err.println("               mdb.yaml configuration file.");
             System.err.println();
@@ -1071,7 +1079,7 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         this.streamName = streamName;
     }
 
-    public static void main(String[] args) throws ConfigurationException, URISyntaxException {
+    public static void main(String[] args) throws Exception {
         // Scan args
         String fileOrUrl = null;
         Map<String,String> options = new HashMap<String,String>();
@@ -1095,6 +1103,12 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
                     options.put(args[i], args[++i]);
                 } else {
                     printArgsError("Name of stream not specified for -s option");
+                }
+            } else if ("-t".equals(args[i])) {
+                if (i+1 < args.length) {
+                    options.put(args[i], args[++i]);
+                } else {
+                    printArgsError("TCP port not specified for -t option");
                 }
             } else if (args[i].startsWith("-")) {
                 printArgsError("Unknown option: " + args[i]);
@@ -1134,6 +1148,14 @@ TreeSelectionListener, ParameterRequestManager, ConnectionListener {
         // Okay, launch the GUI now
         YConfiguration.setup();
         theApp = new PacketViewer(maxLines);
+        
+        if(options.containsKey("-t")) {
+            int port = Integer.parseInt(options.get("-t"));
+            TcpServer tcpServer = new TcpServer(theApp, port, 10);
+            theApp.log("Starting TCP server listening to port "+port);
+            tcpServer.start();
+            theApp.setTcpServer(tcpServer);
+        }
         if (fileOrUrl != null) {
             if (fileOrUrl.startsWith("http://")) {
                 YamcsConnectionProperties ycd = YamcsConnectionProperties.parse(fileOrUrl);
