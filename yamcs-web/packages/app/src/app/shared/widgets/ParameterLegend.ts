@@ -22,5 +22,8 @@ export class ParameterLegend {
   closable = false;
 
   @Output()
+  select = new EventEmitter<string>();
+
+  @Output()
   close = new EventEmitter<string>();
 }

@@ -17,6 +17,14 @@
   position: relative;
 }
 
+.label {
+  cursor: pointer;
+}
+
+.label:hover {
+  opacity: 0.7;
+}
+
 .yvalue {
   margin-left: 5px;
   font-weight: bold;

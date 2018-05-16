@@ -76,13 +76,17 @@ export class ParameterChartTab implements OnDestroy {
   compareParameter() {
     const dialogRef = this.dialog.open(CompareParameterDialog, {
       width: '600px',
+      data: {
+        exclude: this.plot.getParameters(),
+      }
     });
-    dialogRef.afterClosed().subscribe(qualifiedName => {
-      if (qualifiedName) {
-        this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.yamcs.getInstanceClient()!.getParameter(result.qualifiedName).then(parameter => {
           const parameterConfig = new ParameterSeries();
           parameterConfig.parameter = parameter.qualifiedName;
-          parameterConfig.color = 'green';
+          parameterConfig.color = result.color;
+          parameterConfig.strokeWidth = result.thickness;
           this.plot.addParameter(parameter, parameterConfig);
         });
       }

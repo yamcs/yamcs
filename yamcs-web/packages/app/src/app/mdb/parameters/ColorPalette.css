@@ -1,0 +1,15 @@
+.box {
+  float: left;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.box:hover {
+  border: 1px solid black;
+}
+
+.box.selected {
+  border: 2px solid black;
+}

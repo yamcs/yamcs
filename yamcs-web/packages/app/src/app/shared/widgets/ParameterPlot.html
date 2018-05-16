@@ -3,7 +3,8 @@
                         [backgroundColor]="plotAreaBackgroundColor"
                         [borderColor]="gridLineColor"
                         [closable]="removableSeries"
-                        (close)="removeParameter($event)">
+                        (close)="removeParameter($event)"
+                        (select)="modifyParameter($event)">
   </app-parameter-legend>
 </div>
 

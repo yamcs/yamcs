@@ -26,4 +26,7 @@ export class ParameterSeries {
 
   @Input()
   label: string;
+
+  @Input()
+  strokeWidth = 2;
 }

@@ -9,7 +9,9 @@ import { CommandsTable } from './commands/CommandsTable';
 import { IssueCommandDialog } from './commands/IssueCommandDialog';
 import { ContainerDetail } from './containers/ContainerDetail';
 import { ContainersTable } from './containers/ContainersTable';
+import { ColorPalette } from './parameters/ColorPalette';
 import { CompareParameterDialog } from './parameters/CompareParameterDialog';
+import { ModifyParameterDialog } from './parameters/ModifyParameterDialog';
 import { ParameterCalibration } from './parameters/ParameterCalibration';
 import { ParameterDetail } from './parameters/ParameterDetail';
 import { ParameterValuesTable } from './parameters/ParameterValuesTable';
@@ -17,6 +19,7 @@ import { ParametersTable } from './parameters/ParametersTable';
 import { SelectRangeDialog } from './parameters/SelectRangeDialog';
 import { SetParameterDialog } from './parameters/SetParameterDialog';
 import { SeverityMeter } from './parameters/SeverityMeter';
+import { Thickness } from './parameters/Thickness';
 import { PolynomialPipe } from './pipes/PolynomialPipe';
 import { MdbPageTemplate } from './template/MdbPageTemplate';
 import { MdbToolbar } from './template/MdbToolbar';
@@ -29,6 +32,7 @@ const dialogComponents = [
   ArgumentEnumDialog,
   CompareParameterDialog,
   IssueCommandDialog,
+  ModifyParameterDialog,
   SelectRangeDialog,
   SetParameterDialog,
 ];
@@ -44,6 +48,7 @@ const dialogComponents = [
     routingComponents,
     AlgorithmsTable,
     AlgorithmDetail,
+    ColorPalette,
     CommandsTable,
     CommandDetail,
     ContainersTable,
@@ -55,6 +60,7 @@ const dialogComponents = [
     ParameterDetail,
     ParameterValuesTable,
     SeverityMeter,
+    Thickness,
   ],
   entryComponents: [
     dialogComponents,

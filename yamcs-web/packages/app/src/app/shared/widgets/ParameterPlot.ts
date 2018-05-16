@@ -1,8 +1,10 @@
 import { AfterViewInit, Component, ContentChildren, ElementRef, Input, OnDestroy, QueryList, ViewChild } from '@angular/core';
+import { MatDialog } from '@angular/material';
 import { Parameter } from '@yamcs/client';
 import Dygraph from 'dygraphs';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { ModifyParameterDialog } from '../../mdb/parameters/ModifyParameterDialog';
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
@@ -37,12 +39,6 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
   @Input()
   duration = 'PT1H';
-
-  /**
-   * Thickness of series
-   */
-  @Input()
-  strokeWidth = 1;
 
   @Input()
   height = '100%';
@@ -101,7 +97,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
   legendData$ = new BehaviorSubject<DyLegendData | null>(null);
 
-  constructor(private preferenceStore: PreferenceStore) {
+  constructor(private preferenceStore: PreferenceStore, private dialog: MatDialog) {
     this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
       this.applyTheme(darkMode);
     });
@@ -189,6 +185,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
     configs.forEach(config => {
       seriesByLabel[config.label || config.parameter] = {
         color: config.color,
+        strokeWidth: config.strokeWidth,
       };
     });
 
@@ -206,7 +203,6 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
       drawPoints: false,
       showRoller: false,
       customBars: true,
-      strokeWidth: this.strokeWidth,
       gridLineColor: this.gridLineColor,
       axisLineColor: this.axisLineColor,
       axisLabelFontSize: 11,
@@ -377,9 +373,11 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         // Only draw for point of first series, because otherwise the line may
         // get drawn on top of other points.
         if ((primaryConfig.label || primaryConfig.parameter) === seriesName) {
+          ctx.save();
           // ctx.clearRect(0, 0, g.width_, g.height_);
           ctx.setLineDash([5, 5]);
           ctx.strokeStyle = this.highlightColor;
+          ctx.lineWidth = 1;
 
           ctx.beginPath();
           const canvasx = Math.floor(g.selPoints_[0].canvasx) + 0.5; // crisper rendering
@@ -396,6 +394,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
           }
           ctx.stroke();
           ctx.closePath();
+          ctx.restore();
         }
 
         ctx.beginPath();
@@ -441,8 +440,8 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
     gridPluginInstance.setAlarmZones(alarmZones);
   }
 
-  what() {
-    console.log('what...', Math.random());
+  getParameters() {
+    return this.parameters;
   }
 
   addParameter(parameter: Parameter, parameterConfig: ParameterSeries) {
@@ -462,6 +461,24 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
     this.updateDygraphSeries();
   }
 
+  modifyParameter(label: string) {
+    const props = this.dygraph.getPropertiesForSeries(label);
+    const dialogRef = this.dialog.open(ModifyParameterDialog, {
+      data: {
+        ...props,
+        strokeWidth: this.dygraph.getOption('strokeWidth', label),
+      },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const config = this.parameterConfig.get(label)!;
+        config.color = result.color;
+        config.strokeWidth = result.thickness;
+        this.updateDygraphSeries();
+      }
+    });
+  }
+
   private updateDygraphSeries() {
     const seriesByLabel: { [key: string]: any } = {};
 
@@ -469,6 +486,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
     configs.forEach(config => {
       seriesByLabel[config.label || config.parameter] = {
         color: config.color,
+        strokeWidth: config.strokeWidth,
       };
     });
 
