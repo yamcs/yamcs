@@ -1,4 +1,4 @@
-import { AlarmZone } from './AlarmZone';
+import { AlarmZone } from './dygraphs';
 
 /**
  * Draws the gridlines, i.e. the gray horizontal & vertical lines running the

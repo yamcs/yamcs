@@ -1,14 +1,14 @@
 import { AfterViewInit, Component, ContentChildren, ElementRef, Input, OnDestroy, QueryList, ViewChild } from '@angular/core';
 import { Parameter } from '@yamcs/client';
 import Dygraph from 'dygraphs';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
 import GridPlugin from './GridPlugin';
 import { ParameterSeries } from './ParameterSeries';
-import { analyzeStaticValueRanges } from './dygraphs';
+import { DyLegendData, analyzeStaticValueRanges } from './dygraphs';
 
 @Component({
   selector: 'app-parameter-plot',
@@ -69,6 +69,9 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   highlightColor = this.lightHighlightColor;
 
   @Input()
+  removableSeries = false;
+
+  @Input()
   stop = new Date();
 
   /**
@@ -83,9 +86,6 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   @ContentChildren(ParameterSeries)
   seriesComponents: QueryList<ParameterSeries>;
 
-  @ViewChild('legend')
-  legend: ElementRef;
-
   @ViewChild('graphContainer')
   graphContainer: ElementRef;
 
@@ -98,6 +98,8 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   private disableDataReload = false;
 
   private darkModeSubscription: Subscription;
+
+  legendData$ = new BehaviorSubject<DyLegendData | null>(null);
 
   constructor(private preferenceStore: PreferenceStore) {
     this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
@@ -401,25 +403,14 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         ctx.fill();
       },
       legendFormatter: (data: any) => {
-        let legend = '';
-        for (const trace of data.series) {
-          legend += `<div class="legend-box" style="background-color: ${this.plotAreaBackgroundColor}; border: 1px solid ${this.gridLineColor}; border-left: 3px solid ${trace.color}">
-                     ${trace.label}`;
-          if (trace.yHTML) {
-            legend += '&nbsp;&nbsp;&nbsp;' + trace.yHTML;
-          }
-          legend += '</div>&nbsp;&nbsp;&nbsp;';
-        }
-        return legend;
+        this.legendData$.next(data);
+        return '';
       },
       plugins: [
         new CrosshairPlugin(),
       ],
     };
 
-    if (this.legend) {
-      dyOptions.labelsDiv = this.legend.nativeElement;
-    }
     if (this.xAxisHeight !== undefined) {
       dyOptions.xAxisHeight = this.xAxisHeight;
     }
@@ -441,10 +432,28 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
     gridPluginInstance.setAlarmZones(alarmZones);
   }
 
+  what() {
+    console.log('what...', Math.random());
+  }
+
   addParameter(parameter: Parameter, parameterConfig: ParameterSeries) {
+    this.dataSource.addParameter(parameter);
     this.parameters.push(parameter);
     this.parameterConfig.set(parameter.qualifiedName, parameterConfig);
 
+    this.updateDygraphSeries();
+  }
+
+  removeParameter(label: string) {
+    const qualifiedName = label; // TODO
+    this.dataSource.removeParameter(qualifiedName);
+    this.parameters = this.parameters.filter(p => p.qualifiedName !== qualifiedName);
+    this.parameterConfig.delete(qualifiedName);
+
+    this.updateDygraphSeries();
+  }
+
+  private updateDygraphSeries() {
     const seriesByLabel: { [key: string]: any } = {};
 
     const configs = this.parameters.map(p => this.parameterConfig.get(p.qualifiedName)!);
@@ -459,7 +468,11 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
       series: seriesByLabel,
     };
 
-    this.dygraph.updateOptions(dyOptions);
+    // TODO when removing a series we get legend-related errors on hovering (before data is set)
+    // Visually it works though.
+    this.dataSource.reloadVisibleRange().then((() => {
+      this.dygraph.updateOptions(dyOptions, true /* block redraw */);
+    }));
   }
 
   private applyTheme(dark: boolean) {

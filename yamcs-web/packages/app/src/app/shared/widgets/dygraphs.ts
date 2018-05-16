@@ -1,5 +1,60 @@
 import { Parameter } from '@yamcs/client';
 
+export type CustomBarsValue = [number, number, number] | null;
+
+/**
+ * Sample for a time-based plot.
+ * http://dygraphs.com/data.html#array
+ */
+export type DySample = [Date, CustomBarsValue]
+  | [Date, CustomBarsValue, CustomBarsValue]
+  | [Date, CustomBarsValue, CustomBarsValue, CustomBarsValue]
+  | [Date, CustomBarsValue, CustomBarsValue, CustomBarsValue, CustomBarsValue];
+
+/**
+ * Annotation for a sample on a time-based plot.
+ */
+export type DyAnnotation = {
+  series: string;
+  x: number;
+  shortText?: string;
+  text?: string;
+  icon?: string;
+  width?: number;
+  height?: number;
+  cssClass?: string;
+  tickHeight?: number;
+  tickWidth?: number;
+  tickColor?: string;
+  attachAtBottom?: boolean;
+};
+
+export type DyLegendData = {
+  series: DyLegendSeries[];
+  x: number;
+  xHTML: string;
+};
+
+export type DyLegendSeries = {
+  color: string;
+  dashHTML: string;
+  isVisible: boolean;
+  label: string;
+  labelHTML: string;
+  y: number;
+  yHTML: string;
+};
+
+/**
+ * A range of data (which does not overlap with any other guideline)
+ */
+export interface AlarmZone {
+  y1: number;
+  y2: number;
+  y1IsLimit: boolean;
+  color: string;
+}
+
 export function analyzeStaticValueRanges(parameter: Parameter) {
   let minLow;
   let maxHigh;

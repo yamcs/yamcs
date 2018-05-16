@@ -1,0 +1,17 @@
+<div class="legend" *ngIf="data">
+  <div class="legend-box"
+       *ngFor="let trace of data.series; index as i"
+       [style.backgroundColor]="backgroundColor"
+       [style.border]="'1px solid ' + borderColor"
+       [style.borderLeft]="'3px solid ' + trace.color"
+       [style.paddingRight]="closable && i !== 0 ? '15px' : '5px'">
+    {{ trace.label }}
+    <span class="yvalue" *ngIf="trace.yHTML">{{ trace.yHTML }}</span>
+
+    <div class="close-button"
+         *ngIf="closable && i !== 0"
+         (click)="close.emit(trace.label)">
+      <mat-icon class="icon12">close</mat-icon>
+    </div>
+  </div>
+</div>

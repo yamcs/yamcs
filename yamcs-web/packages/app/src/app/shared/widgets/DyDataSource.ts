@@ -2,9 +2,8 @@ import { Alarm, NamedObjectId, Parameter, ParameterValue, Sample } from '@yamcs/
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { convertValueToNumber } from '../utils';
-import { DyAnnotation } from './DyAnnotation';
-import { CustomBarsValue, DySample } from './DySample';
 import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
+import { CustomBarsValue, DyAnnotation, DySample } from './dygraphs';
 
 /**
  * Stores sample data for use in a ParameterPlot directly
@@ -63,12 +62,18 @@ export class DyDataSource {
       ...this.parameters$.value,
       ...parameter,
     ]);
+
     if (this.subscriptionId) {
       const ids = parameter.map(p => ({ name: p.qualifiedName }));
       this.addToRealtimeSubscription(ids);
     } else {
       this.connectRealtime();
     }
+  }
+
+  public removeParameter(qualifiedName: string) {
+    const parameters = this.parameters$.value.filter(p => p.qualifiedName !== qualifiedName);
+    this.parameters$.next(parameters);
   }
 
   /**

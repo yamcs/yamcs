@@ -80,12 +80,10 @@ export class ParameterChartTab implements OnDestroy {
     dialogRef.afterClosed().subscribe(qualifiedName => {
       if (qualifiedName) {
         this.yamcs.getInstanceClient()!.getParameter(qualifiedName).then(parameter => {
-          this.dataSource.addParameter(parameter);
           const parameterConfig = new ParameterSeries();
           parameterConfig.parameter = parameter.qualifiedName;
           parameterConfig.color = 'green';
           this.plot.addParameter(parameter, parameterConfig);
-          this.dataSource.reloadVisibleRange();
         });
       }
     });
