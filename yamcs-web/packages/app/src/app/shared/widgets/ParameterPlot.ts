@@ -402,7 +402,16 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         ctx.arc(cx, cy, radius, 0, 2 * Math.PI, false);
         ctx.fill();
       },
-      legendFormatter: (data: any) => {
+      legendFormatter: (data: DyLegendData) => {
+        for (const trace of data.series) {
+          if (trace.y === undefined) {
+            const rtValue = this.dataSource.latestRealtimeValues.get(trace.label);
+            if (rtValue) {
+              trace.y = rtValue[1];
+              trace.yHTML = String(rtValue[1]);
+            }
+          }
+        }
         this.legendData$.next(data);
         return '';
       },

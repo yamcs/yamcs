@@ -37,7 +37,7 @@ export class DyDataSource {
   private realtimeSubscription: Subscription;
   // Added due to multi-param plots where realtime values are not guaranteed to arrive in the
   // same delivery. Should probably have a server-side solution for this use cause though.
-  private latestRealtimeValues = new Map<string, CustomBarsValue>();
+  latestRealtimeValues = new Map<string, CustomBarsValue>();
 
   constructor(private yamcs: YamcsService) {
     this.realtimeSynchronizer = window.setInterval(() => {
