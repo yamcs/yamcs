@@ -6,7 +6,7 @@
       <mat-card-subtitle>Server Info</mat-card-subtitle>
       <mat-list dense>
         <mat-list-item>
-          <h3 matLine>Yamcs Version</h3>
+          <h3 matLine>Yamcs version</h3>
           <p matLine>
             {{ info.yamcsVersion }}
           </p>
@@ -17,6 +17,23 @@
           <p matLine>
             {{ info.serverId }}
           </p>
+        </mat-list-item>
+
+        <br>
+        <mat-list-item>
+          <h3 matLine>Plugins</h3>
+          <table matLine yaDataTable>
+            <tr>
+              <th>Name</th>
+              <th>Version</th>
+              <th>Vendor</th>
+            </tr>
+            <tr *ngFor="let plugin of info.plugin">
+              <td>{{ plugin.name }}</td>
+              <td>{{ plugin.version || '-' }}</td>
+              <td>{{ plugin.vendor || '-' }}</td>
+            </tr>
+          </table>
         </mat-list-item>
       </mat-list>
     </mat-card>

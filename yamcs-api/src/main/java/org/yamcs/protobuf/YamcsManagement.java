@@ -19398,10 +19398,6 @@ public final class YamcsManagement {
   }
   /**
    * Protobuf type {@code yamcsManagement.LinkInfo}
-   *
-   * <pre>
-   ************** Link Control ***************************
-   * </pre>
    */
   public static final class LinkInfo extends
       com.google.protobuf.GeneratedMessage implements
@@ -20052,10 +20048,6 @@ public final class YamcsManagement {
     }
     /**
      * Protobuf type {@code yamcsManagement.LinkInfo}
-     *
-     * <pre>
-     ************** Link Control ***************************
-     * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> implements

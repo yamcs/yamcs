@@ -157,7 +157,6 @@ message ProcessorRequest {
   optional yamcs.ReplaySpeed replaySpeed = 5; //for CHANGE_SPEED
 }
 
-/************** Link Control ****************************/
 message LinkInfo {
   required string instance = 1;
   required string name = 2;
