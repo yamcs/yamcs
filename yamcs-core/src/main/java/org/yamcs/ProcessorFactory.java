@@ -79,7 +79,6 @@ public class ProcessorFactory {
                 }
 
                 if (conf.containsKey(type, "parameterProviders")) {
-                    List<Map<String, Object>> l = conf.getList(type, "parameterProviders");
                     serviceList.addAll(
                             YamcsServer.createServices(yamcsInstance, conf.getList(type, "parameterProviders")));
                 }

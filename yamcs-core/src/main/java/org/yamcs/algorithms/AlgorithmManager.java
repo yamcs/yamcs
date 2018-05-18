@@ -107,16 +107,6 @@ public class AlgorithmManager extends AbstractService
         scriptEngineManager = new ScriptEngineManager();
     }
 
-    // these two constructors are invoked when part of a replay - we don't do anything with the replay request
-    public AlgorithmManager(String yamcsInstance, ReplayRequest rr) throws ConfigurationException {
-        this(yamcsInstance);
-    }
-
-    public AlgorithmManager(String yamcsInstance, Map<String, Object> config, ReplayRequest rr)
-            throws ConfigurationException {
-        this(yamcsInstance, config);
-    }
-
     @Override
     public void init(Processor yproc) {
         this.yproc = yproc;

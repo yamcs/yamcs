@@ -77,6 +77,7 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 return null;
             }
         }

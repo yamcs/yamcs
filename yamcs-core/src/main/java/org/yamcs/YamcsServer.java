@@ -68,8 +68,6 @@ public class YamcsServer {
     private static String serverId;
     private static String secretKey;
 
-    static YObjectLoader<Service> objLoader = new YObjectLoader<>();
-
     static CrashHandler globalCrashHandler = new LogCrashHandler();
 
     static CrashHandler loadCrashHandler(YConfiguration conf) throws ConfigurationException, IOException {
