@@ -1,4 +1,8 @@
-Version 4.4.1 released 
+Version 4.4.2 released
+- yamcs-web: support multiple series plots
+
+
+Version 4.4.1 released 14-May-2018
 - added the possibility to exclude parameter groups from replays
 - yamcs-web: added a view for the archive index
 - yamcs-web: support replays
