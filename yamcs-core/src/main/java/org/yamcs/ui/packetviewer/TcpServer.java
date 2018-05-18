@@ -67,7 +67,9 @@ public class TcpServer {
         for(Channel c:connectedChannels) {
             if(c.isWritable()) {
                 byte[] b = p.getPacket().toByteArray();
-                c.writeAndFlush(Unpooled.wrappedBuffer(b));
+                if(b.length>4) {
+                    c.writeAndFlush(Unpooled.wrappedBuffer(b, 4, b.length-4));
+                }
             } else {
                 packetViewer.log("Dropping packet because buffer to "+c.remoteAddress()+" is full");
             }

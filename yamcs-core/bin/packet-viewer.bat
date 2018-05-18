@@ -12,6 +12,6 @@ set LOCALCLASSPATH=%LOCALCLASSPATH%;%BASE%\etc
 
 set JAVA=javaw.exe
 set JAVA_ARGS=-client -classpath "%LOCALCLASSPATH%"
-start %JAVA% %JAVA_ARGS%  org.yamcs.ui.packetviewer.PacketViewer
+start %JAVA% %JAVA_ARGS%  org.yamcs.ui.packetviewer.PacketViewer -t 4444
 
 if "%OS%"=="Windows_NT" @endlocal
