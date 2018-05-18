@@ -16,11 +16,17 @@ message GetApiOverviewResponse {
     optional string url = 1;
     repeated string method = 2;
   }
-  
+  message PluginInfo {
+    optional string name = 1;
+    optional string description = 2;
+    optional string version = 3;
+    optional string vendor = 4;
+  }
   optional string yamcsVersion = 1;
   optional string serverId = 2;
   optional string defaultYamcsInstance = 3;
   repeated RouteInfo route = 4;
+  repeated PluginInfo plugin = 5;
 }
 
 message ListParameterInfoResponse {

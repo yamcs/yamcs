@@ -1,8 +1,9 @@
-import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit } from '@angular/core';
-import { Instance } from '@yamcs/client';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
-import { MatTableDataSource, MatSort, MatPaginator } from '@angular/material';
-import { YamcsService } from '../services/YamcsService';
+import { Instance } from '@yamcs/client';
+import { YamcsService } from '../../core/services/YamcsService';
+
 
 @Component({
   templateUrl: './HomePage.html',

@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { ForbiddenPage } from './apputil/pages/ForbiddenPage';
+import { HomePage } from './apputil/pages/HomePage';
+import { LoginPage } from './apputil/pages/LoginPage';
+import { NotFoundPage } from './apputil/pages/NotFoundPage';
+import { ProfilePage } from './apputil/pages/ProfilePage';
 import { AuthGuard } from './core/guards/AuthGuard';
 import { UnselectInstanceGuard } from './core/guards/UnselectInstanceGuard';
-import { ForbiddenPage } from './core/pages/ForbiddenPage';
-import { HomePage } from './core/pages/HomePage';
-import { LoginPage } from './core/pages/LoginPage';
-import { NotFoundPage } from './core/pages/NotFoundPage';
-import { ProfilePage } from './core/pages/ProfilePage';
 
 /*
  * Notes that the nested modules also have AuthGuards.

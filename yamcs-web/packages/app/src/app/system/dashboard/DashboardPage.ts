@@ -39,9 +39,7 @@ export class DashboardPage implements OnDestroy {
     Promise.all([this.jvmMemoryUsedParameter$, this.jvmTotalMemoryParameter$]).then(results => {
       if (results[0] && results[1]) {
         this.jvmMemoryUsedDataSource = new DyDataSource(yamcs);
-        this.jvmMemoryUsedDataSource.addParameter(results[0]!);
-        this.jvmMemoryUsedDataSource.addParameter(results[1]!);
-        this.jvmMemoryUsedDataSource.connectRealtime();
+        this.jvmMemoryUsedDataSource.addParameter(results[0]!, results[1]!);
       }
     });
 
@@ -49,7 +47,6 @@ export class DashboardPage implements OnDestroy {
       if (parameter) {
         this.jvmThreadCountDataSource = new DyDataSource(yamcs);
         this.jvmThreadCountDataSource.addParameter(parameter);
-        this.jvmThreadCountDataSource.connectRealtime();
       }
     });
   }

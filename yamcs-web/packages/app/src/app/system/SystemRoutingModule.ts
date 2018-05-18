@@ -1,29 +1,29 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-
-import { TablesPage } from './tables/TablesPage';
-import { TablePage } from './table/TablePage';
-import { StreamsPage } from './streams/StreamsPage';
-import { StreamPage } from './stream/StreamPage';
-
+import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
-import { SystemPage } from './template/SystemPage';
-import { ServicesPage } from './services/ServicesPage';
-import { LinksPage } from './links/LinksPage';
+import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
+import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
 import { ClientsPage } from './clients/ClientsPage';
 import { DashboardPage } from './dashboard/DashboardPage';
-import { TableInfoTab } from './table/TableInfoTab';
-import { TableDataTab } from './table/TableDataTab';
-import { TableScriptTab } from './table/TableScriptTab';
-import { StreamColumnsTab } from './stream/StreamColumnsTab';
-import { StreamScriptTab } from './stream/StreamScriptTab';
-import { ProcessorsPage } from './processors/ProcessorsPage';
+import { LinksPage } from './links/LinksPage';
 import { ProcessorPage } from './processors/ProcessorPage';
 import { ProcessorTCTab } from './processors/ProcessorTCTab';
 import { ProcessorTMTab } from './processors/ProcessorTMTab';
-import { AuthGuard } from '../core/guards/AuthGuard';
-import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
-import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
+import { ProcessorsPage } from './processors/ProcessorsPage';
+import { ServicesPage } from './services/ServicesPage';
+import { StreamColumnsTab } from './stream/StreamColumnsTab';
+import { StreamPage } from './stream/StreamPage';
+import { StreamScriptTab } from './stream/StreamScriptTab';
+import { StreamsPage } from './streams/StreamsPage';
+import { TableDataTab } from './table/TableDataTab';
+import { TableInfoTab } from './table/TableInfoTab';
+import { TablePage } from './table/TablePage';
+import { TableScriptTab } from './table/TableScriptTab';
+import { TablesPage } from './tables/TablesPage';
+import { SystemPage } from './template/SystemPage';
+
+
 
 const routes = [
   {

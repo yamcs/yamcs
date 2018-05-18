@@ -1,13 +1,16 @@
 import { AfterViewInit, Component, ContentChildren, ElementRef, Input, OnDestroy, QueryList, ViewChild } from '@angular/core';
+import { MatDialog } from '@angular/material';
 import { Parameter } from '@yamcs/client';
 import Dygraph from 'dygraphs';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { ModifyParameterDialog } from '../../mdb/parameters/ModifyParameterDialog';
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
 import GridPlugin from './GridPlugin';
 import { ParameterSeries } from './ParameterSeries';
+import { DyLegendData, analyzeStaticValueRanges } from './dygraphs';
 
 @Component({
   selector: 'app-parameter-plot',
@@ -37,12 +40,6 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   @Input()
   duration = 'PT1H';
 
-  /**
-   * Thickness of series
-   */
-  @Input()
-  strokeWidth = 1;
-
   @Input()
   height = '100%';
 
@@ -68,6 +65,9 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   highlightColor = this.lightHighlightColor;
 
   @Input()
+  removableSeries = false;
+
+  @Input()
   stop = new Date();
 
   /**
@@ -82,33 +82,37 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   @ContentChildren(ParameterSeries)
   seriesComponents: QueryList<ParameterSeries>;
 
-  @ViewChild('legend')
-  legend: ElementRef;
-
   @ViewChild('graphContainer')
   graphContainer: ElementRef;
 
   dygraph: any;
 
   private parameters: Parameter[] = [];
+  private parameterConfig = new Map<string, ParameterSeries>();
 
   // Flag to prevent from reloading while the user is busy with a pan or zoom operation
   private disableDataReload = false;
 
   private darkModeSubscription: Subscription;
 
-  constructor(private preferenceStore: PreferenceStore) {
+  legendData$ = new BehaviorSubject<DyLegendData | null>(null);
+
+  constructor(private preferenceStore: PreferenceStore, private dialog: MatDialog) {
     this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
       this.applyTheme(darkMode);
     });
   }
 
   ngAfterViewInit() {
-    const containingDiv = this.graphContainer.nativeElement as HTMLDivElement;
+    this.dataSource.parameters$.value.forEach(p => {
+      this.parameters.push(p);
+    });
 
     this.seriesComponents.forEach(series => {
-      this.parameters.push(series.parameter);
+      this.parameterConfig.set(series.parameter, series);
     });
+
+    const containingDiv = this.graphContainer.nativeElement as HTMLDivElement;
 
     this.initDygraphs(containingDiv);
     this.dataSource.data$.subscribe(data => {
@@ -130,7 +134,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
           y: { valueRange: data.valueRange }
         };
       } else {
-        const valueRange = this.analyzeStaticValueRanges(this.parameters[0]).valueRange;
+        const valueRange = analyzeStaticValueRanges(this.parameters[0]).valueRange;
         let lo = valueRange[0];
         if (this.dataSource.minValue !== undefined) {
           lo = (lo !== null) ? Math.min(lo, this.dataSource.minValue) : this.dataSource.minValue;
@@ -175,16 +179,19 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   }
 
   private initDygraphs(containingDiv: HTMLDivElement) {
-    const series: { [key: string]: any } = {};
+    const seriesByLabel: { [key: string]: any } = {};
 
-    this.seriesComponents.forEach(s => {
-      series[s.label || s.parameter.qualifiedName] = {
-        color: s.color,
+    const configs = this.parameters.map(p => this.parameterConfig.get(p.qualifiedName)!);
+    configs.forEach(config => {
+      seriesByLabel[config.label || config.parameter] = {
+        color: config.color,
+        strokeWidth: config.strokeWidth,
       };
     });
 
     const primaryParameter = this.parameters[0];
-    const rangeAnalysis = this.analyzeStaticValueRanges(primaryParameter);
+    const primaryConfig = configs[0];
+    const rangeAnalysis = analyzeStaticValueRanges(primaryParameter);
     const alarmZones = rangeAnalysis.staticAlarmZones;
 
     let lastClickedGraph: any = null;
@@ -196,15 +203,14 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
       drawPoints: false,
       showRoller: false,
       customBars: true,
-      strokeWidth: this.strokeWidth,
       gridLineColor: this.gridLineColor,
       axisLineColor: this.axisLineColor,
       axisLabelFontSize: 11,
       digitsAfterDecimal: 6,
-      labels: ['Generation Time', ...this.seriesComponents.map(s => s.label || s.parameter.qualifiedName)],
+      labels: ['Generation Time', ...configs.map(s => s.label || s.parameter)],
       rightGap: 0,
       labelsUTC: this.utc,
-      series,
+      series: seriesByLabel,
       axes: {
         x: {
           drawAxis: this.xAxis,
@@ -213,11 +219,11 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         },
         y: {
           axisLabelWidth: 50,
-          drawAxis: this.seriesComponents.first.axis,
-          drawGrid: this.seriesComponents.first.grid,
-          axisLineWidth: this.seriesComponents.first.axisLineWidth || 0.0000001, // Dygraphs does not handle 0 correctly
+          drawAxis: primaryConfig.axis,
+          drawGrid: primaryConfig.grid,
+          axisLineWidth: primaryConfig.axisLineWidth || 0.0000001, // Dygraphs does not handle 0 correctly
           // includeZero: true,
-          valueRange: this.analyzeStaticValueRanges(primaryParameter).valueRange,
+          valueRange: analyzeStaticValueRanges(primaryParameter).valueRange,
         }
       },
       interactionModel: {
@@ -314,7 +320,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
         ctx.fillRect(area.x, area.y, area.w, area.h);
 
         // Colorize plot area
-        if (this.seriesComponents.first.alarmRanges === 'line') {
+        if (primaryConfig.alarmRanges === 'line') {
           for (const zone of alarmZones) {
             const zoneY = zone.y1IsLimit ? zone.y1 : zone.y2;
             const y = g.toDomCoords(0, zoneY)[1];
@@ -326,7 +332,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
             ctx.lineTo(area.x + area.w, y);
             ctx.stroke();
           }
-        } else if (this.seriesComponents.first.alarmRanges === 'fill') {
+        } else if (primaryConfig.alarmRanges === 'fill') {
           ctx.globalAlpha = 0.2;
           for (const zone of alarmZones) {
             if (zone.y2 === null) {
@@ -366,10 +372,12 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
       ) => {
         // Only draw for point of first series, because otherwise the line may
         // get drawn on top of other points.
-        if ((this.seriesComponents.first.label || this.seriesComponents.first.parameter.qualifiedName) === seriesName) {
+        if ((primaryConfig.label || primaryConfig.parameter) === seriesName) {
+          ctx.save();
           // ctx.clearRect(0, 0, g.width_, g.height_);
           ctx.setLineDash([5, 5]);
           ctx.strokeStyle = this.highlightColor;
+          ctx.lineWidth = 1;
 
           ctx.beginPath();
           const canvasx = Math.floor(g.selPoints_[0].canvasx) + 0.5; // crisper rendering
@@ -386,32 +394,31 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
           }
           ctx.stroke();
           ctx.closePath();
+          ctx.restore();
         }
 
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, 2 * Math.PI, false);
         ctx.fill();
       },
-      legendFormatter: (data: any) => {
-        let legend = '';
+      legendFormatter: (data: DyLegendData) => {
         for (const trace of data.series) {
-          legend += `<div class="legend-box" style="background-color: ${this.plotAreaBackgroundColor}; border: 1px solid ${this.gridLineColor}; border-left: 3px solid ${trace.color}">
-                     ${trace.label}`;
-          if (trace.yHTML) {
-            legend += '&nbsp;&nbsp;&nbsp;' + trace.yHTML;
+          if (trace.y === undefined) {
+            const rtValue = this.dataSource.latestRealtimeValues.get(trace.label);
+            if (rtValue) {
+              trace.y = rtValue[1];
+              trace.yHTML = String(rtValue[1]);
+            }
           }
-          legend += '</div>&nbsp;&nbsp;&nbsp;';
         }
-        return legend;
+        this.legendData$.next(data);
+        return '';
       },
       plugins: [
         new CrosshairPlugin(),
       ],
     };
 
-    if (this.legend) {
-      dyOptions.labelsDiv = this.legend.nativeElement;
-    }
     if (this.xAxisHeight !== undefined) {
       dyOptions.xAxisHeight = this.xAxisHeight;
     }
@@ -431,6 +438,68 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
     const gridPluginInstance = this.dygraph.getPluginInstance_(GridPlugin) as GridPlugin;
     gridPluginInstance.setAlarmZones(alarmZones);
+  }
+
+  getParameters() {
+    return this.parameters;
+  }
+
+  addParameter(parameter: Parameter, parameterConfig: ParameterSeries) {
+    this.dataSource.addParameter(parameter);
+    this.parameters.push(parameter);
+    this.parameterConfig.set(parameter.qualifiedName, parameterConfig);
+
+    this.updateDygraphSeries();
+  }
+
+  removeParameter(label: string) {
+    const qualifiedName = label; // TODO
+    this.dataSource.removeParameter(qualifiedName);
+    this.parameters = this.parameters.filter(p => p.qualifiedName !== qualifiedName);
+    this.parameterConfig.delete(qualifiedName);
+
+    this.updateDygraphSeries();
+  }
+
+  modifyParameter(label: string) {
+    const props = this.dygraph.getPropertiesForSeries(label);
+    const dialogRef = this.dialog.open(ModifyParameterDialog, {
+      data: {
+        ...props,
+        strokeWidth: this.dygraph.getOption('strokeWidth', label),
+      },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const config = this.parameterConfig.get(label)!;
+        config.color = result.color;
+        config.strokeWidth = result.thickness;
+        this.updateDygraphSeries();
+      }
+    });
+  }
+
+  private updateDygraphSeries() {
+    const seriesByLabel: { [key: string]: any } = {};
+
+    const configs = this.parameters.map(p => this.parameterConfig.get(p.qualifiedName)!);
+    configs.forEach(config => {
+      seriesByLabel[config.label || config.parameter] = {
+        color: config.color,
+        strokeWidth: config.strokeWidth,
+      };
+    });
+
+    const dyOptions: { [key: string]: any } = {
+      labels: ['Generation Time', ...configs.map(s => s.label || s.parameter)],
+      series: seriesByLabel,
+    };
+
+    // TODO when removing a series we get legend-related errors on hovering (before data is set)
+    // Visually it works though.
+    this.dataSource.reloadVisibleRange().then((() => {
+      this.dygraph.updateOptions(dyOptions, true /* block redraw */);
+    }));
   }
 
   private applyTheme(dark: boolean) {
@@ -521,81 +590,6 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
     // Percentage from the left.
     return w === 0 ? 0 : (x / w);
-  }
-
-  private analyzeStaticValueRanges(parameter: Parameter) {
-    let minLow;
-    let maxHigh;
-    const staticAlarmZones = []; // Disjoint set of OOL alarm zones
-    if (parameter.type && parameter.type.defaultAlarm) {
-      const defaultAlarm = parameter.type.defaultAlarm;
-      if (defaultAlarm.staticAlarmRange) {
-        let last_y = -Infinity;
-
-        // LOW LIMITS
-        for (let i = defaultAlarm.staticAlarmRange.length - 1; i >= 0; i--) {
-          const range = defaultAlarm.staticAlarmRange[i];
-          if (range.minInclusive !== undefined) {
-            const zone = {
-              y1: last_y,
-              y2: range.minInclusive,
-              y1IsLimit: false,
-              color: this.colorForLevel(range.level) || 'black',
-            };
-            staticAlarmZones.push(zone);
-            last_y = zone.y2;
-
-            if (minLow === undefined) {
-              minLow = range.minInclusive;
-            } else {
-              minLow = Math.min(minLow, range.minInclusive);
-            }
-          }
-        }
-
-        // HIGH LIMITS
-        last_y = Infinity;
-        for (let i = defaultAlarm.staticAlarmRange.length - 1; i >= 0; i--) {
-          const range = defaultAlarm.staticAlarmRange[i];
-          if (range.maxInclusive) {
-            const zone = {
-              y1: range.maxInclusive,
-              y2: last_y,
-              y1IsLimit: true,
-              color: this.colorForLevel(range.level) || 'black',
-            };
-            staticAlarmZones.push(zone);
-            last_y = zone.y1;
-
-            if (maxHigh === undefined) {
-              maxHigh = range.maxInclusive;
-            } else {
-              maxHigh = Math.max(maxHigh, range.maxInclusive);
-            }
-          }
-        }
-      }
-    }
-
-    const valueRange: [number|null, number|null] = [null, null]; // Null makes Dygraph choose
-    if (minLow !== undefined) {
-      valueRange[0] = minLow;
-    }
-    if (maxHigh !== undefined) {
-      valueRange[1] = maxHigh;
-    }
-    return { valueRange, staticAlarmZones };
-  }
-
-  private colorForLevel(level: string) {
-    switch (level) {
-      case 'WATCH': return '#ffdddb';
-      case 'WARNING': return '#ffc3c1';
-      case 'DISTRESS': return '#ffaaa8';
-      case 'CRITICAL': return '#c35e5c';
-      case 'SEVERE': return '#a94442';
-      default: console.error('Unknown level ' + level);
-    }
   }
 
   ngOnDestroy() {

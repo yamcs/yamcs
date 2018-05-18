@@ -5,9 +5,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -20,6 +22,8 @@ import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
+import org.yamcs.security.Privilege;
+import org.yamcs.spi.Plugin;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.YObjectLoader;
@@ -41,8 +45,10 @@ import com.google.common.util.concurrent.Service.State;
  */
 public class YamcsServer {
     static Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
-    final static private String SERVER_ID_KEY = "serverId";
-    final static private String SECRET_KEY = "secretKey";
+    private static final String SERVER_ID_KEY = "serverId";
+    private static final String SECRET_KEY = "secretKey";
+
+    private static Set<Plugin> plugins = new HashSet<>();
 
     ReplayServer replay;
 
@@ -170,6 +176,13 @@ public class YamcsServer {
         return secretKey;
     }
 
+    public static void discoverPlugins() {
+        for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
+            staticlog.info("{} {}", plugin.getName(), plugin.getVersion());
+            plugins.add(plugin);
+        }
+    }
+
     public static void createGlobalServicesAndInstances() throws ConfigurationException, IOException {
         serverId = deriveServerId();
         deriveSecretKey();
@@ -206,6 +219,8 @@ public class YamcsServer {
     }
 
     public static void setupYamcsServer() throws Exception {
+        staticlog.info("yamcs {}", YamcsVersion.version);
+        discoverPlugins();
         createGlobalServicesAndInstances();
         startServices();
 
@@ -235,8 +250,8 @@ public class YamcsServer {
      */
     public static YamcsServerInstance restartYamcsInstance(String instanceName) {
         YamcsServerInstance ysi = instances.get(instanceName);
-        
-        if(ysi.isRunning()) {
+
+        if (ysi.isRunning()) {
             ysi.stopAsync();
             try {
                 ysi.awaitTerminated();
@@ -259,6 +274,11 @@ public class YamcsServer {
 
         return ysi;
     }
+
+    public static Set<Plugin> getPlugins() {
+        return plugins;
+    }
+
     /**
      * Creates a new yamcs instance without starting it. If the instance already exist and not in the state FAILED or
      * TERMINATED a ConfigurationException is thrown
@@ -319,7 +339,8 @@ public class YamcsServer {
                 mdb.setConfigName(configName);
             }
             XtceDb xtcedb = ysi.getXtceDb();
-            if(xtcedb!=null) { //if the instance is in a failed state, it could be that it doesn't have a XtceDB (the failure might be due to the load of the XtceDb)
+            if (xtcedb != null) { // if the instance is in a failed state, it could be that it doesn't have a XtceDB
+                                  // (the failure might be due to the load of the XtceDb)
                 mdb.setName(xtcedb.getRootSpaceSystem().getName());
                 Header h = xtcedb.getRootSpaceSystem().getHeader();
                 if ((h != null) && (h.getVersion() != null)) {
@@ -371,7 +392,7 @@ public class YamcsServer {
     }
 
     private static void setupSecurity() {
-        org.yamcs.security.Privilege.getInstance();
+        Privilege.getInstance();
     }
 
     private static void printOptionsAndExit() {

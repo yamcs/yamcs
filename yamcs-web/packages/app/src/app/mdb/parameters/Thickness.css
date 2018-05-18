@@ -1,0 +1,8 @@
+.box {
+  float: left;
+  width: 30px;
+  height: 20px;
+  box-sizing: border-box;
+  cursor: pointer;
+  margin-right: 5px;
+}

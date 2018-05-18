@@ -7,11 +7,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsVersion;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.spi.Plugin;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -22,8 +24,9 @@ import com.beust.jcommander.internal.Console;
 /**
  * This represents a command together with its options and subcommands
  *
- *     yamcs &lt;options&gt; subcmd &lt;options&gt; subcmd &lt;options&gt;...
- *
+ * <pre>
+ * yamcs &lt;options&gt; subcmd &lt;options&gt; subcmd &lt;options&gt;...
+ * </pre>
  */
 public abstract class Command {
     static protected Console console = JCommander.getConsole();
@@ -35,7 +38,7 @@ public abstract class Command {
     final Command parent;
     Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Parameter(names= {"-h", "--help"}, description="Show usage", help = true)
+    @Parameter(names = { "-h", "--help" }, description = "Show usage", help = true)
     private boolean help;
 
     private boolean ycpRequired = false;
@@ -56,14 +59,15 @@ public abstract class Command {
         subCommands.put(cmd.name, cmd);
         jc.addCommand(cmd.name, cmd);
     }
+
     protected YamcsConnectionProperties getYamcsConnectionProperties() {
         return getYamcsCli().ycp;
     }
-    
+
     protected YamcsCli getYamcsCli() {
         Command c = this;
-        while(c!=null) {
-            if(c instanceof YamcsCli) {
+        while (c != null) {
+            if (c instanceof YamcsCli) {
                 return (YamcsCli) c;
             }
             c = c.parent;
@@ -74,12 +78,12 @@ public abstract class Command {
     public void parse(String... args) {
         int k = 0;
         try {
-            if(subCommands.isEmpty()) {
+            if (subCommands.isEmpty()) {
                 jc.parse(args);
             } else {
-                while(k<args.length) {
-                    if(args[k].startsWith("-")) {
-                        k+=getArity(args[k]);
+                while (k < args.length) {
+                    if (args[k].startsWith("-")) {
+                        k += getArity(args[k]);
                     } else {
                         break;
                     }
@@ -87,7 +91,7 @@ public abstract class Command {
                 }
                 jc.parse(Arrays.copyOf(args, k));
             }
-            if(help) {
+            if (help) {
                 console.println(getUsage());
                 System.exit(0);
             }
@@ -96,17 +100,20 @@ public abstract class Command {
             console.println(getUsage());
             System.exit(1);
         }
-        if(subCommands.isEmpty()) {
+        if (subCommands.isEmpty()) {
             return;
         }
 
         // Special case. Global --version flag prints version info and quits
         if (this instanceof YamcsCli && ((YamcsCli) this).version) {
-            console.println("Yamcs: " + YamcsVersion.version);
+            console.println("yamcs " + YamcsVersion.version);
+            for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
+                console.println(plugin.getName() + " " + plugin.getVersion());
+            }
             System.exit(0);
         }
 
-        if(k==args.length) {
+        if (k == args.length) {
             console.println(getUsage());
             System.exit(1);
         }
@@ -115,28 +122,26 @@ public abstract class Command {
 
         selectedCommand = subCommands.get(subcmdName);
 
-
-        if(selectedCommand==null) {
+        if (selectedCommand == null) {
             String fullcmd = getFullCommandName();
             StringBuilder sb = new StringBuilder();
             sb.append(fullcmd).append(": '").append(subcmdName)
-            .append("'").append(" is not a valid command name. See '")
-            .append(fullcmd)
-            .append(" -h'");
+                    .append("'").append(" is not a valid command name. See '")
+                    .append(fullcmd)
+                    .append(" -h'");
             console.println(sb.toString());
             System.exit(1);
         }
-        selectedCommand.parse(Arrays.copyOfRange(args, k+1, args.length));
+        selectedCommand.parse(Arrays.copyOfRange(args, k + 1, args.length));
     }
 
-
     int getArity(String arg) {
-        for(ParameterDescription pd: jc.getParameters()) {
-            if(Arrays.asList(pd.getParameter().names()).contains(arg)) {
+        for (ParameterDescription pd : jc.getParameters()) {
+            if (Arrays.asList(pd.getParameter().names()).contains(arg)) {
                 return getArity(pd);
             }
         }
-        throw new ParameterException("Unknown option '"+arg+"'");
+        throw new ParameterException("Unknown option '" + arg + "'");
     }
 
     int getArity(ParameterDescription pd) {
@@ -145,20 +150,20 @@ public abstract class Command {
             return 0;
         }
 
-        return pd.getParameter().arity()==-1?1:pd.getParameter().arity();
+        return pd.getParameter().arity() == -1 ? 1 : pd.getParameter().arity();
     }
 
     String getFullCommandName() {
         List<Command> a = new ArrayList<>();
         Command c = this;
-        while(c!=null) {
+        while (c != null) {
             a.add(c);
             c = c.parent;
         }
         StringBuilder sb = new StringBuilder();
-        for(int i=a.size()-1;;i--) {
+        for (int i = a.size() - 1;; i--) {
             sb.append(a.get(i).getName());
-            if(i==0) {
+            if (i == 0) {
                 break;
             }
             sb.append(" ");
@@ -171,69 +176,71 @@ public abstract class Command {
     }
 
     void execute() throws Exception {
-        if(selectedCommand==null) {
-            throw new IllegalStateException("Please implement the execute method in "+this);
+        if (selectedCommand == null) {
+            throw new IllegalStateException("Please implement the execute method in " + this);
         } else {
             selectedCommand.execute();
         }
     }
 
     void validate() throws ParameterException {
-        if(ycpRequired) {
+        if (ycpRequired) {
             YamcsConnectionProperties ycp = getYamcsConnectionProperties();
-            if(ycp==null) {
-                throw new ParameterException("This command requires a connection to a live Yamcs. Use the 'yamcs -y' option");
+            if (ycp == null) {
+                throw new ParameterException(
+                        "This command requires a connection to a live Yamcs. Use the 'yamcs -y' option");
             }
-            if(instanceRequired && ycp.getInstance()==null) {
-                throw new ParameterException("This command requires the Yamcs instance specified in the Yamcs URL. Use the 'yamcs -y http://host:port/instance' option");
+            if (instanceRequired && ycp.getInstance() == null) {
+                throw new ParameterException(
+                        "This command requires the Yamcs instance specified in the Yamcs URL. Use the 'yamcs -y http://host:port/instance' option");
             }
         }
-        if(selectedCommand!=null) {
+        if (selectedCommand != null) {
             selectedCommand.validate();
         }
     }
 
     public String getUsage() {
         StringBuilder out = new StringBuilder();
-        out.append("usage: "+getFullCommandName()).append(" ");
+        out.append("usage: " + getFullCommandName()).append(" ");
         List<ParameterDescription> sorted = jc.getParameters();
         Collections.sort(sorted, parameterDescriptionComparator);
-        if(!sorted.isEmpty()) {
+        if (!sorted.isEmpty()) {
             out.append("[<options>]");
         }
 
-        if(!subCommands.isEmpty()) {
+        if (!subCommands.isEmpty()) {
             out.append(" <command> [<command options>]");
         }
-        if(jc.getMainParameter()!=null) {
+        if (jc.getMainParameter() != null) {
             out.append(" ");
             out.append(jc.getMainParameterDescription());
         }
         out.append("\n");
         if (sorted.size() > 0) {
-            int maxLength = 3+sorted.stream().map(pd -> pd.getNames().length()).max(Integer::max).get();
+            int maxLength = 3 + sorted.stream().map(pd -> pd.getNames().length()).max(Integer::max).get();
 
             out.append("Options:\n");
             for (ParameterDescription pd : sorted) {
                 String descr = pd.getDescription();
-                String [] descrArray = descr.split("\\n");
-                out.append(String.format("    %-"+maxLength+"s    %s\n",pd.getNames(), descrArray[0]));
-                for(int i=1; i<descrArray.length; i++) {
-                    String format = "%-"+(maxLength+pd.getNames().length()+1)+"s%s\n";
+                String[] descrArray = descr.split("\\n");
+                out.append(String.format("    %-" + maxLength + "s    %s\n", pd.getNames(), descrArray[0]));
+                for (int i = 1; i < descrArray.length; i++) {
+                    String format = "%-" + (maxLength + pd.getNames().length() + 1) + "s%s\n";
                     out.append(String.format(format, "", descrArray[i]));
                 }
             }
         }
-        
-        if(!subCommands.isEmpty()) {
+
+        if (!subCommands.isEmpty()) {
             out.append("Commands:\n");
             int maxLength = subCommands.values().stream().mapToInt(c -> c.getName().length()).max().getAsInt();
-            for(Command c: subCommands.values()) {
+            for (Command c : subCommands.values()) {
                 String descr = jc.getCommandDescription(c.getName());
-                String [] descrArray = descr.split("\\n");
-                out.append(String.format("    %-"+maxLength+"s    %s\n", c.getName(), descrArray[0]));
-                for(int i=1; i<descrArray.length; i++) {
-                    String format = "%-"+(maxLength+c.getName().length()+3)+"s%s\n";
+                String[] descrArray = descr.split("\\n");
+                out.append(String.format("    %-" + maxLength + "s    %s\n", c.getName(), descrArray[0]));
+                for (int i = 1; i < descrArray.length; i++) {
+                    String format = "%-" + (maxLength + c.getName().length() + 3) + "s%s\n";
                     out.append(String.format(format, "", descrArray[i]));
                 }
             }

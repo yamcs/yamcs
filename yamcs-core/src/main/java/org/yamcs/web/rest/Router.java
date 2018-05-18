@@ -25,8 +25,10 @@ import org.yamcs.YamcsServer;
 import org.yamcs.YamcsVersion;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
+import org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.spi.Plugin;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.InternalServerErrorException;
@@ -446,6 +448,23 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
             responseb.setYamcsVersion(YamcsVersion.version);
             responseb.setServerId(YamcsServer.getServerId());
+
+            List<Plugin> plugins = new ArrayList<>(YamcsServer.getPlugins());
+            plugins.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
+            for (Plugin plugin : plugins) {
+                PluginInfo.Builder pluginb = PluginInfo.newBuilder()
+                        .setName(plugin.getName());
+                if (plugin.getVersion() != null) {
+                    pluginb.setVersion(plugin.getVersion());
+                }
+                if (plugin.getVendor() != null) {
+                    pluginb.setVendor(plugin.getVendor());
+                }
+                if (plugin.getDescription() != null) {
+                    pluginb.setDescription(plugin.getDescription());
+                }
+                responseb.addPlugin(pluginb);
+            }
 
             // Property to be interpreted at client's leisure.
             // Concept of defaultInstance could be moved into YamcsServer

@@ -16,6 +16,14 @@ export interface GeneralInfo {
   yamcsVersion: string;
   serverId: string;
   defaultYamcsInstance: string;
+  plugin: PluginInfo;
+}
+
+export interface PluginInfo {
+  name: string;
+  description: string;
+  version: string;
+  vendor: string;
 }
 
 export type ServiceState = 'NEW'

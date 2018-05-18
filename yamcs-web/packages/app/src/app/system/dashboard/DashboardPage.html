@@ -6,7 +6,7 @@
       <mat-card-subtitle>Server Info</mat-card-subtitle>
       <mat-list dense>
         <mat-list-item>
-          <h3 matLine>Yamcs Version</h3>
+          <h3 matLine>Yamcs version</h3>
           <p matLine>
             {{ info.yamcsVersion }}
           </p>
@@ -17,6 +17,23 @@
           <p matLine>
             {{ info.serverId }}
           </p>
+        </mat-list-item>
+
+        <br>
+        <mat-list-item>
+          <h3 matLine>Plugins</h3>
+          <table matLine yaDataTable>
+            <tr>
+              <th>Name</th>
+              <th>Version</th>
+              <th>Vendor</th>
+            </tr>
+            <tr *ngFor="let plugin of info.plugin">
+              <td>{{ plugin.name }}</td>
+              <td>{{ plugin.version || '-' }}</td>
+              <td>{{ plugin.vendor || '-' }}</td>
+            </tr>
+          </table>
         </mat-list-item>
       </mat-list>
     </mat-card>
@@ -30,11 +47,11 @@
               <app-parameter-plot [dataSource]="jvmMemoryUsedDataSource"
                                   duration="PT20M"
                                   lightAxisBackgroundColor="white">
-                <app-parameter-series [parameter]="memoryUsed"
+                <app-parameter-series [parameter]="memoryUsed.qualifiedName"
                                       [grid]="true"
                                       [axisLineWidth]="0">
                 </app-parameter-series>
-                <app-parameter-series [parameter]="totalMemory"
+                <app-parameter-series [parameter]="totalMemory.qualifiedName"
                                       [grid]="true"
                                       [axisLineWidth]="0"
                                       color="purple">
@@ -50,7 +67,7 @@
           <mat-card-subtitle>JVM Thread Count</mat-card-subtitle>
           <div style="height: 300px">
             <app-parameter-plot [dataSource]="jvmThreadCountDataSource" duration="PT20M" lightAxisBackgroundColor="white">
-              <app-parameter-series [parameter]="parameter"
+              <app-parameter-series [parameter]="parameter.qualifiedName"
                                     [grid]="true"
                                     [axisLineWidth]="0">
               </app-parameter-series>
