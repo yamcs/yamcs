@@ -1,0 +1,38 @@
+.legend {
+  position: absolute;
+  top: 0;
+  left: 63px;
+  background-color: transparent;
+}
+
+.legend-box {
+  margin-top: 5px;
+  margin-right: 5px;
+  padding-left: 3px;
+  padding-right: 15px;
+  border-radius: 2px;
+  display: inline-block;
+  font-size: 10px;
+  line-height: 14px;
+  position: relative;
+}
+
+.label {
+  cursor: pointer;
+}
+
+.label:hover {
+  opacity: 0.7;
+}
+
+.yvalue {
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+.close-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+}

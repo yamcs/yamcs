@@ -1,24 +1,24 @@
+import { NamedObjectId, ParameterValue } from '@yamcs/client';
+import { Display } from '../Display';
+import { DisplayCommunicator } from '../DisplayCommunicator';
+import { DisplayFrame } from '../DisplayFrame';
+import { Defs, Pattern, Rect, Svg, Tag } from '../tags';
+import { Color } from './Color';
+import { ParameterSample } from './ParameterSample';
+import { StyleSet } from './StyleSet';
 import * as utils from './utils';
-
+import { AbstractWidget } from './widgets/AbstractWidget';
+import { Compound } from './widgets/Compound';
 import { ExternalImage } from './widgets/ExternalImage';
 import { Field } from './widgets/Field';
 import { Label } from './widgets/Label';
-import { LinearTickMeter } from './widgets/LinearTickMeter';
 import { LineGraph } from './widgets/LineGraph';
+import { LinearTickMeter } from './widgets/LinearTickMeter';
 import { NavigationButton } from './widgets/NavigationButton';
 import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
 import { Symbol } from './widgets/Symbol';
-import { AbstractWidget } from './widgets/AbstractWidget';
-import { Svg, Rect, Tag, Defs, Pattern } from '../tags';
-import { Compound } from './widgets/Compound';
-import { Color } from './Color';
-import { DisplayFrame } from '../DisplayFrame';
-import { ParameterSample } from './ParameterSample';
-import { ParameterValue, NamedObjectId } from '@yamcs/client';
-import { StyleSet } from './StyleSet';
-import { Display } from '../Display';
-import { DisplayCommunicator } from '../DisplayCommunicator';
+
 
 export class UssDisplay implements Display {
 
@@ -292,6 +292,9 @@ export class UssDisplay implements Display {
   }
 
   processParameterValues(pvals: ParameterValue[]) {
+    for (const widget of this.widgets) {
+      widget.onDelivery(pvals);
+    }
     for (const pval of pvals) {
       const sample = new ParameterSample(pval);
       const widgets = this.widgetsByTrigger.get(sample.opsName);

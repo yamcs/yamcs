@@ -57,7 +57,6 @@ public class UserRestHandler extends RestHandler {
         userInfob.addTmParaSetPrivileges(".*");
         userInfob.addTmPacketPrivileges(".*");
         userInfob.addTcPrivileges(".*");
-        userInfob.addTcPrivileges(".*");
         userInfob.addSystemPrivileges(".*");
         userInfob.addStreamPrivileges(".*");
         userInfob.addCmdHistoryPrivileges(".*");

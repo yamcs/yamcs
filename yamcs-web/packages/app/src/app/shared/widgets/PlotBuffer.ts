@@ -1,5 +1,4 @@
-import { DyAnnotation } from './DyAnnotation';
-import { DySample } from './DySample';
+import { DyAnnotation, DySample } from './dygraphs';
 
 export type WatermarkObserver = () => void;
 

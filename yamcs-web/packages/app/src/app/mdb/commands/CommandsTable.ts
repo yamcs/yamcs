@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
 import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
-import { Command } from '@yamcs/client';
+import { Command, Instance } from '@yamcs/client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { ColumnInfo } from '../../shared/template/ColumnChooser';
 
@@ -14,7 +14,7 @@ import { ColumnInfo } from '../../shared/template/ColumnChooser';
 export class CommandsTable implements AfterViewInit {
 
   @Input()
-  instance: string;
+  instance: Instance;
 
   @Input()
   commands$: Promise<Command[]>;

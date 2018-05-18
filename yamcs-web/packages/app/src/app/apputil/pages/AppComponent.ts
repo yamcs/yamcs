@@ -2,10 +2,10 @@ import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy } from '@ang
 import { MatDialog } from '@angular/material';
 import { ConnectionInfo, UserInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { AuthService } from '../../core/services/AuthService';
+import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { YamcsService } from '../../core/services/YamcsService';
 import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog';
-import { AuthService } from '../services/AuthService';
-import { PreferenceStore } from '../services/PreferenceStore';
-import { YamcsService } from '../services/YamcsService';
 
 @Component({
   selector: 'app-root',

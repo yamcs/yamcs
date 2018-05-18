@@ -38,6 +38,7 @@ import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { Help } from './widgets/Help';
 import { Hex } from './widgets/Hex';
+import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
 
@@ -94,6 +95,7 @@ const sharedComponents = [
   HelpDialog,
   Hex,
   SidebarNavItem,
+  ParameterLegend,
   ParameterPlot,
   SelectInstanceDialog,
   ParameterSeries,

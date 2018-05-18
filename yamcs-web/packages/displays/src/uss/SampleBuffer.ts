@@ -2,7 +2,9 @@
  * Sample for a time-based plot.
  * http://dygraphs.com/data.html#array
  */
-export type Sample = [Date, number | null];
+export type Sample = [Date, number | null]
+  | [Date, number | null, number | null]
+  | [Date, number | null, number | null, number | null];
 
 /**
  * Data structure that buffers realtime data.

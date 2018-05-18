@@ -1,27 +1,41 @@
-import * as utils from '../utils';
-
-import { AbstractWidget } from './AbstractWidget';
-import { Color } from '../Color';
-import { G, Rect, Text, Circle } from '../../tags';
-
+import { ParameterValue } from '@yamcs/client';
 import Dygraph from 'dygraphs';
-import { DataSourceSample } from '../DataSourceSample';
-import { SampleBuffer, Sample } from '../SampleBuffer';
+import { Circle, G, Rect, Text } from '../../tags';
 import { CircularBuffer } from '../CircularBuffer';
-import { ExpirationBuffer } from '../ExpirationBuffer';
+import { Color } from '../Color';
 import { DataSourceBinding } from '../DataSourceBinding';
-import { convertMonitoringResult } from './Field';
-import { DEFAULT_STYLE } from '../StyleSet';
+import { ExpirationBuffer } from '../ExpirationBuffer';
 import { ParameterBinding } from '../ParameterBinding';
+import { ParameterSample } from '../ParameterSample';
+import { Sample, SampleBuffer } from '../SampleBuffer';
+import { DEFAULT_STYLE } from '../StyleSet';
+import * as utils from '../utils';
+import { AbstractWidget } from './AbstractWidget';
+import { convertMonitoringResult } from './Field';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const PLOT_COLORS = [
   Color.BLACK,
   new Color(0, 0, 255, 255),
+  // FIXME Below colors are made up and not same as uss
+  new Color(0, 210, 213, 255),
+  new Color(231, 41, 138, 255),
+  new Color(65, 171, 93, 255),
+  new Color(102, 194, 165, 255),
 ];
 
 const indicatorChars = 2;
+
+interface LegendData {
+  valueBinding: ParameterBinding;
+
+  elId: string;
+  el?: Element;
+
+  backgroundElId: string;
+  backgroundEl?: Element;
+}
 
 /**
  * TODO
@@ -53,8 +67,7 @@ export class LineGraph extends AbstractWidget {
   private valueBindings: ParameterBinding[];
   private buffer: SampleBuffer;
 
-  private legendEl: Element;
-  private legendBackgroundEl: Element;
+  private legendDataSet: LegendData[] = [];
 
   parseAndDraw() {
     this.title = utils.parseStringChild(this.node, 'Title');
@@ -208,8 +221,10 @@ export class LineGraph extends AbstractWidget {
         const valueBinding = this.valueBindings[i];
         this.legendHeight += 10;
         const boxHeight = 10;
+
+        const backgroundElId = this.generateChildId();
         g.addChild(new Rect({
-          id: `${this.id}-legendbg`,
+          id: backgroundElId,
           x: this.x + this.width - boxWidth,
           y: this.y + (i * boxHeight),
           width: boxWidth,
@@ -235,8 +250,9 @@ export class LineGraph extends AbstractWidget {
           fill: Color.BLACK.toString(),
         }, valueBinding.opsName));
 
+        const elId = this.generateChildId();
         g.addChild(new Text({
-          id: `${this.id}-legend`,
+          id: elId,
           x: this.x + this.width - (colSize * indicatorChars),
           y: this.y + (i * boxHeight) + Math.ceil(boxHeight / 2),
           'dominant-baseline': 'middle',
@@ -245,14 +261,19 @@ export class LineGraph extends AbstractWidget {
           'text-anchor': 'end',
           fill: this.styleSet.getStyle('NOT_RECEIVED').fg.toString(),
         }));
+
+        this.legendDataSet.push({ valueBinding, elId, backgroundElId });
       }
     }
     return g;
   }
 
   afterDomAttachment() {
-    this.legendBackgroundEl = this.svg.getElementById(`${this.id}-legendbg`);
-    this.legendEl = this.svg.getElementById(`${this.id}-legend`);
+    for (const legendData of this.legendDataSet) {
+      legendData.el = this.svg.getElementById(legendData.elId);
+      legendData.backgroundEl = this.svg.getElementById(legendData.backgroundElId);
+    }
+
     // First wrapper positions within the display
     // (LineGraphs are rendered outside of SVG)
     const container = document.createElement('div');
@@ -299,11 +320,24 @@ export class LineGraph extends AbstractWidget {
 
     const series: {[key: string]: any} = {};
     series[this.yLabel] = {
-      color: 'black',
+      color: PLOT_COLORS[0],
       drawPoints: false,
       strokeWidth: 1,
       pointSize: 3,
     };
+
+    const extraLabels: string[] = [];
+    for (let i = 1; i < this.valueBindings.length; i++) {
+      // Exact name doesn't matter, as long as it's unique
+      const label = this.valueBindings[i].opsName!;
+      extraLabels.push(label);
+      series[label] = {
+        color: PLOT_COLORS[i],
+        drawPoints: false,
+        strokeWidth: 1,
+        pointSize: 3,
+      };
+    }
 
     this.graph = new Dygraph(graphWrapper, 'X\n', {
       title: this.title,
@@ -314,7 +348,7 @@ export class LineGraph extends AbstractWidget {
       height: this.height - this.legendHeight,
       xlabel: this.xLabel,
       ylabel: this.yLabel,
-      labels: [this.xLabel, this.yLabel],
+      labels: [this.xLabel, this.yLabel, ...extraLabels],
       series,
       labelsUTC: this.utc,
       axes: {
@@ -415,13 +449,35 @@ export class LineGraph extends AbstractWidget {
     }
   }
 
-  onBindingUpdate(binding: DataSourceBinding, sample: DataSourceSample) {
-    if (binding.dynamicProperty === 'VALUE') {
-      if (sample.acquisitionStatus === 'EXPIRED') {
-        this.buffer.push([sample.generationTime, null]);
-      } else {
-        this.buffer.push([sample.generationTime, binding.value]);
+  // Don't use onBindingUpdate because that gets triggered for every parameter
+  // separately whereas our plot buffer needs combined data.
+  onDelivery(pvals: ParameterValue[]) {
+    let generationTime;
+    const values: Array<number | null> = [];
+    for (const binding of this.valueBindings) {
+      let inDelivery = false;
+      for (const pval of pvals) {
+        if (binding.opsName === pval.id.name) {
+          const sample = new ParameterSample(pval);
+          generationTime = sample.generationTime;
+          if (sample.acquisitionStatus === 'EXPIRED') {
+            values.push(null);
+          } else {
+            values.push(binding.usingRaw ? sample.rawValue : sample.engValue);
+          }
+          inDelivery = true;
+          break;
+        }
       }
+
+      if (!inDelivery) {
+        values.push(binding.value);
+      }
+    }
+
+    if (generationTime) {
+      this.buffer.push([generationTime, ...values] as Sample);
+      // console.log('values', values);
     }
   }
 
@@ -429,11 +485,19 @@ export class LineGraph extends AbstractWidget {
     if (this.legendHeight) {
       for (const valueBinding of this.valueBindings) {
         if (valueBinding.sample) {
+          let legendEl: Element;
+          let legendBackgroundEl: Element;
+          for (const legendData of this.legendDataSet) {
+            if (legendData.valueBinding === valueBinding) {
+              legendEl = legendData.el!;
+              legendBackgroundEl = legendData.backgroundEl!;
+            }
+          }
           const sample = valueBinding.sample;
           const cdmcsMonitoringResult = convertMonitoringResult(sample);
           let v = valueBinding.value;
           v = v.toFixed(this.legendDecimals);
-          this.legendEl.textContent = v;
+          legendEl!.textContent = v;
           let style = DEFAULT_STYLE;
           switch (sample.acquisitionStatus) {
             case 'ACQUIRED':
@@ -449,8 +513,8 @@ export class LineGraph extends AbstractWidget {
               style = this.styleSet.getStyle('STATIC', cdmcsMonitoringResult);
               break;
           }
-          this.legendBackgroundEl.setAttribute('fill', style.bg.toString());
-          this.legendEl.setAttribute('fill', style.fg.toString());
+          legendBackgroundEl!.setAttribute('fill', style.bg.toString());
+          legendEl!.setAttribute('fill', style.fg.toString());
         }
       }
     }

@@ -1,7 +1,7 @@
 <ng-container *ngIf="parameter$ | async as parameter">
   <div style="padding-left: 12px; padding-right: 12px; padding-top: 12px">
     <div class="plot-top-actions" *ngIf="range$ | async as range">
-      <app-text-action icon="add_circle_outline" (click)="compareParameter()" disabled>
+      <app-text-action icon="add_circle_outline" (click)="compareParameter()">
         Comparison
       </app-text-action>
       <span class="separator"></span>
@@ -55,8 +55,9 @@
                         [xGrid]="true"
                         [xAxisHeight]="24"
                         [dataSource]="dataSource"
-                        [stop]="missionTime">
-      <app-parameter-series [parameter]="parameter"
+                        [stop]="missionTime"
+                        [removableSeries]="true">
+      <app-parameter-series [parameter]="parameter.qualifiedName"
                             [grid]="true"></app-parameter-series>
     </app-parameter-plot>
     <div class="zoom-actions">
@@ -77,12 +78,13 @@
             There is no data for this chart in
             <ng-container [ngSwitch]="range">
               <span *ngSwitchCase="'PT1H'">the last hour</span>
-              <span *ngSwitchCase="'PT5H'">the last 5 hours</span>
+              <span *ngSwitchCase="'PT6H'">the last 6 hours</span>
+              <span *ngSwitchCase="'PT12H'">the last 12 hours</span>
               <span *ngSwitchCase="'P1D'">the last 24 hours</span>
+              <span *ngSwitchCase="'P2D'">the last 2 days</span>
               <span *ngSwitchCase="'P1W'">the last week</span>
+              <span *ngSwitchCase="'P2W'">the last 2 weeks</span>
               <span *ngSwitchCase="'P1M'">the last month</span>
-              <span *ngSwitchCase="'P3M'">the last 3 months</span>
-              <span *ngSwitchCase="'P1Y'">the last year</span>
               <span *ngSwitchDefault>the selected range</span>
             </ng-container>
           </span>

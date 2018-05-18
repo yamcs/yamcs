@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.xtce.MdbMappings;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -244,34 +243,6 @@ public class Privilege {
      * @throws ConfigurationException
      * @throws InvalidAuthenticationToken
      */
-    public Collection<String> getTmPacketNames(String yamcsInstance, final AuthenticationToken authToken,
-            String namespace) throws ConfigurationException, InvalidAuthenticationToken {
-        if (namespace == null) {
-            namespace = MdbMappings.MDB_OPSNAME;
-        }
-        Collection<String> tl = getTmPacketNames(XtceDbFactory.getInstance(yamcsInstance), namespace);
-        ArrayList<String> l = new ArrayList<>();
-        for (String name : tl) {
-            if (!hasPrivilege(authToken, PrivilegeType.TM_PACKET, name)) {
-                continue;
-            }
-            l.add(name);
-        }
-        return l;
-    }
-
-    /**
-     * Get packet names this user has appropriate privileges for.
-     *
-     * @param yamcsInstance
-     *            Used to get MDB.
-     * @param authToken
-     * @param namespace
-     *            If null defaults to "MDB:OPS Name"
-     * @return A collection of TM packet names in the specified namespace for which the user has privileges.
-     * @throws ConfigurationException
-     * @throws InvalidAuthenticationToken
-     */
     public Collection<String> getTmPacketNames(String yamcsInstance, final AuthenticationToken authToken)
             throws ConfigurationException {
         XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
@@ -282,47 +253,6 @@ public class Privilege {
             }
         }
         return tl;
-    }
-
-    private Collection<String> getTmPacketNames(XtceDb xtcedb, String namespace) {
-        ArrayList<String> pn = new ArrayList<>();
-        for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
-            String alias = sc.getAlias(namespace);
-            if (alias != null) {
-                pn.add(alias);
-            }
-        }
-        return pn;
-    }
-
-    /**
-     * Get parameter names this user has appropriate privileges for.
-     *
-     * @param yamcsInstance
-     *            Used to get MDB.
-     * @param authToken
-     * @param namespace
-     *            If null defaults to "MDB:OPS Name"
-     * @return A collection of TM parameter names in the specified namespace for which the user has privileges.
-     * @throws ConfigurationException
-     * @throws InvalidAuthenticationToken
-     */
-    public Collection<String> getTmParameterNames(String yamcsInstance, final AuthenticationToken authToken,
-            String namespace) throws ConfigurationException, InvalidAuthenticationToken {
-        if (namespace == null) {
-            namespace = MdbMappings.MDB_OPSNAME;
-        }
-        XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-        ArrayList<String> l = new ArrayList<>();
-        for (String name : xtcedb.getParameterNames()) {
-            if (!hasPrivilege(authToken, PrivilegeType.TM_PARAMETER, name)) {
-                log.trace("User '{}' does not have privilege '{}' for parameter '{}'", authToken,
-                        PrivilegeType.TM_PARAMETER, name);
-                continue;
-            }
-            l.add(xtcedb.getParameter(name).getAlias(namespace));
-        }
-        return l;
     }
 
     public int getMaxNoSessions() {

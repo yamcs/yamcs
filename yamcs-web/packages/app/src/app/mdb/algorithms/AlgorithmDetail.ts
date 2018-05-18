@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, Input, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
-import { Algorithm } from '@yamcs/client';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { Algorithm, Instance } from '@yamcs/client';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/mode/python';
@@ -20,7 +20,7 @@ export class AlgorithmDetail implements AfterViewInit, OnDestroy {
   textContainer: ElementRef;
 
   @Input()
-  instance: string;
+  instance: Instance;
 
   @Input()
   algorithm: Algorithm;

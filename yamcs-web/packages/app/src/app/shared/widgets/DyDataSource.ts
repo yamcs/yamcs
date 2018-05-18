@@ -1,10 +1,9 @@
-import { Alarm, Parameter, ParameterValue, Sample } from '@yamcs/client';
+import { Alarm, NamedObjectId, Parameter, ParameterValue, Sample } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { convertValueToNumber } from '../utils';
-import { DyAnnotation } from './DyAnnotation';
-import { CustomBarsValue, DySample } from './DySample';
 import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
+import { CustomBarsValue, DyAnnotation, DySample } from './dygraphs';
 
 /**
  * Stores sample data for use in a ParameterPlot directly
@@ -27,17 +26,18 @@ export class DyDataSource {
   visibleStart: Date;
   visibleStop: Date;
 
-  private parameters: Parameter[] = [];
+  parameters$ = new BehaviorSubject<Parameter[]>([]);
   private plotBuffer: PlotBuffer;
 
   private lastLoadPromise: Promise<any> | null;
 
   // Realtime
+  private subscriptionId: number;
   private realtimeSynchronizer: number;
   private realtimeSubscription: Subscription;
   // Added due to multi-param plots where realtime values are not guaranteed to arrive in the
   // same delivery. Should probably have a server-side solution for this use cause though.
-  private latestRealtimeValues = new Map<string, CustomBarsValue>();
+  latestRealtimeValues = new Map<string, CustomBarsValue>();
 
   constructor(private yamcs: YamcsService) {
     this.realtimeSynchronizer = window.setInterval(() => {
@@ -57,15 +57,30 @@ export class DyDataSource {
     });
   }
 
-  public addParameter(parameter: Parameter) {
-    this.parameters.push(parameter);
+  public addParameter(...parameter: Parameter[]) {
+    this.parameters$.next([
+      ...this.parameters$.value,
+      ...parameter,
+    ]);
+
+    if (this.subscriptionId) {
+      const ids = parameter.map(p => ({ name: p.qualifiedName }));
+      this.addToRealtimeSubscription(ids);
+    } else {
+      this.connectRealtime();
+    }
+  }
+
+  public removeParameter(qualifiedName: string) {
+    const parameters = this.parameters$.value.filter(p => p.qualifiedName !== qualifiedName);
+    this.parameters$.next(parameters);
   }
 
   /**
    * Triggers a new server request for samples.
    * TODO should pass valueRange somehow
    */
-  private reloadVisibleRange() {
+  reloadVisibleRange() {
     return this.updateWindow(this.visibleStart, this.visibleStop, [null, null]);
   }
 
@@ -83,7 +98,7 @@ export class DyDataSource {
 
     const instanceClient = this.yamcs.getInstanceClient()!;
     const promises: Promise<any>[] = [];
-    for (const parameter of this.parameters) {
+    for (const parameter of this.parameters$.value) {
       promises.push(
         instanceClient.getParameterSamples(parameter.qualifiedName, {
           start: loadStart.toISOString(),
@@ -111,7 +126,7 @@ export class DyDataSource {
         this.maxValue = undefined;
         const dySamples = this.processSamples(results[0]);
         const dyAnnotations = this.spliceAlarmAnnotations([] /*results[1] TODO */, dySamples);
-        for (let i = 1; i < this.parameters.length; i++) {
+        for (let i = 1; i < this.parameters$.value.length; i++) {
           this.mergeSeries(dySamples, this.processSamples(results[2 * i]));
           // const seriesAnnotations = this.spliceAlarmAnnotations(results[2 * i + 1], seriesSamples);
         }
@@ -122,8 +137,8 @@ export class DyDataSource {
     });
   }
 
-  connectRealtime() {
-    const ids = this.parameters.map(parameter => ({ name: parameter.qualifiedName }));
+  private connectRealtime() {
+    const ids = this.parameters$.value.map(parameter => ({ name: parameter.qualifiedName }));
     this.yamcs.getInstanceClient()!.getParameterValueUpdates({
       id: ids,
       sendFromCache: false,
@@ -131,9 +146,20 @@ export class DyDataSource {
       updateOnExpiration: true,
       abortOnInvalid: true,
     }).then(response => {
+      this.subscriptionId = response.subscriptionId;
       this.realtimeSubscription = response.parameterValues$.subscribe(pvals => {
         this.processRealtimeDelivery(pvals);
       });
+    });
+  }
+
+  addToRealtimeSubscription(ids: NamedObjectId[]) {
+    this.yamcs.getInstanceClient()!.getParameterValueUpdates({
+      id: ids,
+      sendFromCache: false,
+      subscriptionId: this.subscriptionId,
+      updateOnExpiration: true,
+      abortOnInvalid: true,
     });
   }
 
@@ -160,7 +186,7 @@ export class DyDataSource {
     const t = new Date();
     t.setTime(Date.parse(pvals[0].generationTimeUTC));
 
-    const dyValues: CustomBarsValue[] = this.parameters.map(parameter => {
+    const dyValues: CustomBarsValue[] = this.parameters$.value.map(parameter => {
       return this.latestRealtimeValues.get(parameter.qualifiedName) || null;
     });
 
@@ -219,7 +245,7 @@ export class DyDataSource {
         const idx = this.findInsertPosition(t, dySamples);
         dySamples.splice(idx, 0, sample);
         dyAnnotations.push({
-          series: this.parameters[0].qualifiedName,
+          series: this.parameters$.value[0].qualifiedName,
           x: t.getTime(),
           shortText: 'A',
           text: 'Alarm triggered at ' + alarm.triggerValue.generationTimeUTC,

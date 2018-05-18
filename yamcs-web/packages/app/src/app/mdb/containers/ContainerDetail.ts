@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import { Container } from '@yamcs/client';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Container, Instance } from '@yamcs/client';
 
 @Component({
   selector: 'app-container-detail',
@@ -9,7 +9,7 @@ import { Container } from '@yamcs/client';
 export class ContainerDetail {
 
   @Input()
-  instance: string;
+  instance: Instance;
 
   @Input()
   container: Container;

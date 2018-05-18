@@ -1,0 +1,13 @@
+<mat-dialog-content>
+  <label class="mat-typography">Color</label><br>
+  <app-color-palette #palette [selectedColor]="data.color" (select)="thickness.changeColor($event)"></app-color-palette>
+  <br>
+  <label class="mat-typography">Thickness</label><br>
+  <app-thickness #thickness [selectedThickness]="data.strokeWidth" [color]="data.color"></app-thickness>
+  <br>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button (click)="select()" color="primary">OK</button>
+</mat-dialog-actions>

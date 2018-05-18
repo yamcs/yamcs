@@ -1,13 +1,14 @@
+import { ParameterValue } from '@yamcs/client';
 import { Tag } from '../../tags';
-import * as utils from '../utils';
-import { UssDisplay } from '../UssDisplay';
-import { ParameterBinding } from '../ParameterBinding';
 import { ComputationBinding } from '../ComputationBinding';
-import { DataSourceSample } from '../DataSourceSample';
 import { ComputationSample } from '../ComputationSample';
 import { DataSourceBinding } from '../DataSourceBinding';
-import { StyleSet } from '../StyleSet';
+import { DataSourceSample } from '../DataSourceSample';
+import { ParameterBinding } from '../ParameterBinding';
 import { ParameterSample } from '../ParameterSample';
+import { StyleSet } from '../StyleSet';
+import { UssDisplay } from '../UssDisplay';
+import * as utils from '../utils';
 
 let widgetSequence = 0;
 
@@ -177,6 +178,9 @@ export abstract class AbstractWidget {
 
   digest() {
     // NOP
+  }
+
+  onDelivery(pvals: ParameterValue[]) {
   }
 
   protected onBindingUpdate(binding: DataSourceBinding, sample: DataSourceSample) {

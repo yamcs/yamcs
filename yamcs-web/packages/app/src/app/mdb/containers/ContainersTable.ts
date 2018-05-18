@@ -1,10 +1,10 @@
-import { Component, ChangeDetectionStrategy, ViewChild, Input, AfterViewInit } from '@angular/core';
-
-import { Container } from '@yamcs/client';
-
-import { MatSort, MatTableDataSource, MatPaginator } from '@angular/material';
-import { ColumnInfo } from '../../shared/template/ColumnChooser';
+import { AfterViewInit, ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
+import { MatPaginator, MatSort, MatTableDataSource } from '@angular/material';
+import { Container, Instance } from '@yamcs/client';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
+import { ColumnInfo } from '../../shared/template/ColumnChooser';
+
+
 
 @Component({
   selector: 'app-containers-table',
@@ -14,7 +14,7 @@ import { PreferenceStore } from '../../core/services/PreferenceStore';
 export class ContainersTable implements AfterViewInit {
 
   @Input()
-  instance: string;
+  instance: Instance;
 
   @Input()
   containers$: Promise<Container[]>;

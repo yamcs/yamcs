@@ -1,0 +1,9 @@
+<ng-container *ngFor="let option of options; index as i">
+  <div class="box"
+      [class.selected]="option === selectedThickness"
+      (click)="select(option)"
+      [style.borderBottom]="option + 'px solid'"
+      [style.borderColor]="option === selectedThickness ? color : 'black'">
+  </div>
+</ng-container>
+<div style="clear: both"></div>

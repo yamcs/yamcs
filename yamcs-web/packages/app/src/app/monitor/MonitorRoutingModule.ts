@@ -1,19 +1,19 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
-import { DisplaysPage } from './displays/DisplaysPage';
-import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
-import { MonitorPage } from './template/MonitorPage';
-import { EventsPage } from './events/EventsPage';
-import { MonitorToolbar } from './template/MonitorToolbar';
-import { LayoutsPage } from './layouts/LayoutsPage';
-import { LayoutPage } from './layouts/LayoutPage';
-import { AlarmsPage } from './alarms/AlarmsPage';
-import { CommandsPage } from './commands/CommandsPage';
-import { ExtensionPage } from './ext/ExtensionPage';
 import { AuthGuard } from '../core/guards/AuthGuard';
+import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
+import { AlarmsPage } from './alarms/AlarmsPage';
 import { ArchivePage } from './archive/ArchivePage';
+import { CommandsPage } from './commands/CommandsPage';
+import { DisplaysPage } from './displays/DisplaysPage';
+import { EventsPage } from './events/EventsPage';
+import { ExtensionPage } from './ext/ExtensionPage';
+import { LayoutPage } from './layouts/LayoutPage';
+import { LayoutsPage } from './layouts/LayoutsPage';
+import { MonitorPage } from './template/MonitorPage';
+import { MonitorToolbar } from './template/MonitorToolbar';
+
 
 const routes: Routes = [
   {

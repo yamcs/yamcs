@@ -1,4 +1,4 @@
-import { SampleBuffer, Sample } from './SampleBuffer';
+import { Sample, SampleBuffer } from './SampleBuffer';
 
 /**
  * Sample buffer that drops samples after a preset expiration time.

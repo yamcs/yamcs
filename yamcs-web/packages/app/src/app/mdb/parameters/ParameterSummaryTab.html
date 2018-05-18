@@ -30,8 +30,8 @@
             <th width="200">Alarm Level (default)</th>
           </tr>
           <tr *ngFor="let enumValue of parameter.type?.enumValue">
-            <td>{{ enumValue.value }}</td>
-            <td>{{ enumValue.label }}</td>
+            <td style="white-space: nowrap">{{ enumValue.value }}</td>
+            <td style="white-space: nowrap">{{ enumValue.label }}</td>
             <td>
               <ng-container *ngIf="getDefaultAlarmLevel(parameter, enumValue) as level">
                 <app-alarm-level [level]="level" [grayscale]="true"></app-alarm-level>
