@@ -1,8 +1,8 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { UserInfo } from '@yamcs/client';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { AuthService } from '../services/AuthService';
+import { UserInfo } from '@yamcs/client';
 import { Observable } from 'rxjs';
+import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './ProfilePage.html',

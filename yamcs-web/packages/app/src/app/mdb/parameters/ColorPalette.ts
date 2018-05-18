@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import * as palette from 'google-palette';
+import * as paletteNs from 'google-palette';
+
+// This is a workaround for ng-packagr. I don't know why.
+// https://github.com/dherges/ng-packagr/issues/217
+const palette = paletteNs;
 
 @Component({
   selector: 'app-color-palette',
