@@ -22,6 +22,9 @@ public interface PacketPreprocessor {
        
     /**
      * transforms a binary packet into a {@link PacketWithTime}
+     * 
+     * Can return null if the packet is corrupt
+     * 
      * @param packet
      * @return
      */

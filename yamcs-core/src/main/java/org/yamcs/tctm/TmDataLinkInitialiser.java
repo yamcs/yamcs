@@ -1,7 +1,6 @@
 package org.yamcs.tctm;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,10 +93,13 @@ public class TmDataLinkInitialiser extends AbstractService {
             if(!enabledAtStartup) {
                 prov.disable();
             }
-        
+            boolean dropCorrupted = YConfiguration.getBoolean(m, "dropCorruptedPackets", true);
             prov.setTmSink(new TmSink() {
                 @Override
                 public void processPacket(PacketWithTime pwrt) {
+                    if(pwrt.isCorrupted() && dropCorrupted) {
+                        return;
+                    }
                     long time= pwrt.getGenerationTime();
                     byte[] pkt = pwrt.getPacket();
                     Tuple t=new Tuple(TM_TUPLE_DEFINITION, new Object[] {time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });

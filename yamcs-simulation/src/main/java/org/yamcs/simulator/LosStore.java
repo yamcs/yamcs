@@ -54,7 +54,7 @@ public class LosStore {
     
     public CCSDSPacket getLosNames(){
 
-        CCSDSPacket losNamePacket = new CCSDSPacket(0, 2, 9);
+        CCSDSPacket losNamePacket = new CCSDSPacket(0, 2, 9, false);
         try {
             File folder = new File(System.getProperty("user.dir") + "/losData/");
             File[] listOfFiles = folder.listFiles() == null? new File[0] : folder.listFiles(); //To avoid a null pointer in case of the folder not existing

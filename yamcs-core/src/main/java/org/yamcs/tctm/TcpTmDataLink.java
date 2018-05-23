@@ -19,7 +19,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
-import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
@@ -58,16 +57,18 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     }
 
     public TcpTmDataLink(String instance, String name, String spec) throws ConfigurationException {
-        this(instance, name);
-        YConfiguration c = YConfiguration.getConfiguration("tcp");
-        host = c.getString(spec, "tmHost");
-        port = c.getInt(spec, "tmPort");
+        this(instance, name, YConfiguration.getConfiguration("tcp").getMap(spec));
     }
 
     public TcpTmDataLink(String instance, String name, Map<String, Object> args) throws ConfigurationException {
         this(instance, name);
-        host = YConfiguration.getString(args, "host");
-        port = YConfiguration.getInt(args, "port");
+        if(args.containsKey("tmHost")) { //this is when the config is specified in tcp.yaml
+            host = YConfiguration.getString(args, "tmHost");
+            port = YConfiguration.getInt(args, "tmPort");
+        } else {
+            host = YConfiguration.getString(args, "host");
+            port = YConfiguration.getInt(args, "port");
+        }
         this.packetInputStreamClassName = YConfiguration.getString(args, "packetInputStreamClassName",
                 CcsdsPacketInputStream.class.getName());
         this.packetInputStreamArgs = args.get("packetInputStreamArgs");
@@ -113,7 +114,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     }
 
     public PacketWithTime getNextPacket() {
-        byte[] packet = null;
+        PacketWithTime pwt = null;
         while (isRunning()) {
             while (disabled) {
                 if (!isRunning()) {
@@ -131,9 +132,11 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                     openSocket();
                     log.info("TM connection established to {}:{}", host, port);
                 }
-                packet = packetInputStream.readPacket();
+                byte[] packet = packetInputStream.readPacket();
                 packetcount++;
-                break;
+                pwt =  packetPreprocessor.process(packet);
+                if(pwt!=null) 
+                    break;
             } catch (EOFException e) {
                 log.warn("Tm Connection closed");
                 tmSocket = null;
@@ -153,10 +156,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                 }
             }
         }
-        if (packet != null) {
-            return packetPreprocessor.process(packet);
-        }
-        return null;
+        return pwt;
     }
 
     @Override

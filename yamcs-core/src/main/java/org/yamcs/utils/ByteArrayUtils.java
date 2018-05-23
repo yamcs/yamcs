@@ -121,4 +121,9 @@ public class ByteArrayUtils {
                ((a[offset+2] & 0xFF) <<8 ) +
                ((a[offset+3] & 0xFF)     );
     }
+    
+    public static int decodeShort(byte[] a, int offset) {
+        return ((a[offset] & 0xFF) <<8 ) +
+               ((a[offset+1] & 0xFF)     );
+    }
 }

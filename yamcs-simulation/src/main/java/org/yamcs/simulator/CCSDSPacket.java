@@ -55,6 +55,7 @@ public class CCSDSPacket {
     private short w;
 
     private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    private boolean checksumPresent;
 
     public CCSDSPacket(ByteBuffer buffer) {
         this.buffer = buffer;
@@ -64,20 +65,32 @@ public class CCSDSPacket {
         packetid = buffer.getInt(12);
         timeMillis = ((long) (buffer.getInt(6)) + 315964800L) * 1000 + (long) (buffer.get(10)) * 1000 / 256;
     }
-
     public CCSDSPacket(int userDataLength, int packetid) {
-        this(userDataLength, SH_PKT_TYPE_CCSDS_CCSDS_PAYLOAD_HK_PACKET, packetid);
+        this(userDataLength, packetid, true);
     }
-
+    public CCSDSPacket(int userDataLength, int packetid, boolean checksumPresent) {
+        this(userDataLength, SH_PKT_TYPE_CCSDS_CCSDS_PAYLOAD_HK_PACKET, packetid, checksumPresent);
+    }
     public CCSDSPacket(int userDataLength, int packetType, int packetid) {
+        this(userDataLength, packetType, packetid, true);
+    }
+    public CCSDSPacket(int userDataLength, int packetType, int packetid, boolean checksumPresent) {
         apid = 1;
         seq = 0;
         timeMillis = System.currentTimeMillis() + 18000; // gps time as of 2017
-        buffer = ByteBuffer.allocate(userDataLength + 16);
+        int dl = userDataLength +16;
+        if(checksumPresent) {
+            dl += 2;
+            if((dl & 1) == 1) { //need an even number of bytes to compute a checksum
+                dl += 1;
+            }
+        }
+        buffer = ByteBuffer.allocate(dl);
         buffer.order(ByteOrder.BIG_ENDIAN);
 
         this.packetType = packetType;
         this.packetid = packetid;
+        this.checksumPresent = checksumPresent;
 
         putHeader();
     }
@@ -165,10 +178,9 @@ public class CCSDSPacket {
         buffer.putInt(6, (int) (timeMillis / 1000 - 315964800L)); // epoch starts a 06-Jan-1980 00:00:00
         buffer.put(10, (byte) ((timeMillis % 1000) * 256 / 1000));
         // buffer.put(11, (byte)((SH_TIME_ID_TIME_OF_PACKET_GENERATION<<6)|SH_PKT_TYPE_CCSDS_CCSDS_PAYLOAD_HK_PACKET));
-        // // original version with no checksum;
-        buffer.put(11, (byte) ((SH_TIME_ID_TIME_OF_PACKET_GENERATION << 6) | packetType)); // no checksum id // modified
-                                                                                           // to allow for packet type
-                                                                                           // assignment
+        // // original version with checksum;
+        int checksum = checksumPresent?1:0;
+        buffer.put(11, (byte) ((SH_TIME_ID_TIME_OF_PACKET_GENERATION << 6) | (checksum << 5) | packetType)); // checksum
         buffer.putInt(12, packetid);
         // describePacketHeader();
 
@@ -178,5 +190,15 @@ public class CCSDSPacket {
         int seq = seqMap.containsKey(apid) ? seqMap.get(apid) : 0;
         seqMap.put(apid, (seq + 1) & 0x3FFF);
         return seq;
+    }
+    
+    public void fillChecksum() {
+        if(checksumPresent) {
+            int checksum = 0;
+            for(int i = 0; i< buffer.limit()-2; i+=2) {
+                checksum += buffer.getShort(i);
+            }
+            buffer.putShort(buffer.limit()-2, (short)checksum);
+        }
     }
 }

@@ -18,13 +18,12 @@ public interface EventProducer {
     public abstract void sendError(String type, String msg);
 
     public abstract void sendWarning(String type, String msg);
-
     public abstract void sendInfo(String type, String msg);
-    
     public abstract void sendWatch(String type, String msg);
     public abstract void sendDistress(String type, String msg);
     public abstract void sendCritical(String type, String msg);
     public abstract void sendSevere(String type, String msg);
+
 
     /**
      * Enable/disable repeated event reduction. If enabled, the events that are equal are not sent until the timeout expires, 

@@ -1,5 +1,7 @@
-Version 4.4.2 released
+Version 4.4.2 released 23-May-2018
 - yamcs-web: support multiple series plots
+- TmLink: added the posibility to specify the checksum type in the Columbus
+pre-processor and added an option to drop corrupted packets.
 
 
 Version 4.4.1 released 14-May-2018

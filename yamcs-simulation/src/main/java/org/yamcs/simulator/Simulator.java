@@ -111,8 +111,8 @@ public class Simulator extends Thread {
     }
 
     protected void transmitTM(CCSDSPacket packet) {
+        packet.fillChecksum();
         tmLink.tmTransmit(packet);
-
     }
 
     public void dumpLosDataFile(String filename) {
@@ -145,7 +145,7 @@ public class Simulator extends Thread {
     }
 
     private static CCSDSPacket buildLosTransmittedRecordingPacket(String transmittedRecordName) {
-        CCSDSPacket packet = new CCSDSPacket(0, 2, 10);
+        CCSDSPacket packet = new CCSDSPacket(0, 2, 10, false);
         packet.appendUserDataBuffer(transmittedRecordName.getBytes());
         packet.appendUserDataBuffer(new byte[1]);
 
@@ -167,7 +167,7 @@ public class Simulator extends Thread {
     }
 
     private static CCSDSPacket buildLosDeletedRecordingPacket(String deletedRecordName) {
-        CCSDSPacket packet = new CCSDSPacket(0, 2, 11);
+        CCSDSPacket packet = new CCSDSPacket(0, 2, 11, false);
         packet.appendUserDataBuffer(deletedRecordName.getBytes());
         packet.appendUserDataBuffer(new byte[1]);
 
@@ -191,7 +191,7 @@ public class Simulator extends Thread {
     }
 
     protected CCSDSPacket ackPacket(CCSDSPacket commandPacket, int stage, int result) {
-        CCSDSPacket ackPacket = new CCSDSPacket(0, commandPacket.getPacketType(), 2000);
+        CCSDSPacket ackPacket = new CCSDSPacket(0, commandPacket.getPacketType(), 2000, false);
         ackPacket.setApid(101);
         int batNum = commandPacket.getPacketId();
 

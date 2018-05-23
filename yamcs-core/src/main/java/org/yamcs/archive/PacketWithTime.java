@@ -12,6 +12,7 @@ public class PacketWithTime {
     private long gentime; //generation time
     private int seqCount;
     private byte[] pkt;
+    boolean corrupted = false;
 
     public PacketWithTime(long rectime, long gentime, int seqCount,  byte[] pkt) {
         this.rectime = rectime;
@@ -33,5 +34,13 @@ public class PacketWithTime {
     }
     public byte[] getPacket() {
         return pkt;
+    }
+    
+    public void setCorrupted(boolean corrupted) {
+        this.corrupted = corrupted;
+    }
+
+    public boolean isCorrupted() {
+        return corrupted;
     }
 }

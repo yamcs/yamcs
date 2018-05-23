@@ -17,7 +17,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -40,7 +39,7 @@ import com.google.common.util.concurrent.RateLimiter;
  *
  */
 public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLink, SystemParametersProducer {
-    static final String CONFIG_KEY_ERROR_DETECTION_WORD = "errorDetectionWord";
+    static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
     protected SocketChannel socketChannel = null;
     protected String host = "whirl";
     protected int port = 10003;
@@ -62,8 +61,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
 
     private SystemParametersCollector sysParamCollector;
     protected final Logger log;
-    private String yamcsInstance;
-    private String name;
+    private final String yamcsInstance;
+    private final String name;
     TimeService timeService;
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
     TcDequeueAndSend tcSender;
@@ -83,8 +82,13 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
 
     private void configure(Map<String, Object> config) {
-        host = YConfiguration.getString(config, "tcHost");
-        port = YConfiguration.getInt(config, "tcPort");
+        if(config.containsKey("tcHost")) {//this is when the config is specified in tcp.yaml
+            host = YConfiguration.getString(config, "tcHost");
+            port = YConfiguration.getInt(config, "tcPort");
+        } else {
+            host = YConfiguration.getString(config, "host");
+            port = YConfiguration.getInt(config, "port");
+        }
         
         minimumTcPacketLength = YConfiguration.getInt(config, "minimumTcPacketLength", -1);
        
@@ -97,8 +101,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         if (config.containsKey("tcMaxRate")) {
             rateLimiter = RateLimiter.create( YConfiguration.getInt(config, "tcMaxRate"));
         }
-        if(config.containsKey(CONFIG_KEY_ERROR_DETECTION_WORD)) {
-            Map<String, Object> c = YConfiguration.getMap(config, CONFIG_KEY_ERROR_DETECTION_WORD);
+        if(config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
+            Map<String, Object> c = YConfiguration.getMap(config, CONFIG_KEY_ERROR_DETECTION);
             String type = YConfiguration.getString(c, "type");
             if("16-SUM".equalsIgnoreCase(type)) {
                 errorDetectionCalculator = new Running16BitChecksumCalculator();
@@ -113,21 +117,11 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         
     }
     
-    protected TcpTcDataLink() {
-        log = LoggerFactory.getLogger(this.getClass().getName());
-    } // dummy constructor which is automatically invoked by subclass constructors
-
-    public TcpTcDataLink(String host, int port) {
-        this.host = host;
-        this.port = port;
-        log = LoggerFactory.getLogger(this.getClass().getName());
-    }
-
     protected long getCurrentTime() {
         if (timeService != null) {
             return timeService.getMissionTime();
         } else {
-            return TimeEncoding.fromUnixTime(System.currentTimeMillis());
+            return TimeEncoding.getWallclockTime();
         }
     }
 
