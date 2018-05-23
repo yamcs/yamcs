@@ -26,9 +26,10 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.YObjectLoader;
+
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.RateLimiter;
 
@@ -39,19 +40,17 @@ import com.google.common.util.concurrent.RateLimiter;
  *
  */
 public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLink, SystemParametersProducer {
-    static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
+  
     protected SocketChannel socketChannel = null;
     protected String host = "whirl";
     protected int port = 10003;
     protected CommandHistoryPublisher commandHistoryListener;
     protected Selector selector;
     SelectionKey selectionKey;
-    protected CcsdsSeqCountFiller seqFiller = new CcsdsSeqCountFiller();
-    ErrorDetectionWordCalculator errorDetectionCalculator;
     
     protected ScheduledThreadPoolExecutor timer;
     protected volatile boolean disabled = false;
-    protected int minimumTcPacketLength = -1; // the minimum size of the CCSDS packets uplinked
+  
     protected BlockingQueue<PreparedCommand> commandQueue;
     RateLimiter rateLimiter;
     
@@ -67,13 +66,16 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
     TcDequeueAndSend tcSender;
     
+    CommandPostprocessor cmdPostProcessor;
+    
+    
     
     public TcpTcDataLink(String yamcsInstance, String name, Map<String, Object> config) throws ConfigurationException {
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
         this.yamcsInstance = yamcsInstance;
         this.name = name;
         
-        configure(config);
+        configure(yamcsInstance, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
@@ -81,7 +83,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         this(yamcsInstance, name, YConfiguration.getConfiguration("tcp").getMap(spec));
     }
 
-    private void configure(Map<String, Object> config) {
+    private void configure(String yamcsInstance, Map<String, Object> config) {
         if(config.containsKey("tcHost")) {//this is when the config is specified in tcp.yaml
             host = YConfiguration.getString(config, "tcHost");
             port = YConfiguration.getInt(config, "tcPort");
@@ -89,9 +91,8 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             host = YConfiguration.getString(config, "host");
             port = YConfiguration.getInt(config, "port");
         }
-        
-        minimumTcPacketLength = YConfiguration.getInt(config, "minimumTcPacketLength", -1);
-       
+        initPostprocessor(yamcsInstance, config);
+      
         
         if (config.containsKey("tcQueueSize")) {
             commandQueue = new LinkedBlockingQueue<>(YConfiguration.getInt(config, "tcQueueSize"));
@@ -101,20 +102,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         if (config.containsKey("tcMaxRate")) {
             rateLimiter = RateLimiter.create( YConfiguration.getInt(config, "tcMaxRate"));
         }
-        if(config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
-            Map<String, Object> c = YConfiguration.getMap(config, CONFIG_KEY_ERROR_DETECTION);
-            String type = YConfiguration.getString(c, "type");
-            if("16-SUM".equalsIgnoreCase(type)) {
-                errorDetectionCalculator = new Running16BitChecksumCalculator();
-            } else if("CRC-16-CCIIT".equalsIgnoreCase(type)) {
-                errorDetectionCalculator = new CrcCciitCalculator(c);
-            } else {
-                throw new ConfigurationException("Unknown errorDetectionWord type '"+type+"': supported types are 16-SUM and CRC-16-CCIIT");
-            }
-        } else {
-            errorDetectionCalculator = new Running16BitChecksumCalculator();
-        }
-        
+       
     }
     
     protected long getCurrentTime() {
@@ -134,6 +122,31 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         timer.execute(tcSender);
         timer.scheduleAtFixedRate(this, 10L, 10L, TimeUnit.SECONDS);
         notifyStarted();
+    }
+    
+    protected void initPostprocessor(String instance, Map<String, Object> args) {
+        String commandPostprocessorClassName = IssCommandPostprocessor.class.getName();
+        Object commandPostprocessorArgs = null;
+        
+        if(args!=null) {
+            commandPostprocessorClassName = YConfiguration.getString(args, "commandPostprocessorClassName",
+                    IssCommandPostprocessor.class.getName());
+            commandPostprocessorArgs = args.get("commandPostprocessorArgs");
+        } 
+        
+        try {
+            if (commandPostprocessorArgs != null) {
+                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance, commandPostprocessorArgs);
+            } else {
+                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance);
+            }
+        } catch (ConfigurationException e) {
+            log.error("Cannot instantiate the command postprocessor", e);
+            throw e;
+        } catch (IOException e) {
+            log.error("Cannot instantiate the command postprocessor", e);
+            throw new ConfigurationException(e);
+        }
     }
 
     /**
@@ -238,6 +251,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     @Override
     public void setCommandHistoryPublisher(CommandHistoryPublisher commandHistoryListener) {
         this.commandHistoryListener = commandHistoryListener;
+        cmdPostProcessor.setCommandHistoryPublisher(commandHistoryListener);
     }
 
     @Override
@@ -326,42 +340,12 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             }
         }
         public void send() {
-          
-            byte[] binary = pc.getBinary();
-            boolean secHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(binary);
-            boolean checksumIndicator = false;
-            if(secHeaderFlag) {
-                checksumIndicator = CcsdsPacket.getChecksumIndicator(binary);
-            }
-            if (checksumIndicator) { //2 extra bytes for the checkword
-                binary = Arrays.copyOf(binary, binary.length+2);
-            }
-            
-            if (binary.length < minimumTcPacketLength) { // enforce the minimum packet length
-                binary = Arrays.copyOf(binary, minimumTcPacketLength);
-            }
-            ByteBuffer bb = ByteBuffer.wrap(binary);
-            bb.putShort(4, (short) (binary.length - 7)); // fix packet length
-
+            byte[] binary = cmdPostProcessor.process(pc);
             int retries = 5;
             boolean sent = false;
-            int seqCount = seqFiller.fill(bb, pc.getCommandId().getGenerationTime());
-            if (checksumIndicator) { 
-                int pos = binary.length - 2;
-                int checkword = errorDetectionCalculator.compute(binary, 0, pos);
-                log.debug("Appending checkword on position {}: {}", pos, Integer.toHexString(checkword));
-                bb.putShort(pos, (short)checkword);
-            } else {
-                if(!secHeaderFlag) {
-                    log.debug("Not appending a checkword since there is no secondary header to configure a checksum indicator");
-                } else {
-                    log.debug("Not appending a checkword since checksumIndicator is false");
-                }
-            }
-        
             
-            commandHistoryListener.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
-            
+           
+            ByteBuffer bb = ByteBuffer.wrap(binary);
             bb.rewind();
             while (!sent && (retries > 0)) {              
                 if (openSocket()) {
@@ -424,9 +408,5 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
         ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
         return Arrays.asList(linkStatus, dataCount);
-    }
-
-    public int getMiniminimumTcPacketLength() {
-        return minimumTcPacketLength;
     }
 }

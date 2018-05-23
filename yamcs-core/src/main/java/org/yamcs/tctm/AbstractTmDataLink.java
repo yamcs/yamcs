@@ -27,10 +27,10 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
     protected void initPreprocessor(String instance, Map<String, Object> args) {
         if(args!=null) {
             this.packetPreprocessorClassName = YConfiguration.getString(args, "packetPreprocessorClassName",
-                    ColumbusPacketPreprocessor.class.getName());
+                    IssPacketPreprocessor.class.getName());
             this.packetPreprocessorArgs = args.get("packetPreprocessorArgs");
         } else {
-            this.packetPreprocessorClassName = ColumbusPacketPreprocessor.class.getName();
+            this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
             this.packetPreprocessorArgs = null;
         }
         

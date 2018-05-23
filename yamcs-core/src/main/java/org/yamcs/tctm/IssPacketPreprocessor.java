@@ -13,24 +13,24 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.CcsdsPacket;
 
-import static org.yamcs.tctm.TcpTcDataLink.CONFIG_KEY_ERROR_DETECTION;
+import static org.yamcs.tctm.IssCommandPostprocessor.CONFIG_KEY_ERROR_DETECTION;
 
 /**
- * This implements CCSDS packets as used in Columbus/ISS
+ * This implements CCSDS packets as used in ISS (International Space Station)
  * 
  * @author nm
  *
  */
-public class ColumbusPacketPreprocessor implements PacketPreprocessor {
+public class IssPacketPreprocessor implements PacketPreprocessor {
     TimeService timeService;
     EventProducer eventProducer;
     ErrorDetectionWordCalculator errorDetectionCalculator;
 
-    public ColumbusPacketPreprocessor(String yamcsInstance) {
+    public IssPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, null);
     }
 
-    public ColumbusPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
+    public IssPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
         timeService = YamcsServer.getTimeService(yamcsInstance);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setRepeatedEventReduction(true, 10000);

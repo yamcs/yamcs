@@ -1,4 +1,4 @@
-curl -XPOST http://localhost:8090/api/processors/simulator/realtime/commands/YSS/SIMULATOR/SWITCH_VOLTAGE_ON -d '{
+curl -XPOST http://localhost:8090/api/processors/simulator/realtime/commands/YSS/SIMULATOR/SWITCH_VOLTAGE_OFF -d '{
   "sequenceNumber" : 1,
   "origin" : "nico",
   "assignment" : [ {

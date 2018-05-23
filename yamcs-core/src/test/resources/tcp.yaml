@@ -4,8 +4,9 @@ test_default:
 
 test48:
     tcHost: localhost
-    tcPort: 10025
-    minimumTcPacketLength: 48
+    tcPort: 10025    
+    commandPostprocessorArgs:
+        minimumTcPacketLength: 48
 
 testMaxRate:
     tcHost: localhost

@@ -79,7 +79,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.tctm.ColumbusPacketPreprocessor;
+import org.yamcs.tctm.IssPacketPreprocessor;
 import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.ui.PrefsObject;
 import org.yamcs.ui.YamcsConnector;
@@ -160,7 +160,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             defaultNamespace = config.getString("defaultNamespace");
         }
 
-        packetPreprocessor = new ColumbusPacketPreprocessor(null);
+        packetPreprocessor = new IssPacketPreprocessor(null);
         // table to the left which shows one row per packet
         packetsTable = new PacketsTable(this);
         packetsTable.setMaxLines(maxLines);

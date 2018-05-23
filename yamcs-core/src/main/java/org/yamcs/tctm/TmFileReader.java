@@ -150,7 +150,7 @@ public class TmFileReader {
 
     public static void main(String[] args) throws IOException, ConfigurationException {
         YConfiguration.setup();
-        TmFileReader tfr=new TmFileReader(args[0], new ColumbusPacketPreprocessor(null));
+        TmFileReader tfr=new TmFileReader(args[0], new IssPacketPreprocessor(null));
         PacketWithTime pwrt;
 
         while((pwrt=tfr.readPacket(TimeEncoding.getWallclockTime()))!=null) {

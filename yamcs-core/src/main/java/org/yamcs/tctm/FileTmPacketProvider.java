@@ -57,7 +57,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
             endAction = EndAction.STOP;
         }
         log.debug("attempting to open file {}", this.fileName);
-        tmFileReader = new TmFileReader(this.fileName, new ColumbusPacketPreprocessor(null));
+        tmFileReader = new TmFileReader(this.fileName, new IssPacketPreprocessor(null));
         timeService = new RealtimeTimeService();
     }
 
@@ -79,7 +79,7 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
                 if (pwrt == null) {
                     if (endAction == EndAction.LOOP) {
                         log.info("File {} finished, looping back to the beginning", fileName);
-                        tmFileReader = new TmFileReader(this.fileName, new ColumbusPacketPreprocessor(null));
+                        tmFileReader = new TmFileReader(this.fileName, new IssPacketPreprocessor(null));
                     } else {
                         log.info("File {} finished", fileName);
                         break;

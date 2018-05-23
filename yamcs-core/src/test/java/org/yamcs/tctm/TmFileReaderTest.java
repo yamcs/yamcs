@@ -23,7 +23,7 @@ public class TmFileReaderTest {
 	
 	@Test
 	public void testRawCcsdsReader() throws InterruptedException, IOException {
-		TmFileReader tfr=new TmFileReader("src/test/resources/TmFileReaderTest-rawccsds", new ColumbusPacketPreprocessor(null));
+		TmFileReader tfr=new TmFileReader("src/test/resources/TmFileReaderTest-rawccsds", new IssPacketPreprocessor(null));
 		PacketWithTime pwrt=tfr.readPacket(TimeEncoding.getWallclockTime());
 		
 		assertNotNull(pwrt);
@@ -46,7 +46,7 @@ public class TmFileReaderTest {
 	
 	@Test(expected=IOException.class)
 	public void testHrdpReader() throws InterruptedException, IOException {
-		TmFileReader tfr=new TmFileReader("src/test/resources/TmFileReaderTest-hrdp-corrupted", new ColumbusPacketPreprocessor(null));
+		TmFileReader tfr=new TmFileReader("src/test/resources/TmFileReaderTest-hrdp-corrupted", new IssPacketPreprocessor(null));
 		PacketWithTime pwrt=tfr.readPacket(TimeEncoding.getWallclockTime());
 		assertNotNull(pwrt);
 		ByteBuffer bb = ByteBuffer.wrap(pwrt.getPacket());

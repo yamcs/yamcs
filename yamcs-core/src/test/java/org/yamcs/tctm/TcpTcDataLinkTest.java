@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -39,10 +40,10 @@ public class TcpTcDataLinkTest {
         mtc.start();
     }
 
-    @Before
+    @After
     public void shutdownTcpServer() throws IOException {
         mtc = new MyTcpServer();
-        mtc.stop();
+        mtc.quit();
 
     }
 
