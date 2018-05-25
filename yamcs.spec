@@ -1,6 +1,6 @@
 Name: 		yamcs
 Version: 	$VERSION$+r$REVISION$
-Release: 	10
+Release: 	1
 
 Group:		MCS
 Summary: 	Mission Control System
