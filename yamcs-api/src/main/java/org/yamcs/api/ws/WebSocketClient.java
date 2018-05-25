@@ -22,7 +22,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -157,8 +156,9 @@ public class WebSocketClient {
                 String password = ((UsernamePasswordToken) authToken).getPasswordS();
                 if (username != null) {
                     String credentialsClear = username;
-                    if (password != null)
+                    if (password != null) {
                         credentialsClear += ":" + password;
+                    }
                     String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
                     String authorization = "Basic " + credentialsB64;
                     header.add(HttpHeaderNames.AUTHORIZATION, authorization);
@@ -172,7 +172,11 @@ public class WebSocketClient {
             header.add(HttpHeaderNames.ACCEPT, MediaType.PROTOBUF);
             subprotocol = SUBPROTOCOL_PROTOBUF;
         }
-        URI uri = yprops.webSocketURI(legacyMode);
+        URI uri = yprops.webSocketURI();
+        if (legacyMode) {
+            uri = yprops.webSocketURI(true);
+            subprotocol = null;
+        }
 
         WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13,
                 subprotocol, false, header, maxFramePayloadLength);
@@ -201,24 +205,20 @@ public class WebSocketClient {
 
         log.info("WebSocket Client connecting");
         ChannelFuture future = bootstrap.connect(uri.getHost(), uri.getPort());
-        future.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (future.isSuccess()) {
-                    nettyChannel = future.channel();
-                } else {
-                    callback.connectionFailed(future.cause());
-                    if (enableReconnection.get()) {
-                        log.info("Attempting reconnect..");
-                        callback.connecting();
-                        group.schedule(() -> createBootstrap(), reconnectionInterval, TimeUnit.MILLISECONDS);
-                    }
+        future.addListener((ChannelFuture future1) -> {
+            if (future1.isSuccess()) {
+                nettyChannel = future1.channel();
+            } else {
+                callback.connectionFailed(future1.cause());
+                if (enableReconnection.get()) {
+                    log.info("Attempting reconnect..");
+                    callback.connecting();
+                    group.schedule(() -> createBootstrap(), reconnectionInterval, TimeUnit.MILLISECONDS);
                 }
             }
         });
 
         return future;
-
     }
 
     /**
