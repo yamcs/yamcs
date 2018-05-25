@@ -104,10 +104,12 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
 
     @Override
     protected void doStart() {
+        
         try {
             artemisSession = locator.createSessionFactory().createSession(false, true, true, true);
             String queue = artemisAddress + "-ActiveMQTmProvider";
             artemisSession.createTemporaryQueue(artemisAddress, queue);
+            log.debug("Starting artemis tm data link connected to {}.{}", artemisAddress, queue);
             ClientConsumer client = artemisSession.createConsumer(queue,
                     AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME + "<>"
                             + AbstractArtemisTranslatorService.UNIQUEID);

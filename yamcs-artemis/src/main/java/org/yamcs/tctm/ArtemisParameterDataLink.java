@@ -129,6 +129,7 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
         try {
             artemisSession = locator.createSessionFactory().createSession();
             String queue = artemisAddress+"-ArtemisPpProvider";
+            log.debug("Starting artemis parameter data link connected to {}.{}", artemisAddress, queue);
             artemisSession.createTemporaryQueue(artemisAddress, queue);
             ClientConsumer client = artemisSession.createConsumer(queue, AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID);
             client.setMessageHandler(this);
