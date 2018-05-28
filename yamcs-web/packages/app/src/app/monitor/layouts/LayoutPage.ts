@@ -1,12 +1,11 @@
-import { Component, ChangeDetectionStrategy, ViewChild } from '@angular/core';
-import { Instance } from '@yamcs/client';
-import { ActivatedRoute, Router } from '@angular/router';
-import { LayoutState } from '@yamcs/displays';
-import { LayoutComponent } from '../displays/LayoutComponent';
-import { BehaviorSubject } from 'rxjs';
-import { NamedLayout, LayoutStorage } from '../displays/LayoutStorage';
+import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Instance } from '@yamcs/client';
+import { LayoutState } from '@yamcs/displays';
+import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
+import { LayoutComponent } from '../displays/LayoutComponent';
 
 @Component({
   templateUrl: './LayoutPage.html',
@@ -18,22 +17,39 @@ export class LayoutPage {
   private layoutComponent: LayoutComponent;
 
   instance: Instance;
-  layout: NamedLayout;
+
+  layoutName: string;
+  layout$: Promise<LayoutState>;
 
   dirty$ = new BehaviorSubject<boolean>(false);
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService, private router: Router, title: Title) {
+  constructor(
+    route: ActivatedRoute,
+    private yamcs: YamcsService,
+    private router: Router,
+    title: Title,
+  ) {
     this.instance = yamcs.getInstance();
-    const layoutName = route.snapshot.paramMap.get('name')!;
-    title.setTitle(layoutName + ' - Yamcs');
+    this.layoutName = route.snapshot.paramMap.get('name')!;
+    title.setTitle(this.layoutName + ' - Yamcs');
 
-    this.layout = LayoutStorage.getLayout(this.instance.name, layoutName);
+    this.layout$ = new Promise<LayoutState>((resolve, reject) => {
+      const objectName = 'layouts/' + this.layoutName;
+      yamcs.getInstanceClient()!.getObject('user.admin' /* FIXME */, objectName).then(response => {
+        response.json().then(layoutState => resolve(layoutState)).catch(err => reject(err));
+      }).catch(err => reject(err));
+    });
   }
 
   saveLayout() {
     const state = this.layoutComponent.getLayoutState();
-    LayoutStorage.saveLayout(this.instance.name, this.layout.name, state);
-    this.dirty$.next(false);
+    const objectName = `layouts/${this.layoutName}`;
+    const objectValue = new Blob([JSON.stringify(state)], {
+      type: 'application/json',
+    });
+    this.yamcs.getInstanceClient()!.uploadObject('user.admin' /* FIXME */, objectName, objectValue).then(() => {
+      this.dirty$.next(false);
+    });
   }
 
   renameLayout() {
@@ -42,8 +58,10 @@ export class LayoutPage {
 
   removeLayout() {
     if (confirm('Do you want to permanently delete this layout?')) {
-      LayoutStorage.deleteLayout(this.instance.name, this.layout.name);
-      this.router.navigateByUrl(`/monitor/layouts?instance=${this.instance.name}`);
+      const objectName = `layouts/${this.layoutName}`;
+      this.yamcs.getInstanceClient()!.deleteObject('user.admin' /* FIXME */, objectName).then(() => {
+        this.router.navigateByUrl(`/monitor/layouts?instance=${this.instance.name}`);
+      });
     }
   }
 

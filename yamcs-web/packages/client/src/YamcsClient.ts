@@ -2,9 +2,7 @@ import { HttpError } from './HttpError';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { BucketsWrapper, InstancesWrapper, ObjectsWrapper, ServicesWrapper } from './types/internal';
-import { AccessTokenResponse, AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, GeneralInfo, Instance, ObjectInfo, Service, UserInfo } from './types/system';
-
-
+import { AccessTokenResponse, AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, GeneralInfo, Instance, ListObjectsOptions, ObjectInfo, Service, UserInfo } from './types/system';
 
 export default class YamcsClient {
 
@@ -158,8 +156,9 @@ export default class YamcsClient {
     });
   }
 
-  async listObjects(bucket: string): Promise<ObjectInfo[]> {
-    const response = await this.doFetch(`${this.apiUrl}/buckets/_global/${bucket}`);
+  async listObjects(bucket: string, options: ListObjectsOptions = {}): Promise<ObjectInfo[]> {
+    const url = `${this.apiUrl}/buckets/_global/${bucket}` + this.queryString(options);
+    const response = await this.doFetch(url);
     const wrapper = await response.json() as ObjectsWrapper;
     return wrapper.objects || [];
   }
@@ -172,7 +171,7 @@ export default class YamcsClient {
   async uploadObject(bucket: string, name: string, value: Blob) {
     const url = `${this.apiUrl}/buckets/_global/${bucket}`;
     const formData = new FormData();
-    formData.set(name, value);
+    formData.set(name, value, name);
     return await this.doFetch(url, {
       method: 'POST',
       body: formData,
@@ -223,5 +222,12 @@ export default class YamcsClient {
         return Promise.reject(new HttpError(response.status, response.statusText));
       }
     });
+  }
+
+  private queryString(options: {[key: string]: any}) {
+    const qs = Object.keys(options)
+      .map(k => `${k}=${options[k]}`)
+      .join('&');
+    return qs === '' ? qs : '?' + qs;
   }
 }

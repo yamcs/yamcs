@@ -258,3 +258,7 @@ export interface ObjectInfo {
 export interface CreateBucketRequest {
   name: string;
 }
+
+export interface ListObjectsOptions {
+  prefix?: string;
+}

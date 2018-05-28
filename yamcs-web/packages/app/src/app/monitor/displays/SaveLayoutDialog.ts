@@ -1,7 +1,6 @@
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Component, Inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { LayoutStorage } from './LayoutStorage';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { Router } from '@angular/router';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -22,10 +21,13 @@ export class SaveLayoutDialog {
 
   save() {
     const instance = this.yamcs.getInstance();
-    const layoutName = this.name.value;
-    const layoutState = this.data.state;
-    LayoutStorage.saveLayout(instance.name, layoutName, layoutState);
-    this.dialogRef.close();
-    this.router.navigateByUrl(`/monitor/layouts/${layoutName}?instance=${instance.name}`);
+    const objectName = `layouts/${this.name.value}`;
+    const objectValue = new Blob([JSON.stringify(this.data.state)], {
+      type: 'application/json',
+    });
+    this.yamcs.getInstanceClient()!.uploadObject('user.admin' /* FIXME */, objectName, objectValue).then(() => {
+      this.dialogRef.close();
+      this.router.navigateByUrl(`/monitor/layouts/${this.name.value}?instance=${instance.name}`);
+    });
   }
 }

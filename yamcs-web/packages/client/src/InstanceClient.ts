@@ -4,7 +4,7 @@ import YamcsClient from './YamcsClient';
 import { AlarmsWrapper, AlgorithmsWrapper, BucketsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, ObjectsWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, Command, Container, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, SpaceSystem } from './types/mdb';
 import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DisplayFolder, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
-import { Bucket, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, CreateBucketRequest, EditCommandQueueEntryOptions, EditCommandQueueOptions, Link, LinkSubscriptionResponse, ObjectInfo, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
+import { Bucket, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, CreateBucketRequest, EditCommandQueueEntryOptions, EditCommandQueueOptions, Link, LinkSubscriptionResponse, ListObjectsOptions, ObjectInfo, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
 
 export class InstanceClient {
 
@@ -484,9 +484,9 @@ export class InstanceClient {
     });
   }
 
-  async listObjects(bucket: string): Promise<ObjectInfo[]> {
+  async listObjects(bucket: string, options: ListObjectsOptions = {}): Promise<ObjectInfo[]> {
     const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}`;
-    const response = await this.yamcs.doFetch(url);
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as ObjectsWrapper;
     return wrapper.objects || [];
   }
@@ -499,7 +499,7 @@ export class InstanceClient {
   async uploadObject(bucket: string, name: string, value: Blob) {
     const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}`;
     const formData = new FormData();
-    formData.set(name, value);
+    formData.set(name, value, name);
     return await this.yamcs.doFetch(url, {
       method: 'POST',
       body: formData,
