@@ -1,3 +1,6 @@
+Version 4.4.3 released 
+- added a simple object storage API (buckets)
+
 Version 4.4.2 released 23-May-2018
 - yamcs-web: support multiple series plots
 - TmLink: added the posibility to specify the checksum type in the Columbus

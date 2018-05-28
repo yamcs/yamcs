@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Bucket;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 public class BucketDbTest {
@@ -46,8 +47,11 @@ public class BucketDbTest {
             e = e1;
         }
         assertNotNull(e);
-        
-        assertEquals("[bucket1]", bucketDb.listBuckets().toString());
+        List<BucketProperties> bpl = bucketDb.listBuckets();
+        assertEquals(1, bpl.size());
+        BucketProperties bp = bpl.get(0);
+        assertEquals("bucket1", bp.getName());
+        assertEquals(0, bp.getSize());
         
         assertTrue(bucket.listObjects(x -> true).isEmpty());
         Map<String, String> props = new HashMap<>();
@@ -70,7 +74,13 @@ public class BucketDbTest {
         tablespace.loadDb(false);
         bucketDb = new RdbBucketDatabase("test", tablespace);
          
-        assertEquals("[bucket1]", bucketDb.listBuckets().toString());
+        bpl = bucketDb.listBuckets();
+        assertEquals(1, bpl.size());
+        bp = bpl.get(0);
+        assertEquals("bucket1", bp.getName());
+        assertEquals(1000, bp.getSize());
+        assertEquals(1, bp.getNumObjects());
+        
         bucket = bucketDb.getBucket("bucket1");
         
         l = bucket.listObjects(x -> true);
