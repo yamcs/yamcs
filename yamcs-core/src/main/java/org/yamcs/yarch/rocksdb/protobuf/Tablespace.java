@@ -6,12 +6,18 @@ package org.yamcs.yarch.rocksdb.protobuf;
 public final class Tablespace {
   private Tablespace() {}
   public static void registerAllExtensions(
-      com.google.protobuf.ExtensionRegistry registry) {
+      com.google.protobuf.ExtensionRegistryLite registry) {
   }
-  public interface TimeBasedPartitionOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
 
-    // optional string partitionDir = 1;
+  public static void registerAllExtensions(
+      com.google.protobuf.ExtensionRegistry registry) {
+    registerAllExtensions(
+        (com.google.protobuf.ExtensionRegistryLite) registry);
+  }
+  public interface TimeBasedPartitionOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:TimeBasedPartition)
+      com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional string partitionDir = 1;</code>
      */
@@ -26,7 +32,6 @@ public final class Tablespace {
     com.google.protobuf.ByteString
         getPartitionDirBytes();
 
-    // optional int64 partitionStart = 2;
     /**
      * <code>optional int64 partitionStart = 2;</code>
      */
@@ -36,7 +41,6 @@ public final class Tablespace {
      */
     long getPartitionStart();
 
-    // optional int64 partitionEnd = 3;
     /**
      * <code>optional int64 partitionEnd = 3;</code>
      */
@@ -49,36 +53,30 @@ public final class Tablespace {
   /**
    * Protobuf type {@code TimeBasedPartition}
    */
-  public static final class TimeBasedPartition extends
-      com.google.protobuf.GeneratedMessage
-      implements TimeBasedPartitionOrBuilder {
+  public  static final class TimeBasedPartition extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:TimeBasedPartition)
+      TimeBasedPartitionOrBuilder {
     // Use TimeBasedPartition.newBuilder() to construct.
-    private TimeBasedPartition(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private TimeBasedPartition(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private TimeBasedPartition(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final TimeBasedPartition defaultInstance;
-    public static TimeBasedPartition getDefaultInstance() {
-      return defaultInstance;
+    private TimeBasedPartition() {
+      partitionDir_ = "";
+      partitionStart_ = 0L;
+      partitionEnd_ = 0L;
     }
 
-    public TimeBasedPartition getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private TimeBasedPartition(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -98,8 +96,9 @@ public final class Tablespace {
               break;
             }
             case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              partitionDir_ = input.readBytes();
+              partitionDir_ = bs;
               break;
             }
             case 16: {
@@ -118,7 +117,7 @@ public final class Tablespace {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -129,32 +128,16 @@ public final class Tablespace {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TimeBasedPartition_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TimeBasedPartition_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.class, org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<TimeBasedPartition> PARSER =
-        new com.google.protobuf.AbstractParser<TimeBasedPartition>() {
-      public TimeBasedPartition parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new TimeBasedPartition(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<TimeBasedPartition> getParserForType() {
-      return PARSER;
-    }
-
     private int bitField0_;
-    // optional string partitionDir = 1;
     public static final int PARTITIONDIR_FIELD_NUMBER = 1;
-    private java.lang.Object partitionDir_;
+    private volatile java.lang.Object partitionDir_;
     /**
      * <code>optional string partitionDir = 1;</code>
      */
@@ -195,7 +178,6 @@ public final class Tablespace {
       }
     }
 
-    // optional int64 partitionStart = 2;
     public static final int PARTITIONSTART_FIELD_NUMBER = 2;
     private long partitionStart_;
     /**
@@ -211,7 +193,6 @@ public final class Tablespace {
       return partitionStart_;
     }
 
-    // optional int64 partitionEnd = 3;
     public static final int PARTITIONEND_FIELD_NUMBER = 3;
     private long partitionEnd_;
     /**
@@ -227,15 +208,11 @@ public final class Tablespace {
       return partitionEnd_;
     }
 
-    private void initFields() {
-      partitionDir_ = "";
-      partitionStart_ = 0L;
-      partitionEnd_ = 0L;
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -243,9 +220,8 @@ public final class Tablespace {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getPartitionDirBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, partitionDir_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeInt64(2, partitionStart_);
@@ -253,18 +229,16 @@ public final class Tablespace {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeInt64(3, partitionEnd_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getPartitionDirBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, partitionDir_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
@@ -274,16 +248,66 @@ public final class Tablespace {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(3, partitionEnd_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition)) {
+        return super.equals(obj);
+      }
+      org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition other = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition) obj;
+
+      boolean result = true;
+      result = result && (hasPartitionDir() == other.hasPartitionDir());
+      if (hasPartitionDir()) {
+        result = result && getPartitionDir()
+            .equals(other.getPartitionDir());
+      }
+      result = result && (hasPartitionStart() == other.hasPartitionStart());
+      if (hasPartitionStart()) {
+        result = result && (getPartitionStart()
+            == other.getPartitionStart());
+      }
+      result = result && (hasPartitionEnd() == other.hasPartitionEnd());
+      if (hasPartitionEnd()) {
+        result = result && (getPartitionEnd()
+            == other.getPartitionEnd());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasPartitionDir()) {
+        hash = (37 * hash) + PARTITIONDIR_FIELD_NUMBER;
+        hash = (53 * hash) + getPartitionDir().hashCode();
+      }
+      if (hasPartitionStart()) {
+        hash = (37 * hash) + PARTITIONSTART_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getPartitionStart());
+      }
+      if (hasPartitionEnd()) {
+        hash = (37 * hash) + PARTITIONEND_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getPartitionEnd());
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition parseFrom(
@@ -309,46 +333,57 @@ public final class Tablespace {
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -356,14 +391,15 @@ public final class Tablespace {
      * Protobuf type {@code TimeBasedPartition}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartitionOrBuilder {
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:TimeBasedPartition)
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartitionOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TimeBasedPartition_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TimeBasedPartition_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -376,18 +412,15 @@ public final class Tablespace {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         partitionDir_ = "";
@@ -397,10 +430,6 @@ public final class Tablespace {
         partitionEnd_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -441,6 +470,32 @@ public final class Tablespace {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition) {
           return mergeFrom((org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition)other);
@@ -463,7 +518,8 @@ public final class Tablespace {
         if (other.hasPartitionEnd()) {
           setPartitionEnd(other.getPartitionEnd());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
@@ -480,7 +536,7 @@ public final class Tablespace {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -490,7 +546,6 @@ public final class Tablespace {
       }
       private int bitField0_;
 
-      // optional string partitionDir = 1;
       private java.lang.Object partitionDir_ = "";
       /**
        * <code>optional string partitionDir = 1;</code>
@@ -504,9 +559,12 @@ public final class Tablespace {
       public java.lang.String getPartitionDir() {
         java.lang.Object ref = partitionDir_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          partitionDir_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            partitionDir_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
@@ -564,7 +622,6 @@ public final class Tablespace {
         return this;
       }
 
-      // optional int64 partitionStart = 2;
       private long partitionStart_ ;
       /**
        * <code>optional int64 partitionStart = 2;</code>
@@ -597,7 +654,6 @@ public final class Tablespace {
         return this;
       }
 
-      // optional int64 partitionEnd = 3;
       private long partitionEnd_ ;
       /**
        * <code>optional int64 partitionEnd = 3;</code>
@@ -629,22 +685,59 @@ public final class Tablespace {
         onChanged();
         return this;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:TimeBasedPartition)
     }
 
+    // @@protoc_insertion_point(class_scope:TimeBasedPartition)
+    private static final org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition DEFAULT_INSTANCE;
     static {
-      defaultInstance = new TimeBasedPartition(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition();
     }
 
-    // @@protoc_insertion_point(class_scope:TimeBasedPartition)
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<TimeBasedPartition>
+        PARSER = new com.google.protobuf.AbstractParser<TimeBasedPartition>() {
+      public TimeBasedPartition parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new TimeBasedPartition(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<TimeBasedPartition> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TimeBasedPartition> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
-  public interface TablespaceRecordOrBuilder
-      extends com.google.protobuf.MessageOrBuilder {
+  public interface TablespaceRecordOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:TablespaceRecord)
+      com.google.protobuf.MessageOrBuilder {
 
-    // optional uint32 tbsIndex = 1;
     /**
      * <code>optional uint32 tbsIndex = 1;</code>
      */
@@ -654,7 +747,6 @@ public final class Tablespace {
      */
     int getTbsIndex();
 
-    // optional .TablespaceRecord.Type type = 2;
     /**
      * <code>optional .TablespaceRecord.Type type = 2;</code>
      */
@@ -664,177 +756,170 @@ public final class Tablespace {
      */
     org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type getType();
 
-    // optional string instanceName = 3;
     /**
-     * <code>optional string instanceName = 3;</code>
-     *
      * <pre>
      * used for all record types
      *if not specified then instanceName = tablespaceName
      * </pre>
+     *
+     * <code>optional string instanceName = 3;</code>
      */
     boolean hasInstanceName();
     /**
-     * <code>optional string instanceName = 3;</code>
-     *
      * <pre>
      * used for all record types
      *if not specified then instanceName = tablespaceName
      * </pre>
+     *
+     * <code>optional string instanceName = 3;</code>
      */
     java.lang.String getInstanceName();
     /**
-     * <code>optional string instanceName = 3;</code>
-     *
      * <pre>
      * used for all record types
      *if not specified then instanceName = tablespaceName
      * </pre>
+     *
+     * <code>optional string instanceName = 3;</code>
      */
     com.google.protobuf.ByteString
         getInstanceNameBytes();
 
-    // optional string tableName = 4;
     /**
-     * <code>optional string tableName = 4;</code>
-     *
      * <pre>
      *used for TABLE_PARTITION and HISTOGRAM
      * </pre>
+     *
+     * <code>optional string tableName = 4;</code>
      */
     boolean hasTableName();
     /**
-     * <code>optional string tableName = 4;</code>
-     *
      * <pre>
      *used for TABLE_PARTITION and HISTOGRAM
      * </pre>
+     *
+     * <code>optional string tableName = 4;</code>
      */
     java.lang.String getTableName();
     /**
-     * <code>optional string tableName = 4;</code>
-     *
      * <pre>
      *used for TABLE_PARTITION and HISTOGRAM
      * </pre>
+     *
+     * <code>optional string tableName = 4;</code>
      */
     com.google.protobuf.ByteString
         getTableNameBytes();
 
-    // optional string histogramColumnName = 5;
     /**
-     * <code>optional string histogramColumnName = 5;</code>
-     *
      * <pre>
      *used for HISTOGRAM 
      * </pre>
+     *
+     * <code>optional string histogramColumnName = 5;</code>
      */
     boolean hasHistogramColumnName();
     /**
-     * <code>optional string histogramColumnName = 5;</code>
-     *
      * <pre>
      *used for HISTOGRAM 
      * </pre>
+     *
+     * <code>optional string histogramColumnName = 5;</code>
      */
     java.lang.String getHistogramColumnName();
     /**
-     * <code>optional string histogramColumnName = 5;</code>
-     *
      * <pre>
      *used for HISTOGRAM 
      * </pre>
+     *
+     * <code>optional string histogramColumnName = 5;</code>
      */
     com.google.protobuf.ByteString
         getHistogramColumnNameBytes();
 
-    // optional bytes partitionValue = 6;
     /**
-     * <code>optional bytes partitionValue = 6;</code>
-     *
      * <pre>
      * used for TABLE_PARTITION: if partitioned by value - the value
      * </pre>
+     *
+     * <code>optional bytes partitionValue = 6;</code>
      */
     boolean hasPartitionValue();
     /**
-     * <code>optional bytes partitionValue = 6;</code>
-     *
      * <pre>
      * used for TABLE_PARTITION: if partitioned by value - the value
      * </pre>
+     *
+     * <code>optional bytes partitionValue = 6;</code>
      */
     com.google.protobuf.ByteString getPartitionValue();
 
-    // optional .TimeBasedPartition partition = 7;
     /**
-     * <code>optional .TimeBasedPartition partition = 7;</code>
-     *
      * <pre>
      * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
      *  - partitionDir is subdirectory name (usually something like 2017/11)
      *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
      * </pre>
+     *
+     * <code>optional .TimeBasedPartition partition = 7;</code>
      */
     boolean hasPartition();
     /**
-     * <code>optional .TimeBasedPartition partition = 7;</code>
-     *
      * <pre>
      * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
      *  - partitionDir is subdirectory name (usually something like 2017/11)
      *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
      * </pre>
+     *
+     * <code>optional .TimeBasedPartition partition = 7;</code>
      */
     org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition getPartition();
     /**
-     * <code>optional .TimeBasedPartition partition = 7;</code>
-     *
      * <pre>
      * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
      *  - partitionDir is subdirectory name (usually something like 2017/11)
      *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
      * </pre>
+     *
+     * <code>optional .TimeBasedPartition partition = 7;</code>
      */
     org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartitionOrBuilder getPartitionOrBuilder();
 
-    // optional string parameterFqn = 8;
     /**
-     * <code>optional string parameterFqn = 8;</code>
-     *
      * <pre>
      *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
      *tbsIndex is the parameter id 
      *parameterType is a number assigned to (rawType,engType) combination
      *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
      * </pre>
+     *
+     * <code>optional string parameterFqn = 8;</code>
      */
     boolean hasParameterFqn();
     /**
-     * <code>optional string parameterFqn = 8;</code>
-     *
      * <pre>
      *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
      *tbsIndex is the parameter id 
      *parameterType is a number assigned to (rawType,engType) combination
      *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
      * </pre>
+     *
+     * <code>optional string parameterFqn = 8;</code>
      */
     java.lang.String getParameterFqn();
     /**
-     * <code>optional string parameterFqn = 8;</code>
-     *
      * <pre>
      *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
      *tbsIndex is the parameter id 
      *parameterType is a number assigned to (rawType,engType) combination
      *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
      * </pre>
+     *
+     * <code>optional string parameterFqn = 8;</code>
      */
     com.google.protobuf.ByteString
         getParameterFqnBytes();
 
-    // optional uint32 parameterType = 9;
     /**
      * <code>optional uint32 parameterType = 9;</code>
      */
@@ -844,71 +929,95 @@ public final class Tablespace {
      */
     int getParameterType();
 
-    // optional string partitioningSchema = 10;
     /**
-     * <code>optional string partitioningSchema = 10;</code>
-     *
      * <pre>
      *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
      * </pre>
+     *
+     * <code>optional string partitioningSchema = 10;</code>
      */
     boolean hasPartitioningSchema();
     /**
-     * <code>optional string partitioningSchema = 10;</code>
-     *
      * <pre>
      *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
      * </pre>
+     *
+     * <code>optional string partitioningSchema = 10;</code>
      */
     java.lang.String getPartitioningSchema();
     /**
-     * <code>optional string partitioningSchema = 10;</code>
-     *
      * <pre>
      *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
      * </pre>
+     *
+     * <code>optional string partitioningSchema = 10;</code>
      */
     com.google.protobuf.ByteString
         getPartitioningSchemaBytes();
+
+    /**
+     * <pre>
+     *bucketName
+     * </pre>
+     *
+     * <code>optional .BucketProperties bucketProperties = 11;</code>
+     */
+    boolean hasBucketProperties();
+    /**
+     * <pre>
+     *bucketName
+     * </pre>
+     *
+     * <code>optional .BucketProperties bucketProperties = 11;</code>
+     */
+    org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties getBucketProperties();
+    /**
+     * <pre>
+     *bucketName
+     * </pre>
+     *
+     * <code>optional .BucketProperties bucketProperties = 11;</code>
+     */
+    org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketPropertiesOrBuilder getBucketPropertiesOrBuilder();
   }
   /**
-   * Protobuf type {@code TablespaceRecord}
-   *
    * <pre>
    **
    *  This is used to encode values in the tablespace metadata database .
    * </pre>
+   *
+   * Protobuf type {@code TablespaceRecord}
    */
-  public static final class TablespaceRecord extends
-      com.google.protobuf.GeneratedMessage
-      implements TablespaceRecordOrBuilder {
+  public  static final class TablespaceRecord extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:TablespaceRecord)
+      TablespaceRecordOrBuilder {
     // Use TablespaceRecord.newBuilder() to construct.
-    private TablespaceRecord(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private TablespaceRecord(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private TablespaceRecord(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final TablespaceRecord defaultInstance;
-    public static TablespaceRecord getDefaultInstance() {
-      return defaultInstance;
+    private TablespaceRecord() {
+      tbsIndex_ = 0;
+      type_ = 1;
+      instanceName_ = "";
+      tableName_ = "";
+      histogramColumnName_ = "";
+      partitionValue_ = com.google.protobuf.ByteString.EMPTY;
+      parameterFqn_ = "";
+      parameterType_ = 0;
+      partitioningSchema_ = "";
     }
 
-    public TablespaceRecord getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private TablespaceRecord(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -939,23 +1048,26 @@ public final class Tablespace {
                 unknownFields.mergeVarintField(2, rawValue);
               } else {
                 bitField0_ |= 0x00000002;
-                type_ = value;
+                type_ = rawValue;
               }
               break;
             }
             case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000004;
-              instanceName_ = input.readBytes();
+              instanceName_ = bs;
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
-              tableName_ = input.readBytes();
+              tableName_ = bs;
               break;
             }
             case 42: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000010;
-              histogramColumnName_ = input.readBytes();
+              histogramColumnName_ = bs;
               break;
             }
             case 50: {
@@ -977,8 +1089,9 @@ public final class Tablespace {
               break;
             }
             case 66: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000080;
-              parameterFqn_ = input.readBytes();
+              parameterFqn_ = bs;
               break;
             }
             case 72: {
@@ -987,8 +1100,22 @@ public final class Tablespace {
               break;
             }
             case 82: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000200;
-              partitioningSchema_ = input.readBytes();
+              partitioningSchema_ = bs;
+              break;
+            }
+            case 90: {
+              org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000400) == 0x00000400)) {
+                subBuilder = bucketProperties_.toBuilder();
+              }
+              bucketProperties_ = input.readMessage(org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(bucketProperties_);
+                bucketProperties_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000400;
               break;
             }
           }
@@ -997,7 +1124,7 @@ public final class Tablespace {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -1008,26 +1135,11 @@ public final class Tablespace {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TablespaceRecord_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TablespaceRecord_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.class, org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<TablespaceRecord> PARSER =
-        new com.google.protobuf.AbstractParser<TablespaceRecord>() {
-      public TablespaceRecord parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new TablespaceRecord(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<TablespaceRecord> getParserForType() {
-      return PARSER;
     }
 
     /**
@@ -1036,126 +1148,154 @@ public final class Tablespace {
     public enum Type
         implements com.google.protobuf.ProtocolMessageEnum {
       /**
-       * <code>TABLE_PARTITION = 1;</code>
-       *
        * <pre>
        *used to store table (partition) data
        *relevant information: instanceName, tableName and optionally partitionValue, partitionDir, partitionStart and partitionEnd
        * </pre>
-       */
-      TABLE_PARTITION(0, 1),
-      /**
-       * <code>HISTOGRAM = 2;</code>
        *
+       * <code>TABLE_PARTITION = 1;</code>
+       */
+      TABLE_PARTITION(1),
+      /**
        * <pre>
        *used to store table histogram data
        *relevant information: instanceName, tableName, columnName
        * </pre>
-       */
-      HISTOGRAM(1, 2),
-      /**
-       * <code>PARCHIVE_PGID2PG = 4;</code>
        *
+       * <code>HISTOGRAM = 2;</code>
+       */
+      HISTOGRAM(2),
+      /**
        * <pre>
        *used as part of the ParameterArchive to keep the parameter group id -&gt; parameter group (list of parameter ids) mapping
        *relevant information: instanceName
        *there is only one record of this type for each instance and ParameterArchive
        * </pre>
-       */
-      PARCHIVE_PGID2PG(2, 4),
-      /**
-       * <code>PARCHIVE_DATA = 5;</code>
        *
+       * <code>PARCHIVE_PGID2PG = 4;</code>
+       */
+      PARCHIVE_PGID2PG(4),
+      /**
        * <pre>
        *used to store ParameterArchive data. There is one record for each separate parameter 
        *(taking into account that a different type represents a different parameter in the ParameterArchive even if it has the same name)
        *relevant information: instanceName, parameterFqn, parameterType
        * </pre>
-       */
-      PARCHIVE_DATA(3, 5),
-      /**
-       * <code>PARCHIVE_PINFO = 6;</code>
        *
+       * <code>PARCHIVE_DATA = 5;</code>
+       */
+      PARCHIVE_DATA(5),
+      /**
        * <pre>
        *used to store information about the partitions of the ParameterArchive in case they are partitioned by time
        * relevant information: instanceName, partitioningSchema
        *there is only one record of this type for each instance and ParameterArchive
        * </pre>
-       */
-      PARCHIVE_PINFO(4, 6),
-      /**
-       * <code>TAGDB = 7;</code>
        *
+       * <code>PARCHIVE_PINFO = 6;</code>
+       */
+      PARCHIVE_PINFO(6),
+      /**
        * <pre>
        *used by the tag database
        * relevant information: instanceName
        * </pre>
+       *
+       * <code>TAGDB = 7;</code>
        */
-      TAGDB(5, 7),
+      TAGDB(7),
+      /**
+       * <pre>
+       *used to store bucket and user objects
+       * relevant information: instanceName, bucketName
+       * </pre>
+       *
+       * <code>BUCKET = 8;</code>
+       */
+      BUCKET(8),
       ;
 
       /**
-       * <code>TABLE_PARTITION = 1;</code>
-       *
        * <pre>
        *used to store table (partition) data
        *relevant information: instanceName, tableName and optionally partitionValue, partitionDir, partitionStart and partitionEnd
        * </pre>
+       *
+       * <code>TABLE_PARTITION = 1;</code>
        */
       public static final int TABLE_PARTITION_VALUE = 1;
       /**
-       * <code>HISTOGRAM = 2;</code>
-       *
        * <pre>
        *used to store table histogram data
        *relevant information: instanceName, tableName, columnName
        * </pre>
+       *
+       * <code>HISTOGRAM = 2;</code>
        */
       public static final int HISTOGRAM_VALUE = 2;
       /**
-       * <code>PARCHIVE_PGID2PG = 4;</code>
-       *
        * <pre>
        *used as part of the ParameterArchive to keep the parameter group id -&gt; parameter group (list of parameter ids) mapping
        *relevant information: instanceName
        *there is only one record of this type for each instance and ParameterArchive
        * </pre>
+       *
+       * <code>PARCHIVE_PGID2PG = 4;</code>
        */
       public static final int PARCHIVE_PGID2PG_VALUE = 4;
       /**
-       * <code>PARCHIVE_DATA = 5;</code>
-       *
        * <pre>
        *used to store ParameterArchive data. There is one record for each separate parameter 
        *(taking into account that a different type represents a different parameter in the ParameterArchive even if it has the same name)
        *relevant information: instanceName, parameterFqn, parameterType
        * </pre>
+       *
+       * <code>PARCHIVE_DATA = 5;</code>
        */
       public static final int PARCHIVE_DATA_VALUE = 5;
       /**
-       * <code>PARCHIVE_PINFO = 6;</code>
-       *
        * <pre>
        *used to store information about the partitions of the ParameterArchive in case they are partitioned by time
        * relevant information: instanceName, partitioningSchema
        *there is only one record of this type for each instance and ParameterArchive
        * </pre>
+       *
+       * <code>PARCHIVE_PINFO = 6;</code>
        */
       public static final int PARCHIVE_PINFO_VALUE = 6;
       /**
-       * <code>TAGDB = 7;</code>
-       *
        * <pre>
        *used by the tag database
        * relevant information: instanceName
        * </pre>
+       *
+       * <code>TAGDB = 7;</code>
        */
       public static final int TAGDB_VALUE = 7;
+      /**
+       * <pre>
+       *used to store bucket and user objects
+       * relevant information: instanceName, bucketName
+       * </pre>
+       *
+       * <code>BUCKET = 8;</code>
+       */
+      public static final int BUCKET_VALUE = 8;
 
 
-      public final int getNumber() { return value; }
+      public final int getNumber() {
+        return value;
+      }
 
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
       public static Type valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static Type forNumber(int value) {
         switch (value) {
           case 1: return TABLE_PARTITION;
           case 2: return HISTOGRAM;
@@ -1163,6 +1303,7 @@ public final class Tablespace {
           case 5: return PARCHIVE_DATA;
           case 6: return PARCHIVE_PINFO;
           case 7: return TAGDB;
+          case 8: return BUCKET;
           default: return null;
         }
       }
@@ -1171,17 +1312,17 @@ public final class Tablespace {
           internalGetValueMap() {
         return internalValueMap;
       }
-      private static com.google.protobuf.Internal.EnumLiteMap<Type>
-          internalValueMap =
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          Type> internalValueMap =
             new com.google.protobuf.Internal.EnumLiteMap<Type>() {
               public Type findValueByNumber(int number) {
-                return Type.valueOf(number);
+                return Type.forNumber(number);
               }
             };
 
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
-        return getDescriptor().getValues().get(index);
+        return getDescriptor().getValues().get(ordinal());
       }
       public final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptorForType() {
@@ -1203,11 +1344,9 @@ public final class Tablespace {
         return VALUES[desc.getIndex()];
       }
 
-      private final int index;
       private final int value;
 
-      private Type(int index, int value) {
-        this.index = index;
+      private Type(int value) {
         this.value = value;
       }
 
@@ -1215,7 +1354,6 @@ public final class Tablespace {
     }
 
     private int bitField0_;
-    // optional uint32 tbsIndex = 1;
     public static final int TBSINDEX_FIELD_NUMBER = 1;
     private int tbsIndex_;
     /**
@@ -1231,9 +1369,8 @@ public final class Tablespace {
       return tbsIndex_;
     }
 
-    // optional .TablespaceRecord.Type type = 2;
     public static final int TYPE_FIELD_NUMBER = 2;
-    private org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type type_;
+    private int type_;
     /**
      * <code>optional .TablespaceRecord.Type type = 2;</code>
      */
@@ -1244,30 +1381,30 @@ public final class Tablespace {
      * <code>optional .TablespaceRecord.Type type = 2;</code>
      */
     public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type getType() {
-      return type_;
+      org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type result = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.valueOf(type_);
+      return result == null ? org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.TABLE_PARTITION : result;
     }
 
-    // optional string instanceName = 3;
     public static final int INSTANCENAME_FIELD_NUMBER = 3;
-    private java.lang.Object instanceName_;
+    private volatile java.lang.Object instanceName_;
     /**
-     * <code>optional string instanceName = 3;</code>
-     *
      * <pre>
      * used for all record types
      *if not specified then instanceName = tablespaceName
      * </pre>
+     *
+     * <code>optional string instanceName = 3;</code>
      */
     public boolean hasInstanceName() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional string instanceName = 3;</code>
-     *
      * <pre>
      * used for all record types
      *if not specified then instanceName = tablespaceName
      * </pre>
+     *
+     * <code>optional string instanceName = 3;</code>
      */
     public java.lang.String getInstanceName() {
       java.lang.Object ref = instanceName_;
@@ -1284,12 +1421,12 @@ public final class Tablespace {
       }
     }
     /**
-     * <code>optional string instanceName = 3;</code>
-     *
      * <pre>
      * used for all record types
      *if not specified then instanceName = tablespaceName
      * </pre>
+     *
+     * <code>optional string instanceName = 3;</code>
      */
     public com.google.protobuf.ByteString
         getInstanceNameBytes() {
@@ -1305,25 +1442,24 @@ public final class Tablespace {
       }
     }
 
-    // optional string tableName = 4;
     public static final int TABLENAME_FIELD_NUMBER = 4;
-    private java.lang.Object tableName_;
+    private volatile java.lang.Object tableName_;
     /**
-     * <code>optional string tableName = 4;</code>
-     *
      * <pre>
      *used for TABLE_PARTITION and HISTOGRAM
      * </pre>
+     *
+     * <code>optional string tableName = 4;</code>
      */
     public boolean hasTableName() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>optional string tableName = 4;</code>
-     *
      * <pre>
      *used for TABLE_PARTITION and HISTOGRAM
      * </pre>
+     *
+     * <code>optional string tableName = 4;</code>
      */
     public java.lang.String getTableName() {
       java.lang.Object ref = tableName_;
@@ -1340,11 +1476,11 @@ public final class Tablespace {
       }
     }
     /**
-     * <code>optional string tableName = 4;</code>
-     *
      * <pre>
      *used for TABLE_PARTITION and HISTOGRAM
      * </pre>
+     *
+     * <code>optional string tableName = 4;</code>
      */
     public com.google.protobuf.ByteString
         getTableNameBytes() {
@@ -1360,25 +1496,24 @@ public final class Tablespace {
       }
     }
 
-    // optional string histogramColumnName = 5;
     public static final int HISTOGRAMCOLUMNNAME_FIELD_NUMBER = 5;
-    private java.lang.Object histogramColumnName_;
+    private volatile java.lang.Object histogramColumnName_;
     /**
-     * <code>optional string histogramColumnName = 5;</code>
-     *
      * <pre>
      *used for HISTOGRAM 
      * </pre>
+     *
+     * <code>optional string histogramColumnName = 5;</code>
      */
     public boolean hasHistogramColumnName() {
       return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>optional string histogramColumnName = 5;</code>
-     *
      * <pre>
      *used for HISTOGRAM 
      * </pre>
+     *
+     * <code>optional string histogramColumnName = 5;</code>
      */
     public java.lang.String getHistogramColumnName() {
       java.lang.Object ref = histogramColumnName_;
@@ -1395,11 +1530,11 @@ public final class Tablespace {
       }
     }
     /**
-     * <code>optional string histogramColumnName = 5;</code>
-     *
      * <pre>
      *used for HISTOGRAM 
      * </pre>
+     *
+     * <code>optional string histogramColumnName = 5;</code>
      */
     public com.google.protobuf.ByteString
         getHistogramColumnNameBytes() {
@@ -1415,95 +1550,92 @@ public final class Tablespace {
       }
     }
 
-    // optional bytes partitionValue = 6;
     public static final int PARTITIONVALUE_FIELD_NUMBER = 6;
     private com.google.protobuf.ByteString partitionValue_;
     /**
-     * <code>optional bytes partitionValue = 6;</code>
-     *
      * <pre>
      * used for TABLE_PARTITION: if partitioned by value - the value
      * </pre>
+     *
+     * <code>optional bytes partitionValue = 6;</code>
      */
     public boolean hasPartitionValue() {
       return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
-     * <code>optional bytes partitionValue = 6;</code>
-     *
      * <pre>
      * used for TABLE_PARTITION: if partitioned by value - the value
      * </pre>
+     *
+     * <code>optional bytes partitionValue = 6;</code>
      */
     public com.google.protobuf.ByteString getPartitionValue() {
       return partitionValue_;
     }
 
-    // optional .TimeBasedPartition partition = 7;
     public static final int PARTITION_FIELD_NUMBER = 7;
     private org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition partition_;
     /**
-     * <code>optional .TimeBasedPartition partition = 7;</code>
-     *
      * <pre>
      * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
      *  - partitionDir is subdirectory name (usually something like 2017/11)
      *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
      * </pre>
+     *
+     * <code>optional .TimeBasedPartition partition = 7;</code>
      */
     public boolean hasPartition() {
       return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
-     * <code>optional .TimeBasedPartition partition = 7;</code>
-     *
      * <pre>
      * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
      *  - partitionDir is subdirectory name (usually something like 2017/11)
      *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
      * </pre>
+     *
+     * <code>optional .TimeBasedPartition partition = 7;</code>
      */
     public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition getPartition() {
-      return partition_;
+      return partition_ == null ? org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance() : partition_;
     }
     /**
-     * <code>optional .TimeBasedPartition partition = 7;</code>
-     *
      * <pre>
      * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
      *  - partitionDir is subdirectory name (usually something like 2017/11)
      *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
      * </pre>
+     *
+     * <code>optional .TimeBasedPartition partition = 7;</code>
      */
     public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartitionOrBuilder getPartitionOrBuilder() {
-      return partition_;
+      return partition_ == null ? org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance() : partition_;
     }
 
-    // optional string parameterFqn = 8;
     public static final int PARAMETERFQN_FIELD_NUMBER = 8;
-    private java.lang.Object parameterFqn_;
+    private volatile java.lang.Object parameterFqn_;
     /**
-     * <code>optional string parameterFqn = 8;</code>
-     *
      * <pre>
      *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
      *tbsIndex is the parameter id 
      *parameterType is a number assigned to (rawType,engType) combination
      *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
      * </pre>
+     *
+     * <code>optional string parameterFqn = 8;</code>
      */
     public boolean hasParameterFqn() {
       return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     /**
-     * <code>optional string parameterFqn = 8;</code>
-     *
      * <pre>
      *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
      *tbsIndex is the parameter id 
      *parameterType is a number assigned to (rawType,engType) combination
      *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
      * </pre>
+     *
+     * <code>optional string parameterFqn = 8;</code>
      */
     public java.lang.String getParameterFqn() {
       java.lang.Object ref = parameterFqn_;
@@ -1520,14 +1652,14 @@ public final class Tablespace {
       }
     }
     /**
-     * <code>optional string parameterFqn = 8;</code>
-     *
      * <pre>
      *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
      *tbsIndex is the parameter id 
      *parameterType is a number assigned to (rawType,engType) combination
      *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
      * </pre>
+     *
+     * <code>optional string parameterFqn = 8;</code>
      */
     public com.google.protobuf.ByteString
         getParameterFqnBytes() {
@@ -1543,7 +1675,6 @@ public final class Tablespace {
       }
     }
 
-    // optional uint32 parameterType = 9;
     public static final int PARAMETERTYPE_FIELD_NUMBER = 9;
     private int parameterType_;
     /**
@@ -1559,25 +1690,24 @@ public final class Tablespace {
       return parameterType_;
     }
 
-    // optional string partitioningSchema = 10;
     public static final int PARTITIONINGSCHEMA_FIELD_NUMBER = 10;
-    private java.lang.Object partitioningSchema_;
+    private volatile java.lang.Object partitioningSchema_;
     /**
-     * <code>optional string partitioningSchema = 10;</code>
-     *
      * <pre>
      *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
      * </pre>
+     *
+     * <code>optional string partitioningSchema = 10;</code>
      */
     public boolean hasPartitioningSchema() {
       return ((bitField0_ & 0x00000200) == 0x00000200);
     }
     /**
-     * <code>optional string partitioningSchema = 10;</code>
-     *
      * <pre>
      *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
      * </pre>
+     *
+     * <code>optional string partitioningSchema = 10;</code>
      */
     public java.lang.String getPartitioningSchema() {
       java.lang.Object ref = partitioningSchema_;
@@ -1594,11 +1724,11 @@ public final class Tablespace {
       }
     }
     /**
-     * <code>optional string partitioningSchema = 10;</code>
-     *
      * <pre>
      *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
      * </pre>
+     *
+     * <code>optional string partitioningSchema = 10;</code>
      */
     public com.google.protobuf.ByteString
         getPartitioningSchemaBytes() {
@@ -1614,22 +1744,44 @@ public final class Tablespace {
       }
     }
 
-    private void initFields() {
-      tbsIndex_ = 0;
-      type_ = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.TABLE_PARTITION;
-      instanceName_ = "";
-      tableName_ = "";
-      histogramColumnName_ = "";
-      partitionValue_ = com.google.protobuf.ByteString.EMPTY;
-      partition_ = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance();
-      parameterFqn_ = "";
-      parameterType_ = 0;
-      partitioningSchema_ = "";
+    public static final int BUCKETPROPERTIES_FIELD_NUMBER = 11;
+    private org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties bucketProperties_;
+    /**
+     * <pre>
+     *bucketName
+     * </pre>
+     *
+     * <code>optional .BucketProperties bucketProperties = 11;</code>
+     */
+    public boolean hasBucketProperties() {
+      return ((bitField0_ & 0x00000400) == 0x00000400);
     }
+    /**
+     * <pre>
+     *bucketName
+     * </pre>
+     *
+     * <code>optional .BucketProperties bucketProperties = 11;</code>
+     */
+    public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties getBucketProperties() {
+      return bucketProperties_ == null ? org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.getDefaultInstance() : bucketProperties_;
+    }
+    /**
+     * <pre>
+     *bucketName
+     * </pre>
+     *
+     * <code>optional .BucketProperties bucketProperties = 11;</code>
+     */
+    public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketPropertiesOrBuilder getBucketPropertiesOrBuilder() {
+      return bucketProperties_ == null ? org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.getDefaultInstance() : bucketProperties_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
-      if (isInitialized != -1) return isInitialized == 1;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
 
       memoizedIsInitialized = 1;
       return true;
@@ -1637,43 +1789,44 @@ public final class Tablespace {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeUInt32(1, tbsIndex_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeEnum(2, type_.getNumber());
+        output.writeEnum(2, type_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getInstanceNameBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, instanceName_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getTableNameBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, tableName_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeBytes(5, getHistogramColumnNameBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, histogramColumnName_);
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeBytes(6, partitionValue_);
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeMessage(7, partition_);
+        output.writeMessage(7, getPartition());
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        output.writeBytes(8, getParameterFqnBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, parameterFqn_);
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         output.writeUInt32(9, parameterType_);
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
-        output.writeBytes(10, getPartitioningSchemaBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, partitioningSchema_);
       }
-      getUnknownFields().writeTo(output);
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        output.writeMessage(11, getBucketProperties());
+      }
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
@@ -1683,19 +1836,16 @@ public final class Tablespace {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(2, type_.getNumber());
+          .computeEnumSize(2, type_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getInstanceNameBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, instanceName_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getTableNameBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, tableName_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(5, getHistogramColumnNameBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, histogramColumnName_);
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
@@ -1703,30 +1853,151 @@ public final class Tablespace {
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(7, partition_);
+          .computeMessageSize(7, getPartition());
       }
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(8, getParameterFqnBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, parameterFqn_);
       }
       if (((bitField0_ & 0x00000100) == 0x00000100)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt32Size(9, parameterType_);
       }
       if (((bitField0_ & 0x00000200) == 0x00000200)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(10, getPartitioningSchemaBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, partitioningSchema_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(11, getBucketProperties());
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord)) {
+        return super.equals(obj);
+      }
+      org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord other = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord) obj;
+
+      boolean result = true;
+      result = result && (hasTbsIndex() == other.hasTbsIndex());
+      if (hasTbsIndex()) {
+        result = result && (getTbsIndex()
+            == other.getTbsIndex());
+      }
+      result = result && (hasType() == other.hasType());
+      if (hasType()) {
+        result = result && type_ == other.type_;
+      }
+      result = result && (hasInstanceName() == other.hasInstanceName());
+      if (hasInstanceName()) {
+        result = result && getInstanceName()
+            .equals(other.getInstanceName());
+      }
+      result = result && (hasTableName() == other.hasTableName());
+      if (hasTableName()) {
+        result = result && getTableName()
+            .equals(other.getTableName());
+      }
+      result = result && (hasHistogramColumnName() == other.hasHistogramColumnName());
+      if (hasHistogramColumnName()) {
+        result = result && getHistogramColumnName()
+            .equals(other.getHistogramColumnName());
+      }
+      result = result && (hasPartitionValue() == other.hasPartitionValue());
+      if (hasPartitionValue()) {
+        result = result && getPartitionValue()
+            .equals(other.getPartitionValue());
+      }
+      result = result && (hasPartition() == other.hasPartition());
+      if (hasPartition()) {
+        result = result && getPartition()
+            .equals(other.getPartition());
+      }
+      result = result && (hasParameterFqn() == other.hasParameterFqn());
+      if (hasParameterFqn()) {
+        result = result && getParameterFqn()
+            .equals(other.getParameterFqn());
+      }
+      result = result && (hasParameterType() == other.hasParameterType());
+      if (hasParameterType()) {
+        result = result && (getParameterType()
+            == other.getParameterType());
+      }
+      result = result && (hasPartitioningSchema() == other.hasPartitioningSchema());
+      if (hasPartitioningSchema()) {
+        result = result && getPartitioningSchema()
+            .equals(other.getPartitioningSchema());
+      }
+      result = result && (hasBucketProperties() == other.hasBucketProperties());
+      if (hasBucketProperties()) {
+        result = result && getBucketProperties()
+            .equals(other.getBucketProperties());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasTbsIndex()) {
+        hash = (37 * hash) + TBSINDEX_FIELD_NUMBER;
+        hash = (53 * hash) + getTbsIndex();
+      }
+      if (hasType()) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + type_;
+      }
+      if (hasInstanceName()) {
+        hash = (37 * hash) + INSTANCENAME_FIELD_NUMBER;
+        hash = (53 * hash) + getInstanceName().hashCode();
+      }
+      if (hasTableName()) {
+        hash = (37 * hash) + TABLENAME_FIELD_NUMBER;
+        hash = (53 * hash) + getTableName().hashCode();
+      }
+      if (hasHistogramColumnName()) {
+        hash = (37 * hash) + HISTOGRAMCOLUMNNAME_FIELD_NUMBER;
+        hash = (53 * hash) + getHistogramColumnName().hashCode();
+      }
+      if (hasPartitionValue()) {
+        hash = (37 * hash) + PARTITIONVALUE_FIELD_NUMBER;
+        hash = (53 * hash) + getPartitionValue().hashCode();
+      }
+      if (hasPartition()) {
+        hash = (37 * hash) + PARTITION_FIELD_NUMBER;
+        hash = (53 * hash) + getPartition().hashCode();
+      }
+      if (hasParameterFqn()) {
+        hash = (37 * hash) + PARAMETERFQN_FIELD_NUMBER;
+        hash = (53 * hash) + getParameterFqn().hashCode();
+      }
+      if (hasParameterType()) {
+        hash = (37 * hash) + PARAMETERTYPE_FIELD_NUMBER;
+        hash = (53 * hash) + getParameterType();
+      }
+      if (hasPartitioningSchema()) {
+        hash = (37 * hash) + PARTITIONINGSCHEMA_FIELD_NUMBER;
+        hash = (53 * hash) + getPartitioningSchema().hashCode();
+      }
+      if (hasBucketProperties()) {
+        hash = (37 * hash) + BUCKETPROPERTIES_FIELD_NUMBER;
+        hash = (53 * hash) + getBucketProperties().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord parseFrom(
@@ -1752,66 +2023,78 @@ public final class Tablespace {
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code TablespaceRecord}
-     *
      * <pre>
      **
      *  This is used to encode values in the tablespace metadata database .
      * </pre>
+     *
+     * Protobuf type {@code TablespaceRecord}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder>
-       implements org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecordOrBuilder {
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:TablespaceRecord)
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecordOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TablespaceRecord_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_TablespaceRecord_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1824,24 +2107,22 @@ public final class Tablespace {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
           getPartitionFieldBuilder();
+          getBucketPropertiesFieldBuilder();
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         tbsIndex_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
-        type_ = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.TABLE_PARTITION;
+        type_ = 1;
         bitField0_ = (bitField0_ & ~0x00000002);
         instanceName_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -1852,7 +2133,7 @@ public final class Tablespace {
         partitionValue_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000020);
         if (partitionBuilder_ == null) {
-          partition_ = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance();
+          partition_ = null;
         } else {
           partitionBuilder_.clear();
         }
@@ -1863,11 +2144,13 @@ public final class Tablespace {
         bitField0_ = (bitField0_ & ~0x00000100);
         partitioningSchema_ = "";
         bitField0_ = (bitField0_ & ~0x00000200);
+        if (bucketPropertiesBuilder_ == null) {
+          bucketProperties_ = null;
+        } else {
+          bucketPropertiesBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -1935,11 +2218,45 @@ public final class Tablespace {
           to_bitField0_ |= 0x00000200;
         }
         result.partitioningSchema_ = partitioningSchema_;
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000400;
+        }
+        if (bucketPropertiesBuilder_ == null) {
+          result.bucketProperties_ = bucketProperties_;
+        } else {
+          result.bucketProperties_ = bucketPropertiesBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord) {
           return mergeFrom((org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord)other);
@@ -1991,7 +2308,11 @@ public final class Tablespace {
           partitioningSchema_ = other.partitioningSchema_;
           onChanged();
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        if (other.hasBucketProperties()) {
+          mergeBucketProperties(other.getBucketProperties());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
@@ -2008,7 +2329,7 @@ public final class Tablespace {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -2018,7 +2339,6 @@ public final class Tablespace {
       }
       private int bitField0_;
 
-      // optional uint32 tbsIndex = 1;
       private int tbsIndex_ ;
       /**
        * <code>optional uint32 tbsIndex = 1;</code>
@@ -2051,8 +2371,7 @@ public final class Tablespace {
         return this;
       }
 
-      // optional .TablespaceRecord.Type type = 2;
-      private org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type type_ = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.TABLE_PARTITION;
+      private int type_ = 1;
       /**
        * <code>optional .TablespaceRecord.Type type = 2;</code>
        */
@@ -2063,7 +2382,8 @@ public final class Tablespace {
        * <code>optional .TablespaceRecord.Type type = 2;</code>
        */
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type getType() {
-        return type_;
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type result = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.valueOf(type_);
+        return result == null ? org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.TABLE_PARTITION : result;
       }
       /**
        * <code>optional .TablespaceRecord.Type type = 2;</code>
@@ -2073,7 +2393,7 @@ public final class Tablespace {
           throw new NullPointerException();
         }
         bitField0_ |= 0x00000002;
-        type_ = value;
+        type_ = value.getNumber();
         onChanged();
         return this;
       }
@@ -2082,50 +2402,52 @@ public final class Tablespace {
        */
       public Builder clearType() {
         bitField0_ = (bitField0_ & ~0x00000002);
-        type_ = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type.TABLE_PARTITION;
+        type_ = 1;
         onChanged();
         return this;
       }
 
-      // optional string instanceName = 3;
       private java.lang.Object instanceName_ = "";
       /**
-       * <code>optional string instanceName = 3;</code>
-       *
        * <pre>
        * used for all record types
        *if not specified then instanceName = tablespaceName
        * </pre>
+       *
+       * <code>optional string instanceName = 3;</code>
        */
       public boolean hasInstanceName() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional string instanceName = 3;</code>
-       *
        * <pre>
        * used for all record types
        *if not specified then instanceName = tablespaceName
        * </pre>
+       *
+       * <code>optional string instanceName = 3;</code>
        */
       public java.lang.String getInstanceName() {
         java.lang.Object ref = instanceName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          instanceName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            instanceName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>optional string instanceName = 3;</code>
-       *
        * <pre>
        * used for all record types
        *if not specified then instanceName = tablespaceName
        * </pre>
+       *
+       * <code>optional string instanceName = 3;</code>
        */
       public com.google.protobuf.ByteString
           getInstanceNameBytes() {
@@ -2141,12 +2463,12 @@ public final class Tablespace {
         }
       }
       /**
-       * <code>optional string instanceName = 3;</code>
-       *
        * <pre>
        * used for all record types
        *if not specified then instanceName = tablespaceName
        * </pre>
+       *
+       * <code>optional string instanceName = 3;</code>
        */
       public Builder setInstanceName(
           java.lang.String value) {
@@ -2159,12 +2481,12 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional string instanceName = 3;</code>
-       *
        * <pre>
        * used for all record types
        *if not specified then instanceName = tablespaceName
        * </pre>
+       *
+       * <code>optional string instanceName = 3;</code>
        */
       public Builder clearInstanceName() {
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -2173,12 +2495,12 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional string instanceName = 3;</code>
-       *
        * <pre>
        * used for all record types
        *if not specified then instanceName = tablespaceName
        * </pre>
+       *
+       * <code>optional string instanceName = 3;</code>
        */
       public Builder setInstanceNameBytes(
           com.google.protobuf.ByteString value) {
@@ -2191,42 +2513,44 @@ public final class Tablespace {
         return this;
       }
 
-      // optional string tableName = 4;
       private java.lang.Object tableName_ = "";
       /**
-       * <code>optional string tableName = 4;</code>
-       *
        * <pre>
        *used for TABLE_PARTITION and HISTOGRAM
        * </pre>
+       *
+       * <code>optional string tableName = 4;</code>
        */
       public boolean hasTableName() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional string tableName = 4;</code>
-       *
        * <pre>
        *used for TABLE_PARTITION and HISTOGRAM
        * </pre>
+       *
+       * <code>optional string tableName = 4;</code>
        */
       public java.lang.String getTableName() {
         java.lang.Object ref = tableName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          tableName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            tableName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>optional string tableName = 4;</code>
-       *
        * <pre>
        *used for TABLE_PARTITION and HISTOGRAM
        * </pre>
+       *
+       * <code>optional string tableName = 4;</code>
        */
       public com.google.protobuf.ByteString
           getTableNameBytes() {
@@ -2242,11 +2566,11 @@ public final class Tablespace {
         }
       }
       /**
-       * <code>optional string tableName = 4;</code>
-       *
        * <pre>
        *used for TABLE_PARTITION and HISTOGRAM
        * </pre>
+       *
+       * <code>optional string tableName = 4;</code>
        */
       public Builder setTableName(
           java.lang.String value) {
@@ -2259,11 +2583,11 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional string tableName = 4;</code>
-       *
        * <pre>
        *used for TABLE_PARTITION and HISTOGRAM
        * </pre>
+       *
+       * <code>optional string tableName = 4;</code>
        */
       public Builder clearTableName() {
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -2272,11 +2596,11 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional string tableName = 4;</code>
-       *
        * <pre>
        *used for TABLE_PARTITION and HISTOGRAM
        * </pre>
+       *
+       * <code>optional string tableName = 4;</code>
        */
       public Builder setTableNameBytes(
           com.google.protobuf.ByteString value) {
@@ -2289,42 +2613,44 @@ public final class Tablespace {
         return this;
       }
 
-      // optional string histogramColumnName = 5;
       private java.lang.Object histogramColumnName_ = "";
       /**
-       * <code>optional string histogramColumnName = 5;</code>
-       *
        * <pre>
        *used for HISTOGRAM 
        * </pre>
+       *
+       * <code>optional string histogramColumnName = 5;</code>
        */
       public boolean hasHistogramColumnName() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional string histogramColumnName = 5;</code>
-       *
        * <pre>
        *used for HISTOGRAM 
        * </pre>
+       *
+       * <code>optional string histogramColumnName = 5;</code>
        */
       public java.lang.String getHistogramColumnName() {
         java.lang.Object ref = histogramColumnName_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          histogramColumnName_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            histogramColumnName_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>optional string histogramColumnName = 5;</code>
-       *
        * <pre>
        *used for HISTOGRAM 
        * </pre>
+       *
+       * <code>optional string histogramColumnName = 5;</code>
        */
       public com.google.protobuf.ByteString
           getHistogramColumnNameBytes() {
@@ -2340,11 +2666,11 @@ public final class Tablespace {
         }
       }
       /**
-       * <code>optional string histogramColumnName = 5;</code>
-       *
        * <pre>
        *used for HISTOGRAM 
        * </pre>
+       *
+       * <code>optional string histogramColumnName = 5;</code>
        */
       public Builder setHistogramColumnName(
           java.lang.String value) {
@@ -2357,11 +2683,11 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional string histogramColumnName = 5;</code>
-       *
        * <pre>
        *used for HISTOGRAM 
        * </pre>
+       *
+       * <code>optional string histogramColumnName = 5;</code>
        */
       public Builder clearHistogramColumnName() {
         bitField0_ = (bitField0_ & ~0x00000010);
@@ -2370,11 +2696,11 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional string histogramColumnName = 5;</code>
-       *
        * <pre>
        *used for HISTOGRAM 
        * </pre>
+       *
+       * <code>optional string histogramColumnName = 5;</code>
        */
       public Builder setHistogramColumnNameBytes(
           com.google.protobuf.ByteString value) {
@@ -2387,34 +2713,33 @@ public final class Tablespace {
         return this;
       }
 
-      // optional bytes partitionValue = 6;
       private com.google.protobuf.ByteString partitionValue_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>optional bytes partitionValue = 6;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION: if partitioned by value - the value
        * </pre>
+       *
+       * <code>optional bytes partitionValue = 6;</code>
        */
       public boolean hasPartitionValue() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>optional bytes partitionValue = 6;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION: if partitioned by value - the value
        * </pre>
+       *
+       * <code>optional bytes partitionValue = 6;</code>
        */
       public com.google.protobuf.ByteString getPartitionValue() {
         return partitionValue_;
       }
       /**
-       * <code>optional bytes partitionValue = 6;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION: if partitioned by value - the value
        * </pre>
+       *
+       * <code>optional bytes partitionValue = 6;</code>
        */
       public Builder setPartitionValue(com.google.protobuf.ByteString value) {
         if (value == null) {
@@ -2426,11 +2751,11 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional bytes partitionValue = 6;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION: if partitioned by value - the value
        * </pre>
+       *
+       * <code>optional bytes partitionValue = 6;</code>
        */
       public Builder clearPartitionValue() {
         bitField0_ = (bitField0_ & ~0x00000020);
@@ -2439,46 +2764,45 @@ public final class Tablespace {
         return this;
       }
 
-      // optional .TimeBasedPartition partition = 7;
-      private org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition partition_ = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
+      private org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition partition_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition, org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.Builder, org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartitionOrBuilder> partitionBuilder_;
       /**
-       * <code>optional .TimeBasedPartition partition = 7;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
        *  - partitionDir is subdirectory name (usually something like 2017/11)
        *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
        * </pre>
+       *
+       * <code>optional .TimeBasedPartition partition = 7;</code>
        */
       public boolean hasPartition() {
         return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
-       * <code>optional .TimeBasedPartition partition = 7;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
        *  - partitionDir is subdirectory name (usually something like 2017/11)
        *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
        * </pre>
+       *
+       * <code>optional .TimeBasedPartition partition = 7;</code>
        */
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition getPartition() {
         if (partitionBuilder_ == null) {
-          return partition_;
+          return partition_ == null ? org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance() : partition_;
         } else {
           return partitionBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TimeBasedPartition partition = 7;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
        *  - partitionDir is subdirectory name (usually something like 2017/11)
        *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
        * </pre>
+       *
+       * <code>optional .TimeBasedPartition partition = 7;</code>
        */
       public Builder setPartition(org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition value) {
         if (partitionBuilder_ == null) {
@@ -2494,13 +2818,13 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional .TimeBasedPartition partition = 7;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
        *  - partitionDir is subdirectory name (usually something like 2017/11)
        *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
        * </pre>
+       *
+       * <code>optional .TimeBasedPartition partition = 7;</code>
        */
       public Builder setPartition(
           org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.Builder builderForValue) {
@@ -2514,17 +2838,18 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional .TimeBasedPartition partition = 7;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
        *  - partitionDir is subdirectory name (usually something like 2017/11)
        *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
        * </pre>
+       *
+       * <code>optional .TimeBasedPartition partition = 7;</code>
        */
       public Builder mergePartition(org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition value) {
         if (partitionBuilder_ == null) {
           if (((bitField0_ & 0x00000040) == 0x00000040) &&
+              partition_ != null &&
               partition_ != org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance()) {
             partition_ =
               org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.newBuilder(partition_).mergeFrom(value).buildPartial();
@@ -2539,17 +2864,17 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional .TimeBasedPartition partition = 7;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
        *  - partitionDir is subdirectory name (usually something like 2017/11)
        *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
        * </pre>
+       *
+       * <code>optional .TimeBasedPartition partition = 7;</code>
        */
       public Builder clearPartition() {
         if (partitionBuilder_ == null) {
-          partition_ = org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance();
+          partition_ = null;
           onChanged();
         } else {
           partitionBuilder_.clear();
@@ -2558,13 +2883,13 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional .TimeBasedPartition partition = 7;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
        *  - partitionDir is subdirectory name (usually something like 2017/11)
        *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
        * </pre>
+       *
+       * <code>optional .TimeBasedPartition partition = 7;</code>
        */
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.Builder getPartitionBuilder() {
         bitField0_ |= 0x00000040;
@@ -2572,37 +2897,38 @@ public final class Tablespace {
         return getPartitionFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TimeBasedPartition partition = 7;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
        *  - partitionDir is subdirectory name (usually something like 2017/11)
        *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
        * </pre>
+       *
+       * <code>optional .TimeBasedPartition partition = 7;</code>
        */
       public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartitionOrBuilder getPartitionOrBuilder() {
         if (partitionBuilder_ != null) {
           return partitionBuilder_.getMessageOrBuilder();
         } else {
-          return partition_;
+          return partition_ == null ?
+              org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.getDefaultInstance() : partition_;
         }
       }
       /**
-       * <code>optional .TimeBasedPartition partition = 7;</code>
-       *
        * <pre>
        * used for TABLE_PARTITION, HISTOGRAM: if partition by time 
        *  - partitionDir is subdirectory name (usually something like 2017/11)
        *  - partitionStart/End are the times representing partition start(inclusive) and end (exclusive)
        * </pre>
+       *
+       * <code>optional .TimeBasedPartition partition = 7;</code>
        */
-      private com.google.protobuf.SingleFieldBuilder<
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition, org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.Builder, org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartitionOrBuilder> 
           getPartitionFieldBuilder() {
         if (partitionBuilder_ == null) {
-          partitionBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          partitionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition, org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition.Builder, org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartitionOrBuilder>(
-                  partition_,
+                  getPartition(),
                   getParentForChildren(),
                   isClean());
           partition_ = null;
@@ -2610,51 +2936,53 @@ public final class Tablespace {
         return partitionBuilder_;
       }
 
-      // optional string parameterFqn = 8;
       private java.lang.Object parameterFqn_ = "";
       /**
-       * <code>optional string parameterFqn = 8;</code>
-       *
        * <pre>
        *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
        *tbsIndex is the parameter id 
        *parameterType is a number assigned to (rawType,engType) combination
        *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
        * </pre>
+       *
+       * <code>optional string parameterFqn = 8;</code>
        */
       public boolean hasParameterFqn() {
         return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
-       * <code>optional string parameterFqn = 8;</code>
-       *
        * <pre>
        *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
        *tbsIndex is the parameter id 
        *parameterType is a number assigned to (rawType,engType) combination
        *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
        * </pre>
+       *
+       * <code>optional string parameterFqn = 8;</code>
        */
       public java.lang.String getParameterFqn() {
         java.lang.Object ref = parameterFqn_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          parameterFqn_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            parameterFqn_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>optional string parameterFqn = 8;</code>
-       *
        * <pre>
        *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
        *tbsIndex is the parameter id 
        *parameterType is a number assigned to (rawType,engType) combination
        *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
        * </pre>
+       *
+       * <code>optional string parameterFqn = 8;</code>
        */
       public com.google.protobuf.ByteString
           getParameterFqnBytes() {
@@ -2670,14 +2998,14 @@ public final class Tablespace {
         }
       }
       /**
-       * <code>optional string parameterFqn = 8;</code>
-       *
        * <pre>
        *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
        *tbsIndex is the parameter id 
        *parameterType is a number assigned to (rawType,engType) combination
        *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
        * </pre>
+       *
+       * <code>optional string parameterFqn = 8;</code>
        */
       public Builder setParameterFqn(
           java.lang.String value) {
@@ -2690,14 +3018,14 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional string parameterFqn = 8;</code>
-       *
        * <pre>
        *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
        *tbsIndex is the parameter id 
        *parameterType is a number assigned to (rawType,engType) combination
        *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
        * </pre>
+       *
+       * <code>optional string parameterFqn = 8;</code>
        */
       public Builder clearParameterFqn() {
         bitField0_ = (bitField0_ & ~0x00000080);
@@ -2706,14 +3034,14 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional string parameterFqn = 8;</code>
-       *
        * <pre>
        *used by the PARCHIVE_DATA to associate parameter ids to (parameter qualified  name, parameterType)
        *tbsIndex is the parameter id 
        *parameterType is a number assigned to (rawType,engType) combination
        *parameterFqn is the parameter fully qualified name (something like /system/subsystem1/subsystem2/paraName)
        * </pre>
+       *
+       * <code>optional string parameterFqn = 8;</code>
        */
       public Builder setParameterFqnBytes(
           com.google.protobuf.ByteString value) {
@@ -2726,7 +3054,6 @@ public final class Tablespace {
         return this;
       }
 
-      // optional uint32 parameterType = 9;
       private int parameterType_ ;
       /**
        * <code>optional uint32 parameterType = 9;</code>
@@ -2759,42 +3086,44 @@ public final class Tablespace {
         return this;
       }
 
-      // optional string partitioningSchema = 10;
       private java.lang.Object partitioningSchema_ = "";
       /**
-       * <code>optional string partitioningSchema = 10;</code>
-       *
        * <pre>
        *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
        * </pre>
+       *
+       * <code>optional string partitioningSchema = 10;</code>
        */
       public boolean hasPartitioningSchema() {
         return ((bitField0_ & 0x00000200) == 0x00000200);
       }
       /**
-       * <code>optional string partitioningSchema = 10;</code>
-       *
        * <pre>
        *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
        * </pre>
+       *
+       * <code>optional string partitioningSchema = 10;</code>
        */
       public java.lang.String getPartitioningSchema() {
         java.lang.Object ref = partitioningSchema_;
         if (!(ref instanceof java.lang.String)) {
-          java.lang.String s = ((com.google.protobuf.ByteString) ref)
-              .toStringUtf8();
-          partitioningSchema_ = s;
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            partitioningSchema_ = s;
+          }
           return s;
         } else {
           return (java.lang.String) ref;
         }
       }
       /**
-       * <code>optional string partitioningSchema = 10;</code>
-       *
        * <pre>
        *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
        * </pre>
+       *
+       * <code>optional string partitioningSchema = 10;</code>
        */
       public com.google.protobuf.ByteString
           getPartitioningSchemaBytes() {
@@ -2810,11 +3139,11 @@ public final class Tablespace {
         }
       }
       /**
-       * <code>optional string partitioningSchema = 10;</code>
-       *
        * <pre>
        *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
        * </pre>
+       *
+       * <code>optional string partitioningSchema = 10;</code>
        */
       public Builder setPartitioningSchema(
           java.lang.String value) {
@@ -2827,11 +3156,11 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional string partitioningSchema = 10;</code>
-       *
        * <pre>
        *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
        * </pre>
+       *
+       * <code>optional string partitioningSchema = 10;</code>
        */
       public Builder clearPartitioningSchema() {
         bitField0_ = (bitField0_ & ~0x00000200);
@@ -2840,11 +3169,11 @@ public final class Tablespace {
         return this;
       }
       /**
-       * <code>optional string partitioningSchema = 10;</code>
-       *
        * <pre>
        *partitioning schema used currently for parameter archive (for tables is stored in the .def file)
        * </pre>
+       *
+       * <code>optional string partitioningSchema = 10;</code>
        */
       public Builder setPartitioningSchemaBytes(
           com.google.protobuf.ByteString value) {
@@ -2857,75 +3186,2711 @@ public final class Tablespace {
         return this;
       }
 
+      private org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties bucketProperties_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketPropertiesOrBuilder> bucketPropertiesBuilder_;
+      /**
+       * <pre>
+       *bucketName
+       * </pre>
+       *
+       * <code>optional .BucketProperties bucketProperties = 11;</code>
+       */
+      public boolean hasBucketProperties() {
+        return ((bitField0_ & 0x00000400) == 0x00000400);
+      }
+      /**
+       * <pre>
+       *bucketName
+       * </pre>
+       *
+       * <code>optional .BucketProperties bucketProperties = 11;</code>
+       */
+      public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties getBucketProperties() {
+        if (bucketPropertiesBuilder_ == null) {
+          return bucketProperties_ == null ? org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.getDefaultInstance() : bucketProperties_;
+        } else {
+          return bucketPropertiesBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       *bucketName
+       * </pre>
+       *
+       * <code>optional .BucketProperties bucketProperties = 11;</code>
+       */
+      public Builder setBucketProperties(org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties value) {
+        if (bucketPropertiesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          bucketProperties_ = value;
+          onChanged();
+        } else {
+          bucketPropertiesBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000400;
+        return this;
+      }
+      /**
+       * <pre>
+       *bucketName
+       * </pre>
+       *
+       * <code>optional .BucketProperties bucketProperties = 11;</code>
+       */
+      public Builder setBucketProperties(
+          org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder builderForValue) {
+        if (bucketPropertiesBuilder_ == null) {
+          bucketProperties_ = builderForValue.build();
+          onChanged();
+        } else {
+          bucketPropertiesBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000400;
+        return this;
+      }
+      /**
+       * <pre>
+       *bucketName
+       * </pre>
+       *
+       * <code>optional .BucketProperties bucketProperties = 11;</code>
+       */
+      public Builder mergeBucketProperties(org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties value) {
+        if (bucketPropertiesBuilder_ == null) {
+          if (((bitField0_ & 0x00000400) == 0x00000400) &&
+              bucketProperties_ != null &&
+              bucketProperties_ != org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.getDefaultInstance()) {
+            bucketProperties_ =
+              org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.newBuilder(bucketProperties_).mergeFrom(value).buildPartial();
+          } else {
+            bucketProperties_ = value;
+          }
+          onChanged();
+        } else {
+          bucketPropertiesBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000400;
+        return this;
+      }
+      /**
+       * <pre>
+       *bucketName
+       * </pre>
+       *
+       * <code>optional .BucketProperties bucketProperties = 11;</code>
+       */
+      public Builder clearBucketProperties() {
+        if (bucketPropertiesBuilder_ == null) {
+          bucketProperties_ = null;
+          onChanged();
+        } else {
+          bucketPropertiesBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000400);
+        return this;
+      }
+      /**
+       * <pre>
+       *bucketName
+       * </pre>
+       *
+       * <code>optional .BucketProperties bucketProperties = 11;</code>
+       */
+      public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder getBucketPropertiesBuilder() {
+        bitField0_ |= 0x00000400;
+        onChanged();
+        return getBucketPropertiesFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       *bucketName
+       * </pre>
+       *
+       * <code>optional .BucketProperties bucketProperties = 11;</code>
+       */
+      public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketPropertiesOrBuilder getBucketPropertiesOrBuilder() {
+        if (bucketPropertiesBuilder_ != null) {
+          return bucketPropertiesBuilder_.getMessageOrBuilder();
+        } else {
+          return bucketProperties_ == null ?
+              org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.getDefaultInstance() : bucketProperties_;
+        }
+      }
+      /**
+       * <pre>
+       *bucketName
+       * </pre>
+       *
+       * <code>optional .BucketProperties bucketProperties = 11;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketPropertiesOrBuilder> 
+          getBucketPropertiesFieldBuilder() {
+        if (bucketPropertiesBuilder_ == null) {
+          bucketPropertiesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketPropertiesOrBuilder>(
+                  getBucketProperties(),
+                  getParentForChildren(),
+                  isClean());
+          bucketProperties_ = null;
+        }
+        return bucketPropertiesBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
       // @@protoc_insertion_point(builder_scope:TablespaceRecord)
     }
 
+    // @@protoc_insertion_point(class_scope:TablespaceRecord)
+    private static final org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord DEFAULT_INSTANCE;
     static {
-      defaultInstance = new TablespaceRecord(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord();
     }
 
-    // @@protoc_insertion_point(class_scope:TablespaceRecord)
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<TablespaceRecord>
+        PARSER = new com.google.protobuf.AbstractParser<TablespaceRecord>() {
+      public TablespaceRecord parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new TablespaceRecord(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<TablespaceRecord> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TablespaceRecord> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
-  private static com.google.protobuf.Descriptors.Descriptor
+  public interface BucketPropertiesOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:BucketProperties)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    /**
+     * <code>optional int64 created = 2;</code>
+     */
+    boolean hasCreated();
+    /**
+     * <code>optional int64 created = 2;</code>
+     */
+    long getCreated();
+
+    /**
+     * <pre>
+     *maximum number of objects in the bucket
+     * </pre>
+     *
+     * <code>optional int32 maxNumObjects = 3;</code>
+     */
+    boolean hasMaxNumObjects();
+    /**
+     * <pre>
+     *maximum number of objects in the bucket
+     * </pre>
+     *
+     * <code>optional int32 maxNumObjects = 3;</code>
+     */
+    int getMaxNumObjects();
+
+    /**
+     * <pre>
+     *maximum size in bytes
+     * </pre>
+     *
+     * <code>optional uint64 maxSize = 4;</code>
+     */
+    boolean hasMaxSize();
+    /**
+     * <pre>
+     *maximum size in bytes
+     * </pre>
+     *
+     * <code>optional uint64 maxSize = 4;</code>
+     */
+    long getMaxSize();
+
+    /**
+     * <pre>
+     *current number of objects in the bucket
+     * </pre>
+     *
+     * <code>optional int32 numObjects = 5;</code>
+     */
+    boolean hasNumObjects();
+    /**
+     * <pre>
+     *current number of objects in the bucket
+     * </pre>
+     *
+     * <code>optional int32 numObjects = 5;</code>
+     */
+    int getNumObjects();
+
+    /**
+     * <pre>
+     *current bucket size
+     * </pre>
+     *
+     * <code>optional uint64 size = 6;</code>
+     */
+    boolean hasSize();
+    /**
+     * <pre>
+     *current bucket size
+     * </pre>
+     *
+     * <code>optional uint64 size = 6;</code>
+     */
+    long getSize();
+  }
+  /**
+   * <pre>
+   *associated to each bucket
+   * </pre>
+   *
+   * Protobuf type {@code BucketProperties}
+   */
+  public  static final class BucketProperties extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:BucketProperties)
+      BucketPropertiesOrBuilder {
+    // Use BucketProperties.newBuilder() to construct.
+    private BucketProperties(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private BucketProperties() {
+      name_ = "";
+      created_ = 0L;
+      maxNumObjects_ = 0;
+      maxSize_ = 0L;
+      numObjects_ = 0;
+      size_ = 0L;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private BucketProperties(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              name_ = bs;
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              created_ = input.readInt64();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              maxNumObjects_ = input.readInt32();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              maxSize_ = input.readUInt64();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000010;
+              numObjects_ = input.readInt32();
+              break;
+            }
+            case 48: {
+              bitField0_ |= 0x00000020;
+              size_ = input.readUInt64();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_BucketProperties_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_BucketProperties_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.class, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private volatile java.lang.Object name_;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int CREATED_FIELD_NUMBER = 2;
+    private long created_;
+    /**
+     * <code>optional int64 created = 2;</code>
+     */
+    public boolean hasCreated() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional int64 created = 2;</code>
+     */
+    public long getCreated() {
+      return created_;
+    }
+
+    public static final int MAXNUMOBJECTS_FIELD_NUMBER = 3;
+    private int maxNumObjects_;
+    /**
+     * <pre>
+     *maximum number of objects in the bucket
+     * </pre>
+     *
+     * <code>optional int32 maxNumObjects = 3;</code>
+     */
+    public boolean hasMaxNumObjects() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <pre>
+     *maximum number of objects in the bucket
+     * </pre>
+     *
+     * <code>optional int32 maxNumObjects = 3;</code>
+     */
+    public int getMaxNumObjects() {
+      return maxNumObjects_;
+    }
+
+    public static final int MAXSIZE_FIELD_NUMBER = 4;
+    private long maxSize_;
+    /**
+     * <pre>
+     *maximum size in bytes
+     * </pre>
+     *
+     * <code>optional uint64 maxSize = 4;</code>
+     */
+    public boolean hasMaxSize() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <pre>
+     *maximum size in bytes
+     * </pre>
+     *
+     * <code>optional uint64 maxSize = 4;</code>
+     */
+    public long getMaxSize() {
+      return maxSize_;
+    }
+
+    public static final int NUMOBJECTS_FIELD_NUMBER = 5;
+    private int numObjects_;
+    /**
+     * <pre>
+     *current number of objects in the bucket
+     * </pre>
+     *
+     * <code>optional int32 numObjects = 5;</code>
+     */
+    public boolean hasNumObjects() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <pre>
+     *current number of objects in the bucket
+     * </pre>
+     *
+     * <code>optional int32 numObjects = 5;</code>
+     */
+    public int getNumObjects() {
+      return numObjects_;
+    }
+
+    public static final int SIZE_FIELD_NUMBER = 6;
+    private long size_;
+    /**
+     * <pre>
+     *current bucket size
+     * </pre>
+     *
+     * <code>optional uint64 size = 6;</code>
+     */
+    public boolean hasSize() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <pre>
+     *current bucket size
+     * </pre>
+     *
+     * <code>optional uint64 size = 6;</code>
+     */
+    public long getSize() {
+      return size_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt64(2, created_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(3, maxNumObjects_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeUInt64(4, maxSize_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeInt32(5, numObjects_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeUInt64(6, size_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(2, created_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, maxNumObjects_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(4, maxSize_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(5, numObjects_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(6, size_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties)) {
+        return super.equals(obj);
+      }
+      org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties other = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties) obj;
+
+      boolean result = true;
+      result = result && (hasName() == other.hasName());
+      if (hasName()) {
+        result = result && getName()
+            .equals(other.getName());
+      }
+      result = result && (hasCreated() == other.hasCreated());
+      if (hasCreated()) {
+        result = result && (getCreated()
+            == other.getCreated());
+      }
+      result = result && (hasMaxNumObjects() == other.hasMaxNumObjects());
+      if (hasMaxNumObjects()) {
+        result = result && (getMaxNumObjects()
+            == other.getMaxNumObjects());
+      }
+      result = result && (hasMaxSize() == other.hasMaxSize());
+      if (hasMaxSize()) {
+        result = result && (getMaxSize()
+            == other.getMaxSize());
+      }
+      result = result && (hasNumObjects() == other.hasNumObjects());
+      if (hasNumObjects()) {
+        result = result && (getNumObjects()
+            == other.getNumObjects());
+      }
+      result = result && (hasSize() == other.hasSize());
+      if (hasSize()) {
+        result = result && (getSize()
+            == other.getSize());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasName()) {
+        hash = (37 * hash) + NAME_FIELD_NUMBER;
+        hash = (53 * hash) + getName().hashCode();
+      }
+      if (hasCreated()) {
+        hash = (37 * hash) + CREATED_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getCreated());
+      }
+      if (hasMaxNumObjects()) {
+        hash = (37 * hash) + MAXNUMOBJECTS_FIELD_NUMBER;
+        hash = (53 * hash) + getMaxNumObjects();
+      }
+      if (hasMaxSize()) {
+        hash = (37 * hash) + MAXSIZE_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getMaxSize());
+      }
+      if (hasNumObjects()) {
+        hash = (37 * hash) + NUMOBJECTS_FIELD_NUMBER;
+        hash = (53 * hash) + getNumObjects();
+      }
+      if (hasSize()) {
+        hash = (37 * hash) + SIZE_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getSize());
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *associated to each bucket
+     * </pre>
+     *
+     * Protobuf type {@code BucketProperties}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:BucketProperties)
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketPropertiesOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_BucketProperties_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_BucketProperties_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.class, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder.class);
+      }
+
+      // Construct using org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        created_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        maxNumObjects_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        maxSize_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        numObjects_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        size_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000020);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_BucketProperties_descriptor;
+      }
+
+      public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties getDefaultInstanceForType() {
+        return org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.getDefaultInstance();
+      }
+
+      public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties build() {
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties buildPartial() {
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties result = new org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.name_ = name_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.created_ = created_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.maxNumObjects_ = maxNumObjects_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.maxSize_ = maxSize_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.numObjects_ = numObjects_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.size_ = size_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties) {
+          return mergeFrom((org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties other) {
+        if (other == org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (other.hasCreated()) {
+          setCreated(other.getCreated());
+        }
+        if (other.hasMaxNumObjects()) {
+          setMaxNumObjects(other.getMaxNumObjects());
+        }
+        if (other.hasMaxSize()) {
+          setMaxSize(other.getMaxSize());
+        }
+        if (other.hasNumObjects()) {
+          setNumObjects(other.getNumObjects());
+        }
+        if (other.hasSize()) {
+          setSize(other.getSize());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object name_ = "";
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      private long created_ ;
+      /**
+       * <code>optional int64 created = 2;</code>
+       */
+      public boolean hasCreated() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional int64 created = 2;</code>
+       */
+      public long getCreated() {
+        return created_;
+      }
+      /**
+       * <code>optional int64 created = 2;</code>
+       */
+      public Builder setCreated(long value) {
+        bitField0_ |= 0x00000002;
+        created_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 created = 2;</code>
+       */
+      public Builder clearCreated() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        created_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private int maxNumObjects_ ;
+      /**
+       * <pre>
+       *maximum number of objects in the bucket
+       * </pre>
+       *
+       * <code>optional int32 maxNumObjects = 3;</code>
+       */
+      public boolean hasMaxNumObjects() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <pre>
+       *maximum number of objects in the bucket
+       * </pre>
+       *
+       * <code>optional int32 maxNumObjects = 3;</code>
+       */
+      public int getMaxNumObjects() {
+        return maxNumObjects_;
+      }
+      /**
+       * <pre>
+       *maximum number of objects in the bucket
+       * </pre>
+       *
+       * <code>optional int32 maxNumObjects = 3;</code>
+       */
+      public Builder setMaxNumObjects(int value) {
+        bitField0_ |= 0x00000004;
+        maxNumObjects_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *maximum number of objects in the bucket
+       * </pre>
+       *
+       * <code>optional int32 maxNumObjects = 3;</code>
+       */
+      public Builder clearMaxNumObjects() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        maxNumObjects_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private long maxSize_ ;
+      /**
+       * <pre>
+       *maximum size in bytes
+       * </pre>
+       *
+       * <code>optional uint64 maxSize = 4;</code>
+       */
+      public boolean hasMaxSize() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <pre>
+       *maximum size in bytes
+       * </pre>
+       *
+       * <code>optional uint64 maxSize = 4;</code>
+       */
+      public long getMaxSize() {
+        return maxSize_;
+      }
+      /**
+       * <pre>
+       *maximum size in bytes
+       * </pre>
+       *
+       * <code>optional uint64 maxSize = 4;</code>
+       */
+      public Builder setMaxSize(long value) {
+        bitField0_ |= 0x00000008;
+        maxSize_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *maximum size in bytes
+       * </pre>
+       *
+       * <code>optional uint64 maxSize = 4;</code>
+       */
+      public Builder clearMaxSize() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        maxSize_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private int numObjects_ ;
+      /**
+       * <pre>
+       *current number of objects in the bucket
+       * </pre>
+       *
+       * <code>optional int32 numObjects = 5;</code>
+       */
+      public boolean hasNumObjects() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <pre>
+       *current number of objects in the bucket
+       * </pre>
+       *
+       * <code>optional int32 numObjects = 5;</code>
+       */
+      public int getNumObjects() {
+        return numObjects_;
+      }
+      /**
+       * <pre>
+       *current number of objects in the bucket
+       * </pre>
+       *
+       * <code>optional int32 numObjects = 5;</code>
+       */
+      public Builder setNumObjects(int value) {
+        bitField0_ |= 0x00000010;
+        numObjects_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *current number of objects in the bucket
+       * </pre>
+       *
+       * <code>optional int32 numObjects = 5;</code>
+       */
+      public Builder clearNumObjects() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        numObjects_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private long size_ ;
+      /**
+       * <pre>
+       *current bucket size
+       * </pre>
+       *
+       * <code>optional uint64 size = 6;</code>
+       */
+      public boolean hasSize() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <pre>
+       *current bucket size
+       * </pre>
+       *
+       * <code>optional uint64 size = 6;</code>
+       */
+      public long getSize() {
+        return size_;
+      }
+      /**
+       * <pre>
+       *current bucket size
+       * </pre>
+       *
+       * <code>optional uint64 size = 6;</code>
+       */
+      public Builder setSize(long value) {
+        bitField0_ |= 0x00000020;
+        size_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *current bucket size
+       * </pre>
+       *
+       * <code>optional uint64 size = 6;</code>
+       */
+      public Builder clearSize() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        size_ = 0L;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:BucketProperties)
+    }
+
+    // @@protoc_insertion_point(class_scope:BucketProperties)
+    private static final org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties();
+    }
+
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<BucketProperties>
+        PARSER = new com.google.protobuf.AbstractParser<BucketProperties>() {
+      public BucketProperties parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new BucketProperties(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<BucketProperties> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<BucketProperties> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ObjectPropertiesOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:ObjectProperties)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    /**
+     * <code>optional uint32 objectId = 2;</code>
+     */
+    boolean hasObjectId();
+    /**
+     * <code>optional uint32 objectId = 2;</code>
+     */
+    int getObjectId();
+
+    /**
+     * <code>optional string contentType = 3;</code>
+     */
+    boolean hasContentType();
+    /**
+     * <code>optional string contentType = 3;</code>
+     */
+    java.lang.String getContentType();
+    /**
+     * <code>optional string contentType = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getContentTypeBytes();
+
+    /**
+     * <code>optional int64 created = 4;</code>
+     */
+    boolean hasCreated();
+    /**
+     * <code>optional int64 created = 4;</code>
+     */
+    long getCreated();
+
+    /**
+     * <code>optional uint64 size = 5;</code>
+     */
+    boolean hasSize();
+    /**
+     * <code>optional uint64 size = 5;</code>
+     */
+    long getSize();
+
+    /**
+     * <code>map&lt;string, string&gt; metadata = 6;</code>
+     */
+    int getMetadataCount();
+    /**
+     * <code>map&lt;string, string&gt; metadata = 6;</code>
+     */
+    boolean containsMetadata(
+        java.lang.String key);
+    /**
+     * Use {@link #getMetadataMap()} instead.
+     */
+    @java.lang.Deprecated
+    java.util.Map<java.lang.String, java.lang.String>
+    getMetadata();
+    /**
+     * <code>map&lt;string, string&gt; metadata = 6;</code>
+     */
+    java.util.Map<java.lang.String, java.lang.String>
+    getMetadataMap();
+    /**
+     * <code>map&lt;string, string&gt; metadata = 6;</code>
+     */
+
+    java.lang.String getMetadataOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue);
+    /**
+     * <code>map&lt;string, string&gt; metadata = 6;</code>
+     */
+
+    java.lang.String getMetadataOrThrow(
+        java.lang.String key);
+  }
+  /**
+   * <pre>
+   *associated to each user object
+   * </pre>
+   *
+   * Protobuf type {@code ObjectProperties}
+   */
+  public  static final class ObjectProperties extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:ObjectProperties)
+      ObjectPropertiesOrBuilder {
+    // Use ObjectProperties.newBuilder() to construct.
+    private ObjectProperties(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ObjectProperties() {
+      name_ = "";
+      objectId_ = 0;
+      contentType_ = "";
+      created_ = 0L;
+      size_ = 0L;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ObjectProperties(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              name_ = bs;
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              objectId_ = input.readUInt32();
+              break;
+            }
+            case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000004;
+              contentType_ = bs;
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              created_ = input.readInt64();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000010;
+              size_ = input.readUInt64();
+              break;
+            }
+            case 50: {
+              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+                metadata_ = com.google.protobuf.MapField.newMapField(
+                    MetadataDefaultEntryHolder.defaultEntry);
+                mutable_bitField0_ |= 0x00000020;
+              }
+              com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+              metadata = input.readMessage(
+                  MetadataDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              metadata_.getMutableMap().put(metadata.getKey(), metadata.getValue());
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_ObjectProperties_descriptor;
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMapField(
+        int number) {
+      switch (number) {
+        case 6:
+          return internalGetMetadata();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_ObjectProperties_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.class, org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private volatile java.lang.Object name_;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int OBJECTID_FIELD_NUMBER = 2;
+    private int objectId_;
+    /**
+     * <code>optional uint32 objectId = 2;</code>
+     */
+    public boolean hasObjectId() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional uint32 objectId = 2;</code>
+     */
+    public int getObjectId() {
+      return objectId_;
+    }
+
+    public static final int CONTENTTYPE_FIELD_NUMBER = 3;
+    private volatile java.lang.Object contentType_;
+    /**
+     * <code>optional string contentType = 3;</code>
+     */
+    public boolean hasContentType() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string contentType = 3;</code>
+     */
+    public java.lang.String getContentType() {
+      java.lang.Object ref = contentType_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          contentType_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string contentType = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getContentTypeBytes() {
+      java.lang.Object ref = contentType_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        contentType_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int CREATED_FIELD_NUMBER = 4;
+    private long created_;
+    /**
+     * <code>optional int64 created = 4;</code>
+     */
+    public boolean hasCreated() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional int64 created = 4;</code>
+     */
+    public long getCreated() {
+      return created_;
+    }
+
+    public static final int SIZE_FIELD_NUMBER = 5;
+    private long size_;
+    /**
+     * <code>optional uint64 size = 5;</code>
+     */
+    public boolean hasSize() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional uint64 size = 5;</code>
+     */
+    public long getSize() {
+      return size_;
+    }
+
+    public static final int METADATA_FIELD_NUMBER = 6;
+    private static final class MetadataDefaultEntryHolder {
+      static final com.google.protobuf.MapEntry<
+          java.lang.String, java.lang.String> defaultEntry =
+              com.google.protobuf.MapEntry
+              .<java.lang.String, java.lang.String>newDefaultInstance(
+                  org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_ObjectProperties_MetadataEntry_descriptor, 
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "",
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "");
+    }
+    private com.google.protobuf.MapField<
+        java.lang.String, java.lang.String> metadata_;
+    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+    internalGetMetadata() {
+      if (metadata_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            MetadataDefaultEntryHolder.defaultEntry);
+      }
+      return metadata_;
+    }
+
+    public int getMetadataCount() {
+      return internalGetMetadata().getMap().size();
+    }
+    /**
+     * <code>map&lt;string, string&gt; metadata = 6;</code>
+     */
+
+    public boolean containsMetadata(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      return internalGetMetadata().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getMetadataMap()} instead.
+     */
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.String> getMetadata() {
+      return getMetadataMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; metadata = 6;</code>
+     */
+
+    public java.util.Map<java.lang.String, java.lang.String> getMetadataMap() {
+      return internalGetMetadata().getMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; metadata = 6;</code>
+     */
+
+    public java.lang.String getMetadataOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetMetadata().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <code>map&lt;string, string&gt; metadata = 6;</code>
+     */
+
+    public java.lang.String getMetadataOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetMetadata().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeUInt32(2, objectId_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, contentType_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt64(4, created_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeUInt64(5, size_);
+      }
+      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+           : internalGetMetadata().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+        metadata = MetadataDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        output.writeMessage(6, metadata);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(2, objectId_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, contentType_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(4, created_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(5, size_);
+      }
+      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+           : internalGetMetadata().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+        metadata = MetadataDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(6, metadata);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties)) {
+        return super.equals(obj);
+      }
+      org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties other = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties) obj;
+
+      boolean result = true;
+      result = result && (hasName() == other.hasName());
+      if (hasName()) {
+        result = result && getName()
+            .equals(other.getName());
+      }
+      result = result && (hasObjectId() == other.hasObjectId());
+      if (hasObjectId()) {
+        result = result && (getObjectId()
+            == other.getObjectId());
+      }
+      result = result && (hasContentType() == other.hasContentType());
+      if (hasContentType()) {
+        result = result && getContentType()
+            .equals(other.getContentType());
+      }
+      result = result && (hasCreated() == other.hasCreated());
+      if (hasCreated()) {
+        result = result && (getCreated()
+            == other.getCreated());
+      }
+      result = result && (hasSize() == other.hasSize());
+      if (hasSize()) {
+        result = result && (getSize()
+            == other.getSize());
+      }
+      result = result && internalGetMetadata().equals(
+          other.internalGetMetadata());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasName()) {
+        hash = (37 * hash) + NAME_FIELD_NUMBER;
+        hash = (53 * hash) + getName().hashCode();
+      }
+      if (hasObjectId()) {
+        hash = (37 * hash) + OBJECTID_FIELD_NUMBER;
+        hash = (53 * hash) + getObjectId();
+      }
+      if (hasContentType()) {
+        hash = (37 * hash) + CONTENTTYPE_FIELD_NUMBER;
+        hash = (53 * hash) + getContentType().hashCode();
+      }
+      if (hasCreated()) {
+        hash = (37 * hash) + CREATED_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getCreated());
+      }
+      if (hasSize()) {
+        hash = (37 * hash) + SIZE_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getSize());
+      }
+      if (!internalGetMetadata().getMap().isEmpty()) {
+        hash = (37 * hash) + METADATA_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetMetadata().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *associated to each user object
+     * </pre>
+     *
+     * Protobuf type {@code ObjectProperties}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:ObjectProperties)
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectPropertiesOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_ObjectProperties_descriptor;
+      }
+
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMapField(
+          int number) {
+        switch (number) {
+          case 6:
+            return internalGetMetadata();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMutableMapField(
+          int number) {
+        switch (number) {
+          case 6:
+            return internalGetMutableMetadata();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_ObjectProperties_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.class, org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.Builder.class);
+      }
+
+      // Construct using org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        objectId_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        contentType_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        created_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        size_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        internalGetMutableMetadata().clear();
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.yarch.rocksdb.protobuf.Tablespace.internal_static_ObjectProperties_descriptor;
+      }
+
+      public org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties getDefaultInstanceForType() {
+        return org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.getDefaultInstance();
+      }
+
+      public org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties build() {
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties buildPartial() {
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties result = new org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.name_ = name_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.objectId_ = objectId_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.contentType_ = contentType_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.created_ = created_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.size_ = size_;
+        result.metadata_ = internalGetMetadata();
+        result.metadata_.makeImmutable();
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties) {
+          return mergeFrom((org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties other) {
+        if (other == org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (other.hasObjectId()) {
+          setObjectId(other.getObjectId());
+        }
+        if (other.hasContentType()) {
+          bitField0_ |= 0x00000004;
+          contentType_ = other.contentType_;
+          onChanged();
+        }
+        if (other.hasCreated()) {
+          setCreated(other.getCreated());
+        }
+        if (other.hasSize()) {
+          setSize(other.getSize());
+        }
+        internalGetMutableMetadata().mergeFrom(
+            other.internalGetMetadata());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object name_ = "";
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int objectId_ ;
+      /**
+       * <code>optional uint32 objectId = 2;</code>
+       */
+      public boolean hasObjectId() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional uint32 objectId = 2;</code>
+       */
+      public int getObjectId() {
+        return objectId_;
+      }
+      /**
+       * <code>optional uint32 objectId = 2;</code>
+       */
+      public Builder setObjectId(int value) {
+        bitField0_ |= 0x00000002;
+        objectId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 objectId = 2;</code>
+       */
+      public Builder clearObjectId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        objectId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object contentType_ = "";
+      /**
+       * <code>optional string contentType = 3;</code>
+       */
+      public boolean hasContentType() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string contentType = 3;</code>
+       */
+      public java.lang.String getContentType() {
+        java.lang.Object ref = contentType_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            contentType_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string contentType = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getContentTypeBytes() {
+        java.lang.Object ref = contentType_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          contentType_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string contentType = 3;</code>
+       */
+      public Builder setContentType(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        contentType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string contentType = 3;</code>
+       */
+      public Builder clearContentType() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        contentType_ = getDefaultInstance().getContentType();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string contentType = 3;</code>
+       */
+      public Builder setContentTypeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        contentType_ = value;
+        onChanged();
+        return this;
+      }
+
+      private long created_ ;
+      /**
+       * <code>optional int64 created = 4;</code>
+       */
+      public boolean hasCreated() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional int64 created = 4;</code>
+       */
+      public long getCreated() {
+        return created_;
+      }
+      /**
+       * <code>optional int64 created = 4;</code>
+       */
+      public Builder setCreated(long value) {
+        bitField0_ |= 0x00000008;
+        created_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 created = 4;</code>
+       */
+      public Builder clearCreated() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        created_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long size_ ;
+      /**
+       * <code>optional uint64 size = 5;</code>
+       */
+      public boolean hasSize() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional uint64 size = 5;</code>
+       */
+      public long getSize() {
+        return size_;
+      }
+      /**
+       * <code>optional uint64 size = 5;</code>
+       */
+      public Builder setSize(long value) {
+        bitField0_ |= 0x00000010;
+        size_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint64 size = 5;</code>
+       */
+      public Builder clearSize() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        size_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.MapField<
+          java.lang.String, java.lang.String> metadata_;
+      private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      internalGetMetadata() {
+        if (metadata_ == null) {
+          return com.google.protobuf.MapField.emptyMapField(
+              MetadataDefaultEntryHolder.defaultEntry);
+        }
+        return metadata_;
+      }
+      private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      internalGetMutableMetadata() {
+        onChanged();;
+        if (metadata_ == null) {
+          metadata_ = com.google.protobuf.MapField.newMapField(
+              MetadataDefaultEntryHolder.defaultEntry);
+        }
+        if (!metadata_.isMutable()) {
+          metadata_ = metadata_.copy();
+        }
+        return metadata_;
+      }
+
+      public int getMetadataCount() {
+        return internalGetMetadata().getMap().size();
+      }
+      /**
+       * <code>map&lt;string, string&gt; metadata = 6;</code>
+       */
+
+      public boolean containsMetadata(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        return internalGetMetadata().getMap().containsKey(key);
+      }
+      /**
+       * Use {@link #getMetadataMap()} instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, java.lang.String> getMetadata() {
+        return getMetadataMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; metadata = 6;</code>
+       */
+
+      public java.util.Map<java.lang.String, java.lang.String> getMetadataMap() {
+        return internalGetMetadata().getMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; metadata = 6;</code>
+       */
+
+      public java.lang.String getMetadataOrDefault(
+          java.lang.String key,
+          java.lang.String defaultValue) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, java.lang.String> map =
+            internalGetMetadata().getMap();
+        return map.containsKey(key) ? map.get(key) : defaultValue;
+      }
+      /**
+       * <code>map&lt;string, string&gt; metadata = 6;</code>
+       */
+
+      public java.lang.String getMetadataOrThrow(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, java.lang.String> map =
+            internalGetMetadata().getMap();
+        if (!map.containsKey(key)) {
+          throw new java.lang.IllegalArgumentException();
+        }
+        return map.get(key);
+      }
+
+      public Builder clearMetadata() {
+        getMutableMetadata().clear();
+        return this;
+      }
+      /**
+       * <code>map&lt;string, string&gt; metadata = 6;</code>
+       */
+
+      public Builder removeMetadata(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        getMutableMetadata().remove(key);
+        return this;
+      }
+      /**
+       * Use alternate mutation accessors instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, java.lang.String>
+      getMutableMetadata() {
+        return internalGetMutableMetadata().getMutableMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; metadata = 6;</code>
+       */
+      public Builder putMetadata(
+          java.lang.String key,
+          java.lang.String value) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (value == null) { throw new java.lang.NullPointerException(); }
+        getMutableMetadata().put(key, value);
+        return this;
+      }
+      /**
+       * <code>map&lt;string, string&gt; metadata = 6;</code>
+       */
+
+      public Builder putAllMetadata(
+          java.util.Map<java.lang.String, java.lang.String> values) {
+        getMutableMetadata().putAll(values);
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:ObjectProperties)
+    }
+
+    // @@protoc_insertion_point(class_scope:ObjectProperties)
+    private static final org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties();
+    }
+
+    public static org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ObjectProperties>
+        PARSER = new com.google.protobuf.AbstractParser<ObjectProperties>() {
+      public ObjectProperties parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ObjectProperties(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ObjectProperties> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ObjectProperties> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_TimeBasedPartition_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_TimeBasedPartition_fieldAccessorTable;
-  private static com.google.protobuf.Descriptors.Descriptor
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_TablespaceRecord_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_TablespaceRecord_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_BucketProperties_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_BucketProperties_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_ObjectProperties_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_ObjectProperties_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_ObjectProperties_MetadataEntry_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_ObjectProperties_MetadataEntry_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
     return descriptor;
   }
-  private static com.google.protobuf.Descriptors.FileDescriptor
+  private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
     java.lang.String[] descriptorData = {
       "\n\020tablespace.proto\"X\n\022TimeBasedPartition" +
       "\022\024\n\014partitionDir\030\001 \001(\t\022\026\n\016partitionStart" +
-      "\030\002 \001(\003\022\024\n\014partitionEnd\030\003 \001(\003\"\215\003\n\020Tablesp" +
+      "\030\002 \001(\003\022\024\n\014partitionEnd\030\003 \001(\003\"\306\003\n\020Tablesp" +
       "aceRecord\022\020\n\010tbsIndex\030\001 \001(\r\022$\n\004type\030\002 \001(" +
       "\0162\026.TablespaceRecord.Type\022\024\n\014instanceNam" +
       "e\030\003 \001(\t\022\021\n\ttableName\030\004 \001(\t\022\033\n\023histogramC" +
       "olumnName\030\005 \001(\t\022\026\n\016partitionValue\030\006 \001(\014\022" +
       "&\n\tpartition\030\007 \001(\0132\023.TimeBasedPartition\022" +
       "\024\n\014parameterFqn\030\010 \001(\t\022\025\n\rparameterType\030\t" +
-      " \001(\r\022\032\n\022partitioningSchema\030\n \001(\t\"r\n\004Type",
-      "\022\023\n\017TABLE_PARTITION\020\001\022\r\n\tHISTOGRAM\020\002\022\024\n\020" +
-      "PARCHIVE_PGID2PG\020\004\022\021\n\rPARCHIVE_DATA\020\005\022\022\n" +
-      "\016PARCHIVE_PINFO\020\006\022\t\n\005TAGDB\020\007B\"\n org.yamc" +
-      "s.yarch.rocksdb.protobuf"
+      " \001(\r\022\032\n\022partitioningSchema\030\n \001(\t\022+\n\020buck",
+      "etProperties\030\013 \001(\0132\021.BucketProperties\"~\n" +
+      "\004Type\022\023\n\017TABLE_PARTITION\020\001\022\r\n\tHISTOGRAM\020" +
+      "\002\022\024\n\020PARCHIVE_PGID2PG\020\004\022\021\n\rPARCHIVE_DATA" +
+      "\020\005\022\022\n\016PARCHIVE_PINFO\020\006\022\t\n\005TAGDB\020\007\022\n\n\006BUC" +
+      "KET\020\010\"{\n\020BucketProperties\022\014\n\004name\030\001 \001(\t\022" +
+      "\017\n\007created\030\002 \001(\003\022\025\n\rmaxNumObjects\030\003 \001(\005\022" +
+      "\017\n\007maxSize\030\004 \001(\004\022\022\n\nnumObjects\030\005 \001(\005\022\014\n\004" +
+      "size\030\006 \001(\004\"\312\001\n\020ObjectProperties\022\014\n\004name\030" +
+      "\001 \001(\t\022\020\n\010objectId\030\002 \001(\r\022\023\n\013contentType\030\003" +
+      " \001(\t\022\017\n\007created\030\004 \001(\003\022\014\n\004size\030\005 \001(\004\0221\n\010m",
+      "etadata\030\006 \003(\0132\037.ObjectProperties.Metadat" +
+      "aEntry\032/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005" +
+      "value\030\002 \001(\t:\0028\001B\"\n org.yamcs.yarch.rocks" +
+      "db.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-      new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
-        public com.google.protobuf.ExtensionRegistry assignDescriptors(
-            com.google.protobuf.Descriptors.FileDescriptor root) {
-          descriptor = root;
-          internal_static_TimeBasedPartition_descriptor =
-            getDescriptor().getMessageTypes().get(0);
-          internal_static_TimeBasedPartition_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_TimeBasedPartition_descriptor,
-              new java.lang.String[] { "PartitionDir", "PartitionStart", "PartitionEnd", });
-          internal_static_TablespaceRecord_descriptor =
-            getDescriptor().getMessageTypes().get(1);
-          internal_static_TablespaceRecord_fieldAccessorTable = new
-            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_TablespaceRecord_descriptor,
-              new java.lang.String[] { "TbsIndex", "Type", "InstanceName", "TableName", "HistogramColumnName", "PartitionValue", "Partition", "ParameterFqn", "ParameterType", "PartitioningSchema", });
-          return null;
-        }
-      };
+        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
+          public com.google.protobuf.ExtensionRegistry assignDescriptors(
+              com.google.protobuf.Descriptors.FileDescriptor root) {
+            descriptor = root;
+            return null;
+          }
+        };
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
+    internal_static_TimeBasedPartition_descriptor =
+      getDescriptor().getMessageTypes().get(0);
+    internal_static_TimeBasedPartition_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_TimeBasedPartition_descriptor,
+        new java.lang.String[] { "PartitionDir", "PartitionStart", "PartitionEnd", });
+    internal_static_TablespaceRecord_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_TablespaceRecord_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_TablespaceRecord_descriptor,
+        new java.lang.String[] { "TbsIndex", "Type", "InstanceName", "TableName", "HistogramColumnName", "PartitionValue", "Partition", "ParameterFqn", "ParameterType", "PartitioningSchema", "BucketProperties", });
+    internal_static_BucketProperties_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_BucketProperties_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_BucketProperties_descriptor,
+        new java.lang.String[] { "Name", "Created", "MaxNumObjects", "MaxSize", "NumObjects", "Size", });
+    internal_static_ObjectProperties_descriptor =
+      getDescriptor().getMessageTypes().get(3);
+    internal_static_ObjectProperties_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_ObjectProperties_descriptor,
+        new java.lang.String[] { "Name", "ObjectId", "ContentType", "Created", "Size", "Metadata", });
+    internal_static_ObjectProperties_MetadataEntry_descriptor =
+      internal_static_ObjectProperties_descriptor.getNestedTypes().get(0);
+    internal_static_ObjectProperties_MetadataEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_ObjectProperties_MetadataEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -369,4 +369,9 @@ public class YarchDatabaseInstance {
     public TimePartitionSchema getDefaultPartitioningSchema() {
         return TimePartitionSchema.getInstance("YYYY");
     }
+
+    public BucketDatabase getBucketDatabase() throws YarchException {
+        return YarchDatabase.getDefaultStorageEngine().getBucketDatabase(this);
+        
+    }
 }

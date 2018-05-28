@@ -14,6 +14,7 @@ import org.yamcs.archive.TagDb;
 import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.AbstractStream;
+import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.Partition;
@@ -201,5 +202,10 @@ public class RdbStorageEngine implements StorageEngine {
         } catch (RocksDBException e) {
             throw new YarchException(e);
         }
+    }
+
+    @Override
+    public BucketDatabase getBucketDatabase(YarchDatabaseInstance yarchDatabaseInstance) throws YarchException {
+        return null;
     }
 }

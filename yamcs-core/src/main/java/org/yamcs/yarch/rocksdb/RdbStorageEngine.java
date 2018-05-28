@@ -18,6 +18,7 @@ import org.yamcs.archive.TagDb;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.AbstractStream;
+import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.StorageEngine;
@@ -39,6 +40,7 @@ public class RdbStorageEngine implements StorageEngine {
     Map<TableDefinition, RdbPartitionManager> partitionManagers = new HashMap<>();
     Map<String, Tablespace> tablespaces = new HashMap<>();
     Map<String, RdbTagDb> tagDbs = new HashMap<>();
+    Map<String, RdbBucketDatabase> bucketDbs = new HashMap<>();
     
     // number of bytes taken by the tbsIndex (prefix for all keys)
     public static final int TBS_INDEX_SIZE = 4;
@@ -160,17 +162,26 @@ public class RdbStorageEngine implements StorageEngine {
         return rdbTagDb;
     }
 
-    private synchronized Tablespace getTablespace(YarchDatabaseInstance ydb, TableDefinition tbl) {
-        String tablespaceName = tbl.getTablespaceName();
-        if (tablespaceName == null) {
-            tablespaceName = ydb.getTablespaceName();
-        }
+    private synchronized Tablespace getTablespace(YarchDatabaseInstance ydb) {
+        String tablespaceName = ydb.getTablespaceName();
         if (tablespaces.containsKey(tablespaceName)) {
             return tablespaces.get(tablespaceName);
         } else {
             createTablespace(tablespaceName);
         }
         return tablespaces.get(tablespaceName);
+        
+    }
+    private synchronized Tablespace getTablespace(YarchDatabaseInstance ydb, TableDefinition tbl) {
+        String tablespaceName = tbl.getTablespaceName();
+        if (tablespaceName == null) {
+            return getTablespace(ydb);
+        } else {
+            if (!tablespaces.containsKey(tablespaceName)) {
+                createTablespace(tablespaceName);
+            }
+            return tablespaces.get(tablespaceName);
+        }
     }
     
     public Map<String, Tablespace> getTablespaces() {
@@ -179,9 +190,7 @@ public class RdbStorageEngine implements StorageEngine {
 
     public synchronized Tablespace createTablespace(String tablespaceName) {
         log.info("Creating tablespace {}", tablespaceName);
-        int id = tablespaces.values().stream().mapToInt(t -> t.getId()).max().orElse(-1);
-        id = (id+1) & 0x7F; //make sure the first bit is always 0
-        Tablespace t = new Tablespace(tablespaceName, (byte) id);
+        Tablespace t = new Tablespace(tablespaceName, (byte)0);
 
         String fn = YarchDatabase.getDataDir() + "/" + tablespaceName + ".tbs";
         try (FileOutputStream fos = new FileOutputStream(fn)) {
@@ -253,6 +262,21 @@ public class RdbStorageEngine implements StorageEngine {
         } catch (RocksDBException | IOException e) {
             throw new YarchException(e);
         }
+    }
+    
+    public synchronized BucketDatabase getBucketDatabase(YarchDatabaseInstance ydb) throws YarchException {
+        String tablespaceName = ydb.getTablespaceName();
+        String yamcsInstance = ydb.getYamcsInstance();
+        RdbBucketDatabase bdb = bucketDbs.get(tablespaceName);
+        if(bdb == null) {
+            try {
+                bdb = new RdbBucketDatabase(yamcsInstance, getTablespace(ydb));
+            } catch (RocksDBException | IOException e) {
+               throw new YarchException("Cannot create bucket database", e);
+            }
+            bucketDbs.put(tablespaceName, bdb);
+        }
+        return bdb;
     }
 
     static byte[] dbKey(int tbsIndex) {

@@ -36,7 +36,14 @@ public class DescendingRangeIterator implements DbIterator {
     boolean valid = false;
     private byte[] curKey;
 
-
+    /**
+     * Creates a new range iterator that iteates in descending order from rangeEnd to rangeStart
+     * @param it
+     * @param rangeStart
+     * @param strictStart
+     * @param rangeEnd
+     * @param strictEnd
+     */
     public DescendingRangeIterator(RocksIterator it, byte[] rangeStart, boolean strictStart, byte[] rangeEnd, boolean strictEnd) {
         this.iterator = it;
         this.rangeStart = rangeStart;
@@ -136,6 +143,5 @@ public class DescendingRangeIterator implements DbIterator {
     public void close() {
         valid = false;
         iterator.close();
-        
     }
 }

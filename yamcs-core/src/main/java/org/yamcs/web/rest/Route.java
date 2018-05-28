@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 
 import org.yamcs.web.rest.Router.RouteMatch;
 
+
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(Routes.class)
@@ -51,8 +52,10 @@ public @interface Route {
      * 
      * See {@link org.yamcs.web.rest.archive.ArchiveTableRestHandler#loadTableData(io.netty.channel.ChannelHandlerContext, io.netty.handler.codec.http.HttpRequest, RouteMatch)} for an example on how to implement this.
      * 
-     * For the normal routes (where dataLoad=false) the body is limited to {@link Router#MAX_BODY_SIZE} bytes provided to the HttpObjectAgregator.  
+     * For the normal routes (where dataLoad=false) the body is limited to {@#maxBodySize} bytes provided to the HttpObjectAgregator.  
      * 
      */
     boolean dataLoad() default false;
+
+    int maxBodySize() default Router.MAX_BODY_SIZE;
 }

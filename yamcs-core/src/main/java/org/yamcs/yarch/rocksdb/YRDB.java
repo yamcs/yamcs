@@ -130,6 +130,14 @@ public class YRDB {
     public RocksIterator newIterator(ColumnFamilyHandle cfh) throws RocksDBException {
         return db.newIterator(cfh);
     }
+    
+    public AscendingRangeIterator newAscendingRangeIterator(byte[] rangeStart, boolean strictStart, byte[] rangeStop, boolean strictStop) {
+        return new AscendingRangeIterator(db.newIterator(), rangeStart, strictStart, rangeStop, strictStop);
+    }
+
+    public DescendingRangeIterator newDescendingRangeIterator(byte[] rangeStart, boolean strictStart, byte[] rangeStop, boolean strictStop) {
+        return new DescendingRangeIterator(db.newIterator(), rangeStart, strictStart, rangeStop, strictStop);
+    }
 
     public synchronized ColumnFamilyHandle getColumnFamilyHandle(byte[] cfname) {
         return columnFamilies.get(new ByteArrayWrapper(cfname));
@@ -141,7 +149,10 @@ public class YRDB {
     public byte[] get(ColumnFamilyHandle cfh, byte[] key) throws RocksDBException {
         return db.get(cfh, key);
     }
-
+    
+    /**
+    *  {@link RocksDB#get}
+    */
     public byte[] get(byte[] k)  throws RocksDBException {
         return db.get(k);
     }
@@ -288,5 +299,26 @@ public class YRDB {
     }
     public long getApproxNumRecords(ColumnFamilyHandle cfh) throws RocksDBException {
         return db.getLongProperty(cfh, ROCKS_PROP_NUM_KEYS);
+    }
+
+    public void delete(byte[] k) throws RocksDBException {
+        db.delete(k);
+    }
+
+    /**
+     * Returns an iterator that iterates over all elements with key starting with the prefix 
+     * @param start
+     * @return
+     */
+    public DbIterator newPrefixIterator(byte[] prefix) {
+        return newAscendingRangeIterator(prefix, false, prefix, false);
+    }
+    /**
+     * Returns an iterator that iterates in reverse over all elements with key starting with the prefix  
+     * @param start
+     * @return
+     */
+    public DbIterator newDescendingPrefixIterator(byte[] prefix) {
+        return new DescendingPrefixIterator(db.newIterator(), prefix);
     }
 }

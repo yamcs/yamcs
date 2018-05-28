@@ -19,8 +19,7 @@ import com.google.common.util.concurrent.Service;
  * Gives information on services (instance specific or server wide)
  */
 public class ServiceRestHandler extends RestHandler {
-    static String GLOBAL_INSTANCE = "_global";
-
+   
     @Route(path = "/api/services/:instance?", method = "GET")
     public void listServices(RestRequest req) throws HttpException {
         checkPrivileges(req);

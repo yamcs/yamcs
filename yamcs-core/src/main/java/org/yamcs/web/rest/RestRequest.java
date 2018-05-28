@@ -21,6 +21,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -316,6 +317,9 @@ public class RestRequest {
 
     public InputStream bodyAsInputStream() {
         return new ByteBufInputStream(httpRequest.content());
+    }
+    public ByteBuf bodyAsBuf() {
+        return httpRequest.content();
     }
 
     /**

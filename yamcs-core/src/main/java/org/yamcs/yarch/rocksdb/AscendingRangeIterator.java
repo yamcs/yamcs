@@ -13,12 +13,12 @@ import org.yamcs.utils.ByteArrayUtils;
  *
  */
 public class AscendingRangeIterator implements DbIterator {
-    final RocksIterator iterator;
+    private final RocksIterator iterator;
     final byte[] rangeStart;
     final boolean strictStart;
     final byte[] rangeEnd;
     final boolean strictEnd;
-    boolean valid = false;
+    private boolean valid = false;
     private byte[] curKey;
     /**
      * Constructs an iterator restricted to a range. Unlike the RocksDB standard iterators, 

@@ -13,6 +13,7 @@ import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.yarch.YarchDatabase;
@@ -23,6 +24,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import static org.yamcs.utils.ByteArrayUtils.decodeInt;
 import static org.yamcs.utils.ByteArrayUtils.encodeInt;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 
 /**
  * 
@@ -160,6 +162,7 @@ public class Tablespace {
         try (AscendingRangeIterator arit = new AscendingRangeIterator(db.newIterator(cfMetadata), rangeStart, false,
                 rangeStart, false)) {
             while (arit.isValid()) {
+            
                 TablespaceRecord.Builder tr;
                 try {
                     tr = TablespaceRecord.newBuilder().mergeFrom(arit.value());
@@ -197,7 +200,7 @@ public class Tablespace {
         if (!trb.hasType()) {
             throw new IllegalArgumentException("The type is mandatory in the TablespaceRecord");
         }
-        if (!yamcsInstance.equals(name)) {
+        if (!name.equals(yamcsInstance)) {
             trb.setInstanceName(yamcsInstance);
         }
         int tbsIndex = getNextTbsIndex();
@@ -209,6 +212,22 @@ public class Tablespace {
         return tr;
     }
 
+    TablespaceRecord updateRecord(String yamcsInstance, WriteBatch writeBatch, TablespaceRecord.Builder trb) {
+        if (!trb.hasType()) {
+            throw new IllegalArgumentException("The type is mandatory in the TablespaceRecord");
+        }
+        if (!trb.hasTbsIndex()) {
+            throw new IllegalArgumentException("The tbsIndex is mandatory for update");
+        }
+        if (!name.equals(yamcsInstance)) {
+            trb.setInstanceName(yamcsInstance);
+        }
+
+        TablespaceRecord tr = trb.build();
+        log.debug("Adding new metadata record {}", tr);
+        writeBatch.put(cfMetadata, getMetadataKey(tr.getType(), tr.getTbsIndex()), tr.toByteArray());
+        return tr;
+    }
     public String getCustomDataDir() {
         return customDataDir;
     }
@@ -274,16 +293,43 @@ public class Tablespace {
         return dir;
     }
 
+    /**
+     * Removes the tbsIndex from the metadata and all the associated data from the main db (data might still be present in the partitions)
+     * 
+     * @param type
+     * @param tbsIndex
+     * @throws RocksDBException
+     */
     public void removeTbsIndex(Type type, int tbsIndex) throws RocksDBException {
         log.debug("Removing tbsIndex {}", tbsIndex);
-        db.getDb().delete(getMetadataKey(type, tbsIndex));
+        try (WriteBatch wb = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
+            wb.remove(cfMetadata, getMetadataKey(type, tbsIndex));
+            byte[] beginKey = new byte[TBS_INDEX_SIZE];
+            byte[] endKey = new byte[TBS_INDEX_SIZE];
+            ByteArrayUtils.encodeInt(tbsIndex, beginKey, 0);
+            ByteArrayUtils.encodeInt(tbsIndex+1, endKey, 0);
+            wb.deleteRange(beginKey, endKey);
+            db.getDb().write(wo, wb);
+        }
     }
 
+    /**
+     * Removes the tbs indices with ALL the associated data from the main db (data might still be present in the partitions)
+     * @param type
+     * @param tbsIndexArray
+     * @throws RocksDBException
+     */
     public void removeTbsIndices(Type type, IntArray tbsIndexArray) throws RocksDBException {
         log.debug("Removing tbsIndices {}", tbsIndexArray);
         try (WriteBatch wb = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             for (int i = 0; i < tbsIndexArray.size(); i++) {
-                wb.remove(getMetadataKey(type, tbsIndexArray.get(i)));
+                int tbsIndex = tbsIndexArray.get(i);
+                wb.remove(cfMetadata, getMetadataKey(type, tbsIndexArray.get(i)));
+                byte[] beginKey = new byte[TBS_INDEX_SIZE];
+                byte[] endKey = new byte[TBS_INDEX_SIZE];
+                ByteArrayUtils.encodeInt(tbsIndex, beginKey, 0);
+                ByteArrayUtils.encodeInt(tbsIndex+1, endKey, 0);
+                wb.deleteRange(beginKey, endKey);
             }
             db.getDb().write(wo, wb);
         }

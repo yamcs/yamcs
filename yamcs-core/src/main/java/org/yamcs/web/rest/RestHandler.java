@@ -50,6 +50,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -60,6 +61,7 @@ import io.netty.handler.codec.http.LastHttpContent;
  * Contains utility methods for REST handlers. May eventually refactor this out.
  */
 public abstract class RestHandler extends RouteHandler {
+    public final static String GLOBAL_INSTANCE = "_global";
 
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
 
@@ -76,19 +78,23 @@ public abstract class RestHandler extends RouteHandler {
     }
 
     protected static void completeOK(RestRequest restRequest, MediaType contentType, ByteBuf body) {
+        completeOK(restRequest, contentType.toString(), body);
+    }
+
+    protected static void completeOK(RestRequest restRequest, String contentType, ByteBuf body) {
         if (body == null) {
             throw new NullPointerException(
                     "body cannot be null; use the completeOK(request) to send an empty response.");
         }
 
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK, body);
-        HttpUtils.setContentTypeHeader(httpResponse, contentType);
+        httpResponse.headers().set(HttpHeaderNames.CONTENT_TYPE, contentType);
         int txSize = body.readableBytes();
         HttpUtil.setContentLength(httpResponse, txSize);
         restRequest.addTransferredSize(txSize);
         completeRequest(restRequest, httpResponse);
     }
-
+    
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
         ChannelFuture cf = HttpRequestHandler.sendResponse(restRequest.getChannelHandlerContext(),
                 restRequest.getHttpRequest(), httpResponse, true);
@@ -159,7 +165,13 @@ public abstract class RestHandler extends RouteHandler {
         }
         return exceptionb;
     }
-
+    protected static String verifyInstance(RestRequest req, String instance, boolean allowGlobal) throws NotFoundException {
+        if(allowGlobal && GLOBAL_INSTANCE.equals(instance)) {
+            return instance;
+        }
+        return verifyInstance(req, instance);
+    }
+    
     protected static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
         if (!YamcsServer.hasInstance(instance)) {
             throw new NotFoundException(req, "No instance named '" + instance + "'");

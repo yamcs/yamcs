@@ -65,6 +65,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -134,6 +135,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new MDBAlgorithmRestHandler());
 
         registerRouteHandler(null, new OverviewRouteHandler());
+        registerRouteHandler(null, new BucketRestHandler());
     }
 
     // Using method handles for better invoke performance
@@ -155,7 +157,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                         for (String m : ann.method()) {
                             HttpMethod httpMethod = HttpMethod.valueOf(m);
                             routeConfigs.add(new RouteConfig(routeHandler, ann.path(), ann.priority(), ann.dataLoad(),
-                                    httpMethod, handle));
+                                    ann.maxBodySize(), httpMethod, handle));
                         }
                     }
                 }
@@ -232,7 +234,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
                 // this will cause the channelRead0 to be called as soon as the request is complete
                 // it will also reject requests whose body is greater than the MAX_BODY_SIZE)
-                ctx.pipeline().addLast(new HttpObjectAggregator(MAX_BODY_SIZE));
+                ctx.pipeline().addLast(new HttpObjectAggregator(rc.maxBodySize()));
                 ctx.pipeline().addLast(this);
                 ctx.fireChannelRead(req);
             }
@@ -387,17 +389,19 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         final HttpMethod httpMethod;
         final MethodHandle handle;
         final boolean dataLoad;
+        final int maxBodySize;
 
         RouteConfig(RouteHandler routeHandler, String originalPath, boolean priority, boolean dataLoad,
-                HttpMethod httpMethod, MethodHandle handle) {
+                int maxBodySize, HttpMethod httpMethod, MethodHandle handle) {
             this.routeHandler = routeHandler;
             this.originalPath = originalPath;
             this.priority = priority;
             this.httpMethod = httpMethod;
             this.handle = handle;
             this.dataLoad = dataLoad;
+            this.maxBodySize = maxBodySize;
         }
-
+       
         @Override
         public int compareTo(RouteConfig o) {
             int priorityCompare = Boolean.compare(priority, o.priority);
@@ -416,6 +420,11 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         public boolean isDataLoad() {
             return dataLoad;
         }
+        
+        public int maxBodySize() {
+            return maxBodySize;
+        }
+
     }
 
     /**

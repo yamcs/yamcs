@@ -3,7 +3,7 @@ package org.yamcs.utils;
 import java.util.Arrays;
 
 public class ByteArrayUtils {
-    
+    public static final byte[] EMPTY = new byte[0];
     /**
      * returns true if a starts with b
      * @param a

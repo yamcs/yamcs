@@ -6,7 +6,13 @@ package org.yamcs.protobuf;
 public final class Web {
   private Web() {}
   public static void registerAllExtensions(
+      com.google.protobuf.ExtensionRegistryLite registry) {
+  }
+
+  public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistry registry) {
+    registerAllExtensions(
+        (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   public interface WebSocketClientMessageOrBuilder extends
       // @@protoc_insertion_point(interface_extends:web.WebSocketClientMessage)
@@ -70,37 +76,32 @@ public final class Web {
   /**
    * Protobuf type {@code web.WebSocketClientMessage}
    */
-  public static final class WebSocketClientMessage extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class WebSocketClientMessage extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.WebSocketClientMessage)
       WebSocketClientMessageOrBuilder {
     // Use WebSocketClientMessage.newBuilder() to construct.
-    private WebSocketClientMessage(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private WebSocketClientMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private WebSocketClientMessage(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final WebSocketClientMessage defaultInstance;
-    public static WebSocketClientMessage getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public WebSocketClientMessage getDefaultInstanceForType() {
-      return defaultInstance;
+    private WebSocketClientMessage() {
+      protocolVersion_ = 0;
+      sequenceNumber_ = 0;
+      resource_ = "";
+      operation_ = "";
+      data_ = com.google.protobuf.ByteString.EMPTY;
     }
 
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private WebSocketClientMessage(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -152,7 +153,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -163,26 +164,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_WebSocketClientMessage_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_WebSocketClientMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.WebSocketClientMessage.class, org.yamcs.protobuf.Web.WebSocketClientMessage.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<WebSocketClientMessage> PARSER =
-        new com.google.protobuf.AbstractParser<WebSocketClientMessage>() {
-      public WebSocketClientMessage parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new WebSocketClientMessage(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<WebSocketClientMessage> getParserForType() {
-      return PARSER;
     }
 
     private int bitField0_;
@@ -217,7 +203,7 @@ public final class Web {
     }
 
     public static final int RESOURCE_FIELD_NUMBER = 3;
-    private java.lang.Object resource_;
+    private volatile java.lang.Object resource_;
     /**
      * <code>optional string resource = 3;</code>
      */
@@ -259,7 +245,7 @@ public final class Web {
     }
 
     public static final int OPERATION_FIELD_NUMBER = 4;
-    private java.lang.Object operation_;
+    private volatile java.lang.Object operation_;
     /**
      * <code>optional string operation = 4;</code>
      */
@@ -315,13 +301,6 @@ public final class Web {
       return data_;
     }
 
-    private void initFields() {
-      protocolVersion_ = 0;
-      sequenceNumber_ = 0;
-      resource_ = "";
-      operation_ = "";
-      data_ = com.google.protobuf.ByteString.EMPTY;
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -334,7 +313,6 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeUInt32(1, protocolVersion_);
       }
@@ -342,20 +320,19 @@ public final class Web {
         output.writeUInt32(2, sequenceNumber_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeBytes(3, getResourceBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, resource_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBytes(4, getOperationBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, operation_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeBytes(5, data_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
@@ -368,27 +345,91 @@ public final class Web {
           .computeUInt32Size(2, sequenceNumber_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, getResourceBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, resource_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(4, getOperationBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, operation_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(5, data_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.WebSocketClientMessage)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.WebSocketClientMessage other = (org.yamcs.protobuf.Web.WebSocketClientMessage) obj;
+
+      boolean result = true;
+      result = result && (hasProtocolVersion() == other.hasProtocolVersion());
+      if (hasProtocolVersion()) {
+        result = result && (getProtocolVersion()
+            == other.getProtocolVersion());
+      }
+      result = result && (hasSequenceNumber() == other.hasSequenceNumber());
+      if (hasSequenceNumber()) {
+        result = result && (getSequenceNumber()
+            == other.getSequenceNumber());
+      }
+      result = result && (hasResource() == other.hasResource());
+      if (hasResource()) {
+        result = result && getResource()
+            .equals(other.getResource());
+      }
+      result = result && (hasOperation() == other.hasOperation());
+      if (hasOperation()) {
+        result = result && getOperation()
+            .equals(other.getOperation());
+      }
+      result = result && (hasData() == other.hasData());
+      if (hasData()) {
+        result = result && getData()
+            .equals(other.getData());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasProtocolVersion()) {
+        hash = (37 * hash) + PROTOCOLVERSION_FIELD_NUMBER;
+        hash = (53 * hash) + getProtocolVersion();
+      }
+      if (hasSequenceNumber()) {
+        hash = (37 * hash) + SEQUENCENUMBER_FIELD_NUMBER;
+        hash = (53 * hash) + getSequenceNumber();
+      }
+      if (hasResource()) {
+        hash = (37 * hash) + RESOURCE_FIELD_NUMBER;
+        hash = (53 * hash) + getResource().hashCode();
+      }
+      if (hasOperation()) {
+        hash = (37 * hash) + OPERATION_FIELD_NUMBER;
+        hash = (53 * hash) + getOperation().hashCode();
+      }
+      if (hasData()) {
+        hash = (37 * hash) + DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getData().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.WebSocketClientMessage parseFrom(
@@ -414,46 +455,57 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.WebSocketClientMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.WebSocketClientMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.WebSocketClientMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.WebSocketClientMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.WebSocketClientMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.WebSocketClientMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketClientMessage prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketClientMessage prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -461,7 +513,7 @@ public final class Web {
      * Protobuf type {@code web.WebSocketClientMessage}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.WebSocketClientMessage)
         org.yamcs.protobuf.Web.WebSocketClientMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -469,7 +521,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketClientMessage_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketClientMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -482,18 +534,15 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         protocolVersion_ = 0;
@@ -507,10 +556,6 @@ public final class Web {
         data_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000010);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -559,6 +604,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.WebSocketClientMessage) {
           return mergeFrom((org.yamcs.protobuf.Web.WebSocketClientMessage)other);
@@ -589,7 +660,8 @@ public final class Web {
         if (other.hasData()) {
           setData(other.getData());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
@@ -606,7 +678,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.WebSocketClientMessage) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -866,16 +938,53 @@ public final class Web {
         onChanged();
         return this;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.WebSocketClientMessage)
     }
 
+    // @@protoc_insertion_point(class_scope:web.WebSocketClientMessage)
+    private static final org.yamcs.protobuf.Web.WebSocketClientMessage DEFAULT_INSTANCE;
     static {
-      defaultInstance = new WebSocketClientMessage(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.WebSocketClientMessage();
     }
 
-    // @@protoc_insertion_point(class_scope:web.WebSocketClientMessage)
+    public static org.yamcs.protobuf.Web.WebSocketClientMessage getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<WebSocketClientMessage>
+        PARSER = new com.google.protobuf.AbstractParser<WebSocketClientMessage>() {
+      public WebSocketClientMessage parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new WebSocketClientMessage(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<WebSocketClientMessage> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<WebSocketClientMessage> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.WebSocketClientMessage getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface WebSocketServerMessageOrBuilder extends
@@ -933,37 +1042,28 @@ public final class Web {
   /**
    * Protobuf type {@code web.WebSocketServerMessage}
    */
-  public static final class WebSocketServerMessage extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class WebSocketServerMessage extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.WebSocketServerMessage)
       WebSocketServerMessageOrBuilder {
     // Use WebSocketServerMessage.newBuilder() to construct.
-    private WebSocketServerMessage(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private WebSocketServerMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private WebSocketServerMessage(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final WebSocketServerMessage defaultInstance;
-    public static WebSocketServerMessage getDefaultInstance() {
-      return defaultInstance;
+    private WebSocketServerMessage() {
+      type_ = 2;
     }
 
-    public WebSocketServerMessage getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private WebSocketServerMessage(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -989,7 +1089,7 @@ public final class Web {
                 unknownFields.mergeVarintField(1, rawValue);
               } else {
                 bitField0_ |= 0x00000001;
-                type_ = value;
+                type_ = rawValue;
               }
               break;
             }
@@ -1038,7 +1138,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -1049,26 +1149,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.WebSocketServerMessage.class, org.yamcs.protobuf.Web.WebSocketServerMessage.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<WebSocketServerMessage> PARSER =
-        new com.google.protobuf.AbstractParser<WebSocketServerMessage>() {
-      public WebSocketServerMessage parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new WebSocketServerMessage(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<WebSocketServerMessage> getParserForType() {
-      return PARSER;
     }
 
     /**
@@ -1077,60 +1162,70 @@ public final class Web {
     public enum MessageType
         implements com.google.protobuf.ProtocolMessageEnum {
       /**
-       * <code>REPLY = 2;</code>
-       *
        * <pre>
        * one-time rpc-style ACK reply
        * </pre>
-       */
-      REPLY(0, 2),
-      /**
-       * <code>EXCEPTION = 3;</code>
        *
+       * <code>REPLY = 2;</code>
+       */
+      REPLY(2),
+      /**
        * <pre>
        * one-time rpc-style exception reply
        * </pre>
-       */
-      EXCEPTION(1, 3),
-      /**
-       * <code>DATA = 4;</code>
        *
+       * <code>EXCEPTION = 3;</code>
+       */
+      EXCEPTION(3),
+      /**
        * <pre>
        * various subscribed data
        * </pre>
+       *
+       * <code>DATA = 4;</code>
        */
-      DATA(2, 4),
+      DATA(4),
       ;
 
       /**
-       * <code>REPLY = 2;</code>
-       *
        * <pre>
        * one-time rpc-style ACK reply
        * </pre>
+       *
+       * <code>REPLY = 2;</code>
        */
       public static final int REPLY_VALUE = 2;
       /**
-       * <code>EXCEPTION = 3;</code>
-       *
        * <pre>
        * one-time rpc-style exception reply
        * </pre>
+       *
+       * <code>EXCEPTION = 3;</code>
        */
       public static final int EXCEPTION_VALUE = 3;
       /**
-       * <code>DATA = 4;</code>
-       *
        * <pre>
        * various subscribed data
        * </pre>
+       *
+       * <code>DATA = 4;</code>
        */
       public static final int DATA_VALUE = 4;
 
 
-      public final int getNumber() { return value; }
+      public final int getNumber() {
+        return value;
+      }
 
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
       public static MessageType valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static MessageType forNumber(int value) {
         switch (value) {
           case 2: return REPLY;
           case 3: return EXCEPTION;
@@ -1143,17 +1238,17 @@ public final class Web {
           internalGetValueMap() {
         return internalValueMap;
       }
-      private static com.google.protobuf.Internal.EnumLiteMap<MessageType>
-          internalValueMap =
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          MessageType> internalValueMap =
             new com.google.protobuf.Internal.EnumLiteMap<MessageType>() {
               public MessageType findValueByNumber(int number) {
-                return MessageType.valueOf(number);
+                return MessageType.forNumber(number);
               }
             };
 
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
-        return getDescriptor().getValues().get(index);
+        return getDescriptor().getValues().get(ordinal());
       }
       public final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptorForType() {
@@ -1175,11 +1270,9 @@ public final class Web {
         return VALUES[desc.getIndex()];
       }
 
-      private final int index;
       private final int value;
 
-      private MessageType(int index, int value) {
-        this.index = index;
+      private MessageType(int value) {
         this.value = value;
       }
 
@@ -1200,19 +1293,19 @@ public final class Web {
       int getProtocolVersion();
 
       /**
-       * <code>optional int32 sequenceNumber = 2;</code>
-       *
        * <pre>
        * allow for -1
        * </pre>
+       *
+       * <code>optional int32 sequenceNumber = 2;</code>
        */
       boolean hasSequenceNumber();
       /**
-       * <code>optional int32 sequenceNumber = 2;</code>
-       *
        * <pre>
        * allow for -1
        * </pre>
+       *
+       * <code>optional int32 sequenceNumber = 2;</code>
        */
       int getSequenceNumber();
 
@@ -1245,56 +1338,51 @@ public final class Web {
           getMessageBytes();
 
       /**
-       * <code>optional bytes data = 5;</code>
-       *
        * <pre>
        * Structured data
        * </pre>
+       *
+       * <code>optional bytes data = 5;</code>
        */
       boolean hasData();
       /**
-       * <code>optional bytes data = 5;</code>
-       *
        * <pre>
        * Structured data
        * </pre>
+       *
+       * <code>optional bytes data = 5;</code>
        */
       com.google.protobuf.ByteString getData();
     }
     /**
      * Protobuf type {@code web.WebSocketServerMessage.WebSocketReplyData}
      */
-    public static final class WebSocketReplyData extends
-        com.google.protobuf.GeneratedMessage implements
+    public  static final class WebSocketReplyData extends
+        com.google.protobuf.GeneratedMessageV3 implements
         // @@protoc_insertion_point(message_implements:web.WebSocketServerMessage.WebSocketReplyData)
         WebSocketReplyDataOrBuilder {
       // Use WebSocketReplyData.newBuilder() to construct.
-      private WebSocketReplyData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      private WebSocketReplyData(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
-        this.unknownFields = builder.getUnknownFields();
       }
-      private WebSocketReplyData(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-      private static final WebSocketReplyData defaultInstance;
-      public static WebSocketReplyData getDefaultInstance() {
-        return defaultInstance;
-      }
-
-      public WebSocketReplyData getDefaultInstanceForType() {
-        return defaultInstance;
+      private WebSocketReplyData() {
+        protocolVersion_ = 0;
+        sequenceNumber_ = 0;
+        type_ = "";
+        message_ = "";
+        data_ = com.google.protobuf.ByteString.EMPTY;
       }
 
-      private final com.google.protobuf.UnknownFieldSet unknownFields;
       @java.lang.Override
       public final com.google.protobuf.UnknownFieldSet
-          getUnknownFields() {
+      getUnknownFields() {
         return this.unknownFields;
       }
       private WebSocketReplyData(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        initFields();
+        this();
         int mutable_bitField0_ = 0;
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
             com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -1346,7 +1434,7 @@ public final class Web {
           throw e.setUnfinishedMessage(this);
         } catch (java.io.IOException e) {
           throw new com.google.protobuf.InvalidProtocolBufferException(
-              e.getMessage()).setUnfinishedMessage(this);
+              e).setUnfinishedMessage(this);
         } finally {
           this.unknownFields = unknownFields.build();
           makeExtensionsImmutable();
@@ -1357,26 +1445,11 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketReplyData_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.class, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.Builder.class);
-      }
-
-      public static com.google.protobuf.Parser<WebSocketReplyData> PARSER =
-          new com.google.protobuf.AbstractParser<WebSocketReplyData>() {
-        public WebSocketReplyData parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new WebSocketReplyData(input, extensionRegistry);
-        }
-      };
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<WebSocketReplyData> getParserForType() {
-        return PARSER;
       }
 
       private int bitField0_;
@@ -1398,28 +1471,28 @@ public final class Web {
       public static final int SEQUENCENUMBER_FIELD_NUMBER = 2;
       private int sequenceNumber_;
       /**
-       * <code>optional int32 sequenceNumber = 2;</code>
-       *
        * <pre>
        * allow for -1
        * </pre>
+       *
+       * <code>optional int32 sequenceNumber = 2;</code>
        */
       public boolean hasSequenceNumber() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional int32 sequenceNumber = 2;</code>
-       *
        * <pre>
        * allow for -1
        * </pre>
+       *
+       * <code>optional int32 sequenceNumber = 2;</code>
        */
       public int getSequenceNumber() {
         return sequenceNumber_;
       }
 
       public static final int TYPE_FIELD_NUMBER = 3;
-      private java.lang.Object type_;
+      private volatile java.lang.Object type_;
       /**
        * <code>optional string type = 3;</code>
        */
@@ -1461,7 +1534,7 @@ public final class Web {
       }
 
       public static final int MESSAGE_FIELD_NUMBER = 4;
-      private java.lang.Object message_;
+      private volatile java.lang.Object message_;
       /**
        * <code>optional string message = 4;</code>
        */
@@ -1505,33 +1578,26 @@ public final class Web {
       public static final int DATA_FIELD_NUMBER = 5;
       private com.google.protobuf.ByteString data_;
       /**
-       * <code>optional bytes data = 5;</code>
-       *
        * <pre>
        * Structured data
        * </pre>
+       *
+       * <code>optional bytes data = 5;</code>
        */
       public boolean hasData() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional bytes data = 5;</code>
-       *
        * <pre>
        * Structured data
        * </pre>
+       *
+       * <code>optional bytes data = 5;</code>
        */
       public com.google.protobuf.ByteString getData() {
         return data_;
       }
 
-      private void initFields() {
-        protocolVersion_ = 0;
-        sequenceNumber_ = 0;
-        type_ = "";
-        message_ = "";
-        data_ = com.google.protobuf.ByteString.EMPTY;
-      }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
@@ -1544,7 +1610,6 @@ public final class Web {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        getSerializedSize();
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           output.writeUInt32(1, protocolVersion_);
         }
@@ -1552,20 +1617,19 @@ public final class Web {
           output.writeInt32(2, sequenceNumber_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          output.writeBytes(3, getTypeBytes());
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 3, type_);
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
-          output.writeBytes(4, getMessageBytes());
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 4, message_);
         }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
           output.writeBytes(5, data_);
         }
-        getUnknownFields().writeTo(output);
+        unknownFields.writeTo(output);
       }
 
-      private int memoizedSerializedSize = -1;
       public int getSerializedSize() {
-        int size = memoizedSerializedSize;
+        int size = memoizedSize;
         if (size != -1) return size;
 
         size = 0;
@@ -1578,27 +1642,91 @@ public final class Web {
             .computeInt32Size(2, sequenceNumber_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeBytesSize(3, getTypeBytes());
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, type_);
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeBytesSize(4, getMessageBytes());
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, message_);
         }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
           size += com.google.protobuf.CodedOutputStream
             .computeBytesSize(5, data_);
         }
-        size += getUnknownFields().getSerializedSize();
-        memoizedSerializedSize = size;
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
         return size;
       }
 
       private static final long serialVersionUID = 0L;
       @java.lang.Override
-      protected java.lang.Object writeReplace()
-          throws java.io.ObjectStreamException {
-        return super.writeReplace();
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData)) {
+          return super.equals(obj);
+        }
+        org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData other = (org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData) obj;
+
+        boolean result = true;
+        result = result && (hasProtocolVersion() == other.hasProtocolVersion());
+        if (hasProtocolVersion()) {
+          result = result && (getProtocolVersion()
+              == other.getProtocolVersion());
+        }
+        result = result && (hasSequenceNumber() == other.hasSequenceNumber());
+        if (hasSequenceNumber()) {
+          result = result && (getSequenceNumber()
+              == other.getSequenceNumber());
+        }
+        result = result && (hasType() == other.hasType());
+        if (hasType()) {
+          result = result && getType()
+              .equals(other.getType());
+        }
+        result = result && (hasMessage() == other.hasMessage());
+        if (hasMessage()) {
+          result = result && getMessage()
+              .equals(other.getMessage());
+        }
+        result = result && (hasData() == other.hasData());
+        if (hasData()) {
+          result = result && getData()
+              .equals(other.getData());
+        }
+        result = result && unknownFields.equals(other.unknownFields);
+        return result;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptorForType().hashCode();
+        if (hasProtocolVersion()) {
+          hash = (37 * hash) + PROTOCOLVERSION_FIELD_NUMBER;
+          hash = (53 * hash) + getProtocolVersion();
+        }
+        if (hasSequenceNumber()) {
+          hash = (37 * hash) + SEQUENCENUMBER_FIELD_NUMBER;
+          hash = (53 * hash) + getSequenceNumber();
+        }
+        if (hasType()) {
+          hash = (37 * hash) + TYPE_FIELD_NUMBER;
+          hash = (53 * hash) + getType().hashCode();
+        }
+        if (hasMessage()) {
+          hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+          hash = (53 * hash) + getMessage().hashCode();
+        }
+        if (hasData()) {
+          hash = (37 * hash) + DATA_FIELD_NUMBER;
+          hash = (53 * hash) + getData().hashCode();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
       }
 
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData parseFrom(
@@ -1624,46 +1752,57 @@ public final class Web {
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData parseFrom(java.io.InputStream input)
           throws java.io.IOException {
-        return PARSER.parseFrom(input);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData parseFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData parseDelimitedFrom(java.io.InputStream input)
           throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData parseDelimitedFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData parseFrom(
           com.google.protobuf.CodedInputStream input)
           throws java.io.IOException {
-        return PARSER.parseFrom(input);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData parseFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
       }
 
-      public static Builder newBuilder() { return Builder.create(); }
       public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData prototype) {
-        return newBuilder().mergeFrom(prototype);
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
       }
-      public Builder toBuilder() { return newBuilder(this); }
+      public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
 
       @java.lang.Override
       protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         Builder builder = new Builder(parent);
         return builder;
       }
@@ -1671,7 +1810,7 @@ public final class Web {
        * Protobuf type {@code web.WebSocketServerMessage.WebSocketReplyData}
        */
       public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
           // @@protoc_insertion_point(builder_implements:web.WebSocketServerMessage.WebSocketReplyData)
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyDataOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
@@ -1679,7 +1818,7 @@ public final class Web {
           return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor;
         }
 
-        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
           return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketReplyData_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
@@ -1692,18 +1831,15 @@ public final class Web {
         }
 
         private Builder(
-            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
           maybeForceBuilderInitialization();
         }
         private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
           }
         }
-        private static Builder create() {
-          return new Builder();
-        }
-
         public Builder clear() {
           super.clear();
           protocolVersion_ = 0;
@@ -1717,10 +1853,6 @@ public final class Web {
           data_ = com.google.protobuf.ByteString.EMPTY;
           bitField0_ = (bitField0_ & ~0x00000010);
           return this;
-        }
-
-        public Builder clone() {
-          return create().mergeFrom(buildPartial());
         }
 
         public com.google.protobuf.Descriptors.Descriptor
@@ -1769,6 +1901,32 @@ public final class Web {
           return result;
         }
 
+        public Builder clone() {
+          return (Builder) super.clone();
+        }
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.setField(field, value);
+        }
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return (Builder) super.clearField(field);
+        }
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return (Builder) super.clearOneof(oneof);
+        }
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, Object value) {
+          return (Builder) super.setRepeatedField(field, index, value);
+        }
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.addRepeatedField(field, value);
+        }
         public Builder mergeFrom(com.google.protobuf.Message other) {
           if (other instanceof org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData) {
             return mergeFrom((org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData)other);
@@ -1799,7 +1957,8 @@ public final class Web {
           if (other.hasData()) {
             setData(other.getData());
           }
-          this.mergeUnknownFields(other.getUnknownFields());
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
           return this;
         }
 
@@ -1816,7 +1975,7 @@ public final class Web {
             parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
             parsedMessage = (org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData) e.getUnfinishedMessage();
-            throw e;
+            throw e.unwrapIOException();
           } finally {
             if (parsedMessage != null) {
               mergeFrom(parsedMessage);
@@ -1860,31 +2019,31 @@ public final class Web {
 
         private int sequenceNumber_ ;
         /**
-         * <code>optional int32 sequenceNumber = 2;</code>
-         *
          * <pre>
          * allow for -1
          * </pre>
+         *
+         * <code>optional int32 sequenceNumber = 2;</code>
          */
         public boolean hasSequenceNumber() {
           return ((bitField0_ & 0x00000002) == 0x00000002);
         }
         /**
-         * <code>optional int32 sequenceNumber = 2;</code>
-         *
          * <pre>
          * allow for -1
          * </pre>
+         *
+         * <code>optional int32 sequenceNumber = 2;</code>
          */
         public int getSequenceNumber() {
           return sequenceNumber_;
         }
         /**
-         * <code>optional int32 sequenceNumber = 2;</code>
-         *
          * <pre>
          * allow for -1
          * </pre>
+         *
+         * <code>optional int32 sequenceNumber = 2;</code>
          */
         public Builder setSequenceNumber(int value) {
           bitField0_ |= 0x00000002;
@@ -1893,11 +2052,11 @@ public final class Web {
           return this;
         }
         /**
-         * <code>optional int32 sequenceNumber = 2;</code>
-         *
          * <pre>
          * allow for -1
          * </pre>
+         *
+         * <code>optional int32 sequenceNumber = 2;</code>
          */
         public Builder clearSequenceNumber() {
           bitField0_ = (bitField0_ & ~0x00000002);
@@ -2060,31 +2219,31 @@ public final class Web {
 
         private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
         /**
-         * <code>optional bytes data = 5;</code>
-         *
          * <pre>
          * Structured data
          * </pre>
+         *
+         * <code>optional bytes data = 5;</code>
          */
         public boolean hasData() {
           return ((bitField0_ & 0x00000010) == 0x00000010);
         }
         /**
-         * <code>optional bytes data = 5;</code>
-         *
          * <pre>
          * Structured data
          * </pre>
+         *
+         * <code>optional bytes data = 5;</code>
          */
         public com.google.protobuf.ByteString getData() {
           return data_;
         }
         /**
-         * <code>optional bytes data = 5;</code>
-         *
          * <pre>
          * Structured data
          * </pre>
+         *
+         * <code>optional bytes data = 5;</code>
          */
         public Builder setData(com.google.protobuf.ByteString value) {
           if (value == null) {
@@ -2096,11 +2255,11 @@ public final class Web {
           return this;
         }
         /**
-         * <code>optional bytes data = 5;</code>
-         *
          * <pre>
          * Structured data
          * </pre>
+         *
+         * <code>optional bytes data = 5;</code>
          */
         public Builder clearData() {
           bitField0_ = (bitField0_ & ~0x00000010);
@@ -2108,16 +2267,53 @@ public final class Web {
           onChanged();
           return this;
         }
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
 
         // @@protoc_insertion_point(builder_scope:web.WebSocketServerMessage.WebSocketReplyData)
       }
 
+      // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage.WebSocketReplyData)
+      private static final org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData DEFAULT_INSTANCE;
       static {
-        defaultInstance = new WebSocketReplyData(true);
-        defaultInstance.initFields();
+        DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData();
       }
 
-      // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage.WebSocketReplyData)
+      public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<WebSocketReplyData>
+          PARSER = new com.google.protobuf.AbstractParser<WebSocketReplyData>() {
+        public WebSocketReplyData parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new WebSocketReplyData(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<WebSocketReplyData> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<WebSocketReplyData> getParserForType() {
+        return PARSER;
+      }
+
+      public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
     }
 
     public interface WebSocketExceptionDataOrBuilder extends
@@ -2134,19 +2330,19 @@ public final class Web {
       int getProtocolVersion();
 
       /**
-       * <code>optional int32 sequenceNumber = 2;</code>
-       *
        * <pre>
        * allow for -1
        * </pre>
+       *
+       * <code>optional int32 sequenceNumber = 2;</code>
        */
       boolean hasSequenceNumber();
       /**
-       * <code>optional int32 sequenceNumber = 2;</code>
-       *
        * <pre>
        * allow for -1
        * </pre>
+       *
+       * <code>optional int32 sequenceNumber = 2;</code>
        */
       int getSequenceNumber();
 
@@ -2179,56 +2375,51 @@ public final class Web {
           getMessageBytes();
 
       /**
-       * <code>optional bytes data = 5;</code>
-       *
        * <pre>
        * Structured exception data
        * </pre>
+       *
+       * <code>optional bytes data = 5;</code>
        */
       boolean hasData();
       /**
-       * <code>optional bytes data = 5;</code>
-       *
        * <pre>
        * Structured exception data
        * </pre>
+       *
+       * <code>optional bytes data = 5;</code>
        */
       com.google.protobuf.ByteString getData();
     }
     /**
      * Protobuf type {@code web.WebSocketServerMessage.WebSocketExceptionData}
      */
-    public static final class WebSocketExceptionData extends
-        com.google.protobuf.GeneratedMessage implements
+    public  static final class WebSocketExceptionData extends
+        com.google.protobuf.GeneratedMessageV3 implements
         // @@protoc_insertion_point(message_implements:web.WebSocketServerMessage.WebSocketExceptionData)
         WebSocketExceptionDataOrBuilder {
       // Use WebSocketExceptionData.newBuilder() to construct.
-      private WebSocketExceptionData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      private WebSocketExceptionData(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
-        this.unknownFields = builder.getUnknownFields();
       }
-      private WebSocketExceptionData(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-      private static final WebSocketExceptionData defaultInstance;
-      public static WebSocketExceptionData getDefaultInstance() {
-        return defaultInstance;
-      }
-
-      public WebSocketExceptionData getDefaultInstanceForType() {
-        return defaultInstance;
+      private WebSocketExceptionData() {
+        protocolVersion_ = 0;
+        sequenceNumber_ = 0;
+        type_ = "";
+        message_ = "";
+        data_ = com.google.protobuf.ByteString.EMPTY;
       }
 
-      private final com.google.protobuf.UnknownFieldSet unknownFields;
       @java.lang.Override
       public final com.google.protobuf.UnknownFieldSet
-          getUnknownFields() {
+      getUnknownFields() {
         return this.unknownFields;
       }
       private WebSocketExceptionData(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        initFields();
+        this();
         int mutable_bitField0_ = 0;
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
             com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -2280,7 +2471,7 @@ public final class Web {
           throw e.setUnfinishedMessage(this);
         } catch (java.io.IOException e) {
           throw new com.google.protobuf.InvalidProtocolBufferException(
-              e.getMessage()).setUnfinishedMessage(this);
+              e).setUnfinishedMessage(this);
         } finally {
           this.unknownFields = unknownFields.build();
           makeExtensionsImmutable();
@@ -2291,26 +2482,11 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketExceptionData_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.class, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.Builder.class);
-      }
-
-      public static com.google.protobuf.Parser<WebSocketExceptionData> PARSER =
-          new com.google.protobuf.AbstractParser<WebSocketExceptionData>() {
-        public WebSocketExceptionData parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new WebSocketExceptionData(input, extensionRegistry);
-        }
-      };
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<WebSocketExceptionData> getParserForType() {
-        return PARSER;
       }
 
       private int bitField0_;
@@ -2332,28 +2508,28 @@ public final class Web {
       public static final int SEQUENCENUMBER_FIELD_NUMBER = 2;
       private int sequenceNumber_;
       /**
-       * <code>optional int32 sequenceNumber = 2;</code>
-       *
        * <pre>
        * allow for -1
        * </pre>
+       *
+       * <code>optional int32 sequenceNumber = 2;</code>
        */
       public boolean hasSequenceNumber() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional int32 sequenceNumber = 2;</code>
-       *
        * <pre>
        * allow for -1
        * </pre>
+       *
+       * <code>optional int32 sequenceNumber = 2;</code>
        */
       public int getSequenceNumber() {
         return sequenceNumber_;
       }
 
       public static final int TYPE_FIELD_NUMBER = 3;
-      private java.lang.Object type_;
+      private volatile java.lang.Object type_;
       /**
        * <code>optional string type = 3;</code>
        */
@@ -2395,7 +2571,7 @@ public final class Web {
       }
 
       public static final int MESSAGE_FIELD_NUMBER = 4;
-      private java.lang.Object message_;
+      private volatile java.lang.Object message_;
       /**
        * <code>optional string message = 4;</code>
        */
@@ -2439,33 +2615,26 @@ public final class Web {
       public static final int DATA_FIELD_NUMBER = 5;
       private com.google.protobuf.ByteString data_;
       /**
-       * <code>optional bytes data = 5;</code>
-       *
        * <pre>
        * Structured exception data
        * </pre>
+       *
+       * <code>optional bytes data = 5;</code>
        */
       public boolean hasData() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional bytes data = 5;</code>
-       *
        * <pre>
        * Structured exception data
        * </pre>
+       *
+       * <code>optional bytes data = 5;</code>
        */
       public com.google.protobuf.ByteString getData() {
         return data_;
       }
 
-      private void initFields() {
-        protocolVersion_ = 0;
-        sequenceNumber_ = 0;
-        type_ = "";
-        message_ = "";
-        data_ = com.google.protobuf.ByteString.EMPTY;
-      }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
@@ -2478,7 +2647,6 @@ public final class Web {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        getSerializedSize();
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           output.writeUInt32(1, protocolVersion_);
         }
@@ -2486,20 +2654,19 @@ public final class Web {
           output.writeInt32(2, sequenceNumber_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          output.writeBytes(3, getTypeBytes());
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 3, type_);
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
-          output.writeBytes(4, getMessageBytes());
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 4, message_);
         }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
           output.writeBytes(5, data_);
         }
-        getUnknownFields().writeTo(output);
+        unknownFields.writeTo(output);
       }
 
-      private int memoizedSerializedSize = -1;
       public int getSerializedSize() {
-        int size = memoizedSerializedSize;
+        int size = memoizedSize;
         if (size != -1) return size;
 
         size = 0;
@@ -2512,27 +2679,91 @@ public final class Web {
             .computeInt32Size(2, sequenceNumber_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeBytesSize(3, getTypeBytes());
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, type_);
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeBytesSize(4, getMessageBytes());
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, message_);
         }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
           size += com.google.protobuf.CodedOutputStream
             .computeBytesSize(5, data_);
         }
-        size += getUnknownFields().getSerializedSize();
-        memoizedSerializedSize = size;
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
         return size;
       }
 
       private static final long serialVersionUID = 0L;
       @java.lang.Override
-      protected java.lang.Object writeReplace()
-          throws java.io.ObjectStreamException {
-        return super.writeReplace();
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData)) {
+          return super.equals(obj);
+        }
+        org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData other = (org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData) obj;
+
+        boolean result = true;
+        result = result && (hasProtocolVersion() == other.hasProtocolVersion());
+        if (hasProtocolVersion()) {
+          result = result && (getProtocolVersion()
+              == other.getProtocolVersion());
+        }
+        result = result && (hasSequenceNumber() == other.hasSequenceNumber());
+        if (hasSequenceNumber()) {
+          result = result && (getSequenceNumber()
+              == other.getSequenceNumber());
+        }
+        result = result && (hasType() == other.hasType());
+        if (hasType()) {
+          result = result && getType()
+              .equals(other.getType());
+        }
+        result = result && (hasMessage() == other.hasMessage());
+        if (hasMessage()) {
+          result = result && getMessage()
+              .equals(other.getMessage());
+        }
+        result = result && (hasData() == other.hasData());
+        if (hasData()) {
+          result = result && getData()
+              .equals(other.getData());
+        }
+        result = result && unknownFields.equals(other.unknownFields);
+        return result;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptorForType().hashCode();
+        if (hasProtocolVersion()) {
+          hash = (37 * hash) + PROTOCOLVERSION_FIELD_NUMBER;
+          hash = (53 * hash) + getProtocolVersion();
+        }
+        if (hasSequenceNumber()) {
+          hash = (37 * hash) + SEQUENCENUMBER_FIELD_NUMBER;
+          hash = (53 * hash) + getSequenceNumber();
+        }
+        if (hasType()) {
+          hash = (37 * hash) + TYPE_FIELD_NUMBER;
+          hash = (53 * hash) + getType().hashCode();
+        }
+        if (hasMessage()) {
+          hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+          hash = (53 * hash) + getMessage().hashCode();
+        }
+        if (hasData()) {
+          hash = (37 * hash) + DATA_FIELD_NUMBER;
+          hash = (53 * hash) + getData().hashCode();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
       }
 
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData parseFrom(
@@ -2558,46 +2789,57 @@ public final class Web {
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData parseFrom(java.io.InputStream input)
           throws java.io.IOException {
-        return PARSER.parseFrom(input);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData parseFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData parseDelimitedFrom(java.io.InputStream input)
           throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData parseDelimitedFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData parseFrom(
           com.google.protobuf.CodedInputStream input)
           throws java.io.IOException {
-        return PARSER.parseFrom(input);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData parseFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
       }
 
-      public static Builder newBuilder() { return Builder.create(); }
       public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData prototype) {
-        return newBuilder().mergeFrom(prototype);
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
       }
-      public Builder toBuilder() { return newBuilder(this); }
+      public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
 
       @java.lang.Override
       protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         Builder builder = new Builder(parent);
         return builder;
       }
@@ -2605,7 +2847,7 @@ public final class Web {
        * Protobuf type {@code web.WebSocketServerMessage.WebSocketExceptionData}
        */
       public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
           // @@protoc_insertion_point(builder_implements:web.WebSocketServerMessage.WebSocketExceptionData)
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionDataOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
@@ -2613,7 +2855,7 @@ public final class Web {
           return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor;
         }
 
-        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
           return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketExceptionData_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
@@ -2626,18 +2868,15 @@ public final class Web {
         }
 
         private Builder(
-            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
           maybeForceBuilderInitialization();
         }
         private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
           }
         }
-        private static Builder create() {
-          return new Builder();
-        }
-
         public Builder clear() {
           super.clear();
           protocolVersion_ = 0;
@@ -2651,10 +2890,6 @@ public final class Web {
           data_ = com.google.protobuf.ByteString.EMPTY;
           bitField0_ = (bitField0_ & ~0x00000010);
           return this;
-        }
-
-        public Builder clone() {
-          return create().mergeFrom(buildPartial());
         }
 
         public com.google.protobuf.Descriptors.Descriptor
@@ -2703,6 +2938,32 @@ public final class Web {
           return result;
         }
 
+        public Builder clone() {
+          return (Builder) super.clone();
+        }
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.setField(field, value);
+        }
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return (Builder) super.clearField(field);
+        }
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return (Builder) super.clearOneof(oneof);
+        }
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, Object value) {
+          return (Builder) super.setRepeatedField(field, index, value);
+        }
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.addRepeatedField(field, value);
+        }
         public Builder mergeFrom(com.google.protobuf.Message other) {
           if (other instanceof org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData) {
             return mergeFrom((org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData)other);
@@ -2733,7 +2994,8 @@ public final class Web {
           if (other.hasData()) {
             setData(other.getData());
           }
-          this.mergeUnknownFields(other.getUnknownFields());
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
           return this;
         }
 
@@ -2750,7 +3012,7 @@ public final class Web {
             parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
             parsedMessage = (org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData) e.getUnfinishedMessage();
-            throw e;
+            throw e.unwrapIOException();
           } finally {
             if (parsedMessage != null) {
               mergeFrom(parsedMessage);
@@ -2794,31 +3056,31 @@ public final class Web {
 
         private int sequenceNumber_ ;
         /**
-         * <code>optional int32 sequenceNumber = 2;</code>
-         *
          * <pre>
          * allow for -1
          * </pre>
+         *
+         * <code>optional int32 sequenceNumber = 2;</code>
          */
         public boolean hasSequenceNumber() {
           return ((bitField0_ & 0x00000002) == 0x00000002);
         }
         /**
-         * <code>optional int32 sequenceNumber = 2;</code>
-         *
          * <pre>
          * allow for -1
          * </pre>
+         *
+         * <code>optional int32 sequenceNumber = 2;</code>
          */
         public int getSequenceNumber() {
           return sequenceNumber_;
         }
         /**
-         * <code>optional int32 sequenceNumber = 2;</code>
-         *
          * <pre>
          * allow for -1
          * </pre>
+         *
+         * <code>optional int32 sequenceNumber = 2;</code>
          */
         public Builder setSequenceNumber(int value) {
           bitField0_ |= 0x00000002;
@@ -2827,11 +3089,11 @@ public final class Web {
           return this;
         }
         /**
-         * <code>optional int32 sequenceNumber = 2;</code>
-         *
          * <pre>
          * allow for -1
          * </pre>
+         *
+         * <code>optional int32 sequenceNumber = 2;</code>
          */
         public Builder clearSequenceNumber() {
           bitField0_ = (bitField0_ & ~0x00000002);
@@ -2994,31 +3256,31 @@ public final class Web {
 
         private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
         /**
-         * <code>optional bytes data = 5;</code>
-         *
          * <pre>
          * Structured exception data
          * </pre>
+         *
+         * <code>optional bytes data = 5;</code>
          */
         public boolean hasData() {
           return ((bitField0_ & 0x00000010) == 0x00000010);
         }
         /**
-         * <code>optional bytes data = 5;</code>
-         *
          * <pre>
          * Structured exception data
          * </pre>
+         *
+         * <code>optional bytes data = 5;</code>
          */
         public com.google.protobuf.ByteString getData() {
           return data_;
         }
         /**
-         * <code>optional bytes data = 5;</code>
-         *
          * <pre>
          * Structured exception data
          * </pre>
+         *
+         * <code>optional bytes data = 5;</code>
          */
         public Builder setData(com.google.protobuf.ByteString value) {
           if (value == null) {
@@ -3030,11 +3292,11 @@ public final class Web {
           return this;
         }
         /**
-         * <code>optional bytes data = 5;</code>
-         *
          * <pre>
          * Structured exception data
          * </pre>
+         *
+         * <code>optional bytes data = 5;</code>
          */
         public Builder clearData() {
           bitField0_ = (bitField0_ & ~0x00000010);
@@ -3042,16 +3304,53 @@ public final class Web {
           onChanged();
           return this;
         }
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
 
         // @@protoc_insertion_point(builder_scope:web.WebSocketServerMessage.WebSocketExceptionData)
       }
 
+      // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage.WebSocketExceptionData)
+      private static final org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData DEFAULT_INSTANCE;
       static {
-        defaultInstance = new WebSocketExceptionData(true);
-        defaultInstance.initFields();
+        DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData();
       }
 
-      // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage.WebSocketExceptionData)
+      public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<WebSocketExceptionData>
+          PARSER = new com.google.protobuf.AbstractParser<WebSocketExceptionData>() {
+        public WebSocketExceptionData parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new WebSocketExceptionData(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<WebSocketExceptionData> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<WebSocketExceptionData> getParserForType() {
+        return PARSER;
+      }
+
+      public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
     }
 
     public interface WebSocketSubscriptionDataOrBuilder extends
@@ -3272,43 +3571,35 @@ public final class Web {
       org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder getExtensionDataOrBuilder();
     }
     /**
-     * Protobuf type {@code web.WebSocketServerMessage.WebSocketSubscriptionData}
-     *
      * <pre>
      * Could use protobuf3 Any-type some day.
      * </pre>
+     *
+     * Protobuf type {@code web.WebSocketServerMessage.WebSocketSubscriptionData}
      */
-    public static final class WebSocketSubscriptionData extends
-        com.google.protobuf.GeneratedMessage implements
+    public  static final class WebSocketSubscriptionData extends
+        com.google.protobuf.GeneratedMessageV3 implements
         // @@protoc_insertion_point(message_implements:web.WebSocketServerMessage.WebSocketSubscriptionData)
         WebSocketSubscriptionDataOrBuilder {
       // Use WebSocketSubscriptionData.newBuilder() to construct.
-      private WebSocketSubscriptionData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      private WebSocketSubscriptionData(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
         super(builder);
-        this.unknownFields = builder.getUnknownFields();
       }
-      private WebSocketSubscriptionData(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-      private static final WebSocketSubscriptionData defaultInstance;
-      public static WebSocketSubscriptionData getDefaultInstance() {
-        return defaultInstance;
+      private WebSocketSubscriptionData() {
+        sequenceNumber_ = 0;
+        type_ = 1;
       }
 
-      public WebSocketSubscriptionData getDefaultInstanceForType() {
-        return defaultInstance;
-      }
-
-      private final com.google.protobuf.UnknownFieldSet unknownFields;
       @java.lang.Override
       public final com.google.protobuf.UnknownFieldSet
-          getUnknownFields() {
+      getUnknownFields() {
         return this.unknownFields;
       }
       private WebSocketSubscriptionData(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        initFields();
+        this();
         int mutable_bitField0_ = 0;
         com.google.protobuf.UnknownFieldSet.Builder unknownFields =
             com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -3339,7 +3630,7 @@ public final class Web {
                   unknownFields.mergeVarintField(2, rawValue);
                 } else {
                   bitField0_ |= 0x00000002;
-                  type_ = value;
+                  type_ = rawValue;
                 }
                 break;
               }
@@ -3544,7 +3835,7 @@ public final class Web {
           throw e.setUnfinishedMessage(this);
         } catch (java.io.IOException e) {
           throw new com.google.protobuf.InvalidProtocolBufferException(
-              e.getMessage()).setUnfinishedMessage(this);
+              e).setUnfinishedMessage(this);
         } finally {
           this.unknownFields = unknownFields.build();
           makeExtensionsImmutable();
@@ -3555,26 +3846,11 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.class, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.Builder.class);
-      }
-
-      public static com.google.protobuf.Parser<WebSocketSubscriptionData> PARSER =
-          new com.google.protobuf.AbstractParser<WebSocketSubscriptionData>() {
-        public WebSocketSubscriptionData parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new WebSocketSubscriptionData(input, extensionRegistry);
-        }
-      };
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<WebSocketSubscriptionData> getParserForType() {
-        return PARSER;
       }
 
       private int bitField0_;
@@ -3594,7 +3870,7 @@ public final class Web {
       }
 
       public static final int TYPE_FIELD_NUMBER = 2;
-      private org.yamcs.protobuf.Yamcs.ProtoDataType type_;
+      private int type_;
       /**
        * <code>optional .yamcs.ProtoDataType type = 2;</code>
        */
@@ -3605,7 +3881,8 @@ public final class Web {
        * <code>optional .yamcs.ProtoDataType type = 2;</code>
        */
       public org.yamcs.protobuf.Yamcs.ProtoDataType getType() {
-        return type_;
+        org.yamcs.protobuf.Yamcs.ProtoDataType result = org.yamcs.protobuf.Yamcs.ProtoDataType.valueOf(type_);
+        return result == null ? org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR : result;
       }
 
       public static final int PARAMETERDATA_FIELD_NUMBER = 3;
@@ -3620,13 +3897,13 @@ public final class Web {
        * <code>optional .pvalue.ParameterData parameterData = 3;</code>
        */
       public org.yamcs.protobuf.Pvalue.ParameterData getParameterData() {
-        return parameterData_;
+        return parameterData_ == null ? org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance() : parameterData_;
       }
       /**
        * <code>optional .pvalue.ParameterData parameterData = 3;</code>
        */
       public org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder getParameterDataOrBuilder() {
-        return parameterData_;
+        return parameterData_ == null ? org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance() : parameterData_;
       }
 
       public static final int COMMAND_FIELD_NUMBER = 4;
@@ -3641,13 +3918,13 @@ public final class Web {
        * <code>optional .commanding.CommandHistoryEntry command = 4;</code>
        */
       public org.yamcs.protobuf.Commanding.CommandHistoryEntry getCommand() {
-        return command_;
+        return command_ == null ? org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance() : command_;
       }
       /**
        * <code>optional .commanding.CommandHistoryEntry command = 4;</code>
        */
       public org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder getCommandOrBuilder() {
-        return command_;
+        return command_ == null ? org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance() : command_;
       }
 
       public static final int PROCESSORINFO_FIELD_NUMBER = 5;
@@ -3662,13 +3939,13 @@ public final class Web {
        * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessorInfo() {
-        return processorInfo_;
+        return processorInfo_ == null ? org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processorInfo_;
       }
       /**
        * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorInfoOrBuilder() {
-        return processorInfo_;
+        return processorInfo_ == null ? org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processorInfo_;
       }
 
       public static final int CLIENTINFO_FIELD_NUMBER = 6;
@@ -3683,13 +3960,13 @@ public final class Web {
        * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo() {
-        return clientInfo_;
+        return clientInfo_ == null ? org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance() : clientInfo_;
       }
       /**
        * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder() {
-        return clientInfo_;
+        return clientInfo_ == null ? org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance() : clientInfo_;
       }
 
       public static final int STATISTICS_FIELD_NUMBER = 7;
@@ -3704,13 +3981,13 @@ public final class Web {
        * <code>optional .yamcsManagement.Statistics statistics = 7;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.Statistics getStatistics() {
-        return statistics_;
+        return statistics_ == null ? org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance() : statistics_;
       }
       /**
        * <code>optional .yamcsManagement.Statistics statistics = 7;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.StatisticsOrBuilder getStatisticsOrBuilder() {
-        return statistics_;
+        return statistics_ == null ? org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance() : statistics_;
       }
 
       public static final int EVENT_FIELD_NUMBER = 8;
@@ -3725,13 +4002,13 @@ public final class Web {
        * <code>optional .yamcs.Event event = 8;</code>
        */
       public org.yamcs.protobuf.Yamcs.Event getEvent() {
-        return event_;
+        return event_ == null ? org.yamcs.protobuf.Yamcs.Event.getDefaultInstance() : event_;
       }
       /**
        * <code>optional .yamcs.Event event = 8;</code>
        */
       public org.yamcs.protobuf.Yamcs.EventOrBuilder getEventOrBuilder() {
-        return event_;
+        return event_ == null ? org.yamcs.protobuf.Yamcs.Event.getDefaultInstance() : event_;
       }
 
       public static final int STREAMDATA_FIELD_NUMBER = 9;
@@ -3746,13 +4023,13 @@ public final class Web {
        * <code>optional .archive.StreamData streamData = 9;</code>
        */
       public org.yamcs.protobuf.Archive.StreamData getStreamData() {
-        return streamData_;
+        return streamData_ == null ? org.yamcs.protobuf.Archive.StreamData.getDefaultInstance() : streamData_;
       }
       /**
        * <code>optional .archive.StreamData streamData = 9;</code>
        */
       public org.yamcs.protobuf.Archive.StreamDataOrBuilder getStreamDataOrBuilder() {
-        return streamData_;
+        return streamData_ == null ? org.yamcs.protobuf.Archive.StreamData.getDefaultInstance() : streamData_;
       }
 
       public static final int ALARMDATA_FIELD_NUMBER = 10;
@@ -3767,13 +4044,13 @@ public final class Web {
        * <code>optional .alarms.AlarmData alarmData = 10;</code>
        */
       public org.yamcs.protobuf.Alarms.AlarmData getAlarmData() {
-        return alarmData_;
+        return alarmData_ == null ? org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance() : alarmData_;
       }
       /**
        * <code>optional .alarms.AlarmData alarmData = 10;</code>
        */
       public org.yamcs.protobuf.Alarms.AlarmDataOrBuilder getAlarmDataOrBuilder() {
-        return alarmData_;
+        return alarmData_ == null ? org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance() : alarmData_;
       }
 
       public static final int TIMEINFO_FIELD_NUMBER = 11;
@@ -3788,13 +4065,13 @@ public final class Web {
        * <code>optional .yamcs.TimeInfo timeInfo = 11;</code>
        */
       public org.yamcs.protobuf.Yamcs.TimeInfo getTimeInfo() {
-        return timeInfo_;
+        return timeInfo_ == null ? org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance() : timeInfo_;
       }
       /**
        * <code>optional .yamcs.TimeInfo timeInfo = 11;</code>
        */
       public org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder getTimeInfoOrBuilder() {
-        return timeInfo_;
+        return timeInfo_ == null ? org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance() : timeInfo_;
       }
 
       public static final int LINKEVENT_FIELD_NUMBER = 12;
@@ -3809,13 +4086,13 @@ public final class Web {
        * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.LinkEvent getLinkEvent() {
-        return linkEvent_;
+        return linkEvent_ == null ? org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance() : linkEvent_;
       }
       /**
        * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder getLinkEventOrBuilder() {
-        return linkEvent_;
+        return linkEvent_ == null ? org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance() : linkEvent_;
       }
 
       public static final int COMMANDQUEUEINFO_FIELD_NUMBER = 13;
@@ -3830,13 +4107,13 @@ public final class Web {
        * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
        */
       public org.yamcs.protobuf.Commanding.CommandQueueInfo getCommandQueueInfo() {
-        return commandQueueInfo_;
+        return commandQueueInfo_ == null ? org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance() : commandQueueInfo_;
       }
       /**
        * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
        */
       public org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder getCommandQueueInfoOrBuilder() {
-        return commandQueueInfo_;
+        return commandQueueInfo_ == null ? org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance() : commandQueueInfo_;
       }
 
       public static final int COMMANDQUEUEEVENT_FIELD_NUMBER = 14;
@@ -3851,13 +4128,13 @@ public final class Web {
        * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
        */
       public org.yamcs.protobuf.Commanding.CommandQueueEvent getCommandQueueEvent() {
-        return commandQueueEvent_;
+        return commandQueueEvent_ == null ? org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance() : commandQueueEvent_;
       }
       /**
        * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
        */
       public org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder getCommandQueueEventOrBuilder() {
-        return commandQueueEvent_;
+        return commandQueueEvent_ == null ? org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance() : commandQueueEvent_;
       }
 
       public static final int TMPACKET_FIELD_NUMBER = 15;
@@ -3872,13 +4149,13 @@ public final class Web {
        * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
        */
       public org.yamcs.protobuf.Yamcs.TmPacketData getTmPacket() {
-        return tmPacket_;
+        return tmPacket_ == null ? org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance() : tmPacket_;
       }
       /**
        * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
        */
       public org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder getTmPacketOrBuilder() {
-        return tmPacket_;
+        return tmPacket_ == null ? org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance() : tmPacket_;
       }
 
       public static final int CONNECTIONINFO_FIELD_NUMBER = 16;
@@ -3893,13 +4170,13 @@ public final class Web {
        * <code>optional .web.ConnectionInfo connectionInfo = 16;</code>
        */
       public org.yamcs.protobuf.Web.ConnectionInfo getConnectionInfo() {
-        return connectionInfo_;
+        return connectionInfo_ == null ? org.yamcs.protobuf.Web.ConnectionInfo.getDefaultInstance() : connectionInfo_;
       }
       /**
        * <code>optional .web.ConnectionInfo connectionInfo = 16;</code>
        */
       public org.yamcs.protobuf.Web.ConnectionInfoOrBuilder getConnectionInfoOrBuilder() {
-        return connectionInfo_;
+        return connectionInfo_ == null ? org.yamcs.protobuf.Web.ConnectionInfo.getDefaultInstance() : connectionInfo_;
       }
 
       public static final int EXTENSIONDATA_FIELD_NUMBER = 100;
@@ -3914,34 +4191,15 @@ public final class Web {
        * <code>optional .web.WebSocketExtensionData extensionData = 100;</code>
        */
       public org.yamcs.protobuf.Web.WebSocketExtensionData getExtensionData() {
-        return extensionData_;
+        return extensionData_ == null ? org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance() : extensionData_;
       }
       /**
        * <code>optional .web.WebSocketExtensionData extensionData = 100;</code>
        */
       public org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder getExtensionDataOrBuilder() {
-        return extensionData_;
+        return extensionData_ == null ? org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance() : extensionData_;
       }
 
-      private void initFields() {
-        sequenceNumber_ = 0;
-        type_ = org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR;
-        parameterData_ = org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance();
-        command_ = org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance();
-        processorInfo_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
-        clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
-        statistics_ = org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance();
-        event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
-        streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
-        alarmData_ = org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
-        timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
-        linkEvent_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
-        commandQueueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
-        commandQueueEvent_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance();
-        tmPacket_ = org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance();
-        connectionInfo_ = org.yamcs.protobuf.Web.ConnectionInfo.getDefaultInstance();
-        extensionData_ = org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance();
-      }
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
@@ -4032,64 +4290,62 @@ public final class Web {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        getSerializedSize();
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
           output.writeUInt32(1, sequenceNumber_);
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          output.writeEnum(2, type_.getNumber());
+          output.writeEnum(2, type_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          output.writeMessage(3, parameterData_);
+          output.writeMessage(3, getParameterData());
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
-          output.writeMessage(4, command_);
+          output.writeMessage(4, getCommand());
         }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
-          output.writeMessage(5, processorInfo_);
+          output.writeMessage(5, getProcessorInfo());
         }
         if (((bitField0_ & 0x00000020) == 0x00000020)) {
-          output.writeMessage(6, clientInfo_);
+          output.writeMessage(6, getClientInfo());
         }
         if (((bitField0_ & 0x00000040) == 0x00000040)) {
-          output.writeMessage(7, statistics_);
+          output.writeMessage(7, getStatistics());
         }
         if (((bitField0_ & 0x00000080) == 0x00000080)) {
-          output.writeMessage(8, event_);
+          output.writeMessage(8, getEvent());
         }
         if (((bitField0_ & 0x00000100) == 0x00000100)) {
-          output.writeMessage(9, streamData_);
+          output.writeMessage(9, getStreamData());
         }
         if (((bitField0_ & 0x00000200) == 0x00000200)) {
-          output.writeMessage(10, alarmData_);
+          output.writeMessage(10, getAlarmData());
         }
         if (((bitField0_ & 0x00000400) == 0x00000400)) {
-          output.writeMessage(11, timeInfo_);
+          output.writeMessage(11, getTimeInfo());
         }
         if (((bitField0_ & 0x00000800) == 0x00000800)) {
-          output.writeMessage(12, linkEvent_);
+          output.writeMessage(12, getLinkEvent());
         }
         if (((bitField0_ & 0x00001000) == 0x00001000)) {
-          output.writeMessage(13, commandQueueInfo_);
+          output.writeMessage(13, getCommandQueueInfo());
         }
         if (((bitField0_ & 0x00002000) == 0x00002000)) {
-          output.writeMessage(14, commandQueueEvent_);
+          output.writeMessage(14, getCommandQueueEvent());
         }
         if (((bitField0_ & 0x00004000) == 0x00004000)) {
-          output.writeMessage(15, tmPacket_);
+          output.writeMessage(15, getTmPacket());
         }
         if (((bitField0_ & 0x00008000) == 0x00008000)) {
-          output.writeMessage(16, connectionInfo_);
+          output.writeMessage(16, getConnectionInfo());
         }
         if (((bitField0_ & 0x00010000) == 0x00010000)) {
-          output.writeMessage(100, extensionData_);
+          output.writeMessage(100, getExtensionData());
         }
-        getUnknownFields().writeTo(output);
+        unknownFields.writeTo(output);
       }
 
-      private int memoizedSerializedSize = -1;
       public int getSerializedSize() {
-        int size = memoizedSerializedSize;
+        int size = memoizedSize;
         if (size != -1) return size;
 
         size = 0;
@@ -4099,78 +4355,251 @@ public final class Web {
         }
         if (((bitField0_ & 0x00000002) == 0x00000002)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeEnumSize(2, type_.getNumber());
+            .computeEnumSize(2, type_);
         }
         if (((bitField0_ & 0x00000004) == 0x00000004)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(3, parameterData_);
+            .computeMessageSize(3, getParameterData());
         }
         if (((bitField0_ & 0x00000008) == 0x00000008)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(4, command_);
+            .computeMessageSize(4, getCommand());
         }
         if (((bitField0_ & 0x00000010) == 0x00000010)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(5, processorInfo_);
+            .computeMessageSize(5, getProcessorInfo());
         }
         if (((bitField0_ & 0x00000020) == 0x00000020)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(6, clientInfo_);
+            .computeMessageSize(6, getClientInfo());
         }
         if (((bitField0_ & 0x00000040) == 0x00000040)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(7, statistics_);
+            .computeMessageSize(7, getStatistics());
         }
         if (((bitField0_ & 0x00000080) == 0x00000080)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(8, event_);
+            .computeMessageSize(8, getEvent());
         }
         if (((bitField0_ & 0x00000100) == 0x00000100)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(9, streamData_);
+            .computeMessageSize(9, getStreamData());
         }
         if (((bitField0_ & 0x00000200) == 0x00000200)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(10, alarmData_);
+            .computeMessageSize(10, getAlarmData());
         }
         if (((bitField0_ & 0x00000400) == 0x00000400)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(11, timeInfo_);
+            .computeMessageSize(11, getTimeInfo());
         }
         if (((bitField0_ & 0x00000800) == 0x00000800)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(12, linkEvent_);
+            .computeMessageSize(12, getLinkEvent());
         }
         if (((bitField0_ & 0x00001000) == 0x00001000)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(13, commandQueueInfo_);
+            .computeMessageSize(13, getCommandQueueInfo());
         }
         if (((bitField0_ & 0x00002000) == 0x00002000)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(14, commandQueueEvent_);
+            .computeMessageSize(14, getCommandQueueEvent());
         }
         if (((bitField0_ & 0x00004000) == 0x00004000)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(15, tmPacket_);
+            .computeMessageSize(15, getTmPacket());
         }
         if (((bitField0_ & 0x00008000) == 0x00008000)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(16, connectionInfo_);
+            .computeMessageSize(16, getConnectionInfo());
         }
         if (((bitField0_ & 0x00010000) == 0x00010000)) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(100, extensionData_);
+            .computeMessageSize(100, getExtensionData());
         }
-        size += getUnknownFields().getSerializedSize();
-        memoizedSerializedSize = size;
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
         return size;
       }
 
       private static final long serialVersionUID = 0L;
       @java.lang.Override
-      protected java.lang.Object writeReplace()
-          throws java.io.ObjectStreamException {
-        return super.writeReplace();
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData)) {
+          return super.equals(obj);
+        }
+        org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData other = (org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData) obj;
+
+        boolean result = true;
+        result = result && (hasSequenceNumber() == other.hasSequenceNumber());
+        if (hasSequenceNumber()) {
+          result = result && (getSequenceNumber()
+              == other.getSequenceNumber());
+        }
+        result = result && (hasType() == other.hasType());
+        if (hasType()) {
+          result = result && type_ == other.type_;
+        }
+        result = result && (hasParameterData() == other.hasParameterData());
+        if (hasParameterData()) {
+          result = result && getParameterData()
+              .equals(other.getParameterData());
+        }
+        result = result && (hasCommand() == other.hasCommand());
+        if (hasCommand()) {
+          result = result && getCommand()
+              .equals(other.getCommand());
+        }
+        result = result && (hasProcessorInfo() == other.hasProcessorInfo());
+        if (hasProcessorInfo()) {
+          result = result && getProcessorInfo()
+              .equals(other.getProcessorInfo());
+        }
+        result = result && (hasClientInfo() == other.hasClientInfo());
+        if (hasClientInfo()) {
+          result = result && getClientInfo()
+              .equals(other.getClientInfo());
+        }
+        result = result && (hasStatistics() == other.hasStatistics());
+        if (hasStatistics()) {
+          result = result && getStatistics()
+              .equals(other.getStatistics());
+        }
+        result = result && (hasEvent() == other.hasEvent());
+        if (hasEvent()) {
+          result = result && getEvent()
+              .equals(other.getEvent());
+        }
+        result = result && (hasStreamData() == other.hasStreamData());
+        if (hasStreamData()) {
+          result = result && getStreamData()
+              .equals(other.getStreamData());
+        }
+        result = result && (hasAlarmData() == other.hasAlarmData());
+        if (hasAlarmData()) {
+          result = result && getAlarmData()
+              .equals(other.getAlarmData());
+        }
+        result = result && (hasTimeInfo() == other.hasTimeInfo());
+        if (hasTimeInfo()) {
+          result = result && getTimeInfo()
+              .equals(other.getTimeInfo());
+        }
+        result = result && (hasLinkEvent() == other.hasLinkEvent());
+        if (hasLinkEvent()) {
+          result = result && getLinkEvent()
+              .equals(other.getLinkEvent());
+        }
+        result = result && (hasCommandQueueInfo() == other.hasCommandQueueInfo());
+        if (hasCommandQueueInfo()) {
+          result = result && getCommandQueueInfo()
+              .equals(other.getCommandQueueInfo());
+        }
+        result = result && (hasCommandQueueEvent() == other.hasCommandQueueEvent());
+        if (hasCommandQueueEvent()) {
+          result = result && getCommandQueueEvent()
+              .equals(other.getCommandQueueEvent());
+        }
+        result = result && (hasTmPacket() == other.hasTmPacket());
+        if (hasTmPacket()) {
+          result = result && getTmPacket()
+              .equals(other.getTmPacket());
+        }
+        result = result && (hasConnectionInfo() == other.hasConnectionInfo());
+        if (hasConnectionInfo()) {
+          result = result && getConnectionInfo()
+              .equals(other.getConnectionInfo());
+        }
+        result = result && (hasExtensionData() == other.hasExtensionData());
+        if (hasExtensionData()) {
+          result = result && getExtensionData()
+              .equals(other.getExtensionData());
+        }
+        result = result && unknownFields.equals(other.unknownFields);
+        return result;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptorForType().hashCode();
+        if (hasSequenceNumber()) {
+          hash = (37 * hash) + SEQUENCENUMBER_FIELD_NUMBER;
+          hash = (53 * hash) + getSequenceNumber();
+        }
+        if (hasType()) {
+          hash = (37 * hash) + TYPE_FIELD_NUMBER;
+          hash = (53 * hash) + type_;
+        }
+        if (hasParameterData()) {
+          hash = (37 * hash) + PARAMETERDATA_FIELD_NUMBER;
+          hash = (53 * hash) + getParameterData().hashCode();
+        }
+        if (hasCommand()) {
+          hash = (37 * hash) + COMMAND_FIELD_NUMBER;
+          hash = (53 * hash) + getCommand().hashCode();
+        }
+        if (hasProcessorInfo()) {
+          hash = (37 * hash) + PROCESSORINFO_FIELD_NUMBER;
+          hash = (53 * hash) + getProcessorInfo().hashCode();
+        }
+        if (hasClientInfo()) {
+          hash = (37 * hash) + CLIENTINFO_FIELD_NUMBER;
+          hash = (53 * hash) + getClientInfo().hashCode();
+        }
+        if (hasStatistics()) {
+          hash = (37 * hash) + STATISTICS_FIELD_NUMBER;
+          hash = (53 * hash) + getStatistics().hashCode();
+        }
+        if (hasEvent()) {
+          hash = (37 * hash) + EVENT_FIELD_NUMBER;
+          hash = (53 * hash) + getEvent().hashCode();
+        }
+        if (hasStreamData()) {
+          hash = (37 * hash) + STREAMDATA_FIELD_NUMBER;
+          hash = (53 * hash) + getStreamData().hashCode();
+        }
+        if (hasAlarmData()) {
+          hash = (37 * hash) + ALARMDATA_FIELD_NUMBER;
+          hash = (53 * hash) + getAlarmData().hashCode();
+        }
+        if (hasTimeInfo()) {
+          hash = (37 * hash) + TIMEINFO_FIELD_NUMBER;
+          hash = (53 * hash) + getTimeInfo().hashCode();
+        }
+        if (hasLinkEvent()) {
+          hash = (37 * hash) + LINKEVENT_FIELD_NUMBER;
+          hash = (53 * hash) + getLinkEvent().hashCode();
+        }
+        if (hasCommandQueueInfo()) {
+          hash = (37 * hash) + COMMANDQUEUEINFO_FIELD_NUMBER;
+          hash = (53 * hash) + getCommandQueueInfo().hashCode();
+        }
+        if (hasCommandQueueEvent()) {
+          hash = (37 * hash) + COMMANDQUEUEEVENT_FIELD_NUMBER;
+          hash = (53 * hash) + getCommandQueueEvent().hashCode();
+        }
+        if (hasTmPacket()) {
+          hash = (37 * hash) + TMPACKET_FIELD_NUMBER;
+          hash = (53 * hash) + getTmPacket().hashCode();
+        }
+        if (hasConnectionInfo()) {
+          hash = (37 * hash) + CONNECTIONINFO_FIELD_NUMBER;
+          hash = (53 * hash) + getConnectionInfo().hashCode();
+        }
+        if (hasExtensionData()) {
+          hash = (37 * hash) + EXTENSIONDATA_FIELD_NUMBER;
+          hash = (53 * hash) + getExtensionData().hashCode();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
       }
 
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData parseFrom(
@@ -4196,58 +4625,69 @@ public final class Web {
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData parseFrom(java.io.InputStream input)
           throws java.io.IOException {
-        return PARSER.parseFrom(input);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData parseFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData parseDelimitedFrom(java.io.InputStream input)
           throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData parseDelimitedFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData parseFrom(
           com.google.protobuf.CodedInputStream input)
           throws java.io.IOException {
-        return PARSER.parseFrom(input);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
       }
       public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData parseFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        return PARSER.parseFrom(input, extensionRegistry);
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
       }
 
-      public static Builder newBuilder() { return Builder.create(); }
       public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData prototype) {
-        return newBuilder().mergeFrom(prototype);
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
       }
-      public Builder toBuilder() { return newBuilder(this); }
+      public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
 
       @java.lang.Override
       protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         Builder builder = new Builder(parent);
         return builder;
       }
       /**
-       * Protobuf type {@code web.WebSocketServerMessage.WebSocketSubscriptionData}
-       *
        * <pre>
        * Could use protobuf3 Any-type some day.
        * </pre>
+       *
+       * Protobuf type {@code web.WebSocketServerMessage.WebSocketSubscriptionData}
        */
       public static final class Builder extends
-          com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
           // @@protoc_insertion_point(builder_implements:web.WebSocketServerMessage.WebSocketSubscriptionData)
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionDataOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
@@ -4255,7 +4695,7 @@ public final class Web {
           return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor;
         }
 
-        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
           return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
@@ -4268,12 +4708,13 @@ public final class Web {
         }
 
         private Builder(
-            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
           maybeForceBuilderInitialization();
         }
         private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
             getParameterDataFieldBuilder();
             getCommandFieldBuilder();
             getProcessorInfoFieldBuilder();
@@ -4291,111 +4732,103 @@ public final class Web {
             getExtensionDataFieldBuilder();
           }
         }
-        private static Builder create() {
-          return new Builder();
-        }
-
         public Builder clear() {
           super.clear();
           sequenceNumber_ = 0;
           bitField0_ = (bitField0_ & ~0x00000001);
-          type_ = org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR;
+          type_ = 1;
           bitField0_ = (bitField0_ & ~0x00000002);
           if (parameterDataBuilder_ == null) {
-            parameterData_ = org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance();
+            parameterData_ = null;
           } else {
             parameterDataBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000004);
           if (commandBuilder_ == null) {
-            command_ = org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance();
+            command_ = null;
           } else {
             commandBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000008);
           if (processorInfoBuilder_ == null) {
-            processorInfo_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+            processorInfo_ = null;
           } else {
             processorInfoBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000010);
           if (clientInfoBuilder_ == null) {
-            clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
+            clientInfo_ = null;
           } else {
             clientInfoBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000020);
           if (statisticsBuilder_ == null) {
-            statistics_ = org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance();
+            statistics_ = null;
           } else {
             statisticsBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000040);
           if (eventBuilder_ == null) {
-            event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
+            event_ = null;
           } else {
             eventBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000080);
           if (streamDataBuilder_ == null) {
-            streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
+            streamData_ = null;
           } else {
             streamDataBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000100);
           if (alarmDataBuilder_ == null) {
-            alarmData_ = org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
+            alarmData_ = null;
           } else {
             alarmDataBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000200);
           if (timeInfoBuilder_ == null) {
-            timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
+            timeInfo_ = null;
           } else {
             timeInfoBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000400);
           if (linkEventBuilder_ == null) {
-            linkEvent_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
+            linkEvent_ = null;
           } else {
             linkEventBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00000800);
           if (commandQueueInfoBuilder_ == null) {
-            commandQueueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
+            commandQueueInfo_ = null;
           } else {
             commandQueueInfoBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00001000);
           if (commandQueueEventBuilder_ == null) {
-            commandQueueEvent_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance();
+            commandQueueEvent_ = null;
           } else {
             commandQueueEventBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00002000);
           if (tmPacketBuilder_ == null) {
-            tmPacket_ = org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance();
+            tmPacket_ = null;
           } else {
             tmPacketBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00004000);
           if (connectionInfoBuilder_ == null) {
-            connectionInfo_ = org.yamcs.protobuf.Web.ConnectionInfo.getDefaultInstance();
+            connectionInfo_ = null;
           } else {
             connectionInfoBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00008000);
           if (extensionDataBuilder_ == null) {
-            extensionData_ = org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance();
+            extensionData_ = null;
           } else {
             extensionDataBuilder_.clear();
           }
           bitField0_ = (bitField0_ & ~0x00010000);
           return this;
-        }
-
-        public Builder clone() {
-          return create().mergeFrom(buildPartial());
         }
 
         public com.google.protobuf.Descriptors.Descriptor
@@ -4552,6 +4985,32 @@ public final class Web {
           return result;
         }
 
+        public Builder clone() {
+          return (Builder) super.clone();
+        }
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.setField(field, value);
+        }
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return (Builder) super.clearField(field);
+        }
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return (Builder) super.clearOneof(oneof);
+        }
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, Object value) {
+          return (Builder) super.setRepeatedField(field, index, value);
+        }
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.addRepeatedField(field, value);
+        }
         public Builder mergeFrom(com.google.protobuf.Message other) {
           if (other instanceof org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData) {
             return mergeFrom((org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData)other);
@@ -4614,86 +5073,74 @@ public final class Web {
           if (other.hasExtensionData()) {
             mergeExtensionData(other.getExtensionData());
           }
-          this.mergeUnknownFields(other.getUnknownFields());
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
           return this;
         }
 
         public final boolean isInitialized() {
           if (hasParameterData()) {
             if (!getParameterData().isInitialized()) {
-              
               return false;
             }
           }
           if (hasCommand()) {
             if (!getCommand().isInitialized()) {
-              
               return false;
             }
           }
           if (hasProcessorInfo()) {
             if (!getProcessorInfo().isInitialized()) {
-              
               return false;
             }
           }
           if (hasClientInfo()) {
             if (!getClientInfo().isInitialized()) {
-              
               return false;
             }
           }
           if (hasStatistics()) {
             if (!getStatistics().isInitialized()) {
-              
               return false;
             }
           }
           if (hasEvent()) {
             if (!getEvent().isInitialized()) {
-              
               return false;
             }
           }
           if (hasStreamData()) {
             if (!getStreamData().isInitialized()) {
-              
               return false;
             }
           }
           if (hasAlarmData()) {
             if (!getAlarmData().isInitialized()) {
-              
               return false;
             }
           }
           if (hasLinkEvent()) {
             if (!getLinkEvent().isInitialized()) {
-              
               return false;
             }
           }
           if (hasCommandQueueInfo()) {
             if (!getCommandQueueInfo().isInitialized()) {
-              
               return false;
             }
           }
           if (hasCommandQueueEvent()) {
             if (!getCommandQueueEvent().isInitialized()) {
-              
               return false;
             }
           }
           if (hasTmPacket()) {
             if (!getTmPacket().isInitialized()) {
-              
               return false;
             }
           }
           if (hasConnectionInfo()) {
             if (!getConnectionInfo().isInitialized()) {
-              
               return false;
             }
           }
@@ -4709,7 +5156,7 @@ public final class Web {
             parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
             parsedMessage = (org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData) e.getUnfinishedMessage();
-            throw e;
+            throw e.unwrapIOException();
           } finally {
             if (parsedMessage != null) {
               mergeFrom(parsedMessage);
@@ -4751,7 +5198,7 @@ public final class Web {
           return this;
         }
 
-        private org.yamcs.protobuf.Yamcs.ProtoDataType type_ = org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR;
+        private int type_ = 1;
         /**
          * <code>optional .yamcs.ProtoDataType type = 2;</code>
          */
@@ -4762,7 +5209,8 @@ public final class Web {
          * <code>optional .yamcs.ProtoDataType type = 2;</code>
          */
         public org.yamcs.protobuf.Yamcs.ProtoDataType getType() {
-          return type_;
+          org.yamcs.protobuf.Yamcs.ProtoDataType result = org.yamcs.protobuf.Yamcs.ProtoDataType.valueOf(type_);
+          return result == null ? org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR : result;
         }
         /**
          * <code>optional .yamcs.ProtoDataType type = 2;</code>
@@ -4772,7 +5220,7 @@ public final class Web {
             throw new NullPointerException();
           }
           bitField0_ |= 0x00000002;
-          type_ = value;
+          type_ = value.getNumber();
           onChanged();
           return this;
         }
@@ -4781,13 +5229,13 @@ public final class Web {
          */
         public Builder clearType() {
           bitField0_ = (bitField0_ & ~0x00000002);
-          type_ = org.yamcs.protobuf.Yamcs.ProtoDataType.DT_ERROR;
+          type_ = 1;
           onChanged();
           return this;
         }
 
-        private org.yamcs.protobuf.Pvalue.ParameterData parameterData_ = org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Pvalue.ParameterData parameterData_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Pvalue.ParameterData, org.yamcs.protobuf.Pvalue.ParameterData.Builder, org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder> parameterDataBuilder_;
         /**
          * <code>optional .pvalue.ParameterData parameterData = 3;</code>
@@ -4800,7 +5248,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Pvalue.ParameterData getParameterData() {
           if (parameterDataBuilder_ == null) {
-            return parameterData_;
+            return parameterData_ == null ? org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance() : parameterData_;
           } else {
             return parameterDataBuilder_.getMessage();
           }
@@ -4841,6 +5289,7 @@ public final class Web {
         public Builder mergeParameterData(org.yamcs.protobuf.Pvalue.ParameterData value) {
           if (parameterDataBuilder_ == null) {
             if (((bitField0_ & 0x00000004) == 0x00000004) &&
+                parameterData_ != null &&
                 parameterData_ != org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance()) {
               parameterData_ =
                 org.yamcs.protobuf.Pvalue.ParameterData.newBuilder(parameterData_).mergeFrom(value).buildPartial();
@@ -4859,7 +5308,7 @@ public final class Web {
          */
         public Builder clearParameterData() {
           if (parameterDataBuilder_ == null) {
-            parameterData_ = org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance();
+            parameterData_ = null;
             onChanged();
           } else {
             parameterDataBuilder_.clear();
@@ -4882,17 +5331,18 @@ public final class Web {
           if (parameterDataBuilder_ != null) {
             return parameterDataBuilder_.getMessageOrBuilder();
           } else {
-            return parameterData_;
+            return parameterData_ == null ?
+                org.yamcs.protobuf.Pvalue.ParameterData.getDefaultInstance() : parameterData_;
           }
         }
         /**
          * <code>optional .pvalue.ParameterData parameterData = 3;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Pvalue.ParameterData, org.yamcs.protobuf.Pvalue.ParameterData.Builder, org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder> 
             getParameterDataFieldBuilder() {
           if (parameterDataBuilder_ == null) {
-            parameterDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            parameterDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Pvalue.ParameterData, org.yamcs.protobuf.Pvalue.ParameterData.Builder, org.yamcs.protobuf.Pvalue.ParameterDataOrBuilder>(
                     getParameterData(),
                     getParentForChildren(),
@@ -4902,8 +5352,8 @@ public final class Web {
           return parameterDataBuilder_;
         }
 
-        private org.yamcs.protobuf.Commanding.CommandHistoryEntry command_ = org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Commanding.CommandHistoryEntry command_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Commanding.CommandHistoryEntry, org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder, org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder> commandBuilder_;
         /**
          * <code>optional .commanding.CommandHistoryEntry command = 4;</code>
@@ -4916,7 +5366,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Commanding.CommandHistoryEntry getCommand() {
           if (commandBuilder_ == null) {
-            return command_;
+            return command_ == null ? org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance() : command_;
           } else {
             return commandBuilder_.getMessage();
           }
@@ -4957,6 +5407,7 @@ public final class Web {
         public Builder mergeCommand(org.yamcs.protobuf.Commanding.CommandHistoryEntry value) {
           if (commandBuilder_ == null) {
             if (((bitField0_ & 0x00000008) == 0x00000008) &&
+                command_ != null &&
                 command_ != org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance()) {
               command_ =
                 org.yamcs.protobuf.Commanding.CommandHistoryEntry.newBuilder(command_).mergeFrom(value).buildPartial();
@@ -4975,7 +5426,7 @@ public final class Web {
          */
         public Builder clearCommand() {
           if (commandBuilder_ == null) {
-            command_ = org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance();
+            command_ = null;
             onChanged();
           } else {
             commandBuilder_.clear();
@@ -4998,17 +5449,18 @@ public final class Web {
           if (commandBuilder_ != null) {
             return commandBuilder_.getMessageOrBuilder();
           } else {
-            return command_;
+            return command_ == null ?
+                org.yamcs.protobuf.Commanding.CommandHistoryEntry.getDefaultInstance() : command_;
           }
         }
         /**
          * <code>optional .commanding.CommandHistoryEntry command = 4;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Commanding.CommandHistoryEntry, org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder, org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder> 
             getCommandFieldBuilder() {
           if (commandBuilder_ == null) {
-            commandBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            commandBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Commanding.CommandHistoryEntry, org.yamcs.protobuf.Commanding.CommandHistoryEntry.Builder, org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder>(
                     getCommand(),
                     getParentForChildren(),
@@ -5018,8 +5470,8 @@ public final class Web {
           return commandBuilder_;
         }
 
-        private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processorInfo_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processorInfo_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> processorInfoBuilder_;
         /**
          * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
@@ -5032,7 +5484,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessorInfo() {
           if (processorInfoBuilder_ == null) {
-            return processorInfo_;
+            return processorInfo_ == null ? org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processorInfo_;
           } else {
             return processorInfoBuilder_.getMessage();
           }
@@ -5073,6 +5525,7 @@ public final class Web {
         public Builder mergeProcessorInfo(org.yamcs.protobuf.YamcsManagement.ProcessorInfo value) {
           if (processorInfoBuilder_ == null) {
             if (((bitField0_ & 0x00000010) == 0x00000010) &&
+                processorInfo_ != null &&
                 processorInfo_ != org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance()) {
               processorInfo_ =
                 org.yamcs.protobuf.YamcsManagement.ProcessorInfo.newBuilder(processorInfo_).mergeFrom(value).buildPartial();
@@ -5091,7 +5544,7 @@ public final class Web {
          */
         public Builder clearProcessorInfo() {
           if (processorInfoBuilder_ == null) {
-            processorInfo_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+            processorInfo_ = null;
             onChanged();
           } else {
             processorInfoBuilder_.clear();
@@ -5114,17 +5567,18 @@ public final class Web {
           if (processorInfoBuilder_ != null) {
             return processorInfoBuilder_.getMessageOrBuilder();
           } else {
-            return processorInfo_;
+            return processorInfo_ == null ?
+                org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processorInfo_;
           }
         }
         /**
          * <code>optional .yamcsManagement.ProcessorInfo processorInfo = 5;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> 
             getProcessorInfoFieldBuilder() {
           if (processorInfoBuilder_ == null) {
-            processorInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            processorInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder>(
                     getProcessorInfo(),
                     getParentForChildren(),
@@ -5134,8 +5588,8 @@ public final class Web {
           return processorInfoBuilder_;
         }
 
-        private org.yamcs.protobuf.YamcsManagement.ClientInfo clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.YamcsManagement.ClientInfo clientInfo_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> clientInfoBuilder_;
         /**
          * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
@@ -5148,7 +5602,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo() {
           if (clientInfoBuilder_ == null) {
-            return clientInfo_;
+            return clientInfo_ == null ? org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance() : clientInfo_;
           } else {
             return clientInfoBuilder_.getMessage();
           }
@@ -5189,6 +5643,7 @@ public final class Web {
         public Builder mergeClientInfo(org.yamcs.protobuf.YamcsManagement.ClientInfo value) {
           if (clientInfoBuilder_ == null) {
             if (((bitField0_ & 0x00000020) == 0x00000020) &&
+                clientInfo_ != null &&
                 clientInfo_ != org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance()) {
               clientInfo_ =
                 org.yamcs.protobuf.YamcsManagement.ClientInfo.newBuilder(clientInfo_).mergeFrom(value).buildPartial();
@@ -5207,7 +5662,7 @@ public final class Web {
          */
         public Builder clearClientInfo() {
           if (clientInfoBuilder_ == null) {
-            clientInfo_ = org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance();
+            clientInfo_ = null;
             onChanged();
           } else {
             clientInfoBuilder_.clear();
@@ -5230,17 +5685,18 @@ public final class Web {
           if (clientInfoBuilder_ != null) {
             return clientInfoBuilder_.getMessageOrBuilder();
           } else {
-            return clientInfo_;
+            return clientInfo_ == null ?
+                org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance() : clientInfo_;
           }
         }
         /**
          * <code>optional .yamcsManagement.ClientInfo clientInfo = 6;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> 
             getClientInfoFieldBuilder() {
           if (clientInfoBuilder_ == null) {
-            clientInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            clientInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder>(
                     getClientInfo(),
                     getParentForChildren(),
@@ -5250,8 +5706,8 @@ public final class Web {
           return clientInfoBuilder_;
         }
 
-        private org.yamcs.protobuf.YamcsManagement.Statistics statistics_ = org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.YamcsManagement.Statistics statistics_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.YamcsManagement.Statistics, org.yamcs.protobuf.YamcsManagement.Statistics.Builder, org.yamcs.protobuf.YamcsManagement.StatisticsOrBuilder> statisticsBuilder_;
         /**
          * <code>optional .yamcsManagement.Statistics statistics = 7;</code>
@@ -5264,7 +5720,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.YamcsManagement.Statistics getStatistics() {
           if (statisticsBuilder_ == null) {
-            return statistics_;
+            return statistics_ == null ? org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance() : statistics_;
           } else {
             return statisticsBuilder_.getMessage();
           }
@@ -5305,6 +5761,7 @@ public final class Web {
         public Builder mergeStatistics(org.yamcs.protobuf.YamcsManagement.Statistics value) {
           if (statisticsBuilder_ == null) {
             if (((bitField0_ & 0x00000040) == 0x00000040) &&
+                statistics_ != null &&
                 statistics_ != org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance()) {
               statistics_ =
                 org.yamcs.protobuf.YamcsManagement.Statistics.newBuilder(statistics_).mergeFrom(value).buildPartial();
@@ -5323,7 +5780,7 @@ public final class Web {
          */
         public Builder clearStatistics() {
           if (statisticsBuilder_ == null) {
-            statistics_ = org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance();
+            statistics_ = null;
             onChanged();
           } else {
             statisticsBuilder_.clear();
@@ -5346,17 +5803,18 @@ public final class Web {
           if (statisticsBuilder_ != null) {
             return statisticsBuilder_.getMessageOrBuilder();
           } else {
-            return statistics_;
+            return statistics_ == null ?
+                org.yamcs.protobuf.YamcsManagement.Statistics.getDefaultInstance() : statistics_;
           }
         }
         /**
          * <code>optional .yamcsManagement.Statistics statistics = 7;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.YamcsManagement.Statistics, org.yamcs.protobuf.YamcsManagement.Statistics.Builder, org.yamcs.protobuf.YamcsManagement.StatisticsOrBuilder> 
             getStatisticsFieldBuilder() {
           if (statisticsBuilder_ == null) {
-            statisticsBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            statisticsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.YamcsManagement.Statistics, org.yamcs.protobuf.YamcsManagement.Statistics.Builder, org.yamcs.protobuf.YamcsManagement.StatisticsOrBuilder>(
                     getStatistics(),
                     getParentForChildren(),
@@ -5366,8 +5824,8 @@ public final class Web {
           return statisticsBuilder_;
         }
 
-        private org.yamcs.protobuf.Yamcs.Event event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Yamcs.Event event_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Yamcs.Event, org.yamcs.protobuf.Yamcs.Event.Builder, org.yamcs.protobuf.Yamcs.EventOrBuilder> eventBuilder_;
         /**
          * <code>optional .yamcs.Event event = 8;</code>
@@ -5380,7 +5838,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Yamcs.Event getEvent() {
           if (eventBuilder_ == null) {
-            return event_;
+            return event_ == null ? org.yamcs.protobuf.Yamcs.Event.getDefaultInstance() : event_;
           } else {
             return eventBuilder_.getMessage();
           }
@@ -5421,6 +5879,7 @@ public final class Web {
         public Builder mergeEvent(org.yamcs.protobuf.Yamcs.Event value) {
           if (eventBuilder_ == null) {
             if (((bitField0_ & 0x00000080) == 0x00000080) &&
+                event_ != null &&
                 event_ != org.yamcs.protobuf.Yamcs.Event.getDefaultInstance()) {
               event_ =
                 org.yamcs.protobuf.Yamcs.Event.newBuilder(event_).mergeFrom(value).buildPartial();
@@ -5439,7 +5898,7 @@ public final class Web {
          */
         public Builder clearEvent() {
           if (eventBuilder_ == null) {
-            event_ = org.yamcs.protobuf.Yamcs.Event.getDefaultInstance();
+            event_ = null;
             onChanged();
           } else {
             eventBuilder_.clear();
@@ -5462,17 +5921,18 @@ public final class Web {
           if (eventBuilder_ != null) {
             return eventBuilder_.getMessageOrBuilder();
           } else {
-            return event_;
+            return event_ == null ?
+                org.yamcs.protobuf.Yamcs.Event.getDefaultInstance() : event_;
           }
         }
         /**
          * <code>optional .yamcs.Event event = 8;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Yamcs.Event, org.yamcs.protobuf.Yamcs.Event.Builder, org.yamcs.protobuf.Yamcs.EventOrBuilder> 
             getEventFieldBuilder() {
           if (eventBuilder_ == null) {
-            eventBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            eventBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Yamcs.Event, org.yamcs.protobuf.Yamcs.Event.Builder, org.yamcs.protobuf.Yamcs.EventOrBuilder>(
                     getEvent(),
                     getParentForChildren(),
@@ -5482,8 +5942,8 @@ public final class Web {
           return eventBuilder_;
         }
 
-        private org.yamcs.protobuf.Archive.StreamData streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Archive.StreamData streamData_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Archive.StreamData, org.yamcs.protobuf.Archive.StreamData.Builder, org.yamcs.protobuf.Archive.StreamDataOrBuilder> streamDataBuilder_;
         /**
          * <code>optional .archive.StreamData streamData = 9;</code>
@@ -5496,7 +5956,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Archive.StreamData getStreamData() {
           if (streamDataBuilder_ == null) {
-            return streamData_;
+            return streamData_ == null ? org.yamcs.protobuf.Archive.StreamData.getDefaultInstance() : streamData_;
           } else {
             return streamDataBuilder_.getMessage();
           }
@@ -5537,6 +5997,7 @@ public final class Web {
         public Builder mergeStreamData(org.yamcs.protobuf.Archive.StreamData value) {
           if (streamDataBuilder_ == null) {
             if (((bitField0_ & 0x00000100) == 0x00000100) &&
+                streamData_ != null &&
                 streamData_ != org.yamcs.protobuf.Archive.StreamData.getDefaultInstance()) {
               streamData_ =
                 org.yamcs.protobuf.Archive.StreamData.newBuilder(streamData_).mergeFrom(value).buildPartial();
@@ -5555,7 +6016,7 @@ public final class Web {
          */
         public Builder clearStreamData() {
           if (streamDataBuilder_ == null) {
-            streamData_ = org.yamcs.protobuf.Archive.StreamData.getDefaultInstance();
+            streamData_ = null;
             onChanged();
           } else {
             streamDataBuilder_.clear();
@@ -5578,17 +6039,18 @@ public final class Web {
           if (streamDataBuilder_ != null) {
             return streamDataBuilder_.getMessageOrBuilder();
           } else {
-            return streamData_;
+            return streamData_ == null ?
+                org.yamcs.protobuf.Archive.StreamData.getDefaultInstance() : streamData_;
           }
         }
         /**
          * <code>optional .archive.StreamData streamData = 9;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Archive.StreamData, org.yamcs.protobuf.Archive.StreamData.Builder, org.yamcs.protobuf.Archive.StreamDataOrBuilder> 
             getStreamDataFieldBuilder() {
           if (streamDataBuilder_ == null) {
-            streamDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            streamDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Archive.StreamData, org.yamcs.protobuf.Archive.StreamData.Builder, org.yamcs.protobuf.Archive.StreamDataOrBuilder>(
                     getStreamData(),
                     getParentForChildren(),
@@ -5598,8 +6060,8 @@ public final class Web {
           return streamDataBuilder_;
         }
 
-        private org.yamcs.protobuf.Alarms.AlarmData alarmData_ = org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Alarms.AlarmData alarmData_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder> alarmDataBuilder_;
         /**
          * <code>optional .alarms.AlarmData alarmData = 10;</code>
@@ -5612,7 +6074,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Alarms.AlarmData getAlarmData() {
           if (alarmDataBuilder_ == null) {
-            return alarmData_;
+            return alarmData_ == null ? org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance() : alarmData_;
           } else {
             return alarmDataBuilder_.getMessage();
           }
@@ -5653,6 +6115,7 @@ public final class Web {
         public Builder mergeAlarmData(org.yamcs.protobuf.Alarms.AlarmData value) {
           if (alarmDataBuilder_ == null) {
             if (((bitField0_ & 0x00000200) == 0x00000200) &&
+                alarmData_ != null &&
                 alarmData_ != org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance()) {
               alarmData_ =
                 org.yamcs.protobuf.Alarms.AlarmData.newBuilder(alarmData_).mergeFrom(value).buildPartial();
@@ -5671,7 +6134,7 @@ public final class Web {
          */
         public Builder clearAlarmData() {
           if (alarmDataBuilder_ == null) {
-            alarmData_ = org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance();
+            alarmData_ = null;
             onChanged();
           } else {
             alarmDataBuilder_.clear();
@@ -5694,17 +6157,18 @@ public final class Web {
           if (alarmDataBuilder_ != null) {
             return alarmDataBuilder_.getMessageOrBuilder();
           } else {
-            return alarmData_;
+            return alarmData_ == null ?
+                org.yamcs.protobuf.Alarms.AlarmData.getDefaultInstance() : alarmData_;
           }
         }
         /**
          * <code>optional .alarms.AlarmData alarmData = 10;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder> 
             getAlarmDataFieldBuilder() {
           if (alarmDataBuilder_ == null) {
-            alarmDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            alarmDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Alarms.AlarmData, org.yamcs.protobuf.Alarms.AlarmData.Builder, org.yamcs.protobuf.Alarms.AlarmDataOrBuilder>(
                     getAlarmData(),
                     getParentForChildren(),
@@ -5714,8 +6178,8 @@ public final class Web {
           return alarmDataBuilder_;
         }
 
-        private org.yamcs.protobuf.Yamcs.TimeInfo timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Yamcs.TimeInfo timeInfo_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder> timeInfoBuilder_;
         /**
          * <code>optional .yamcs.TimeInfo timeInfo = 11;</code>
@@ -5728,7 +6192,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Yamcs.TimeInfo getTimeInfo() {
           if (timeInfoBuilder_ == null) {
-            return timeInfo_;
+            return timeInfo_ == null ? org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance() : timeInfo_;
           } else {
             return timeInfoBuilder_.getMessage();
           }
@@ -5769,6 +6233,7 @@ public final class Web {
         public Builder mergeTimeInfo(org.yamcs.protobuf.Yamcs.TimeInfo value) {
           if (timeInfoBuilder_ == null) {
             if (((bitField0_ & 0x00000400) == 0x00000400) &&
+                timeInfo_ != null &&
                 timeInfo_ != org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance()) {
               timeInfo_ =
                 org.yamcs.protobuf.Yamcs.TimeInfo.newBuilder(timeInfo_).mergeFrom(value).buildPartial();
@@ -5787,7 +6252,7 @@ public final class Web {
          */
         public Builder clearTimeInfo() {
           if (timeInfoBuilder_ == null) {
-            timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
+            timeInfo_ = null;
             onChanged();
           } else {
             timeInfoBuilder_.clear();
@@ -5810,17 +6275,18 @@ public final class Web {
           if (timeInfoBuilder_ != null) {
             return timeInfoBuilder_.getMessageOrBuilder();
           } else {
-            return timeInfo_;
+            return timeInfo_ == null ?
+                org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance() : timeInfo_;
           }
         }
         /**
          * <code>optional .yamcs.TimeInfo timeInfo = 11;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder> 
             getTimeInfoFieldBuilder() {
           if (timeInfoBuilder_ == null) {
-            timeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            timeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder>(
                     getTimeInfo(),
                     getParentForChildren(),
@@ -5830,8 +6296,8 @@ public final class Web {
           return timeInfoBuilder_;
         }
 
-        private org.yamcs.protobuf.YamcsManagement.LinkEvent linkEvent_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.YamcsManagement.LinkEvent linkEvent_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.YamcsManagement.LinkEvent, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder, org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder> linkEventBuilder_;
         /**
          * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
@@ -5844,7 +6310,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.YamcsManagement.LinkEvent getLinkEvent() {
           if (linkEventBuilder_ == null) {
-            return linkEvent_;
+            return linkEvent_ == null ? org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance() : linkEvent_;
           } else {
             return linkEventBuilder_.getMessage();
           }
@@ -5885,6 +6351,7 @@ public final class Web {
         public Builder mergeLinkEvent(org.yamcs.protobuf.YamcsManagement.LinkEvent value) {
           if (linkEventBuilder_ == null) {
             if (((bitField0_ & 0x00000800) == 0x00000800) &&
+                linkEvent_ != null &&
                 linkEvent_ != org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance()) {
               linkEvent_ =
                 org.yamcs.protobuf.YamcsManagement.LinkEvent.newBuilder(linkEvent_).mergeFrom(value).buildPartial();
@@ -5903,7 +6370,7 @@ public final class Web {
          */
         public Builder clearLinkEvent() {
           if (linkEventBuilder_ == null) {
-            linkEvent_ = org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance();
+            linkEvent_ = null;
             onChanged();
           } else {
             linkEventBuilder_.clear();
@@ -5926,17 +6393,18 @@ public final class Web {
           if (linkEventBuilder_ != null) {
             return linkEventBuilder_.getMessageOrBuilder();
           } else {
-            return linkEvent_;
+            return linkEvent_ == null ?
+                org.yamcs.protobuf.YamcsManagement.LinkEvent.getDefaultInstance() : linkEvent_;
           }
         }
         /**
          * <code>optional .yamcsManagement.LinkEvent linkEvent = 12;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.YamcsManagement.LinkEvent, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder, org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder> 
             getLinkEventFieldBuilder() {
           if (linkEventBuilder_ == null) {
-            linkEventBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            linkEventBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.YamcsManagement.LinkEvent, org.yamcs.protobuf.YamcsManagement.LinkEvent.Builder, org.yamcs.protobuf.YamcsManagement.LinkEventOrBuilder>(
                     getLinkEvent(),
                     getParentForChildren(),
@@ -5946,8 +6414,8 @@ public final class Web {
           return linkEventBuilder_;
         }
 
-        private org.yamcs.protobuf.Commanding.CommandQueueInfo commandQueueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Commanding.CommandQueueInfo commandQueueInfo_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder> commandQueueInfoBuilder_;
         /**
          * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
@@ -5960,7 +6428,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Commanding.CommandQueueInfo getCommandQueueInfo() {
           if (commandQueueInfoBuilder_ == null) {
-            return commandQueueInfo_;
+            return commandQueueInfo_ == null ? org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance() : commandQueueInfo_;
           } else {
             return commandQueueInfoBuilder_.getMessage();
           }
@@ -6001,6 +6469,7 @@ public final class Web {
         public Builder mergeCommandQueueInfo(org.yamcs.protobuf.Commanding.CommandQueueInfo value) {
           if (commandQueueInfoBuilder_ == null) {
             if (((bitField0_ & 0x00001000) == 0x00001000) &&
+                commandQueueInfo_ != null &&
                 commandQueueInfo_ != org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance()) {
               commandQueueInfo_ =
                 org.yamcs.protobuf.Commanding.CommandQueueInfo.newBuilder(commandQueueInfo_).mergeFrom(value).buildPartial();
@@ -6019,7 +6488,7 @@ public final class Web {
          */
         public Builder clearCommandQueueInfo() {
           if (commandQueueInfoBuilder_ == null) {
-            commandQueueInfo_ = org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance();
+            commandQueueInfo_ = null;
             onChanged();
           } else {
             commandQueueInfoBuilder_.clear();
@@ -6042,17 +6511,18 @@ public final class Web {
           if (commandQueueInfoBuilder_ != null) {
             return commandQueueInfoBuilder_.getMessageOrBuilder();
           } else {
-            return commandQueueInfo_;
+            return commandQueueInfo_ == null ?
+                org.yamcs.protobuf.Commanding.CommandQueueInfo.getDefaultInstance() : commandQueueInfo_;
           }
         }
         /**
          * <code>optional .commanding.CommandQueueInfo commandQueueInfo = 13;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder> 
             getCommandQueueInfoFieldBuilder() {
           if (commandQueueInfoBuilder_ == null) {
-            commandQueueInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            commandQueueInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Commanding.CommandQueueInfo, org.yamcs.protobuf.Commanding.CommandQueueInfo.Builder, org.yamcs.protobuf.Commanding.CommandQueueInfoOrBuilder>(
                     getCommandQueueInfo(),
                     getParentForChildren(),
@@ -6062,8 +6532,8 @@ public final class Web {
           return commandQueueInfoBuilder_;
         }
 
-        private org.yamcs.protobuf.Commanding.CommandQueueEvent commandQueueEvent_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Commanding.CommandQueueEvent commandQueueEvent_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Commanding.CommandQueueEvent, org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder, org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder> commandQueueEventBuilder_;
         /**
          * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
@@ -6076,7 +6546,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Commanding.CommandQueueEvent getCommandQueueEvent() {
           if (commandQueueEventBuilder_ == null) {
-            return commandQueueEvent_;
+            return commandQueueEvent_ == null ? org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance() : commandQueueEvent_;
           } else {
             return commandQueueEventBuilder_.getMessage();
           }
@@ -6117,6 +6587,7 @@ public final class Web {
         public Builder mergeCommandQueueEvent(org.yamcs.protobuf.Commanding.CommandQueueEvent value) {
           if (commandQueueEventBuilder_ == null) {
             if (((bitField0_ & 0x00002000) == 0x00002000) &&
+                commandQueueEvent_ != null &&
                 commandQueueEvent_ != org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance()) {
               commandQueueEvent_ =
                 org.yamcs.protobuf.Commanding.CommandQueueEvent.newBuilder(commandQueueEvent_).mergeFrom(value).buildPartial();
@@ -6135,7 +6606,7 @@ public final class Web {
          */
         public Builder clearCommandQueueEvent() {
           if (commandQueueEventBuilder_ == null) {
-            commandQueueEvent_ = org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance();
+            commandQueueEvent_ = null;
             onChanged();
           } else {
             commandQueueEventBuilder_.clear();
@@ -6158,17 +6629,18 @@ public final class Web {
           if (commandQueueEventBuilder_ != null) {
             return commandQueueEventBuilder_.getMessageOrBuilder();
           } else {
-            return commandQueueEvent_;
+            return commandQueueEvent_ == null ?
+                org.yamcs.protobuf.Commanding.CommandQueueEvent.getDefaultInstance() : commandQueueEvent_;
           }
         }
         /**
          * <code>optional .commanding.CommandQueueEvent commandQueueEvent = 14;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Commanding.CommandQueueEvent, org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder, org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder> 
             getCommandQueueEventFieldBuilder() {
           if (commandQueueEventBuilder_ == null) {
-            commandQueueEventBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            commandQueueEventBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Commanding.CommandQueueEvent, org.yamcs.protobuf.Commanding.CommandQueueEvent.Builder, org.yamcs.protobuf.Commanding.CommandQueueEventOrBuilder>(
                     getCommandQueueEvent(),
                     getParentForChildren(),
@@ -6178,8 +6650,8 @@ public final class Web {
           return commandQueueEventBuilder_;
         }
 
-        private org.yamcs.protobuf.Yamcs.TmPacketData tmPacket_ = org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Yamcs.TmPacketData tmPacket_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Yamcs.TmPacketData, org.yamcs.protobuf.Yamcs.TmPacketData.Builder, org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder> tmPacketBuilder_;
         /**
          * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
@@ -6192,7 +6664,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Yamcs.TmPacketData getTmPacket() {
           if (tmPacketBuilder_ == null) {
-            return tmPacket_;
+            return tmPacket_ == null ? org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance() : tmPacket_;
           } else {
             return tmPacketBuilder_.getMessage();
           }
@@ -6233,6 +6705,7 @@ public final class Web {
         public Builder mergeTmPacket(org.yamcs.protobuf.Yamcs.TmPacketData value) {
           if (tmPacketBuilder_ == null) {
             if (((bitField0_ & 0x00004000) == 0x00004000) &&
+                tmPacket_ != null &&
                 tmPacket_ != org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance()) {
               tmPacket_ =
                 org.yamcs.protobuf.Yamcs.TmPacketData.newBuilder(tmPacket_).mergeFrom(value).buildPartial();
@@ -6251,7 +6724,7 @@ public final class Web {
          */
         public Builder clearTmPacket() {
           if (tmPacketBuilder_ == null) {
-            tmPacket_ = org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance();
+            tmPacket_ = null;
             onChanged();
           } else {
             tmPacketBuilder_.clear();
@@ -6274,17 +6747,18 @@ public final class Web {
           if (tmPacketBuilder_ != null) {
             return tmPacketBuilder_.getMessageOrBuilder();
           } else {
-            return tmPacket_;
+            return tmPacket_ == null ?
+                org.yamcs.protobuf.Yamcs.TmPacketData.getDefaultInstance() : tmPacket_;
           }
         }
         /**
          * <code>optional .yamcs.TmPacketData tmPacket = 15;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Yamcs.TmPacketData, org.yamcs.protobuf.Yamcs.TmPacketData.Builder, org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder> 
             getTmPacketFieldBuilder() {
           if (tmPacketBuilder_ == null) {
-            tmPacketBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            tmPacketBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Yamcs.TmPacketData, org.yamcs.protobuf.Yamcs.TmPacketData.Builder, org.yamcs.protobuf.Yamcs.TmPacketDataOrBuilder>(
                     getTmPacket(),
                     getParentForChildren(),
@@ -6294,8 +6768,8 @@ public final class Web {
           return tmPacketBuilder_;
         }
 
-        private org.yamcs.protobuf.Web.ConnectionInfo connectionInfo_ = org.yamcs.protobuf.Web.ConnectionInfo.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Web.ConnectionInfo connectionInfo_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Web.ConnectionInfo, org.yamcs.protobuf.Web.ConnectionInfo.Builder, org.yamcs.protobuf.Web.ConnectionInfoOrBuilder> connectionInfoBuilder_;
         /**
          * <code>optional .web.ConnectionInfo connectionInfo = 16;</code>
@@ -6308,7 +6782,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Web.ConnectionInfo getConnectionInfo() {
           if (connectionInfoBuilder_ == null) {
-            return connectionInfo_;
+            return connectionInfo_ == null ? org.yamcs.protobuf.Web.ConnectionInfo.getDefaultInstance() : connectionInfo_;
           } else {
             return connectionInfoBuilder_.getMessage();
           }
@@ -6349,6 +6823,7 @@ public final class Web {
         public Builder mergeConnectionInfo(org.yamcs.protobuf.Web.ConnectionInfo value) {
           if (connectionInfoBuilder_ == null) {
             if (((bitField0_ & 0x00008000) == 0x00008000) &&
+                connectionInfo_ != null &&
                 connectionInfo_ != org.yamcs.protobuf.Web.ConnectionInfo.getDefaultInstance()) {
               connectionInfo_ =
                 org.yamcs.protobuf.Web.ConnectionInfo.newBuilder(connectionInfo_).mergeFrom(value).buildPartial();
@@ -6367,7 +6842,7 @@ public final class Web {
          */
         public Builder clearConnectionInfo() {
           if (connectionInfoBuilder_ == null) {
-            connectionInfo_ = org.yamcs.protobuf.Web.ConnectionInfo.getDefaultInstance();
+            connectionInfo_ = null;
             onChanged();
           } else {
             connectionInfoBuilder_.clear();
@@ -6390,17 +6865,18 @@ public final class Web {
           if (connectionInfoBuilder_ != null) {
             return connectionInfoBuilder_.getMessageOrBuilder();
           } else {
-            return connectionInfo_;
+            return connectionInfo_ == null ?
+                org.yamcs.protobuf.Web.ConnectionInfo.getDefaultInstance() : connectionInfo_;
           }
         }
         /**
          * <code>optional .web.ConnectionInfo connectionInfo = 16;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Web.ConnectionInfo, org.yamcs.protobuf.Web.ConnectionInfo.Builder, org.yamcs.protobuf.Web.ConnectionInfoOrBuilder> 
             getConnectionInfoFieldBuilder() {
           if (connectionInfoBuilder_ == null) {
-            connectionInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            connectionInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Web.ConnectionInfo, org.yamcs.protobuf.Web.ConnectionInfo.Builder, org.yamcs.protobuf.Web.ConnectionInfoOrBuilder>(
                     getConnectionInfo(),
                     getParentForChildren(),
@@ -6410,8 +6886,8 @@ public final class Web {
           return connectionInfoBuilder_;
         }
 
-        private org.yamcs.protobuf.Web.WebSocketExtensionData extensionData_ = org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance();
-        private com.google.protobuf.SingleFieldBuilder<
+        private org.yamcs.protobuf.Web.WebSocketExtensionData extensionData_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Web.WebSocketExtensionData, org.yamcs.protobuf.Web.WebSocketExtensionData.Builder, org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder> extensionDataBuilder_;
         /**
          * <code>optional .web.WebSocketExtensionData extensionData = 100;</code>
@@ -6424,7 +6900,7 @@ public final class Web {
          */
         public org.yamcs.protobuf.Web.WebSocketExtensionData getExtensionData() {
           if (extensionDataBuilder_ == null) {
-            return extensionData_;
+            return extensionData_ == null ? org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance() : extensionData_;
           } else {
             return extensionDataBuilder_.getMessage();
           }
@@ -6465,6 +6941,7 @@ public final class Web {
         public Builder mergeExtensionData(org.yamcs.protobuf.Web.WebSocketExtensionData value) {
           if (extensionDataBuilder_ == null) {
             if (((bitField0_ & 0x00010000) == 0x00010000) &&
+                extensionData_ != null &&
                 extensionData_ != org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance()) {
               extensionData_ =
                 org.yamcs.protobuf.Web.WebSocketExtensionData.newBuilder(extensionData_).mergeFrom(value).buildPartial();
@@ -6483,7 +6960,7 @@ public final class Web {
          */
         public Builder clearExtensionData() {
           if (extensionDataBuilder_ == null) {
-            extensionData_ = org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance();
+            extensionData_ = null;
             onChanged();
           } else {
             extensionDataBuilder_.clear();
@@ -6506,17 +6983,18 @@ public final class Web {
           if (extensionDataBuilder_ != null) {
             return extensionDataBuilder_.getMessageOrBuilder();
           } else {
-            return extensionData_;
+            return extensionData_ == null ?
+                org.yamcs.protobuf.Web.WebSocketExtensionData.getDefaultInstance() : extensionData_;
           }
         }
         /**
          * <code>optional .web.WebSocketExtensionData extensionData = 100;</code>
          */
-        private com.google.protobuf.SingleFieldBuilder<
+        private com.google.protobuf.SingleFieldBuilderV3<
             org.yamcs.protobuf.Web.WebSocketExtensionData, org.yamcs.protobuf.Web.WebSocketExtensionData.Builder, org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder> 
             getExtensionDataFieldBuilder() {
           if (extensionDataBuilder_ == null) {
-            extensionDataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            extensionDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
                 org.yamcs.protobuf.Web.WebSocketExtensionData, org.yamcs.protobuf.Web.WebSocketExtensionData.Builder, org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder>(
                     getExtensionData(),
                     getParentForChildren(),
@@ -6525,21 +7003,58 @@ public final class Web {
           }
           return extensionDataBuilder_;
         }
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
 
         // @@protoc_insertion_point(builder_scope:web.WebSocketServerMessage.WebSocketSubscriptionData)
       }
 
+      // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage.WebSocketSubscriptionData)
+      private static final org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData DEFAULT_INSTANCE;
       static {
-        defaultInstance = new WebSocketSubscriptionData(true);
-        defaultInstance.initFields();
+        DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData();
       }
 
-      // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage.WebSocketSubscriptionData)
+      public static org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<WebSocketSubscriptionData>
+          PARSER = new com.google.protobuf.AbstractParser<WebSocketSubscriptionData>() {
+        public WebSocketSubscriptionData parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new WebSocketSubscriptionData(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<WebSocketSubscriptionData> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<WebSocketSubscriptionData> getParserForType() {
+        return PARSER;
+      }
+
+      public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
     }
 
     private int bitField0_;
     public static final int TYPE_FIELD_NUMBER = 1;
-    private org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType type_;
+    private int type_;
     /**
      * <code>optional .web.WebSocketServerMessage.MessageType type = 1;</code>
      */
@@ -6550,7 +7065,8 @@ public final class Web {
      * <code>optional .web.WebSocketServerMessage.MessageType type = 1;</code>
      */
     public org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType getType() {
-      return type_;
+      org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType result = org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.valueOf(type_);
+      return result == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.REPLY : result;
     }
 
     public static final int REPLY_FIELD_NUMBER = 2;
@@ -6565,13 +7081,13 @@ public final class Web {
      * <code>optional .web.WebSocketServerMessage.WebSocketReplyData reply = 2;</code>
      */
     public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData getReply() {
-      return reply_;
+      return reply_ == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.getDefaultInstance() : reply_;
     }
     /**
      * <code>optional .web.WebSocketServerMessage.WebSocketReplyData reply = 2;</code>
      */
     public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyDataOrBuilder getReplyOrBuilder() {
-      return reply_;
+      return reply_ == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.getDefaultInstance() : reply_;
     }
 
     public static final int EXCEPTION_FIELD_NUMBER = 3;
@@ -6586,13 +7102,13 @@ public final class Web {
      * <code>optional .web.WebSocketServerMessage.WebSocketExceptionData exception = 3;</code>
      */
     public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData getException() {
-      return exception_;
+      return exception_ == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.getDefaultInstance() : exception_;
     }
     /**
      * <code>optional .web.WebSocketServerMessage.WebSocketExceptionData exception = 3;</code>
      */
     public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionDataOrBuilder getExceptionOrBuilder() {
-      return exception_;
+      return exception_ == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.getDefaultInstance() : exception_;
     }
 
     public static final int DATA_FIELD_NUMBER = 4;
@@ -6607,21 +7123,15 @@ public final class Web {
      * <code>optional .web.WebSocketServerMessage.WebSocketSubscriptionData data = 4;</code>
      */
     public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData getData() {
-      return data_;
+      return data_ == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.getDefaultInstance() : data_;
     }
     /**
      * <code>optional .web.WebSocketServerMessage.WebSocketSubscriptionData data = 4;</code>
      */
     public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionDataOrBuilder getDataOrBuilder() {
-      return data_;
+      return data_ == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.getDefaultInstance() : data_;
     }
 
-    private void initFields() {
-      type_ = org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.REPLY;
-      reply_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.getDefaultInstance();
-      exception_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.getDefaultInstance();
-      data_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.getDefaultInstance();
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -6640,54 +7150,108 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeEnum(1, type_.getNumber());
+        output.writeEnum(1, type_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, reply_);
+        output.writeMessage(2, getReply());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeMessage(3, exception_);
+        output.writeMessage(3, getException());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeMessage(4, data_);
+        output.writeMessage(4, getData());
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(1, type_.getNumber());
+          .computeEnumSize(1, type_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, reply_);
+          .computeMessageSize(2, getReply());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, exception_);
+          .computeMessageSize(3, getException());
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, data_);
+          .computeMessageSize(4, getData());
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.WebSocketServerMessage)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.WebSocketServerMessage other = (org.yamcs.protobuf.Web.WebSocketServerMessage) obj;
+
+      boolean result = true;
+      result = result && (hasType() == other.hasType());
+      if (hasType()) {
+        result = result && type_ == other.type_;
+      }
+      result = result && (hasReply() == other.hasReply());
+      if (hasReply()) {
+        result = result && getReply()
+            .equals(other.getReply());
+      }
+      result = result && (hasException() == other.hasException());
+      if (hasException()) {
+        result = result && getException()
+            .equals(other.getException());
+      }
+      result = result && (hasData() == other.hasData());
+      if (hasData()) {
+        result = result && getData()
+            .equals(other.getData());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasType()) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + type_;
+      }
+      if (hasReply()) {
+        hash = (37 * hash) + REPLY_FIELD_NUMBER;
+        hash = (53 * hash) + getReply().hashCode();
+      }
+      if (hasException()) {
+        hash = (37 * hash) + EXCEPTION_FIELD_NUMBER;
+        hash = (53 * hash) + getException().hashCode();
+      }
+      if (hasData()) {
+        hash = (37 * hash) + DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getData().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.WebSocketServerMessage parseFrom(
@@ -6713,46 +7277,57 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.WebSocketServerMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.WebSocketServerMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.WebSocketServerMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.WebSocketServerMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.WebSocketServerMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.WebSocketServerMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketServerMessage prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketServerMessage prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -6760,7 +7335,7 @@ public final class Web {
      * Protobuf type {@code web.WebSocketServerMessage}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.WebSocketServerMessage)
         org.yamcs.protobuf.Web.WebSocketServerMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -6768,7 +7343,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketServerMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -6781,48 +7356,41 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
           getReplyFieldBuilder();
           getExceptionFieldBuilder();
           getDataFieldBuilder();
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
-        type_ = org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.REPLY;
+        type_ = 2;
         bitField0_ = (bitField0_ & ~0x00000001);
         if (replyBuilder_ == null) {
-          reply_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.getDefaultInstance();
+          reply_ = null;
         } else {
           replyBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         if (exceptionBuilder_ == null) {
-          exception_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.getDefaultInstance();
+          exception_ = null;
         } else {
           exceptionBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
         if (dataBuilder_ == null) {
-          data_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.getDefaultInstance();
+          data_ = null;
         } else {
           dataBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -6879,6 +7447,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.WebSocketServerMessage) {
           return mergeFrom((org.yamcs.protobuf.Web.WebSocketServerMessage)other);
@@ -6902,14 +7496,14 @@ public final class Web {
         if (other.hasData()) {
           mergeData(other.getData());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
         if (hasData()) {
           if (!getData().isInitialized()) {
-            
             return false;
           }
         }
@@ -6925,7 +7519,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.WebSocketServerMessage) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -6935,7 +7529,7 @@ public final class Web {
       }
       private int bitField0_;
 
-      private org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType type_ = org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.REPLY;
+      private int type_ = 2;
       /**
        * <code>optional .web.WebSocketServerMessage.MessageType type = 1;</code>
        */
@@ -6946,7 +7540,8 @@ public final class Web {
        * <code>optional .web.WebSocketServerMessage.MessageType type = 1;</code>
        */
       public org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType getType() {
-        return type_;
+        org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType result = org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.valueOf(type_);
+        return result == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.REPLY : result;
       }
       /**
        * <code>optional .web.WebSocketServerMessage.MessageType type = 1;</code>
@@ -6956,7 +7551,7 @@ public final class Web {
           throw new NullPointerException();
         }
         bitField0_ |= 0x00000001;
-        type_ = value;
+        type_ = value.getNumber();
         onChanged();
         return this;
       }
@@ -6965,13 +7560,13 @@ public final class Web {
        */
       public Builder clearType() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        type_ = org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType.REPLY;
+        type_ = 2;
         onChanged();
         return this;
       }
 
-      private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData reply_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
+      private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData reply_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyDataOrBuilder> replyBuilder_;
       /**
        * <code>optional .web.WebSocketServerMessage.WebSocketReplyData reply = 2;</code>
@@ -6984,7 +7579,7 @@ public final class Web {
        */
       public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData getReply() {
         if (replyBuilder_ == null) {
-          return reply_;
+          return reply_ == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.getDefaultInstance() : reply_;
         } else {
           return replyBuilder_.getMessage();
         }
@@ -7025,6 +7620,7 @@ public final class Web {
       public Builder mergeReply(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData value) {
         if (replyBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              reply_ != null &&
               reply_ != org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.getDefaultInstance()) {
             reply_ =
               org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.newBuilder(reply_).mergeFrom(value).buildPartial();
@@ -7043,7 +7639,7 @@ public final class Web {
        */
       public Builder clearReply() {
         if (replyBuilder_ == null) {
-          reply_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.getDefaultInstance();
+          reply_ = null;
           onChanged();
         } else {
           replyBuilder_.clear();
@@ -7066,17 +7662,18 @@ public final class Web {
         if (replyBuilder_ != null) {
           return replyBuilder_.getMessageOrBuilder();
         } else {
-          return reply_;
+          return reply_ == null ?
+              org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.getDefaultInstance() : reply_;
         }
       }
       /**
        * <code>optional .web.WebSocketServerMessage.WebSocketReplyData reply = 2;</code>
        */
-      private com.google.protobuf.SingleFieldBuilder<
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyDataOrBuilder> 
           getReplyFieldBuilder() {
         if (replyBuilder_ == null) {
-          replyBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          replyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyDataOrBuilder>(
                   getReply(),
                   getParentForChildren(),
@@ -7086,8 +7683,8 @@ public final class Web {
         return replyBuilder_;
       }
 
-      private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData exception_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
+      private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData exception_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionDataOrBuilder> exceptionBuilder_;
       /**
        * <code>optional .web.WebSocketServerMessage.WebSocketExceptionData exception = 3;</code>
@@ -7100,7 +7697,7 @@ public final class Web {
        */
       public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData getException() {
         if (exceptionBuilder_ == null) {
-          return exception_;
+          return exception_ == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.getDefaultInstance() : exception_;
         } else {
           return exceptionBuilder_.getMessage();
         }
@@ -7141,6 +7738,7 @@ public final class Web {
       public Builder mergeException(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData value) {
         if (exceptionBuilder_ == null) {
           if (((bitField0_ & 0x00000004) == 0x00000004) &&
+              exception_ != null &&
               exception_ != org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.getDefaultInstance()) {
             exception_ =
               org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.newBuilder(exception_).mergeFrom(value).buildPartial();
@@ -7159,7 +7757,7 @@ public final class Web {
        */
       public Builder clearException() {
         if (exceptionBuilder_ == null) {
-          exception_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.getDefaultInstance();
+          exception_ = null;
           onChanged();
         } else {
           exceptionBuilder_.clear();
@@ -7182,17 +7780,18 @@ public final class Web {
         if (exceptionBuilder_ != null) {
           return exceptionBuilder_.getMessageOrBuilder();
         } else {
-          return exception_;
+          return exception_ == null ?
+              org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.getDefaultInstance() : exception_;
         }
       }
       /**
        * <code>optional .web.WebSocketServerMessage.WebSocketExceptionData exception = 3;</code>
        */
-      private com.google.protobuf.SingleFieldBuilder<
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionDataOrBuilder> 
           getExceptionFieldBuilder() {
         if (exceptionBuilder_ == null) {
-          exceptionBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          exceptionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionDataOrBuilder>(
                   getException(),
                   getParentForChildren(),
@@ -7202,8 +7801,8 @@ public final class Web {
         return exceptionBuilder_;
       }
 
-      private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData data_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
+      private org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData data_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionDataOrBuilder> dataBuilder_;
       /**
        * <code>optional .web.WebSocketServerMessage.WebSocketSubscriptionData data = 4;</code>
@@ -7216,7 +7815,7 @@ public final class Web {
        */
       public org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData getData() {
         if (dataBuilder_ == null) {
-          return data_;
+          return data_ == null ? org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -7257,6 +7856,7 @@ public final class Web {
       public Builder mergeData(org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData value) {
         if (dataBuilder_ == null) {
           if (((bitField0_ & 0x00000008) == 0x00000008) &&
+              data_ != null &&
               data_ != org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.getDefaultInstance()) {
             data_ =
               org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.newBuilder(data_).mergeFrom(value).buildPartial();
@@ -7275,7 +7875,7 @@ public final class Web {
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
-          data_ = org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.getDefaultInstance();
+          data_ = null;
           onChanged();
         } else {
           dataBuilder_.clear();
@@ -7298,17 +7898,18 @@ public final class Web {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
-          return data_;
+          return data_ == null ?
+              org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>optional .web.WebSocketServerMessage.WebSocketSubscriptionData data = 4;</code>
        */
-      private com.google.protobuf.SingleFieldBuilder<
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionDataOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
-          dataBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData.Builder, org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionDataOrBuilder>(
                   getData(),
                   getParentForChildren(),
@@ -7317,16 +7918,53 @@ public final class Web {
         }
         return dataBuilder_;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.WebSocketServerMessage)
     }
 
+    // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage)
+    private static final org.yamcs.protobuf.Web.WebSocketServerMessage DEFAULT_INSTANCE;
     static {
-      defaultInstance = new WebSocketServerMessage(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.WebSocketServerMessage();
     }
 
-    // @@protoc_insertion_point(class_scope:web.WebSocketServerMessage)
+    public static org.yamcs.protobuf.Web.WebSocketServerMessage getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<WebSocketServerMessage>
+        PARSER = new com.google.protobuf.AbstractParser<WebSocketServerMessage>() {
+      public WebSocketServerMessage parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new WebSocketServerMessage(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<WebSocketServerMessage> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<WebSocketServerMessage> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.WebSocketServerMessage getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface WebSocketExtensionDataOrBuilder extends
@@ -7352,43 +7990,35 @@ public final class Web {
     com.google.protobuf.ByteString getData();
   }
   /**
-   * Protobuf type {@code web.WebSocketExtensionData}
-   *
    * <pre>
    * Escape hatch for providing non-core Yamcs data over web socket
    * </pre>
+   *
+   * Protobuf type {@code web.WebSocketExtensionData}
    */
-  public static final class WebSocketExtensionData extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class WebSocketExtensionData extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.WebSocketExtensionData)
       WebSocketExtensionDataOrBuilder {
     // Use WebSocketExtensionData.newBuilder() to construct.
-    private WebSocketExtensionData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private WebSocketExtensionData(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private WebSocketExtensionData(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final WebSocketExtensionData defaultInstance;
-    public static WebSocketExtensionData getDefaultInstance() {
-      return defaultInstance;
+    private WebSocketExtensionData() {
+      type_ = 0;
+      data_ = com.google.protobuf.ByteString.EMPTY;
     }
 
-    public WebSocketExtensionData getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private WebSocketExtensionData(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -7423,7 +8053,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -7434,26 +8064,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_WebSocketExtensionData_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_WebSocketExtensionData_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.WebSocketExtensionData.class, org.yamcs.protobuf.Web.WebSocketExtensionData.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<WebSocketExtensionData> PARSER =
-        new com.google.protobuf.AbstractParser<WebSocketExtensionData>() {
-      public WebSocketExtensionData parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new WebSocketExtensionData(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<WebSocketExtensionData> getParserForType() {
-      return PARSER;
     }
 
     private int bitField0_;
@@ -7487,10 +8102,6 @@ public final class Web {
       return data_;
     }
 
-    private void initFields() {
-      type_ = 0;
-      data_ = com.google.protobuf.ByteString.EMPTY;
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -7503,19 +8114,17 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeUInt32(1, type_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBytes(2, data_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
@@ -7527,16 +8136,55 @@ public final class Web {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, data_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.WebSocketExtensionData)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.WebSocketExtensionData other = (org.yamcs.protobuf.Web.WebSocketExtensionData) obj;
+
+      boolean result = true;
+      result = result && (hasType() == other.hasType());
+      if (hasType()) {
+        result = result && (getType()
+            == other.getType());
+      }
+      result = result && (hasData() == other.hasData());
+      if (hasData()) {
+        result = result && getData()
+            .equals(other.getData());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasType()) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + getType();
+      }
+      if (hasData()) {
+        hash = (37 * hash) + DATA_FIELD_NUMBER;
+        hash = (53 * hash) + getData().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.WebSocketExtensionData parseFrom(
@@ -7562,58 +8210,69 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.WebSocketExtensionData parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.WebSocketExtensionData parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.WebSocketExtensionData parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.WebSocketExtensionData parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.WebSocketExtensionData parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.WebSocketExtensionData parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketExtensionData prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.WebSocketExtensionData prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code web.WebSocketExtensionData}
-     *
      * <pre>
      * Escape hatch for providing non-core Yamcs data over web socket
      * </pre>
+     *
+     * Protobuf type {@code web.WebSocketExtensionData}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.WebSocketExtensionData)
         org.yamcs.protobuf.Web.WebSocketExtensionDataOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -7621,7 +8280,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketExtensionData_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_WebSocketExtensionData_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -7634,18 +8293,15 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         type_ = 0;
@@ -7653,10 +8309,6 @@ public final class Web {
         data_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -7693,6 +8345,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.WebSocketExtensionData) {
           return mergeFrom((org.yamcs.protobuf.Web.WebSocketExtensionData)other);
@@ -7710,7 +8388,8 @@ public final class Web {
         if (other.hasData()) {
           setData(other.getData());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
@@ -7727,7 +8406,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.WebSocketExtensionData) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -7803,21 +8482,58 @@ public final class Web {
         onChanged();
         return this;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.WebSocketExtensionData)
     }
 
+    // @@protoc_insertion_point(class_scope:web.WebSocketExtensionData)
+    private static final org.yamcs.protobuf.Web.WebSocketExtensionData DEFAULT_INSTANCE;
     static {
-      defaultInstance = new WebSocketExtensionData(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.WebSocketExtensionData();
     }
 
-    // @@protoc_insertion_point(class_scope:web.WebSocketExtensionData)
+    public static org.yamcs.protobuf.Web.WebSocketExtensionData getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<WebSocketExtensionData>
+        PARSER = new com.google.protobuf.AbstractParser<WebSocketExtensionData>() {
+      public WebSocketExtensionData parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new WebSocketExtensionData(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<WebSocketExtensionData> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<WebSocketExtensionData> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.WebSocketExtensionData getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface RestExceptionMessageOrBuilder extends
       // @@protoc_insertion_point(interface_extends:web.RestExceptionMessage)
-      com.google.protobuf.GeneratedMessage.
+      com.google.protobuf.GeneratedMessageV3.
           ExtendableMessageOrBuilder<RestExceptionMessage> {
 
     /**
@@ -7849,44 +8565,36 @@ public final class Web {
         getMsgBytes();
   }
   /**
-   * Protobuf type {@code web.RestExceptionMessage}
-   *
    * <pre>
    * Generic holder for an exception
    * </pre>
+   *
+   * Protobuf type {@code web.RestExceptionMessage}
    */
-  public static final class RestExceptionMessage extends
-      com.google.protobuf.GeneratedMessage.ExtendableMessage<
+  public  static final class RestExceptionMessage extends
+      com.google.protobuf.GeneratedMessageV3.ExtendableMessage<
         RestExceptionMessage> implements
       // @@protoc_insertion_point(message_implements:web.RestExceptionMessage)
       RestExceptionMessageOrBuilder {
     // Use RestExceptionMessage.newBuilder() to construct.
-    private RestExceptionMessage(com.google.protobuf.GeneratedMessage.ExtendableBuilder<org.yamcs.protobuf.Web.RestExceptionMessage, ?> builder) {
+    private RestExceptionMessage(com.google.protobuf.GeneratedMessageV3.ExtendableBuilder<org.yamcs.protobuf.Web.RestExceptionMessage, ?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private RestExceptionMessage(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final RestExceptionMessage defaultInstance;
-    public static RestExceptionMessage getDefaultInstance() {
-      return defaultInstance;
+    private RestExceptionMessage() {
+      type_ = "";
+      msg_ = "";
     }
 
-    public RestExceptionMessage getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private RestExceptionMessage(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -7923,7 +8631,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -7934,31 +8642,16 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_RestExceptionMessage_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_RestExceptionMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.RestExceptionMessage.class, org.yamcs.protobuf.Web.RestExceptionMessage.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<RestExceptionMessage> PARSER =
-        new com.google.protobuf.AbstractParser<RestExceptionMessage>() {
-      public RestExceptionMessage parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new RestExceptionMessage(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<RestExceptionMessage> getParserForType() {
-      return PARSER;
-    }
-
     private int bitField0_;
     public static final int TYPE_FIELD_NUMBER = 1;
-    private java.lang.Object type_;
+    private volatile java.lang.Object type_;
     /**
      * <code>optional string type = 1;</code>
      */
@@ -8000,7 +8693,7 @@ public final class Web {
     }
 
     public static final int MSG_FIELD_NUMBER = 2;
-    private java.lang.Object msg_;
+    private volatile java.lang.Object msg_;
     /**
      * <code>optional string msg = 2;</code>
      */
@@ -8041,10 +8734,6 @@ public final class Web {
       }
     }
 
-    private void initFields() {
-      type_ = "";
-      msg_ = "";
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -8061,45 +8750,83 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
-      com.google.protobuf.GeneratedMessage
-        .ExtendableMessage<org.yamcs.protobuf.Web.RestExceptionMessage>.ExtensionWriter extensionWriter =
-          newExtensionWriter();
+      com.google.protobuf.GeneratedMessageV3
+        .ExtendableMessage<org.yamcs.protobuf.Web.RestExceptionMessage>.ExtensionWriter
+          extensionWriter = newExtensionWriter();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getTypeBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, type_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getMsgBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, msg_);
       }
       extensionWriter.writeUntil(201, output);
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getTypeBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, type_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getMsgBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, msg_);
       }
       size += extensionsSerializedSize();
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.RestExceptionMessage)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.RestExceptionMessage other = (org.yamcs.protobuf.Web.RestExceptionMessage) obj;
+
+      boolean result = true;
+      result = result && (hasType() == other.hasType());
+      if (hasType()) {
+        result = result && getType()
+            .equals(other.getType());
+      }
+      result = result && (hasMsg() == other.hasMsg());
+      if (hasMsg()) {
+        result = result && getMsg()
+            .equals(other.getMsg());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      result = result &&
+          getExtensionFields().equals(other.getExtensionFields());
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasType()) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + getType().hashCode();
+      }
+      if (hasMsg()) {
+        hash = (37 * hash) + MSG_FIELD_NUMBER;
+        hash = (53 * hash) + getMsg().hashCode();
+      }
+      hash = hashFields(hash, getExtensionFields());
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.RestExceptionMessage parseFrom(
@@ -8125,58 +8852,69 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.RestExceptionMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.RestExceptionMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.RestExceptionMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.RestExceptionMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.RestExceptionMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.RestExceptionMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.RestExceptionMessage prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.RestExceptionMessage prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code web.RestExceptionMessage}
-     *
      * <pre>
      * Generic holder for an exception
      * </pre>
+     *
+     * Protobuf type {@code web.RestExceptionMessage}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.ExtendableBuilder<
+        com.google.protobuf.GeneratedMessageV3.ExtendableBuilder<
           org.yamcs.protobuf.Web.RestExceptionMessage, Builder> implements
         // @@protoc_insertion_point(builder_implements:web.RestExceptionMessage)
         org.yamcs.protobuf.Web.RestExceptionMessageOrBuilder {
@@ -8185,7 +8923,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_RestExceptionMessage_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_RestExceptionMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8198,18 +8936,15 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         type_ = "";
@@ -8217,10 +8952,6 @@ public final class Web {
         msg_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -8257,6 +8988,55 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public <Type> Builder setExtension(
+          com.google.protobuf.GeneratedMessage.GeneratedExtension<
+              org.yamcs.protobuf.Web.RestExceptionMessage, Type> extension,
+          Type value) {
+        return (Builder) super.setExtension(extension, value);
+      }
+      public <Type> Builder setExtension(
+          com.google.protobuf.GeneratedMessage.GeneratedExtension<
+              org.yamcs.protobuf.Web.RestExceptionMessage, java.util.List<Type>> extension,
+          int index, Type value) {
+        return (Builder) super.setExtension(extension, index, value);
+      }
+      public <Type> Builder addExtension(
+          com.google.protobuf.GeneratedMessage.GeneratedExtension<
+              org.yamcs.protobuf.Web.RestExceptionMessage, java.util.List<Type>> extension,
+          Type value) {
+        return (Builder) super.addExtension(extension, value);
+      }
+      public <Type> Builder clearExtension(
+          com.google.protobuf.GeneratedMessage.GeneratedExtension<
+              org.yamcs.protobuf.Web.RestExceptionMessage, ?> extension) {
+        return (Builder) super.clearExtension(extension);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.RestExceptionMessage) {
           return mergeFrom((org.yamcs.protobuf.Web.RestExceptionMessage)other);
@@ -8279,13 +9059,13 @@ public final class Web {
           onChanged();
         }
         this.mergeExtensionFields(other);
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
         if (!extensionsAreInitialized()) {
-          
           return false;
         }
         return true;
@@ -8300,7 +9080,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.RestExceptionMessage) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -8461,16 +9241,53 @@ public final class Web {
         onChanged();
         return this;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.RestExceptionMessage)
     }
 
+    // @@protoc_insertion_point(class_scope:web.RestExceptionMessage)
+    private static final org.yamcs.protobuf.Web.RestExceptionMessage DEFAULT_INSTANCE;
     static {
-      defaultInstance = new RestExceptionMessage(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.RestExceptionMessage();
     }
 
-    // @@protoc_insertion_point(class_scope:web.RestExceptionMessage)
+    public static org.yamcs.protobuf.Web.RestExceptionMessage getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<RestExceptionMessage>
+        PARSER = new com.google.protobuf.AbstractParser<RestExceptionMessage>() {
+      public RestExceptionMessage parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new RestExceptionMessage(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<RestExceptionMessage> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RestExceptionMessage> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.RestExceptionMessage getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface LinkSubscriptionRequestOrBuilder extends
@@ -8494,37 +9311,28 @@ public final class Web {
   /**
    * Protobuf type {@code web.LinkSubscriptionRequest}
    */
-  public static final class LinkSubscriptionRequest extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class LinkSubscriptionRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.LinkSubscriptionRequest)
       LinkSubscriptionRequestOrBuilder {
     // Use LinkSubscriptionRequest.newBuilder() to construct.
-    private LinkSubscriptionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private LinkSubscriptionRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private LinkSubscriptionRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final LinkSubscriptionRequest defaultInstance;
-    public static LinkSubscriptionRequest getDefaultInstance() {
-      return defaultInstance;
+    private LinkSubscriptionRequest() {
+      instance_ = "";
     }
 
-    public LinkSubscriptionRequest getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private LinkSubscriptionRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -8555,7 +9363,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -8566,31 +9374,16 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_LinkSubscriptionRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_LinkSubscriptionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.LinkSubscriptionRequest.class, org.yamcs.protobuf.Web.LinkSubscriptionRequest.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<LinkSubscriptionRequest> PARSER =
-        new com.google.protobuf.AbstractParser<LinkSubscriptionRequest>() {
-      public LinkSubscriptionRequest parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new LinkSubscriptionRequest(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<LinkSubscriptionRequest> getParserForType() {
-      return PARSER;
-    }
-
     private int bitField0_;
     public static final int INSTANCE_FIELD_NUMBER = 1;
-    private java.lang.Object instance_;
+    private volatile java.lang.Object instance_;
     /**
      * <code>optional string instance = 1;</code>
      */
@@ -8631,9 +9424,6 @@ public final class Web {
       }
     }
 
-    private void initFields() {
-      instance_ = "";
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -8646,33 +9436,60 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getInstanceBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, instance_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getInstanceBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, instance_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.LinkSubscriptionRequest)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.LinkSubscriptionRequest other = (org.yamcs.protobuf.Web.LinkSubscriptionRequest) obj;
+
+      boolean result = true;
+      result = result && (hasInstance() == other.hasInstance());
+      if (hasInstance()) {
+        result = result && getInstance()
+            .equals(other.getInstance());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasInstance()) {
+        hash = (37 * hash) + INSTANCE_FIELD_NUMBER;
+        hash = (53 * hash) + getInstance().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.LinkSubscriptionRequest parseFrom(
@@ -8698,46 +9515,57 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.LinkSubscriptionRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.LinkSubscriptionRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.LinkSubscriptionRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.LinkSubscriptionRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.LinkSubscriptionRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.LinkSubscriptionRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.LinkSubscriptionRequest prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.LinkSubscriptionRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -8745,7 +9573,7 @@ public final class Web {
      * Protobuf type {@code web.LinkSubscriptionRequest}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.LinkSubscriptionRequest)
         org.yamcs.protobuf.Web.LinkSubscriptionRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -8753,7 +9581,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_LinkSubscriptionRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_LinkSubscriptionRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8766,27 +9594,20 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         instance_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -8819,6 +9640,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.LinkSubscriptionRequest) {
           return mergeFrom((org.yamcs.protobuf.Web.LinkSubscriptionRequest)other);
@@ -8835,7 +9682,8 @@ public final class Web {
           instance_ = other.instance_;
           onChanged();
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
@@ -8852,7 +9700,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.LinkSubscriptionRequest) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -8937,16 +9785,53 @@ public final class Web {
         onChanged();
         return this;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.LinkSubscriptionRequest)
     }
 
+    // @@protoc_insertion_point(class_scope:web.LinkSubscriptionRequest)
+    private static final org.yamcs.protobuf.Web.LinkSubscriptionRequest DEFAULT_INSTANCE;
     static {
-      defaultInstance = new LinkSubscriptionRequest(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.LinkSubscriptionRequest();
     }
 
-    // @@protoc_insertion_point(class_scope:web.LinkSubscriptionRequest)
+    public static org.yamcs.protobuf.Web.LinkSubscriptionRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<LinkSubscriptionRequest>
+        PARSER = new com.google.protobuf.AbstractParser<LinkSubscriptionRequest>() {
+      public LinkSubscriptionRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new LinkSubscriptionRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<LinkSubscriptionRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<LinkSubscriptionRequest> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.LinkSubscriptionRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface ProcessorSubscriptionRequestOrBuilder extends
@@ -8974,37 +9859,29 @@ public final class Web {
   /**
    * Protobuf type {@code web.ProcessorSubscriptionRequest}
    */
-  public static final class ProcessorSubscriptionRequest extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class ProcessorSubscriptionRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.ProcessorSubscriptionRequest)
       ProcessorSubscriptionRequestOrBuilder {
     // Use ProcessorSubscriptionRequest.newBuilder() to construct.
-    private ProcessorSubscriptionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private ProcessorSubscriptionRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private ProcessorSubscriptionRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final ProcessorSubscriptionRequest defaultInstance;
-    public static ProcessorSubscriptionRequest getDefaultInstance() {
-      return defaultInstance;
+    private ProcessorSubscriptionRequest() {
+      allProcessors_ = false;
+      allInstances_ = false;
     }
 
-    public ProcessorSubscriptionRequest getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private ProcessorSubscriptionRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -9039,7 +9916,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -9050,26 +9927,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.ProcessorSubscriptionRequest.class, org.yamcs.protobuf.Web.ProcessorSubscriptionRequest.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<ProcessorSubscriptionRequest> PARSER =
-        new com.google.protobuf.AbstractParser<ProcessorSubscriptionRequest>() {
-      public ProcessorSubscriptionRequest parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ProcessorSubscriptionRequest(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<ProcessorSubscriptionRequest> getParserForType() {
-      return PARSER;
     }
 
     private int bitField0_;
@@ -9103,10 +9965,6 @@ public final class Web {
       return allInstances_;
     }
 
-    private void initFields() {
-      allProcessors_ = false;
-      allInstances_ = false;
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -9119,19 +9977,17 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBool(1, allProcessors_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBool(2, allInstances_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
@@ -9143,16 +9999,57 @@ public final class Web {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(2, allInstances_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.ProcessorSubscriptionRequest)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.ProcessorSubscriptionRequest other = (org.yamcs.protobuf.Web.ProcessorSubscriptionRequest) obj;
+
+      boolean result = true;
+      result = result && (hasAllProcessors() == other.hasAllProcessors());
+      if (hasAllProcessors()) {
+        result = result && (getAllProcessors()
+            == other.getAllProcessors());
+      }
+      result = result && (hasAllInstances() == other.hasAllInstances());
+      if (hasAllInstances()) {
+        result = result && (getAllInstances()
+            == other.getAllInstances());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasAllProcessors()) {
+        hash = (37 * hash) + ALLPROCESSORS_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getAllProcessors());
+      }
+      if (hasAllInstances()) {
+        hash = (37 * hash) + ALLINSTANCES_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getAllInstances());
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(
@@ -9178,46 +10075,57 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.ProcessorSubscriptionRequest prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.ProcessorSubscriptionRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -9225,7 +10133,7 @@ public final class Web {
      * Protobuf type {@code web.ProcessorSubscriptionRequest}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.ProcessorSubscriptionRequest)
         org.yamcs.protobuf.Web.ProcessorSubscriptionRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -9233,7 +10141,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -9246,18 +10154,15 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         allProcessors_ = false;
@@ -9265,10 +10170,6 @@ public final class Web {
         allInstances_ = false;
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -9305,6 +10206,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.ProcessorSubscriptionRequest) {
           return mergeFrom((org.yamcs.protobuf.Web.ProcessorSubscriptionRequest)other);
@@ -9322,7 +10249,8 @@ public final class Web {
         if (other.hasAllInstances()) {
           setAllInstances(other.getAllInstances());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
@@ -9339,7 +10267,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.ProcessorSubscriptionRequest) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -9412,16 +10340,53 @@ public final class Web {
         onChanged();
         return this;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.ProcessorSubscriptionRequest)
     }
 
+    // @@protoc_insertion_point(class_scope:web.ProcessorSubscriptionRequest)
+    private static final org.yamcs.protobuf.Web.ProcessorSubscriptionRequest DEFAULT_INSTANCE;
     static {
-      defaultInstance = new ProcessorSubscriptionRequest(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.ProcessorSubscriptionRequest();
     }
 
-    // @@protoc_insertion_point(class_scope:web.ProcessorSubscriptionRequest)
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ProcessorSubscriptionRequest>
+        PARSER = new com.google.protobuf.AbstractParser<ProcessorSubscriptionRequest>() {
+      public ProcessorSubscriptionRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ProcessorSubscriptionRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ProcessorSubscriptionRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ProcessorSubscriptionRequest> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.ProcessorSubscriptionRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface ManagementSubscriptionRequestOrBuilder extends
@@ -9458,37 +10423,30 @@ public final class Web {
   /**
    * Protobuf type {@code web.ManagementSubscriptionRequest}
    */
-  public static final class ManagementSubscriptionRequest extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class ManagementSubscriptionRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.ManagementSubscriptionRequest)
       ManagementSubscriptionRequestOrBuilder {
     // Use ManagementSubscriptionRequest.newBuilder() to construct.
-    private ManagementSubscriptionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private ManagementSubscriptionRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private ManagementSubscriptionRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final ManagementSubscriptionRequest defaultInstance;
-    public static ManagementSubscriptionRequest getDefaultInstance() {
-      return defaultInstance;
+    private ManagementSubscriptionRequest() {
+      clientInfo_ = false;
+      processorInfo_ = false;
+      processorStatistics_ = false;
     }
 
-    public ManagementSubscriptionRequest getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private ManagementSubscriptionRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -9528,7 +10486,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -9539,26 +10497,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_ManagementSubscriptionRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_ManagementSubscriptionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.ManagementSubscriptionRequest.class, org.yamcs.protobuf.Web.ManagementSubscriptionRequest.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<ManagementSubscriptionRequest> PARSER =
-        new com.google.protobuf.AbstractParser<ManagementSubscriptionRequest>() {
-      public ManagementSubscriptionRequest parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ManagementSubscriptionRequest(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<ManagementSubscriptionRequest> getParserForType() {
-      return PARSER;
     }
 
     private int bitField0_;
@@ -9607,11 +10550,6 @@ public final class Web {
       return processorStatistics_;
     }
 
-    private void initFields() {
-      clientInfo_ = false;
-      processorInfo_ = false;
-      processorStatistics_ = false;
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -9624,7 +10562,6 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBool(1, clientInfo_);
       }
@@ -9634,12 +10571,11 @@ public final class Web {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBool(3, processorStatistics_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
@@ -9655,16 +10591,67 @@ public final class Web {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(3, processorStatistics_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.ManagementSubscriptionRequest)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.ManagementSubscriptionRequest other = (org.yamcs.protobuf.Web.ManagementSubscriptionRequest) obj;
+
+      boolean result = true;
+      result = result && (hasClientInfo() == other.hasClientInfo());
+      if (hasClientInfo()) {
+        result = result && (getClientInfo()
+            == other.getClientInfo());
+      }
+      result = result && (hasProcessorInfo() == other.hasProcessorInfo());
+      if (hasProcessorInfo()) {
+        result = result && (getProcessorInfo()
+            == other.getProcessorInfo());
+      }
+      result = result && (hasProcessorStatistics() == other.hasProcessorStatistics());
+      if (hasProcessorStatistics()) {
+        result = result && (getProcessorStatistics()
+            == other.getProcessorStatistics());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasClientInfo()) {
+        hash = (37 * hash) + CLIENTINFO_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getClientInfo());
+      }
+      if (hasProcessorInfo()) {
+        hash = (37 * hash) + PROCESSORINFO_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getProcessorInfo());
+      }
+      if (hasProcessorStatistics()) {
+        hash = (37 * hash) + PROCESSORSTATISTICS_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getProcessorStatistics());
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(
@@ -9690,46 +10677,57 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.ManagementSubscriptionRequest prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.ManagementSubscriptionRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -9737,7 +10735,7 @@ public final class Web {
      * Protobuf type {@code web.ManagementSubscriptionRequest}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.ManagementSubscriptionRequest)
         org.yamcs.protobuf.Web.ManagementSubscriptionRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -9745,7 +10743,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_ManagementSubscriptionRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_ManagementSubscriptionRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -9758,18 +10756,15 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         clientInfo_ = false;
@@ -9779,10 +10774,6 @@ public final class Web {
         processorStatistics_ = false;
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -9823,6 +10814,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.ManagementSubscriptionRequest) {
           return mergeFrom((org.yamcs.protobuf.Web.ManagementSubscriptionRequest)other);
@@ -9843,7 +10860,8 @@ public final class Web {
         if (other.hasProcessorStatistics()) {
           setProcessorStatistics(other.getProcessorStatistics());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
@@ -9860,7 +10878,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.ManagementSubscriptionRequest) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -9965,16 +10983,53 @@ public final class Web {
         onChanged();
         return this;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.ManagementSubscriptionRequest)
     }
 
+    // @@protoc_insertion_point(class_scope:web.ManagementSubscriptionRequest)
+    private static final org.yamcs.protobuf.Web.ManagementSubscriptionRequest DEFAULT_INSTANCE;
     static {
-      defaultInstance = new ManagementSubscriptionRequest(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.ManagementSubscriptionRequest();
     }
 
-    // @@protoc_insertion_point(class_scope:web.ManagementSubscriptionRequest)
+    public static org.yamcs.protobuf.Web.ManagementSubscriptionRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ManagementSubscriptionRequest>
+        PARSER = new com.google.protobuf.AbstractParser<ManagementSubscriptionRequest>() {
+      public ManagementSubscriptionRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ManagementSubscriptionRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ManagementSubscriptionRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ManagementSubscriptionRequest> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.ManagementSubscriptionRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface ParameterSubscriptionRequestOrBuilder extends
@@ -10006,67 +11061,65 @@ public final class Web {
         int index);
 
     /**
-     * <code>optional bool abortOnInvalid = 2;</code>
-     *
      * <pre>
      *if set to true, an error message will be sent back if any parameter from the list above is invalid
      * by default is false
      * </pre>
+     *
+     * <code>optional bool abortOnInvalid = 2;</code>
      */
     boolean hasAbortOnInvalid();
     /**
-     * <code>optional bool abortOnInvalid = 2;</code>
-     *
      * <pre>
      *if set to true, an error message will be sent back if any parameter from the list above is invalid
      * by default is false
      * </pre>
+     *
+     * <code>optional bool abortOnInvalid = 2;</code>
      */
     boolean getAbortOnInvalid();
 
     /**
-     * <code>optional bool updateOnExpiration = 3;</code>
-     *
      * <pre>
      * if set to true, send parameter updates when parameters expire.
      * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
      *by default is false
      * </pre>
+     *
+     * <code>optional bool updateOnExpiration = 3;</code>
      */
     boolean hasUpdateOnExpiration();
     /**
-     * <code>optional bool updateOnExpiration = 3;</code>
-     *
      * <pre>
      * if set to true, send parameter updates when parameters expire.
      * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
      *by default is false
      * </pre>
+     *
+     * <code>optional bool updateOnExpiration = 3;</code>
      */
     boolean getUpdateOnExpiration();
 
     /**
-     * <code>optional bool sendFromCache = 4;</code>
-     *
      * <pre>
      *if set to true (default), send a first batch of the parameters from cache if available
      * otherwise just wait for the parameters to be updated
      * </pre>
+     *
+     * <code>optional bool sendFromCache = 4;</code>
      */
     boolean hasSendFromCache();
     /**
-     * <code>optional bool sendFromCache = 4;</code>
-     *
      * <pre>
      *if set to true (default), send a first batch of the parameters from cache if available
      * otherwise just wait for the parameters to be updated
      * </pre>
+     *
+     * <code>optional bool sendFromCache = 4;</code>
      */
     boolean getSendFromCache();
 
     /**
-     * <code>optional int32 subscriptionId = 5;</code>
-     *
      * <pre>
      *subcriptionId
      *  0 or not specified means to add parameters to the first subscription made
@@ -10075,11 +11128,11 @@ public final class Web {
      * -1 means to create a new subscription
      * &gt;1 means to add parameters to the existing subcription with that id
      * </pre>
+     *
+     * <code>optional int32 subscriptionId = 5;</code>
      */
     boolean hasSubscriptionId();
     /**
-     * <code>optional int32 subscriptionId = 5;</code>
-     *
      * <pre>
      *subcriptionId
      *  0 or not specified means to add parameters to the first subscription made
@@ -10088,101 +11141,99 @@ public final class Web {
      * -1 means to create a new subscription
      * &gt;1 means to add parameters to the existing subcription with that id
      * </pre>
+     *
+     * <code>optional int32 subscriptionId = 5;</code>
      */
     int getSubscriptionId();
 
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     *
      * <pre>
      *Hack to allow the old subscribe with NamedObjectList to work when json is used.
      * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
      * remove this field when we are sure nobody uses the old method
      * </pre>
+     *
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      */
     @java.lang.Deprecated java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
         getListList();
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     *
      * <pre>
      *Hack to allow the old subscribe with NamedObjectList to work when json is used.
      * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
      * remove this field when we are sure nobody uses the old method
      * </pre>
+     *
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      */
     @java.lang.Deprecated org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index);
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     *
      * <pre>
      *Hack to allow the old subscribe with NamedObjectList to work when json is used.
      * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
      * remove this field when we are sure nobody uses the old method
      * </pre>
+     *
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      */
     @java.lang.Deprecated int getListCount();
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     *
      * <pre>
      *Hack to allow the old subscribe with NamedObjectList to work when json is used.
      * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
      * remove this field when we are sure nobody uses the old method
      * </pre>
+     *
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      */
     @java.lang.Deprecated java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
         getListOrBuilderList();
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     *
      * <pre>
      *Hack to allow the old subscribe with NamedObjectList to work when json is used.
      * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
      * remove this field when we are sure nobody uses the old method
      * </pre>
+     *
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      */
     @java.lang.Deprecated org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
         int index);
   }
   /**
-   * Protobuf type {@code web.ParameterSubscriptionRequest}
-   *
    * <pre>
    * Used for parameter subscription and unsubscription.
    * </pre>
+   *
+   * Protobuf type {@code web.ParameterSubscriptionRequest}
    */
-  public static final class ParameterSubscriptionRequest extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class ParameterSubscriptionRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.ParameterSubscriptionRequest)
       ParameterSubscriptionRequestOrBuilder {
     // Use ParameterSubscriptionRequest.newBuilder() to construct.
-    private ParameterSubscriptionRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private ParameterSubscriptionRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private ParameterSubscriptionRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final ParameterSubscriptionRequest defaultInstance;
-    public static ParameterSubscriptionRequest getDefaultInstance() {
-      return defaultInstance;
-    }
-
-    public ParameterSubscriptionRequest getDefaultInstanceForType() {
-      return defaultInstance;
+    private ParameterSubscriptionRequest() {
+      id_ = java.util.Collections.emptyList();
+      abortOnInvalid_ = false;
+      updateOnExpiration_ = false;
+      sendFromCache_ = false;
+      subscriptionId_ = 0;
+      list_ = java.util.Collections.emptyList();
     }
 
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private ParameterSubscriptionRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -10206,7 +11257,8 @@ public final class Web {
                 id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              id_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              id_.add(
+                  input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
               break;
             }
             case 16: {
@@ -10234,7 +11286,8 @@ public final class Web {
                 list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
                 mutable_bitField0_ |= 0x00000020;
               }
-              list_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              list_.add(
+                  input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
               break;
             }
           }
@@ -10243,7 +11296,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           id_ = java.util.Collections.unmodifiableList(id_);
@@ -10260,26 +11313,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_ParameterSubscriptionRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.ParameterSubscriptionRequest.class, org.yamcs.protobuf.Web.ParameterSubscriptionRequest.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<ParameterSubscriptionRequest> PARSER =
-        new com.google.protobuf.AbstractParser<ParameterSubscriptionRequest>() {
-      public ParameterSubscriptionRequest parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ParameterSubscriptionRequest(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<ParameterSubscriptionRequest> getParserForType() {
-      return PARSER;
     }
 
     private int bitField0_;
@@ -10321,23 +11359,23 @@ public final class Web {
     public static final int ABORTONINVALID_FIELD_NUMBER = 2;
     private boolean abortOnInvalid_;
     /**
-     * <code>optional bool abortOnInvalid = 2;</code>
-     *
      * <pre>
      *if set to true, an error message will be sent back if any parameter from the list above is invalid
      * by default is false
      * </pre>
+     *
+     * <code>optional bool abortOnInvalid = 2;</code>
      */
     public boolean hasAbortOnInvalid() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional bool abortOnInvalid = 2;</code>
-     *
      * <pre>
      *if set to true, an error message will be sent back if any parameter from the list above is invalid
      * by default is false
      * </pre>
+     *
+     * <code>optional bool abortOnInvalid = 2;</code>
      */
     public boolean getAbortOnInvalid() {
       return abortOnInvalid_;
@@ -10346,25 +11384,25 @@ public final class Web {
     public static final int UPDATEONEXPIRATION_FIELD_NUMBER = 3;
     private boolean updateOnExpiration_;
     /**
-     * <code>optional bool updateOnExpiration = 3;</code>
-     *
      * <pre>
      * if set to true, send parameter updates when parameters expire.
      * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
      *by default is false
      * </pre>
+     *
+     * <code>optional bool updateOnExpiration = 3;</code>
      */
     public boolean hasUpdateOnExpiration() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>optional bool updateOnExpiration = 3;</code>
-     *
      * <pre>
      * if set to true, send parameter updates when parameters expire.
      * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
      *by default is false
      * </pre>
+     *
+     * <code>optional bool updateOnExpiration = 3;</code>
      */
     public boolean getUpdateOnExpiration() {
       return updateOnExpiration_;
@@ -10373,23 +11411,23 @@ public final class Web {
     public static final int SENDFROMCACHE_FIELD_NUMBER = 4;
     private boolean sendFromCache_;
     /**
-     * <code>optional bool sendFromCache = 4;</code>
-     *
      * <pre>
      *if set to true (default), send a first batch of the parameters from cache if available
      * otherwise just wait for the parameters to be updated
      * </pre>
+     *
+     * <code>optional bool sendFromCache = 4;</code>
      */
     public boolean hasSendFromCache() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional bool sendFromCache = 4;</code>
-     *
      * <pre>
      *if set to true (default), send a first batch of the parameters from cache if available
      * otherwise just wait for the parameters to be updated
      * </pre>
+     *
+     * <code>optional bool sendFromCache = 4;</code>
      */
     public boolean getSendFromCache() {
       return sendFromCache_;
@@ -10398,8 +11436,6 @@ public final class Web {
     public static final int SUBSCRIPTIONID_FIELD_NUMBER = 5;
     private int subscriptionId_;
     /**
-     * <code>optional int32 subscriptionId = 5;</code>
-     *
      * <pre>
      *subcriptionId
      *  0 or not specified means to add parameters to the first subscription made
@@ -10408,13 +11444,13 @@ public final class Web {
      * -1 means to create a new subscription
      * &gt;1 means to add parameters to the existing subcription with that id
      * </pre>
+     *
+     * <code>optional int32 subscriptionId = 5;</code>
      */
     public boolean hasSubscriptionId() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>optional int32 subscriptionId = 5;</code>
-     *
      * <pre>
      *subcriptionId
      *  0 or not specified means to add parameters to the first subscription made
@@ -10423,6 +11459,8 @@ public final class Web {
      * -1 means to create a new subscription
      * &gt;1 means to add parameters to the existing subcription with that id
      * </pre>
+     *
+     * <code>optional int32 subscriptionId = 5;</code>
      */
     public int getSubscriptionId() {
       return subscriptionId_;
@@ -10431,76 +11469,68 @@ public final class Web {
     public static final int LIST_FIELD_NUMBER = 10000;
     private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_;
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     *
      * <pre>
      *Hack to allow the old subscribe with NamedObjectList to work when json is used.
      * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
      * remove this field when we are sure nobody uses the old method
      * </pre>
+     *
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      */
     @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
       return list_;
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     *
      * <pre>
      *Hack to allow the old subscribe with NamedObjectList to work when json is used.
      * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
      * remove this field when we are sure nobody uses the old method
      * </pre>
+     *
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      */
     @java.lang.Deprecated public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
         getListOrBuilderList() {
       return list_;
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     *
      * <pre>
      *Hack to allow the old subscribe with NamedObjectList to work when json is used.
      * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
      * remove this field when we are sure nobody uses the old method
      * </pre>
+     *
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      */
     @java.lang.Deprecated public int getListCount() {
       return list_.size();
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     *
      * <pre>
      *Hack to allow the old subscribe with NamedObjectList to work when json is used.
      * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
      * remove this field when we are sure nobody uses the old method
      * </pre>
+     *
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      */
     @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
       return list_.get(index);
     }
     /**
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     *
      * <pre>
      *Hack to allow the old subscribe with NamedObjectList to work when json is used.
      * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
      * remove this field when we are sure nobody uses the old method
      * </pre>
+     *
+     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
      */
     @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
         int index) {
       return list_.get(index);
     }
 
-    private void initFields() {
-      id_ = java.util.Collections.emptyList();
-      abortOnInvalid_ = false;
-      updateOnExpiration_ = false;
-      sendFromCache_ = false;
-      subscriptionId_ = 0;
-      list_ = java.util.Collections.emptyList();
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -10525,7 +11555,6 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       for (int i = 0; i < id_.size(); i++) {
         output.writeMessage(1, id_.get(i));
       }
@@ -10544,12 +11573,11 @@ public final class Web {
       for (int i = 0; i < list_.size(); i++) {
         output.writeMessage(10000, list_.get(i));
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
@@ -10577,16 +11605,88 @@ public final class Web {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(10000, list_.get(i));
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.ParameterSubscriptionRequest)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.ParameterSubscriptionRequest other = (org.yamcs.protobuf.Web.ParameterSubscriptionRequest) obj;
+
+      boolean result = true;
+      result = result && getIdList()
+          .equals(other.getIdList());
+      result = result && (hasAbortOnInvalid() == other.hasAbortOnInvalid());
+      if (hasAbortOnInvalid()) {
+        result = result && (getAbortOnInvalid()
+            == other.getAbortOnInvalid());
+      }
+      result = result && (hasUpdateOnExpiration() == other.hasUpdateOnExpiration());
+      if (hasUpdateOnExpiration()) {
+        result = result && (getUpdateOnExpiration()
+            == other.getUpdateOnExpiration());
+      }
+      result = result && (hasSendFromCache() == other.hasSendFromCache());
+      if (hasSendFromCache()) {
+        result = result && (getSendFromCache()
+            == other.getSendFromCache());
+      }
+      result = result && (hasSubscriptionId() == other.hasSubscriptionId());
+      if (hasSubscriptionId()) {
+        result = result && (getSubscriptionId()
+            == other.getSubscriptionId());
+      }
+      result = result && getListList()
+          .equals(other.getListList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getIdCount() > 0) {
+        hash = (37 * hash) + ID_FIELD_NUMBER;
+        hash = (53 * hash) + getIdList().hashCode();
+      }
+      if (hasAbortOnInvalid()) {
+        hash = (37 * hash) + ABORTONINVALID_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getAbortOnInvalid());
+      }
+      if (hasUpdateOnExpiration()) {
+        hash = (37 * hash) + UPDATEONEXPIRATION_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getUpdateOnExpiration());
+      }
+      if (hasSendFromCache()) {
+        hash = (37 * hash) + SENDFROMCACHE_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getSendFromCache());
+      }
+      if (hasSubscriptionId()) {
+        hash = (37 * hash) + SUBSCRIPTIONID_FIELD_NUMBER;
+        hash = (53 * hash) + getSubscriptionId();
+      }
+      if (getListCount() > 0) {
+        hash = (37 * hash) + LIST_FIELD_NUMBER;
+        hash = (53 * hash) + getListList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.ParameterSubscriptionRequest parseFrom(
@@ -10612,58 +11712,69 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.ParameterSubscriptionRequest prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.ParameterSubscriptionRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code web.ParameterSubscriptionRequest}
-     *
      * <pre>
      * Used for parameter subscription and unsubscription.
      * </pre>
+     *
+     * Protobuf type {@code web.ParameterSubscriptionRequest}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.ParameterSubscriptionRequest)
         org.yamcs.protobuf.Web.ParameterSubscriptionRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -10671,7 +11782,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_ParameterSubscriptionRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -10684,20 +11795,17 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
           getIdFieldBuilder();
           getListFieldBuilder();
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         if (idBuilder_ == null) {
@@ -10721,10 +11829,6 @@ public final class Web {
           listBuilder_.clear();
         }
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -10787,6 +11891,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.ParameterSubscriptionRequest) {
           return mergeFrom((org.yamcs.protobuf.Web.ParameterSubscriptionRequest)other);
@@ -10817,7 +11947,7 @@ public final class Web {
               id_ = other.id_;
               bitField0_ = (bitField0_ & ~0x00000001);
               idBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getIdFieldBuilder() : null;
             } else {
               idBuilder_.addAllMessages(other.id_);
@@ -10855,27 +11985,26 @@ public final class Web {
               list_ = other.list_;
               bitField0_ = (bitField0_ & ~0x00000020);
               listBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getListFieldBuilder() : null;
             } else {
               listBuilder_.addAllMessages(other.list_);
             }
           }
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
         for (int i = 0; i < getIdCount(); i++) {
           if (!getId(i).isInitialized()) {
-            
             return false;
           }
         }
         for (int i = 0; i < getListCount(); i++) {
           if (!getList(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -10891,7 +12020,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.ParameterSubscriptionRequest) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -10910,7 +12039,7 @@ public final class Web {
          }
       }
 
-      private com.google.protobuf.RepeatedFieldBuilder<
+      private com.google.protobuf.RepeatedFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> idBuilder_;
 
       /**
@@ -11126,11 +12255,11 @@ public final class Web {
            getIdBuilderList() {
         return getIdFieldBuilder().getBuilderList();
       }
-      private com.google.protobuf.RepeatedFieldBuilder<
+      private com.google.protobuf.RepeatedFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
           getIdFieldBuilder() {
         if (idBuilder_ == null) {
-          idBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+          idBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
                   id_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
@@ -11143,34 +12272,34 @@ public final class Web {
 
       private boolean abortOnInvalid_ ;
       /**
-       * <code>optional bool abortOnInvalid = 2;</code>
-       *
        * <pre>
        *if set to true, an error message will be sent back if any parameter from the list above is invalid
        * by default is false
        * </pre>
+       *
+       * <code>optional bool abortOnInvalid = 2;</code>
        */
       public boolean hasAbortOnInvalid() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>optional bool abortOnInvalid = 2;</code>
-       *
        * <pre>
        *if set to true, an error message will be sent back if any parameter from the list above is invalid
        * by default is false
        * </pre>
+       *
+       * <code>optional bool abortOnInvalid = 2;</code>
        */
       public boolean getAbortOnInvalid() {
         return abortOnInvalid_;
       }
       /**
-       * <code>optional bool abortOnInvalid = 2;</code>
-       *
        * <pre>
        *if set to true, an error message will be sent back if any parameter from the list above is invalid
        * by default is false
        * </pre>
+       *
+       * <code>optional bool abortOnInvalid = 2;</code>
        */
       public Builder setAbortOnInvalid(boolean value) {
         bitField0_ |= 0x00000002;
@@ -11179,12 +12308,12 @@ public final class Web {
         return this;
       }
       /**
-       * <code>optional bool abortOnInvalid = 2;</code>
-       *
        * <pre>
        *if set to true, an error message will be sent back if any parameter from the list above is invalid
        * by default is false
        * </pre>
+       *
+       * <code>optional bool abortOnInvalid = 2;</code>
        */
       public Builder clearAbortOnInvalid() {
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -11195,37 +12324,37 @@ public final class Web {
 
       private boolean updateOnExpiration_ ;
       /**
-       * <code>optional bool updateOnExpiration = 3;</code>
-       *
        * <pre>
        * if set to true, send parameter updates when parameters expire.
        * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
        *by default is false
        * </pre>
+       *
+       * <code>optional bool updateOnExpiration = 3;</code>
        */
       public boolean hasUpdateOnExpiration() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional bool updateOnExpiration = 3;</code>
-       *
        * <pre>
        * if set to true, send parameter updates when parameters expire.
        * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
        *by default is false
        * </pre>
+       *
+       * <code>optional bool updateOnExpiration = 3;</code>
        */
       public boolean getUpdateOnExpiration() {
         return updateOnExpiration_;
       }
       /**
-       * <code>optional bool updateOnExpiration = 3;</code>
-       *
        * <pre>
        * if set to true, send parameter updates when parameters expire.
        * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
        *by default is false
        * </pre>
+       *
+       * <code>optional bool updateOnExpiration = 3;</code>
        */
       public Builder setUpdateOnExpiration(boolean value) {
         bitField0_ |= 0x00000004;
@@ -11234,13 +12363,13 @@ public final class Web {
         return this;
       }
       /**
-       * <code>optional bool updateOnExpiration = 3;</code>
-       *
        * <pre>
        * if set to true, send parameter updates when parameters expire.
        * the parameter will have the same value and timestamp like the previous sent one, but the acquisition status will be set to EXPIRED (instead of ACQUIRED)
        *by default is false
        * </pre>
+       *
+       * <code>optional bool updateOnExpiration = 3;</code>
        */
       public Builder clearUpdateOnExpiration() {
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -11251,34 +12380,34 @@ public final class Web {
 
       private boolean sendFromCache_ ;
       /**
-       * <code>optional bool sendFromCache = 4;</code>
-       *
        * <pre>
        *if set to true (default), send a first batch of the parameters from cache if available
        * otherwise just wait for the parameters to be updated
        * </pre>
+       *
+       * <code>optional bool sendFromCache = 4;</code>
        */
       public boolean hasSendFromCache() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional bool sendFromCache = 4;</code>
-       *
        * <pre>
        *if set to true (default), send a first batch of the parameters from cache if available
        * otherwise just wait for the parameters to be updated
        * </pre>
+       *
+       * <code>optional bool sendFromCache = 4;</code>
        */
       public boolean getSendFromCache() {
         return sendFromCache_;
       }
       /**
-       * <code>optional bool sendFromCache = 4;</code>
-       *
        * <pre>
        *if set to true (default), send a first batch of the parameters from cache if available
        * otherwise just wait for the parameters to be updated
        * </pre>
+       *
+       * <code>optional bool sendFromCache = 4;</code>
        */
       public Builder setSendFromCache(boolean value) {
         bitField0_ |= 0x00000008;
@@ -11287,12 +12416,12 @@ public final class Web {
         return this;
       }
       /**
-       * <code>optional bool sendFromCache = 4;</code>
-       *
        * <pre>
        *if set to true (default), send a first batch of the parameters from cache if available
        * otherwise just wait for the parameters to be updated
        * </pre>
+       *
+       * <code>optional bool sendFromCache = 4;</code>
        */
       public Builder clearSendFromCache() {
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -11303,8 +12432,6 @@ public final class Web {
 
       private int subscriptionId_ ;
       /**
-       * <code>optional int32 subscriptionId = 5;</code>
-       *
        * <pre>
        *subcriptionId
        *  0 or not specified means to add parameters to the first subscription made
@@ -11313,13 +12440,13 @@ public final class Web {
        * -1 means to create a new subscription
        * &gt;1 means to add parameters to the existing subcription with that id
        * </pre>
+       *
+       * <code>optional int32 subscriptionId = 5;</code>
        */
       public boolean hasSubscriptionId() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional int32 subscriptionId = 5;</code>
-       *
        * <pre>
        *subcriptionId
        *  0 or not specified means to add parameters to the first subscription made
@@ -11328,13 +12455,13 @@ public final class Web {
        * -1 means to create a new subscription
        * &gt;1 means to add parameters to the existing subcription with that id
        * </pre>
+       *
+       * <code>optional int32 subscriptionId = 5;</code>
        */
       public int getSubscriptionId() {
         return subscriptionId_;
       }
       /**
-       * <code>optional int32 subscriptionId = 5;</code>
-       *
        * <pre>
        *subcriptionId
        *  0 or not specified means to add parameters to the first subscription made
@@ -11343,6 +12470,8 @@ public final class Web {
        * -1 means to create a new subscription
        * &gt;1 means to add parameters to the existing subcription with that id
        * </pre>
+       *
+       * <code>optional int32 subscriptionId = 5;</code>
        */
       public Builder setSubscriptionId(int value) {
         bitField0_ |= 0x00000010;
@@ -11351,8 +12480,6 @@ public final class Web {
         return this;
       }
       /**
-       * <code>optional int32 subscriptionId = 5;</code>
-       *
        * <pre>
        *subcriptionId
        *  0 or not specified means to add parameters to the first subscription made
@@ -11361,6 +12488,8 @@ public final class Web {
        * -1 means to create a new subscription
        * &gt;1 means to add parameters to the existing subcription with that id
        * </pre>
+       *
+       * <code>optional int32 subscriptionId = 5;</code>
        */
       public Builder clearSubscriptionId() {
         bitField0_ = (bitField0_ & ~0x00000010);
@@ -11378,17 +12507,17 @@ public final class Web {
          }
       }
 
-      private com.google.protobuf.RepeatedFieldBuilder<
+      private com.google.protobuf.RepeatedFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> listBuilder_;
 
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
         if (listBuilder_ == null) {
@@ -11398,13 +12527,13 @@ public final class Web {
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public int getListCount() {
         if (listBuilder_ == null) {
@@ -11414,13 +12543,13 @@ public final class Web {
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
         if (listBuilder_ == null) {
@@ -11430,13 +12559,13 @@ public final class Web {
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder setList(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
@@ -11453,13 +12582,13 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder setList(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
@@ -11473,13 +12602,13 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder addList(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (listBuilder_ == null) {
@@ -11495,13 +12624,13 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder addList(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
@@ -11518,13 +12647,13 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder addList(
           org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
@@ -11538,13 +12667,13 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder addList(
           int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
@@ -11558,13 +12687,13 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder addAllList(
           java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
@@ -11579,13 +12708,13 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder clearList() {
         if (listBuilder_ == null) {
@@ -11598,13 +12727,13 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder removeList(int index) {
         if (listBuilder_ == null) {
@@ -11617,26 +12746,26 @@ public final class Web {
         return this;
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getListBuilder(
           int index) {
         return getListFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
           int index) {
@@ -11646,13 +12775,13 @@ public final class Web {
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
            getListOrBuilderList() {
@@ -11663,26 +12792,26 @@ public final class Web {
         }
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder() {
         return getListFieldBuilder().addBuilder(
             org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder(
           int index) {
@@ -11690,23 +12819,23 @@ public final class Web {
             index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       *
        * <pre>
        *Hack to allow the old subscribe with NamedObjectList to work when json is used.
        * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
        * remove this field when we are sure nobody uses the old method
        * </pre>
+       *
+       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
        */
       @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
            getListBuilderList() {
         return getListFieldBuilder().getBuilderList();
       }
-      private com.google.protobuf.RepeatedFieldBuilder<
+      private com.google.protobuf.RepeatedFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
           getListFieldBuilder() {
         if (listBuilder_ == null) {
-          listBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+          listBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
                   list_,
                   ((bitField0_ & 0x00000020) == 0x00000020),
@@ -11716,16 +12845,53 @@ public final class Web {
         }
         return listBuilder_;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.ParameterSubscriptionRequest)
     }
 
+    // @@protoc_insertion_point(class_scope:web.ParameterSubscriptionRequest)
+    private static final org.yamcs.protobuf.Web.ParameterSubscriptionRequest DEFAULT_INSTANCE;
     static {
-      defaultInstance = new ParameterSubscriptionRequest(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.ParameterSubscriptionRequest();
     }
 
-    // @@protoc_insertion_point(class_scope:web.ParameterSubscriptionRequest)
+    public static org.yamcs.protobuf.Web.ParameterSubscriptionRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ParameterSubscriptionRequest>
+        PARSER = new com.google.protobuf.AbstractParser<ParameterSubscriptionRequest>() {
+      public ParameterSubscriptionRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ParameterSubscriptionRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ParameterSubscriptionRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ParameterSubscriptionRequest> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.ParameterSubscriptionRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface ParameterSubscriptionResponseOrBuilder extends
@@ -11766,43 +12932,35 @@ public final class Web {
     int getSubscriptionId();
   }
   /**
-   * Protobuf type {@code web.ParameterSubscriptionResponse}
-   *
    * <pre>
    * Response to parameter subscription
    * </pre>
+   *
+   * Protobuf type {@code web.ParameterSubscriptionResponse}
    */
-  public static final class ParameterSubscriptionResponse extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class ParameterSubscriptionResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.ParameterSubscriptionResponse)
       ParameterSubscriptionResponseOrBuilder {
     // Use ParameterSubscriptionResponse.newBuilder() to construct.
-    private ParameterSubscriptionResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private ParameterSubscriptionResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private ParameterSubscriptionResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final ParameterSubscriptionResponse defaultInstance;
-    public static ParameterSubscriptionResponse getDefaultInstance() {
-      return defaultInstance;
+    private ParameterSubscriptionResponse() {
+      invalid_ = java.util.Collections.emptyList();
+      subscriptionId_ = 0;
     }
 
-    public ParameterSubscriptionResponse getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private ParameterSubscriptionResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -11826,7 +12984,8 @@ public final class Web {
                 invalid_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              invalid_.add(input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              invalid_.add(
+                  input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
               break;
             }
             case 24: {
@@ -11840,7 +12999,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           invalid_ = java.util.Collections.unmodifiableList(invalid_);
@@ -11854,26 +13013,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_ParameterSubscriptionResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.ParameterSubscriptionResponse.class, org.yamcs.protobuf.Web.ParameterSubscriptionResponse.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<ParameterSubscriptionResponse> PARSER =
-        new com.google.protobuf.AbstractParser<ParameterSubscriptionResponse>() {
-      public ParameterSubscriptionResponse parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ParameterSubscriptionResponse(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<ParameterSubscriptionResponse> getParserForType() {
-      return PARSER;
     }
 
     private int bitField0_;
@@ -11927,10 +13071,6 @@ public final class Web {
       return subscriptionId_;
     }
 
-    private void initFields() {
-      invalid_ = java.util.Collections.emptyList();
-      subscriptionId_ = 0;
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -11949,19 +13089,17 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       for (int i = 0; i < invalid_.size(); i++) {
         output.writeMessage(2, invalid_.get(i));
       }
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeInt32(3, subscriptionId_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
@@ -11973,16 +13111,52 @@ public final class Web {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, subscriptionId_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.ParameterSubscriptionResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.ParameterSubscriptionResponse other = (org.yamcs.protobuf.Web.ParameterSubscriptionResponse) obj;
+
+      boolean result = true;
+      result = result && getInvalidList()
+          .equals(other.getInvalidList());
+      result = result && (hasSubscriptionId() == other.hasSubscriptionId());
+      if (hasSubscriptionId()) {
+        result = result && (getSubscriptionId()
+            == other.getSubscriptionId());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getInvalidCount() > 0) {
+        hash = (37 * hash) + INVALID_FIELD_NUMBER;
+        hash = (53 * hash) + getInvalidList().hashCode();
+      }
+      if (hasSubscriptionId()) {
+        hash = (37 * hash) + SUBSCRIPTIONID_FIELD_NUMBER;
+        hash = (53 * hash) + getSubscriptionId();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.ParameterSubscriptionResponse parseFrom(
@@ -12008,58 +13182,69 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ParameterSubscriptionResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.ParameterSubscriptionResponse prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.ParameterSubscriptionResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code web.ParameterSubscriptionResponse}
-     *
      * <pre>
      * Response to parameter subscription
      * </pre>
+     *
+     * Protobuf type {@code web.ParameterSubscriptionResponse}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.ParameterSubscriptionResponse)
         org.yamcs.protobuf.Web.ParameterSubscriptionResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -12067,7 +13252,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_ParameterSubscriptionResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -12080,19 +13265,16 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
           getInvalidFieldBuilder();
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         if (invalidBuilder_ == null) {
@@ -12104,10 +13286,6 @@ public final class Web {
         subscriptionId_ = 0;
         bitField0_ = (bitField0_ & ~0x00000002);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -12149,6 +13327,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.ParameterSubscriptionResponse) {
           return mergeFrom((org.yamcs.protobuf.Web.ParameterSubscriptionResponse)other);
@@ -12179,7 +13383,7 @@ public final class Web {
               invalid_ = other.invalid_;
               bitField0_ = (bitField0_ & ~0x00000001);
               invalidBuilder_ = 
-                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getInvalidFieldBuilder() : null;
             } else {
               invalidBuilder_.addAllMessages(other.invalid_);
@@ -12189,14 +13393,14 @@ public final class Web {
         if (other.hasSubscriptionId()) {
           setSubscriptionId(other.getSubscriptionId());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
         for (int i = 0; i < getInvalidCount(); i++) {
           if (!getInvalid(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -12212,7 +13416,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.ParameterSubscriptionResponse) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -12231,7 +13435,7 @@ public final class Web {
          }
       }
 
-      private com.google.protobuf.RepeatedFieldBuilder<
+      private com.google.protobuf.RepeatedFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> invalidBuilder_;
 
       /**
@@ -12447,11 +13651,11 @@ public final class Web {
            getInvalidBuilderList() {
         return getInvalidFieldBuilder().getBuilderList();
       }
-      private com.google.protobuf.RepeatedFieldBuilder<
+      private com.google.protobuf.RepeatedFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
           getInvalidFieldBuilder() {
         if (invalidBuilder_ == null) {
-          invalidBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+          invalidBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
                   invalid_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
@@ -12493,16 +13697,53 @@ public final class Web {
         onChanged();
         return this;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.ParameterSubscriptionResponse)
     }
 
+    // @@protoc_insertion_point(class_scope:web.ParameterSubscriptionResponse)
+    private static final org.yamcs.protobuf.Web.ParameterSubscriptionResponse DEFAULT_INSTANCE;
     static {
-      defaultInstance = new ParameterSubscriptionResponse(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.ParameterSubscriptionResponse();
     }
 
-    // @@protoc_insertion_point(class_scope:web.ParameterSubscriptionResponse)
+    public static org.yamcs.protobuf.Web.ParameterSubscriptionResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ParameterSubscriptionResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ParameterSubscriptionResponse>() {
+      public ParameterSubscriptionResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ParameterSubscriptionResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ParameterSubscriptionResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ParameterSubscriptionResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.ParameterSubscriptionResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface TimeSubscriptionResponseOrBuilder extends
@@ -12525,37 +13766,27 @@ public final class Web {
   /**
    * Protobuf type {@code web.TimeSubscriptionResponse}
    */
-  public static final class TimeSubscriptionResponse extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class TimeSubscriptionResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.TimeSubscriptionResponse)
       TimeSubscriptionResponseOrBuilder {
     // Use TimeSubscriptionResponse.newBuilder() to construct.
-    private TimeSubscriptionResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private TimeSubscriptionResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private TimeSubscriptionResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final TimeSubscriptionResponse defaultInstance;
-    public static TimeSubscriptionResponse getDefaultInstance() {
-      return defaultInstance;
+    private TimeSubscriptionResponse() {
     }
 
-    public TimeSubscriptionResponse getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private TimeSubscriptionResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -12593,7 +13824,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -12604,26 +13835,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_TimeSubscriptionResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_TimeSubscriptionResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.TimeSubscriptionResponse.class, org.yamcs.protobuf.Web.TimeSubscriptionResponse.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<TimeSubscriptionResponse> PARSER =
-        new com.google.protobuf.AbstractParser<TimeSubscriptionResponse>() {
-      public TimeSubscriptionResponse parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new TimeSubscriptionResponse(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<TimeSubscriptionResponse> getParserForType() {
-      return PARSER;
     }
 
     private int bitField0_;
@@ -12639,18 +13855,15 @@ public final class Web {
      * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
      */
     public org.yamcs.protobuf.Yamcs.TimeInfo getTimeInfo() {
-      return timeInfo_;
+      return timeInfo_ == null ? org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance() : timeInfo_;
     }
     /**
      * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
      */
     public org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder getTimeInfoOrBuilder() {
-      return timeInfo_;
+      return timeInfo_ == null ? org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance() : timeInfo_;
     }
 
-    private void initFields() {
-      timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -12663,33 +13876,61 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeMessage(1, timeInfo_);
+        output.writeMessage(1, getTimeInfo());
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, timeInfo_);
+          .computeMessageSize(1, getTimeInfo());
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.TimeSubscriptionResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.TimeSubscriptionResponse other = (org.yamcs.protobuf.Web.TimeSubscriptionResponse) obj;
+
+      boolean result = true;
+      result = result && (hasTimeInfo() == other.hasTimeInfo());
+      if (hasTimeInfo()) {
+        result = result && getTimeInfo()
+            .equals(other.getTimeInfo());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasTimeInfo()) {
+        hash = (37 * hash) + TIMEINFO_FIELD_NUMBER;
+        hash = (53 * hash) + getTimeInfo().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(
@@ -12715,46 +13956,57 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.TimeSubscriptionResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.TimeSubscriptionResponse prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.TimeSubscriptionResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -12762,7 +14014,7 @@ public final class Web {
      * Protobuf type {@code web.TimeSubscriptionResponse}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.TimeSubscriptionResponse)
         org.yamcs.protobuf.Web.TimeSubscriptionResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -12770,7 +14022,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_TimeSubscriptionResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_TimeSubscriptionResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -12783,32 +14035,25 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
           getTimeInfoFieldBuilder();
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         if (timeInfoBuilder_ == null) {
-          timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
+          timeInfo_ = null;
         } else {
           timeInfoBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -12845,6 +14090,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.TimeSubscriptionResponse) {
           return mergeFrom((org.yamcs.protobuf.Web.TimeSubscriptionResponse)other);
@@ -12859,7 +14130,8 @@ public final class Web {
         if (other.hasTimeInfo()) {
           mergeTimeInfo(other.getTimeInfo());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
@@ -12876,7 +14148,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.TimeSubscriptionResponse) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -12886,8 +14158,8 @@ public final class Web {
       }
       private int bitField0_;
 
-      private org.yamcs.protobuf.Yamcs.TimeInfo timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
+      private org.yamcs.protobuf.Yamcs.TimeInfo timeInfo_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder> timeInfoBuilder_;
       /**
        * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
@@ -12900,7 +14172,7 @@ public final class Web {
        */
       public org.yamcs.protobuf.Yamcs.TimeInfo getTimeInfo() {
         if (timeInfoBuilder_ == null) {
-          return timeInfo_;
+          return timeInfo_ == null ? org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance() : timeInfo_;
         } else {
           return timeInfoBuilder_.getMessage();
         }
@@ -12941,6 +14213,7 @@ public final class Web {
       public Builder mergeTimeInfo(org.yamcs.protobuf.Yamcs.TimeInfo value) {
         if (timeInfoBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              timeInfo_ != null &&
               timeInfo_ != org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance()) {
             timeInfo_ =
               org.yamcs.protobuf.Yamcs.TimeInfo.newBuilder(timeInfo_).mergeFrom(value).buildPartial();
@@ -12959,7 +14232,7 @@ public final class Web {
        */
       public Builder clearTimeInfo() {
         if (timeInfoBuilder_ == null) {
-          timeInfo_ = org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance();
+          timeInfo_ = null;
           onChanged();
         } else {
           timeInfoBuilder_.clear();
@@ -12982,17 +14255,18 @@ public final class Web {
         if (timeInfoBuilder_ != null) {
           return timeInfoBuilder_.getMessageOrBuilder();
         } else {
-          return timeInfo_;
+          return timeInfo_ == null ?
+              org.yamcs.protobuf.Yamcs.TimeInfo.getDefaultInstance() : timeInfo_;
         }
       }
       /**
        * <code>optional .yamcs.TimeInfo timeInfo = 1;</code>
        */
-      private com.google.protobuf.SingleFieldBuilder<
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder> 
           getTimeInfoFieldBuilder() {
         if (timeInfoBuilder_ == null) {
-          timeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          timeInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               org.yamcs.protobuf.Yamcs.TimeInfo, org.yamcs.protobuf.Yamcs.TimeInfo.Builder, org.yamcs.protobuf.Yamcs.TimeInfoOrBuilder>(
                   getTimeInfo(),
                   getParentForChildren(),
@@ -13001,16 +14275,53 @@ public final class Web {
         }
         return timeInfoBuilder_;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.TimeSubscriptionResponse)
     }
 
+    // @@protoc_insertion_point(class_scope:web.TimeSubscriptionResponse)
+    private static final org.yamcs.protobuf.Web.TimeSubscriptionResponse DEFAULT_INSTANCE;
     static {
-      defaultInstance = new TimeSubscriptionResponse(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.TimeSubscriptionResponse();
     }
 
-    // @@protoc_insertion_point(class_scope:web.TimeSubscriptionResponse)
+    public static org.yamcs.protobuf.Web.TimeSubscriptionResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<TimeSubscriptionResponse>
+        PARSER = new com.google.protobuf.AbstractParser<TimeSubscriptionResponse>() {
+      public TimeSubscriptionResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new TimeSubscriptionResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<TimeSubscriptionResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<TimeSubscriptionResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.TimeSubscriptionResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface ProcessorSubscriptionResponseOrBuilder extends
@@ -13033,37 +14344,27 @@ public final class Web {
   /**
    * Protobuf type {@code web.ProcessorSubscriptionResponse}
    */
-  public static final class ProcessorSubscriptionResponse extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class ProcessorSubscriptionResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.ProcessorSubscriptionResponse)
       ProcessorSubscriptionResponseOrBuilder {
     // Use ProcessorSubscriptionResponse.newBuilder() to construct.
-    private ProcessorSubscriptionResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private ProcessorSubscriptionResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private ProcessorSubscriptionResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final ProcessorSubscriptionResponse defaultInstance;
-    public static ProcessorSubscriptionResponse getDefaultInstance() {
-      return defaultInstance;
+    private ProcessorSubscriptionResponse() {
     }
 
-    public ProcessorSubscriptionResponse getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private ProcessorSubscriptionResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -13101,7 +14402,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -13112,26 +14413,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.ProcessorSubscriptionResponse.class, org.yamcs.protobuf.Web.ProcessorSubscriptionResponse.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<ProcessorSubscriptionResponse> PARSER =
-        new com.google.protobuf.AbstractParser<ProcessorSubscriptionResponse>() {
-      public ProcessorSubscriptionResponse parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ProcessorSubscriptionResponse(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<ProcessorSubscriptionResponse> getParserForType() {
-      return PARSER;
     }
 
     private int bitField0_;
@@ -13147,18 +14433,15 @@ public final class Web {
      * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessor() {
-      return processor_;
+      return processor_ == null ? org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processor_;
     }
     /**
      * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorOrBuilder() {
-      return processor_;
+      return processor_ == null ? org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processor_;
     }
 
-    private void initFields() {
-      processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -13177,33 +14460,61 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeMessage(1, processor_);
+        output.writeMessage(1, getProcessor());
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, processor_);
+          .computeMessageSize(1, getProcessor());
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.ProcessorSubscriptionResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.ProcessorSubscriptionResponse other = (org.yamcs.protobuf.Web.ProcessorSubscriptionResponse) obj;
+
+      boolean result = true;
+      result = result && (hasProcessor() == other.hasProcessor());
+      if (hasProcessor()) {
+        result = result && getProcessor()
+            .equals(other.getProcessor());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasProcessor()) {
+        hash = (37 * hash) + PROCESSOR_FIELD_NUMBER;
+        hash = (53 * hash) + getProcessor().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(
@@ -13229,46 +14540,57 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.ProcessorSubscriptionResponse prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.ProcessorSubscriptionResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -13276,7 +14598,7 @@ public final class Web {
      * Protobuf type {@code web.ProcessorSubscriptionResponse}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.ProcessorSubscriptionResponse)
         org.yamcs.protobuf.Web.ProcessorSubscriptionResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -13284,7 +14606,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_ProcessorSubscriptionResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -13297,32 +14619,25 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
           getProcessorFieldBuilder();
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         if (processorBuilder_ == null) {
-          processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+          processor_ = null;
         } else {
           processorBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -13359,6 +14674,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.ProcessorSubscriptionResponse) {
           return mergeFrom((org.yamcs.protobuf.Web.ProcessorSubscriptionResponse)other);
@@ -13373,14 +14714,14 @@ public final class Web {
         if (other.hasProcessor()) {
           mergeProcessor(other.getProcessor());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
         if (hasProcessor()) {
           if (!getProcessor().isInitialized()) {
-            
             return false;
           }
         }
@@ -13396,7 +14737,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.ProcessorSubscriptionResponse) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -13406,8 +14747,8 @@ public final class Web {
       }
       private int bitField0_;
 
-      private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
+      private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processor_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> processorBuilder_;
       /**
        * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
@@ -13420,7 +14761,7 @@ public final class Web {
        */
       public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessor() {
         if (processorBuilder_ == null) {
-          return processor_;
+          return processor_ == null ? org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processor_;
         } else {
           return processorBuilder_.getMessage();
         }
@@ -13461,6 +14802,7 @@ public final class Web {
       public Builder mergeProcessor(org.yamcs.protobuf.YamcsManagement.ProcessorInfo value) {
         if (processorBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              processor_ != null &&
               processor_ != org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance()) {
             processor_ =
               org.yamcs.protobuf.YamcsManagement.ProcessorInfo.newBuilder(processor_).mergeFrom(value).buildPartial();
@@ -13479,7 +14821,7 @@ public final class Web {
        */
       public Builder clearProcessor() {
         if (processorBuilder_ == null) {
-          processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+          processor_ = null;
           onChanged();
         } else {
           processorBuilder_.clear();
@@ -13502,17 +14844,18 @@ public final class Web {
         if (processorBuilder_ != null) {
           return processorBuilder_.getMessageOrBuilder();
         } else {
-          return processor_;
+          return processor_ == null ?
+              org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processor_;
         }
       }
       /**
        * <code>optional .yamcsManagement.ProcessorInfo processor = 1;</code>
        */
-      private com.google.protobuf.SingleFieldBuilder<
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> 
           getProcessorFieldBuilder() {
         if (processorBuilder_ == null) {
-          processorBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          processorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder>(
                   getProcessor(),
                   getParentForChildren(),
@@ -13521,16 +14864,53 @@ public final class Web {
         }
         return processorBuilder_;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.ProcessorSubscriptionResponse)
     }
 
+    // @@protoc_insertion_point(class_scope:web.ProcessorSubscriptionResponse)
+    private static final org.yamcs.protobuf.Web.ProcessorSubscriptionResponse DEFAULT_INSTANCE;
     static {
-      defaultInstance = new ProcessorSubscriptionResponse(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.ProcessorSubscriptionResponse();
     }
 
-    // @@protoc_insertion_point(class_scope:web.ProcessorSubscriptionResponse)
+    public static org.yamcs.protobuf.Web.ProcessorSubscriptionResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ProcessorSubscriptionResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ProcessorSubscriptionResponse>() {
+      public ProcessorSubscriptionResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ProcessorSubscriptionResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ProcessorSubscriptionResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ProcessorSubscriptionResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.ProcessorSubscriptionResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface ConnectionInfoOrBuilder extends
@@ -13573,43 +14953,34 @@ public final class Web {
     org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorOrBuilder();
   }
   /**
-   * Protobuf type {@code web.ConnectionInfo}
-   *
    * <pre>
    *sent via the websocket with information about connected client
    * </pre>
+   *
+   * Protobuf type {@code web.ConnectionInfo}
    */
-  public static final class ConnectionInfo extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class ConnectionInfo extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.ConnectionInfo)
       ConnectionInfoOrBuilder {
     // Use ConnectionInfo.newBuilder() to construct.
-    private ConnectionInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private ConnectionInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private ConnectionInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final ConnectionInfo defaultInstance;
-    public static ConnectionInfo getDefaultInstance() {
-      return defaultInstance;
+    private ConnectionInfo() {
+      clientId_ = 0;
     }
 
-    public ConnectionInfo getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private ConnectionInfo(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -13665,7 +15036,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -13676,26 +15047,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_ConnectionInfo_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_ConnectionInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.ConnectionInfo.class, org.yamcs.protobuf.Web.ConnectionInfo.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<ConnectionInfo> PARSER =
-        new com.google.protobuf.AbstractParser<ConnectionInfo>() {
-      public ConnectionInfo parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new ConnectionInfo(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<ConnectionInfo> getParserForType() {
-      return PARSER;
     }
 
     private int bitField0_;
@@ -13726,13 +15082,13 @@ public final class Web {
      * <code>optional .yamcsManagement.YamcsInstance instance = 2;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.YamcsInstance getInstance() {
-      return instance_;
+      return instance_ == null ? org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDefaultInstance() : instance_;
     }
     /**
      * <code>optional .yamcsManagement.YamcsInstance instance = 2;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.YamcsInstanceOrBuilder getInstanceOrBuilder() {
-      return instance_;
+      return instance_ == null ? org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDefaultInstance() : instance_;
     }
 
     public static final int PROCESSOR_FIELD_NUMBER = 3;
@@ -13747,20 +15103,15 @@ public final class Web {
      * <code>optional .yamcsManagement.ProcessorInfo processor = 3;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessor() {
-      return processor_;
+      return processor_ == null ? org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processor_;
     }
     /**
      * <code>optional .yamcsManagement.ProcessorInfo processor = 3;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder getProcessorOrBuilder() {
-      return processor_;
+      return processor_ == null ? org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processor_;
     }
 
-    private void initFields() {
-      clientId_ = 0;
-      instance_ = org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDefaultInstance();
-      processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -13785,22 +15136,20 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeInt32(1, clientId_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeMessage(2, instance_);
+        output.writeMessage(2, getInstance());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeMessage(3, processor_);
+        output.writeMessage(3, getProcessor());
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
@@ -13810,22 +15159,70 @@ public final class Web {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, instance_);
+          .computeMessageSize(2, getInstance());
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, processor_);
+          .computeMessageSize(3, getProcessor());
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.ConnectionInfo)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.ConnectionInfo other = (org.yamcs.protobuf.Web.ConnectionInfo) obj;
+
+      boolean result = true;
+      result = result && (hasClientId() == other.hasClientId());
+      if (hasClientId()) {
+        result = result && (getClientId()
+            == other.getClientId());
+      }
+      result = result && (hasInstance() == other.hasInstance());
+      if (hasInstance()) {
+        result = result && getInstance()
+            .equals(other.getInstance());
+      }
+      result = result && (hasProcessor() == other.hasProcessor());
+      if (hasProcessor()) {
+        result = result && getProcessor()
+            .equals(other.getProcessor());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasClientId()) {
+        hash = (37 * hash) + CLIENTID_FIELD_NUMBER;
+        hash = (53 * hash) + getClientId();
+      }
+      if (hasInstance()) {
+        hash = (37 * hash) + INSTANCE_FIELD_NUMBER;
+        hash = (53 * hash) + getInstance().hashCode();
+      }
+      if (hasProcessor()) {
+        hash = (37 * hash) + PROCESSOR_FIELD_NUMBER;
+        hash = (53 * hash) + getProcessor().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.ConnectionInfo parseFrom(
@@ -13851,58 +15248,69 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.ConnectionInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ConnectionInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ConnectionInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ConnectionInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.ConnectionInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.ConnectionInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.ConnectionInfo prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.ConnectionInfo prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code web.ConnectionInfo}
-     *
      * <pre>
      *sent via the websocket with information about connected client
      * </pre>
+     *
+     * Protobuf type {@code web.ConnectionInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.ConnectionInfo)
         org.yamcs.protobuf.Web.ConnectionInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -13910,7 +15318,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_ConnectionInfo_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_ConnectionInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -13923,41 +15331,34 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
           getInstanceFieldBuilder();
           getProcessorFieldBuilder();
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         clientId_ = 0;
         bitField0_ = (bitField0_ & ~0x00000001);
         if (instanceBuilder_ == null) {
-          instance_ = org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDefaultInstance();
+          instance_ = null;
         } else {
           instanceBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
         if (processorBuilder_ == null) {
-          processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+          processor_ = null;
         } else {
           processorBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -14006,6 +15407,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.ConnectionInfo) {
           return mergeFrom((org.yamcs.protobuf.Web.ConnectionInfo)other);
@@ -14026,20 +15453,19 @@ public final class Web {
         if (other.hasProcessor()) {
           mergeProcessor(other.getProcessor());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
         if (hasInstance()) {
           if (!getInstance().isInitialized()) {
-            
             return false;
           }
         }
         if (hasProcessor()) {
           if (!getProcessor().isInitialized()) {
-            
             return false;
           }
         }
@@ -14055,7 +15481,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.ConnectionInfo) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -14097,8 +15523,8 @@ public final class Web {
         return this;
       }
 
-      private org.yamcs.protobuf.YamcsManagement.YamcsInstance instance_ = org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
+      private org.yamcs.protobuf.YamcsManagement.YamcsInstance instance_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.YamcsManagement.YamcsInstance, org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder, org.yamcs.protobuf.YamcsManagement.YamcsInstanceOrBuilder> instanceBuilder_;
       /**
        * <code>optional .yamcsManagement.YamcsInstance instance = 2;</code>
@@ -14111,7 +15537,7 @@ public final class Web {
        */
       public org.yamcs.protobuf.YamcsManagement.YamcsInstance getInstance() {
         if (instanceBuilder_ == null) {
-          return instance_;
+          return instance_ == null ? org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDefaultInstance() : instance_;
         } else {
           return instanceBuilder_.getMessage();
         }
@@ -14152,6 +15578,7 @@ public final class Web {
       public Builder mergeInstance(org.yamcs.protobuf.YamcsManagement.YamcsInstance value) {
         if (instanceBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              instance_ != null &&
               instance_ != org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDefaultInstance()) {
             instance_ =
               org.yamcs.protobuf.YamcsManagement.YamcsInstance.newBuilder(instance_).mergeFrom(value).buildPartial();
@@ -14170,7 +15597,7 @@ public final class Web {
        */
       public Builder clearInstance() {
         if (instanceBuilder_ == null) {
-          instance_ = org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDefaultInstance();
+          instance_ = null;
           onChanged();
         } else {
           instanceBuilder_.clear();
@@ -14193,17 +15620,18 @@ public final class Web {
         if (instanceBuilder_ != null) {
           return instanceBuilder_.getMessageOrBuilder();
         } else {
-          return instance_;
+          return instance_ == null ?
+              org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDefaultInstance() : instance_;
         }
       }
       /**
        * <code>optional .yamcsManagement.YamcsInstance instance = 2;</code>
        */
-      private com.google.protobuf.SingleFieldBuilder<
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.YamcsManagement.YamcsInstance, org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder, org.yamcs.protobuf.YamcsManagement.YamcsInstanceOrBuilder> 
           getInstanceFieldBuilder() {
         if (instanceBuilder_ == null) {
-          instanceBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          instanceBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.YamcsInstance, org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder, org.yamcs.protobuf.YamcsManagement.YamcsInstanceOrBuilder>(
                   getInstance(),
                   getParentForChildren(),
@@ -14213,8 +15641,8 @@ public final class Web {
         return instanceBuilder_;
       }
 
-      private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
+      private org.yamcs.protobuf.YamcsManagement.ProcessorInfo processor_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> processorBuilder_;
       /**
        * <code>optional .yamcsManagement.ProcessorInfo processor = 3;</code>
@@ -14227,7 +15655,7 @@ public final class Web {
        */
       public org.yamcs.protobuf.YamcsManagement.ProcessorInfo getProcessor() {
         if (processorBuilder_ == null) {
-          return processor_;
+          return processor_ == null ? org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processor_;
         } else {
           return processorBuilder_.getMessage();
         }
@@ -14268,6 +15696,7 @@ public final class Web {
       public Builder mergeProcessor(org.yamcs.protobuf.YamcsManagement.ProcessorInfo value) {
         if (processorBuilder_ == null) {
           if (((bitField0_ & 0x00000004) == 0x00000004) &&
+              processor_ != null &&
               processor_ != org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance()) {
             processor_ =
               org.yamcs.protobuf.YamcsManagement.ProcessorInfo.newBuilder(processor_).mergeFrom(value).buildPartial();
@@ -14286,7 +15715,7 @@ public final class Web {
        */
       public Builder clearProcessor() {
         if (processorBuilder_ == null) {
-          processor_ = org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance();
+          processor_ = null;
           onChanged();
         } else {
           processorBuilder_.clear();
@@ -14309,17 +15738,18 @@ public final class Web {
         if (processorBuilder_ != null) {
           return processorBuilder_.getMessageOrBuilder();
         } else {
-          return processor_;
+          return processor_ == null ?
+              org.yamcs.protobuf.YamcsManagement.ProcessorInfo.getDefaultInstance() : processor_;
         }
       }
       /**
        * <code>optional .yamcsManagement.ProcessorInfo processor = 3;</code>
        */
-      private com.google.protobuf.SingleFieldBuilder<
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder> 
           getProcessorFieldBuilder() {
         if (processorBuilder_ == null) {
-          processorBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          processorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.ProcessorInfo, org.yamcs.protobuf.YamcsManagement.ProcessorInfo.Builder, org.yamcs.protobuf.YamcsManagement.ProcessorInfoOrBuilder>(
                   getProcessor(),
                   getParentForChildren(),
@@ -14328,16 +15758,53 @@ public final class Web {
         }
         return processorBuilder_;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.ConnectionInfo)
     }
 
+    // @@protoc_insertion_point(class_scope:web.ConnectionInfo)
+    private static final org.yamcs.protobuf.Web.ConnectionInfo DEFAULT_INSTANCE;
     static {
-      defaultInstance = new ConnectionInfo(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.ConnectionInfo();
     }
 
-    // @@protoc_insertion_point(class_scope:web.ConnectionInfo)
+    public static org.yamcs.protobuf.Web.ConnectionInfo getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ConnectionInfo>
+        PARSER = new com.google.protobuf.AbstractParser<ConnectionInfo>() {
+      public ConnectionInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ConnectionInfo(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ConnectionInfo> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ConnectionInfo> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.ConnectionInfo getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface AuthInfoOrBuilder extends
@@ -14356,37 +15823,28 @@ public final class Web {
   /**
    * Protobuf type {@code web.AuthInfo}
    */
-  public static final class AuthInfo extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class AuthInfo extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.AuthInfo)
       AuthInfoOrBuilder {
     // Use AuthInfo.newBuilder() to construct.
-    private AuthInfo(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private AuthInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private AuthInfo(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final AuthInfo defaultInstance;
-    public static AuthInfo getDefaultInstance() {
-      return defaultInstance;
+    private AuthInfo() {
+      requireAuthentication_ = false;
     }
 
-    public AuthInfo getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private AuthInfo(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -14416,7 +15874,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -14427,26 +15885,11 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_AuthInfo_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_AuthInfo_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.AuthInfo.class, org.yamcs.protobuf.Web.AuthInfo.Builder.class);
-    }
-
-    public static com.google.protobuf.Parser<AuthInfo> PARSER =
-        new com.google.protobuf.AbstractParser<AuthInfo>() {
-      public AuthInfo parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new AuthInfo(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<AuthInfo> getParserForType() {
-      return PARSER;
     }
 
     private int bitField0_;
@@ -14465,9 +15908,6 @@ public final class Web {
       return requireAuthentication_;
     }
 
-    private void initFields() {
-      requireAuthentication_ = false;
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -14480,16 +15920,14 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBool(1, requireAuthentication_);
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
@@ -14497,16 +15935,47 @@ public final class Web {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(1, requireAuthentication_);
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.AuthInfo)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.AuthInfo other = (org.yamcs.protobuf.Web.AuthInfo) obj;
+
+      boolean result = true;
+      result = result && (hasRequireAuthentication() == other.hasRequireAuthentication());
+      if (hasRequireAuthentication()) {
+        result = result && (getRequireAuthentication()
+            == other.getRequireAuthentication());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasRequireAuthentication()) {
+        hash = (37 * hash) + REQUIREAUTHENTICATION_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+            getRequireAuthentication());
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.AuthInfo parseFrom(
@@ -14532,46 +16001,57 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.AuthInfo parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.AuthInfo parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.AuthInfo parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.AuthInfo parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.AuthInfo parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.AuthInfo parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.AuthInfo prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.AuthInfo prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -14579,7 +16059,7 @@ public final class Web {
      * Protobuf type {@code web.AuthInfo}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.AuthInfo)
         org.yamcs.protobuf.Web.AuthInfoOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -14587,7 +16067,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_AuthInfo_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_AuthInfo_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -14600,27 +16080,20 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         requireAuthentication_ = false;
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -14653,6 +16126,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.AuthInfo) {
           return mergeFrom((org.yamcs.protobuf.Web.AuthInfo)other);
@@ -14667,7 +16166,8 @@ public final class Web {
         if (other.hasRequireAuthentication()) {
           setRequireAuthentication(other.getRequireAuthentication());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
@@ -14684,7 +16184,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.AuthInfo) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -14725,16 +16225,53 @@ public final class Web {
         onChanged();
         return this;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.AuthInfo)
     }
 
+    // @@protoc_insertion_point(class_scope:web.AuthInfo)
+    private static final org.yamcs.protobuf.Web.AuthInfo DEFAULT_INSTANCE;
     static {
-      defaultInstance = new AuthInfo(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.AuthInfo();
     }
 
-    // @@protoc_insertion_point(class_scope:web.AuthInfo)
+    public static org.yamcs.protobuf.Web.AuthInfo getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<AuthInfo>
+        PARSER = new com.google.protobuf.AbstractParser<AuthInfo>() {
+      public AuthInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new AuthInfo(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<AuthInfo> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AuthInfo> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.AuthInfo getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   public interface AccessTokenResponseOrBuilder extends
@@ -14770,19 +16307,19 @@ public final class Web {
         getTokenTypeBytes();
 
     /**
-     * <code>optional int32 expires_in = 3;</code>
-     *
      * <pre>
      * In seconds
      * </pre>
+     *
+     * <code>optional int32 expires_in = 3;</code>
      */
     boolean hasExpiresIn();
     /**
-     * <code>optional int32 expires_in = 3;</code>
-     *
      * <pre>
      * In seconds
      * </pre>
+     *
+     * <code>optional int32 expires_in = 3;</code>
      */
     int getExpiresIn();
 
@@ -14800,43 +16337,36 @@ public final class Web {
     org.yamcs.protobuf.YamcsManagement.UserInfoOrBuilder getUserOrBuilder();
   }
   /**
-   * Protobuf type {@code web.AccessTokenResponse}
-   *
    * <pre>
    * Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework
    * </pre>
+   *
+   * Protobuf type {@code web.AccessTokenResponse}
    */
-  public static final class AccessTokenResponse extends
-      com.google.protobuf.GeneratedMessage implements
+  public  static final class AccessTokenResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:web.AccessTokenResponse)
       AccessTokenResponseOrBuilder {
     // Use AccessTokenResponse.newBuilder() to construct.
-    private AccessTokenResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+    private AccessTokenResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
-      this.unknownFields = builder.getUnknownFields();
     }
-    private AccessTokenResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
-
-    private static final AccessTokenResponse defaultInstance;
-    public static AccessTokenResponse getDefaultInstance() {
-      return defaultInstance;
+    private AccessTokenResponse() {
+      accessToken_ = "";
+      tokenType_ = "";
+      expiresIn_ = 0;
     }
 
-    public AccessTokenResponse getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    private final com.google.protobuf.UnknownFieldSet unknownFields;
     @java.lang.Override
     public final com.google.protobuf.UnknownFieldSet
-        getUnknownFields() {
+    getUnknownFields() {
       return this.unknownFields;
     }
     private AccessTokenResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      initFields();
+      this();
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -14891,7 +16421,7 @@ public final class Web {
         throw e.setUnfinishedMessage(this);
       } catch (java.io.IOException e) {
         throw new com.google.protobuf.InvalidProtocolBufferException(
-            e.getMessage()).setUnfinishedMessage(this);
+            e).setUnfinishedMessage(this);
       } finally {
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -14902,31 +16432,16 @@ public final class Web {
       return org.yamcs.protobuf.Web.internal_static_web_AccessTokenResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Web.internal_static_web_AccessTokenResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Web.AccessTokenResponse.class, org.yamcs.protobuf.Web.AccessTokenResponse.Builder.class);
     }
 
-    public static com.google.protobuf.Parser<AccessTokenResponse> PARSER =
-        new com.google.protobuf.AbstractParser<AccessTokenResponse>() {
-      public AccessTokenResponse parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return new AccessTokenResponse(input, extensionRegistry);
-      }
-    };
-
-    @java.lang.Override
-    public com.google.protobuf.Parser<AccessTokenResponse> getParserForType() {
-      return PARSER;
-    }
-
     private int bitField0_;
     public static final int ACCESS_TOKEN_FIELD_NUMBER = 1;
-    private java.lang.Object accessToken_;
+    private volatile java.lang.Object accessToken_;
     /**
      * <code>optional string access_token = 1;</code>
      */
@@ -14968,7 +16483,7 @@ public final class Web {
     }
 
     public static final int TOKEN_TYPE_FIELD_NUMBER = 2;
-    private java.lang.Object tokenType_;
+    private volatile java.lang.Object tokenType_;
     /**
      * <code>optional string token_type = 2;</code>
      */
@@ -15012,21 +16527,21 @@ public final class Web {
     public static final int EXPIRES_IN_FIELD_NUMBER = 3;
     private int expiresIn_;
     /**
-     * <code>optional int32 expires_in = 3;</code>
-     *
      * <pre>
      * In seconds
      * </pre>
+     *
+     * <code>optional int32 expires_in = 3;</code>
      */
     public boolean hasExpiresIn() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional int32 expires_in = 3;</code>
-     *
      * <pre>
      * In seconds
      * </pre>
+     *
+     * <code>optional int32 expires_in = 3;</code>
      */
     public int getExpiresIn() {
       return expiresIn_;
@@ -15044,21 +16559,15 @@ public final class Web {
      * <code>optional .yamcsManagement.UserInfo user = 4;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.UserInfo getUser() {
-      return user_;
+      return user_ == null ? org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance() : user_;
     }
     /**
      * <code>optional .yamcsManagement.UserInfo user = 4;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.UserInfoOrBuilder getUserOrBuilder() {
-      return user_;
+      return user_ == null ? org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance() : user_;
     }
 
-    private void initFields() {
-      accessToken_ = "";
-      tokenType_ = "";
-      expiresIn_ = 0;
-      user_ = org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance();
-    }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -15077,35 +16586,31 @@ public final class Web {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getAccessTokenBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, accessToken_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBytes(2, getTokenTypeBytes());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, tokenType_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeInt32(3, expiresIn_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeMessage(4, user_);
+        output.writeMessage(4, getUser());
       }
-      getUnknownFields().writeTo(output);
+      unknownFields.writeTo(output);
     }
 
-    private int memoizedSerializedSize = -1;
     public int getSerializedSize() {
-      int size = memoizedSerializedSize;
+      int size = memoizedSize;
       if (size != -1) return size;
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getAccessTokenBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, accessToken_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, getTokenTypeBytes());
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, tokenType_);
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
@@ -15113,18 +16618,75 @@ public final class Web {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, user_);
+          .computeMessageSize(4, getUser());
       }
-      size += getUnknownFields().getSerializedSize();
-      memoizedSerializedSize = size;
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
       return size;
     }
 
     private static final long serialVersionUID = 0L;
     @java.lang.Override
-    protected java.lang.Object writeReplace()
-        throws java.io.ObjectStreamException {
-      return super.writeReplace();
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.AccessTokenResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.AccessTokenResponse other = (org.yamcs.protobuf.Web.AccessTokenResponse) obj;
+
+      boolean result = true;
+      result = result && (hasAccessToken() == other.hasAccessToken());
+      if (hasAccessToken()) {
+        result = result && getAccessToken()
+            .equals(other.getAccessToken());
+      }
+      result = result && (hasTokenType() == other.hasTokenType());
+      if (hasTokenType()) {
+        result = result && getTokenType()
+            .equals(other.getTokenType());
+      }
+      result = result && (hasExpiresIn() == other.hasExpiresIn());
+      if (hasExpiresIn()) {
+        result = result && (getExpiresIn()
+            == other.getExpiresIn());
+      }
+      result = result && (hasUser() == other.hasUser());
+      if (hasUser()) {
+        result = result && getUser()
+            .equals(other.getUser());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasAccessToken()) {
+        hash = (37 * hash) + ACCESS_TOKEN_FIELD_NUMBER;
+        hash = (53 * hash) + getAccessToken().hashCode();
+      }
+      if (hasTokenType()) {
+        hash = (37 * hash) + TOKEN_TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + getTokenType().hashCode();
+      }
+      if (hasExpiresIn()) {
+        hash = (37 * hash) + EXPIRES_IN_FIELD_NUMBER;
+        hash = (53 * hash) + getExpiresIn();
+      }
+      if (hasUser()) {
+        hash = (37 * hash) + USER_FIELD_NUMBER;
+        hash = (53 * hash) + getUser().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
     }
 
     public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(
@@ -15150,58 +16712,69 @@ public final class Web {
     }
     public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.AccessTokenResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.AccessTokenResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
     public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
-      return PARSER.parseFrom(input);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
     }
     public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      return PARSER.parseFrom(input, extensionRegistry);
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
-    public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.AccessTokenResponse prototype) {
-      return newBuilder().mergeFrom(prototype);
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
     }
-    public Builder toBuilder() { return newBuilder(this); }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.AccessTokenResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
 
     @java.lang.Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code web.AccessTokenResponse}
-     *
      * <pre>
      * Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework
      * </pre>
+     *
+     * Protobuf type {@code web.AccessTokenResponse}
      */
     public static final class Builder extends
-        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:web.AccessTokenResponse)
         org.yamcs.protobuf.Web.AccessTokenResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
@@ -15209,7 +16782,7 @@ public final class Web {
         return org.yamcs.protobuf.Web.internal_static_web_AccessTokenResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Web.internal_static_web_AccessTokenResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -15222,19 +16795,16 @@ public final class Web {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
       private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
           getUserFieldBuilder();
         }
       }
-      private static Builder create() {
-        return new Builder();
-      }
-
       public Builder clear() {
         super.clear();
         accessToken_ = "";
@@ -15244,16 +16814,12 @@ public final class Web {
         expiresIn_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
         if (userBuilder_ == null) {
-          user_ = org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance();
+          user_ = null;
         } else {
           userBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
-      }
-
-      public Builder clone() {
-        return create().mergeFrom(buildPartial());
       }
 
       public com.google.protobuf.Descriptors.Descriptor
@@ -15302,6 +16868,32 @@ public final class Web {
         return result;
       }
 
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Web.AccessTokenResponse) {
           return mergeFrom((org.yamcs.protobuf.Web.AccessTokenResponse)other);
@@ -15329,14 +16921,14 @@ public final class Web {
         if (other.hasUser()) {
           mergeUser(other.getUser());
         }
-        this.mergeUnknownFields(other.getUnknownFields());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
         if (hasUser()) {
           if (!getUser().isInitialized()) {
-            
             return false;
           }
         }
@@ -15352,7 +16944,7 @@ public final class Web {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
           parsedMessage = (org.yamcs.protobuf.Web.AccessTokenResponse) e.getUnfinishedMessage();
-          throw e;
+          throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
             mergeFrom(parsedMessage);
@@ -15516,31 +17108,31 @@ public final class Web {
 
       private int expiresIn_ ;
       /**
-       * <code>optional int32 expires_in = 3;</code>
-       *
        * <pre>
        * In seconds
        * </pre>
+       *
+       * <code>optional int32 expires_in = 3;</code>
        */
       public boolean hasExpiresIn() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>optional int32 expires_in = 3;</code>
-       *
        * <pre>
        * In seconds
        * </pre>
+       *
+       * <code>optional int32 expires_in = 3;</code>
        */
       public int getExpiresIn() {
         return expiresIn_;
       }
       /**
-       * <code>optional int32 expires_in = 3;</code>
-       *
        * <pre>
        * In seconds
        * </pre>
+       *
+       * <code>optional int32 expires_in = 3;</code>
        */
       public Builder setExpiresIn(int value) {
         bitField0_ |= 0x00000004;
@@ -15549,11 +17141,11 @@ public final class Web {
         return this;
       }
       /**
-       * <code>optional int32 expires_in = 3;</code>
-       *
        * <pre>
        * In seconds
        * </pre>
+       *
+       * <code>optional int32 expires_in = 3;</code>
        */
       public Builder clearExpiresIn() {
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -15562,8 +17154,8 @@ public final class Web {
         return this;
       }
 
-      private org.yamcs.protobuf.YamcsManagement.UserInfo user_ = org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance();
-      private com.google.protobuf.SingleFieldBuilder<
+      private org.yamcs.protobuf.YamcsManagement.UserInfo user_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.YamcsManagement.UserInfo, org.yamcs.protobuf.YamcsManagement.UserInfo.Builder, org.yamcs.protobuf.YamcsManagement.UserInfoOrBuilder> userBuilder_;
       /**
        * <code>optional .yamcsManagement.UserInfo user = 4;</code>
@@ -15576,7 +17168,7 @@ public final class Web {
        */
       public org.yamcs.protobuf.YamcsManagement.UserInfo getUser() {
         if (userBuilder_ == null) {
-          return user_;
+          return user_ == null ? org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance() : user_;
         } else {
           return userBuilder_.getMessage();
         }
@@ -15617,6 +17209,7 @@ public final class Web {
       public Builder mergeUser(org.yamcs.protobuf.YamcsManagement.UserInfo value) {
         if (userBuilder_ == null) {
           if (((bitField0_ & 0x00000008) == 0x00000008) &&
+              user_ != null &&
               user_ != org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance()) {
             user_ =
               org.yamcs.protobuf.YamcsManagement.UserInfo.newBuilder(user_).mergeFrom(value).buildPartial();
@@ -15635,7 +17228,7 @@ public final class Web {
        */
       public Builder clearUser() {
         if (userBuilder_ == null) {
-          user_ = org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance();
+          user_ = null;
           onChanged();
         } else {
           userBuilder_.clear();
@@ -15658,17 +17251,18 @@ public final class Web {
         if (userBuilder_ != null) {
           return userBuilder_.getMessageOrBuilder();
         } else {
-          return user_;
+          return user_ == null ?
+              org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance() : user_;
         }
       }
       /**
        * <code>optional .yamcsManagement.UserInfo user = 4;</code>
        */
-      private com.google.protobuf.SingleFieldBuilder<
+      private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.YamcsManagement.UserInfo, org.yamcs.protobuf.YamcsManagement.UserInfo.Builder, org.yamcs.protobuf.YamcsManagement.UserInfoOrBuilder> 
           getUserFieldBuilder() {
         if (userBuilder_ == null) {
-          userBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+          userBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.UserInfo, org.yamcs.protobuf.YamcsManagement.UserInfo.Builder, org.yamcs.protobuf.YamcsManagement.UserInfoOrBuilder>(
                   getUser(),
                   getParentForChildren(),
@@ -15677,109 +17271,146 @@ public final class Web {
         }
         return userBuilder_;
       }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
 
       // @@protoc_insertion_point(builder_scope:web.AccessTokenResponse)
     }
 
+    // @@protoc_insertion_point(class_scope:web.AccessTokenResponse)
+    private static final org.yamcs.protobuf.Web.AccessTokenResponse DEFAULT_INSTANCE;
     static {
-      defaultInstance = new AccessTokenResponse(true);
-      defaultInstance.initFields();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.AccessTokenResponse();
     }
 
-    // @@protoc_insertion_point(class_scope:web.AccessTokenResponse)
+    public static org.yamcs.protobuf.Web.AccessTokenResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<AccessTokenResponse>
+        PARSER = new com.google.protobuf.AbstractParser<AccessTokenResponse>() {
+      public AccessTokenResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new AccessTokenResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<AccessTokenResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AccessTokenResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.AccessTokenResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketClientMessage_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_WebSocketClientMessage_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketServerMessage_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_WebSocketServerMessage_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_WebSocketServerMessage_WebSocketReplyData_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_WebSocketServerMessage_WebSocketExceptionData_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_WebSocketExtensionData_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_WebSocketExtensionData_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_RestExceptionMessage_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_RestExceptionMessage_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_LinkSubscriptionRequest_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_LinkSubscriptionRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ProcessorSubscriptionRequest_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_ProcessorSubscriptionRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ManagementSubscriptionRequest_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_ManagementSubscriptionRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ParameterSubscriptionRequest_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ParameterSubscriptionResponse_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_TimeSubscriptionResponse_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_TimeSubscriptionResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ProcessorSubscriptionResponse_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_ProcessorSubscriptionResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_ConnectionInfo_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_ConnectionInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_AuthInfo_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_AuthInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_AccessTokenResponse_descriptor;
-  private static
-    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_AccessTokenResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
     return descriptor;
   }
-  private static com.google.protobuf.Descriptors.FileDescriptor
+  private static  com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
     java.lang.String[] descriptorData = {
@@ -15873,103 +17504,103 @@ public final class Web {
     internal_static_web_WebSocketClientMessage_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_web_WebSocketClientMessage_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_WebSocketClientMessage_descriptor,
         new java.lang.String[] { "ProtocolVersion", "SequenceNumber", "Resource", "Operation", "Data", });
     internal_static_web_WebSocketServerMessage_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_web_WebSocketServerMessage_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_WebSocketServerMessage_descriptor,
         new java.lang.String[] { "Type", "Reply", "Exception", "Data", });
     internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor =
       internal_static_web_WebSocketServerMessage_descriptor.getNestedTypes().get(0);
     internal_static_web_WebSocketServerMessage_WebSocketReplyData_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_WebSocketServerMessage_WebSocketReplyData_descriptor,
         new java.lang.String[] { "ProtocolVersion", "SequenceNumber", "Type", "Message", "Data", });
     internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor =
       internal_static_web_WebSocketServerMessage_descriptor.getNestedTypes().get(1);
     internal_static_web_WebSocketServerMessage_WebSocketExceptionData_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_WebSocketServerMessage_WebSocketExceptionData_descriptor,
         new java.lang.String[] { "ProtocolVersion", "SequenceNumber", "Type", "Message", "Data", });
     internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor =
       internal_static_web_WebSocketServerMessage_descriptor.getNestedTypes().get(2);
     internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_WebSocketServerMessage_WebSocketSubscriptionData_descriptor,
         new java.lang.String[] { "SequenceNumber", "Type", "ParameterData", "Command", "ProcessorInfo", "ClientInfo", "Statistics", "Event", "StreamData", "AlarmData", "TimeInfo", "LinkEvent", "CommandQueueInfo", "CommandQueueEvent", "TmPacket", "ConnectionInfo", "ExtensionData", });
     internal_static_web_WebSocketExtensionData_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_web_WebSocketExtensionData_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_WebSocketExtensionData_descriptor,
         new java.lang.String[] { "Type", "Data", });
     internal_static_web_RestExceptionMessage_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_web_RestExceptionMessage_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_RestExceptionMessage_descriptor,
         new java.lang.String[] { "Type", "Msg", });
     internal_static_web_LinkSubscriptionRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_web_LinkSubscriptionRequest_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_LinkSubscriptionRequest_descriptor,
         new java.lang.String[] { "Instance", });
     internal_static_web_ProcessorSubscriptionRequest_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_web_ProcessorSubscriptionRequest_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ProcessorSubscriptionRequest_descriptor,
         new java.lang.String[] { "AllProcessors", "AllInstances", });
     internal_static_web_ManagementSubscriptionRequest_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_web_ManagementSubscriptionRequest_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ManagementSubscriptionRequest_descriptor,
         new java.lang.String[] { "ClientInfo", "ProcessorInfo", "ProcessorStatistics", });
     internal_static_web_ParameterSubscriptionRequest_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ParameterSubscriptionRequest_descriptor,
         new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "SubscriptionId", "List", });
     internal_static_web_ParameterSubscriptionResponse_descriptor =
       getDescriptor().getMessageTypes().get(8);
     internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ParameterSubscriptionResponse_descriptor,
         new java.lang.String[] { "Invalid", "SubscriptionId", });
     internal_static_web_TimeSubscriptionResponse_descriptor =
       getDescriptor().getMessageTypes().get(9);
     internal_static_web_TimeSubscriptionResponse_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_TimeSubscriptionResponse_descriptor,
         new java.lang.String[] { "TimeInfo", });
     internal_static_web_ProcessorSubscriptionResponse_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_web_ProcessorSubscriptionResponse_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ProcessorSubscriptionResponse_descriptor,
         new java.lang.String[] { "Processor", });
     internal_static_web_ConnectionInfo_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_web_ConnectionInfo_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ConnectionInfo_descriptor,
         new java.lang.String[] { "ClientId", "Instance", "Processor", });
     internal_static_web_AuthInfo_descriptor =
       getDescriptor().getMessageTypes().get(12);
     internal_static_web_AuthInfo_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_AuthInfo_descriptor,
         new java.lang.String[] { "RequireAuthentication", });
     internal_static_web_AccessTokenResponse_descriptor =
       getDescriptor().getMessageTypes().get(13);
     internal_static_web_AccessTokenResponse_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_AccessTokenResponse_descriptor,
         new java.lang.String[] { "AccessToken", "TokenType", "ExpiresIn", "User", });
     org.yamcs.protobuf.Yamcs.getDescriptor();

@@ -277,3 +277,29 @@ message DisplayFile {
   optional string path = 2;
   optional string url = 3;
 }
+
+message CreateBucketRequest {
+  optional string name = 1;
+}
+
+message BucketInfo {
+  optional string name = 1;
+  optional uint64 size  = 2; //total size in bytes of all objects in the bucket (metadata is not counted)
+  optional uint32 numObjects  = 3; //number of objects in the bucket
+}
+message ObjectInfo {
+  optional string name = 1;
+  optional string created  = 2; //time in UTC format
+  optional uint64 size  = 3; //size in bytes
+  map<string, string> metadata = 4;
+}
+
+message ListBucketsResponse {
+  repeated BucketInfo buckets = 1;
+}
+
+
+message ListObjectsResponse {
+   repeated ObjectInfo objects = 2;
+}
+
