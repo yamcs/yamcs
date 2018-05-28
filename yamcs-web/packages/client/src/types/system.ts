@@ -241,3 +241,20 @@ export interface CommandQueueEventSubscriptionResponse {
 export interface EditCommandQueueEntryOptions {
   state: 'released' | 'rejected';
 }
+
+export interface Bucket {
+  name: string;
+  size: number;
+  numObjects: number;
+}
+
+export interface ObjectInfo {
+  name: string;
+  created: string;
+  size: number;
+  metadata: { [key: string]: string };
+}
+
+export interface CreateBucketRequest {
+  name: string;
+}

@@ -1,8 +1,8 @@
 import { HttpError } from './HttpError';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { InstancesWrapper, ServicesWrapper } from './types/internal';
-import { AccessTokenResponse, AuthInfo, EditClientRequest, GeneralInfo, Instance, Service, UserInfo } from './types/system';
+import { BucketsWrapper, InstancesWrapper, ObjectsWrapper, ServicesWrapper } from './types/internal';
+import { AccessTokenResponse, AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, GeneralInfo, Instance, ObjectInfo, Service, UserInfo } from './types/system';
 
 
 
@@ -134,6 +134,55 @@ export default class YamcsClient {
     return await this.doFetch(url, {
       body,
       method: 'PATCH',
+    });
+  }
+
+  async createBucket(options: CreateBucketRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/buckets/_global`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Event;
+  }
+
+  async getBuckets(): Promise<Bucket[]> {
+    const response = await this.doFetch(`${this.apiUrl}/buckets/_global`);
+    const wrapper = await response.json() as BucketsWrapper;
+    return wrapper.buckets || [];
+  }
+
+  async deleteBucket(name: string) {
+    return await this.doFetch(`${this.apiUrl}/buckets/_global/${name}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async listObjects(bucket: string): Promise<ObjectInfo[]> {
+    const response = await this.doFetch(`${this.apiUrl}/buckets/_global/${bucket}`);
+    const wrapper = await response.json() as ObjectsWrapper;
+    return wrapper.objects || [];
+  }
+
+  async getObject(bucket: string, name: string) {
+    const url = `${this.apiUrl}/buckets/_global/${bucket}/${name}`;
+    return await this.doFetch(url);
+  }
+
+  async uploadObject(bucket: string, name: string, value: Blob) {
+    const url = `${this.apiUrl}/buckets/_global/${bucket}`;
+    const formData = new FormData();
+    formData.set(name, value);
+    return await this.doFetch(url, {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async deleteObject(bucket: string, name: string) {
+    const url = `${this.apiUrl}/buckets/_global/${bucket}/${name}`;
+    return await this.doFetch(url, {
+      method: 'DELETE',
     });
   }
 

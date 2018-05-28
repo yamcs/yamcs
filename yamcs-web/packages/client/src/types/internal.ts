@@ -1,31 +1,8 @@
-import {
-  Algorithm,
-  Command,
-  Container,
-  Parameter,
-  SpaceSystem,
-} from './mdb';
+import { Algorithm, Command, Container, Parameter, SpaceSystem } from './mdb';
+import { Alarm, CommandHistoryEntry, Event, IndexGroup, Range, Sample } from './monitoring';
+import { Bucket, ClientInfo, CommandQueue, Instance, Link, ObjectInfo, Processor, Record, Service, Stream, Table } from './system';
 
-import {
-  ClientInfo,
-  CommandQueue,
-  Instance,
-  Link,
-  Processor,
-  Record,
-  Service,
-  Stream,
-  Table,
-} from './system';
 
-import {
-  Alarm,
-  CommandHistoryEntry,
-  Event,
-  IndexGroup,
-  Range,
-  Sample,
-} from './monitoring';
 
 export type WebSocketClientMessage = [
   number, // Protocol
@@ -133,4 +110,12 @@ export interface IndexResult {
 
 export interface PacketNameWrapper {
   name: string[];
+}
+
+export interface BucketsWrapper {
+  buckets: Bucket[];
+}
+
+export interface ObjectsWrapper {
+  objects: ObjectInfo[];
 }
