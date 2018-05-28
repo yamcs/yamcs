@@ -1,6 +1,6 @@
-import sourceMaps from 'rollup-plugin-sourcemaps'
-import typescript from 'rollup-plugin-typescript2'
-import uglify from 'rollup-plugin-uglify'
+import sourceMaps from 'rollup-plugin-sourcemaps';
+import { terser } from 'rollup-plugin-terser';
+import typescript from 'rollup-plugin-typescript2';
 
 export default {
   input: 'src/index.ts',
@@ -13,7 +13,7 @@ export default {
   },
   plugins: [
     typescript({ useTsconfigDeclarationDir: true }),
-    uglify(),
+    terser(),
     sourceMaps(),
   ],
 }
