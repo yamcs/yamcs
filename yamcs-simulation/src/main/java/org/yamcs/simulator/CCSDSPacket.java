@@ -177,8 +177,7 @@ public class CCSDSPacket {
         buffer.putShort(4, (short) (buffer.capacity() - 7)); // secondary
         buffer.putInt(6, (int) (timeMillis / 1000 - 315964800L)); // epoch starts a 06-Jan-1980 00:00:00
         buffer.put(10, (byte) ((timeMillis % 1000) * 256 / 1000));
-        // buffer.put(11, (byte)((SH_TIME_ID_TIME_OF_PACKET_GENERATION<<6)|SH_PKT_TYPE_CCSDS_CCSDS_PAYLOAD_HK_PACKET));
-        // // original version with checksum;
+        // original version with checksum;
         int checksum = checksumPresent?1:0;
         buffer.put(11, (byte) ((SH_TIME_ID_TIME_OF_PACKET_GENERATION << 6) | (checksum << 5) | packetType)); // checksum
         buffer.putInt(12, packetid);

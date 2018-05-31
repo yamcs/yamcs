@@ -14,7 +14,7 @@ public class CertificateToken implements AuthenticationToken {
     }
 
     @Override
-    public Object getPrincipal() {
+    public String getPrincipal() {
         return cert.getSubjectX500Principal().getName();
     }
 

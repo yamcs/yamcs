@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.yamcs.security.JWT;
 import org.yamcs.security.JWT.JWTDecodeException;
 import org.yamcs.security.User;
-import org.yamcs.security.UsernamePasswordToken;
 
 import com.google.gson.JsonObject;
 
@@ -18,7 +17,7 @@ public class JWTTest {
 
     @Test()
     public void testUnsigned() throws JWTDecodeException {
-        User testUser = new User(new UsernamePasswordToken("someUser", "pw"));
+        User testUser = new User("someUser");
         String unsignedToken = JWT.generateUnsignedToken(testUser, 1000);
 
         JsonObject claims = JWT.decodeUnverified(unsignedToken);
@@ -29,7 +28,7 @@ public class JWTTest {
 
     @Test
     public void testHS256() throws InvalidKeyException, NoSuchAlgorithmException, JWTDecodeException {
-        User testUser = new User(new UsernamePasswordToken("someUser", "pw"));
+        User testUser = new User("someUser");
         String signedToken = JWT.generateHS256Token(testUser, "secret", 1000);
 
         JsonObject unverifiedClaims = JWT.decodeUnverified(signedToken);

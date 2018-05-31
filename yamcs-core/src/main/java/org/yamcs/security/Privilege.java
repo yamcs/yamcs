@@ -283,10 +283,6 @@ public class Privilege {
     public AuthModule getAuthModule() {
         return authModule;
     }
-
-    public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) {
-        return authModule.authenticateHttp(ctx, req);
-    }
 }
 
 class UsernameCache {

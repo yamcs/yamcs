@@ -153,8 +153,20 @@ message ConnectionInfo {
   optional yamcsManagement.ProcessorInfo processor = 3;
 }
 
+message AuthResource {
+  enum Type {
+     UP_FORM = 1; //builtin username password form
+     POST = 2; // POST request to a yamcs url
+     //REDIRECT = 3; // redirect request to an outside URL (not yet implemented)
+  };
+  Type type;
+  String uri; //in case of POST is just a relative path to the yacms web
+  String state; //the client has to send this to the POST link and then back to Yamcs
+}
+
 message AuthInfo {
   optional bool requireAuthentication = 1;
+  repeated AuthResource authResources;
 }
 
 // Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework

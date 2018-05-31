@@ -12,6 +12,6 @@ public interface AuthenticationToken {
      *
      * @return the account identity submitted during the authentication process.
      */
-    Object getPrincipal();
+    String getPrincipal();
 
 }

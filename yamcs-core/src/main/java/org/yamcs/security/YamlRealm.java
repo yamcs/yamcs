@@ -32,7 +32,7 @@ public class YamlRealm implements Realm {
     @Override
     public boolean supports(AuthenticationToken authToken) {
         return authToken instanceof UsernamePasswordToken
-                || authToken instanceof AccessToken;
+                || authToken instanceof JwtToken;
     }
 
     @Override
@@ -42,8 +42,8 @@ public class YamlRealm implements Realm {
         }
         if (authToken instanceof UsernamePasswordToken) {
             return authenticateUsernamePasswordToken((UsernamePasswordToken) authToken);
-        } else if (authToken instanceof AccessToken) {
-            return authenticateAccessToken((AccessToken) authToken);
+        } else if (authToken instanceof JwtToken) {
+            return authenticateAccessToken((JwtToken) authToken);
         }
         return false;
     }
@@ -71,7 +71,7 @@ public class YamlRealm implements Realm {
         return false;
     }
 
-    private boolean authenticateAccessToken(AccessToken authToken) {
+    private boolean authenticateAccessToken(JwtToken authToken) {
         List<String> userDef = findUserDefinition((String) authToken.getPrincipal());
         return userDef != null && !authToken.isExpired();
     }
@@ -86,11 +86,11 @@ public class YamlRealm implements Realm {
     }
 
     @Override
-    public User loadUser(AuthenticationToken authToken) {
-        User user = new User(authToken);
+    public User loadUser(String principalName) {
+        User user = new User(principalName);
 
         YConfiguration conf = YConfiguration.getConfiguration("credentials", true);
-        List<String> userDef = conf.getList("users", user.getPrincipalName());
+        List<String> userDef = conf.getList("users", principalName);
 
         for (int i = 1; i < userDef.size(); i++) {
             String role = userDef.get(i);

@@ -10,11 +10,11 @@ import com.google.gson.JsonObject;
 /**
  * Identifies a user that was authenticated via a JWT bearer token
  */
-public class AccessToken implements AuthenticationToken {
+public class JwtToken {
 
     private JsonObject claims;
 
-    public AccessToken(String jwt, String secretKey) throws JWTDecodeException {
+    public JwtToken(String jwt, String secretKey) throws JWTDecodeException {
         try {
             this.claims = JWT.decode(jwt, secretKey);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
@@ -22,8 +22,7 @@ public class AccessToken implements AuthenticationToken {
         }
     }
 
-    @Override
-    public Object getPrincipal() {
+    public String getPrincipal() {
         return claims.get("sub").getAsString();
     }
 

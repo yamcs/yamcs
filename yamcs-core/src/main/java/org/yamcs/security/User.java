@@ -9,7 +9,6 @@ import java.util.Set;
  */
 public class User {
 
-    private AuthenticationToken authToken;
     private Date lastUpdated;
 
     private Set<String> roles = new HashSet<>();
@@ -20,10 +19,11 @@ public class User {
     private Set<String> streamPrivileges = new HashSet<>();
     private Set<String> cmdHistoryPrivileges = new HashSet<>();
     private Set<String> systemPrivileges = new HashSet<>();
-
-    public User(AuthenticationToken authToken) {
-        this.authToken = authToken;
+    private String principalName;
+    
+    public User(String principalName) {
         lastUpdated = new Date();
+        this.principalName = principalName;
     }
 
     public Date getLastUpdated() {
@@ -90,13 +90,9 @@ public class User {
         systemPrivileges.add(privilege);
     }
 
-    public AuthenticationToken getAuthenticationToken() {
-        return authToken;
-    }
 
     public String getPrincipalName() {
-        Object principal = authToken.getPrincipal();
-        return principal != null ? principal.toString() : null;
+       return principalName;
     }
 
     /**
@@ -154,7 +150,7 @@ public class User {
 
     @Override
     public String toString() {
-        return "User: " + authToken.getPrincipal().toString()
+        return "User: " + principalName
                 + "\n roles: " + roles
                 + "\n   tm parameter privileges:" + tmParaPrivileges
                 + "\n   tm parameter set privileges:" + tmParaSetPrivileges

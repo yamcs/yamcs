@@ -8,7 +8,7 @@ package org.yamcs.security;
 public class SystemToken implements AuthenticationToken {
 
     @Override
-    public Object getPrincipal() {
+    public String getPrincipal() {
         return "System";
     }
 }

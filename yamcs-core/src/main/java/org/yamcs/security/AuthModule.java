@@ -2,8 +2,7 @@ package org.yamcs.security;
 
 import java.util.concurrent.CompletableFuture;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpRequest;
+import org.yamcs.web.AuthHandler;
 
 /**
  * Interface implemented by the Authentication and Authorization modules.
@@ -13,32 +12,35 @@ import io.netty.handler.codec.http.HttpRequest;
  * 
  * Usually the roles are associated to privileges but this class makes no assumption about that.
  * 
- * 
- * The {@link #authenticateHttp(ChannelHandlerContext, HttpRequest)} is called at the reception of the http request and
- * returns an authentication token that is used later on to check for privileges and roles.
- * 
- * Note that while the {@link #authenticateHttp(ChannelHandlerContext, HttpRequest)} method is asynchronous, the other
- * methods are supposed to return fast, so the information about the user privileges has to be cached.
- * 
- * For the short lived REST requests the privilege check follows in quick succesion the authenticate call. For the
- * websocket, however the check privilege it can come a long time after the authenticate so in case the token expires, a
- * preemptive renewal strategy has to be implemented.
+ * The AuthModule has to associate to each user an AuthenticationToken - based on this the Yamcs Web will {@link AuthHandler}
+ *  generate a JWT token which is passed between the client and the server with each request. 
+ *   
  * 
  * @author nm
  *
  */
 public interface AuthModule {
+    public final static String TYPE_USERPASS = "USERNAME_PASSWORD";
+    public final static String TYPE_CODE = "AUTH_CODE";
     /**
-     * Authenticate the request and return a CompletableFuture to indicate the completion.
+     * Create an AuthenticationToken object based on some information received from the user
      * 
-     * Possibly send already an answer on the ctx.
+     * This operation may involve contacting back the authentication server so it is asynchronous.
      * 
-     * @param ctx
-     * @param req
-     * @return an AuthenticationToken that will be passed later in the checkPrivileges methods
+     * @param type - the type of the authObject
+     * @param authObject 
+     * @return
+     */
+    CompletableFuture<AuthenticationToken> authenticate(String type, Object authObject);
+    
+    /**
+     * Verify if the token is (still) valid.
+     * 
+     * @param authenticationToken - token to be verified
+     * @return true if the token is valid, false otherwise
      * 
      */
-    CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req);
+    boolean verifyToken(AuthenticationToken authenticationToken);
 
     /**
      * Get the list of roles of the user.
@@ -81,5 +83,4 @@ public interface AuthModule {
      * @return the authenticated user
      */
     User getUser(AuthenticationToken authToken);
-
 }

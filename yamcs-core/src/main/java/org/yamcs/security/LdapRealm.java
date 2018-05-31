@@ -75,7 +75,7 @@ public class LdapRealm implements Realm {
     @Override
     public boolean supports(AuthenticationToken authToken) {
         return authToken instanceof UsernamePasswordToken
-                || authToken instanceof AccessToken
+                || authToken instanceof JwtToken
                 || authToken instanceof CertificateToken;
     }
 
@@ -88,9 +88,7 @@ public class LdapRealm implements Realm {
             return authenticateUsernamePassword((UsernamePasswordToken) authToken);
         } else if (authToken instanceof CertificateToken) {
             return authenticateCertificate((CertificateToken) authToken);
-        } else if (authToken instanceof AccessToken) {
-            return authenticateAccessToken((AccessToken) authToken);
-        }
+        } 
         return false;
     }
 
@@ -137,10 +135,6 @@ public class LdapRealm implements Realm {
         }
     }
 
-    private boolean authenticateAccessToken(AccessToken authToken) {
-        User user = loadUser(authToken);
-        return user != null && !authToken.isExpired();
-    }
 
     private boolean authenticateUsernamePassword(UsernamePasswordToken authToken) {
         String username = authToken.getUsername();
@@ -174,8 +168,8 @@ public class LdapRealm implements Realm {
      * Loads a user from LDAP together with all the roles and the privileges.
      */
     @Override
-    public User loadUser(AuthenticationToken authToken) {
-        User u = new User(authToken);
+    public User loadUser(String principalName) {
+        User u = new User(principalName);
 
         DirContext context = null;
         try {

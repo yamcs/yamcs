@@ -24,6 +24,6 @@ public interface Realm {
      * @param authenticationToken
      * @return User with roles and privileges loaded
      */
-    public User loadUser(AuthenticationToken authenticationToken);
+    public User loadUser(String principalName);
 
 }

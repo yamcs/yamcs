@@ -48,7 +48,7 @@ public class UsernamePasswordToken implements AuthenticationToken {
     }
 
     @Override
-    public Object getPrincipal() {
+    public String getPrincipal() {
         return username;
     }
 

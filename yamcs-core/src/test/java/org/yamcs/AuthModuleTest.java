@@ -18,9 +18,7 @@ import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpServer;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
 
 public class AuthModuleTest {
     @BeforeClass
@@ -44,24 +42,6 @@ public class AuthModuleTest {
     }
 
     public static class MyAuthModule implements AuthModule {
-
-        @Override
-        public CompletableFuture<AuthenticationToken> authenticateHttp(ChannelHandlerContext ctx, HttpRequest req) {
-            CompletableFuture<AuthenticationToken> cf = new CompletableFuture<>();
-
-            // simulate that it takes one second to login to an external server
-            new Thread(() -> {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-                cf.complete(new MyAuthToken());
-            }).start();
-
-            return cf;
-        }
-
         @Override
         public String[] getRoles(AuthenticationToken authenticationToken) throws InvalidAuthenticationToken {
             return null;
@@ -82,12 +62,23 @@ public class AuthModuleTest {
         public User getUser(AuthenticationToken authToken) {
             return null;
         }
+
+        @Override
+        public boolean verifyToken(AuthenticationToken authenticationToken) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        @Override
+        public CompletableFuture<AuthenticationToken> authenticate(String type, Object authObject) {
+            return null;
+        }
     }
 
     static class MyAuthToken implements AuthenticationToken {
 
         @Override
-        public Object getPrincipal() {
+        public String getPrincipal() {
             return "cuckoo";
         }
     }
