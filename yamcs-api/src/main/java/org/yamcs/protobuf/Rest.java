@@ -46898,27 +46898,27 @@ public final class Rest {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+     * <code>repeated .parameters.BucketInfo bucket = 1;</code>
      */
     java.util.List<org.yamcs.protobuf.Rest.BucketInfo> 
-        getBucketsList();
+        getBucketList();
     /**
-     * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+     * <code>repeated .parameters.BucketInfo bucket = 1;</code>
      */
-    org.yamcs.protobuf.Rest.BucketInfo getBuckets(int index);
+    org.yamcs.protobuf.Rest.BucketInfo getBucket(int index);
     /**
-     * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+     * <code>repeated .parameters.BucketInfo bucket = 1;</code>
      */
-    int getBucketsCount();
+    int getBucketCount();
     /**
-     * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+     * <code>repeated .parameters.BucketInfo bucket = 1;</code>
      */
     java.util.List<? extends org.yamcs.protobuf.Rest.BucketInfoOrBuilder> 
-        getBucketsOrBuilderList();
+        getBucketOrBuilderList();
     /**
-     * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+     * <code>repeated .parameters.BucketInfo bucket = 1;</code>
      */
-    org.yamcs.protobuf.Rest.BucketInfoOrBuilder getBucketsOrBuilder(
+    org.yamcs.protobuf.Rest.BucketInfoOrBuilder getBucketOrBuilder(
         int index);
   }
   /**
@@ -46933,7 +46933,7 @@ public final class Rest {
       super(builder);
     }
     private ListBucketsResponse() {
-      buckets_ = java.util.Collections.emptyList();
+      bucket_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -46966,10 +46966,10 @@ public final class Rest {
             }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                buckets_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.BucketInfo>();
+                bucket_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.BucketInfo>();
                 mutable_bitField0_ |= 0x00000001;
               }
-              buckets_.add(
+              bucket_.add(
                   input.readMessage(org.yamcs.protobuf.Rest.BucketInfo.PARSER, extensionRegistry));
               break;
             }
@@ -46982,7 +46982,7 @@ public final class Rest {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          buckets_ = java.util.Collections.unmodifiableList(buckets_);
+          bucket_ = java.util.Collections.unmodifiableList(bucket_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -47000,39 +47000,39 @@ public final class Rest {
               org.yamcs.protobuf.Rest.ListBucketsResponse.class, org.yamcs.protobuf.Rest.ListBucketsResponse.Builder.class);
     }
 
-    public static final int BUCKETS_FIELD_NUMBER = 1;
-    private java.util.List<org.yamcs.protobuf.Rest.BucketInfo> buckets_;
+    public static final int BUCKET_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Rest.BucketInfo> bucket_;
     /**
-     * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+     * <code>repeated .parameters.BucketInfo bucket = 1;</code>
      */
-    public java.util.List<org.yamcs.protobuf.Rest.BucketInfo> getBucketsList() {
-      return buckets_;
+    public java.util.List<org.yamcs.protobuf.Rest.BucketInfo> getBucketList() {
+      return bucket_;
     }
     /**
-     * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+     * <code>repeated .parameters.BucketInfo bucket = 1;</code>
      */
     public java.util.List<? extends org.yamcs.protobuf.Rest.BucketInfoOrBuilder> 
-        getBucketsOrBuilderList() {
-      return buckets_;
+        getBucketOrBuilderList() {
+      return bucket_;
     }
     /**
-     * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+     * <code>repeated .parameters.BucketInfo bucket = 1;</code>
      */
-    public int getBucketsCount() {
-      return buckets_.size();
+    public int getBucketCount() {
+      return bucket_.size();
     }
     /**
-     * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+     * <code>repeated .parameters.BucketInfo bucket = 1;</code>
      */
-    public org.yamcs.protobuf.Rest.BucketInfo getBuckets(int index) {
-      return buckets_.get(index);
+    public org.yamcs.protobuf.Rest.BucketInfo getBucket(int index) {
+      return bucket_.get(index);
     }
     /**
-     * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+     * <code>repeated .parameters.BucketInfo bucket = 1;</code>
      */
-    public org.yamcs.protobuf.Rest.BucketInfoOrBuilder getBucketsOrBuilder(
+    public org.yamcs.protobuf.Rest.BucketInfoOrBuilder getBucketOrBuilder(
         int index) {
-      return buckets_.get(index);
+      return bucket_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -47047,8 +47047,8 @@ public final class Rest {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      for (int i = 0; i < buckets_.size(); i++) {
-        output.writeMessage(1, buckets_.get(i));
+      for (int i = 0; i < bucket_.size(); i++) {
+        output.writeMessage(1, bucket_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -47058,9 +47058,9 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < buckets_.size(); i++) {
+      for (int i = 0; i < bucket_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, buckets_.get(i));
+          .computeMessageSize(1, bucket_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -47079,8 +47079,8 @@ public final class Rest {
       org.yamcs.protobuf.Rest.ListBucketsResponse other = (org.yamcs.protobuf.Rest.ListBucketsResponse) obj;
 
       boolean result = true;
-      result = result && getBucketsList()
-          .equals(other.getBucketsList());
+      result = result && getBucketList()
+          .equals(other.getBucketList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -47092,9 +47092,9 @@ public final class Rest {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (getBucketsCount() > 0) {
-        hash = (37 * hash) + BUCKETS_FIELD_NUMBER;
-        hash = (53 * hash) + getBucketsList().hashCode();
+      if (getBucketCount() > 0) {
+        hash = (37 * hash) + BUCKET_FIELD_NUMBER;
+        hash = (53 * hash) + getBucketList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -47210,16 +47210,16 @@ public final class Rest {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
-          getBucketsFieldBuilder();
+          getBucketFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
-        if (bucketsBuilder_ == null) {
-          buckets_ = java.util.Collections.emptyList();
+        if (bucketBuilder_ == null) {
+          bucket_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
         } else {
-          bucketsBuilder_.clear();
+          bucketBuilder_.clear();
         }
         return this;
       }
@@ -47244,14 +47244,14 @@ public final class Rest {
       public org.yamcs.protobuf.Rest.ListBucketsResponse buildPartial() {
         org.yamcs.protobuf.Rest.ListBucketsResponse result = new org.yamcs.protobuf.Rest.ListBucketsResponse(this);
         int from_bitField0_ = bitField0_;
-        if (bucketsBuilder_ == null) {
+        if (bucketBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            buckets_ = java.util.Collections.unmodifiableList(buckets_);
+            bucket_ = java.util.Collections.unmodifiableList(bucket_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
-          result.buckets_ = buckets_;
+          result.bucket_ = bucket_;
         } else {
-          result.buckets_ = bucketsBuilder_.build();
+          result.bucket_ = bucketBuilder_.build();
         }
         onBuilt();
         return result;
@@ -47294,29 +47294,29 @@ public final class Rest {
 
       public Builder mergeFrom(org.yamcs.protobuf.Rest.ListBucketsResponse other) {
         if (other == org.yamcs.protobuf.Rest.ListBucketsResponse.getDefaultInstance()) return this;
-        if (bucketsBuilder_ == null) {
-          if (!other.buckets_.isEmpty()) {
-            if (buckets_.isEmpty()) {
-              buckets_ = other.buckets_;
+        if (bucketBuilder_ == null) {
+          if (!other.bucket_.isEmpty()) {
+            if (bucket_.isEmpty()) {
+              bucket_ = other.bucket_;
               bitField0_ = (bitField0_ & ~0x00000001);
             } else {
-              ensureBucketsIsMutable();
-              buckets_.addAll(other.buckets_);
+              ensureBucketIsMutable();
+              bucket_.addAll(other.bucket_);
             }
             onChanged();
           }
         } else {
-          if (!other.buckets_.isEmpty()) {
-            if (bucketsBuilder_.isEmpty()) {
-              bucketsBuilder_.dispose();
-              bucketsBuilder_ = null;
-              buckets_ = other.buckets_;
+          if (!other.bucket_.isEmpty()) {
+            if (bucketBuilder_.isEmpty()) {
+              bucketBuilder_.dispose();
+              bucketBuilder_ = null;
+              bucket_ = other.bucket_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              bucketsBuilder_ = 
+              bucketBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getBucketsFieldBuilder() : null;
+                   getBucketFieldBuilder() : null;
             } else {
-              bucketsBuilder_.addAllMessages(other.buckets_);
+              bucketBuilder_.addAllMessages(other.bucket_);
             }
           }
         }
@@ -47348,244 +47348,244 @@ public final class Rest {
       }
       private int bitField0_;
 
-      private java.util.List<org.yamcs.protobuf.Rest.BucketInfo> buckets_ =
+      private java.util.List<org.yamcs.protobuf.Rest.BucketInfo> bucket_ =
         java.util.Collections.emptyList();
-      private void ensureBucketsIsMutable() {
+      private void ensureBucketIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          buckets_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.BucketInfo>(buckets_);
+          bucket_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.BucketInfo>(bucket_);
           bitField0_ |= 0x00000001;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.yamcs.protobuf.Rest.BucketInfo, org.yamcs.protobuf.Rest.BucketInfo.Builder, org.yamcs.protobuf.Rest.BucketInfoOrBuilder> bucketsBuilder_;
+          org.yamcs.protobuf.Rest.BucketInfo, org.yamcs.protobuf.Rest.BucketInfo.Builder, org.yamcs.protobuf.Rest.BucketInfoOrBuilder> bucketBuilder_;
 
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public java.util.List<org.yamcs.protobuf.Rest.BucketInfo> getBucketsList() {
-        if (bucketsBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(buckets_);
+      public java.util.List<org.yamcs.protobuf.Rest.BucketInfo> getBucketList() {
+        if (bucketBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(bucket_);
         } else {
-          return bucketsBuilder_.getMessageList();
+          return bucketBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public int getBucketsCount() {
-        if (bucketsBuilder_ == null) {
-          return buckets_.size();
+      public int getBucketCount() {
+        if (bucketBuilder_ == null) {
+          return bucket_.size();
         } else {
-          return bucketsBuilder_.getCount();
+          return bucketBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public org.yamcs.protobuf.Rest.BucketInfo getBuckets(int index) {
-        if (bucketsBuilder_ == null) {
-          return buckets_.get(index);
+      public org.yamcs.protobuf.Rest.BucketInfo getBucket(int index) {
+        if (bucketBuilder_ == null) {
+          return bucket_.get(index);
         } else {
-          return bucketsBuilder_.getMessage(index);
+          return bucketBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public Builder setBuckets(
+      public Builder setBucket(
           int index, org.yamcs.protobuf.Rest.BucketInfo value) {
-        if (bucketsBuilder_ == null) {
+        if (bucketBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureBucketsIsMutable();
-          buckets_.set(index, value);
+          ensureBucketIsMutable();
+          bucket_.set(index, value);
           onChanged();
         } else {
-          bucketsBuilder_.setMessage(index, value);
+          bucketBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public Builder setBuckets(
+      public Builder setBucket(
           int index, org.yamcs.protobuf.Rest.BucketInfo.Builder builderForValue) {
-        if (bucketsBuilder_ == null) {
-          ensureBucketsIsMutable();
-          buckets_.set(index, builderForValue.build());
+        if (bucketBuilder_ == null) {
+          ensureBucketIsMutable();
+          bucket_.set(index, builderForValue.build());
           onChanged();
         } else {
-          bucketsBuilder_.setMessage(index, builderForValue.build());
+          bucketBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public Builder addBuckets(org.yamcs.protobuf.Rest.BucketInfo value) {
-        if (bucketsBuilder_ == null) {
+      public Builder addBucket(org.yamcs.protobuf.Rest.BucketInfo value) {
+        if (bucketBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureBucketsIsMutable();
-          buckets_.add(value);
+          ensureBucketIsMutable();
+          bucket_.add(value);
           onChanged();
         } else {
-          bucketsBuilder_.addMessage(value);
+          bucketBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public Builder addBuckets(
+      public Builder addBucket(
           int index, org.yamcs.protobuf.Rest.BucketInfo value) {
-        if (bucketsBuilder_ == null) {
+        if (bucketBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureBucketsIsMutable();
-          buckets_.add(index, value);
+          ensureBucketIsMutable();
+          bucket_.add(index, value);
           onChanged();
         } else {
-          bucketsBuilder_.addMessage(index, value);
+          bucketBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public Builder addBuckets(
+      public Builder addBucket(
           org.yamcs.protobuf.Rest.BucketInfo.Builder builderForValue) {
-        if (bucketsBuilder_ == null) {
-          ensureBucketsIsMutable();
-          buckets_.add(builderForValue.build());
+        if (bucketBuilder_ == null) {
+          ensureBucketIsMutable();
+          bucket_.add(builderForValue.build());
           onChanged();
         } else {
-          bucketsBuilder_.addMessage(builderForValue.build());
+          bucketBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public Builder addBuckets(
+      public Builder addBucket(
           int index, org.yamcs.protobuf.Rest.BucketInfo.Builder builderForValue) {
-        if (bucketsBuilder_ == null) {
-          ensureBucketsIsMutable();
-          buckets_.add(index, builderForValue.build());
+        if (bucketBuilder_ == null) {
+          ensureBucketIsMutable();
+          bucket_.add(index, builderForValue.build());
           onChanged();
         } else {
-          bucketsBuilder_.addMessage(index, builderForValue.build());
+          bucketBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public Builder addAllBuckets(
+      public Builder addAllBucket(
           java.lang.Iterable<? extends org.yamcs.protobuf.Rest.BucketInfo> values) {
-        if (bucketsBuilder_ == null) {
-          ensureBucketsIsMutable();
+        if (bucketBuilder_ == null) {
+          ensureBucketIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, buckets_);
+              values, bucket_);
           onChanged();
         } else {
-          bucketsBuilder_.addAllMessages(values);
+          bucketBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public Builder clearBuckets() {
-        if (bucketsBuilder_ == null) {
-          buckets_ = java.util.Collections.emptyList();
+      public Builder clearBucket() {
+        if (bucketBuilder_ == null) {
+          bucket_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
-          bucketsBuilder_.clear();
+          bucketBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public Builder removeBuckets(int index) {
-        if (bucketsBuilder_ == null) {
-          ensureBucketsIsMutable();
-          buckets_.remove(index);
+      public Builder removeBucket(int index) {
+        if (bucketBuilder_ == null) {
+          ensureBucketIsMutable();
+          bucket_.remove(index);
           onChanged();
         } else {
-          bucketsBuilder_.remove(index);
+          bucketBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public org.yamcs.protobuf.Rest.BucketInfo.Builder getBucketsBuilder(
+      public org.yamcs.protobuf.Rest.BucketInfo.Builder getBucketBuilder(
           int index) {
-        return getBucketsFieldBuilder().getBuilder(index);
+        return getBucketFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public org.yamcs.protobuf.Rest.BucketInfoOrBuilder getBucketsOrBuilder(
+      public org.yamcs.protobuf.Rest.BucketInfoOrBuilder getBucketOrBuilder(
           int index) {
-        if (bucketsBuilder_ == null) {
-          return buckets_.get(index);  } else {
-          return bucketsBuilder_.getMessageOrBuilder(index);
+        if (bucketBuilder_ == null) {
+          return bucket_.get(index);  } else {
+          return bucketBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
       public java.util.List<? extends org.yamcs.protobuf.Rest.BucketInfoOrBuilder> 
-           getBucketsOrBuilderList() {
-        if (bucketsBuilder_ != null) {
-          return bucketsBuilder_.getMessageOrBuilderList();
+           getBucketOrBuilderList() {
+        if (bucketBuilder_ != null) {
+          return bucketBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(buckets_);
+          return java.util.Collections.unmodifiableList(bucket_);
         }
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public org.yamcs.protobuf.Rest.BucketInfo.Builder addBucketsBuilder() {
-        return getBucketsFieldBuilder().addBuilder(
+      public org.yamcs.protobuf.Rest.BucketInfo.Builder addBucketBuilder() {
+        return getBucketFieldBuilder().addBuilder(
             org.yamcs.protobuf.Rest.BucketInfo.getDefaultInstance());
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
-      public org.yamcs.protobuf.Rest.BucketInfo.Builder addBucketsBuilder(
+      public org.yamcs.protobuf.Rest.BucketInfo.Builder addBucketBuilder(
           int index) {
-        return getBucketsFieldBuilder().addBuilder(
+        return getBucketFieldBuilder().addBuilder(
             index, org.yamcs.protobuf.Rest.BucketInfo.getDefaultInstance());
       }
       /**
-       * <code>repeated .parameters.BucketInfo buckets = 1;</code>
+       * <code>repeated .parameters.BucketInfo bucket = 1;</code>
        */
       public java.util.List<org.yamcs.protobuf.Rest.BucketInfo.Builder> 
-           getBucketsBuilderList() {
-        return getBucketsFieldBuilder().getBuilderList();
+           getBucketBuilderList() {
+        return getBucketFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
           org.yamcs.protobuf.Rest.BucketInfo, org.yamcs.protobuf.Rest.BucketInfo.Builder, org.yamcs.protobuf.Rest.BucketInfoOrBuilder> 
-          getBucketsFieldBuilder() {
-        if (bucketsBuilder_ == null) {
-          bucketsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+          getBucketFieldBuilder() {
+        if (bucketBuilder_ == null) {
+          bucketBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Rest.BucketInfo, org.yamcs.protobuf.Rest.BucketInfo.Builder, org.yamcs.protobuf.Rest.BucketInfoOrBuilder>(
-                  buckets_,
+                  bucket_,
                   ((bitField0_ & 0x00000001) == 0x00000001),
                   getParentForChildren(),
                   isClean());
-          buckets_ = null;
+          bucket_ = null;
         }
-        return bucketsBuilder_;
+        return bucketBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -47641,27 +47641,46 @@ public final class Rest {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+     * <code>repeated string prefix = 1;</code>
+     */
+    java.util.List<java.lang.String>
+        getPrefixList();
+    /**
+     * <code>repeated string prefix = 1;</code>
+     */
+    int getPrefixCount();
+    /**
+     * <code>repeated string prefix = 1;</code>
+     */
+    java.lang.String getPrefix(int index);
+    /**
+     * <code>repeated string prefix = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getPrefixBytes(int index);
+
+    /**
+     * <code>repeated .parameters.ObjectInfo object = 2;</code>
      */
     java.util.List<org.yamcs.protobuf.Rest.ObjectInfo> 
-        getObjectsList();
+        getObjectList();
     /**
-     * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+     * <code>repeated .parameters.ObjectInfo object = 2;</code>
      */
-    org.yamcs.protobuf.Rest.ObjectInfo getObjects(int index);
+    org.yamcs.protobuf.Rest.ObjectInfo getObject(int index);
     /**
-     * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+     * <code>repeated .parameters.ObjectInfo object = 2;</code>
      */
-    int getObjectsCount();
+    int getObjectCount();
     /**
-     * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+     * <code>repeated .parameters.ObjectInfo object = 2;</code>
      */
     java.util.List<? extends org.yamcs.protobuf.Rest.ObjectInfoOrBuilder> 
-        getObjectsOrBuilderList();
+        getObjectOrBuilderList();
     /**
-     * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+     * <code>repeated .parameters.ObjectInfo object = 2;</code>
      */
-    org.yamcs.protobuf.Rest.ObjectInfoOrBuilder getObjectsOrBuilder(
+    org.yamcs.protobuf.Rest.ObjectInfoOrBuilder getObjectOrBuilder(
         int index);
   }
   /**
@@ -47676,7 +47695,8 @@ public final class Rest {
       super(builder);
     }
     private ListObjectsResponse() {
-      objects_ = java.util.Collections.emptyList();
+      prefix_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      object_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -47707,12 +47727,21 @@ public final class Rest {
               }
               break;
             }
-            case 18: {
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-                objects_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.ObjectInfo>();
+                prefix_ = new com.google.protobuf.LazyStringArrayList();
                 mutable_bitField0_ |= 0x00000001;
               }
-              objects_.add(
+              prefix_.add(bs);
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                object_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.ObjectInfo>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              object_.add(
                   input.readMessage(org.yamcs.protobuf.Rest.ObjectInfo.PARSER, extensionRegistry));
               break;
             }
@@ -47725,7 +47754,10 @@ public final class Rest {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-          objects_ = java.util.Collections.unmodifiableList(objects_);
+          prefix_ = prefix_.getUnmodifiableView();
+        }
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          object_ = java.util.Collections.unmodifiableList(object_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -47743,39 +47775,68 @@ public final class Rest {
               org.yamcs.protobuf.Rest.ListObjectsResponse.class, org.yamcs.protobuf.Rest.ListObjectsResponse.Builder.class);
     }
 
-    public static final int OBJECTS_FIELD_NUMBER = 2;
-    private java.util.List<org.yamcs.protobuf.Rest.ObjectInfo> objects_;
+    public static final int PREFIX_FIELD_NUMBER = 1;
+    private com.google.protobuf.LazyStringList prefix_;
     /**
-     * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+     * <code>repeated string prefix = 1;</code>
      */
-    public java.util.List<org.yamcs.protobuf.Rest.ObjectInfo> getObjectsList() {
-      return objects_;
+    public com.google.protobuf.ProtocolStringList
+        getPrefixList() {
+      return prefix_;
     }
     /**
-     * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+     * <code>repeated string prefix = 1;</code>
+     */
+    public int getPrefixCount() {
+      return prefix_.size();
+    }
+    /**
+     * <code>repeated string prefix = 1;</code>
+     */
+    public java.lang.String getPrefix(int index) {
+      return prefix_.get(index);
+    }
+    /**
+     * <code>repeated string prefix = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getPrefixBytes(int index) {
+      return prefix_.getByteString(index);
+    }
+
+    public static final int OBJECT_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.Rest.ObjectInfo> object_;
+    /**
+     * <code>repeated .parameters.ObjectInfo object = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Rest.ObjectInfo> getObjectList() {
+      return object_;
+    }
+    /**
+     * <code>repeated .parameters.ObjectInfo object = 2;</code>
      */
     public java.util.List<? extends org.yamcs.protobuf.Rest.ObjectInfoOrBuilder> 
-        getObjectsOrBuilderList() {
-      return objects_;
+        getObjectOrBuilderList() {
+      return object_;
     }
     /**
-     * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+     * <code>repeated .parameters.ObjectInfo object = 2;</code>
      */
-    public int getObjectsCount() {
-      return objects_.size();
+    public int getObjectCount() {
+      return object_.size();
     }
     /**
-     * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+     * <code>repeated .parameters.ObjectInfo object = 2;</code>
      */
-    public org.yamcs.protobuf.Rest.ObjectInfo getObjects(int index) {
-      return objects_.get(index);
+    public org.yamcs.protobuf.Rest.ObjectInfo getObject(int index) {
+      return object_.get(index);
     }
     /**
-     * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+     * <code>repeated .parameters.ObjectInfo object = 2;</code>
      */
-    public org.yamcs.protobuf.Rest.ObjectInfoOrBuilder getObjectsOrBuilder(
+    public org.yamcs.protobuf.Rest.ObjectInfoOrBuilder getObjectOrBuilder(
         int index) {
-      return objects_.get(index);
+      return object_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -47790,8 +47851,11 @@ public final class Rest {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      for (int i = 0; i < objects_.size(); i++) {
-        output.writeMessage(2, objects_.get(i));
+      for (int i = 0; i < prefix_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, prefix_.getRaw(i));
+      }
+      for (int i = 0; i < object_.size(); i++) {
+        output.writeMessage(2, object_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -47801,9 +47865,17 @@ public final class Rest {
       if (size != -1) return size;
 
       size = 0;
-      for (int i = 0; i < objects_.size(); i++) {
+      {
+        int dataSize = 0;
+        for (int i = 0; i < prefix_.size(); i++) {
+          dataSize += computeStringSizeNoTag(prefix_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getPrefixList().size();
+      }
+      for (int i = 0; i < object_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, objects_.get(i));
+          .computeMessageSize(2, object_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -47822,8 +47894,10 @@ public final class Rest {
       org.yamcs.protobuf.Rest.ListObjectsResponse other = (org.yamcs.protobuf.Rest.ListObjectsResponse) obj;
 
       boolean result = true;
-      result = result && getObjectsList()
-          .equals(other.getObjectsList());
+      result = result && getPrefixList()
+          .equals(other.getPrefixList());
+      result = result && getObjectList()
+          .equals(other.getObjectList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -47835,9 +47909,13 @@ public final class Rest {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (getObjectsCount() > 0) {
-        hash = (37 * hash) + OBJECTS_FIELD_NUMBER;
-        hash = (53 * hash) + getObjectsList().hashCode();
+      if (getPrefixCount() > 0) {
+        hash = (37 * hash) + PREFIX_FIELD_NUMBER;
+        hash = (53 * hash) + getPrefixList().hashCode();
+      }
+      if (getObjectCount() > 0) {
+        hash = (37 * hash) + OBJECT_FIELD_NUMBER;
+        hash = (53 * hash) + getObjectList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -47953,16 +48031,18 @@ public final class Rest {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
-          getObjectsFieldBuilder();
+          getObjectFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
-        if (objectsBuilder_ == null) {
-          objects_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
+        prefix_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (objectBuilder_ == null) {
+          object_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
-          objectsBuilder_.clear();
+          objectBuilder_.clear();
         }
         return this;
       }
@@ -47987,14 +48067,19 @@ public final class Rest {
       public org.yamcs.protobuf.Rest.ListObjectsResponse buildPartial() {
         org.yamcs.protobuf.Rest.ListObjectsResponse result = new org.yamcs.protobuf.Rest.ListObjectsResponse(this);
         int from_bitField0_ = bitField0_;
-        if (objectsBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
-            objects_ = java.util.Collections.unmodifiableList(objects_);
-            bitField0_ = (bitField0_ & ~0x00000001);
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          prefix_ = prefix_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.prefix_ = prefix_;
+        if (objectBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            object_ = java.util.Collections.unmodifiableList(object_);
+            bitField0_ = (bitField0_ & ~0x00000002);
           }
-          result.objects_ = objects_;
+          result.object_ = object_;
         } else {
-          result.objects_ = objectsBuilder_.build();
+          result.object_ = objectBuilder_.build();
         }
         onBuilt();
         return result;
@@ -48037,29 +48122,39 @@ public final class Rest {
 
       public Builder mergeFrom(org.yamcs.protobuf.Rest.ListObjectsResponse other) {
         if (other == org.yamcs.protobuf.Rest.ListObjectsResponse.getDefaultInstance()) return this;
-        if (objectsBuilder_ == null) {
-          if (!other.objects_.isEmpty()) {
-            if (objects_.isEmpty()) {
-              objects_ = other.objects_;
-              bitField0_ = (bitField0_ & ~0x00000001);
+        if (!other.prefix_.isEmpty()) {
+          if (prefix_.isEmpty()) {
+            prefix_ = other.prefix_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensurePrefixIsMutable();
+            prefix_.addAll(other.prefix_);
+          }
+          onChanged();
+        }
+        if (objectBuilder_ == null) {
+          if (!other.object_.isEmpty()) {
+            if (object_.isEmpty()) {
+              object_ = other.object_;
+              bitField0_ = (bitField0_ & ~0x00000002);
             } else {
-              ensureObjectsIsMutable();
-              objects_.addAll(other.objects_);
+              ensureObjectIsMutable();
+              object_.addAll(other.object_);
             }
             onChanged();
           }
         } else {
-          if (!other.objects_.isEmpty()) {
-            if (objectsBuilder_.isEmpty()) {
-              objectsBuilder_.dispose();
-              objectsBuilder_ = null;
-              objects_ = other.objects_;
-              bitField0_ = (bitField0_ & ~0x00000001);
-              objectsBuilder_ = 
+          if (!other.object_.isEmpty()) {
+            if (objectBuilder_.isEmpty()) {
+              objectBuilder_.dispose();
+              objectBuilder_ = null;
+              object_ = other.object_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              objectBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getObjectsFieldBuilder() : null;
+                   getObjectFieldBuilder() : null;
             } else {
-              objectsBuilder_.addAllMessages(other.objects_);
+              objectBuilder_.addAllMessages(other.object_);
             }
           }
         }
@@ -48091,244 +48186,337 @@ public final class Rest {
       }
       private int bitField0_;
 
-      private java.util.List<org.yamcs.protobuf.Rest.ObjectInfo> objects_ =
-        java.util.Collections.emptyList();
-      private void ensureObjectsIsMutable() {
+      private com.google.protobuf.LazyStringList prefix_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensurePrefixIsMutable() {
         if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-          objects_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.ObjectInfo>(objects_);
+          prefix_ = new com.google.protobuf.LazyStringArrayList(prefix_);
           bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated string prefix = 1;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getPrefixList() {
+        return prefix_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string prefix = 1;</code>
+       */
+      public int getPrefixCount() {
+        return prefix_.size();
+      }
+      /**
+       * <code>repeated string prefix = 1;</code>
+       */
+      public java.lang.String getPrefix(int index) {
+        return prefix_.get(index);
+      }
+      /**
+       * <code>repeated string prefix = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getPrefixBytes(int index) {
+        return prefix_.getByteString(index);
+      }
+      /**
+       * <code>repeated string prefix = 1;</code>
+       */
+      public Builder setPrefix(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePrefixIsMutable();
+        prefix_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string prefix = 1;</code>
+       */
+      public Builder addPrefix(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePrefixIsMutable();
+        prefix_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string prefix = 1;</code>
+       */
+      public Builder addAllPrefix(
+          java.lang.Iterable<java.lang.String> values) {
+        ensurePrefixIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, prefix_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string prefix = 1;</code>
+       */
+      public Builder clearPrefix() {
+        prefix_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string prefix = 1;</code>
+       */
+      public Builder addPrefixBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensurePrefixIsMutable();
+        prefix_.add(value);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<org.yamcs.protobuf.Rest.ObjectInfo> object_ =
+        java.util.Collections.emptyList();
+      private void ensureObjectIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          object_ = new java.util.ArrayList<org.yamcs.protobuf.Rest.ObjectInfo>(object_);
+          bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.yamcs.protobuf.Rest.ObjectInfo, org.yamcs.protobuf.Rest.ObjectInfo.Builder, org.yamcs.protobuf.Rest.ObjectInfoOrBuilder> objectsBuilder_;
+          org.yamcs.protobuf.Rest.ObjectInfo, org.yamcs.protobuf.Rest.ObjectInfo.Builder, org.yamcs.protobuf.Rest.ObjectInfoOrBuilder> objectBuilder_;
 
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public java.util.List<org.yamcs.protobuf.Rest.ObjectInfo> getObjectsList() {
-        if (objectsBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(objects_);
+      public java.util.List<org.yamcs.protobuf.Rest.ObjectInfo> getObjectList() {
+        if (objectBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(object_);
         } else {
-          return objectsBuilder_.getMessageList();
+          return objectBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public int getObjectsCount() {
-        if (objectsBuilder_ == null) {
-          return objects_.size();
+      public int getObjectCount() {
+        if (objectBuilder_ == null) {
+          return object_.size();
         } else {
-          return objectsBuilder_.getCount();
+          return objectBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public org.yamcs.protobuf.Rest.ObjectInfo getObjects(int index) {
-        if (objectsBuilder_ == null) {
-          return objects_.get(index);
+      public org.yamcs.protobuf.Rest.ObjectInfo getObject(int index) {
+        if (objectBuilder_ == null) {
+          return object_.get(index);
         } else {
-          return objectsBuilder_.getMessage(index);
+          return objectBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public Builder setObjects(
+      public Builder setObject(
           int index, org.yamcs.protobuf.Rest.ObjectInfo value) {
-        if (objectsBuilder_ == null) {
+        if (objectBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureObjectsIsMutable();
-          objects_.set(index, value);
+          ensureObjectIsMutable();
+          object_.set(index, value);
           onChanged();
         } else {
-          objectsBuilder_.setMessage(index, value);
+          objectBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public Builder setObjects(
+      public Builder setObject(
           int index, org.yamcs.protobuf.Rest.ObjectInfo.Builder builderForValue) {
-        if (objectsBuilder_ == null) {
-          ensureObjectsIsMutable();
-          objects_.set(index, builderForValue.build());
+        if (objectBuilder_ == null) {
+          ensureObjectIsMutable();
+          object_.set(index, builderForValue.build());
           onChanged();
         } else {
-          objectsBuilder_.setMessage(index, builderForValue.build());
+          objectBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public Builder addObjects(org.yamcs.protobuf.Rest.ObjectInfo value) {
-        if (objectsBuilder_ == null) {
+      public Builder addObject(org.yamcs.protobuf.Rest.ObjectInfo value) {
+        if (objectBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureObjectsIsMutable();
-          objects_.add(value);
+          ensureObjectIsMutable();
+          object_.add(value);
           onChanged();
         } else {
-          objectsBuilder_.addMessage(value);
+          objectBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public Builder addObjects(
+      public Builder addObject(
           int index, org.yamcs.protobuf.Rest.ObjectInfo value) {
-        if (objectsBuilder_ == null) {
+        if (objectBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureObjectsIsMutable();
-          objects_.add(index, value);
+          ensureObjectIsMutable();
+          object_.add(index, value);
           onChanged();
         } else {
-          objectsBuilder_.addMessage(index, value);
+          objectBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public Builder addObjects(
+      public Builder addObject(
           org.yamcs.protobuf.Rest.ObjectInfo.Builder builderForValue) {
-        if (objectsBuilder_ == null) {
-          ensureObjectsIsMutable();
-          objects_.add(builderForValue.build());
+        if (objectBuilder_ == null) {
+          ensureObjectIsMutable();
+          object_.add(builderForValue.build());
           onChanged();
         } else {
-          objectsBuilder_.addMessage(builderForValue.build());
+          objectBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public Builder addObjects(
+      public Builder addObject(
           int index, org.yamcs.protobuf.Rest.ObjectInfo.Builder builderForValue) {
-        if (objectsBuilder_ == null) {
-          ensureObjectsIsMutable();
-          objects_.add(index, builderForValue.build());
+        if (objectBuilder_ == null) {
+          ensureObjectIsMutable();
+          object_.add(index, builderForValue.build());
           onChanged();
         } else {
-          objectsBuilder_.addMessage(index, builderForValue.build());
+          objectBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public Builder addAllObjects(
+      public Builder addAllObject(
           java.lang.Iterable<? extends org.yamcs.protobuf.Rest.ObjectInfo> values) {
-        if (objectsBuilder_ == null) {
-          ensureObjectsIsMutable();
+        if (objectBuilder_ == null) {
+          ensureObjectIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, objects_);
+              values, object_);
           onChanged();
         } else {
-          objectsBuilder_.addAllMessages(values);
+          objectBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public Builder clearObjects() {
-        if (objectsBuilder_ == null) {
-          objects_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000001);
+      public Builder clearObject() {
+        if (objectBuilder_ == null) {
+          object_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
         } else {
-          objectsBuilder_.clear();
+          objectBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public Builder removeObjects(int index) {
-        if (objectsBuilder_ == null) {
-          ensureObjectsIsMutable();
-          objects_.remove(index);
+      public Builder removeObject(int index) {
+        if (objectBuilder_ == null) {
+          ensureObjectIsMutable();
+          object_.remove(index);
           onChanged();
         } else {
-          objectsBuilder_.remove(index);
+          objectBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public org.yamcs.protobuf.Rest.ObjectInfo.Builder getObjectsBuilder(
+      public org.yamcs.protobuf.Rest.ObjectInfo.Builder getObjectBuilder(
           int index) {
-        return getObjectsFieldBuilder().getBuilder(index);
+        return getObjectFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public org.yamcs.protobuf.Rest.ObjectInfoOrBuilder getObjectsOrBuilder(
+      public org.yamcs.protobuf.Rest.ObjectInfoOrBuilder getObjectOrBuilder(
           int index) {
-        if (objectsBuilder_ == null) {
-          return objects_.get(index);  } else {
-          return objectsBuilder_.getMessageOrBuilder(index);
+        if (objectBuilder_ == null) {
+          return object_.get(index);  } else {
+          return objectBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
       public java.util.List<? extends org.yamcs.protobuf.Rest.ObjectInfoOrBuilder> 
-           getObjectsOrBuilderList() {
-        if (objectsBuilder_ != null) {
-          return objectsBuilder_.getMessageOrBuilderList();
+           getObjectOrBuilderList() {
+        if (objectBuilder_ != null) {
+          return objectBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(objects_);
+          return java.util.Collections.unmodifiableList(object_);
         }
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public org.yamcs.protobuf.Rest.ObjectInfo.Builder addObjectsBuilder() {
-        return getObjectsFieldBuilder().addBuilder(
+      public org.yamcs.protobuf.Rest.ObjectInfo.Builder addObjectBuilder() {
+        return getObjectFieldBuilder().addBuilder(
             org.yamcs.protobuf.Rest.ObjectInfo.getDefaultInstance());
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
-      public org.yamcs.protobuf.Rest.ObjectInfo.Builder addObjectsBuilder(
+      public org.yamcs.protobuf.Rest.ObjectInfo.Builder addObjectBuilder(
           int index) {
-        return getObjectsFieldBuilder().addBuilder(
+        return getObjectFieldBuilder().addBuilder(
             index, org.yamcs.protobuf.Rest.ObjectInfo.getDefaultInstance());
       }
       /**
-       * <code>repeated .parameters.ObjectInfo objects = 2;</code>
+       * <code>repeated .parameters.ObjectInfo object = 2;</code>
        */
       public java.util.List<org.yamcs.protobuf.Rest.ObjectInfo.Builder> 
-           getObjectsBuilderList() {
-        return getObjectsFieldBuilder().getBuilderList();
+           getObjectBuilderList() {
+        return getObjectFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
           org.yamcs.protobuf.Rest.ObjectInfo, org.yamcs.protobuf.Rest.ObjectInfo.Builder, org.yamcs.protobuf.Rest.ObjectInfoOrBuilder> 
-          getObjectsFieldBuilder() {
-        if (objectsBuilder_ == null) {
-          objectsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+          getObjectFieldBuilder() {
+        if (objectBuilder_ == null) {
+          objectBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Rest.ObjectInfo, org.yamcs.protobuf.Rest.ObjectInfo.Builder, org.yamcs.protobuf.Rest.ObjectInfoOrBuilder>(
-                  objects_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  object_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
                   isClean());
-          objects_ = null;
+          object_ = null;
         }
-        return objectsBuilder_;
+        return objectBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -48788,11 +48976,11 @@ public final class Rest {
       "reated\030\002 \001(\t\022\014\n\004size\030\003 \001(\004\0226\n\010metadata\030\004" +
       " \003(\0132$.parameters.ObjectInfo.MetadataEnt" +
       "ry\032/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005valu" +
-      "e\030\002 \001(\t:\0028\001\">\n\023ListBucketsResponse\022\'\n\007bu" +
-      "ckets\030\001 \003(\0132\026.parameters.BucketInfo\">\n\023L" +
-      "istObjectsResponse\022\'\n\007objects\030\002 \003(\0132\026.pa" +
-      "rameters.ObjectInfoB\024\n\022org.yamcs.protobu" +
-      "f"
+      "e\030\002 \001(\t:\0028\001\"=\n\023ListBucketsResponse\022&\n\006bu" +
+      "cket\030\001 \003(\0132\026.parameters.BucketInfo\"M\n\023Li" +
+      "stObjectsResponse\022\016\n\006prefix\030\001 \003(\t\022&\n\006obj" +
+      "ect\030\002 \003(\0132\026.parameters.ObjectInfoB\024\n\022org" +
+      ".yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -49148,13 +49336,13 @@ public final class Rest {
     internal_static_parameters_ListBucketsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListBucketsResponse_descriptor,
-        new java.lang.String[] { "Buckets", });
+        new java.lang.String[] { "Bucket", });
     internal_static_parameters_ListObjectsResponse_descriptor =
       getDescriptor().getMessageTypes().get(49);
     internal_static_parameters_ListObjectsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListObjectsResponse_descriptor,
-        new java.lang.String[] { "Objects", });
+        new java.lang.String[] { "Prefix", "Object", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
     org.yamcs.protobuf.Archive.getDescriptor();
     org.yamcs.protobuf.Pvalue.getDescriptor();

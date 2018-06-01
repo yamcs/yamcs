@@ -295,11 +295,12 @@ message ObjectInfo {
 }
 
 message ListBucketsResponse {
-  repeated BucketInfo buckets = 1;
+  repeated BucketInfo bucket = 1;
 }
 
 
 message ListObjectsResponse {
-   repeated ObjectInfo objects = 2;
+   repeated string prefix = 1;
+   repeated ObjectInfo object = 2;
 }
 
