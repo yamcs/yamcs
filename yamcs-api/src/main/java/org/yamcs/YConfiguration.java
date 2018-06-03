@@ -19,13 +19,12 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 
 /**
- * This class loads yamcs configurations. There are a number of "subsystems",
- * each using a corresponding subsystem.yaml file
+ * This class loads yamcs configurations. There are a number of "subsystems", each using a corresponding subsystem.yaml
+ * file
  *
- * There are three places where a configuration file is looked up in order:
- * - in the prefix/file.yaml via the classpath if the prefix is set in the setup method (used in the unittests)
- * - in the userConfigDirectory .yamcs/etc/file.yaml
- * - in the file.yaml via the classpath.
+ * There are three places where a configuration file is looked up in order: - in the prefix/file.yaml via the classpath
+ * if the prefix is set in the setup method (used in the unittests) - in the userConfigDirectory .yamcs/etc/file.yaml -
+ * in the file.yaml via the classpath.
  *
  * @author nm
  */
@@ -245,6 +244,10 @@ public class YConfiguration {
         return name;
     }
 
+    public Map<String, Object> getRoot() {
+        return root;
+    }
+
     /****************************** Map configs */
 
     @SuppressWarnings("unchecked")
@@ -360,9 +363,8 @@ public class YConfiguration {
 
     /********************** Boolean configs */
     /**
-     * Returns m.get(key) if it exists and is of type boolean,
-     * if m.get(key) exists and is not boolean, throw an exception.
-     * if m.get(key) does not exist, return the default value.
+     * Returns m.get(key) if it exists and is of type boolean, if m.get(key) exists and is not boolean, throw an
+     * exception. if m.get(key) does not exist, return the default value.
      * 
      * @param m
      * @param key
@@ -524,16 +526,17 @@ public class YConfiguration {
     }
 
     /**
-     * Default config file resolver.
-     * Looks for configuration files in the classpath and in the user config directory (~/.yamcs/).
+     * Default config file resolver. Looks for configuration files in the classpath and in the user config directory
+     * (~/.yamcs/).
      */
     public static class DefaultConfigurationResolver implements YConfigurationResolver {
+        @Override
         public InputStream getConfigurationStream(String name) throws ConfigurationException {
             InputStream is;
             if (prefix != null) {
                 if ((is = YConfiguration.class.getResourceAsStream("/" + prefix + name)) != null) {
                     log.debug("Reading {}", new File(YConfiguration.class.getResource("/" + prefix + name).getFile())
-                                    .getAbsolutePath());
+                            .getAbsolutePath());
                     return is;
                 }
             }
@@ -558,11 +561,9 @@ public class YConfiguration {
     }
 
     /**
-     * Introduced to be able to detect when a configuration file was not
-     * specified (as opposed to when there's a validation error inside). The
-     * current default behaviour of Yamcs is to throw an error when
-     * getConfiguration(String subystem) is called and the resource does not
-     * exist.
+     * Introduced to be able to detect when a configuration file was not specified (as opposed to when there's a
+     * validation error inside). The current default behaviour of Yamcs is to throw an error when
+     * getConfiguration(String subystem) is called and the resource does not exist.
      */
     public static class ConfigurationNotFoundException extends ConfigurationException {
         private static final long serialVersionUID = 1L;
