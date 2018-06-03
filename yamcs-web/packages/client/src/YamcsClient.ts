@@ -147,7 +147,7 @@ export default class YamcsClient {
   async getBuckets(): Promise<Bucket[]> {
     const response = await this.doFetch(`${this.apiUrl}/buckets/_global`);
     const wrapper = await response.json() as BucketsWrapper;
-    return wrapper.buckets || [];
+    return wrapper.bucket || [];
   }
 
   async deleteBucket(name: string) {
@@ -160,7 +160,7 @@ export default class YamcsClient {
     const url = `${this.apiUrl}/buckets/_global/${bucket}` + this.queryString(options);
     const response = await this.doFetch(url);
     const wrapper = await response.json() as ObjectsWrapper;
-    return wrapper.objects || [];
+    return wrapper.object || [];
   }
 
   async getObject(bucket: string, name: string) {

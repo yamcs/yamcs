@@ -474,7 +474,7 @@ export class InstanceClient {
   async getBuckets(): Promise<Bucket[]> {
     const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${this.instance}`);
     const wrapper = await response.json() as BucketsWrapper;
-    return wrapper.buckets || [];
+    return wrapper.bucket || [];
   }
 
   async deleteBucket(name: string) {
@@ -488,7 +488,7 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as ObjectsWrapper;
-    return wrapper.objects || [];
+    return wrapper.object || [];
   }
 
   async getObject(bucket: string, name: string) {

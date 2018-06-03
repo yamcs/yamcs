@@ -113,9 +113,9 @@ export interface PacketNameWrapper {
 }
 
 export interface BucketsWrapper {
-  buckets: Bucket[];
+  bucket: Bucket[];
 }
 
 export interface ObjectsWrapper {
-  objects: ObjectInfo[];
+  object: ObjectInfo[];
 }
