@@ -109,7 +109,7 @@ export default class YamcsClient {
   async startService(name: string) {
     const body = JSON.stringify({
       state: 'running'
-    })
+    });
     return this.doFetch(`${this.apiUrl}/services/_global/service/${name}`, {
       body,
       method: 'PATCH',
@@ -119,7 +119,7 @@ export default class YamcsClient {
   async stopService(name: string) {
     const body = JSON.stringify({
       state: 'stopped'
-    })
+    });
     return this.doFetch(`${this.apiUrl}/services/_global/service/${name}`, {
       body,
       method: 'PATCH',

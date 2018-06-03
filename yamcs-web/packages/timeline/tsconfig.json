@@ -4,7 +4,7 @@
     "module": "es2015",
 
     "strict": true,
-    "strictPropertyInitialization": false,
+    "strictPropertyInitialization": false, // TODO
 
     // This mainly to detect unused imports
     // (tslint has terrible support for this)

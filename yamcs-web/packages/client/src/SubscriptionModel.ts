@@ -12,5 +12,5 @@ export class SubscriptionModel {
   management = false;
   processor = false;
   commandQueues = false;
-  parameters: ParameterSubscriptionRequest;
+  parameters?: ParameterSubscriptionRequest;
 }

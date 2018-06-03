@@ -229,7 +229,7 @@ export interface FixedValue {
   sizeInBits: number;
 }
 
-export class RepeatInfo {
+export interface RepeatInfo {
   fixedCount: number;
   dynamicCount: Parameter;
   bitsBetween: number;
