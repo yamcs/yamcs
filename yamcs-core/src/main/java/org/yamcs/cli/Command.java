@@ -214,7 +214,11 @@ public abstract class Command {
         }
         if (jc.getMainParameter() != null) {
             out.append(" ");
-            out.append(jc.getMainParameterDescription());
+            if (jc.getMainParameter().getParameter().required()) {
+                out.append(jc.getMainParameterDescription());
+            } else {
+                out.append("[").append(jc.getMainParameterDescription()).append("]");
+            }
         }
         out.append("\n");
         if (sorted.size() > 0) {

@@ -5,6 +5,8 @@ import java.util.concurrent.CompletionException;
 
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
+import org.yamcs.protobuf.Rest.ListBucketsResponse;
+import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.Rest.ListTablesResponse;
 
@@ -52,5 +54,32 @@ public class InstanceClient {
                 throw new CompletionException(e);
             }
         });
+    }
+
+    public CompletableFuture<ListBucketsResponse> getBuckets() {
+        String url = "/buckets/" + instance;
+        return restClient.doRequest(url, HttpMethod.GET).thenApply(response -> {
+            try {
+                return ListBucketsResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<ListObjectsResponse> getObjects(String bucket) {
+        String url = "/buckets/" + instance + "/" + bucket;
+        return restClient.doRequest(url, HttpMethod.GET).thenApply(response -> {
+            try {
+                return ListObjectsResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<byte[]> getObject(String bucket, String object) {
+        String url = "/buckets/" + instance + "/" + bucket + "/" + object;
+        return restClient.doRequest(url, HttpMethod.GET);
     }
 }

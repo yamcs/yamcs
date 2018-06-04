@@ -25,6 +25,9 @@ public class ServicesCli extends Command {
     @Parameters(commandDescription = "List existing tables")
     class ServicesList extends Command {
 
+        @Parameter(names = { "-g", "--global" }, description = "Do not use instance-specific data")
+        boolean global = false;
+
         public ServicesList() {
             super("list", ServicesCli.this);
         }
@@ -32,14 +35,25 @@ public class ServicesCli extends Command {
         @Override
         public void execute() throws Exception {
             YamcsConnectionProperties ycp = getYamcsConnectionProperties();
-            InstanceClient instanceClient = new YamcsClient(ycp).selectInstance(ycp.getInstance());
-            instanceClient.getServices().thenAccept(response -> {
-                String tpl = "%-50s %-10s";
-                console.println(String.format(tpl, "NAME", "STATUS"));
-                for (ServiceInfo service : response.getServiceList()) {
-                    console.println(String.format(tpl, service.getName(), service.getState()));
-                }
-            }).get();
+            YamcsClient yamcsClient = new YamcsClient(ycp);
+            if (global) {
+                yamcsClient.getServices().thenAccept(response -> {
+                    String tpl = "%-50s %-10s";
+                    console.println(String.format(tpl, "NAME", "STATUS"));
+                    for (ServiceInfo service : response.getServiceList()) {
+                        console.println(String.format(tpl, service.getName(), service.getState()));
+                    }
+                }).get();
+            } else {
+                InstanceClient instanceClient = yamcsClient.selectInstance(ycp.getInstance());
+                instanceClient.getServices().thenAccept(response -> {
+                    String tpl = "%-50s %-10s";
+                    console.println(String.format(tpl, "NAME", "STATUS"));
+                    for (ServiceInfo service : response.getServiceList()) {
+                        console.println(String.format(tpl, service.getName(), service.getState()));
+                    }
+                }).get();
+            }
         }
     }
 
@@ -49,6 +63,9 @@ public class ServicesCli extends Command {
         @Parameter(description = "service", required = true)
         List<String> services;
 
+        @Parameter(names = { "-g", "--global" }, description = "Do not use instance-specific data")
+        boolean global = false;
+
         public ServicesEnable() {
             super("enable", ServicesCli.this);
         }
@@ -56,10 +73,18 @@ public class ServicesCli extends Command {
         @Override
         public void execute() throws Exception {
             YamcsConnectionProperties ycp = getYamcsConnectionProperties();
-            InstanceClient instanceClient = new YamcsClient(ycp).selectInstance(ycp.getInstance());
-            for (String service : services) {
-                EditServiceRequest options = EditServiceRequest.newBuilder().setState("running").build();
-                instanceClient.editService(service, options).get();
+            YamcsClient yamcsClient = new YamcsClient(ycp);
+            if (global) {
+                for (String service : services) {
+                    EditServiceRequest options = EditServiceRequest.newBuilder().setState("running").build();
+                    yamcsClient.editService(service, options).get();
+                }
+            } else {
+                InstanceClient instanceClient = yamcsClient.selectInstance(ycp.getInstance());
+                for (String service : services) {
+                    EditServiceRequest options = EditServiceRequest.newBuilder().setState("running").build();
+                    instanceClient.editService(service, options).get();
+                }
             }
         }
     }
@@ -70,6 +95,9 @@ public class ServicesCli extends Command {
         @Parameter(description = "service", required = true)
         List<String> services;
 
+        @Parameter(names = { "-g", "--global" }, description = "Do not use instance-specific data")
+        boolean global = false;
+
         public ServicesDisable() {
             super("disable", ServicesCli.this);
         }
@@ -77,10 +105,18 @@ public class ServicesCli extends Command {
         @Override
         public void execute() throws Exception {
             YamcsConnectionProperties ycp = getYamcsConnectionProperties();
-            InstanceClient instanceClient = new YamcsClient(ycp).selectInstance(ycp.getInstance());
-            for (String service : services) {
-                EditServiceRequest options = EditServiceRequest.newBuilder().setState("stopped").build();
-                instanceClient.editService(service, options).get();
+            YamcsClient yamcsClient = new YamcsClient(ycp);
+            if (global) {
+                for (String service : services) {
+                    EditServiceRequest options = EditServiceRequest.newBuilder().setState("stopped").build();
+                    yamcsClient.editService(service, options).get();
+                }
+            } else {
+                InstanceClient instanceClient = yamcsClient.selectInstance(ycp.getInstance());
+                for (String service : services) {
+                    EditServiceRequest options = EditServiceRequest.newBuilder().setState("stopped").build();
+                    instanceClient.editService(service, options).get();
+                }
             }
         }
     }
