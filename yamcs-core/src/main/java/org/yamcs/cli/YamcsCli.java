@@ -3,6 +3,7 @@ package org.yamcs.cli;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -30,6 +31,7 @@ public class YamcsCli extends Command {
         addSubCommand(new ArchiveCli(this));
         addSubCommand(new Backup(this));
         addSubCommand(new CheckConfig(this));
+        addSubCommand(new Config(this));
         addSubCommand(new ParameterArchiveCli(this));
         addSubCommand(new RocksDbCli(this));
         addSubCommand(new ServicesCli(this));
@@ -37,13 +39,13 @@ public class YamcsCli extends Command {
         addSubCommand(new XtceDbCli(this));
     }
 
-    @Parameter(names = "-y", description = "Yamcs URL")
+    @Parameter(names = { "-y", "--yamcs-url" }, description = "Yamcs URL")
     private String yamcsUrl;
 
-    @Parameter(names = "--etcDir", description = "Yamcs configuration directory to use (instead of the default /opt/yamcs/etc, ~/.yamcs/)")
+    @Parameter(names = "--etc-dir", description = "Override default Yamcs configuration directory")
     private String etcDir;
 
-    @Parameter(names = "--version", description = "Print version information and quit")
+    @Parameter(names = { "-v", "--version" }, description = "Print version information and quit")
     boolean version;
 
     YamcsConnectionProperties ycp;
@@ -55,6 +57,17 @@ public class YamcsCli extends Command {
                 ycp = YamcsConnectionProperties.parse(yamcsUrl);
             } catch (URISyntaxException e) {
                 throw new ParameterException("Invalid Yamcs URL '" + yamcsUrl + "'");
+            }
+        } else {
+            File preferencesFile = YamcsConnectionProperties.getPreferenceFile();
+            if (preferencesFile.exists()) {
+                YamcsConnectionProperties yprops = new YamcsConnectionProperties();
+                try {
+                    yprops.load();
+                    ycp = yprops;
+                } catch (IOException e) {
+                    // Ignore
+                }
             }
         }
         if (etcDir != null) {

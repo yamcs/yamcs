@@ -2,6 +2,7 @@ package org.yamcs.api;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -91,22 +92,23 @@ public class YamcsConnectionProperties {
         }
     }
 
-    public void load() {
-        try {
-            Properties p = new Properties();
-            String home = System.getProperty("user.home") + "/.yamcs";
-            p.load(new FileInputStream(home + "/" + PREF_FILENAME));
-            host = p.getProperty("host");
-            try {
-                port = Integer.parseInt(p.getProperty("port"));
-            } catch (NumberFormatException e) {
-            }
+    public static File getPreferenceFile() {
+        String home = System.getProperty("user.home") + "/.yamcs";
+        return new File(home, PREF_FILENAME);
+    }
 
-            instance = p.getProperty("instance");
-            if (p.containsKey("username")) {
-                authToken = new UsernamePasswordToken(p.getProperty("username"), (char[]) null);
-            }
-        } catch (IOException e) {
+    public void load() throws FileNotFoundException, IOException {
+        Properties p = new Properties();
+        p.load(new FileInputStream(getPreferenceFile()));
+        host = p.getProperty("host");
+        try {
+            port = Integer.parseInt(p.getProperty("port"));
+        } catch (NumberFormatException e) {
+        }
+
+        instance = p.getProperty("instance");
+        if (p.containsKey("username")) {
+            authToken = new UsernamePasswordToken(p.getProperty("username"), (char[]) null);
         }
     }
 
@@ -114,8 +116,9 @@ public class YamcsConnectionProperties {
         Properties p = new Properties();
         p.setProperty("host", host);
         p.setProperty("port", Integer.toString(port));
-        if (instance != null)
+        if (instance != null) {
             p.setProperty("instance", instance);
+        }
         if (authToken instanceof UsernamePasswordToken) {
             UsernamePasswordToken upt = (UsernamePasswordToken) authToken;
             p.setProperty("username", upt.getUsername());
@@ -123,8 +126,7 @@ public class YamcsConnectionProperties {
         try {
             String home = System.getProperty("user.home") + "/.yamcs";
             (new File(home)).mkdirs();
-            p.store(new FileOutputStream(home + "/" + PREF_FILENAME),
-                    "Yamcs connect dialog properties cache");
+            p.store(new FileOutputStream(home + "/" + PREF_FILENAME), null);
         } catch (IOException e1) {
             e1.printStackTrace();
         }
@@ -200,8 +202,9 @@ public class YamcsConnectionProperties {
         if ("https".equals(u.getScheme()) || "yamcss".equals(u.getScheme())) {
             ycd.ssl = true;
         }
-        if (u.getPort() != -1)
+        if (u.getPort() != -1) {
             ycd.port = u.getPort();
+        }
         ycd.host = u.getHost();
 
         if (u.getUserInfo() != null) {
@@ -215,10 +218,12 @@ public class YamcsConnectionProperties {
         }
 
         String[] pc = u.getPath().split("/");
-        if (pc.length > 3)
+        if (pc.length > 3) {
             throw new URISyntaxException(uri, "Can only support instance/address paths");
-        if (pc.length > 1)
+        }
+        if (pc.length > 1) {
             ycd.instance = pc[1];
+        }
 
         return ycd;
     }
