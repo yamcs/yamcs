@@ -2,16 +2,14 @@ package org.yamcs.cli;
 
 import java.util.List;
 
+import org.yamcs.api.InstanceClient;
+import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
-import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-
-import io.netty.handler.codec.http.HttpMethod;
 
 @Parameters(commandDescription = "Service operations")
 public class ServicesCli extends Command {
@@ -34,15 +32,14 @@ public class ServicesCli extends Command {
         @Override
         public void execute() throws Exception {
             YamcsConnectionProperties ycp = getYamcsConnectionProperties();
-            RestClient restClient = new RestClient(ycp);
-
-            byte[] resp = restClient.doRequest("/services/" + ycp.getInstance(), HttpMethod.GET).get();
-            ListServiceInfoResponse response = ListServiceInfoResponse.parseFrom(resp);
-            String tpl = "%-50s %-10s";
-            console.println(String.format(tpl, "NAME", "STATUS"));
-            for (ServiceInfo service : response.getServiceList()) {
-                console.println(String.format(tpl, service.getName(), service.getState()));
-            }
+            InstanceClient instanceClient = new YamcsClient(ycp).selectInstance(ycp.getInstance());
+            instanceClient.getServices().thenAccept(response -> {
+                String tpl = "%-50s %-10s";
+                console.println(String.format(tpl, "NAME", "STATUS"));
+                for (ServiceInfo service : response.getServiceList()) {
+                    console.println(String.format(tpl, service.getName(), service.getState()));
+                }
+            }).get();
         }
     }
 
@@ -59,14 +56,10 @@ public class ServicesCli extends Command {
         @Override
         public void execute() throws Exception {
             YamcsConnectionProperties ycp = getYamcsConnectionProperties();
-            RestClient restClient = new RestClient(ycp);
-
-            EditServiceRequest.Builder requestb = EditServiceRequest.newBuilder();
-            requestb.setState("running");
-
+            InstanceClient instanceClient = new YamcsClient(ycp).selectInstance(ycp.getInstance());
             for (String service : services) {
-                String url = "/services/" + ycp.getInstance() + "/" + service;
-                restClient.doRequest(url, HttpMethod.PATCH, requestb.build().toByteArray()).get();
+                EditServiceRequest options = EditServiceRequest.newBuilder().setState("running").build();
+                instanceClient.editService(service, options).get();
             }
         }
     }
@@ -84,14 +77,10 @@ public class ServicesCli extends Command {
         @Override
         public void execute() throws Exception {
             YamcsConnectionProperties ycp = getYamcsConnectionProperties();
-            RestClient restClient = new RestClient(ycp);
-
-            EditServiceRequest.Builder requestb = EditServiceRequest.newBuilder();
-            requestb.setState("stopped");
-
+            InstanceClient instanceClient = new YamcsClient(ycp).selectInstance(ycp.getInstance());
             for (String service : services) {
-                String url = "/services/" + ycp.getInstance() + "/" + service;
-                restClient.doRequest(url, HttpMethod.PATCH, requestb.build().toByteArray()).get();
+                EditServiceRequest options = EditServiceRequest.newBuilder().setState("stopped").build();
+                instanceClient.editService(service, options).get();
             }
         }
     }

@@ -11,12 +11,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.yamcs.api.InstanceClient;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.BulkRestDataSender;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Archive.TableInfo;
-import org.yamcs.protobuf.Rest.ListTablesResponse;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.TableLoadResponse;
 
@@ -54,13 +55,12 @@ public class TablesCli extends Command {
         @Override
         public void execute() throws Exception {
             YamcsConnectionProperties ycp = getYamcsConnectionProperties();
-            RestClient restClient = new RestClient(ycp);
-
-            byte[] resp = restClient.doRequest("/archive/" + ycp.getInstance() + "/tables", HttpMethod.GET).get();
-            ListTablesResponse response = ListTablesResponse.parseFrom(resp);
-            for (TableInfo table : response.getTableList()) {
-                console.println(table.getName());
-            }
+            InstanceClient instanceClient = new YamcsClient(ycp).selectInstance(ycp.getInstance());
+            instanceClient.getTables().thenAccept(response -> {
+                for (TableInfo table : response.getTableList()) {
+                    console.println(table.getName());
+                }
+            }).get();
         }
     }
 
