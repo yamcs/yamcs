@@ -155,7 +155,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req)
             throws HttpException {
         Privilege priv = Privilege.getInstance();
-        if(!priv.isEnabled()) {
+        if (!priv.isEnabled()) {
             return;
         }
         AuthenticationToken authToken = authChecker.verifyAuth(ctx, req);
@@ -249,7 +249,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    public ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
+    public static ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
         response.headers().set(HttpHeaderNames.LOCATION, newUri);
         log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(),
@@ -338,8 +338,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Sends base HTTP response indicating the use of chunked transfer encoding
-     * NM 11-May-2018: We do not put the ChunckedWriteHandler on the pipeline because the input is already chunked.
+     * Sends base HTTP response indicating the use of chunked transfer encoding NM 11-May-2018: We do not put the
+     * ChunckedWriteHandler on the pipeline because the input is already chunked.
      * 
      */
     public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType,
