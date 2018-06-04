@@ -106,11 +106,17 @@ export default class YamcsClient {
     return wrapper.service || [];
   }
 
+  async getService(name: string): Promise<Service> {
+    const url = `${this.apiUrl}/services/_global/${name}`;
+    const response = await this.doFetch(url);
+    return await response.json() as Service;
+  }
+
   async startService(name: string) {
     const body = JSON.stringify({
       state: 'running'
     });
-    return this.doFetch(`${this.apiUrl}/services/_global/service/${name}`, {
+    return this.doFetch(`${this.apiUrl}/services/_global/${name}`, {
       body,
       method: 'PATCH',
     });
@@ -120,7 +126,7 @@ export default class YamcsClient {
     const body = JSON.stringify({
       state: 'stopped'
     });
-    return this.doFetch(`${this.apiUrl}/services/_global/service/${name}`, {
+    return this.doFetch(`${this.apiUrl}/services/_global/${name}`, {
       body,
       method: 'PATCH',
     });

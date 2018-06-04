@@ -241,11 +241,17 @@ export class InstanceClient {
     return wrapper.service || [];
   }
 
+  async getService(name: string): Promise<Service> {
+    const url = `${this.yamcs.apiUrl}/services/${this.instance}/${name}`;
+    const response = await this.yamcs.doFetch(url);
+    return await response.json() as Service;
+  }
+
   async startService(name: string) {
     const body = JSON.stringify({
       state: 'running'
     })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}`, {
       body,
       method: 'PATCH',
     });
@@ -255,7 +261,7 @@ export class InstanceClient {
     const body = JSON.stringify({
       state: 'stopped'
     })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}`, {
       body,
       method: 'PATCH',
     });

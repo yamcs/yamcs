@@ -19,8 +19,8 @@ public class StorageCli extends Command {
 
     public StorageCli(Command parent) {
         super("storage", parent);
-        addSubCommand(new StorageList());
         addSubCommand(new StorageCat());
+        addSubCommand(new StorageList());
         setYcpRequired(true, true);
     }
 

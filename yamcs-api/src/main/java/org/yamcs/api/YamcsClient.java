@@ -6,8 +6,11 @@ import java.util.concurrent.CompletionException;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
+import org.yamcs.protobuf.Rest.ListInstancesResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
+import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -30,10 +33,41 @@ public class YamcsClient {
         return new InstanceClient(instance, this);
     }
 
+    public CompletableFuture<ListInstancesResponse> getInstances() {
+        return restClient.doRequest("/instances", HttpMethod.GET).thenApply(response -> {
+            try {
+                return ListInstancesResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<YamcsInstance> getInstance(String instance) {
+        return restClient.doRequest("/instances/" + instance, HttpMethod.GET).thenApply(response -> {
+            try {
+                return YamcsInstance.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
     public CompletableFuture<ListServiceInfoResponse> getServices() {
         return restClient.doRequest("/services/_global", HttpMethod.GET).thenApply(response -> {
             try {
                 return ListServiceInfoResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<ServiceInfo> getService(String service) {
+        String url = "/services/_global/" + service;
+        return restClient.doRequest(url, HttpMethod.GET).thenApply(response -> {
+            try {
+                return ServiceInfo.parseFrom(response);
             } catch (InvalidProtocolBufferException e) {
                 throw new CompletionException(e);
             }

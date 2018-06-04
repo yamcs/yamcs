@@ -9,6 +9,7 @@ import org.yamcs.protobuf.Rest.ListBucketsResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.Rest.ListTablesResponse;
+import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -33,6 +34,17 @@ public class InstanceClient {
         return restClient.doRequest(url, HttpMethod.GET).thenApply(response -> {
             try {
                 return ListServiceInfoResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<ServiceInfo> getService(String service) {
+        String url = "/services/" + instance + "/" + service;
+        return restClient.doRequest(url, HttpMethod.GET).thenApply(response -> {
+            try {
+                return ServiceInfo.parseFrom(response);
             } catch (InvalidProtocolBufferException e) {
                 throw new CompletionException(e);
             }

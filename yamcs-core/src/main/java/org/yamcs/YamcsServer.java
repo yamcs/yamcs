@@ -416,6 +416,22 @@ public class YamcsServer {
         return new ArrayList<>(globalServiceList);
     }
 
+    public static ServiceWithConfig getGlobalServiceWithConfig(String serviceName) {
+        if (globalServiceList == null) {
+            return null;
+        }
+
+        synchronized (globalServiceList) {
+            for (ServiceWithConfig swc : globalServiceList) {
+                Service s = swc.service;
+                if (s.getClass().getName().equals(serviceName)) {
+                    return swc;
+                }
+            }
+        }
+        return null;
+    }
+
     public static <T extends Service> T getService(String yamcsInstance, Class<T> serviceClass) {
         YamcsServerInstance ys = YamcsServer.getInstance(yamcsInstance);
         if (ys == null) {
@@ -429,19 +445,8 @@ public class YamcsServer {
     }
 
     public static Service getGlobalService(String serviceName) {
-        if (globalServiceList == null) {
-            return null;
-        }
-
-        synchronized (globalServiceList) {
-            for (ServiceWithConfig swc : globalServiceList) {
-                Service s = swc.service;
-                if (s.getClass().getName().equals(serviceName)) {
-                    return s;
-                }
-            }
-        }
-        return null;
+        ServiceWithConfig serviceWithConfig = getGlobalServiceWithConfig(serviceName);
+        return serviceWithConfig != null ? serviceWithConfig.getService() : null;
     }
 
     @SuppressWarnings("unchecked")

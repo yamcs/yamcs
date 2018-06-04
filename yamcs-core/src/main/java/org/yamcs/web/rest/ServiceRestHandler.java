@@ -5,6 +5,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
+import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.security.Privilege;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
@@ -19,7 +20,7 @@ import com.google.common.util.concurrent.Service;
  * Gives information on services (instance specific or server wide)
  */
 public class ServiceRestHandler extends RestHandler {
-   
+
     @Route(path = "/api/services/:instance?", method = "GET")
     public void listServices(RestRequest req) throws HttpException {
         checkPrivileges(req);
@@ -47,6 +48,40 @@ public class ServiceRestHandler extends RestHandler {
             }
         }
         completeOK(req, responseb.build());
+    }
+
+    @Route(path = "/api/services/:instance/:name", method = "GET")
+    public void getService(RestRequest req) throws HttpException {
+        checkPrivileges(req);
+        String instance = req.getRouteParam("instance");
+        if (instance == null) {
+            throw new BadRequestException("No instance specified");
+        }
+        boolean global = false;
+        if (GLOBAL_INSTANCE.equals(instance)) {
+            global = true;
+        } else {
+            verifyInstance(req, instance);
+        }
+        String serviceName = req.getRouteParam("name");
+        if (global) {
+            ServiceWithConfig serviceWithConfig = YamcsServer.getGlobalServiceWithConfig(serviceName);
+            if (serviceWithConfig == null) {
+                throw new NotFoundException(req);
+            }
+
+            ServiceInfo serviceInfo = ServiceHelper.toServiceInfo(serviceWithConfig, null, null);
+            completeOK(req, serviceInfo);
+        } else {
+            YamcsServerInstance ysi = YamcsServer.getInstance(instance);
+            ServiceWithConfig serviceWithConfig = ysi.getServiceWithConfig(serviceName);
+            if (serviceWithConfig == null) {
+                throw new NotFoundException(req);
+            }
+
+            ServiceInfo serviceInfo = ServiceHelper.toServiceInfo(serviceWithConfig, instance, null);
+            completeOK(req, serviceInfo);
+        }
     }
 
     @Route(path = "/api/services/:instance/:name", method = { "PATCH", "PUT", "POST" })
