@@ -14,7 +14,7 @@ import org.yamcs.protobuf.Rest.ObjectInfo;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-@Parameters(commandDescription = "Object storage operations")
+@Parameters(commandDescription = "Manage object storage")
 public class StorageCli extends Command {
 
     public StorageCli(Command parent) {

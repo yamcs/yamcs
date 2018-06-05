@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -32,7 +32,7 @@ public abstract class Command {
     static protected Console console = JCommander.getConsole();
 
     protected JCommander jc = new JCommander(this);
-    protected Map<String, Command> subCommands = new HashMap<>();
+    protected Map<String, Command> subCommands = new LinkedHashMap<>();
     protected Command selectedCommand;
     final private String name;
     final Command parent;

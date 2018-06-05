@@ -46,7 +46,7 @@ import io.netty.handler.codec.http.QueryStringEncoder;
  * @author nm
  *
  */
-@Parameters(commandDescription = "Allows to perform and restore backups")
+@Parameters(commandDescription = "Perform and restore backups")
 public class Backup extends Command {
     public Backup(YamcsCli yamcsCli) {
         super("backup", yamcsCli);
@@ -123,6 +123,7 @@ public class Backup extends Command {
             super("create", Backup.this);
         }
 
+        @Override
         void validate() {
             YamcsConnectionProperties yamcsConn = getYamcsConnectionProperties();
             if (yamcsConn != null) {
@@ -172,12 +173,12 @@ public class Backup extends Command {
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), bopt);) {
 
                 List<byte[]> cfl = RocksDB.listColumnFamilies(opt, dbDir);
-                List<ColumnFamilyDescriptor> cfdList = new ArrayList<ColumnFamilyDescriptor>(cfl.size());
+                List<ColumnFamilyDescriptor> cfdList = new ArrayList<>(cfl.size());
 
                 for (byte[] b : cfl) {
                     cfdList.add(new ColumnFamilyDescriptor(b, cfOptions));
                 }
-                List<ColumnFamilyHandle> cfhList = new ArrayList<ColumnFamilyHandle>(cfl.size());
+                List<ColumnFamilyHandle> cfhList = new ArrayList<>(cfl.size());
 
                 try (RocksDB db = RocksDB.open(dbOptions, dbDir, cfdList, cfhList)) {
                     backupEngine.createNewBackup(db);

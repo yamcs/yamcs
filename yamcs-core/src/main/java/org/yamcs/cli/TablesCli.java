@@ -36,7 +36,7 @@ import io.netty.handler.codec.http.HttpMethod;
  * @author nm
  *
  */
-@Parameters(commandDescription = "Table operations")
+@Parameters(commandDescription = "Read and manipulate tables")
 public class TablesCli extends Command {
     public TablesCli(Command parent) {
         super("tables", parent);

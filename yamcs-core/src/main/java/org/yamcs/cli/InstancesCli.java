@@ -10,7 +10,7 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-@Parameters(commandDescription = "Instance operations")
+@Parameters(commandDescription = "Read Yamcs instances")
 public class InstancesCli extends Command {
 
     public InstancesCli(Command parent) {

@@ -12,7 +12,7 @@ import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-@Parameters(commandDescription = "Service operations")
+@Parameters(commandDescription = "Read and manipulate services")
 public class ServicesCli extends Command {
 
     public ServicesCli(Command parent) {

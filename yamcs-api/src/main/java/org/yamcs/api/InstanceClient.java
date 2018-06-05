@@ -4,11 +4,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import org.yamcs.api.rest.RestClient;
+import org.yamcs.protobuf.Rest.EditLinkRequest;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
+import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.Rest.ListTablesResponse;
+import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -53,6 +56,34 @@ public class InstanceClient {
 
     public CompletableFuture<Void> editService(String service, EditServiceRequest options) {
         String url = "/services/" + instance + "/" + service;
+        byte[] body = options.toByteArray();
+        return restClient.doRequest(url, HttpMethod.PATCH, body).thenApply(response -> null);
+    }
+
+    public CompletableFuture<ListLinkInfoResponse> getLinks() {
+        String url = "/links/" + instance;
+        return restClient.doRequest(url, HttpMethod.GET).thenApply(response -> {
+            try {
+                return ListLinkInfoResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<LinkInfo> getLink(String link) {
+        String url = "/links/" + instance + "/" + link;
+        return restClient.doRequest(url, HttpMethod.GET).thenApply(response -> {
+            try {
+                return LinkInfo.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<Void> editLink(String link, EditLinkRequest options) {
+        String url = "/links/" + instance + "/" + link;
         byte[] body = options.toByteArray();
         return restClient.doRequest(url, HttpMethod.PATCH, body).thenApply(response -> null);
     }
