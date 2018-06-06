@@ -20,4 +20,10 @@ public interface ArgumentType {
      * @return the list of units
      */
     public List<UnitType> getUnitSet();
+
+    /**
+     * 
+     * @return the name of the type
+     */
+    String getName();
 }

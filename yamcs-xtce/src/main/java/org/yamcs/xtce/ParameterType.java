@@ -53,10 +53,19 @@ public interface ParameterType {
     
     /**
      * 
-     * @return the data encoding for the parameter
+     * @return the data encoding for the parameter type
      */
     public DataEncoding getEncoding();
     
-    
+    /**
+     * set the data encoding for the parameter type
+     * @param dataEncoding
+     */
     void setEncoding(DataEncoding dataEncoding);
+
+    /**
+     * 
+     * @return the name of the type
+     */
+    String getName();
 }

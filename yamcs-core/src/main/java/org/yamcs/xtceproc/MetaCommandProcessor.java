@@ -54,7 +54,11 @@ public class MetaCommandProcessor {
         
         BitBuffer bitbuf = new BitBuffer(new byte[MAX_CMD_SIZE]);
         TcProcessingContext pcontext = new TcProcessingContext(pdata, args, params, bitbuf, 0);
-        pcontext.mccProcessor.encode(mc);
+        try {
+            pcontext.mccProcessor.encode(mc);
+        } catch (CommandEncodingException e) {
+            throw new ErrorInCommand("Error when encoding command: "+e.getMessage());
+        }
 
         int length = (bitbuf.getPosition()+7)/8;
         byte[] b = new byte[length];

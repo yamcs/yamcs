@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.*;
 
 public class MetaCommandContainerProcessor {
@@ -103,8 +102,11 @@ public class MetaCommandContainerProcessor {
 
         ArgumentType atype = arg.getArgumentType();
         Value rawValue = argumentTypeProcessor.decalibrate(atype, argValue);
-
-        pcontext.deEncoder.encodeRaw(((BaseDataType) atype).getEncoding(), rawValue);
+        DataEncoding encoding = ((BaseDataType) atype).getEncoding();
+        if(encoding==null) {
+            throw new CommandEncodingException("No encoding available for type '"+atype.getName()+"' used for argument '"+arg.getName()+"'");
+        }
+        pcontext.deEncoder.encodeRaw(encoding, rawValue);
 
     }
 
@@ -116,8 +118,11 @@ public class MetaCommandContainerProcessor {
         }
         Value rawValue = paraValue; // TBD if this is correct
         ParameterType ptype = para.getParameterType();
-
-        pcontext.deEncoder.encodeRaw(((BaseDataType) ptype).getEncoding(), rawValue);
+        DataEncoding encoding = ((BaseDataType) ptype).getEncoding();
+        if(encoding==null) {
+            throw new CommandEncodingException("No encoding available for type '"+ptype.getName()+"' used for parameter '"+para.getName()+"'");
+        }
+        pcontext.deEncoder.encodeRaw(encoding, rawValue);
 
     }
 
