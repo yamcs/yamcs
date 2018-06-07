@@ -16,7 +16,6 @@ import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest;
-import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.StringConverter;
@@ -45,8 +44,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/commands/:name*", method = "POST")
     public void issueCommand(RestRequest req) throws HttpException {
-
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayCommand);
+        checkSystemPrivilege(req, SystemPrivilege.MayCommand);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.hasCommanding()) {
@@ -57,7 +55,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         MetaCommand cmd = verifyCommand(req, mdb, requestCommandName);
 
-        verifyAuthorization(req.getAuthToken(), PrivilegeType.TC, cmd.getQualifiedName());
+        checkPrivileges(req, PrivilegeType.TC, cmd.getQualifiedName());
 
         String origin = "";
         int sequenceNumber = 0;
@@ -108,7 +106,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
         PreparedCommand preparedCommand;
         try {
             preparedCommand = processor.getCommandingManager().buildCommand(cmd, assignments, origin, sequenceNumber,
-                    req.getAuthToken());
+                    req.getUser());
 
             // make the source - should perhaps come from the client
             StringBuilder sb = new StringBuilder();
@@ -146,23 +144,19 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
         // Good, now send
         CommandQueue queue;
-        try {
-            if (dryRun) {
-                CommandQueueManager mgr = processor.getCommandingManager().getCommandQueueManager();
-                queue = mgr.getQueue(req.getAuthToken(), preparedCommand);
-            } else {
-                queue = processor.getCommandingManager().sendCommand(req.getAuthToken(), preparedCommand);
-                if (comment != null) {
-                    try {
-                        processor.getCommandingManager().addToCommandHistory(preparedCommand.getCommandId(), "Comment",
-                                comment, req.getAuthToken());
-                    } catch (NoPermissionException e) {
-                        throw new ForbiddenException(e);
-                    }
+        if (dryRun) {
+            CommandQueueManager mgr = processor.getCommandingManager().getCommandQueueManager();
+            queue = mgr.getQueue(req.getUser(), preparedCommand);
+        } else {
+            queue = processor.getCommandingManager().sendCommand(req.getUser(), preparedCommand);
+            if (comment != null) {
+                try {
+                    processor.getCommandingManager().addToCommandHistory(preparedCommand.getCommandId(), "Comment",
+                            comment, req.getUser());
+                } catch (NoPermissionException e) {
+                    throw new ForbiddenException(e);
                 }
             }
-        } catch (InvalidAuthenticationToken e) {
-            throw new ForbiddenException(e);
         }
 
         Commanding.CommandQueueEntry cqe = ManagementGpbHelper.toCommandQueueEntry(queue, preparedCommand);
@@ -190,7 +184,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
                 for (UpdateCommandHistoryRequest.KeyValue historyEntry : request.getHistoryEntryList()) {
                     processor.getCommandingManager().addToCommandHistory(cmdId, historyEntry.getKey(),
-                            historyEntry.getValue(), req.getAuthToken());
+                            historyEntry.getValue(), req.getUser());
                 }
             }
         } catch (NoPermissionException e) {

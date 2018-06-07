@@ -7,10 +7,8 @@ import org.rocksdb.RocksDBException;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
 import org.yamcs.protobuf.Yamcs.StringMessage;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
-import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
@@ -32,7 +30,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/parameterArchive/rebuild", method = "POST")
     public void reprocess(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        checkPrivileges(req);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
 
         if (!req.hasQueryParameter("start")) {
             throw new BadRequestException("no start specified");
@@ -56,7 +54,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions", method = "POST")
     public void deletePartition(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        checkPrivileges(req);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
 
         if (!req.hasQueryParameter("start")) {
             throw new BadRequestException("no start specified");
@@ -94,7 +92,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*", method = "GET")
     public void archiveInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        checkPrivileges(req);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
 
         String fqn = req.getRouteParam("name");
         ParameterArchiveV2 parchive = getParameterArchive(instance);
@@ -115,11 +113,4 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         }
         return (ParameterArchiveV2) parameterArchive.getParchive();
     }
-
-    private void checkPrivileges(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayControlArchiving)) {
-            throw new ForbiddenException("No privilege for this operation");
-        }
-    }
-
 }

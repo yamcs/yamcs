@@ -3,7 +3,6 @@ package org.yamcs.alarms;
 import java.util.ArrayList;
 
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.Privilege;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -87,8 +86,8 @@ public class AlarmStreamer implements AlarmListener {
 
         tdef.addColumn("acknowledgedBy", DataType.STRING);
         String username = activeAlarm.usernameThatAcknowledged;
-        if (username == null) {
-            username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : Privilege.getInstance().getDefaultUser();
+        if (activeAlarm.autoAcknowledge) {
+            username = "autoAcknowledged";
         }
         al.add(username);
 

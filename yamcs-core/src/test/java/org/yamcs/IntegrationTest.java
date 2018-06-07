@@ -685,7 +685,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         FileOutputStream file2Out = new FileOutputStream(file2);
 
         httpClient.doBulkReceiveRequest("http://localhost:9190/_static/" + file1.getName(), HttpMethod.GET, null,
-                adminToken, data -> {
+                adminUsername, adminPassword, data -> {
                     try {
                         file2Out.write(data);
                     } catch (IOException e) {
@@ -703,7 +703,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         YamcsApiException e1 = null;
         try {
             httpClient.doAsyncRequest("http://localhost:9190/_static/" + file1.getName(), HttpMethod.GET, null,
-                    adminToken, httpHeaders).get();
+                    adminUsername, adminPassword, httpHeaders).get();
         } catch (ExecutionException e) {
             e1 = (YamcsApiException) e.getCause();
         }
@@ -713,7 +713,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         httpHeaders = new DefaultHttpHeaders();
         httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified() - 1000));
         byte[] b1 = httpClient.doAsyncRequest("http://localhost:9190/_static/" + file1.getName(), HttpMethod.GET, null,
-                adminToken, httpHeaders).get();
+                adminUsername, adminPassword, httpHeaders).get();
         assertEquals(file1.length(), b1.length);
 
         file1.delete();

@@ -7,7 +7,6 @@ import java.security.PrivilegedAction;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.security.auth.Subject;
@@ -16,6 +15,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
@@ -31,7 +31,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.AuthModuleHttpHandler;
 import org.yamcs.web.HttpRequestHandler;
-import org.yamcs.web.UnauthorizedException;
 
 import com.sun.security.auth.callback.TextCallbackHandler;
 
@@ -53,11 +52,12 @@ import io.netty.util.CharsetUtil;
  * @author nm
  *
  */
-public class SpnegoAuthModule extends AbstractAuthModule implements AuthModuleHttpHandler {
+public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
+
     final String krbRealm; // if not null, only users from this domain will be accepted
     final boolean stripRealm; // if true, domain has to be not null and will be stripped from the username
 
-    Map<String, SpnegoToken> authCode2token = new ConcurrentHashMap<>();
+    Map<String, SpnegoAuthenticationInfo> code2info = new ConcurrentHashMap<>();
     final long AUTH_CODE_VALIDITY = 10000;
     private static final Logger log = LoggerFactory.getLogger(SpnegoAuthModule.class);
 
@@ -65,8 +65,6 @@ public class SpnegoAuthModule extends AbstractAuthModule implements AuthModuleHt
     final GSSManager gssManager;
 
     GSSCredential yamcsCred;
-    // this is used for authorization
-    YamlRealm yamlRealm;
 
     static final String NEGOTIATE = "Negotiate";
     static final SecureRandom secureRandom = new SecureRandom();
@@ -92,7 +90,6 @@ public class SpnegoAuthModule extends AbstractAuthModule implements AuthModuleHt
         stripRealm = YConfiguration.getBoolean(config, "stripRealm", false);
         krbRealm = YConfiguration.getString(config, "krbRealm", null);
 
-        yamlRealm = new YamlRealm();
         try {
             yamcsLogin = new LoginContext("Yamcs", new TextCallbackHandler());
             yamcsLogin.login();
@@ -103,65 +100,55 @@ public class SpnegoAuthModule extends AbstractAuthModule implements AuthModuleHt
     }
 
     @Override
-    public CompletableFuture<AuthenticationToken> authenticate(String type, Object authObj) {
-        switch (type) {
-        case TYPE_CODE:
-            return authenticateByCode((String) authObj);
-        case TYPE_USERPASS:
-            return authenticateByPassword((Map<String, String>) authObj);
-        }
-
-        log.error("Unsupported authentication type '{}'", type);
-        CompletableFuture<AuthenticationToken> r = new CompletableFuture<>();
-
-        r.completeExceptionally(new ConfigurationException("Unsupported authentication type '" + type + "'"));
-        return r;
+    public boolean supportsAuthenticate(String type) {
+        return TYPE_CODE.equals(type) || TYPE_USERPASS.equals(type);
     }
 
-    private CompletableFuture<AuthenticationToken> authenticateByPassword(Map<String, String> m) {
-        String username = m.get(DefaultAuthModule.USERNAME);
-        char[] password = m.get(DefaultAuthModule.PASSWORD).toCharArray();
-        CompletableFuture<AuthenticationToken> r = new CompletableFuture<>();
+    @Override
+    public AuthenticationInfo getAuthenticationInfo(String type, Object authObj) throws AuthenticationException {
+        switch (type) {
+        case TYPE_USERPASS:
+            return authenticateByPassword((Map<String, String>) authObj);
+        case TYPE_CODE:
+            return authenticateByCode((String) authObj);
+        }
+
+        return null;
+    }
+
+    private AuthenticationInfo authenticateByPassword(Map<String, String> m) throws AuthenticationException {
+        String username = m.get(USERNAME);
+        char[] password = m.get(PASSWORD).toCharArray();
         try {
             LoginContext userLogin = new LoginContext("UserAuth", new UserPassCallbackHandler(username, password));
             userLogin.login();
-            r.complete(new UsernamePasswordToken(username, password));
+            return new AuthenticationInfo(this, username);
+        } catch (AccountNotFoundException e) {
+            return null;
         } catch (LoginException e) {
-            r.completeExceptionally(e);
+            throw new AuthenticationException(e);
         }
-
-        return r;
     }
 
-    private CompletableFuture<AuthenticationToken> authenticateByCode(String authorizationCode) {
-        CompletableFuture<AuthenticationToken> r = new CompletableFuture<>();
-        SpnegoToken token = authCode2token.get(authorizationCode);
+    private AuthenticationInfo authenticateByCode(String authorizationCode) throws AuthenticationException {
+        SpnegoAuthenticationInfo authInfo = code2info.get(authorizationCode);
         long now = System.currentTimeMillis();
-        if ((token == null) || (now - token.created) > AUTH_CODE_VALIDITY) {
-            r.completeExceptionally(new UnauthorizedException("Invalid authorization code"));
+        if ((authInfo == null) || (now - authInfo.created) > AUTH_CODE_VALIDITY) {
+            throw new AuthenticationException("Invalid authorization code");
         } else {
-            r.complete(token);
+            return authInfo;
         }
-        return r;
     }
 
     @Override
-    public boolean verifyToken(AuthenticationToken authenticationToken) {
+    public boolean verifyValidity(User user) {
         // TODO check expiration
         return true;
-
     }
 
     @Override
-    public User getUser(AuthenticationToken authToken) {
-        yamlRealm.authenticate(authToken);
-        if (authToken instanceof SpnegoToken) {
-            return ((SpnegoToken) authToken).user;
-        } else if (authToken instanceof UsernamePasswordToken) {
-            return yamlRealm.loadUser(((UsernamePasswordToken) authToken).getUsername());
-        } else {
-            return null;
-        }
+    public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) {
+        return new AuthorizationInfo();
     }
 
     @Override
@@ -222,17 +209,9 @@ public class SpnegoAuthModule extends AbstractAuthModule implements AuthModuleHt
                         if (stripRealm) {
                             client = client.substring(0, client.length() - krbRealm.length() - 1);
                         }
-                        User user;
-                        try {
-                            user = yamlRealm.loadUser(client);
-                        } catch (ConfigurationException e) {
-                            log.warn("Failed to load user {} from credentials.yaml: {}", client, e.getMessage());
-                            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-                            return;
-                        }
-                        SpnegoToken token = new SpnegoToken(user);
+                        SpnegoAuthenticationInfo authInfo = new SpnegoAuthenticationInfo(this, client);
                         String authorizationCode = generateAuthCode();
-                        authCode2token.put(authorizationCode, token);
+                        code2info.put(authorizationCode, authInfo);
                         ByteBuf buf = Unpooled.copiedBuffer(authorizationCode, CharsetUtil.UTF_8);
                         HttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.OK, buf);
                         HttpUtil.setContentLength(res, buf.readableBytes());
@@ -263,18 +242,13 @@ public class SpnegoAuthModule extends AbstractAuthModule implements AuthModuleHt
         }
     }
 
-    static class SpnegoToken implements AuthenticationToken {
-        User user;
+    static class SpnegoAuthenticationInfo extends AuthenticationInfo {
+
         long created; // date of creation
 
-        public SpnegoToken(User user) {
-            this.user = user;
+        public SpnegoAuthenticationInfo(AuthModule authenticator, String principal) {
+            super(authenticator, principal);
             this.created = System.currentTimeMillis();
-        }
-
-        @Override
-        public String getPrincipal() {
-            return user.getPrincipalName();
         }
     }
 

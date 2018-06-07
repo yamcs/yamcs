@@ -24,7 +24,6 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.tctm.TmDataLinkInitialiser;
@@ -96,16 +95,12 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
-            if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
-                    p.getQualifiedName())) {
-                throw new BadRequestException("Insufficient privileges for parameter " + p.getQualifiedName());
-            }
+            checkPrivileges(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName());
             ids.add(id);
         }
         if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
-                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
-                        p.getQualifiedName())) {
+                if (!hasPrivilege(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
                     continue;
                 }
                 if (request.hasNamespace()) {
@@ -140,10 +135,10 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids, addRaw, addMonitoring,
                     filename);
-            RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
+            RestReplays.replay(instance, req.getUser(), rr.build(), l);
         } else {
             RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req, filename);
-            RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
+            RestReplays.replay(instance, req.getUser(), rr.build(), l);
         }
     }
 
@@ -180,11 +175,11 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList, addRaw, addMonitoring,
                     filename);
             l.setNoRepeat(noRepeat);
-            RestReplays.replay(instance, req.getAuthToken(), rr, l);
+            RestReplays.replay(instance, req.getUser(), rr, l);
         } else {
             RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req, filename);
             l.setNoRepeat(noRepeat);
-            RestReplays.replay(instance, req.getAuthToken(), rr, l);
+            RestReplays.replay(instance, req.getUser(), rr, l);
         }
     }
 
@@ -199,7 +194,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         }
 
-        verifyAuthorization(req.getAuthToken(), PrivilegeType.TM_PACKET, nameSet);
+        checkPrivileges(req, PrivilegeType.TM_PACKET, nameSet);
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -244,7 +239,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         }
 
-        verifyAuthorization(req.getAuthToken(), PrivilegeType.CMD_HISTORY, nameSet);
+        checkPrivileges(req, PrivilegeType.CMD_HISTORY, nameSet);
 
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -270,7 +265,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     public void downloadTableData(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadTables);
+        checkSystemPrivilege(req, SystemPrivilege.MayReadTables);
 
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
 
@@ -316,7 +311,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     public void downloadEvents(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         ArchiveEventRestHandler.verifyEventArchiveSupport(instance);
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadEvents);
+        checkSystemPrivilege(req, SystemPrivilege.MayReadEvents);
 
         Set<String> sourceSet = new HashSet<>();
         for (String names : req.getQueryParameterList("source", Collections.emptyList())) {

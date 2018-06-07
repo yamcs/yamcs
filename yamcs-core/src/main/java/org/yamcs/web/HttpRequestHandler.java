@@ -13,8 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
+import org.yamcs.security.SecurityStore;
+import org.yamcs.security.User;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
 
@@ -76,7 +76,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey
             .valueOf("chunkedTransferStats");
-    public static final AttributeKey<AuthenticationToken> CTX_AUTH_TOKEN = AttributeKey.valueOf("authToken");
+    public static final AttributeKey<User> CTX_USER = AttributeKey.valueOf("user");
 
     private static final Logger log = LoggerFactory.getLogger(HttpRequestHandler.class);
 
@@ -154,12 +154,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
     private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req)
             throws HttpException {
-        Privilege priv = Privilege.getInstance();
-        if (!priv.isEnabled()) {
-            return;
+        SecurityStore security = SecurityStore.getInstance();
+        if (security.isEnabled()) {
+            User user = authChecker.verifyAuth(ctx, req);
+            ctx.channel().attr(CTX_USER).set(user);
+        } else {
+            User user = security.getUnauthenticatedUser();
+            ctx.channel().attr(CTX_USER).set(user);
         }
-        AuthenticationToken authToken = authChecker.verifyAuth(ctx, req);
-        ctx.channel().attr(CTX_AUTH_TOKEN).set(authToken);
     }
 
     private void handleRequest(ChannelHandlerContext ctx, HttpRequest req)
@@ -236,7 +238,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);
-        originalRequestInfo.setAuthenticationToken(ctx.channel().attr(CTX_AUTH_TOKEN).get());
+        originalRequestInfo.setUser(ctx.channel().attr(CTX_USER).get());
         ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo));
 
         // Effectively trigger websocket-handler (will attempt handshake)

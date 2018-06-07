@@ -9,10 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.cli.Backup;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
-import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
@@ -32,7 +30,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
     @Route(path = "/api/archive/rocksdb/:tablespace/properties", method = "GET")
     @Route(path = "/api/archive/rocksdb/:tablespace/properties/:dbpath*", method = "GET")
     public void getProperty(RestRequest req) throws HttpException {
-        checkPrivileges(req);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
         Tablespace tablespace = verifyTablespace(req);
         String dbpath = req.hasRouteParam("dbpath") ? req.getRouteParam("dbpath") : null;
 
@@ -70,7 +68,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/rocksdb/list", method = "GET")
     public void listOpenDbs(RestRequest req) throws HttpException {
-        checkPrivileges(req);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         StringBuilder sb = new StringBuilder();
         for (Tablespace tblsp : rse.getTablespaces().values()) {
@@ -93,7 +91,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/rocksdb/backup/:dbpath*", method = "POST")
     public void doBackup(RestRequest req) throws HttpException {
-        checkPrivileges(req);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
 
         Tablespace tablespace = verifyTablespace(req);
         String dbpath = req.hasRouteParam("dbpath") ? req.getRouteParam("dbpath") : null;
@@ -121,12 +119,6 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
             }
         });
 
-    }
-
-    private void checkPrivileges(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayControlArchiving)) {
-            throw new ForbiddenException("No privilege for this operation");
-        }
     }
 
     private Tablespace verifyTablespace(RestRequest req) throws HttpException {

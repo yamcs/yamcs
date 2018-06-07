@@ -22,7 +22,6 @@ import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
-import org.yamcs.security.Privilege;
 import org.yamcs.spi.Plugin;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
@@ -389,10 +388,6 @@ public class YamcsServer {
         return instances.get(yamcsInstance);
     }
 
-    private static void setupSecurity() {
-        Privilege.getInstance();
-    }
-
     private static void printOptionsAndExit() {
         System.err.println("Usage: yamcs-server.sh");
         System.err.println("\t All options are taken from yamcs.yaml");
@@ -516,9 +511,7 @@ public class YamcsServer {
 
         try {
             YConfiguration.setup();
-            setupSecurity();
             setupYamcsServer();
-
         } catch (ConfigurationException e) {
             staticlog.error("Could not start Yamcs Server", e);
             System.err.println(e.toString());

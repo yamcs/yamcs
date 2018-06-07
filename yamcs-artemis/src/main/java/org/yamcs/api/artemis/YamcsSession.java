@@ -1,31 +1,28 @@
 package org.yamcs.api.artemis;
 
-
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
-import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.UsernamePasswordToken;
 
 public class YamcsSession {
-    boolean invm=true;
+    boolean invm = true;
     ClientSessionFactory sessionFactory;
     public ClientSession session;
     private YamcsConnectionProperties ycd;
     ServerLocator locator;
-    boolean preAcknowledge=true;
+    boolean preAcknowledge = true;
 
     public static String hornetqInvmUser;
     public static String hornetqInvmPass;
@@ -34,13 +31,14 @@ public class YamcsSession {
         hornetqInvmPass = java.util.UUID.randomUUID().toString();
     }
 
-
     static {
-        //divert hornetq logging
+        // divert hornetq logging
         System.setProperty("org.jboss.logging.provider", "slf4j");
     }
 
-    private YamcsSession() {}
+    private YamcsSession() {
+    }
+
     public ClientSessionFactory getSessionFactory() {
         return sessionFactory;
     }
@@ -59,13 +57,16 @@ public class YamcsSession {
 
     public void close() throws ActiveMQException {
         try {
-            if (session != null)
+            if (session != null) {
                 session.close();
+            }
         } finally {
-            if (sessionFactory != null)
+            if (sessionFactory != null) {
                 sessionFactory.close();
-            if (locator != null)
+            }
+            if (locator != null) {
                 locator.close();
+            }
         }
     }
 
@@ -73,31 +74,28 @@ public class YamcsSession {
         try {
             String username = null;
             String password = null;
-            if(invm) {
-                locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(Protocol.IN_VM_FACTORY));
-                sessionFactory =  locator.createSessionFactory();
+            if (invm) {
+                locator = ActiveMQClient
+                        .createServerLocatorWithoutHA(new TransportConfiguration(Protocol.IN_VM_FACTORY));
+                sessionFactory = locator.createSessionFactory();
                 username = hornetqInvmUser;
                 password = hornetqInvmPass;
             } else {
-                if(ycd.getHost()!=null) {
-                    Map<String, Object> tcpConfig =new HashMap<>();
+                if (ycd.getHost() != null) {
+                    Map<String, Object> tcpConfig = new HashMap<>();
                     tcpConfig.put(TransportConstants.HOST_PROP_NAME, ycd.getHost());
                     tcpConfig.put(TransportConstants.PORT_PROP_NAME, ycd.getPort());
-                    locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(),tcpConfig));
-                    sessionFactory =  locator.createSessionFactory();
+                    locator = ActiveMQClient.createServerLocatorWithoutHA(
+                            new TransportConfiguration(NettyConnectorFactory.class.getName(), tcpConfig));
+                    sessionFactory = locator.createSessionFactory();
                 } else {
-                    locator = ActiveMQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
-                    sessionFactory =  locator.createSessionFactory();
+                    locator = ActiveMQClient.createServerLocatorWithoutHA(
+                            new TransportConfiguration(NettyConnectorFactory.class.getName()));
+                    sessionFactory = locator.createSessionFactory();
                 }
-                AuthenticationToken authToken = ycd.getAuthenticationToken();
-                if(authToken!=null) {
-                    if(authToken instanceof UsernamePasswordToken) {
-                        UsernamePasswordToken upt = (UsernamePasswordToken)authToken;
-                        username = upt.getUsername();
-                        password = upt.getPasswordS();
-                    } else {
-                        throw new IllegalArgumentException("Authentication token of type "+authToken.getClass()+" not supported for the Aremis connections");
-                    }
+                if (ycd.getUsername() != null) {
+                    username = ycd.getUsername();
+                    password = new String(ycd.getPassword());
                 }
 
             }
@@ -105,19 +103,21 @@ public class YamcsSession {
             // guest auth and authz (if allowed by server)
             session = sessionFactory.createSession(username, password, false, true, true, preAcknowledge, 1);
             session.start();
-        } catch( ActiveMQException e ) {
+        } catch (ActiveMQException e) {
             // Pass specific ActiveMQExceptions as our cause, helps identify
             // permissions problems
             try {
                 close();
-            } catch (ActiveMQException e1) {}
-            throw new YamcsApiException( e.getMessage(), e );
-        } catch(Exception e) {
+            } catch (ActiveMQException e1) {
+            }
+            throw new YamcsApiException(e.getMessage(), e);
+        } catch (Exception e) {
             // Pass Exception's cause as our cause.
             // close everything
             try {
                 close();
-            } catch (ActiveMQException e1) {} 
+            } catch (ActiveMQException e1) {
+            }
             throw new YamcsApiException(e.getMessage(), e.getCause());
         }
     }
@@ -126,9 +126,8 @@ public class YamcsSession {
         return new Builder();
     }
 
-
     public static class Builder {
-        YamcsSession result=new YamcsSession();
+        YamcsSession result = new YamcsSession();
 
         public Builder setConnectionParams(String host, int port) {
             return setConnectionParams(host, port, null, null);
@@ -139,9 +138,7 @@ public class YamcsSession {
             result.ycd = new YamcsConnectionProperties();
             result.ycd.setHost(host);
             result.ycd.setPort(port);
-            if(username!=null) {
-                result.ycd.setAuthenticationToken(new UsernamePasswordToken(username, password));
-            }
+            result.ycd.setCredentials(username, password.toCharArray());
             return this;
         }
 
@@ -158,12 +155,13 @@ public class YamcsSession {
         }
 
         /**
-         * If set to true, the consumers created with this session will automatically acknowledge the messages.
-         * The acknowledge happens on the server before the consumers receive the messages. 
+         * If set to true, the consumers created with this session will automatically acknowledge the messages. The
+         * acknowledge happens on the server before the consumers receive the messages.
+         * 
          * @param preack
          * @return
          */
-        public Builder setPreAcknowledge (boolean preack) {
+        public Builder setPreAcknowledge(boolean preack) {
             result.preAcknowledge = preack;
             return this;
         }
@@ -173,16 +171,17 @@ public class YamcsSession {
             return result;
         }
     }
+
     public ClientMessage createMessage(boolean durable) {
         return session.createMessage(durable);
     }
 
     @Override
     protected void finalize() {
-        if(sessionFactory!=null) {
+        if (sessionFactory != null) {
             sessionFactory.close();
         }
-        if(locator!=null) {
+        if (locator != null) {
             locator.close();
         }
     }

@@ -1,0 +1,31 @@
+Monitoring:
+  tm_parameter_privileges: [".*"]
+  tm_parameter_set_privileges: []
+  tm_packet_privileges: [".*"]
+  tc_privileges: []
+  system_privileges:
+    - MayControlYProcessor
+    - MayGetMissionDatabase
+    - MayControlArchiving
+
+Operator:
+  tm_parameter_privileges: [".*"]
+  tm_parameter_set_privileges: []
+  tm_packet_privileges: [".*"]
+  tc_privileges: [".*"]
+  system_privileges:
+    - MayControlYProcessor
+    - MayModifyCommandHistory
+    - MayControlCommandQueue
+    - MayCommandPayload
+    - MayGetMissionDatabase
+    - MayControlArchiving
+
+Admin:
+  tm_parameter_privileges: [".*"]
+  tm_parameter_set_privileges: [".*"]
+  tm_packet_privileges: [".*"]
+  tc_privileges: [".*"]
+  system_privileges: [".*"]
+  stream_privileges: [".*"]
+  cmd_history_privileges: [".*"]

@@ -35,8 +35,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.UsernamePasswordToken;
 
 /**
  * Dialog for entering yamcs connection parameters. This is a copy of the YamcsConnectDialog with options to get also
@@ -133,17 +131,12 @@ public class ConnectDialog extends JDialog implements ActionListener {
         	c.gridy=3;c.gridx=1;c.anchor=GridBagConstraints.WEST;inputPanel.add(sslCheckBox,c);
          */
         if (authenticationEnabled) {
-            AuthenticationToken t = connectionProps.getAuthenticationToken();
-            if (!(t instanceof UsernamePasswordToken)) {
-                throw new RuntimeException("Only username password authentication supported");
-            }
-            UsernamePasswordToken upt = (UsernamePasswordToken) t;
             ceast.gridy++;
             cwest.gridy++;
             lab = new JLabel("Username: ");
             lab.setHorizontalAlignment(SwingConstants.RIGHT);
             inputPanel.add(lab, ceast);
-            usernameTextField = new JTextField(upt.getUsername());
+            usernameTextField = new JTextField(connectionProps.getUsername());
             usernameTextField.setPreferredSize(new Dimension(160, usernameTextField.getPreferredSize().height));
             inputPanel.add(usernameTextField, cwest);
 
@@ -334,13 +327,11 @@ public class ConnectDialog extends JDialog implements ActionListener {
 
             // values.ssl= sslCheckBox.isSelected();
             if (authenticationEnabled) {
-                UsernamePasswordToken upt = new UsernamePasswordToken(usernameTextField.getText(),
-                        passwordTextField.getPassword());
                 passwordTextField.setText("");
-                connectionProps.setAuthenticationToken(upt);
+                connectionProps.setCredentials(usernameTextField.getText(), passwordTextField.getPassword());
             } else {
                 // If not authenticating, don't use last credentials
-                connectionProps.setAuthenticationToken(null);
+                connectionProps.setCredentials(null, null);
             }
 
             if (instanceCombo != null) {
@@ -374,9 +365,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
                 int port = Integer.parseInt(portTextField.getText());
                 YamcsConnectionProperties ycp = new YamcsConnectionProperties(host, port);
                 if (authenticationEnabled) {
-                    UsernamePasswordToken upt = new UsernamePasswordToken(usernameTextField.getText(),
-                            passwordTextField.getPassword());
-                    ycp.setAuthenticationToken(upt);
+                    ycp.setCredentials(usernameTextField.getText(), passwordTextField.getPassword());
                 }
 
                 RestClient restClient = new RestClient(ycp);

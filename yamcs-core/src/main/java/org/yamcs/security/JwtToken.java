@@ -22,7 +22,7 @@ public class JwtToken {
         }
     }
 
-    public String getPrincipal() {
+    public String getSubject() {
         return claims.get("sub").getAsString();
     }
 
@@ -36,6 +36,6 @@ public class JwtToken {
 
     @Override
     public String toString() {
-        return getPrincipal().toString();
+        return getSubject().toString();
     }
 }

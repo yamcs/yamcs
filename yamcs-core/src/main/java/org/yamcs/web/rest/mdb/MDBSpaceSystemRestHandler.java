@@ -27,7 +27,7 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
     }
 
     private void getSpaceSystemInfo(RestRequest req) throws HttpException {
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
+        checkSystemPrivilege(req, SystemPrivilege.MayGetMissionDatabase);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 

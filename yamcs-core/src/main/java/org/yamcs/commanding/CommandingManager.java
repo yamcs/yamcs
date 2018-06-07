@@ -10,11 +10,9 @@ import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.InvalidAuthenticationToken;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtceproc.MetaCommandProcessor;
@@ -55,14 +53,15 @@ public class CommandingManager extends AbstractService {
      * pc is a command whose source is included. parse the source populate the binary part and the definition.
      */
     public PreparedCommand buildCommand(MetaCommand mc, List<ArgumentAssignment> argAssignmentList, String origin,
-            int seq, AuthenticationToken authToken) throws ErrorInCommand, NoPermissionException, YamcsException {
+            int seq, User user) throws ErrorInCommand, NoPermissionException, YamcsException {
         log.debug("building command {} with arguments {}", mc.getName(), argAssignmentList);
 
-        if (!Privilege.getInstance().hasPrivilege1(authToken, PrivilegeType.TC, mc.getName())) {
+        if (!user.hasPrivilege(PrivilegeType.TC, mc.getName())) {
             throw new NoPermissionException("User has no privilege on command " + mc.getName());
         }
-        if (origin == null)
+        if (origin == null) {
             origin = "anonymous";
+        }
 
         CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, argAssignmentList);
 
@@ -72,33 +71,23 @@ public class CommandingManager extends AbstractService {
         pc.setMetaCommand(mc);
         pc.setBinary(cbr.getCmdPacket());
         pc.setArgAssignment(cbr.getArgs());
-
-        String username;
-        if (authToken != null && authToken.getPrincipal() != null) {
-            username = authToken.getPrincipal().toString();
-        } else {
-            username = Privilege.getInstance().getDefaultUser();
-        }
-        pc.setUsername(username);
+        pc.setUsername(user.getUsername());
 
         return pc;
     }
 
     /**
      * @return the queue that the command was sent to
-     * @throws InvalidAuthenticationToken
      */
-    public CommandQueue sendCommand(AuthenticationToken authToken, PreparedCommand pc)
-            throws InvalidAuthenticationToken {
+    public CommandQueue sendCommand(User user, PreparedCommand pc) {
         log.debug("sendCommand commandSource={}", pc.getSource());
-        return commandQueueManager.addCommand(authToken, pc);
+        return commandQueueManager.addCommand(user, pc);
     }
 
-    public void addToCommandHistory(CommandId commandId, String key, String value, AuthenticationToken authToken)
+    public void addToCommandHistory(CommandId commandId, String key, String value, User user)
             throws NoPermissionException {
-        if (!Privilege.getInstance().hasPrivilege1(authToken, PrivilegeType.SYSTEM,
-                SystemPrivilege.MayModifyCommandHistory.name())) {
-            log.warn("Throwing InsufficientPrivileges for lack of COMMANDING privilege for user {}", authToken);
+        if (!user.hasPrivilege(PrivilegeType.SYSTEM, SystemPrivilege.MayModifyCommandHistory.toString())) {
+            log.warn("Throwing InsufficientPrivileges for lack of COMMANDING privilege for user {}", user);
             throw new NoPermissionException("User has no privilege to update command history ");
         }
 

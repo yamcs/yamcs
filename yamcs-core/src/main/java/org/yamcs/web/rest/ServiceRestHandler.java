@@ -6,10 +6,8 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
-import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
@@ -23,7 +21,8 @@ public class ServiceRestHandler extends RestHandler {
 
     @Route(path = "/api/services/:instance?", method = "GET")
     public void listServices(RestRequest req) throws HttpException {
-        checkPrivileges(req);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlServices);
+
         String instance = req.getRouteParam("instance");
         if (instance == null) {
             throw new BadRequestException("No instance specified");
@@ -52,7 +51,8 @@ public class ServiceRestHandler extends RestHandler {
 
     @Route(path = "/api/services/:instance/:name", method = "GET")
     public void getService(RestRequest req) throws HttpException {
-        checkPrivileges(req);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlServices);
+
         String instance = req.getRouteParam("instance");
         if (instance == null) {
             throw new BadRequestException("No instance specified");
@@ -87,7 +87,8 @@ public class ServiceRestHandler extends RestHandler {
     @Route(path = "/api/services/:instance/:name", method = { "PATCH", "PUT", "POST" })
     @Route(path = "/api/services/:instance/service/:name", method = { "PATCH", "PUT", "POST" })
     public void editService(RestRequest req) throws HttpException {
-        checkPrivileges(req);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlServices);
+
         String instance = req.getRouteParam("instance");
         if (instance == null) {
             throw new BadRequestException("No instance specified");
@@ -147,12 +148,6 @@ public class ServiceRestHandler extends RestHandler {
             }
         } else {
             completeOK(req);
-        }
-    }
-
-    private void checkPrivileges(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayControlServices)) {
-            throw new ForbiddenException("No privilege for this operation");
         }
     }
 }

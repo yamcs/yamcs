@@ -22,9 +22,11 @@ import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.TableLoadResponse;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
-import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 import org.yamcs.web.BadRequestException;
+import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpContentToByteBufDecoder;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
@@ -62,7 +64,7 @@ public class ArchiveTableRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/:instance/tables", method = "GET")
     public void listTables(RestRequest req) throws HttpException {
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadTables);
+        checkSystemPrivilege(req, SystemPrivilege.MayReadTables);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -76,7 +78,7 @@ public class ArchiveTableRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/:instance/tables/:name", method = "GET")
     public void getTable(RestRequest req) throws HttpException {
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadTables);
+        checkSystemPrivilege(req, SystemPrivilege.MayReadTables);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -88,7 +90,7 @@ public class ArchiveTableRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/:instance/tables/:name/data", method = "GET")
     public void getTableData(RestRequest req) throws HttpException {
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadTables);
+        checkSystemPrivilege(req, SystemPrivilege.MayReadTables);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -138,8 +140,10 @@ public class ArchiveTableRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/:instance/tables/:name/data", method = "POST", dataLoad = true)
     public void loadTableData(ChannelHandlerContext ctx, HttpRequest req, RouteMatch match) throws HttpException {
-        AuthenticationToken token = ctx.channel().attr(HttpRequestHandler.CTX_AUTH_TOKEN).get();
-        verifyAuthorization(token, SystemPrivilege.MayWriteTables);
+        User user = ctx.channel().attr(HttpRequestHandler.CTX_USER).get();
+        if (!user.hasPrivilege(PrivilegeType.SYSTEM, SystemPrivilege.MayWriteTables.toString())) {
+            throw new ForbiddenException("Insufificient  privileges");
+        }
         MediaType contentType = MediaType.getContentType(req);
         if (contentType != MediaType.PROTOBUF) {
             throw new BadRequestException(

@@ -15,8 +15,6 @@ import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.UsernamePasswordToken;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -149,22 +147,17 @@ public class WebSocketClient {
             header.add(HttpHeaderNames.USER_AGENT, userAgent);
         }
 
-        AuthenticationToken authToken = yprops.getAuthenticationToken();
-        if (authToken != null) {
-            if (authToken instanceof UsernamePasswordToken) {
-                String username = ((UsernamePasswordToken) authToken).getUsername();
-                String password = ((UsernamePasswordToken) authToken).getPasswordS();
-                if (username != null) {
-                    String credentialsClear = username;
-                    if (password != null) {
-                        credentialsClear += ":" + password;
-                    }
-                    String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
-                    String authorization = "Basic " + credentialsB64;
-                    header.add(HttpHeaderNames.AUTHORIZATION, authorization);
+        if (yprops.getUsername() != null) {
+            String username = yprops.getUsername();
+            String password = new String(yprops.getPassword());
+            if (username != null) {
+                String credentialsClear = username;
+                if (password != null) {
+                    credentialsClear += ":" + password;
                 }
-            } else {
-                throw new RuntimeException("authentication token of type " + authToken.getClass() + " not supported");
+                String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
+                String authorization = "Basic " + credentialsB64;
+                header.add(HttpHeaderNames.AUTHORIZATION, authorization);
             }
         }
         String subprotocol = SUBPROTOCOL_JSON;

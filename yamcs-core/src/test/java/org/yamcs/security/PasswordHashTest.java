@@ -1,10 +1,13 @@
 package org.yamcs.security;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+
+import org.junit.Test;
 
 /**
  * Created by msc on 07/05/15.
@@ -12,21 +15,16 @@ import java.security.spec.InvalidKeySpecException;
 public class PasswordHashTest {
     @Test
     public void hash_validate_ok() throws InvalidKeySpecException, NoSuchAlgorithmException {
+        PBKDF2PasswordHasher hasher = new PBKDF2PasswordHasher();
+        String password = "testtest";
+        String hash = hasher.createHash(password.toCharArray());
+        String secondHash = hasher.createHash(password.toCharArray());
+        assertNotEquals(hash, secondHash);
 
-        // Test password validation
-        System.out.println("Running tests...");
-        for (int i = 0; i < 100; i++) {
-            String password = "" + i;
-            String hash = PasswordHash.createHash(password);
-            String secondHash = PasswordHash.createHash(password);
-            Assert.assertFalse("Two hashes should not be equal", hash.equals(secondHash));
+        String wrongPassword = "wrong";
+        assertFalse("Wrong password should not be accepted",
+                (hasher.validatePassword(wrongPassword.toCharArray(), hash)));
 
-            String wrongPassword = "" + (i + 1);
-            Assert.assertFalse("Wrong password should not be accepted",
-                    (PasswordHash.validatePassword(wrongPassword, hash)));
-
-            Assert.assertTrue("Good password should be accepted", PasswordHash.validatePassword(password, hash));
-        }
+        assertTrue("Good password should be accepted", hasher.validatePassword(password.toCharArray(), hash));
     }
-
 }

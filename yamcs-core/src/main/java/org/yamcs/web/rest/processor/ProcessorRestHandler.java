@@ -29,9 +29,9 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
+import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -84,7 +84,7 @@ public class ProcessorRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor", method = "DELETE")
     public void deleteProcessor(RestRequest req) throws HttpException {
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlProcessor);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlProcessor);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
@@ -97,7 +97,7 @@ public class ProcessorRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
     public void editProcessor(RestRequest req) throws HttpException {
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayControlProcessor);
+        checkSystemPrivilege(req, SystemPrivilege.MayControlProcessor);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
@@ -225,7 +225,7 @@ public class ProcessorRestHandler extends RestHandler {
         }
         Set<Integer> clientIds = new HashSet<>(request.getClientIdList());
         // this will remove any invalid clientIds from the set
-        verifyPermissions(reqb.getPersistent(), processorType, clientIds, restReq.getAuthToken());
+        verifyPermissions(reqb.getPersistent(), processorType, clientIds, restReq.getUser());
 
         if (request.hasConfig()) {
             reqb.setConfig(request.getConfig());
@@ -234,17 +234,17 @@ public class ProcessorRestHandler extends RestHandler {
         reqb.addAllClientId(clientIds);
         ManagementService mservice = ManagementService.getInstance();
         try {
-            mservice.createProcessor(reqb.build(), restReq.getUsername());
+            mservice.createProcessor(reqb.build(), restReq.getUser().getUsername());
             completeOK(restReq);
         } catch (YamcsException e) {
             throw new BadRequestException(e.getMessage());
         }
     }
 
-    private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds,
-            AuthenticationToken authToken) throws ForbiddenException {
-        String username = Privilege.getInstance().getUsername(authToken);
-        if (!Privilege.getInstance().hasPrivilege1(authToken, SystemPrivilege.MayControlProcessor)) {
+    private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds, User user)
+            throws ForbiddenException {
+        String username = user.getUsername();
+        if (!user.hasPrivilege(PrivilegeType.SYSTEM, SystemPrivilege.MayControlProcessor.toString())) {
             if (persistent) {
                 log.warn("User {} is not allowed to create persistent processors", username);
                 throw new ForbiddenException("No permission to create persistent processors");

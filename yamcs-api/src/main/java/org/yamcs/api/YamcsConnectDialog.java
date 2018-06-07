@@ -29,8 +29,6 @@ import javax.swing.SwingConstants;
 
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.UsernamePasswordToken;
 
 /**
  * Dialog for entering yamcs connection parameters
@@ -115,11 +113,9 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
             lab = new JLabel("Username: ");
             lab.setHorizontalAlignment(SwingConstants.RIGHT);
             inputPanel.add(lab, ceast);
-            AuthenticationToken authToken = connectionProperties.getAuthenticationToken();
             usernameTextField = new JTextField();
-            if (authToken instanceof UsernamePasswordToken) {
-                UsernamePasswordToken upt = (UsernamePasswordToken) authToken;
-                usernameTextField.setText(upt.getUsername());
+            if (connectionProperties.getUsername() != null) {
+                usernameTextField.setText(connectionProperties.getUsername());
             }
             usernameTextField.setPreferredSize(new Dimension(160, usernameTextField.getPreferredSize().height));
             inputPanel.add(usernameTextField, cwest);
@@ -203,13 +199,11 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
                 connectionProperties.setHost(hostTextField.getText());
                 connectionProperties.setPort(Integer.parseInt(portTextField.getText()));
                 if (authEnabled) {
-                    UsernamePasswordToken upd = new UsernamePasswordToken(usernameTextField.getText(),
-                            passwordTextField.getPassword());
-                    connectionProperties.setAuthenticationToken(upd);
+                    connectionProperties.setCredentials(usernameTextField.getText(), passwordTextField.getPassword());
                     passwordTextField.setText("");
                 } else {
                     // If not authenticating, don't use last credentials
-                    connectionProperties.setAuthenticationToken(null);
+                    connectionProperties.setCredentials(null, null);
                 }
                 if (instanceCombo != null) {
                     connectionProperties.setInstance((String) instanceCombo.getSelectedItem());
@@ -226,12 +220,14 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
             try {
                 String host = hostTextField.getText();
                 int port = Integer.parseInt(portTextField.getText());
-                AuthenticationToken authToken = null;
+                String username = null;
+                char[] password = null;
                 if (authEnabled) {
-                    authToken = new UsernamePasswordToken(usernameTextField.getText(), passwordTextField.getPassword());
+                    username = usernameTextField.getText();
+                    password = passwordTextField.getPassword();
                 }
                 YamcsConnectionProperties tmp = new YamcsConnectionProperties(host, port);
-                tmp.setAuthenticationToken(authToken);
+                tmp.setCredentials(username, password);
                 RestClient restClient = new RestClient(tmp);
                 List<YamcsInstance> yinstances = restClient.blockingGetYamcsInstances();
                 instanceCombo.removeAllItems();

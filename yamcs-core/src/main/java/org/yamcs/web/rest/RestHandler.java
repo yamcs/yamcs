@@ -18,8 +18,6 @@ import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.StringConverter;
@@ -94,7 +92,7 @@ public abstract class RestHandler extends RouteHandler {
         restRequest.addTransferredSize(txSize);
         completeRequest(restRequest, httpResponse);
     }
-    
+
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
         ChannelFuture cf = HttpRequestHandler.sendResponse(restRequest.getChannelHandlerContext(),
                 restRequest.getHttpRequest(), httpResponse, true);
@@ -165,13 +163,15 @@ public abstract class RestHandler extends RouteHandler {
         }
         return exceptionb;
     }
-    protected static String verifyInstance(RestRequest req, String instance, boolean allowGlobal) throws NotFoundException {
-        if(allowGlobal && GLOBAL_INSTANCE.equals(instance)) {
+
+    protected static String verifyInstance(RestRequest req, String instance, boolean allowGlobal)
+            throws NotFoundException {
+        if (allowGlobal && GLOBAL_INSTANCE.equals(instance)) {
             return instance;
         }
         return verifyInstance(req, instance);
     }
-    
+
     protected static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
         if (!YamcsServer.hasInstance(instance)) {
             throw new NotFoundException(req, "No instance named '" + instance + "'");
@@ -279,7 +279,7 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(id);
         }
 
-        if (p != null && !authorised(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
+        if (p != null && !hasPrivilege(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
             log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead",
                     StringConverter.idToString(id));
             p = null;
@@ -296,7 +296,7 @@ public abstract class RestHandler extends RouteHandler {
             throws NotFoundException {
         Stream stream = ydb.getStream(streamName);
 
-        if (stream != null && !authorised(req, PrivilegeType.STREAM, streamName)) {
+        if (stream != null && !hasPrivilege(req, PrivilegeType.STREAM, streamName)) {
             log.warn("Stream {} found, but withheld due to insufficient privileges. Returning 404 instead",
                     streamName);
             stream = null;
@@ -409,10 +409,6 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    protected static boolean authorised(RestRequest req, PrivilegeType type, String privilege) {
-        return Privilege.getInstance().hasPrivilege1(req.getAuthToken(), type, privilege);
-    }
-
     protected static class NameDescriptionWithId<T extends NameDescription> {
         final private T item;
         private final NamedObjectId requestedId;
@@ -437,35 +433,29 @@ public abstract class RestHandler extends RouteHandler {
                 .addListener(l -> req.getCompletableFuture().complete(null));
     }
 
-    protected static void checkSystemPrivilege(RestRequest req, SystemPrivilege priv) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), priv)) {
-            throw new ForbiddenException("Need " + priv + " privilege for this operation");
-        }
+    protected static void checkSystemPrivilege(RestRequest req, SystemPrivilege priv) throws ForbiddenException {
+        checkPrivileges(req, PrivilegeType.SYSTEM, priv.toString());
     }
 
-    protected void verifyAuthorization(AuthenticationToken authToken, SystemPrivilege p) throws ForbiddenException {
-        if (!Privilege.getInstance().hasPrivilege1(authToken, p)) {
-            throw new ForbiddenException("Need " + p + " privilege for this operation");
-        }
-    }
-
-    protected static void verifyAuthorization(AuthenticationToken authToken, PrivilegeType type,
-            Collection<String> names) throws ForbiddenException {
-        for (String n : names) {
-            if (!Privilege.getInstance().hasPrivilege1(authToken, type, n)) {
-                throw new ForbiddenException("No " + type + " authorization for '" + n + "'");
-            }
-            ;
-        }
-    };
-
-    protected static void verifyAuthorization(AuthenticationToken authToken, PrivilegeType type, String... names)
+    protected static void checkPrivileges(RestRequest req, PrivilegeType type, Collection<String> privileges)
             throws ForbiddenException {
-        for (String n : names) {
-            if (!Privilege.getInstance().hasPrivilege1(authToken, type, n)) {
-                throw new ForbiddenException("No " + type + " authorization for '" + n + "'");
+        checkPrivileges(req, type, privileges.toArray(new String[privileges.size()]));
+    }
+
+    protected static void checkPrivileges(RestRequest req, PrivilegeType type, String... privileges)
+            throws ForbiddenException {
+        for (String privilege : privileges) {
+            if (!req.getUser().hasPrivilege(type, privilege)) {
+                throw new ForbiddenException("No " + type + " authorization for '" + privilege + "'");
             }
-            ;
         }
-    };
+    }
+
+    protected static boolean hasSystemPrivilege(RestRequest req, SystemPrivilege privilege) {
+        return hasPrivilege(req, PrivilegeType.SYSTEM, privilege.toString());
+    }
+
+    protected static boolean hasPrivilege(RestRequest req, PrivilegeType type, String privilege) {
+        return req.getUser().hasPrivilege(type, privilege);
+    }
 }

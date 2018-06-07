@@ -25,7 +25,6 @@ import org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.UsernamePasswordToken;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -187,11 +186,10 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 .get();
     }
 
-
     private RestClient getRestClient(String username, String password) {
         YamcsConnectionProperties ycp1 = ycp.clone();
 
-        ycp1.setAuthenticationToken(new UsernamePasswordToken(username, password));
+        ycp1.setCredentials(username, password.toCharArray());
         RestClient restClient1 = new RestClient(ycp1);
         restClient1.setAcceptMediaType(MediaType.JSON);
         restClient1.setSendMediaType(MediaType.JSON);

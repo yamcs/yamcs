@@ -13,6 +13,7 @@ import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 
 import io.netty.handler.codec.http.HttpMethod;
 
@@ -43,14 +44,18 @@ public class YamcsClient {
         });
     }
 
+    @SuppressWarnings("unchecked")
+    private static <T extends Message> T decode(byte[] data, T defaultInstance) throws CompletionException {
+        try {
+            return (T) defaultInstance.newBuilderForType().mergeFrom(data).build();
+        } catch (InvalidProtocolBufferException e) {
+            throw new CompletionException(e);
+        }
+    }
+
     public CompletableFuture<YamcsInstance> getInstance(String instance) {
-        return restClient.doRequest("/instances/" + instance, HttpMethod.GET).thenApply(response -> {
-            try {
-                return YamcsInstance.parseFrom(response);
-            } catch (InvalidProtocolBufferException e) {
-                throw new CompletionException(e);
-            }
-        });
+        return restClient.doRequest("/instances/" + instance, HttpMethod.GET)
+                .thenApply(response -> decode(response, YamcsInstance.getDefaultInstance()));
     }
 
     public CompletableFuture<ListServiceInfoResponse> getServices() {

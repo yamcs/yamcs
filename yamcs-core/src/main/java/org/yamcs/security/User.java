@@ -1,6 +1,5 @@
 package org.yamcs.security;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,7 +8,12 @@ import java.util.Set;
  */
 public class User {
 
-    private Date lastUpdated;
+    private String username;
+
+    private AuthenticationInfo authenticationInfo;
+
+    // A superuser does not require privilege checking
+    private boolean superuser = false;
 
     private Set<String> roles = new HashSet<>();
     private Set<String> tmParaPrivileges = new HashSet<>();
@@ -19,15 +23,26 @@ public class User {
     private Set<String> streamPrivileges = new HashSet<>();
     private Set<String> cmdHistoryPrivileges = new HashSet<>();
     private Set<String> systemPrivileges = new HashSet<>();
-    private String principalName;
-    
-    public User(String principalName) {
-        lastUpdated = new Date();
-        this.principalName = principalName;
+
+    public User(AuthenticationInfo authenticationInfo) {
+        this.authenticationInfo = authenticationInfo;
+        this.username = authenticationInfo.getPrincipal();
     }
 
-    public Date getLastUpdated() {
-        return lastUpdated;
+    public User(String username) {
+        this.username = username;
+    }
+
+    public AuthenticationInfo getAuthenticationInfo() {
+        return authenticationInfo;
+    }
+
+    public boolean isSuperuser() {
+        return superuser;
+    }
+
+    public void setSuperuser(boolean superuser) {
+        this.superuser = superuser;
     }
 
     public void addRole(String role) {
@@ -90,30 +105,25 @@ public class User {
         systemPrivileges.add(privilege);
     }
 
-
-    public String getPrincipalName() {
-       return principalName;
+    public String getUsername() {
+        return username;
     }
 
     /**
      * @return the roles of the calling user
      */
     public String[] getRoles() {
-        if (roles == null)
+        if (roles == null) {
             return new String[0];
+        }
         return roles.toArray(new String[roles.size()]);
     }
 
-    public boolean hasRole(String role) {
-        if (this.roles == null)
-            return false;
-        return (this.roles.contains(role));
-    }
-
     public boolean hasPrivilege(PrivilegeType type, String privilege) {
-        Set<String> priv = null;
-        if (privilege == null)
+        if (superuser) {
             return true;
+        }
+        Set<String> priv = null;
         switch (type) {
         case TM_PARAMETER:
             priv = this.tmParaPrivileges;
@@ -150,13 +160,6 @@ public class User {
 
     @Override
     public String toString() {
-        return "User: " + principalName
-                + "\n roles: " + roles
-                + "\n   tm parameter privileges:" + tmParaPrivileges
-                + "\n   tm parameter set privileges:" + tmParaSetPrivileges
-                + "\n   tm packet privileges:" + tmPacketPrivileges
-                + "\n   tc privileges:" + tcPrivileges
-                + "\n   system privileges:" + systemPrivileges
-                + "\n   lastUpdated:" + lastUpdated;
+        return username;
     }
 }

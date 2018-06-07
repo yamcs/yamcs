@@ -18,9 +18,8 @@ import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.User;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.Parameter;
 
@@ -56,17 +55,17 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         schedulePeriodicExpirationChecking(this);
     }
 
-    public int addRequest(List<NamedObjectId> idList, AuthenticationToken authToken)
+    public int addRequest(List<NamedObjectId> idList, User user)
             throws InvalidIdentification, NoPermissionException {
-        return addRequest(idList, false, authToken);
+        return addRequest(idList, false, user);
     }
 
-    public int addRequest(List<NamedObjectId> idList, boolean checkExpiration, AuthenticationToken authToken)
+    public int addRequest(List<NamedObjectId> idList, boolean checkExpiration, User user)
             throws InvalidIdentification, NoPermissionException {
         List<Parameter> plist = checkNames(idList);
         Subscription subscr = new Subscription(checkExpiration);
         for (int i = 0; i < idList.size(); i++) {
-            checkParameterPrivilege(authToken, plist.get(i).getQualifiedName());
+            checkParameterPrivilege(user, plist.get(i).getQualifiedName());
             subscr.put(plist.get(i), idList.get(i));
         }
         int subscriptionId = prm.addRequest(plist, this);
@@ -75,7 +74,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         return subscriptionId;
     }
 
-    public void addItemsToRequest(int subscriptionId, List<NamedObjectId> idList, AuthenticationToken authToken)
+    public void addItemsToRequest(int subscriptionId, List<NamedObjectId> idList, User user)
             throws InvalidIdentification, NoPermissionException {
         Subscription subscr = subscriptions.get(subscriptionId);
         if (subscr == null) {
@@ -86,7 +85,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         synchronized (subscr) {
             for (int i = 0; i < idList.size(); i++) {
                 Parameter p = plist.get(i);
-                checkParameterPrivilege(authToken, p.getQualifiedName());
+                checkParameterPrivilege(user, p.getQualifiedName());
                 NamedObjectId id = idList.get(i);
                 if (!subscr.put(p, id)) {
                     log.info("Ignoring duplicate subscription for '{}', id: {}", p.getName(),
@@ -139,8 +138,8 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         prm.removeRequest(subscriptionId);
     }
 
-    public void removeItemsFromRequest(int subscriptionId, List<NamedObjectId> parameterIds,
-            AuthenticationToken authToken) throws NoPermissionException {
+    public void removeItemsFromRequest(int subscriptionId, List<NamedObjectId> parameterIds, User user)
+            throws NoPermissionException {
         Subscription subscr = subscriptions.get(subscriptionId);
 
         if (subscr == null) {
@@ -165,19 +164,19 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         return prm;
     }
 
-    public int subscribeAll(String namespace, AuthenticationToken authToken) throws NoPermissionException {
-        checkParameterPrivilege(authToken, ".*");
+    public int subscribeAll(String namespace, User user) throws NoPermissionException {
+        checkParameterPrivilege(user, ".*");
         return prm.subscribeAll(this);
     }
 
-    public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList, AuthenticationToken authToken)
+    public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList, User user)
             throws InvalidIdentification, NoPermissionException {
         List<Parameter> params = checkNames(idList);
 
         ListMultimap<Parameter, NamedObjectId> lm = ArrayListMultimap.create();
         for (int i = 0; i < idList.size(); i++) {
             Parameter p = params.get(i);
-            checkParameterPrivilege(authToken, p.getQualifiedName());
+            checkParameterPrivilege(user, p.getQualifiedName());
             NamedObjectId id = idList.get(i);
             lm.put(p, id);
         }
@@ -234,15 +233,16 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     /**
      * Change processor and return the list of parameters that were valid in the old processor and are not anymore
      */
-    public List<NamedObjectId> switchPrm(ParameterRequestManager newPrm, AuthenticationToken authToken)
+    public List<NamedObjectId> switchPrm(ParameterRequestManager newPrm, User user)
             throws NoPermissionException {
         List<NamedObjectId> invalid = new ArrayList<>();
         if (prm.getXtceDb() == newPrm.getXtceDb()) {
             for (int subscriptionId : subscriptions.keySet()) {
                 List<Parameter> plist = prm.removeRequest(subscriptionId);
                 // checking permission
-                for (Parameter p : plist)
-                    checkParameterPrivilege(authToken, p.getQualifiedName());
+                for (Parameter p : plist) {
+                    checkParameterPrivilege(user, p.getQualifiedName());
+                }
                 newPrm.addRequest(subscriptionId, plist, this);
             }
             prm = newPrm;
@@ -268,7 +268,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                         invalid.addAll(e.getInvalidParameters());
                         try {
                             plist = checkNames(idList);
-                        } catch (InvalidIdentification e1) { // shouldn'd happen again
+                        } catch (InvalidIdentification e1) { // shouldn't happen again
                             throw new IllegalStateException(e1);
                         }
                     }
@@ -277,7 +277,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
                     for (int i = 0; i < plist.size(); i++) {
                         Parameter p = plist.get(i);
-                        checkParameterPrivilege(authToken, p.getQualifiedName());
+                        checkParameterPrivilege(user, p.getQualifiedName());
                         NamedObjectId id = idList.get(i);
                         subscr1.put(p, id);
                     }
@@ -376,10 +376,10 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
      * @param parameterName
      * @throws NoPermissionException
      */
-    private void checkParameterPrivilege(AuthenticationToken authToken, String parameterName)
+    private void checkParameterPrivilege(User user, String parameterName)
             throws NoPermissionException {
-        if (!Privilege.getInstance().hasPrivilege1(authToken, PrivilegeType.TM_PARAMETER, parameterName)) {
-            throw new NoPermissionException("User " + authToken + " has no permission for parameter " + parameterName);
+        if (!user.hasPrivilege(PrivilegeType.TM_PARAMETER, parameterName)) {
+            throw new NoPermissionException("User " + user + " has no permission for parameter " + parameterName);
         }
     }
 

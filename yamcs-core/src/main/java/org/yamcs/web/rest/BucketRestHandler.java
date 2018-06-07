@@ -14,11 +14,10 @@ import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ObjectInfo;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
-import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
@@ -56,9 +55,8 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance", method = "GET")
     public void listBuckets(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayReadBucket)) {
-            throw new ForbiddenException("No privilege for this operation");
-        }
+        checkSystemPrivilege(req, SystemPrivilege.MayReadBucket);
+
         BucketDatabase bdb = getBucketDb(req);
         List<BucketProperties> l = bdb.listBuckets();
         ListBucketsResponse.Builder lbr = ListBucketsResponse.newBuilder();
@@ -71,9 +69,8 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance", method = { "POST" })
     public void createBucket(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayCreateBucket)) {
-            throw new ForbiddenException("No privilege for this operation");
-        }
+        checkSystemPrivilege(req, SystemPrivilege.MayCreateBucket);
+
         CreateBucketRequest crb = req.bodyAsMessage(CreateBucketRequest.newBuilder()).build();
         verifyBucketName(crb.getName());
         BucketDatabase bdb = getBucketDb(req);
@@ -92,9 +89,8 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "DELETE" })
     public void deleteBucket(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayCreateBucket)) {
-            throw new ForbiddenException("No privilege for this operation");
-        }
+        checkSystemPrivilege(req, SystemPrivilege.MayReadBucket);
+
         BucketDatabase bdb = getBucketDb(req);
         Bucket b = verifyAndGetBucket(req);
         try {
@@ -282,18 +278,16 @@ public class BucketRestHandler extends RestHandler {
 
     private void checkPrivileges(RestRequest req, SystemPrivilege priv) throws HttpException {
         String bucketName = req.getRouteParam(BUCKET_NAME_PARAM);
-        if (bucketName.equals(getUserBucketName(req.getUsername()))) {
+        if (bucketName.equals(getUserBucketName(req.getUser()))) {
             return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
                     // anyway)
         }
 
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), priv)) {
-            throw new ForbiddenException("No privilege for this operation");
-        }
+        checkSystemPrivilege(req, priv);
     }
 
-    private static String getUserBucketName(String username) {
-        return "user." + username;
+    private static String getUserBucketName(User user) {
+        return "user." + user.getUsername();
     }
 
     static private BucketDatabase getBucketDb(RestRequest req) throws HttpException {
@@ -317,7 +311,7 @@ public class BucketRestHandler extends RestHandler {
 
         Bucket bucket = bdb.getBucket(bucketName);
         if (bucket == null) {
-            if (bucketName.equals(getUserBucketName(req.getUsername()))) {
+            if (bucketName.equals(getUserBucketName(req.getUser()))) {
                 try {
                     bucket = bdb.createBucket(bucketName);
                 } catch (IOException e) {

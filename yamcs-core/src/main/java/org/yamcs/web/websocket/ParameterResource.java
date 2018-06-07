@@ -28,7 +28,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.NamedObjectList;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.StringMessage;
-import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.User;
 import org.yamcs.utils.StringConverter;
 
 /**
@@ -75,13 +75,13 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
 
         switch (ctx.getOperation()) {
         case WSR_SUBSCRIBE:
-            return subscribe(subscriptionId, ctx.getRequestId(), req, client.getAuthToken());
+            return subscribe(subscriptionId, ctx.getRequestId(), req, client.getUser());
         case WSR_SUBSCRIBE_ALL:
             StringMessage stringMessage = decoder.decodeMessageData(ctx, StringMessage.newBuilder()).build();
-            return subscribeAll(ctx.getRequestId(), stringMessage.getMessage(), client.getAuthToken());
+            return subscribeAll(ctx.getRequestId(), stringMessage.getMessage(), client.getUser());
         case WSR_UNSUBSCRIBE:
             NamedObjectList unsubscribeList = decoder.decodeMessageData(ctx, NamedObjectList.newBuilder()).build();
-            return unsubscribe(subscriptionId, ctx.getRequestId(), unsubscribeList, client.getAuthToken());
+            return unsubscribe(subscriptionId, ctx.getRequestId(), unsubscribeList, client.getUser());
         case WSR_UNSUBSCRIBE_ALL:
             return unsubscribeAll(subscriptionId, ctx.getRequestId());
         default:
@@ -97,17 +97,16 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         }
     }
 
-    private WebSocketReply subscribe(int subscriptionId, int requestId, ParameterSubscriptionRequest req,
-            AuthenticationToken authToken)
+    private WebSocketReply subscribe(int subscriptionId, int requestId, ParameterSubscriptionRequest req, User user)
             throws WebSocketException {
         List<NamedObjectId> idList = req.getIdList();
         try {
             WebSocketReply reply = new WebSocketReply(requestId);
             try {
                 if (subscriptionId != -1) {
-                    pidrm.addItemsToRequest(subscriptionId, idList, authToken);
+                    pidrm.addItemsToRequest(subscriptionId, idList, user);
                 } else {
-                    subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
+                    subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), user);
                     if (firstSubscriptionId == -1) {
                         firstSubscriptionId = subscriptionId;
                     }
@@ -140,9 +139,9 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                                     StringConverter.idListToString(e.getInvalidParameters()));
                         }
                         if (subscriptionId != -1) {
-                            pidrm.addItemsToRequest(subscriptionId, idList, authToken);
+                            pidrm.addItemsToRequest(subscriptionId, idList, user);
                         } else {
-                            subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), authToken);
+                            subscriptionId = pidrm.addRequest(idList, req.getUpdateOnExpiration(), user);
                         }
                         if (firstSubscriptionId == -1) {
                             firstSubscriptionId = subscriptionId;
@@ -156,7 +155,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             }
             wsHandler.sendReply(reply);
             if (pidrm.hasParameterCache() && (!req.hasSendFromCache() || req.getSendFromCache())) {
-                List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idList, authToken);
+                List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idList, user);
                 if (!pvlist.isEmpty()) {
                     update(subscriptionId, pvlist);
                 }
@@ -178,12 +177,11 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         }
     }
 
-    private WebSocketReply unsubscribe(int subscriptionId, int requestId, NamedObjectList paraList,
-            AuthenticationToken authToken)
+    private WebSocketReply unsubscribe(int subscriptionId, int requestId, NamedObjectList paraList, User user)
             throws WebSocketException {
         if (subscriptionId != -1) {
             try {
-                pidrm.removeItemsFromRequest(subscriptionId, paraList.getListList(), authToken);
+                pidrm.removeItemsFromRequest(subscriptionId, paraList.getListList(), user);
             } catch (NoPermissionException e) {
                 throw new WebSocketException(requestId, "No permission", e);
             }
@@ -193,13 +191,13 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         }
     }
 
-    private WebSocketReply subscribeAll(int requestId, String namespace, AuthenticationToken authToken)
+    private WebSocketReply subscribeAll(int requestId, String namespace, User user)
             throws WebSocketException {
         if (allSubscriptionId != -1) {
             throw new WebSocketException(requestId, "Already subscribed for this client");
         }
         try {
-            allSubscriptionId = pidrm.subscribeAll(namespace, authToken);
+            allSubscriptionId = pidrm.subscribeAll(namespace, user);
         } catch (NoPermissionException e) {
             throw new WebSocketException(requestId, "No permission", e);
         }
@@ -266,8 +264,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     @Override
     public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
         try {
-            List<NamedObjectId> invalid = pidrm.switchPrm(newProcessor.getParameterRequestManager(),
-                    client.getAuthToken());
+            List<NamedObjectId> invalid = pidrm.switchPrm(newProcessor.getParameterRequestManager(), client.getUser());
             super.switchProcessor(oldProcessor, newProcessor);
             if (!invalid.isEmpty()) {
                 // send notification for invalid parameters

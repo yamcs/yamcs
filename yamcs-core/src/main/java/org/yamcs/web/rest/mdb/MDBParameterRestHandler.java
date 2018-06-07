@@ -14,7 +14,6 @@ import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse;
 import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse.GetParameterInfoResponse;
 import org.yamcs.protobuf.Rest.ListParameterInfoResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
@@ -35,7 +34,7 @@ public class MDBParameterRestHandler extends RestHandler {
 
     @Route(path = "/api/mdb/:instance/parameters/bulk", method = { "GET", "POST" }, priority = true)
     public void getBulkParameterInfo(RestRequest req) throws HttpException {
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
+        checkSystemPrivilege(req, SystemPrivilege.MayGetMissionDatabase);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -47,8 +46,7 @@ public class MDBParameterRestHandler extends RestHandler {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
-            if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
-                    p.getQualifiedName())) {
+            if (!hasPrivilege(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
                 log.warn("Not providing information about parameter {} because no privileges exists",
                         p.getQualifiedName());
                 continue;
@@ -111,10 +109,8 @@ public class MDBParameterRestHandler extends RestHandler {
         List<Parameter> matchedParameters = new ArrayList<>();
         if (req.hasQueryParameter("namespace")) {
             String namespace = req.getQueryParameter("namespace");
-
-            Privilege privilege = Privilege.getInstance();
             for (Parameter p : mdb.getParameters()) {
-                if (!privilege.hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
+                if (!hasPrivilege(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
                     continue;
                 }
                 if (matcher != null && !matcher.matches(p)) {

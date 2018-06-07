@@ -26,9 +26,8 @@ import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.EditAlarmRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.User;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -80,7 +79,8 @@ public class ProcessorParameterRestHandler extends RestHandler {
         case "acknowledged":
             try {
                 // TODO permissions on AlarmServer
-                alarmServer.acknowledge(p, seqNum, req.getUsername(), processor.getCurrentTime(), comment);
+                String username = req.getUser().getUsername();
+                alarmServer.acknowledge(p, seqNum, username, processor.getCurrentTime(), comment);
                 completeOK(req);
             } catch (CouldNotAcknowledgeAlarmException e) {
                 log.debug("Did not acknowledge alarm {}.{}", seqNum, e.getMessage());
@@ -121,12 +121,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         for (SetParameterValueRequest r : request.getRequestList()) {
             try {
                 String parameterName = prm.getParameter(r.getId()).getQualifiedName();
-                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER_SET,
-                        parameterName)) {
-                    throw new ForbiddenException(
-                            "User " + req.getAuthToken() + " has no 'set' permission for parameter "
-                                    + parameterName);
-                }
+                checkPrivileges(req, PrivilegeType.TM_PARAMETER_SET, parameterName);
             } catch (InvalidIdentification e) {
                 throw new BadRequestException("InvalidIdentification: " + e.getMessage());
             }
@@ -156,11 +151,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
 
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
-                p.getQualifiedName())) {
-            log.warn("Parameter Info for {} not authorized for token {}", p.getQualifiedName(), req.getAuthToken());
-            throw new BadRequestException("Invalid parameter name specified");
-        }
+        checkPrivileges(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName());
         long timeout = 10000;
         boolean fromCache = true;
         if (req.hasQueryParameter("timeout")) {
@@ -172,7 +163,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
 
         NamedObjectId id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
         List<NamedObjectId> ids = Arrays.asList(id);
-        List<ParameterValue> pvals = doGetParameterValues(processor, req.getAuthToken(), ids, fromCache, timeout);
+        List<ParameterValue> pvals = doGetParameterValues(processor, req.getUser(), ids, fromCache, timeout);
 
         ParameterValue pval;
         if (pvals.isEmpty()) {
@@ -213,15 +204,15 @@ public class ProcessorParameterRestHandler extends RestHandler {
         }
 
         List<NamedObjectId> ids = request.getIdList();
-        List<ParameterValue> pvals = doGetParameterValues(processor, req.getAuthToken(), ids, fromCache, timeout);
+        List<ParameterValue> pvals = doGetParameterValues(processor, req.getUser(), ids, fromCache, timeout);
 
         BulkGetParameterValueResponse.Builder responseb = BulkGetParameterValueResponse.newBuilder();
         responseb.addAllValue(pvals);
         completeOK(req, responseb.build());
     }
 
-    private List<ParameterValue> doGetParameterValues(Processor processor, AuthenticationToken authToken,
-            List<NamedObjectId> ids, boolean fromCache, long timeout) throws HttpException {
+    private List<ParameterValue> doGetParameterValues(Processor processor, User user, List<NamedObjectId> ids,
+            boolean fromCache, long timeout) throws HttpException {
         if (timeout > 60000) {
             throw new BadRequestException("Invalid timeout specified. Maximum is 60.000 milliseconds");
         }
@@ -236,13 +227,13 @@ public class ProcessorParameterRestHandler extends RestHandler {
                     throw new BadRequestException("ParameterCache not activated for this processor");
                 }
                 List<ParameterValueWithId> l;
-                l = pwirh.getValuesFromCache(ids, authToken);
+                l = pwirh.getValuesFromCache(ids, user);
                 for (ParameterValueWithId pvwi : l) {
                     pvals.add(pvwi.toGbpParameterValue());
                 }
             } else {
 
-                int reqId = pwirh.addRequest(ids, authToken);
+                int reqId = pwirh.addRequest(ids, user);
                 long t0 = System.currentTimeMillis();
                 long t1;
                 while (true) {

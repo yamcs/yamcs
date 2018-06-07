@@ -27,7 +27,7 @@ import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo;
-import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.User;
 import org.yamcs.spi.Plugin;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
@@ -247,10 +247,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        AuthenticationToken token = ctx.channel().attr(HttpRequestHandler.CTX_AUTH_TOKEN).get();
+        User user = ctx.channel().attr(HttpRequestHandler.CTX_USER).get();
         RouteMatch match = ctx.channel().attr(CTX_ROUTE_MATCH).get();
         QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
-        RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
+        RestRequest restReq = new RestRequest(ctx, req, qsDecoder, user);
         restReq.setRouteMatch(match);
         log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.method(), req.uri());
         dispatch(restReq, match);
@@ -400,7 +400,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             this.dataLoad = dataLoad;
             this.maxBodySize = maxBodySize;
         }
-       
+
         @Override
         public int compareTo(RouteConfig o) {
             int priorityCompare = Boolean.compare(priority, o.priority);
@@ -419,7 +419,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         public boolean isDataLoad() {
             return dataLoad;
         }
-        
+
         public int maxBodySize() {
             return maxBodySize;
         }

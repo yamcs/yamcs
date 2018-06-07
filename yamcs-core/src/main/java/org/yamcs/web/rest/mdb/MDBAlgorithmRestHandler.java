@@ -20,7 +20,7 @@ public class MDBAlgorithmRestHandler extends RestHandler {
     @Route(path = "/api/mdb/:instance/algorithms", method = "GET")
     @Route(path = "/api/mdb/:instance/algorithms/:name*", method = "GET")
     public void getAlgorithm(RestRequest req) throws HttpException {
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
+        checkSystemPrivilege(req, SystemPrivilege.MayGetMissionDatabase);
 
         if (req.hasRouteParam("name")) {
             getAlgorithmInfo(req);

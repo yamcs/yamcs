@@ -11,7 +11,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.User;
 import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.HttpRequestInfo;
 import org.yamcs.web.HttpServer;
@@ -83,8 +83,8 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         }
 
         String yamcsInstance = originalRequestInfo.getYamcsInstance();
-        AuthenticationToken authToken = originalRequestInfo.getAuthenticationToken();
-        processorClient = new WebSocketProcessorClient(yamcsInstance, this, applicationName, authToken);
+        User user = originalRequestInfo.getUser();
+        processorClient = new WebSocketProcessorClient(yamcsInstance, this, applicationName, user);
         HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
         if (httpServer != null) { // Can happen in junit when not using yamcs.yaml
             for (WebSocketResourceProvider provider : httpServer.getWebSocketResourceProviders()) {

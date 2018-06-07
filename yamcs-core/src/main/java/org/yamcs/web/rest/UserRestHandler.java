@@ -9,7 +9,6 @@ import java.util.List;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.UserInfo;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpException;
 
@@ -20,28 +19,23 @@ public class UserRestHandler extends RestHandler {
 
     @Route(path = "/api/user", method = "GET")
     public void getUser(RestRequest req) throws HttpException {
-        User user = Privilege.getInstance().getUser(req.getAuthToken());
+        User user = req.getUser();
         UserInfo userInfo = toUserInfo(user, true);
         completeOK(req, userInfo);
     }
 
     public static UserInfo toUserInfo(User user, boolean addClientInfo) {
         UserInfo.Builder userInfob;
-        if (user == null) {
-            userInfob = buildFullyPrivilegedUser();
-            userInfob.setLogin(Privilege.getInstance().getDefaultUser());
-        } else {
-            userInfob = UserInfo.newBuilder();
-            userInfob.setLogin(user.getPrincipalName());
-            userInfob.addAllRoles(asSortedList(user.getRoles()));
-            userInfob.addAllTmParaPrivileges(asSortedList(user.getTmParaPrivileges()));
-            userInfob.addAllTmParaSetPrivileges(asSortedList(user.getTmParaSetPrivileges()));
-            userInfob.addAllTmPacketPrivileges(asSortedList(user.getTmPacketPrivileges()));
-            userInfob.addAllTcPrivileges(asSortedList(user.getTcPrivileges()));
-            userInfob.addAllSystemPrivileges(asSortedList(user.getSystemPrivileges()));
-            userInfob.addAllStreamPrivileges(asSortedList(user.getStreamPrivileges()));
-            userInfob.addAllCmdHistoryPrivileges(asSortedList(user.getCmdHistoryPrivileges()));
-        }
+        userInfob = UserInfo.newBuilder();
+        userInfob.setLogin(user.getUsername());
+        userInfob.addAllRoles(asSortedList(user.getRoles()));
+        userInfob.addAllTmParaPrivileges(asSortedList(user.getTmParaPrivileges()));
+        userInfob.addAllTmParaSetPrivileges(asSortedList(user.getTmParaSetPrivileges()));
+        userInfob.addAllTmPacketPrivileges(asSortedList(user.getTmPacketPrivileges()));
+        userInfob.addAllTcPrivileges(asSortedList(user.getTcPrivileges()));
+        userInfob.addAllSystemPrivileges(asSortedList(user.getSystemPrivileges()));
+        userInfob.addAllStreamPrivileges(asSortedList(user.getStreamPrivileges()));
+        userInfob.addAllCmdHistoryPrivileges(asSortedList(user.getCmdHistoryPrivileges()));
 
         for (ClientInfo ci : ManagementService.getInstance().getClientInfo(userInfob.getLogin())) {
             userInfob.addClientInfo(ci);

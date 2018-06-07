@@ -80,7 +80,7 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
 
         RestDownsampler sampler = new RestDownsampler(rr.getStart(), rr.getStop(), sampleCount);
 
-        RestReplays.replay(instance, req.getAuthToken(), rr.build(), new RestReplayListener() {
+        RestReplays.replay(instance, req.getUser(), rr.build(), new RestReplayListener() {
             @Override
             public void onParameterData(List<ParameterValueWithId> params) {
                 for (ParameterValueWithId pvalid : params) {
@@ -145,7 +145,7 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
                     }
                 };
                 replayListener.setNoRepeat(noRepeat);
-                RestReplays.replay(instance, req.getAuthToken(), rr, replayListener);
+                RestReplays.replay(instance, req.getUser(), rr, replayListener);
 
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
@@ -167,7 +167,7 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
                 }
             };
             replayListener.setNoRepeat(noRepeat);
-            RestReplays.replay(instance, req.getAuthToken(), rr, replayListener);
+            RestReplays.replay(instance, req.getUser(), rr, replayListener);
         }
     }
 }

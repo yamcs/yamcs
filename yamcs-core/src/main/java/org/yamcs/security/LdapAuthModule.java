@@ -1,17 +1,13 @@
 package org.yamcs.security;
 
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
 
-import javax.naming.AuthenticationException;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
@@ -22,10 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
-/**
- * Created by msc on 05/05/15.
- */
-public class LdapRealm implements Realm {
+public class LdapAuthModule implements AuthModule {
 
     private String tmParaPrivPath;
     private String tmParaSetPrivPath;
@@ -38,34 +31,33 @@ public class LdapRealm implements Realm {
     private String userPath;
 
     private static final Hashtable<String, String> contextEnv = new Hashtable<>();
-    private static final Logger log = LoggerFactory.getLogger(LdapRealm.class);
+    private static final Logger log = LoggerFactory.getLogger(LdapAuthModule.class);
 
-    public LdapRealm() {
-        YConfiguration conf = YConfiguration.getConfiguration("privileges");
+    public LdapAuthModule(Map<String, Object> config) {
+        String host = YConfiguration.getString(config, "ldaphost");
+        userPath = YConfiguration.getString(config, "userPath");
+        rolePath = YConfiguration.getString(config, "rolePath");
 
-        String host = conf.getString("ldaphost");
-        userPath = conf.getString("userPath");
-        rolePath = conf.getString("rolePath");
-        if (conf.containsKey("systemPath")) {
-            systemPrivPath = conf.getString("systemPath");
+        if (config.containsKey("systemPath")) {
+            systemPrivPath = YConfiguration.getString(config, "systemPath");
         }
-        if (conf.containsKey("tmParameterPath")) {
-            tmParaPrivPath = conf.getString("tmParameterPath");
+        if (config.containsKey("tmParameterPath")) {
+            tmParaPrivPath = YConfiguration.getString(config, "tmParameterPath");
         }
-        if (conf.containsKey("tmParameterSetPath")) {
-            tmParaSetPrivPath = conf.getString("tmParameterSetPath");
+        if (config.containsKey("tmParameterSetPath")) {
+            tmParaSetPrivPath = YConfiguration.getString(config, "tmParameterSetPath");
         }
-        if (conf.containsKey("tmPacketPath")) {
-            tmPacketPrivPath = conf.getString("tmPacketPath");
+        if (config.containsKey("tmPacketPath")) {
+            tmPacketPrivPath = YConfiguration.getString(config, "tmPacketPath");
         }
-        if (conf.containsKey("tcPath")) {
-            tcPrivPath = conf.getString("tcPath");
+        if (config.containsKey("tcPath")) {
+            tcPrivPath = YConfiguration.getString(config, "tcPath");
         }
-        if (conf.containsKey("streamPath")) {
-            streamPrivPath = conf.getString("streamPath");
+        if (config.containsKey("streamPath")) {
+            streamPrivPath = YConfiguration.getString(config, "streamPath");
         }
-        if (conf.containsKey("cmdHistoryPath")) {
-            cmdHistoryPrivPath = conf.getString("cmdHistoryPath");
+        if (config.containsKey("cmdHistoryPath")) {
+            cmdHistoryPrivPath = YConfiguration.getString(config, "cmdHistoryPath");
         }
         contextEnv.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         contextEnv.put(Context.PROVIDER_URL, "ldap://" + host);
@@ -73,72 +65,32 @@ public class LdapRealm implements Realm {
     }
 
     @Override
-    public boolean supports(AuthenticationToken authToken) {
-        return authToken instanceof UsernamePasswordToken
-                || authToken instanceof JwtToken
-                || authToken instanceof CertificateToken;
+    public boolean supportsAuthenticate(String type) {
+        return TYPE_USERPASS.equals(type);
     }
 
     @Override
-    public boolean authenticate(AuthenticationToken authToken) {
-        if (authToken == null || authToken.getPrincipal() == null) {
-            return false;
+    public AuthenticationInfo getAuthenticationInfo(String type, Object authObj) throws AuthenticationException {
+        if (TYPE_USERPASS.equals(type)) {
+            Map<String, String> m = (Map<String, String>) authObj;
+            String username = m.get(USERNAME);
+            String password = m.get(PASSWORD);
+            return authenticateUsernamePassword(username, password);
         }
-        if (authToken instanceof UsernamePasswordToken) {
-            return authenticateUsernamePassword((UsernamePasswordToken) authToken);
-        } else if (authToken instanceof CertificateToken) {
-            return authenticateCertificate((CertificateToken) authToken);
-        } 
-        return false;
+
+        return null;
     }
 
-    private boolean authenticateCertificate(CertificateToken authenticationToken) {
-        try {
-            X509Certificate cert = authenticationToken.getCert();
-            byte[] encodedCert = null;
-            try {
-                encodedCert = cert.getEncoded();
-            } catch (CertificateEncodingException e) {
-                log.warn("got CertificateEncodingException when encoding certificate: {}", cert, e);
-                return false;
-            }
-
-            DirContext context = new InitialDirContext(contextEnv);
-            try {
-                SearchControls cons = new SearchControls();
-                cons.setSearchScope(SearchControls.SUBTREE_SCOPE);
-                cons.setReturningAttributes(new String[] { "userCertificate" });
-                NamingEnumeration<SearchResult> results = context.search(userPath, "userCertificate=*", cons);
-                boolean found = false;
-                while (results.hasMore()) {
-                    SearchResult r = results.next();
-                    // uid = r.getNameInNamespace();
-                    Attribute a = r.getAttributes().get("userCertificate;binary");
-                    if (a != null) {
-                        for (int i = 0; i < a.size(); i++) {
-                            if (Arrays.equals(encodedCert, (byte[]) a.get(i))) {
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (found)
-                        break;
-                }
-                return found;
-            } finally {
-                context.close();
-            }
-        } catch (NamingException ne) {
-            log.error("Unable to authenticate this X509Certificate certificate against LDAP.", ne);
-            return false;
-        }
-    }
-
-
-    private boolean authenticateUsernamePassword(UsernamePasswordToken authToken) {
-        String username = authToken.getUsername();
-        String password = authToken.getPasswordS();
+    /*
+     * Currently this method does not follow our conventions very well. Namely, it does not distinguish between a user
+     * that cannot be found, or a user that could not provide correct credentials. Therefore we return null in both,
+     * cases to not stop the login process, and allow other AuthModules to try to identify the user.
+     * 
+     * A proper solution would likely require binding with an administrative account, such that user existence
+     * can be verified prior to verifying credentials.
+     */
+    private AuthenticationInfo authenticateUsernamePassword(String username, String password)
+            throws AuthenticationException {
         DirContext ctx = null;
         try {
             String userDn = "uid=" + username + "," + userPath;
@@ -153,67 +105,63 @@ public class LdapRealm implements Realm {
             }
             ctx = new InitialDirContext(localContextEnv);
             ctx.close();
-        } catch (AuthenticationException e) {
-            log.warn("User '{}' not authenticated with LDAP; Could not bind with supplied username and password.",
-                    username);
-            return false;
+        } catch (javax.naming.AuthenticationException e) {
+            log.debug("User cannot bind", e);
+            return null;
         } catch (NamingException e) {
-            log.warn("User '{}' not authenticated with LDAP; An LDAP error was caught: {}", username, e);
-            return false;
+            throw new AuthenticationException(e);
         }
-        return true;
+        return new AuthenticationInfo(this, username);
     }
 
-    /**
-     * Loads a user from LDAP together with all the roles and the privileges.
-     */
     @Override
-    public User loadUser(String principalName) {
-        User u = new User(principalName);
+    public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) {
+        String principal = authenticationInfo.getPrincipal();
+        AuthorizationInfo authz = new AuthorizationInfo();
 
         DirContext context = null;
         try {
             context = new InitialDirContext(contextEnv);
-            String dn = "uid=" + u.getPrincipalName() + "," + userPath;
+            String dn = "uid=" + principal + "," + userPath;
             Set<String> ldapRoles = loadRoles(context, dn);
             for (String ldapRole : ldapRoles) {
                 int start = ldapRole.indexOf("cn=");
                 int stop = ldapRole.indexOf(",ou=");
-                u.addRole(ldapRole.substring(start + 3, stop));
+                authz.addRole(ldapRole.substring(start + 3, stop));
             }
             if (tmParaPrivPath != null) {
                 for (String privilege : loadPrivileges(context, ldapRoles, tmParaPrivPath)) {
-                    u.addTmParaPrivilege(privilege);
+                    authz.addPrivilege(PrivilegeType.TM_PARAMETER, privilege);
                 }
             }
             if (tmPacketPrivPath != null) {
                 for (String privilege : loadPrivileges(context, ldapRoles, tmPacketPrivPath)) {
-                    u.addTmPacketPrivilege(privilege);
+                    authz.addPrivilege(PrivilegeType.TM_PACKET, privilege);
                 }
             }
             if (tcPrivPath != null) {
                 for (String privilege : loadPrivileges(context, ldapRoles, tcPrivPath)) {
-                    u.addTcPrivilege(privilege);
+                    authz.addPrivilege(PrivilegeType.TC, privilege);
                 }
             }
             if (systemPrivPath != null) {
                 for (String privilege : loadPrivileges(context, ldapRoles, systemPrivPath)) {
-                    u.addSystemPrivilege(privilege);
+                    authz.addPrivilege(PrivilegeType.SYSTEM, privilege);
                 }
             }
             if (tmParaSetPrivPath != null) {
                 for (String privilege : loadPrivileges(context, ldapRoles, tmParaSetPrivPath)) {
-                    u.addTmParaSetPrivilege(privilege);
+                    authz.addPrivilege(PrivilegeType.TM_PARAMETER_SET, privilege);
                 }
             }
             if (streamPrivPath != null) {
                 for (String privilege : loadPrivileges(context, ldapRoles, streamPrivPath)) {
-                    u.addStreamPrivilege(privilege);
+                    authz.addPrivilege(PrivilegeType.STREAM, privilege);
                 }
             }
             if (cmdHistoryPrivPath != null) {
                 for (String privilege : loadPrivileges(context, ldapRoles, cmdHistoryPrivPath)) {
-                    u.addCmdHistoryPrivilege(privilege);
+                    authz.addPrivilege(PrivilegeType.CMD_HISTORY, privilege);
                 }
             }
         } catch (NamingException e) {
@@ -226,8 +174,7 @@ public class LdapRealm implements Realm {
             }
         }
 
-        log.debug("got user from ldap: {}", u);
-        return u;
+        return authz;
     }
 
     private Set<String> loadRoles(DirContext context, String dn) throws NamingException {
@@ -271,7 +218,8 @@ public class LdapRealm implements Realm {
         return privs;
     }
 
-    public String getUserPath() {
-        return userPath;
+    @Override
+    public boolean verifyValidity(User user) {
+        return true;
     }
 }

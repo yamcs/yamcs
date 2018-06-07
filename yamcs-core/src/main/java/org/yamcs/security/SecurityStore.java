@@ -1,7 +1,8 @@
 package org.yamcs.security;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -16,28 +17,52 @@ public class SecurityStore {
     private static final Logger log = LoggerFactory.getLogger(SecurityStore.class);
     private static SecurityStore instance;
 
-    private boolean enabled;
-    private String unauthenticatedIdentity;
-    private YamcsSecurityManager securityManager;
+    private boolean enabled = false;
 
-    // Deprecated support for privileges.yaml
-    private int maxNoSessions;
-    private AuthModule authModule;
+    private List<AuthModule> authModules = new ArrayList<>();
+
+    private User systemUser;
+    private User unauthenticatedUser;
 
     private SecurityStore() {
-        enabled = false;
-        unauthenticatedIdentity = "admin";
+        YConfiguration yconf = YConfiguration.getConfiguration("security");
 
-        if (YConfiguration.isDefined("security")) {
-            YConfiguration yconf = YConfiguration.getConfiguration("security");
-            loadSecurityConfiguration(yconf);
-        } else if (YConfiguration.isDefined("privileges")) {
-            log.warn("DEPRECATION WARNING: Migrate to security.yaml instead of privileges.yaml");
-            YConfiguration yconf = YConfiguration.getConfiguration("privileges");
-            loadLegacySecurityConfiguration(yconf);
-        } else {
-            log.warn("Privileges disabled, all connections are allowed and have full permissions");
+        enabled = yconf.getBoolean("enabled");
+        if (!enabled) {
+            log.warn("Security disabled");
+            if (yconf.containsKey("unauthenticatedUser")) {
+                Map<String, Object> userProps = yconf.getMap("unauthenticatedUser");
+                String username = YConfiguration.getString(userProps, "username");
+                if (username.isEmpty() || username.contains(":")) {
+                    throw new ConfigurationException("Invalid username '" + username + "' for unauthenticatedUser");
+                }
+
+                unauthenticatedUser = new User(username);
+                unauthenticatedUser.setSuperuser(YConfiguration.getBoolean(userProps, "superuser", false));
+
+                if (userProps.containsKey("roles")) {
+                    for (String role : YConfiguration.<String> getList(userProps, "roles")) {
+                        unauthenticatedUser.addRole(role);
+                    }
+                }
+
+                // TODO allow configuring privileges? Probably shouldn't come from an AuthModule because enabled=false
+            }
         }
+
+        if (yconf.containsKey("authModules")) {
+            for (Map<String, Object> moduleConf : yconf.<Map<String, Object>> getList("authModules")) {
+                try {
+                    AuthModule authModule = YObjectLoader.loadObject(moduleConf);
+                    authModules.add(authModule);
+                } catch (IOException e) {
+                    throw new ConfigurationException("Failed to load AuthModule", e);
+                }
+            }
+        }
+
+        systemUser = new User("System");
+        systemUser.setSuperuser(true);
     }
 
     public static synchronized SecurityStore getInstance() {
@@ -47,81 +72,77 @@ public class SecurityStore {
         return instance;
     }
 
-    private void loadSecurityConfiguration(YConfiguration yconf) {
-        maxNoSessions = 10;
-        if (yconf.containsKey("maxNoSessions")) {
-            maxNoSessions = yconf.getInt("maxNoSessions");
-        }
-
-        enabled = yconf.getBoolean("enabled");
-        if (enabled) {
-            try {
-                securityManager = YObjectLoader.loadObject(yconf.getMap("securityManager"));
-            } catch (IOException e) {
-                throw new ConfigurationException("Could not load security configuration", e);
-            }
-        } else {
-            if (yconf.containsKey("unauthenticatedIdentity")) {
-                String name = yconf.getString("unauthenticatedIdentity");
-                if (name.isEmpty() || name.contains(":")) {
-                    throw new ConfigurationException(
-                            "Invalid name '" + name + "' for unauthenticatedIdentity");
-                }
-                unauthenticatedIdentity = name;
-            }
-        }
+    public List<AuthModule> getAuthModules() {
+        return authModules;
     }
 
     /**
-     * Reads security properties from the privileges.yaml file. Will be removed in a future release. Use security.yaml
-     * instead.
+     * Returns the system user. This user object is only intended for internal use when actions require a user, yet
+     * cannot be linked to an actual user. The System user is granted all privileges.
      */
-    private void loadLegacySecurityConfiguration(YConfiguration yconf) {
-        maxNoSessions = 10;
-        if (yconf.containsKey("maxNoSessions")) {
-            maxNoSessions = yconf.getInt("maxNoSessions");
-        }
+    public User getSystemUser() {
+        return systemUser;
+    }
 
-        enabled = yconf.getBoolean("enabled");
-        if (enabled) {
-            try {
-                authModule = YObjectLoader.loadObject(yconf.getMap("authModule"));
-            } catch (IOException e) {
-                throw new ConfigurationException("Could not load security configuration", e);
-            }
-        } else {
-            if (yconf.containsKey("defaultUser")) {
-                String name = yconf.getString("defaultUser");
-                if (name.isEmpty() || name.contains(":")) {
-                    throw new ConfigurationException(
-                            "Invalid name '" + name + "' for default user");
-                }
-                unauthenticatedIdentity = name;
-            }
-        }
+    /**
+     * Returns the unauthenticated user. This is always null if security is enabled.
+     */
+    public User getUnauthenticatedUser() {
+        return unauthenticatedUser;
     }
 
     public boolean isEnabled() {
         return enabled;
     }
 
-    public CompletableFuture<String> authenticate(String username, char[] password) {
-        if (securityManager != null) {
-            return securityManager.validateUser(username, password);
-        } else {
-            Map<String, String> m = new HashMap<>();
-            m.put(DefaultAuthModule.USERNAME, username);
-            m.put(DefaultAuthModule.PASSWORD, password.toString());
-            return authModule.authenticate(AuthModule.TYPE_USERPASS, m)
-                    .thenApply(AuthenticationToken::getPrincipal);
+    /**
+     * Attempts to authenticate a user with the given token and adds authorization information.
+     */
+    public CompletableFuture<User> login(String type, Object authObject) {
+        if (!enabled) {
+            return CompletableFuture.completedFuture(unauthenticatedUser);
         }
+
+        CompletableFuture<User> f = new CompletableFuture<>();
+
+        // 1. Authenticate. Stops on first match.
+        AuthenticationInfo authInfo = null;
+        for (AuthModule authModule : authModules) {
+            try {
+                authInfo = authModule.getAuthenticationInfo(type, authObject);
+                if (authInfo != null) {
+                    log.debug("User successfully authenticated by AuthModule {}", authModule);
+                    break;
+                } else {
+                    log.trace("User does not exist according to AuthModule {}", authModule);
+                }
+            } catch (AuthenticationException e) {
+                log.info("AuthModule {} aborted the login process", authModule.getClass());
+                f.completeExceptionally(e);
+                return f;
+            }
+        }
+
+        if (authInfo == null) {
+            log.info("User does not exist");
+            f.completeExceptionally(new AuthenticationException("User does not exist"));
+            return f;
+        }
+
+        // 2. Authorize. All modules get the opportunity.
+        for (AuthModule authModule : authModules) {
+            AuthorizationInfo authzInfo = authModule.getAuthorizationInfo(authInfo);
+        }
+        return f;
     }
 
-    /**
-     * This configuration should not be in core Yamcs. It's specific to CIS.
-     */
-    @Deprecated
-    public int getMaxNoSessions() {
-        return maxNoSessions;
+    public boolean verifyValidity(User user) {
+        for (AuthModule authModule : authModules) {
+            AuthenticationInfo authInfo = user.getAuthenticationInfo();
+            if (authInfo != null && authModule.equals(authInfo.getAuthenticator())) {
+                return authModule.verifyValidity(user);
+            }
+        }
+        return true;
     }
 }
