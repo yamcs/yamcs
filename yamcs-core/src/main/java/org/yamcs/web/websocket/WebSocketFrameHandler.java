@@ -188,9 +188,12 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         }
     }
 
+    /**
+     * this is called when the client closes abruptly the connection
+     */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("Will close channel due to internal error", cause);
+        log.warn("Will close channel due to error", cause);
         ctx.close();
     }
 
