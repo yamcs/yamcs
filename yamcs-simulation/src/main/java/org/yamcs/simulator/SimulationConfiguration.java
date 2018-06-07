@@ -15,6 +15,15 @@ public class SimulationConfiguration {
     private int losPeriodS;
     private int aosPeriodS;
     
+    //used for performance testing, if perfTestPacketNum &gt; 0, 
+    // then it will send that number of packets of perfTestPacketSize with the delay in between of perfTestPacketInterval ms
+    
+    private int perfTestNumPackets = -1;
+    private int perfTestPacketSize;
+    private long perfTestPacketInterval;
+    
+    
+    
     private List<ServerConnection> serverConnections;
 
     private String testDataDir;
@@ -44,6 +53,11 @@ public class SimulationConfiguration {
         conf.losPeriodS = yconfig.getInt("los_period_s");
         conf.aosPeriodS = yconfig.getInt("aos_period_s");
         conf.testDataDir = yconfig.getString("test_data");
+        if(yconfig.containsKey("perfTestNumPackets")) {
+            conf.perfTestNumPackets = yconfig.getInt("perfTestNumPackets");
+            conf.perfTestPacketSize = yconfig.getInt("perfTestPacketSize");
+            conf.perfTestPacketInterval = yconfig.getInt("perfTestPacketInterval");
+        }
         
         int i = 0;
         conf.serverConnections = new LinkedList<>();
@@ -85,4 +99,18 @@ public class SimulationConfiguration {
     public String getTestDataDir() {
         return testDataDir;
     }
+
+    public int getPerfTestNumPackets() {
+        return perfTestNumPackets;
+    }
+    
+    public int getPerfTestPacketSize() {
+        return perfTestPacketSize;
+    }
+    
+    public long getPerfTestPacketInterval() {
+        return perfTestPacketInterval;
+    }
+
+  
 }

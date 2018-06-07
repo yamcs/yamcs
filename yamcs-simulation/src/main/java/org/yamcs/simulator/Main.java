@@ -18,9 +18,7 @@ public class Main {
         
         YConfiguration.setup(System.getProperty("user.dir"));
         SimulationConfiguration simConfig = SimulationConfiguration.loadFromFile();
-        
-        YObjectLoader<? extends Simulator> objectLoader = new YObjectLoader<>();
-        Simulator simulator = objectLoader.loadObject(simConfig.getModelClass().getName(), simConfig);
+        Simulator simulator = YObjectLoader.loadObject(simConfig.getModelClass().getName(), simConfig);
         
         // Start UI
         if(simConfig.isUIEnabled()) {

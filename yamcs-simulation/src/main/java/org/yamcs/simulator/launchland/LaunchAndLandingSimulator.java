@@ -54,7 +54,8 @@ public class LaunchAndLandingSimulator extends Simulator {
 
     @Override
     public void run() {
-        super.run();
+        startConnectionThreads();
+        startPerfTestThread();
         new Thread(() -> {
             while (true) {
                 try {
@@ -179,7 +180,7 @@ public class LaunchAndLandingSimulator extends Simulator {
     }
 
     private void switchBatteryOn(CCSDSPacket commandPacket) {
-        getTMLink().ackPacketSend(ackPacket(commandPacket, 1, 0));
+        getTMLink().tmTransmit(ackPacket(commandPacket, 1, 0));
         commandPacket.setPacketId(1);
         int batNum = commandPacket.getUserDataBuffer().get(0);
         switch (batNum) {
@@ -201,11 +202,11 @@ public class LaunchAndLandingSimulator extends Simulator {
             exeTransmitted = false;
             batteryCommand = BatteryCommand.BATTERY3_ON;
         }
-        getTMLink().ackPacketSend(ackPacket(commandPacket, 2, 0));
+        getTMLink().tmTransmit(ackPacket(commandPacket, 2, 0));
     }
 
     private void switchBatteryOff(CCSDSPacket commandPacket) {
-        getTMLink().ackPacketSend(ackPacket(commandPacket, 1, 0));
+        getTMLink().tmTransmit(ackPacket(commandPacket, 1, 0));
         commandPacket.setPacketId(2);
         int batNum = commandPacket.getUserDataBuffer().get(0);
         CCSDSPacket ackPacket;
@@ -231,18 +232,18 @@ public class LaunchAndLandingSimulator extends Simulator {
             ackPacket = new CCSDSPacket(1, 2, 7);
             AckHandler.fillAckPacket(ackPacket, 1);
         }
-        getTMLink().ackPacketSend(ackPacket(commandPacket, 2, 0));
+        getTMLink().tmTransmit(ackPacket(commandPacket, 2, 0));
     }
 
     private void listRecordings(CCSDSPacket commandPacket) {
-        getTMLink().ackPacketSend(ackPacket(commandPacket, 1, 0));
+        getTMLink().tmTransmit(ackPacket(commandPacket, 1, 0));
         CCSDSPacket losNamePacket = getLosStore().getLosNames();
         transmitTM(losNamePacket);
-        getTMLink().ackPacketSend(ackPacket(commandPacket, 2, 0));
+        getTMLink().tmTransmit(ackPacket(commandPacket, 2, 0));
     }
 
     private void dumpRecording(CCSDSPacket commandPacket) {
-        getTMLink().ackPacketSend(ackPacket(commandPacket, 1, 0));
+        getTMLink().tmTransmit(ackPacket(commandPacket, 1, 0));
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
         int indexStartOfString = 16;
         int indexEndOfString = indexStartOfString;
@@ -255,16 +256,16 @@ public class LaunchAndLandingSimulator extends Simulator {
         String fileName1 = new String(fileNameArray, indexStartOfString, indexEndOfString - indexStartOfString);
         log.info("Command DUMP_RECORDING for file {}", fileName1);
         dumpLosDataFile(fileName1);
-        getTMLink().ackPacketSend(ackPacket(commandPacket, 2, 0));
+        getTMLink().tmTransmit(ackPacket(commandPacket, 2, 0));
     }
 
     private void deleteRecording(CCSDSPacket commandPacket) {
-        getTMLink().ackPacketSend(ackPacket(commandPacket, 1, 0));
+        getTMLink().tmTransmit(ackPacket(commandPacket, 1, 0));
         byte[] fileNameArray = commandPacket.getUserDataBuffer().array();
         String fileName = new String(fileNameArray, 16, fileNameArray.length - 22);
         log.info("Command DELETE_RECORDING for file {}", fileName);
         deleteLosDataFile(fileName);
-        getTMLink().ackPacketSend(ackPacket(commandPacket, 2, 0));
+        getTMLink().tmTransmit(ackPacket(commandPacket, 2, 0));
     }
 
 }

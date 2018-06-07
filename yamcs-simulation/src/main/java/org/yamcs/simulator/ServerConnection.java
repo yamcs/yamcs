@@ -1,24 +1,26 @@
 package org.yamcs.simulator;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServerConnection {
+    private static final Logger log = LoggerFactory.getLogger(ServerConnection.class);
 
-    public enum ConnectionStatus{
-        NOT_CONNECTED,
-        CONNECTING,
-        CONNECTED,
-        CONNECTION_LOST
+    public enum ConnectionStatus {
+        NOT_CONNECTED, CONNECTING, CONNECTED, CONNECTION_LOST
     }
 
-    private boolean connected = false;
-    private boolean signalStatus = false;
+    private boolean tmConnected = false;
+    private boolean losConnected = false;
+    private boolean tcConnected = false;
 
     private Socket tmSocket;
     private Socket tcSocket;
@@ -34,8 +36,12 @@ public class ServerConnection {
 
     private int id;
 
-    BlockingQueue<CCSDSPacket> tmQueue = new LinkedBlockingQueue<>();//no more than 100 pending commands
+    BlockingQueue<CCSDSPacket> tmQueue = new LinkedBlockingQueue<>();// no more than 100 pending commands
     BlockingQueue<CCSDSPacket> tmDumpQueue = new ArrayBlockingQueue<>(1000);
+
+    private Simulator simulator;
+
+    DataInputStream tcInputStream;
 
     public ServerConnection(int id, int tmPort, int tcPort, int losPort) {
         this.id = id;
@@ -44,52 +50,12 @@ public class ServerConnection {
         this.losPort = losPort;
     }
 
+    public void setSimulator(Simulator simulator) {
+        this.simulator = simulator;
+    }
+
     public Socket getTcSocket() {
         return tcSocket;
-    }
-
-    public void setTcSocket(Socket tcSocket) {
-        this.tcSocket = tcSocket;
-    }
-
-    public Socket getTmSocket() {
-        return tmSocket;
-    }
-
-    public void setTmSocket(Socket tmSocket) {
-        this.tmSocket = tmSocket;
-    }
-
-    public int getTcPort() {
-        return tcPort;
-    }
-
-    public void setTcPort(int tcPort) {
-        this.tcPort = tcPort;
-    }
-
-    public int getTmPort() {
-        return tmPort;
-    }
-
-    public void setTmPort(int tmPort) {
-        this.tmPort = tmPort;
-    }
-
-    public ServerSocket getTmServerSocket() {
-        return tmServerSocket;
-    }
-
-    public void setTmServerSocket(ServerSocket tmServerSocket) {
-        this.tmServerSocket = tmServerSocket;
-    }
-
-    public ServerSocket getTcServerSocket() {
-        return tcServerSocket;
-    }
-
-    public void setTcServerSocket(ServerSocket tcServerSocket) {
-        this.tcServerSocket = tcServerSocket;
     }
 
     public int getId() {
@@ -100,34 +66,12 @@ public class ServerConnection {
         this.id = id;
     }
 
-    public boolean isConnected() {
-        return connected;
-    }
-
-    public void setConnected(boolean connected) {
-        this.connected = connected;
-    }
-
-    public  CCSDSPacket getTmPacket() {
-        return tmQueue.remove();
-
-    }
-
     public void queueTmPacket(CCSDSPacket packet) {
         try {
             this.tmQueue.put(packet);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    public boolean isTmQueueEmpty() {
-        return tmQueue.isEmpty();
-    }
-
-    // tm dump related
-    public CCSDSPacket getTmDumpPacket() {
-        return tmDumpQueue.remove();
     }
 
     public void addTmDumpPacket(CCSDSPacket packet) throws InterruptedException {
@@ -138,35 +82,152 @@ public class ServerConnection {
         return tmDumpQueue.isEmpty();
     }
 
-    public boolean isSignalStatus() {
-        return signalStatus;
+    public void packetSendThread() {
+        while (true) {
+            try {
+                CCSDSPacket packet = tmQueue.take();
+                if (!simulator.isLOS()) {
+                    if (!tmConnected) {
+                        connectTm();
+                    }
+                    try {
+                        packet.writeTo(tmSocket.getOutputStream());
+                    } catch (Exception e) {
+                        log.info("Error writing to socket: " + e.getMessage());
+                        tmConnected = false;
+                    }
+                } else {
+                    if (id == 0) {
+                        // Not the best solution, the if condition stop the LOS file from having double instances
+                        // Might rework the logic at a later date
+                        simulator.getLosStore().tmPacketStore(packet);
+                    }
+                }
+
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
     }
 
-    public void setSignalStatus(boolean signalStatus) {
-        this.signalStatus = signalStatus;
+    public void losSendThread() {
+        while (true) {
+            if (!losConnected) {
+                connectLos();
+            }
+            try {
+                CCSDSPacket packet = tmDumpQueue.take();
+                try {
+                    packet.writeTo(losSocket.getOutputStream());
+                } catch (Exception e) {
+                    log.info("Error writing to socket: " + e.getMessage());
+                    losConnected = false;
+                }
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
+
     }
 
-    public ServerSocket getLosServerSocket() {
-        return losServerSocket;
+    public void connectTc() {
+        if (tcSocket != null) {
+            tcConnected = false;
+            try {
+                tcSocket.close();
+                tcServerSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (simulator.getSimWindow() != null) {
+            simulator.getSimWindow().setServerStatus(id, ServerConnection.ConnectionStatus.CONNECTING);
+        }
+        try {
+            tcServerSocket = new ServerSocket(tcPort);
+            tcSocket = tcServerSocket.accept();
+            tcInputStream = new DataInputStream(tcSocket.getInputStream());
+            tcConnected = true;
+            logMessage("Connected TC: " + tcSocket.getInetAddress() + ":" + tcSocket.getPort());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        updateGui();
     }
 
-    public void setLosServerSocket(ServerSocket losServerSocket) {
-        this.losServerSocket = losServerSocket;
+    private void connectLos() {
+        if (losSocket != null) {
+            losConnected = false;
+            try {
+                losSocket.close();
+                losServerSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (simulator.getSimWindow() != null)
+            simulator.getSimWindow().setServerStatus(id, ServerConnection.ConnectionStatus.CONNECTING);
+        try {
+            log.info("Waiting for LOS connection from server {}", id);
+            losServerSocket = new ServerSocket(losPort);
+            losSocket = losServerSocket.accept();
+            losConnected = true;
+            logMessage("Connected TM DUMP: " + losSocket.getInetAddress() + ":" + losSocket.getPort());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        updateGui();
     }
 
-    public Socket getLosSocket() {
-        return losSocket;
+    private void connectTm() {
+        // Check for previous connection, used for loss of server.
+        if (tmSocket != null) {
+            tmConnected = false;
+            try {
+                tmSocket.close();
+                tmServerSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (simulator.getSimWindow() != null)
+            simulator.getSimWindow().setServerStatus(id, ServerConnection.ConnectionStatus.CONNECTING);
+        try {
+            log.info("Waiting for TM connection from server {}", id);
+            tmServerSocket = new ServerSocket(tmPort);
+            tmSocket = tmServerSocket.accept();
+            tmConnected = true;
+            logMessage("Connected TM: " + tmSocket.getInetAddress() + ":"  + tmSocket.getPort());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        updateGui();
     }
 
-    public void setLosSocket(Socket losSocket) {
-        this.losSocket = losSocket;
+    private void updateGui() {
+        if (simulator.getSimWindow() != null)
+        if (tcConnected && tmConnected & losConnected) {
+            simulator.getSimWindow().setServerStatus(id, ServerConnection.ConnectionStatus.CONNECTED);
+        }
+    }
+    private void logMessage(String message) {
+        log.info(message);
+        if (simulator.getSimWindow() != null)
+            simulator.getSimWindow().addLog(id, message + "\n");
     }
 
-    public int getLosPort() {
-        return losPort;
+    public boolean isTcConnected() {
+        return tcConnected;
     }
 
-    public void setLosPort(int losPort) {
-        this.losPort = losPort;
+    public void setTcConnected(boolean b) {
+        tcConnected = b;
+    }
+
+    public DataInputStream getTcInputStream() {
+        return tcInputStream;
     }
 }

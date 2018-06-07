@@ -39,7 +39,8 @@ public class LEOSpacecraftSimulator extends Simulator {
     
     @Override
     public void run() {
-        super.run();
+        startConnectionThreads();
+        startPerfTestThread();
         try {
             SimulationData data;
             while ((data = packetFeeder.readNext()) != null) {

@@ -3,19 +3,21 @@ package org.yamcs.simulator;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.simulator.ui.SimWindow;
 
-public class Simulator extends Thread {
+public abstract class Simulator extends Thread {
 
     protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); // no more than 100 pending
     // commands
 
     private int DEFAULT_MAX_LENGTH = 65542;
-    private int maxLength = DEFAULT_MAX_LENGTH;
+    private int maxTcPacketLength = DEFAULT_MAX_LENGTH;
+    private int PERF_TEST_PACKET_ID = 10000;
 
     private SimulationConfiguration simConfig;
     private TelemetryLink tmLink;
@@ -29,28 +31,61 @@ public class Simulator extends Thread {
 
     public Simulator(SimulationConfiguration simConfig) {
         this.simConfig = simConfig;
-        tmLink = new TelemetryLink(this, simConfig);
+        tmLink = new TelemetryLink(simConfig);
         losStore = new LosStore(this, simConfig);
     }
 
-    @Override
-    public void run() {
+    protected void startPerfTestThread() {
+        if(simConfig.getPerfTestNumPackets() > 0) {
+            new Thread(() -> {
+                try {
+                   
+                    sendPerfPackets();
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }).start();
+        }
+    }
+    
+    
+    //performance testing
+    private void sendPerfPackets() throws InterruptedException {
+        Random r = new Random();
+        int packetNum = simConfig.getPerfTestNumPackets();
+        int packetSize = simConfig.getPerfTestPacketSize();
+        long interval = simConfig.getPerfTestPacketInterval();
+        log.info("Starting performance data sending thread with {} packets of {} size spaced at {} ms intervals",  
+                packetNum, packetSize, interval);
+        while (true) {
+            for(int i=0; i<packetNum; i++) {
+                CCSDSPacket packet = new CCSDSPacket(packetSize, PERF_TEST_PACKET_ID+i);
+                ByteBuffer bb = packet.getUserDataBuffer();
+                while(bb.remaining()>4) {
+                    bb.putInt(r.nextInt());
+                }
+                transmitTM(packet);
+                Thread.sleep(interval);
+            }
+        }
+    }
+    protected void startConnectionThreads() {
         for (ServerConnection serverConnection : simConfig.getServerConnections()) {
-            tmLink.yamcsServerConnect(serverConnection);
-
+            serverConnection.setSimulator(this);
             // start the TC reception thread;
             new Thread(() -> {
                 while (true) {
                     try {
+                        if (!serverConnection.isTcConnected()) {
+                            serverConnection.connectTc();
+                        }
                         // read commands
-                        CCSDSPacket packet = readPacket(
-                                new DataInputStream(serverConnection.getTcSocket().getInputStream()));
+                        CCSDSPacket packet = readPacket(serverConnection.getTcInputStream());
                         if (packet != null)
                             pendingCommands.put(packet);
 
                     } catch (IOException e) {
-                        serverConnection.setConnected(false);
-                        tmLink.yamcsServerConnect(serverConnection);
+                        serverConnection.setTcConnected(false);
                     } catch (InterruptedException e) {
                         log.warn("Read packets interrupted.", e);
                         Thread.currentThread().interrupt();
@@ -60,34 +95,23 @@ public class Simulator extends Thread {
 
             // start the TM transmission thread
             log.debug("Start TM thread");
-            (new Thread(() -> tmLink.packetSend(serverConnection))).start();
+            (new Thread(() -> serverConnection.packetSendThread())).start();
+            (new Thread(() -> serverConnection.losSendThread())).start();
         }
     }
-
-    /**
-     * this runs in a separate thread but pushes commands to the main TM thread
-     */
-    protected CCSDSPacket readPacket(DataInputStream dIn) {
-        try {
-            byte hdr[] = new byte[6];
-            dIn.readFully(hdr);
-            int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
-            if (remaining > maxLength - 6)
-                throw new IOException("Remaining packet length too big: " + remaining + " maximum allowed is " + (maxLength - 6));
-            byte[] b = new byte[6 + remaining];
-            System.arraycopy(hdr, 0, b, 0, 6);
-            dIn.readFully(b, 6, remaining);
-            CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
-            tmLink.ackPacketSend(ackPacket(packet, 0, 0));
-            return packet;
-
-        } catch (IOException e) {
-            log.error("Connection lost:" + e.getMessage(), e);
-        } catch (Exception e) {
-            log.error("Error reading command " + e.getMessage(), e);
-        }
-        return null;
-
+    protected CCSDSPacket readPacket(DataInputStream dIn) throws IOException {
+        byte hdr[] = new byte[6];
+        dIn.readFully(hdr);
+        int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
+        if (remaining > maxTcPacketLength - 6)
+            throw new IOException(
+                    "Remaining packet length too big: " + remaining + " maximum allowed is " + (maxTcPacketLength - 6));
+        byte[] b = new byte[6 + remaining];
+        System.arraycopy(hdr, 0, b, 0, 6);
+        dIn.readFully(b, 6, remaining);
+        CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
+        tmLink.tmTransmit(ackPacket(packet, 0, 0));
+        return packet;
     }
 
     public SimulationConfiguration getSimulationConfiguration() {
@@ -137,7 +161,7 @@ public class Simulator extends Thread {
             for (ServerConnection serverConnection : simConfig.getServerConnections()) {
                 serverConnection.addTmDumpPacket(confirmationPacket);
             }
-            
+
             dataStream.close();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
