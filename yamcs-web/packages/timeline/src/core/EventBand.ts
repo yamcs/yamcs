@@ -461,13 +461,14 @@ export default class EventBand extends Band {
       }));
     }
 
+    if (event.userObject.tooltip) {
+      eventG.addChild(new Title({}, event.userObject.tooltip));
+    }
+
     let title = event.userObject.title;
     if (title) {
       if (event.drawInfo!.offscreenStart) {
         title = '◀' + title;
-      }
-      if (event.userObject.tooltip) {
-        eventG.addChild(new Title({}, event.userObject.tooltip));
       }
       const fm = this.timeline.getFontMetrics(title, this.style.textSize);
       const titleFitsInBox = fm.width <= event.drawInfo!.availableTitleWidth;
