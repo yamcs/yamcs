@@ -150,7 +150,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
 
     /**
-     * attempts to open the socket if not alreayd open and returns true if its open at the end of the call 
+     * attempts to open the socket if not already open and returns true if its open at the end of the call 
      * @return
      */
     protected synchronized boolean openSocket() {
@@ -159,10 +159,10 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         }
         try {
             InetAddress address = InetAddress.getByName(host);
+            selector = Selector.open();
             socketChannel = SocketChannel.open(new InetSocketAddress(address, port));
             socketChannel.configureBlocking(false);
             socketChannel.socket().setKeepAlive(true);
-            selector = Selector.open();
             selectionKey = socketChannel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ);
             log.info("TC connection established to {}:{}", host, port);
             return true;
