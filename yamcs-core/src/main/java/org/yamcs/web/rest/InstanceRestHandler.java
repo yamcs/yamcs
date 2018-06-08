@@ -61,7 +61,7 @@ public class InstanceRestHandler extends RestHandler {
 
     @Route(path = "/api/instances/:instance", method = { "PATCH", "PUT", "POST" })
     public void editInstance(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlServices);
+        checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         String state;

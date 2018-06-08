@@ -31,7 +31,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/parameterArchive/rebuild", method = "POST")
     public void reprocess(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
         if (!req.hasQueryParameter("start")) {
             throw new BadRequestException("no start specified");
@@ -55,7 +55,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions", method = "POST")
     public void deletePartition(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
         if (!req.hasQueryParameter("start")) {
             throw new BadRequestException("no start specified");
@@ -73,10 +73,11 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
             sb.append("removed the following partitions: ");
             boolean first = true;
             for (Partition p : removed.values()) {
-                if (first)
+                if (first) {
                     first = false;
-                else
+                } else {
                     sb.append(", ");
+                }
                 sb.append(p.toString());
             }
             StringMessage sm = StringMessage.newBuilder().setMessage(sb.toString()).build();
@@ -91,7 +92,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*", method = "GET")
     public void archiveInfo(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         String fqn = req.getRouteParam("name");

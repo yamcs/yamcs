@@ -15812,10 +15812,18 @@ public final class Web {
       com.google.protobuf.MessageOrBuilder {
 
     /**
+     * <pre>
+     * repeated AuthResource authResources;
+     * </pre>
+     *
      * <code>optional bool requireAuthentication = 1;</code>
      */
     boolean hasRequireAuthentication();
     /**
+     * <pre>
+     * repeated AuthResource authResources;
+     * </pre>
+     *
      * <code>optional bool requireAuthentication = 1;</code>
      */
     boolean getRequireAuthentication();
@@ -15896,12 +15904,20 @@ public final class Web {
     public static final int REQUIREAUTHENTICATION_FIELD_NUMBER = 1;
     private boolean requireAuthentication_;
     /**
+     * <pre>
+     * repeated AuthResource authResources;
+     * </pre>
+     *
      * <code>optional bool requireAuthentication = 1;</code>
      */
     public boolean hasRequireAuthentication() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
+     * <pre>
+     * repeated AuthResource authResources;
+     * </pre>
+     *
      * <code>optional bool requireAuthentication = 1;</code>
      */
     public boolean getRequireAuthentication() {
@@ -16196,18 +16212,30 @@ public final class Web {
 
       private boolean requireAuthentication_ ;
       /**
+       * <pre>
+       * repeated AuthResource authResources;
+       * </pre>
+       *
        * <code>optional bool requireAuthentication = 1;</code>
        */
       public boolean hasRequireAuthentication() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
+       * <pre>
+       * repeated AuthResource authResources;
+       * </pre>
+       *
        * <code>optional bool requireAuthentication = 1;</code>
        */
       public boolean getRequireAuthentication() {
         return requireAuthentication_;
       }
       /**
+       * <pre>
+       * repeated AuthResource authResources;
+       * </pre>
+       *
        * <code>optional bool requireAuthentication = 1;</code>
        */
       public Builder setRequireAuthentication(boolean value) {
@@ -16217,6 +16245,10 @@ public final class Web {
         return this;
       }
       /**
+       * <pre>
+       * repeated AuthResource authResources;
+       * </pre>
+       *
        * <code>optional bool requireAuthentication = 1;</code>
        */
       public Builder clearRequireAuthentication() {

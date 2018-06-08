@@ -14,7 +14,7 @@ import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse;
 import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse.GetParameterInfoResponse;
 import org.yamcs.protobuf.Rest.ListParameterInfoResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
@@ -34,7 +34,7 @@ public class MDBParameterRestHandler extends RestHandler {
 
     @Route(path = "/api/mdb/:instance/parameters/bulk", method = { "GET", "POST" }, priority = true)
     public void getBulkParameterInfo(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayGetMissionDatabase);
+        checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);
@@ -46,7 +46,7 @@ public class MDBParameterRestHandler extends RestHandler {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
-            if (!hasPrivilege(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
+            if (!hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                 log.warn("Not providing information about parameter {} because no privileges exists",
                         p.getQualifiedName());
                 continue;
@@ -110,7 +110,7 @@ public class MDBParameterRestHandler extends RestHandler {
         if (req.hasQueryParameter("namespace")) {
             String namespace = req.getQueryParameter("namespace");
             for (Parameter p : mdb.getParameters()) {
-                if (!hasPrivilege(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
+                if (!hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                     continue;
                 }
                 if (matcher != null && !matcher.matches(p)) {

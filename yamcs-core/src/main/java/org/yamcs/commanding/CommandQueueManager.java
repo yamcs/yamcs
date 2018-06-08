@@ -26,6 +26,8 @@ import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.QueueState;
+import org.yamcs.security.ObjectPrivilege;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
 import org.yamcs.utils.LoggingUtils;
@@ -111,7 +113,6 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 if (config.containsKey(qn, "stateExpirationTimeS")) {
                     q.stateExpirationTimeS = config.getInt(qn, "stateExpirationTimeS");
                 }
-                q.roles = config.getList(qn, "roles");
                 if (config.containsKey(qn, "significances")) {
                     q.significances = config.getList(qn, "significances");
                 }
@@ -362,25 +363,18 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
      * @return the queue where the command should be placed.
      */
     public CommandQueue getQueue(User user, PreparedCommand pc) {
-        String[] roles = user.getRoles();
-        if (roles == null) {
-            return queues.get("default");
-        }
-        for (String role : roles) {
-            for (CommandQueue cq : queues.values()) {
-                if (cq.roles == null) {
-                    continue;
-                }
-                for (String r1 : cq.roles) {
-                    if (role.equals(r1)) {
-                        if (cq.significances == null
-                                || (pc.getMetaCommand().getDefaultSignificance() == null
-                                        && cq.significances.contains("none"))
-                                || (pc.getMetaCommand().getDefaultSignificance() != null && cq.significances.contains(
-                                        pc.getMetaCommand().getDefaultSignificance().getConsequenceLevel().name()))) {
-                            // return first queue that matches the role of the user and significance of the command
-                            return cq;
-                        }
+        Set<ObjectPrivilege> queuePrivileges = user.getObjectPrivileges(ObjectPrivilegeType.InsertCommandQueue);
+        for (CommandQueue cq : queues.values()) {
+            for (ObjectPrivilege privilege : queuePrivileges) {
+                if (privilege.getObject().equals(cq.getName())) {
+                    if (cq.significances == null
+                            || (pc.getMetaCommand().getDefaultSignificance() == null
+                                    && cq.significances.contains("none"))
+                            || (pc.getMetaCommand().getDefaultSignificance() != null && cq.significances.contains(
+                                    pc.getMetaCommand().getDefaultSignificance().getConsequenceLevel().name()))) {
+                        // return first queue that the user can insert into and that matches the significance of the
+                        // command
+                        return cq;
                     }
                 }
             }

@@ -16,7 +16,7 @@ import org.yamcs.protobuf.Rest.IssueCommandRequest;
 import org.yamcs.protobuf.Rest.IssueCommandRequest.Assignment;
 import org.yamcs.protobuf.Rest.IssueCommandResponse;
 import org.yamcs.protobuf.Rest.UpdateCommandHistoryRequest;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
@@ -44,7 +44,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/commands/:name*", method = "POST")
     public void issueCommand(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayCommand);
+        checkSystemPrivilege(req, SystemPrivilege.Command);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.hasCommanding()) {
@@ -55,7 +55,7 @@ public class ProcessorCommandRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         MetaCommand cmd = verifyCommand(req, mdb, requestCommandName);
 
-        checkPrivileges(req, PrivilegeType.TC, cmd.getQualifiedName());
+        checkObjectPrivileges(req, ObjectPrivilegeType.Command, cmd.getQualifiedName());
 
         String origin = "";
         int sequenceNumber = 0;

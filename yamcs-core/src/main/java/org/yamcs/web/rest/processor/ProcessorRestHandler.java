@@ -29,7 +29,6 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
-import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
@@ -84,7 +83,7 @@ public class ProcessorRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor", method = "DELETE")
     public void deleteProcessor(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlProcessor);
+        checkSystemPrivilege(req, SystemPrivilege.ControlProcessor);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
@@ -97,7 +96,7 @@ public class ProcessorRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor", method = { "PATCH", "PUT", "POST" })
     public void editProcessor(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlProcessor);
+        checkSystemPrivilege(req, SystemPrivilege.ControlProcessor);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         if (!processor.isReplay()) {
@@ -244,7 +243,7 @@ public class ProcessorRestHandler extends RestHandler {
     private void verifyPermissions(boolean persistent, String processorType, Set<Integer> clientIds, User user)
             throws ForbiddenException {
         String username = user.getUsername();
-        if (!user.hasPrivilege(PrivilegeType.SYSTEM, SystemPrivilege.MayControlProcessor.toString())) {
+        if (!user.hasSystemPrivilege(SystemPrivilege.ControlProcessor)) {
             if (persistent) {
                 log.warn("User {} is not allowed to create persistent processors", username);
                 throw new ForbiddenException("No permission to create persistent processors");

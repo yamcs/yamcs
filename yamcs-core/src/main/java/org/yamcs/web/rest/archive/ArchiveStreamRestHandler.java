@@ -2,7 +2,7 @@ package org.yamcs.web.rest.archive;
 
 import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Rest.ListStreamsResponse;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -21,7 +21,7 @@ public class ArchiveStreamRestHandler extends RestHandler {
 
         ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
         for (AbstractStream stream : ydb.getStreams()) {
-            if (!hasPrivilege(req, PrivilegeType.STREAM, stream.getName())) {
+            if (!hasObjectPrivilege(req, ObjectPrivilegeType.Stream, stream.getName())) {
                 continue;
             }
             responseb.addStream(ArchiveHelper.toStreamInfo(stream));

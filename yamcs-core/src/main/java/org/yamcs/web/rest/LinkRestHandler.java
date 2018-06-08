@@ -44,7 +44,7 @@ public class LinkRestHandler extends RestHandler {
     @Route(path = "/api/links/:instance/:name", method = { "PATCH", "PUT", "POST" })
     @Route(path = "/api/links/:instance/link/:name", method = { "PATCH", "PUT", "POST" })
     public void editLink(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlLinks);
+        checkSystemPrivilege(req, SystemPrivilege.ControlLinks);
 
         LinkInfo linkInfo = verifyLink(req, req.getRouteParam("instance"), req.getRouteParam("name"));
 

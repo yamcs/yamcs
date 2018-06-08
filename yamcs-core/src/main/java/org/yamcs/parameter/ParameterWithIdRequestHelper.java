@@ -18,7 +18,7 @@ import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.Parameter;
@@ -378,7 +378,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
      */
     private void checkParameterPrivilege(User user, String parameterName)
             throws NoPermissionException {
-        if (!user.hasPrivilege(PrivilegeType.TM_PARAMETER, parameterName)) {
+        if (!user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, parameterName)) {
             throw new NoPermissionException("User " + user + " has no permission for parameter " + parameterName);
         }
     }

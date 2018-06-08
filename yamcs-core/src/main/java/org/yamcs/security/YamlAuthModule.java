@@ -3,6 +3,8 @@ package org.yamcs.security;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +21,10 @@ public class YamlAuthModule implements AuthModule {
     private PasswordHasher passwordHasher;
     private Map<String, Map<String, Object>> userDefs = new HashMap<>();
     private Map<String, Map<String, Object>> roleDefs = new HashMap<>();
+
+    public YamlAuthModule() throws IOException {
+        this(Collections.emptyMap());
+    }
 
     public YamlAuthModule(Map<String, Object> config) throws IOException {
         if (config.containsKey("hasher")) {
@@ -42,43 +48,41 @@ public class YamlAuthModule implements AuthModule {
     }
 
     @Override
-    public boolean supportsAuthenticate(String type) {
-        return TYPE_USERPASS.equals(type);
-    }
+    public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        if (token instanceof UsernamePasswordToken) {
+            String username = token.getPrincipal();
+            char[] password = ((UsernamePasswordToken) token).getPassword();
 
-    @Override
-    public AuthenticationInfo getAuthenticationInfo(String type, Object authObj) throws AuthenticationException {
-        Map<String, String> m = (Map<String, String>) authObj;
-        String username = m.get(USERNAME);
-        String password = m.get(PASSWORD);
+            Map<String, Object> userDef = userDefs.get(username);
+            if (userDef == null || !userDef.containsKey("password")
+                    || YConfiguration.getString(userDef, "password").trim().isEmpty()) {
+                log.debug("User does not exist");
+                return null;
+            }
 
-        Map<String, Object> userDef = userDefs.get(username);
-        if (userDef == null || userDef.containsKey("password")
-                || YConfiguration.getString(userDef, "password").trim().isEmpty()) {
-            log.debug("User does not exist");
-            return null;
-        }
-
-        // Verify password
-        String expected = YConfiguration.getString(userDef, "password");
-        if (passwordHasher != null) {
-            try {
-                if (!passwordHasher.validatePassword(password.toCharArray(), expected)) {
+            // Verify password
+            String expected = YConfiguration.getString(userDef, "password");
+            if (passwordHasher != null) {
+                try {
+                    if (!passwordHasher.validatePassword(password, expected)) {
+                        throw new AuthenticationException("Password does not match");
+                    }
+                } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                    throw new AuthenticationException(e);
+                }
+            } else {
+                if (!Arrays.equals(expected.toCharArray(), password)) {
                     throw new AuthenticationException("Password does not match");
                 }
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                throw new AuthenticationException(e);
             }
+            return new AuthenticationInfo(this, username);
         } else {
-            if (!expected.equals(password)) {
-                throw new AuthenticationException("Password does not match");
-            }
+            return null;
         }
-
-        return new AuthenticationInfo(this, username);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) {
         String principal = authenticationInfo.getPrincipal();
 
@@ -92,12 +96,22 @@ public class YamlAuthModule implements AuthModule {
             if (userDef.containsKey("roles")) {
                 List<String> roles = YConfiguration.getList(userDef, "roles");
                 for (String role : roles) {
-                    authz.addRole(role);
 
                     // Add privileges for this role
                     if (roleDefs.containsKey(role)) {
-                        Map<String, Object> privs = roleDefs.get(role);
-                        privs.forEach((priv, obj) -> authz.addPrivilege(priv, (String) obj));
+                        Map<String, Object> types = roleDefs.get(role);
+                        types.forEach((typeString, objects) -> {
+                            if (typeString.equals("System")) {
+                                for (String name : (List<String>) objects) {
+                                    authz.addSystemPrivilege(new SystemPrivilege(name));
+                                }
+                            } else {
+                                ObjectPrivilegeType type = new ObjectPrivilegeType(typeString);
+                                for (String object : (List<String>) objects) {
+                                    authz.addObjectPrivilege(new ObjectPrivilege(type, object));
+                                }
+                            }
+                        });
                     }
                 }
             }

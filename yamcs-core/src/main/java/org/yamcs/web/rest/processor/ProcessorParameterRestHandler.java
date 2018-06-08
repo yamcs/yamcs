@@ -26,7 +26,7 @@ import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest;
 import org.yamcs.protobuf.Rest.BulkSetParameterValueRequest.SetParameterValueRequest;
 import org.yamcs.protobuf.Rest.EditAlarmRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.BadRequestException;
@@ -121,7 +121,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         for (SetParameterValueRequest r : request.getRequestList()) {
             try {
                 String parameterName = prm.getParameter(r.getId()).getQualifiedName();
-                checkPrivileges(req, PrivilegeType.TM_PARAMETER_SET, parameterName);
+                checkObjectPrivileges(req, ObjectPrivilegeType.WriteParameter, parameterName);
             } catch (InvalidIdentification e) {
                 throw new BadRequestException("InvalidIdentification: " + e.getMessage());
             }
@@ -151,7 +151,7 @@ public class ProcessorParameterRestHandler extends RestHandler {
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
 
-        checkPrivileges(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName());
+        checkObjectPrivileges(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
         long timeout = 10000;
         boolean fromCache = true;
         if (req.hasQueryParameter("timeout")) {

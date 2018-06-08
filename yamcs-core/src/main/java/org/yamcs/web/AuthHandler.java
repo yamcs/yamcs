@@ -6,17 +6,17 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Web.AccessTokenResponse;
 import org.yamcs.protobuf.Web.AuthInfo;
 import org.yamcs.security.AuthModule;
-import org.yamcs.security.JWT;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.SecurityStore;
+import org.yamcs.security.ThirdPartyAuthorizationCode;
 import org.yamcs.security.User;
+import org.yamcs.security.UsernamePasswordToken;
 import org.yamcs.web.rest.UserRestHandler;
 
 import io.netty.channel.ChannelHandler.Sharable;
@@ -92,13 +92,18 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
                 String grantType = getStringFromForm(formDecoder, "grant_type");
 
                 if ("password".equals(grantType)) {
-                    Map<String, String> m = new HashMap<>();
-                    m.put(AuthModule.USERNAME, getStringFromForm(formDecoder, "username"));
-                    m.put(AuthModule.PASSWORD, getStringFromForm(formDecoder, "password"));
-                    user = SecurityStore.getInstance().login(AuthModule.TYPE_USERPASS, m).get();
+                    String username = getStringFromForm(formDecoder, "username");
+                    String password = getStringFromForm(formDecoder, "password");
+                    AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
+                    user = SecurityStore.getInstance().login(token).get();
                 } else if ("authorization_code".equals(grantType)) {
+                    // This code must have been previously granted via an extension path such as /auth/spnego
+                    // (which is a special case due to the use of Negotiate).
+                    // Currently we only support authorization codes that are managed by an AuthModule (hence the
+                    // name 'ThirdParty'. This may need to be revised when we add general support for the /authorize
+                    // endpoint.
                     String authcode = getStringFromForm(formDecoder, "code");
-                    user = SecurityStore.getInstance().login(AuthModule.TYPE_CODE, authcode).get();
+                    user = SecurityStore.getInstance().login(new ThirdPartyAuthorizationCode(authcode)).get();
                 } else {
                     HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST,
                             "Unsupported grant_type '" + grantType + "'");
@@ -122,13 +127,15 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
         try {
             int ttl = 500; // in seconds
-            String jwt = JWT.generateHS256Token(user, YamcsServer.getSecretKey(), ttl);
+            String jwt = JwtHelper.generateHS256Token(user, YamcsServer.getSecretKey(), ttl);
 
             AccessTokenResponse.Builder responseb = AccessTokenResponse.newBuilder();
             responseb.setTokenType("bearer");
             responseb.setAccessToken(jwt);
             responseb.setExpiresIn(ttl);
             responseb.setUser(UserRestHandler.toUserInfo(user, false));
+
+            HttpRequestHandler.getAuthorizationChecker().storeTokenToUserMapping(jwt, user);
             HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, responseb.build(), true);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);

@@ -12,7 +12,7 @@ import org.junit.Test;
 /**
  * Created by msc on 07/05/15.
  */
-public class PasswordHashTest {
+public class Pbkdf2PasswordHasherTest {
     @Test
     public void hash_validate_ok() throws InvalidKeySpecException, NoSuchAlgorithmException {
         PBKDF2PasswordHasher hasher = new PBKDF2PasswordHasher();

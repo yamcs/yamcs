@@ -64,23 +64,6 @@ public class LdapAuthModule implements AuthModule {
         contextEnv.put("com.sun.jndi.ldap.connect.pool", "true");
     }
 
-    @Override
-    public boolean supportsAuthenticate(String type) {
-        return TYPE_USERPASS.equals(type);
-    }
-
-    @Override
-    public AuthenticationInfo getAuthenticationInfo(String type, Object authObj) throws AuthenticationException {
-        if (TYPE_USERPASS.equals(type)) {
-            Map<String, String> m = (Map<String, String>) authObj;
-            String username = m.get(USERNAME);
-            String password = m.get(PASSWORD);
-            return authenticateUsernamePassword(username, password);
-        }
-
-        return null;
-    }
-
     /*
      * Currently this method does not follow our conventions very well. Namely, it does not distinguish between a user
      * that cannot be found, or a user that could not provide correct credentials. Therefore we return null in both,
@@ -89,29 +72,35 @@ public class LdapAuthModule implements AuthModule {
      * A proper solution would likely require binding with an administrative account, such that user existence
      * can be verified prior to verifying credentials.
      */
-    private AuthenticationInfo authenticateUsernamePassword(String username, String password)
-            throws AuthenticationException {
-        DirContext ctx = null;
-        try {
-            String userDn = "uid=" + username + "," + userPath;
-            Hashtable<String, String> localContextEnv = new Hashtable<>();
-            localContextEnv.put(Context.INITIAL_CONTEXT_FACTORY, contextEnv.get(Context.INITIAL_CONTEXT_FACTORY));
-            localContextEnv.put(Context.PROVIDER_URL, contextEnv.get(Context.PROVIDER_URL));
-            localContextEnv.put("com.sun.jndi.ldap.connect.pool", "true");
-            localContextEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
-            localContextEnv.put(Context.SECURITY_PRINCIPAL, userDn);
-            if (password != null) {
-                localContextEnv.put(Context.SECURITY_CREDENTIALS, password);
+    @Override
+    public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        if (token instanceof UsernamePasswordToken) {
+            String username = ((UsernamePasswordToken) token).getPrincipal();
+            char[] password = ((UsernamePasswordToken) token).getPassword();
+            DirContext ctx = null;
+            try {
+                String userDn = "uid=" + username + "," + userPath;
+                Hashtable<String, String> localContextEnv = new Hashtable<>();
+                localContextEnv.put(Context.INITIAL_CONTEXT_FACTORY, contextEnv.get(Context.INITIAL_CONTEXT_FACTORY));
+                localContextEnv.put(Context.PROVIDER_URL, contextEnv.get(Context.PROVIDER_URL));
+                localContextEnv.put("com.sun.jndi.ldap.connect.pool", "true");
+                localContextEnv.put(Context.SECURITY_AUTHENTICATION, "simple");
+                localContextEnv.put(Context.SECURITY_PRINCIPAL, userDn);
+                if (password != null) {
+                    localContextEnv.put(Context.SECURITY_CREDENTIALS, new String(password));
+                }
+                ctx = new InitialDirContext(localContextEnv);
+                ctx.close();
+            } catch (javax.naming.AuthenticationException e) {
+                log.debug("User cannot bind", e);
+                return null;
+            } catch (NamingException e) {
+                throw new AuthenticationException(e);
             }
-            ctx = new InitialDirContext(localContextEnv);
-            ctx.close();
-        } catch (javax.naming.AuthenticationException e) {
-            log.debug("User cannot bind", e);
+            return new AuthenticationInfo(this, username);
+        } else {
             return null;
-        } catch (NamingException e) {
-            throw new AuthenticationException(e);
         }
-        return new AuthenticationInfo(this, username);
     }
 
     @Override
@@ -124,44 +113,40 @@ public class LdapAuthModule implements AuthModule {
             context = new InitialDirContext(contextEnv);
             String dn = "uid=" + principal + "," + userPath;
             Set<String> ldapRoles = loadRoles(context, dn);
-            for (String ldapRole : ldapRoles) {
-                int start = ldapRole.indexOf("cn=");
-                int stop = ldapRole.indexOf(",ou=");
-                authz.addRole(ldapRole.substring(start + 3, stop));
+            if (systemPrivPath != null) {
+                for (String privilege : loadPrivileges(context, ldapRoles, systemPrivPath)) {
+                    authz.addSystemPrivilege(new SystemPrivilege(privilege));
+                }
             }
+
             if (tmParaPrivPath != null) {
-                for (String privilege : loadPrivileges(context, ldapRoles, tmParaPrivPath)) {
-                    authz.addPrivilege(PrivilegeType.TM_PARAMETER, privilege);
+                for (String object : loadPrivileges(context, ldapRoles, tmParaPrivPath)) {
+                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.ReadParameter, object));
                 }
             }
             if (tmPacketPrivPath != null) {
-                for (String privilege : loadPrivileges(context, ldapRoles, tmPacketPrivPath)) {
-                    authz.addPrivilege(PrivilegeType.TM_PACKET, privilege);
+                for (String object : loadPrivileges(context, ldapRoles, tmPacketPrivPath)) {
+                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.ReadPacket, object));
                 }
             }
             if (tcPrivPath != null) {
-                for (String privilege : loadPrivileges(context, ldapRoles, tcPrivPath)) {
-                    authz.addPrivilege(PrivilegeType.TC, privilege);
-                }
-            }
-            if (systemPrivPath != null) {
-                for (String privilege : loadPrivileges(context, ldapRoles, systemPrivPath)) {
-                    authz.addPrivilege(PrivilegeType.SYSTEM, privilege);
+                for (String object : loadPrivileges(context, ldapRoles, tcPrivPath)) {
+                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.Command, object));
                 }
             }
             if (tmParaSetPrivPath != null) {
-                for (String privilege : loadPrivileges(context, ldapRoles, tmParaSetPrivPath)) {
-                    authz.addPrivilege(PrivilegeType.TM_PARAMETER_SET, privilege);
+                for (String object : loadPrivileges(context, ldapRoles, tmParaSetPrivPath)) {
+                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.WriteParameter, object));
                 }
             }
             if (streamPrivPath != null) {
-                for (String privilege : loadPrivileges(context, ldapRoles, streamPrivPath)) {
-                    authz.addPrivilege(PrivilegeType.STREAM, privilege);
+                for (String object : loadPrivileges(context, ldapRoles, streamPrivPath)) {
+                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.Stream, object));
                 }
             }
             if (cmdHistoryPrivPath != null) {
-                for (String privilege : loadPrivileges(context, ldapRoles, cmdHistoryPrivPath)) {
-                    authz.addPrivilege(PrivilegeType.CMD_HISTORY, privilege);
+                for (String object : loadPrivileges(context, ldapRoles, cmdHistoryPrivPath)) {
+                    authz.addObjectPrivilege(new ObjectPrivilege(ObjectPrivilegeType.CommandHistory, object));
                 }
             }
         } catch (NamingException e) {

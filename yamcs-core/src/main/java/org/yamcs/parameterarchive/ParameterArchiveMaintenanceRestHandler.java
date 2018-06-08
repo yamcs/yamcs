@@ -30,7 +30,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/parameterArchive/rebuild", method = "POST")
     public void reprocess(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
         if (!req.hasQueryParameter("start")) {
             throw new BadRequestException("no start specified");
@@ -54,7 +54,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/parameterArchive/deletePartitions", method = "POST")
     public void deletePartition(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
         if (!req.hasQueryParameter("start")) {
             throw new BadRequestException("no start specified");
@@ -92,7 +92,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/parameterArchive/info/parameter/:name*", method = "GET")
     public void archiveInfo(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
         String fqn = req.getRouteParam("name");
         ParameterArchiveV2 parchive = getParameterArchive(instance);

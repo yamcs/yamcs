@@ -82,7 +82,7 @@ public class ClientRestHandler extends RestHandler {
 
     private void verifyPermission(Processor processor, int clientId, RestRequest req)
             throws HttpException {
-        if (hasSystemPrivilege(req, SystemPrivilege.MayControlProcessor)) {
+        if (hasSystemPrivilege(req, SystemPrivilege.ControlProcessor)) {
             // With this privilege, everything is allowed
             return;
         }

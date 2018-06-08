@@ -12,6 +12,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.YObjectLoader;
 
+/**
+ * Manages the security layer. It allows logging in users with a pluggable variety of extensions. The Security Store
+ * reads its configuration from the security.yaml file. This file may define any number of {@link AuthModule}s that may
+ * all participate in the authentication and authorization process.
+ */
 public class SecurityStore {
 
     private static final Logger log = LoggerFactory.getLogger(SecurityStore.class);
@@ -39,12 +44,6 @@ public class SecurityStore {
 
                 unauthenticatedUser = new User(username);
                 unauthenticatedUser.setSuperuser(YConfiguration.getBoolean(userProps, "superuser", false));
-
-                if (userProps.containsKey("roles")) {
-                    for (String role : YConfiguration.<String> getList(userProps, "roles")) {
-                        unauthenticatedUser.addRole(role);
-                    }
-                }
 
                 // TODO allow configuring privileges? Probably shouldn't come from an AuthModule because enabled=false
             }
@@ -98,7 +97,7 @@ public class SecurityStore {
     /**
      * Attempts to authenticate a user with the given token and adds authorization information.
      */
-    public CompletableFuture<User> login(String type, Object authObject) {
+    public CompletableFuture<User> login(AuthenticationToken token) {
         if (!enabled) {
             return CompletableFuture.completedFuture(unauthenticatedUser);
         }
@@ -109,7 +108,7 @@ public class SecurityStore {
         AuthenticationInfo authInfo = null;
         for (AuthModule authModule : authModules) {
             try {
-                authInfo = authModule.getAuthenticationInfo(type, authObject);
+                authInfo = authModule.getAuthenticationInfo(token);
                 if (authInfo != null) {
                     log.debug("User successfully authenticated by AuthModule {}", authModule);
                     break;
@@ -129,10 +128,20 @@ public class SecurityStore {
             return f;
         }
 
+        User user = new User(authInfo);
+
         // 2. Authorize. All modules get the opportunity.
         for (AuthModule authModule : authModules) {
             AuthorizationInfo authzInfo = authModule.getAuthorizationInfo(authInfo);
+            for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
+                user.addSystemPrivilege(privilege);
+            }
+            for (ObjectPrivilege privilege : authzInfo.getObjectPrivileges()) {
+                user.addObjectPrivilege(privilege);
+            }
         }
+
+        f.complete(user);
         return f;
     }
 

@@ -29,7 +29,7 @@ public class MDBRestHandler extends RestHandler {
 
     @Route(path = "/api/mdb/:instance", method = "GET")
     public void getMissionDatabase(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayGetMissionDatabase);
+        checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         XtceDb mdb = XtceDbFactory.getInstance(instance);

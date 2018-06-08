@@ -15,17 +15,13 @@ public class UsernamePasswordToken implements AuthenticationToken {
         this.password = password;
     }
 
-    public String getUsername() {
+    @Override
+    public String getPrincipal() {
         return username;
     }
 
     public char[] getPassword() {
         return password;
-    }
-
-    @Override
-    public String getPrincipal() {
-        return username;
     }
 
     @Override

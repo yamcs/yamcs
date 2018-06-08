@@ -27,7 +27,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/cqueues", method = "GET")
     public void listQueues(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlCommandQueue);
+        checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
@@ -39,7 +39,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = "GET")
     public void getQueue(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlCommandQueue);
+        checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
@@ -51,7 +51,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name", method = { "PATCH", "PUT", "POST" })
     public void editQueue(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlCommandQueue);
+        checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
@@ -88,7 +88,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
 
     @Route(path = "/api/processors/:instance/:processor/cqueues/:name/entries", method = "GET")
     public void listQueueEntries(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlCommandQueue);
+        checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);
@@ -105,7 +105,7 @@ public class ProcessorCommandQueueRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/cqueues/:cqueue/entries/:uuid", method = { "PATCH", "PUT",
             "POST" })
     public void editQueueEntry(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlCommandQueue);
+        checkSystemPrivilege(req, SystemPrivilege.ControlCommandQueue);
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         CommandQueueManager mgr = verifyCommandQueueManager(processor);

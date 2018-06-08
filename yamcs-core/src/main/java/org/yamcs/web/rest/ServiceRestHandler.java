@@ -21,7 +21,7 @@ public class ServiceRestHandler extends RestHandler {
 
     @Route(path = "/api/services/:instance?", method = "GET")
     public void listServices(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlServices);
+        checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 
         String instance = req.getRouteParam("instance");
         if (instance == null) {
@@ -51,7 +51,7 @@ public class ServiceRestHandler extends RestHandler {
 
     @Route(path = "/api/services/:instance/:name", method = "GET")
     public void getService(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlServices);
+        checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 
         String instance = req.getRouteParam("instance");
         if (instance == null) {
@@ -87,7 +87,7 @@ public class ServiceRestHandler extends RestHandler {
     @Route(path = "/api/services/:instance/:name", method = { "PATCH", "PUT", "POST" })
     @Route(path = "/api/services/:instance/service/:name", method = { "PATCH", "PUT", "POST" })
     public void editService(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlServices);
+        checkSystemPrivilege(req, SystemPrivilege.ControlServices);
 
         String instance = req.getRouteParam("instance");
         if (instance == null) {

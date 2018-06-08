@@ -26,7 +26,8 @@ import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpContentDecompressor;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
@@ -87,17 +88,17 @@ public class HttpClient {
             fullUri += "?" + uri.getRawQuery();
         }
         HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, httpMethod, fullUri, content);
-        request.headers().set(HttpHeaders.Names.HOST, host);
-        request.headers().set(HttpHeaders.Names.CONTENT_LENGTH, content.readableBytes());
-        request.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
+        request.headers().set(HttpHeaderNames.HOST, host);
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
+        request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
         if (authToken != null) {
-            String credentialsClear = authToken.getUsername();
+            String credentialsClear = authToken.getPrincipal();
             if (authToken.getPassword() != null) {
                 credentialsClear += ":" + new String(authToken.getPassword());
             }
             String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
             String authorization = "Basic " + credentialsB64;
-            request.headers().set(HttpHeaders.Names.AUTHORIZATION, authorization);
+            request.headers().set(HttpHeaderNames.AUTHORIZATION, authorization);
         }
 
         ch.writeAndFlush(request).await(1, TimeUnit.SECONDS);

@@ -92,7 +92,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static final String HANDLER_NAME_COMPRESSOR = "hndl_compressor";
     public static final String HANDLER_NAME_CHUNKED_WRITER = "hndl_chunked_writer";
 
-    private static AuthorizationChecker authChecker = new AuthorizationChecker();
+    private static HttpAuthorizationChecker authChecker = new HttpAuthorizationChecker();
     static {
         HttpUtil.setContentLength(BAD_REQUEST, 0);
     }
@@ -103,6 +103,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public HttpRequestHandler(Router apiRouter, WebConfig webConfig) {
         this.apiRouter = apiRouter;
         this.webConfig = webConfig;
+    }
+
+    public static HttpAuthorizationChecker getAuthorizationChecker() {
+        return authChecker;
     }
 
     @Override

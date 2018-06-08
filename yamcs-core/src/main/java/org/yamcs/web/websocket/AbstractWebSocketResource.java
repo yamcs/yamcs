@@ -2,7 +2,6 @@ package org.yamcs.web.websocket;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
-import org.yamcs.security.PrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 
 import io.netty.channel.Channel;
@@ -44,7 +43,7 @@ public abstract class AbstractWebSocketResource {
     }
 
     protected void checkSystemPrivilege(int requestId, SystemPrivilege systemPrivilege) throws WebSocketException {
-        if (!client.getUser().hasPrivilege(PrivilegeType.SYSTEM, systemPrivilege.name())) {
+        if (!client.getUser().hasSystemPrivilege(systemPrivilege)) {
             throw new WebSocketException(requestId, "Need " + systemPrivilege + " privilege for this operation");
         }
     }

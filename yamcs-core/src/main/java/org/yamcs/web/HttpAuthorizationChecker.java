@@ -1,8 +1,6 @@
 package org.yamcs.web;
 
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -10,12 +8,12 @@ import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
-import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationException;
-import org.yamcs.security.JWT.JWTDecodeException;
-import org.yamcs.security.JwtToken;
+import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.User;
+import org.yamcs.security.UsernamePasswordToken;
+import org.yamcs.web.JwtHelper.JwtDecodeException;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -24,11 +22,19 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 
-public class AuthorizationChecker {
+/**
+ * Checks the HTTP Authorization header for supported types. It also allows scanning bearer tokens from the Cookie
+ * header specifically to support web socket requests coming from a browser (browsers do not allow setting custom
+ * authorization headers on websocket requests).
+ * <p>
+ * This class maintains a cache from a JWT bearer token to the authenticated User object. This allows skipping the login
+ * process as long as the bearer is valid.
+ */
+public class HttpAuthorizationChecker {
 
     private static final String AUTH_TYPE_BASIC = "Basic ";
     private static final String AUTH_TYPE_BEARER = "Bearer ";
-    private static final Logger log = LoggerFactory.getLogger(AuthorizationChecker.class);
+    private static final Logger log = LoggerFactory.getLogger(HttpAuthorizationChecker.class);
 
     private final ConcurrentHashMap<String, User> jwtTokens = new ConcurrentHashMap<>();
     private int cleaningCounter = 0;
@@ -56,6 +62,10 @@ public class AuthorizationChecker {
         }
     }
 
+    public void storeTokenToUserMapping(String jwtToken, User user) {
+        jwtTokens.put(jwtToken, user);
+    }
+
     private User handleBasicAuth(ChannelHandlerContext ctx, HttpRequest req) throws HttpException {
         String header = req.headers().get(HttpHeaderNames.AUTHORIZATION);
         String userpassEncoded = header.substring(AUTH_TYPE_BASIC.length());
@@ -72,11 +82,9 @@ public class AuthorizationChecker {
             throw new BadRequestException("Malformed username/password (Not separated by colon?)");
         }
 
-        Map<String, String> m = new HashMap<>();
-        m.put(AuthModule.USERNAME, parts[0]);
-        m.put(AuthModule.PASSWORD, parts[1]);
         try {
-            return SecurityStore.getInstance().login(AuthModule.TYPE_USERPASS, m).get();
+            AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1].toCharArray());
+            return SecurityStore.getInstance().login(token).get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return null;
@@ -134,7 +142,7 @@ public class AuthorizationChecker {
             }
 
             return cachedUser;
-        } catch (JWTDecodeException e) {
+        } catch (JwtDecodeException e) {
             throw new UnauthorizedException("Failed to decode JWT: " + e.getMessage());
         }
     }
@@ -146,7 +154,7 @@ public class AuthorizationChecker {
                 if (jwtToken.isExpired()) {
                     jwtTokens.remove(jwt);
                 }
-            } catch (JWTDecodeException e) {
+            } catch (JwtDecodeException e) {
                 jwtTokens.remove(jwt);
             }
         }

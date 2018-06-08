@@ -18,7 +18,7 @@ import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
@@ -279,7 +279,7 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(id);
         }
 
-        if (p != null && !hasPrivilege(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
+        if (p != null && !hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
             log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead",
                     StringConverter.idToString(id));
             p = null;
@@ -296,7 +296,7 @@ public abstract class RestHandler extends RouteHandler {
             throws NotFoundException {
         Stream stream = ydb.getStream(streamName);
 
-        if (stream != null && !hasPrivilege(req, PrivilegeType.STREAM, streamName)) {
+        if (stream != null && !hasObjectPrivilege(req, ObjectPrivilegeType.Stream, streamName)) {
             log.warn("Stream {} found, but withheld due to insufficient privileges. Returning 404 instead",
                     streamName);
             stream = null;
@@ -433,29 +433,31 @@ public abstract class RestHandler extends RouteHandler {
                 .addListener(l -> req.getCompletableFuture().complete(null));
     }
 
-    protected static void checkSystemPrivilege(RestRequest req, SystemPrivilege priv) throws ForbiddenException {
-        checkPrivileges(req, PrivilegeType.SYSTEM, priv.toString());
+    protected static void checkSystemPrivilege(RestRequest req, SystemPrivilege privilege) throws ForbiddenException {
+        if (!req.getUser().hasSystemPrivilege(privilege)) {
+            throw new ForbiddenException("No system privilege '" + privilege + "'");
+        }
     }
 
-    protected static void checkPrivileges(RestRequest req, PrivilegeType type, Collection<String> privileges)
+    protected static void checkObjectPrivileges(RestRequest req, ObjectPrivilegeType type, Collection<String> objects)
             throws ForbiddenException {
-        checkPrivileges(req, type, privileges.toArray(new String[privileges.size()]));
+        checkObjectPrivileges(req, type, objects.toArray(new String[objects.size()]));
     }
 
-    protected static void checkPrivileges(RestRequest req, PrivilegeType type, String... privileges)
+    protected static void checkObjectPrivileges(RestRequest req, ObjectPrivilegeType type, String... objects)
             throws ForbiddenException {
-        for (String privilege : privileges) {
-            if (!req.getUser().hasPrivilege(type, privilege)) {
-                throw new ForbiddenException("No " + type + " authorization for '" + privilege + "'");
+        for (String object : objects) {
+            if (!req.getUser().hasObjectPrivilege(type, object)) {
+                throw new ForbiddenException("No " + type + " authorization for '" + object + "'");
             }
         }
     }
 
     protected static boolean hasSystemPrivilege(RestRequest req, SystemPrivilege privilege) {
-        return hasPrivilege(req, PrivilegeType.SYSTEM, privilege.toString());
+        return req.getUser().hasSystemPrivilege(privilege);
     }
 
-    protected static boolean hasPrivilege(RestRequest req, PrivilegeType type, String privilege) {
-        return req.getUser().hasPrivilege(type, privilege);
+    protected static boolean hasObjectPrivilege(RestRequest req, ObjectPrivilegeType type, String privilege) {
+        return req.getUser().hasObjectPrivilege(type, privilege);
     }
 }

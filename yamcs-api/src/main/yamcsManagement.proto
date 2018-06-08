@@ -97,17 +97,17 @@ message ClientInfo {
   optional string loginTimeUTC = 9;
 }
 
+message ObjectPrivilegeInfo {
+  optional string type = 1;
+  repeated string object = 2;
+}
+
 message UserInfo {
   optional string login = 1;
-  repeated ClientInfo clientInfo = 2;
-  repeated string roles = 3;
-  repeated string tmParaPrivileges = 4;
-  repeated string tmParaSetPrivileges = 5;
-  repeated string tmPacketPrivileges = 6;
-  repeated string tcPrivileges = 7;
-  repeated string systemPrivileges = 8;
-  repeated string streamPrivileges = 9;
-  repeated string cmdHistoryPrivileges = 10;
+  repeated string systemPrivilege = 2;
+  repeated ObjectPrivilegeInfo objectPrivilege = 3;
+  optional bool superuser = 4;
+  repeated ClientInfo clientInfo = 5;
 }
 
 message TmStatistics {

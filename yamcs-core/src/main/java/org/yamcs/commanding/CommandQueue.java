@@ -23,7 +23,6 @@ public class CommandQueue {
     int stateExpirationRemainingS = -1;
     ScheduledFuture<?> stateExpirationJob = null;
 
-    List<String> roles;
     List<String> significances;
     String spQueueState;
     String spNumSentCommands;

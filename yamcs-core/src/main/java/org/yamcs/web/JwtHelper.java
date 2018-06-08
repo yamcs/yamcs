@@ -1,4 +1,4 @@
-package org.yamcs.security;
+package org.yamcs.web;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -9,11 +9,13 @@ import java.util.Base64;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.yamcs.security.User;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
-public class JWT {
+public class JwtHelper {
 
     private static final String NO_ALG_HEADER = Base64.getUrlEncoder().withoutPadding()
             .encodeToString("{\"alg\":\"none\"}".getBytes());
@@ -67,66 +69,66 @@ public class JWT {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(macResult);
     }
 
-    public static JsonObject decodeUnverified(String token) throws JWTDecodeException {
+    public static JsonObject decodeUnverified(String token) throws JwtDecodeException {
         String parts[] = token.split("\\.");
 
         byte[] decodedClaims;
         try {
             decodedClaims = Base64.getUrlDecoder().decode(parts[1].getBytes());
         } catch (IllegalArgumentException e) {
-            throw new JWTDecodeException("Could not decode JWT Payload as Base 64 URL-encoded String", e);
+            throw new JwtDecodeException("Could not decode JWT Payload as Base 64 URL-encoded String", e);
         }
 
         try {
             return new JsonParser().parse(new String(decodedClaims, StandardCharsets.UTF_8)).getAsJsonObject();
         } catch (JsonSyntaxException e) {
-            throw new JWTDecodeException("Could not decode JWT Payload as JSON");
+            throw new JwtDecodeException("Could not decode JWT Payload as JSON");
         } catch (IllegalStateException e) {
-            throw new JWTDecodeException("Decoded JWT Payload is not a valid JSON Object");
+            throw new JwtDecodeException("Decoded JWT Payload is not a valid JSON Object");
         }
     }
 
     public static JsonObject decode(String token, String secret)
-            throws JWTDecodeException, InvalidKeyException, NoSuchAlgorithmException {
+            throws JwtDecodeException, InvalidKeyException, NoSuchAlgorithmException {
         String parts[] = token.split("\\.");
         if (parts.length < 2) {
-            throw new JWTDecodeException("JWT should consist of three sections separated by dots");
+            throw new JwtDecodeException("JWT should consist of three sections separated by dots");
         }
 
         String unsignedToken = parts[0] + "." + parts[1];
         byte[] expectedSignature = hmacSha256(secret, unsignedToken).getBytes();
         if (parts.length < 3) {
-            throw new JWTDecodeException("Signature missing");
+            throw new JwtDecodeException("Signature missing");
         }
         byte[] actualSignature = parts[2].getBytes();
         if (!Arrays.equals(expectedSignature, actualSignature)) {
-            throw new JWTDecodeException("Invalid signature");
+            throw new JwtDecodeException("Invalid signature");
         }
 
         byte[] decodedClaims;
         try {
             decodedClaims = Base64.getUrlDecoder().decode(parts[1].getBytes());
         } catch (IllegalArgumentException e) {
-            throw new JWTDecodeException("Could not decode JWT Payload as Base 64 URL-encoded UTF-8 String", e);
+            throw new JwtDecodeException("Could not decode JWT Payload as Base 64 URL-encoded UTF-8 String", e);
         }
 
         try {
             return new JsonParser().parse(new String(decodedClaims, StandardCharsets.UTF_8)).getAsJsonObject();
         } catch (JsonSyntaxException e) {
-            throw new JWTDecodeException("Could not decode JWT Payload as JSON");
+            throw new JwtDecodeException("Could not decode JWT Payload as JSON");
         } catch (IllegalStateException e) {
-            throw new JWTDecodeException("Decoded JWT Payload is not a valid JSON Object");
+            throw new JwtDecodeException("Decoded JWT Payload is not a valid JSON Object");
         }
     }
 
     @SuppressWarnings("serial")
-    public static final class JWTDecodeException extends Exception {
+    public static final class JwtDecodeException extends Exception {
 
-        public JWTDecodeException(String message) {
+        public JwtDecodeException(String message) {
             super(message);
         }
 
-        public JWTDecodeException(String message, Throwable e) {
+        public JwtDecodeException(String message, Throwable e) {
             super(message, e);
         }
     }

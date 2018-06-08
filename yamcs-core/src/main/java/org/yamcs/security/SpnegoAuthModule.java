@@ -47,10 +47,13 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.CharsetUtil;
 
 /**
- * Implements SPNEGO authentication and uses the {@link Realm} for authorization
+ * Implements SPNEGO authentication against an external Kerberos host.
+ * <p>
+ * Upon succesful authentication, Kerberos issues a 'ticket' with limited lifetime. {@link SpnegoAuthModule} maps this
+ * ticket to an internally generated authorization code which can be used for repeat identity checks against the
+ * {@link SecurityStore}.
  * 
  * @author nm
- *
  */
 public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
 
@@ -100,25 +103,19 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
     }
 
     @Override
-    public boolean supportsAuthenticate(String type) {
-        return TYPE_CODE.equals(type) || TYPE_USERPASS.equals(type);
-    }
-
-    @Override
-    public AuthenticationInfo getAuthenticationInfo(String type, Object authObj) throws AuthenticationException {
-        switch (type) {
-        case TYPE_USERPASS:
-            return authenticateByPassword((Map<String, String>) authObj);
-        case TYPE_CODE:
-            return authenticateByCode((String) authObj);
+    public AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        if (token instanceof UsernamePasswordToken) {
+            return authenticateByPassword((UsernamePasswordToken) token);
+        } else if (token instanceof ThirdPartyAuthorizationCode) {
+            return authenticateByCode((ThirdPartyAuthorizationCode) token);
+        } else {
+            return null;
         }
-
-        return null;
     }
 
-    private AuthenticationInfo authenticateByPassword(Map<String, String> m) throws AuthenticationException {
-        String username = m.get(USERNAME);
-        char[] password = m.get(PASSWORD).toCharArray();
+    private AuthenticationInfo authenticateByPassword(UsernamePasswordToken token) throws AuthenticationException {
+        String username = token.getPrincipal();
+        char[] password = token.getPassword();
         try {
             LoginContext userLogin = new LoginContext("UserAuth", new UserPassCallbackHandler(username, password));
             userLogin.login();
@@ -130,8 +127,8 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
         }
     }
 
-    private AuthenticationInfo authenticateByCode(String authorizationCode) throws AuthenticationException {
-        SpnegoAuthenticationInfo authInfo = code2info.get(authorizationCode);
+    private AuthenticationInfo authenticateByCode(ThirdPartyAuthorizationCode code) throws AuthenticationException {
+        SpnegoAuthenticationInfo authInfo = code2info.get(code.getPrincipal());
         long now = System.currentTimeMillis();
         if ((authInfo == null) || (now - authInfo.created) > AUTH_CODE_VALIDITY) {
             throw new AuthenticationException("Invalid authorization code");

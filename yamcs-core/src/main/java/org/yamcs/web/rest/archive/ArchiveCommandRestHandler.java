@@ -4,7 +4,7 @@ import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.GPBHelper;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Rest.ListCommandsResponse;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
@@ -37,7 +37,7 @@ public class ArchiveCommandRestHandler extends RestHandler {
         if (req.hasRouteParam("name")) {
             XtceDb mdb = XtceDbFactory.getInstance(instance);
             MetaCommand cmd = verifyCommand(req, mdb, req.getRouteParam("name"));
-            checkPrivileges(req, PrivilegeType.TC, cmd.getQualifiedName());
+            checkObjectPrivileges(req, ObjectPrivilegeType.Command, cmd.getQualifiedName());
             sqlb.where("cmdName = ?", cmd.getQualifiedName());
         }
         sqlb.descend(req.asksDescending(true));

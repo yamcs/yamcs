@@ -30,7 +30,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
     @Route(path = "/api/archive/rocksdb/:tablespace/properties", method = "GET")
     @Route(path = "/api/archive/rocksdb/:tablespace/properties/:dbpath*", method = "GET")
     public void getProperty(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
         Tablespace tablespace = verifyTablespace(req);
         String dbpath = req.hasRouteParam("dbpath") ? req.getRouteParam("dbpath") : null;
 
@@ -68,7 +68,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/rocksdb/list", method = "GET")
     public void listOpenDbs(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
         StringBuilder sb = new StringBuilder();
         for (Tablespace tblsp : rse.getTablespaces().values()) {
@@ -91,7 +91,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
 
     @Route(path = "/api/archive/rocksdb/backup/:dbpath*", method = "POST")
     public void doBackup(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
         Tablespace tablespace = verifyTablespace(req);
         String dbpath = req.hasRouteParam("dbpath") ? req.getRouteParam("dbpath") : null;

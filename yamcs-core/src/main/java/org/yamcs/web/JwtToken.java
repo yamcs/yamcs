@@ -1,9 +1,9 @@
-package org.yamcs.security;
+package org.yamcs.web;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import org.yamcs.security.JWT.JWTDecodeException;
+import org.yamcs.web.JwtHelper.JwtDecodeException;
 
 import com.google.gson.JsonObject;
 
@@ -14,9 +14,9 @@ public class JwtToken {
 
     private JsonObject claims;
 
-    public JwtToken(String jwt, String secretKey) throws JWTDecodeException {
+    public JwtToken(String jwt, String secretKey) throws JwtDecodeException {
         try {
-            this.claims = JWT.decode(jwt, secretKey);
+            this.claims = JwtHelper.decode(jwt, secretKey);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new AssertionError(e);
         }

@@ -5,39 +5,21 @@ import org.yamcs.web.AuthHandler;
 /**
  * Interface implemented by the Authentication and Authorization modules.
  * 
- * Each user has a list of privileges and a list of roles. The roles are used for the Commanding system to decide in
- * which queue will be put the commands sent by the user.
- * 
- * Usually the roles are associated to privileges but this class makes no assumption about that.
- * 
- * The AuthModule has to associate to each user an AuthenticationToken - based on this {@link AuthHandler} will generate
- * a JWT token which is passed between the client and the server with each request.
+ * The AuthModule has to associate to each user AuthenticationInfo that may contain contextual security properties.
+ * Based on this {@link AuthHandler} will generate a JWT token which is passed between the client and the server with
+ * each request.
  * 
  * @author nm
  */
 public interface AuthModule {
 
-    public final static String TYPE_USERPASS = "USERNAME_PASSWORD";
-    public static final String USERNAME = "username";
-    public static final String PASSWORD = "password";
-
-    public final static String TYPE_CODE = "AUTH_CODE";
-
-    /**
-     * Returns true if this AuthModule supports authentication of the specified type. Modules that return <tt>false</tt>
-     * will still have possibility to add roles to the user authenticated by a different module.
-     */
-    public boolean supportsAuthenticate(String type);
-
     /**
      * Identify the subject based on the given information.
      * 
-     * @param type
-     *            the type of the authObject
-     * @param authObject
+     * @param token
      * @return an info object containing the principal of the subject, or <tt>null</tt> if the login failed
      */
-    AuthenticationInfo getAuthenticationInfo(String type, Object authObject) throws AuthenticationException;
+    AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException;
 
     /**
      * Retrieve access control information based on the given AuthenticationInfo. This AuthenticationInfo may have been

@@ -28,7 +28,7 @@ import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
@@ -70,7 +70,7 @@ public class ArchivePacketRestHandler extends RestHandler {
             List<String> unsortedPackets = new ArrayList<>();
             for (Entry<String, Short> entry : enumValues.entrySet()) {
                 String packetName = entry.getKey();
-                if (hasPrivilege(req, PrivilegeType.TM_PACKET, packetName)) {
+                if (hasObjectPrivilege(req, ObjectPrivilegeType.ReadPacket, packetName)) {
                     unsortedPackets.add(packetName);
                 }
             }
@@ -171,7 +171,7 @@ public class ArchivePacketRestHandler extends RestHandler {
             }
         }
         if (!nameSet.isEmpty()) {
-            checkPrivileges(req, PrivilegeType.TM_PACKET, nameSet);
+            checkObjectPrivileges(req, ObjectPrivilegeType.ReadPacket, nameSet);
         } else {
             nameSet.addAll(getTmPacketNames(instance, req.getUser()));
         }
@@ -237,7 +237,7 @@ public class ArchivePacketRestHandler extends RestHandler {
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
                 TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
-                if (hasPrivilege(req, PrivilegeType.TM_PACKET, pdata.getId().getName())) {
+                if (hasObjectPrivilege(req, ObjectPrivilegeType.ReadPacket, pdata.getId().getName())) {
                     packets.add(pdata);
                 }
             }
@@ -276,7 +276,7 @@ public class ArchivePacketRestHandler extends RestHandler {
         XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         ArrayList<String> tl = new ArrayList<>();
         for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
-            if (user.hasPrivilege(PrivilegeType.TM_PACKET, sc.getQualifiedName())) {
+            if (user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, sc.getQualifiedName())) {
                 tl.add(sc.getQualifiedName());
             }
         }
