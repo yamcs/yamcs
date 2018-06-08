@@ -3,7 +3,8 @@ package org.yamcs.security;
 import java.util.Objects;
 
 /**
- * A system privilege is the right to perform a particular action on any object of a particular type.
+ * A system privilege is the right to perform a particular action or to perform an action on any object of a particular
+ * type.
  * <p>
  * There is no 'wildcard' that represent all system privileges. For such behaviour you should instead consider granting
  * a user the 'superuser' attribute.

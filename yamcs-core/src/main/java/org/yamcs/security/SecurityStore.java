@@ -110,13 +110,13 @@ public class SecurityStore {
             try {
                 authInfo = authModule.getAuthenticationInfo(token);
                 if (authInfo != null) {
-                    log.debug("User successfully authenticated by AuthModule {}", authModule);
+                    log.debug("User successfully authenticated by {}", authModule.getClass().getName());
                     break;
                 } else {
-                    log.trace("User does not exist according to AuthModule {}", authModule);
+                    log.trace("User does not exist according to {}", authModule.getClass().getName());
                 }
             } catch (AuthenticationException e) {
-                log.info("AuthModule {} aborted the login process", authModule.getClass());
+                log.info("{} aborted the login process", authModule.getClass().getName());
                 f.completeExceptionally(e);
                 return f;
             }

@@ -35,6 +35,7 @@ public class YamcsCli extends Command {
         addSubCommand(new InstancesCli(this));
         addSubCommand(new LinksCli(this));
         addSubCommand(new ParameterArchiveCli(this));
+        addSubCommand(new PasswordHashCli(this));
         addSubCommand(new RocksDbCli(this));
         addSubCommand(new ServicesCli(this));
         addSubCommand(new StorageCli(this));
