@@ -1,30 +1,27 @@
 package org.yamcs.cli;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.yamcs.AbstractIntegrationTest;
-import org.yamcs.cli.YamcsCli;
 
-public class YamcsCliTest extends AbstractIntegrationTest {
+public class YamcsCliTest {
     ByteArrayOutputStream outStream;
-    
-    
+
     @Before
     public void changeSysOut() {
         outStream = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(outStream);
         System.setOut(ps);
     }
-    
+
     @Test
     public void testXtceDbCli() throws Exception {
         YamcsCli yamcsCli = new YamcsCli();
-        yamcsCli.parse(new String[] {"xtcedb", "print", "refmdb"});
+        yamcsCli.parse(new String[] { "xtcedb", "print", "refmdb" });
         yamcsCli.validate();
         yamcsCli.execute();
         String out = outStream.toString();

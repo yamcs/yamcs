@@ -2,11 +2,6 @@ package org.yamcs.cli;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystemException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +23,7 @@ import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
+import org.yamcs.yarch.BackupUtils;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
@@ -64,43 +60,6 @@ public class Backup extends Command {
 
     private void error(String msg) {
         throw new ParameterException(getFullCommandName() + ": " + msg);
-
-    }
-
-    public static void verifyBackupDirectory(String backupDir, boolean mustExist) throws IOException {
-        Path path = FileSystems.getDefault().getPath(backupDir);
-        if (path.toFile().exists()) {
-            if (!path.toFile().isDirectory()) {
-                throw new FileSystemException(backupDir, null,
-                        "File '" + backupDir + "' exists and is not a directory");
-            }
-
-            boolean isEmpty = true;
-            boolean isBackupDir = false;
-            try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(path)) {
-                for (Path p : dirStream) {
-                    isEmpty = false;
-                    if (p.endsWith("meta")) {
-                        isBackupDir = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!isEmpty && !isBackupDir) {
-                throw new FileSystemException(backupDir, null,
-                        "Directory '" + backupDir + "' is not a backup directory");
-            }
-            if (!Files.isWritable(path)) {
-                throw new FileSystemException(backupDir, null, "Directory '" + backupDir + "' is not writable");
-            }
-        } else {
-            if (mustExist) {
-                throw new FileSystemException(backupDir, null, "Directory '" + backupDir + "' does not exist");
-            } else {
-                Files.createDirectories(path);
-            }
-        }
 
     }
 
@@ -165,7 +124,7 @@ public class Backup extends Command {
         }
 
         private void backupDirectly() throws IOException {
-            verifyBackupDirectory(backupDir, false);
+            BackupUtils.verifyBackupDirectory(backupDir, false);
             try (Options opt = new Options();
                     BackupableDBOptions bopt = new BackupableDBOptions(backupDir);
                     ColumnFamilyOptions cfOptions = new ColumnFamilyOptions();
@@ -209,7 +168,7 @@ public class Backup extends Command {
 
         @Override
         void execute() throws Exception {
-            verifyBackupDirectory(backupDir, true);
+            BackupUtils.verifyBackupDirectory(backupDir, true);
             try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
                     RestoreOptions restoreOpt = new RestoreOptions(true);) {
@@ -232,7 +191,7 @@ public class Backup extends Command {
 
         @Override
         void execute() throws Exception {
-            verifyBackupDirectory(backupDir, true);
+            BackupUtils.verifyBackupDirectory(backupDir, true);
 
             BackupableDBOptions opt = new BackupableDBOptions(backupDir);
             BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
@@ -264,7 +223,7 @@ public class Backup extends Command {
 
         @Override
         void execute() throws Exception {
-            verifyBackupDirectory(backupDir, true);
+            BackupUtils.verifyBackupDirectory(backupDir, true);
             try (BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);) {
 

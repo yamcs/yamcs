@@ -56,7 +56,8 @@ ln -fs $YAMCS_HOME/yamcs-server/lib/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/packages/app/dist $TARGET/lib/yamcs-web
 
 ln -fs $YAMCS_HOME/yamcs-client/target/*.jar $TARGET/lib
-ln -fs $YAMCS_HOME/yamcs-client/lib/*datepicker*.jar $TARGET/lib
+ln -fs $YAMCS_HOME/yamcs-client/lib/jcommander*.jar $TARGET/lib
+ln -fs $YAMCS_HOME/yamcs-client/lib/jdatepicker*.jar $TARGET/lib
 
 # Sets up a development environment for an example Yamcs configuration
 if [ $YSS_CONFIGURATION -eq "1" ]; then

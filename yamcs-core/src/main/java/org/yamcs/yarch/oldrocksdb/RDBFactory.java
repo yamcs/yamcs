@@ -20,63 +20,65 @@ import org.rocksdb.RestoreOptions;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.cli.Backup;
+import org.yamcs.yarch.BackupUtils;
 
 /**
- * manufacturer of RDB databases. It runs a thread that synchronises them from time to time and closes 
- * those that have not been used in a while
+ * manufacturer of RDB databases. It runs a thread that synchronises them from time to time and closes those that have
+ * not been used in a while
+ * 
  * @author nm
  *
  */
 @Deprecated
 public class RDBFactory implements Runnable {
-    HashMap<String, DbAndAccessTime> databases=new HashMap<>();
+    HashMap<String, DbAndAccessTime> databases = new HashMap<>();
 
     static Logger log = LoggerFactory.getLogger(RDBFactory.class.getName());
-    static HashMap<String, RDBFactory> instances=new HashMap<>(); 
+    static HashMap<String, RDBFactory> instances = new HashMap<>();
     static int maxOpenDbs = 200;
     ScheduledThreadPoolExecutor scheduler;
     final String instance;
     public static FlushOptions flushOptions = new FlushOptions();
     StringColumnFamilySerializer stringCfSerializer = new StringColumnFamilySerializer();
-    
-    //use this when the db is open for the backup; if the same db is open with another serializer, then this one will be dropped 
+
+    // use this when the db is open for the backup; if the same db is open with another serializer, then this one will
+    // be dropped
     DummyColumnFamilySerializer dummyCfSerializer = new DummyColumnFamilySerializer();
 
     public static synchronized RDBFactory getInstance(String instance) {
-        return instances.computeIfAbsent(instance, k-> new RDBFactory(k)); 
+        return instances.computeIfAbsent(instance, k -> new RDBFactory(k));
     }
 
     /**
      * Opens or create a database.
      * 
      * 
-     * @param absolutePath - absolute path - should be a directory
-     * @param readonly - open in readonly mode; if the database is open in readwrite mode, it will be returned like that
+     * @param absolutePath
+     *            - absolute path - should be a directory
+     * @param readonly
+     *            - open in readonly mode; if the database is open in readwrite mode, it will be returned like that
      * @return the database created or opened
      * @throws IOException
      */
-    public YRDB getRdb(String absolutePath, boolean readonly) throws IOException{
+    public YRDB getRdb(String absolutePath, boolean readonly) throws IOException {
         return rdb(absolutePath, 0, readonly);
     }
 
-    public YRDB getRdb(String absolutePath, int prefixSize, boolean readonly) throws IOException  {      
+    public YRDB getRdb(String absolutePath, int prefixSize, boolean readonly) throws IOException {
         return rdb(absolutePath, prefixSize, readonly);
     }
+
     /**
      * use default visibility to be able to create a separate one from the unit test
      */
     RDBFactory(String instance) {
         this.instance = instance;
         flushOptions.setWaitForFlush(false);
-        scheduler = new ScheduledThreadPoolExecutor(1,new ThreadFactory() {//the default thread factory creates non daemon threads 
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t=new Thread(r);
-                t.setDaemon(true);
-                t.setName("RDBFactory-sync");
-                return t;
-            }
+        scheduler = new ScheduledThreadPoolExecutor(1, (ThreadFactory) r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            t.setName("RDBFactory-sync");
+            return t;
         });
         scheduler.scheduleAtFixedRate(this, 1, 1, TimeUnit.MINUTES);
         Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook()));
@@ -84,20 +86,20 @@ public class RDBFactory implements Runnable {
 
     private synchronized YRDB rdb(String absolutePath, int prefixSize, boolean readonly) throws IOException {
         DbAndAccessTime daat = databases.get(absolutePath);
-        if(daat==null) {
-            if(databases.size()>=maxOpenDbs) { //close the db with the oldest timestamp
-                long min=Long.MAX_VALUE;
-                String minFile=null;
-                for(Entry<String, DbAndAccessTime> entry:databases.entrySet()) {
+        if (daat == null) {
+            if (databases.size() >= maxOpenDbs) { // close the db with the oldest timestamp
+                long min = Long.MAX_VALUE;
+                String minFile = null;
+                for (Entry<String, DbAndAccessTime> entry : databases.entrySet()) {
                     DbAndAccessTime daat1 = entry.getValue();
-                    if((daat1.refcount==0)&&(daat1.lastAccess<min)) {
+                    if ((daat1.refcount == 0) && (daat1.lastAccess < min)) {
                         min = daat1.lastAccess;
                         minFile = entry.getKey();
                     }
                 }
-                if(minFile!=null) {
+                if (minFile != null) {
                     log.debug("Closing the database: {}  to not have more than {} open databases", minFile, maxOpenDbs);
-                    daat=databases.remove(minFile);
+                    daat = databases.remove(minFile);
                     daat.db.close();
                 }
             }
@@ -109,7 +111,6 @@ public class RDBFactory implements Runnable {
                 throw new IOException(e);
             }
 
-
             daat = new DbAndAccessTime(db, absolutePath, readonly);
             databases.put(absolutePath, daat);
         }
@@ -117,40 +118,38 @@ public class RDBFactory implements Runnable {
         daat.refcount++;
         return daat.db;
     }
-    
-   
 
     public void delete(String file) {
         del(file);
     }
 
     private synchronized void del(String dir) {
-        DbAndAccessTime daat=databases.remove(dir);
-        if(daat!=null) {
+        DbAndAccessTime daat = databases.remove(dir);
+        if (daat != null) {
             daat.db.close();
         }
     }
 
     @Override
     public synchronized void run() {
-        //remove all the databases not accessed in the last 5 min and sync the others
-        long time=System.currentTimeMillis();
-        Iterator<Map.Entry<String, DbAndAccessTime>>it = databases.entrySet().iterator();
-        while(it.hasNext()) {
-            Map.Entry<String, DbAndAccessTime> entry=it.next();
-            DbAndAccessTime daat=entry.getValue();
-            if((daat.refcount==0) && ( time-daat.lastAccess>300000)) {
+        // remove all the databases not accessed in the last 5 min and sync the others
+        long time = System.currentTimeMillis();
+        Iterator<Map.Entry<String, DbAndAccessTime>> it = databases.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, DbAndAccessTime> entry = it.next();
+            DbAndAccessTime daat = entry.getValue();
+            if ((daat.refcount == 0) && (time - daat.lastAccess > 300000)) {
                 log.debug("Closing the database: {}", entry.getKey());
                 daat.db.close();
                 it.remove();
-            } 
+            }
         }
     }
 
     synchronized void shutdown() {
         log.debug("shutting down, closing all the databases {}", databases.keySet());
-        Iterator<Map.Entry<String, DbAndAccessTime>>it = databases.entrySet().iterator();
-        while(it.hasNext()) {
+        Iterator<Map.Entry<String, DbAndAccessTime>> it = databases.entrySet().iterator();
+        while (it.hasNext()) {
             Map.Entry<String, DbAndAccessTime> entry = it.next();
             entry.getValue().db.close();
             it.remove();
@@ -166,7 +165,7 @@ public class RDBFactory implements Runnable {
 
     public synchronized void dispose(YRDB rdb) {
         DbAndAccessTime daat = databases.get(rdb.getPath());
-        if(daat==null) {
+        if (daat == null) {
             log.error("Dispose called with an invalid rdb (already disposed??): {}", rdb.getPath());
             return;
         }
@@ -181,19 +180,21 @@ public class RDBFactory implements Runnable {
      */
     public synchronized void closeIfOpen(String absolutePath) {
         DbAndAccessTime daat = databases.remove(absolutePath);
-        if(daat!=null) {
+        if (daat != null) {
             daat.db.close();
-        }		
+        }
     }
 
     /**
      * Get the database which is already open or null if it is not open
-     * @param absolutePath the absoulte path of the database to be returned
+     * 
+     * @param absolutePath
+     *            the absoulte path of the database to be returned
      * @return the database object
      */
     public synchronized YRDB getOpenRdb(String absolutePath) {
         DbAndAccessTime daat = databases.get(absolutePath);
-        if(daat==null) {
+        if (daat == null) {
             return null;
         }
         daat.lastAccess = System.currentTimeMillis();
@@ -223,11 +224,11 @@ public class RDBFactory implements Runnable {
      * @return a future that can be used to know when the backup has finished and if there was any error
      */
     public CompletableFuture<Void> doBackup(String dbpath, String backupDir) {
-        CompletableFuture<Void> cf = new CompletableFuture<Void>();
-        scheduler.execute(()->{
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        scheduler.execute(() -> {
             YRDB db = null;
             try {
-                Backup.verifyBackupDirectory(backupDir, false);
+                BackupUtils.verifyBackupDirectory(backupDir, false);
                 BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
                 db = getRdb(dbpath, false);
@@ -239,8 +240,8 @@ public class RDBFactory implements Runnable {
             } catch (Exception e) {
                 log.warn("Got error when creating the backup: {} ", e.getMessage());
                 cf.completeExceptionally(e);
-            } finally { 
-                if(db!=null) {
+            } finally {
+                if (db != null) {
                     dispose(db);
                 }
             }
@@ -249,10 +250,9 @@ public class RDBFactory implements Runnable {
         return cf;
     }
 
-
     public CompletableFuture<Void> restoreBackup(String backupDir, String dbPath) {
-        CompletableFuture<Void> cf = new CompletableFuture<Void>();
-        scheduler.execute(()->{
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        scheduler.execute(() -> {
             try {
                 BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
@@ -265,21 +265,21 @@ public class RDBFactory implements Runnable {
                 cf.complete(null);
             } catch (Exception e) {
                 cf.completeExceptionally(e);
-            } finally { 
+            } finally {
             }
         });
 
         return cf;
     }
-    
+
     public CompletableFuture<Void> restoreBackup(int backupId, String backupDir, String dbPath) {
         CompletableFuture<Void> cf = new CompletableFuture<>();
-        scheduler.execute(()-> {
+        scheduler.execute(() -> {
             try {
                 BackupableDBOptions opt = new BackupableDBOptions(backupDir);
                 BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);
                 RestoreOptions restoreOpt = new RestoreOptions(false);
-                if(backupId==-1) {
+                if (backupId == -1) {
                     backupEngine.restoreDbFromLatestBackup(dbPath, dbPath, restoreOpt);
                 } else {
                     backupEngine.restoreDbFromBackup(backupId, dbPath, dbPath, restoreOpt);
@@ -291,19 +291,18 @@ public class RDBFactory implements Runnable {
                 cf.complete(null);
             } catch (Exception e) {
                 cf.completeExceptionally(e);
-            } finally { 
+            } finally {
             }
         });
 
         return cf;
     }
-    
 
-    /** 
+    /**
      * Called from Unit tests to cleanup before the next test
      */
     public static void shutdownAll() {
-        for(RDBFactory r: instances.values()) {
+        for (RDBFactory r : instances.values()) {
             r.shutdown();
         }
         instances.clear();
@@ -313,14 +312,13 @@ public class RDBFactory implements Runnable {
 class DbAndAccessTime {
     YRDB db;
     long lastAccess;
-    int refcount=0;
+    int refcount = 0;
     boolean readonly;
     String dir;
 
-
     public DbAndAccessTime(YRDB db, String dir, boolean readonly) {
-        this.db=db;
-        this.readonly=readonly;
+        this.db = db;
+        this.readonly = readonly;
         this.dir = dir;
     }
 }

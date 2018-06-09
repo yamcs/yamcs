@@ -31,7 +31,7 @@ import com.beust.jcommander.Parameters;
         + "The table will be identical to the tm table and will contain a histogram on pname (=packet name).\n"
         + "It is possible to specify how many partitions (i.e. how many different pnames) to be loaded for each frequency\n"
         + "and the time duration of the data." + "")
-class RocksdbBenchmark extends Command {
+class RocksDbBenchmark extends Command {
     @Parameter(names = "--dbDir", description = "the directory where the database will be created.\n"
             + "A \"rocksbench\" archive instance will be created in this directory", required = true)
     String dbDir;
@@ -57,7 +57,7 @@ class RocksdbBenchmark extends Command {
     private YarchDatabaseInstance ydb;
 
 
-    public RocksdbBenchmark(RocksDbCli rocksDbCli) {
+    public RocksDbBenchmark(RocksDbCli rocksDbCli) {
         super("bench", rocksDbCli);
     }
 

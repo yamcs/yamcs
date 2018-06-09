@@ -8,7 +8,6 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
-import org.yamcs.cli.Backup;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
@@ -16,6 +15,7 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
+import org.yamcs.yarch.BackupUtils;
 import org.yamcs.yarch.rocksdb.RDBFactory;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.rocksdb.Tablespace;
@@ -101,7 +101,7 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
             throw new BadRequestException("No backup directory specified");
         }
         try {
-            Backup.verifyBackupDirectory(backupDir, false);
+            BackupUtils.verifyBackupDirectory(backupDir, false);
         } catch (Exception e1) {
             throw new BadRequestException(e1.getMessage());
         }

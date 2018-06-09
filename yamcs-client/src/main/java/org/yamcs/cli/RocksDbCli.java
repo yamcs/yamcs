@@ -29,7 +29,7 @@ public class RocksDbCli extends Command {
     public RocksDbCli(YamcsCli yamcsCli) {
         super("rocksdb", yamcsCli);
         addSubCommand(new RocksdbCompact());
-        addSubCommand(new RocksdbBenchmark(this));
+        addSubCommand(new RocksDbBenchmark(this));
     }
 
     @Override
