@@ -9,8 +9,6 @@ bin/
 *.iml
 
 target/
-yamcs-artemis/lib/
-yamcs-core/lib/
 live/
 server.lock
 make-live-devel-local.sh

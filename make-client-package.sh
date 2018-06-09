@@ -25,7 +25,11 @@ mkdir -p /tmp/$dist/etc/orekit
 mkdir -p /tmp/$dist/bin
 
 cd /tmp/$dist
-ln -s $yamcshome/yamcs-core/lib/*.jar lib/
+
+# TODO should have a 'yamcs-client' module with its own lib dir
+# Currently however it is too difficult to unsplit the client from yamcs-core.
+ln -s $yamcshome/yamcs-server/lib/*.jar lib/
+
 ln -s $yamcshome/$yjar lib/
 ln -s $yamcshome/yamcs-core/bin/event-viewer.* bin/
 ln -s $yamcshome/yamcs-core/bin/yamcs-monitor.* bin/

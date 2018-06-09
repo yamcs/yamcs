@@ -25,7 +25,7 @@ git clone . /tmp/$dist
 cd /tmp/$dist
 
 # fix revision in pom.xml
-for f in pom.xml yamcs-core/pom.xml yamcs-api/pom.xml yamcs-xtce/pom.xml yamcs-artemis/pom.xml yamcs-simulation/pom.xml; do
+for f in pom.xml yamcs-core/pom.xml yamcs-server/pom.xml yamcs-api/pom.xml yamcs-xtce/pom.xml yamcs-artemis/pom.xml yamcs-simulation/pom.xml; do
     cat $f | sed -e 's/<version>'$version'/<version>'$version'-'$rev/ | sed -e 's/-\${buildNumber}/'/ >$f.fixed
     mv $f.fixed $f
 done

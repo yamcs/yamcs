@@ -45,13 +45,14 @@ mkdir -p $TARGET/web
 rm -rf $TARGET/lib
 mkdir -p $TARGET/lib/ext
 
+cp -an $YAMCS_HOME/yamcs-server/bin/* $TARGET/bin
 cp -an $YAMCS_HOME/yamcs-core/bin/* $TARGET/bin
 
 ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
-ln -fs $YAMCS_HOME/yamcs-core/lib/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
 ln -fs $YAMCS_HOME/yamcs-artemis/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-artemis/lib/*.jar $TARGET/lib
+ln -fs $YAMCS_HOME/yamcs-server/lib/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/packages/app/dist $TARGET/lib/yamcs-web
 
 # Sets up a development environment for an example Yamcs configuration
