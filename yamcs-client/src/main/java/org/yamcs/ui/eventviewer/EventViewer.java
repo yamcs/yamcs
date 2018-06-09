@@ -75,10 +75,10 @@ import org.yamcs.YamcsException;
 import org.yamcs.api.YamcsConnectDialog;
 import org.yamcs.api.YamcsConnectDialog.YamcsConnectDialogResult;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.YamcsConnector;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
-import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 
 import com.csvreader.CsvWriter;

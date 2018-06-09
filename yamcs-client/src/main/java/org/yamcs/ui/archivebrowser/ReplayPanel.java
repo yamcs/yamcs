@@ -5,8 +5,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -15,13 +13,13 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.yamcs.api.ProcessorControlClient;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.protobuf.YamcsManagement.TmStatistics;
-import org.yamcs.ui.ProcessorControlClient;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -85,12 +83,7 @@ public class ReplayPanel extends JPanel {
         replayStopIcon = ArchivePanel.getIcon("stop.gif");
         playStopButton = new JButton(replayStopIcon); // the Play/Stop button
         playStopButton.setEnabled(false);
-        playStopButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                playOrStopPressed();
-            }
-        });
+        playStopButton.addActionListener(ae -> playOrStopPressed());
         gbc.weightx = 0.0;
         gbc.weighty = 1.0;
         gbc.gridwidth = 1;
@@ -232,8 +225,9 @@ public class ReplayPanel extends JPanel {
         if ((currentYProcInfo == null)
                 || !ci.getInstance().equals(currentYProcInfo.getInstance())
                 || !ci.getName().equals(currentYProcInfo.getName())
-                || !ci.hasReplayRequest())
+                || !ci.hasReplayRequest()) {
             return;
+        }
         currentYProcInfo = ci;
         updateReplayPanel();
     }

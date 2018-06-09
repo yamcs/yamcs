@@ -43,13 +43,13 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
+import org.yamcs.api.YamcsConnector;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.CommandQueueEntry;
 import org.yamcs.protobuf.Commanding.CommandQueueInfo;
 import org.yamcs.protobuf.Commanding.QueueState;
 import org.yamcs.ui.CommandQueueControlClient;
 import org.yamcs.ui.CommandQueueListener;
-import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
 
 /**

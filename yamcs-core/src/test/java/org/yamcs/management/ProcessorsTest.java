@@ -14,8 +14,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -27,16 +25,16 @@ import org.yamcs.TmPacketProvider;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.ProcessorControlClient;
+import org.yamcs.api.ProcessorListener;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.YamcsConnector;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.ui.ProcessorControlClient;
-import org.yamcs.ui.ProcessorListener;
-import org.yamcs.ui.YamcsConnector;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -202,8 +200,9 @@ public class ProcessorsTest {
 
         @Override
         public void processorClosed(ProcessorInfo ci) {
-            if (instance.equals(ci.getInstance()))
+            if (instance.equals(ci.getInstance())) {
                 procClosedList.add(ci);
+            }
         }
 
         @Override

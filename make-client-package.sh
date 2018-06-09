@@ -4,10 +4,10 @@ cd `dirname $0`
 yamcshome=`pwd`
 
 unset GREP_OPTIONS
-# Get the latest yamcs-core/yamcs*.jar but exclude the sources jar because the client needs the compiled Java class files
-yjar=`ls -t -1 yamcs-core/target/yamcs*.jar | grep -v -- -sources.jar | head -n 1`
+# Get the latest yamcs-client/yamcs*.jar but exclude the sources jar because the client needs the compiled Java class files
+yjar=`ls -t -1 yamcs-client/target/yamcs*.jar | grep -v -- -sources.jar | head -n 1`
 if [ -z "$yjar" ]; then
-	echo "ERROR: yamcs jar not found in yamcs-core/target/yamcs*.jar - did you build the project first? Try: mvn clean install"
+	echo "ERROR: yamcs jar not found in yamcs-client/target/yamcs*.jar - did you build the project first? Try: mvn clean install"
 	exit 1
 fi
 
@@ -26,19 +26,12 @@ mkdir -p /tmp/$dist/bin
 
 cd /tmp/$dist
 
-# TODO should have a 'yamcs-client' module with its own lib dir
-# Currently however it is too difficult to unsplit the client from yamcs-core.
-ln -s $yamcshome/yamcs-server/lib/*.jar lib/
-
 ln -s $yamcshome/$yjar lib/
-ln -s $yamcshome/yamcs-core/bin/event-viewer.* bin/
-ln -s $yamcshome/yamcs-core/bin/yamcs-monitor.* bin/
-ln -s $yamcshome/yamcs-core/bin/packet-viewer.* bin/
-ln -s $yamcshome/yamcs-core/bin/setclasspath.sh bin/
-ln -s $yamcshome/yamcs-core/bin/lcp.bat bin/
+ln -s $yamcshome/yamcs-client/lib/*.jar lib/
+ln -s $yamcshome/yamcs-client/bin/* bin/
 cp $yamcshome/yamcs-core/etc/UTC-TAI.history etc/orekit
-cp $yamcshome/yamcs-core/etc/yamcs-ui.yaml.sample etc/yamcs-ui.yaml
-cp $yamcshome/yamcs-core/etc/event-viewer.yaml.sample etc/event-viewer.yaml
+cp $yamcshome/yamcs-client/etc/yamcs-ui.yaml.sample etc/yamcs-ui.yaml
+cp $yamcshome/yamcs-client/etc/event-viewer.yaml.sample etc/event-viewer.yaml
 
 cd /tmp
 

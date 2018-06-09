@@ -1,25 +1,38 @@
 package org.yamcs.ui.archivebrowser;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.api.YamcsConnector;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.ui.CommandHistoryRetrievalGui;
 import org.yamcs.ui.PacketRetrievalGui;
 import org.yamcs.ui.ParameterRetrievalGui;
 import org.yamcs.ui.UiColors;
-import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Adds controls to a wrapped {@link org.yamcs.ui.archivebrowser.DataView}
@@ -49,7 +62,8 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
 
     private static Logger log = LoggerFactory.getLogger(DataViewer.class);
 
-    public DataViewer(YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, ArchivePanel archivePanel, boolean replayEnabled) {
+    public DataViewer(YamcsConnector yconnector, ArchiveIndexReceiver indexReceiver, ArchivePanel archivePanel,
+            boolean replayEnabled) {
         super(yconnector, indexReceiver);
         this.archivePanel = archivePanel;
         this.replayEnabled = replayEnabled;
@@ -104,8 +118,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
     }
 
     /**
-     * Includes a date range for showing the selected interval,
-     * and a field that follows the mouse position (similar to
+     * Includes a date range for showing the selected interval, and a field that follows the mouse position (similar to
      * TT, but without day of the year formatting.)
      */
     @Override
@@ -115,7 +128,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         Border insideBorder = BorderFactory.createEmptyBorder(0, 10, 0, 10);
         vbox.setBorder(BorderFactory.createCompoundBorder(outsideBorder, insideBorder));
 
-        InstantFormat iformat=new InstantFormat();
+        InstantFormat iformat = new InstantFormat();
 
         Box mouseBox = Box.createHorizontalBox();
         mouseLocatorLabel = new JLabel("\u27a5");
@@ -144,12 +157,8 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         selectionStart.setPreferredSize(selectionStart.getMaximumSize());
         selectionStart.setFont(selectionStart.getFont().deriveFont(selectionStart.getFont().getSize2D() - 3));
         selectionStartBox.add(selectionStart);
-        selectionStart.addPropertyChangeListener("value", new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent e) {
-                dataView.updateSelection((Long) selectionStart.getValue(), (Long) selectionStop.getValue());
-            }
-        });
+        selectionStart.addPropertyChangeListener("value",
+                e -> dataView.updateSelection((Long) selectionStart.getValue(), (Long) selectionStop.getValue()));
 
         Box selectionStopBox = Box.createHorizontalBox();
         selectionStop = new JFormattedTextField(iformat);
@@ -160,12 +169,8 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         selectionStop.setPreferredSize(selectionStop.getMaximumSize());
         selectionStop.setFont(selectionStop.getFont().deriveFont(selectionStop.getFont().getSize2D() - 3));
         selectionStopBox.add(selectionStop);
-        selectionStop.addPropertyChangeListener("value", new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent e) {
-                dataView.updateSelection((Long) selectionStart.getValue(), (Long) selectionStop.getValue());
-            }
-        });
+        selectionStop.addPropertyChangeListener("value",
+                e -> dataView.updateSelection((Long) selectionStart.getValue(), (Long) selectionStop.getValue()));
 
         mouseBox.setAlignmentX(Component.RIGHT_ALIGNMENT);
         vbox.add(mouseBox);
@@ -178,7 +183,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
     }
 
     public void signalMousePosition(long instant) {
-        mouseLocatorLabel.setForeground((instant== TimeEncoding.INVALID_INSTANT) ? Color.LIGHT_GRAY : Color.GRAY);
+        mouseLocatorLabel.setForeground((instant == TimeEncoding.INVALID_INSTANT) ? Color.LIGHT_GRAY : Color.GRAY);
         mouseLocator.setValue(instant);
     }
 
@@ -186,36 +191,36 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         if (selection != null) {
             signalSelectionStartChange(selection.getStartInstant());
             signalSelectionStopChange(selection.getStopInstant());
-            if(selection.getStartInstant()!=TimeEncoding.INVALID_INSTANT
-                    || selection.getStopInstant()!=TimeEncoding.INVALID_INSTANT) {
+            if (selection.getStartInstant() != TimeEncoding.INVALID_INSTANT
+                    || selection.getStopInstant() != TimeEncoding.INVALID_INSTANT) {
                 dottedSquare.setForeground(Color.BLUE);
             } else {
                 dottedSquare.setForeground(Color.GRAY);
             }
-            if(replayEnabled) {
+            if (replayEnabled) {
                 archivePanel.replayPanel.applySelectionButton.setEnabled(true);
             }
         } else {
             signalSelectionStartChange(TimeEncoding.INVALID_INSTANT);
             signalSelectionStopChange(TimeEncoding.INVALID_INSTANT);
-            if(dottedSquare!=null) { // FIXME gui set-up should not need resetSelection() call
+            if (dottedSquare != null) { // FIXME gui set-up should not need resetSelection() call
                 dottedSquare.setForeground(Color.GRAY);
             }
-            if(replayEnabled) {
+            if (replayEnabled) {
                 archivePanel.replayPanel.applySelectionButton.setEnabled(false);
             }
         }
     }
 
     public void signalSelectionStartChange(long startInstant) {
-        if(selectionStart!=null) { // FIXME Can be null during gui set-up.
+        if (selectionStart != null) { // FIXME Can be null during gui set-up.
             selectionStart.setEditable((startInstant != TimeEncoding.INVALID_INSTANT));
             selectionStart.setValue(startInstant);
         }
     }
 
     public void signalSelectionStopChange(long stopInstant) {
-        if(selectionStop!=null) { // FIXME Can be null during gui set-up.
+        if (selectionStop != null) { // FIXME Can be null during gui set-up.
             selectionStop.setEditable((stopInstant != TimeEncoding.INVALID_INSTANT));
             selectionStop.setValue(stopInstant);
         }
@@ -262,7 +267,7 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         showAllButton.setEnabled(false);
         buttonToolbar.add(showAllButton);
 
-        newTagButton=new JButton("New Tag");
+        newTagButton = new JButton("New Tag");
         newTagButton.setVisible(archivePanel.archiveBrowser.indexReceiver.supportsTags());
         newTagButton.setEnabled(false);
         newTagButton.setToolTipText("Define a new tag for the current selection");
@@ -285,20 +290,20 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
             dataView.zoomIn();
             zoomOutButton.setEnabled(true);
         } else if (cmd.equalsIgnoreCase("completeness_selection_finished")) {
-            if(indexReceiver.supportsTags()) {
+            if (indexReceiver.supportsTags()) {
                 newTagButton.setEnabled(true);
             }
         } else if (cmd.toLowerCase().endsWith("selection_finished")) {
-            if(indexReceiver.supportsTags()) {
+            if (indexReceiver.supportsTags()) {
                 newTagButton.setEnabled(true);
             }
-            if(cmd.startsWith("pp") || cmd.startsWith("tm")) {
+            if (cmd.startsWith("pp") || cmd.startsWith("tm")) {
                 packetRetrieval.setEnabled(true);
                 parameterRetrieval.setEnabled(true);
             } else if (cmd.startsWith("cmdhist")) {
                 cmdHistRetrieval.setEnabled(true);
             }
-        } else  if(cmd.equalsIgnoreCase("selection_reset")) {
+        } else if (cmd.equalsIgnoreCase("selection_reset")) {
             if (newTagButton != null) {
                 newTagButton.setEnabled(false);
             }
@@ -308,41 +313,44 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
         } else if (cmd.equalsIgnoreCase("new-tag-button")) {
             Selection sel = dataView.getSelection();
             dataView.headerPanel.tagBox.createNewTag(sel.getStartInstant(), sel.getStopInstant());
-        } else if(cmd.equalsIgnoreCase("insert-tag")) {
-            TagBox.TagEvent te=(TagBox.TagEvent)e;
+        } else if (cmd.equalsIgnoreCase("insert-tag")) {
+            TagBox.TagEvent te = (TagBox.TagEvent) e;
             indexReceiver.insertTag(archivePanel.archiveBrowser.getInstance(), te.newTag);
-        } else if(cmd.equalsIgnoreCase("update-tag")) {
-            TagBox.TagEvent te=(TagBox.TagEvent)e;
+        } else if (cmd.equalsIgnoreCase("update-tag")) {
+            TagBox.TagEvent te = (TagBox.TagEvent) e;
             indexReceiver.updateTag(archivePanel.archiveBrowser.getInstance(), te.oldTag, te.newTag);
-        } else if(cmd.equalsIgnoreCase("delete-tag")) {
-            TagBox.TagEvent te=(TagBox.TagEvent)e;
+        } else if (cmd.equalsIgnoreCase("delete-tag")) {
+            TagBox.TagEvent te = (TagBox.TagEvent) e;
             indexReceiver.deleteTag(archivePanel.archiveBrowser.getInstance(), te.oldTag);
-        }  else if (cmd.equals("start-packet-retrieval")) {
+        } else if (cmd.equals("start-packet-retrieval")) {
             List<String> packets = Collections.emptyList();
-            if(dataView.indexBoxes.containsKey("tm")) {
+            if (dataView.indexBoxes.containsKey("tm")) {
                 packets = dataView.getSelectedPackets("tm");
             }
             Selection sel = dataView.getSelection();
-            if(packetGui==null) {
-                packetGui=new PacketRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
+            if (packetGui == null) {
+                packetGui = new PacketRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
-            packetGui.setValues(archivePanel.archiveBrowser.getInstance(), packets, sel.getStartInstant(), sel.getStopInstant());
+            packetGui.setValues(archivePanel.archiveBrowser.getInstance(), packets, sel.getStartInstant(),
+                    sel.getStopInstant());
             packetGui.setVisible(true);
 
         } else if (cmd.equals("start-parameter-retrieval")) {
             Selection sel = dataView.getSelection();
-            if(parameterGui==null) {
+            if (parameterGui == null) {
                 parameterGui = new ParameterRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
-            parameterGui.setValues(archivePanel.archiveBrowser.getInstance(), sel.getStartInstant(), sel.getStopInstant());
+            parameterGui.setValues(archivePanel.archiveBrowser.getInstance(), sel.getStartInstant(),
+                    sel.getStopInstant());
             parameterGui.setVisible(true);
         } else if (cmd.equals("start-cmdhist-retrieval")) {
 
             Selection sel = dataView.getSelection();
             if (cmdHistGui == null) {
-                    cmdHistGui = new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
+                cmdHistGui = new CommandHistoryRetrievalGui(yconnector.getConnectionParams(), getContentPanel());
             }
-            cmdHistGui.setValues(archivePanel.archiveBrowser.getInstance(), null, sel.getStartInstant(), sel.getStopInstant());
+            cmdHistGui.setValues(archivePanel.archiveBrowser.getInstance(), null, sel.getStartInstant(),
+                    sel.getStopInstant());
             cmdHistGui.setVisible(true);
         }
     }
@@ -354,19 +362,16 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
     @Override
     public void startReloading() {
         log.trace("startReloading. EDT? {} (should be false)", EventQueue.isDispatchThread());
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                zoomInButton.setEnabled(false);
-                zoomOutButton.setEnabled(false);
-                showAllButton.setEnabled(false);
-                if (replayEnabled) {
-                    archivePanel.replayPanel.applySelectionButton.setEnabled(false);
-                }
+        SwingUtilities.invokeLater(() -> {
+            zoomInButton.setEnabled(false);
+            zoomOutButton.setEnabled(false);
+            showAllButton.setEnabled(false);
+            if (replayEnabled) {
+                archivePanel.replayPanel.applySelectionButton.setEnabled(false);
             }
         });
 
-        for(IndexBox ib:dataView.indexBoxes.values()) {
+        for (IndexBox ib : dataView.indexBoxes.values()) {
             ib.startReloading();
         }
         dataView.headerPanel.tagBox.tags.clear();
@@ -374,9 +379,9 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
 
     @Override
     public void windowResized() {
-        if(dataView.zoomStack.isEmpty() || dataView.zoomStack.size() == 1) {
+        if (dataView.zoomStack.isEmpty() || dataView.zoomStack.size() == 1) {
             dataView.refreshDisplay(true);
-            if(!dataView.zoomStack.isEmpty()) {
+            if (!dataView.zoomStack.isEmpty()) {
                 dataView.setViewLocationFromZoomstack();
             }
         }
@@ -385,13 +390,13 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
     @Override
     public void receiveArchiveRecords(Yamcs.IndexResult ir) {
         log.trace("receiveArchiveRecords. EDT? {} (should be false)", EventQueue.isDispatchThread());
-        if("completeness".equals(ir.getType())) {
-            if(dataView.indexBoxes.containsKey("completeness")) {
+        if ("completeness".equals(ir.getType())) {
+            if (dataView.indexBoxes.containsKey("completeness")) {
                 dataView.indexBoxes.get("completeness").receiveArchiveRecords(ir.getRecordsList());
             }
-        } else if("histogram".equals(ir.getType())) {
-            String tableName=ir.getTableName();
-            if(dataView.indexBoxes.containsKey(tableName)) {
+        } else if ("histogram".equals(ir.getType())) {
+            String tableName = ir.getTableName();
+            if (dataView.indexBoxes.containsKey(tableName)) {
                 dataView.indexBoxes.get(tableName).receiveArchiveRecords(ir.getRecordsList());
             }
         } else {

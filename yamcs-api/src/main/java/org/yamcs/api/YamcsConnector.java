@@ -1,4 +1,4 @@
-package org.yamcs.ui;
+package org.yamcs.api;
 
 
 import io.netty.channel.ChannelFuture;

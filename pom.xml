@@ -143,6 +143,7 @@
     <module>yamcs-artemis</module>
     <module>yamcs-server</module>
     <module>yamcs-simulation</module>
+    <module>yamcs-client</module>
   </modules>
 
   <distributionManagement>

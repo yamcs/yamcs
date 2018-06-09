@@ -1,4 +1,4 @@
-package org.yamcs.ui;
+package org.yamcs.api;
 
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;

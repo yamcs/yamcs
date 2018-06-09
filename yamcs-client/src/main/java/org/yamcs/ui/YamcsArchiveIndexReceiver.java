@@ -2,11 +2,8 @@ package org.yamcs.ui;
 
 import java.util.concurrent.Future;
 
-import org.yamcs.ui.archivebrowser.ArchiveIndexListener;
-import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.TimeInterval;
 import org.yamcs.api.YamcsApiException;
+import org.yamcs.api.YamcsConnector;
 import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Rest.CreateTagRequest;
@@ -14,6 +11,10 @@ import org.yamcs.protobuf.Rest.EditTagRequest;
 import org.yamcs.protobuf.Rest.ListTagsResponse;
 import org.yamcs.protobuf.Yamcs.ArchiveTag;
 import org.yamcs.protobuf.Yamcs.IndexResult;
+import org.yamcs.ui.archivebrowser.ArchiveIndexListener;
+import org.yamcs.ui.archivebrowser.ArchiveIndexReceiver;
+import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.TimeInterval;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -26,37 +27,36 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
 
     YamcsConnector yconnector;
 
-
     public YamcsArchiveIndexReceiver(YamcsConnector yconnector) {
         this.yconnector = yconnector;
     }
 
     @Override
     public void setIndexListener(ArchiveIndexListener ail) {
-        this.indexListener=ail;
+        this.indexListener = ail;
     }
 
     @Override
     public void getIndex(final String instance, final TimeInterval interval) {
-        if(receiving){
+        if (receiving) {
             indexListener.log("already receiving data");
             return;
         }
-        if( instance == null ) {
-            indexListener.receiveArchiveRecordsError( "No yamcs instance to get data from" );
+        if (instance == null) {
+            indexListener.receiveArchiveRecordsError("No yamcs instance to get data from");
             return;
         }
 
         yconnector.getExecutor().submit(() -> {
             try {
                 RestClient restClient = yconnector.getRestClient();
-                StringBuilder resource = new StringBuilder().append("/archive/"+instance+"/indexes?");
+                StringBuilder resource = new StringBuilder().append("/archive/" + instance + "/indexes?");
 
-                if(interval.hasStart()) {
-                    resource.append("start="+TimeEncoding.toString(interval.getStart()));
+                if (interval.hasStart()) {
+                    resource.append("start=" + TimeEncoding.toString(interval.getStart()));
                 }
-                if(interval.hasEnd()) {
-                    resource.append("&stop="+TimeEncoding.toString(interval.getEnd()));
+                if (interval.hasEnd()) {
+                    resource.append("&stop=" + TimeEncoding.toString(interval.getEnd()));
                 }
 
                 Future<Void> f = restClient.doBulkGetRequest(resource.toString(), new BulkRestDataReceiver() {
@@ -65,9 +65,10 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
                         try {
                             indexListener.receiveArchiveRecords(IndexResult.parseFrom(data));
                         } catch (InvalidProtocolBufferException e) {
-                            throw new YamcsApiException("Error parsing index result: "+e.getMessage());
+                            throw new YamcsApiException("Error parsing index result: " + e.getMessage());
                         }
                     }
+
                     @Override
                     public void receiveException(Throwable t) {
                         indexListener.receiveArchiveRecordsError(t.getMessage());
@@ -79,29 +80,28 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
             } catch (Exception e) {
                 e.printStackTrace();
                 indexListener.receiveArchiveRecordsError(e.toString());
-            }  finally {
-                receiving=false;
+            } finally {
+                receiving = false;
             }
         });
     }
 
-
     @Override
     public void getTag(final String instance, final TimeInterval interval) {
-        if(receiving){
+        if (receiving) {
             indexListener.log("already receiving data");
             return;
         }
         yconnector.getExecutor().submit(() -> {
             try {
                 RestClient restClient = yconnector.getRestClient();
-                StringBuilder resource = new StringBuilder().append("/archive/"+instance+"/tags?");
+                StringBuilder resource = new StringBuilder().append("/archive/" + instance + "/tags?");
 
-                if(interval.hasStart()) {
-                    resource.append("start="+TimeEncoding.toString(interval.getStart()));
+                if (interval.hasStart()) {
+                    resource.append("start=" + TimeEncoding.toString(interval.getStart()));
                 }
-                if(interval.hasEnd()) {
-                    resource.append("&stop="+TimeEncoding.toString(interval.getEnd()));
+                if (interval.hasEnd()) {
+                    resource.append("&stop=" + TimeEncoding.toString(interval.getEnd()));
                 }
 
                 Future<byte[]> f = restClient.doRequest(resource.toString(), HttpMethod.GET);
@@ -113,12 +113,11 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
             } catch (Exception e) {
                 e.printStackTrace();
                 indexListener.receiveArchiveRecordsError(e.getMessage());
-            }  finally {
-                receiving=false;
+            } finally {
+                receiving = false;
             }
         });
     }
-
 
     @Override
     public void insertTag(String instance, ArchiveTag tag) {
@@ -127,11 +126,11 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
                 .setStart(TimeEncoding.toString(tag.getStart())).setStop(TimeEncoding.toString(tag.getStop())).build();
         try {
             RestClient restClient = yconnector.getRestClient();
-            StringBuilder resource = new StringBuilder().append("/archive/"+instance+"/tags");
+            StringBuilder resource = new StringBuilder().append("/archive/" + instance + "/tags");
             byte[] data = restClient.doRequest(resource.toString(), HttpMethod.POST, ctr.toByteArray()).get();
             indexListener.tagAdded(ArchiveTag.parseFrom(data));
         } catch (Exception e) {
-            indexListener.log("Failed to insert tag: "+e.getMessage());
+            indexListener.log("Failed to insert tag: " + e.getMessage());
         }
     }
 
@@ -139,8 +138,9 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
     public void updateTag(String instance, ArchiveTag oldTag, ArchiveTag newTag) {
         EditTagRequest etr = EditTagRequest.newBuilder().setColor(newTag.getColor())
                 .setDescription(newTag.getDescription()).setName(newTag.getName())
-                .setStart(TimeEncoding.toString(newTag.getStart())).setStop(TimeEncoding.toString(newTag.getStop())).build();
-        
+                .setStart(TimeEncoding.toString(newTag.getStart())).setStop(TimeEncoding.toString(newTag.getStop()))
+                .build();
+
         try {
             RestClient restClient = yconnector.getRestClient();
             StringBuilder resource = new StringBuilder().append("/archive/").append(instance).append("/tags/")
@@ -148,7 +148,7 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
             byte[] data = restClient.doRequest(resource.toString(), HttpMethod.PATCH, etr.toByteArray()).get();
             indexListener.tagChanged(oldTag, ArchiveTag.parseFrom(data));
         } catch (Exception e) {
-            indexListener.log("Failed to insert tag: "+e.getMessage());
+            indexListener.log("Failed to insert tag: " + e.getMessage());
         }
 
     }
@@ -162,7 +162,7 @@ public class YamcsArchiveIndexReceiver implements ArchiveIndexReceiver {
             byte[] data = restClient.doRequest(resource.toString(), HttpMethod.DELETE).get();
             indexListener.tagRemoved(ArchiveTag.parseFrom(data));
         } catch (Exception e) {
-            indexListener.log("Failed to remove tag: "+e.getMessage());
+            indexListener.log("Failed to remove tag: " + e.getMessage());
         }
     }
 

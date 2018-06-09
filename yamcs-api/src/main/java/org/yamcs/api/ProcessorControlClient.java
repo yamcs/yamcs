@@ -1,10 +1,9 @@
-package org.yamcs.ui;
+package org.yamcs.api;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.YamcsException;
-import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
@@ -22,7 +21,6 @@ import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.websocket.ManagementResource;
 
 import com.google.protobuf.util.JsonFormat;
 
@@ -148,7 +146,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     }
 
     public void receiveInitialConfig() {
-        WebSocketRequest wsr = new WebSocketRequest(ManagementResource.RESOURCE_NAME, ManagementResource.OP_subscribe);
+        WebSocketRequest wsr = new WebSocketRequest("management", "subscribe");
         yconnector.performSubscription(wsr, this, this);
     }
 
