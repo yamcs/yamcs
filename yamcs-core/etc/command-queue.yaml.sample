@@ -1,6 +1,6 @@
 # Definitions of command queues
 # Eeach queue has a name, a default state and a list of roles
-# There are three possibile states: 
+# There are three possible states: 
 #   - enabled means the commands are sent immediately
 #   - blocked means the commands are accepted into the queue but need to be 
 #     manually sent 
@@ -15,14 +15,11 @@ queueNames: [ops, uhb]
 ops:
     state: enabled
     significances: [none]
-    roles: [Operator]
 
 ops-critic:
     state: enabled
     significances: [watch, warning, distress, critical, severe]
     stateExpirationTimeS: 300
-    roles: [Operator]
 
 uhb:
     state: disabled
-    roles: [UHB-Operator]

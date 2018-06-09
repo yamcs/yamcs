@@ -1,0 +1,32 @@
+Monitoring:
+  ReadParameter: [".*"]
+  WriteParameter: []
+  ReadPacket: [".*"]
+  Command: []
+  System:
+    - ControlProcessor
+    - GetMissionDatabase
+    - ControlArchiving
+
+Operator:
+  ReadParameter: [".*"]
+  WriteParameter: []
+  ReadPacket: [".*"]
+  Command: [".*"]
+  InsertCommandQueue: ["Operator"]
+  System:
+    - ControlProcessor
+    - ModifyCommandHistory
+    - ControlCommandQueue
+    - Command
+    - GetMissionDatabase
+    - ControlArchiving
+
+Admin:
+  ReadParameter: [".*"]
+  WriteParameter: [".*"]
+  ReadPacket: [".*"]
+  Command: [".*"]
+  System: [".*"]
+  Stream: [".*"]
+  CommandHistory: [".*"]
