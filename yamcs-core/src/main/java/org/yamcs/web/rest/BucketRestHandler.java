@@ -55,7 +55,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance", method = "GET")
     public void listBuckets(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ReadBucket);
+        checkSystemPrivilege(req, SystemPrivilege.ReadAnyBucket);
 
         BucketDatabase bdb = getBucketDb(req);
         List<BucketProperties> l = bdb.listBuckets();
@@ -69,7 +69,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance", method = { "POST" })
     public void createBucket(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.CreateBucket);
+        checkSystemPrivilege(req, SystemPrivilege.CreateAnyBucket);
 
         CreateBucketRequest crb = req.bodyAsMessage(CreateBucketRequest.newBuilder()).build();
         verifyBucketName(crb.getName());
@@ -89,7 +89,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "DELETE" })
     public void deleteBucket(RestRequest req) throws HttpException {
-        checkSystemPrivilege(req, SystemPrivilege.ReadBucket);
+        checkSystemPrivilege(req, SystemPrivilege.ReadAnyBucket);
 
         BucketDatabase bdb = getBucketDb(req);
         Bucket b = verifyAndGetBucket(req);
@@ -105,7 +105,7 @@ public class BucketRestHandler extends RestHandler {
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "POST" }, maxBodySize = MAX_BODY_SIZE)
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "POST" }, maxBodySize = MAX_BODY_SIZE)
     public void uploadObject(RestRequest req) throws HttpException {
-        checkPrivileges(req, SystemPrivilege.WriteBucket);
+        checkPrivileges(req, SystemPrivilege.UpdateAnyBucket);
         String contentType = req.getHeader(HttpHeaderNames.CONTENT_TYPE);
 
         if (contentType.startsWith("multipart/form-data")) {
@@ -193,7 +193,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "GET" })
     public void listObjects(RestRequest req) throws HttpException {
-        checkPrivileges(req, SystemPrivilege.ReadBucket);
+        checkPrivileges(req, SystemPrivilege.ReadAnyBucket);
         Bucket b = verifyAndGetBucket(req);
         try {
             String delimiter = req.getQueryParameter("delimiter");
@@ -239,7 +239,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "GET" })
     public void getObject(RestRequest req) throws HttpException {
-        checkPrivileges(req, SystemPrivilege.ReadBucket);
+        checkPrivileges(req, SystemPrivilege.ReadAnyBucket);
 
         String objName = req.getRouteParam(OBJECT_NAME_PARAM);
         Bucket b = verifyAndGetBucket(req);
@@ -259,7 +259,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "DELETE" })
     public void deleteObject(RestRequest req) throws HttpException {
-        checkPrivileges(req, SystemPrivilege.WriteBucket);
+        checkPrivileges(req, SystemPrivilege.UpdateAnyBucket);
 
         String objName = req.getRouteParam(OBJECT_NAME_PARAM);
         Bucket b = verifyAndGetBucket(req);
