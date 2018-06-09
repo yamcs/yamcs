@@ -34,7 +34,7 @@ public class LdapAuthModule implements AuthModule {
     private static final Logger log = LoggerFactory.getLogger(LdapAuthModule.class);
 
     public LdapAuthModule(Map<String, Object> config) {
-        String host = YConfiguration.getString(config, "ldaphost");
+        String host = YConfiguration.getString(config, "host");
         userPath = YConfiguration.getString(config, "userPath");
         rolePath = YConfiguration.getString(config, "rolePath");
 

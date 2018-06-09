@@ -136,8 +136,8 @@ public class SecurityStore {
         }
 
         if (authInfo == null) {
-            log.info("User does not exist");
-            f.completeExceptionally(new AuthenticationException("User does not exist"));
+            log.info("Cannot identify user for token");
+            f.completeExceptionally(new AuthenticationException("Cannot identify user for token"));
             return f;
         }
 
@@ -145,15 +145,24 @@ public class SecurityStore {
 
         // 2. Authorize. All modules get the opportunity.
         for (AuthModule authModule : authModules) {
-            AuthorizationInfo authzInfo = authModule.getAuthorizationInfo(authInfo);
-            for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
-                user.addSystemPrivilege(privilege);
-            }
-            for (ObjectPrivilege privilege : authzInfo.getObjectPrivileges()) {
-                user.addObjectPrivilege(privilege);
+            try {
+                AuthorizationInfo authzInfo = authModule.getAuthorizationInfo(authInfo);
+                if (authzInfo != null) {
+                    for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
+                        user.addSystemPrivilege(privilege);
+                    }
+                    for (ObjectPrivilege privilege : authzInfo.getObjectPrivileges()) {
+                        user.addObjectPrivilege(privilege);
+                    }
+                }
+            } catch (AuthorizationException e) {
+                log.info("{} aborted the login process", authModule.getClass().getName());
+                f.completeExceptionally(e);
+                return f;
             }
         }
 
+        log.info("Successfully logged in user {}", user);
         f.complete(user);
         return f;
     }

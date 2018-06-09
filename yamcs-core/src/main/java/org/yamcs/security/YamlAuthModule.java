@@ -18,6 +18,7 @@ public class YamlAuthModule implements AuthModule {
 
     private static final Logger log = LoggerFactory.getLogger(YamlAuthModule.class);
 
+    private boolean required;
     private PasswordHasher passwordHasher;
     private Map<String, Map<String, Object>> userDefs = new HashMap<>();
     private Map<String, Map<String, Object>> roleDefs = new HashMap<>();
@@ -27,6 +28,7 @@ public class YamlAuthModule implements AuthModule {
     }
 
     public YamlAuthModule(Map<String, Object> config) throws IOException {
+        required = YConfiguration.getBoolean(config, "required", false);
         if (config.containsKey("hasher")) {
             String className = YConfiguration.getString(config, "hasher");
             passwordHasher = YObjectLoader.loadObject(className);
@@ -35,7 +37,11 @@ public class YamlAuthModule implements AuthModule {
             YConfiguration yconf = YConfiguration.getConfiguration("users");
             Map<String, Object> userConfig = yconf.getRoot();
             for (String username : userConfig.keySet()) {
-                userDefs.put(username, YConfiguration.getMap(userConfig, username));
+                if (!YConfiguration.isNull(userConfig, username)) {
+                    userDefs.put(username, YConfiguration.getMap(userConfig, username));
+                } else {
+                    userDefs.put(username, Collections.emptyMap());
+                }
             }
         }
         if (YConfiguration.isDefined("roles")) {
@@ -85,13 +91,17 @@ public class YamlAuthModule implements AuthModule {
 
     @Override
     @SuppressWarnings("unchecked")
-    public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) {
+    public AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) throws AuthorizationException {
         String principal = authenticationInfo.getPrincipal();
 
         AuthorizationInfo authz = new AuthorizationInfo();
 
         Map<String, Object> userDef = userDefs.get(principal);
-        if (userDef != null) {
+        if (userDef == null) {
+            if (required) {
+                throw new AuthorizationException("Cannot find required user in users.yaml");
+            }
+        } else {
             if (YConfiguration.getBoolean(userDef, "superuser", false)) {
                 authz.grantSuperuser();
             }

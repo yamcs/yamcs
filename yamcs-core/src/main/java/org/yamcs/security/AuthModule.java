@@ -27,7 +27,7 @@ public interface AuthModule {
      * 
      * @return an info object containing role/privilege information of the subject
      */
-    AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo);
+    AuthorizationInfo getAuthorizationInfo(AuthenticationInfo authenticationInfo) throws AuthorizationException;
 
     /**
      * Verify if the previously authenticated user is (still) valid
