@@ -1,6 +1,5 @@
 package org.yamcs.ui.eventviewer;
 
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -37,64 +36,67 @@ import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.websocket.EventResource;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-public class YamcsEventReceiver implements ConnectionListener, EventReceiver, WebSocketClientCallback, WebSocketResponseHandler {
+public class YamcsEventReceiver
+        implements ConnectionListener, EventReceiver, WebSocketClientCallback, WebSocketResponseHandler {
     EventViewer eventViewer;
     YamcsConnector yconnector;
 
     public YamcsEventReceiver(YamcsConnector yconnector) {
         this.yconnector = yconnector;
-        
+
         yconnector.addConnectionListener(this);
     }
 
     @Override
     public void setEventViewer(EventViewer ev) {
-        this.eventViewer=ev;
+        this.eventViewer = ev;
     }
-
 
     @Override
     public void onMessage(WebSocketSubscriptionData data) {
-        if(data.hasEvent()) {
+        if (data.hasEvent()) {
             Event ev = data.getEvent();
             eventViewer.addEvent(ev);
         }
-        if(data.hasParameterData()) {        
+        if (data.hasParameterData()) {
             ParameterData par = data.getParameterData();
-            eventViewer.updateStatus(par.getParameter(0).getId().getName(), par.getParameter(0).getEngValue().getStringValue());
+            eventViewer.updateStatus(par.getParameter(0).getId().getName(),
+                    par.getParameter(0).getEngValue().getStringValue());
         }
     }
 
     @Override
     public void connected(String url) {
-        WebSocketRequest wsr = new WebSocketRequest(EventResource.RESOURCE_NAME, EventResource.OP_subscribe);
+        WebSocketRequest wsr = new WebSocketRequest("events", "subscribe");
         yconnector.performSubscription(wsr, this, this);
-        
-        for(String parameter: eventViewer.getParameterLinkStatus()) {
-            ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();        
+
+        for (String parameter : eventViewer.getParameterLinkStatus()) {
+            ParameterSubscriptionRequest.Builder b = ParameterSubscriptionRequest.newBuilder();
             b.addId(NamedObjectId.newBuilder().setName(parameter).build());
-            b.setAbortOnInvalid(false);        
-            WebSocketRequest wsrLink = new WebSocketRequest("parameter", EventResource.OP_subscribe, b.build());
+            b.setAbortOnInvalid(false);
+            WebSocketRequest wsrLink = new WebSocketRequest("parameter", "subscribe", b.build());
             yconnector.performSubscription(wsrLink, this, this);
         }
     }
 
     @Override
     public void retrievePastEvents() {
-        PastEventParams params=YarchPastEventsDialog.showDialog(eventViewer);
-        if(!params.ok) return;
+        PastEventParams params = YarchPastEventsDialog.showDialog(eventViewer);
+        if (!params.ok) {
+            return;
+        }
 
         RestClient restClient = yconnector.getRestClient();
-        StringBuilder resource = new StringBuilder().append("/archive/"+yconnector.getConnectionParams().getInstance()+"/downloads/events?");
+        StringBuilder resource = new StringBuilder()
+                .append("/archive/" + yconnector.getConnectionParams().getInstance() + "/downloads/events?");
 
-        resource.append("start="+TimeEncoding.toString(params.start));
-        resource.append("&stop="+TimeEncoding.toString(params.stop));
+        resource.append("start=" + TimeEncoding.toString(params.start));
+        resource.append("&stop=" + TimeEncoding.toString(params.stop));
 
-        int batchSize = 1000; //we do this to limit the number of swing calls
+        int batchSize = 1000; // we do this to limit the number of swing calls
         List<Event> evList = new ArrayList<>(batchSize);
         AtomicInteger count = new AtomicInteger();
         CompletableFuture<Void> f = restClient.doBulkGetRequest(resource.toString(), new BulkRestDataReceiver() {
@@ -102,31 +104,32 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
             public void receiveData(byte[] data) throws YamcsApiException {
                 try {
                     evList.add(Event.parseFrom(data));
-                    if(evList.size()==batchSize) {
+                    if (evList.size() == batchSize) {
                         count.addAndGet(batchSize);
-                        eventViewer.addEvents(new ArrayList<Event>(evList));
+                        eventViewer.addEvents(new ArrayList<>(evList));
                         evList.clear();
                     }
                 } catch (InvalidProtocolBufferException e) {
-                    throw new YamcsApiException("Error parsing index result: "+e.getMessage());
+                    throw new YamcsApiException("Error parsing index result: " + e.getMessage());
                 }
             }
+
             @Override
             public void receiveException(Throwable t) {
                 t.printStackTrace();
-                eventViewer.log("Received error when downloading events: "+t.getMessage());
+                eventViewer.log("Received error when downloading events: " + t.getMessage());
             }
         });
         f.whenComplete((result, exception) -> {
-            if(exception==null) {
+            if (exception == null) {
                 count.addAndGet(evList.size());
                 eventViewer.addEvents(evList);
-                eventViewer.log("Past Event retrieval finished; retrieved "+count.get()+" events");
+                eventViewer.log("Past Event retrieval finished; retrieved " + count.get() + " events");
             } else {
                 exception.printStackTrace();
                 count.addAndGet(evList.size());
                 eventViewer.addEvents(evList);
-                eventViewer.log("Past Event retrieval finished with error; retrieved "+count.get()+" events");
+                eventViewer.log("Past Event retrieval finished with error; retrieved " + count.get() + " events");
             }
         });
     }
@@ -134,6 +137,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
     static class PastEventParams {
         boolean ok;
         long start, stop;
+
         public PastEventParams(long start, long stop) {
             super();
             this.start = start;
@@ -147,14 +151,16 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
         private PastEventParams params;
         JTextField startTextField;
         JTextField stopTextField;
-        //JCheckBox sslCheckBox;
+        // JCheckBox sslCheckBox;
         private JTextField instanceTextField;
 
         static YarchPastEventsDialog dialog;
-        YarchPastEventsDialog( JFrame parent ) {
+
+        YarchPastEventsDialog(JFrame parent) {
             super(parent, "Retrieve past events", true);
 
-            params = new PastEventParams(TimeEncoding.getWallclockTime()-1000L*3600*24*30, TimeEncoding.getWallclockTime());
+            params = new PastEventParams(TimeEncoding.getWallclockTime() - 1000L * 3600 * 24 * 30,
+                    TimeEncoding.getWallclockTime());
 
             JPanel inputPanel, buttonPanel;
             JLabel lab;
@@ -169,15 +175,27 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
 
             lab = new JLabel("Start: ");
             lab.setHorizontalAlignment(SwingConstants.RIGHT);
-            c.gridy=1;c.gridx=0;c.anchor=GridBagConstraints.EAST;inputPanel.add(lab,c);
+            c.gridy = 1;
+            c.gridx = 0;
+            c.anchor = GridBagConstraints.EAST;
+            inputPanel.add(lab, c);
             startTextField = new JTextField(TimeEncoding.toString(params.start));
-            c.gridy=1;c.gridx=1;c.anchor=GridBagConstraints.WEST;inputPanel.add(startTextField,c);
+            c.gridy = 1;
+            c.gridx = 1;
+            c.anchor = GridBagConstraints.WEST;
+            inputPanel.add(startTextField, c);
 
             lab = new JLabel("Stop: ");
             lab.setHorizontalAlignment(SwingConstants.RIGHT);
-            c.gridy=2;c.gridx=0;c.anchor=GridBagConstraints.EAST;inputPanel.add(lab,c);
+            c.gridy = 2;
+            c.gridx = 0;
+            c.anchor = GridBagConstraints.EAST;
+            inputPanel.add(lab, c);
             stopTextField = new JTextField(TimeEncoding.toString(params.stop));
-            c.gridy=2;c.gridx=1;c.anchor=GridBagConstraints.WEST;inputPanel.add(stopTextField,c);
+            c.gridy = 2;
+            c.gridx = 1;
+            c.anchor = GridBagConstraints.WEST;
+            inputPanel.add(stopTextField, c);
 
             // button panel
 
@@ -202,8 +220,8 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
         }
 
         @Override
-        public void actionPerformed( ActionEvent e ) {
-            if ( e.getActionCommand().equals("ok") ) {
+        public void actionPerformed(ActionEvent e) {
+            if (e.getActionCommand().equals("ok")) {
                 try {
                     params.start = TimeEncoding.parse(startTextField.getText());
                     params.stop = TimeEncoding.parse(stopTextField.getText());
@@ -212,19 +230,20 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
                 } catch (NumberFormatException x) {
                     // do not close the dialogue
                 }
-            } else if ( e.getActionCommand().equals("cancel") ) {
+            } else if (e.getActionCommand().equals("cancel")) {
                 params.ok = false;
                 setVisible(false);
             }
         }
 
-        public final static PastEventParams showDialog( JFrame parent) {
-            if(dialog==null) dialog = new YarchPastEventsDialog(parent);
+        public final static PastEventParams showDialog(JFrame parent) {
+            if (dialog == null) {
+                dialog = new YarchPastEventsDialog(parent);
+            }
             dialog.setVisible(true);
             return dialog.params;
         }
     }
-
 
     @Override
     public void connecting(String url) {
@@ -232,7 +251,7 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
 
     @Override
     public void connectionFailed(String url, YamcsException exception) {
-        eventViewer.log("Connection to "+url+" failed: "+exception.getMessage());
+        eventViewer.log("Connection to " + url + " failed: " + exception.getMessage());
     }
 
     @Override
@@ -247,6 +266,6 @@ public class YamcsEventReceiver implements ConnectionListener, EventReceiver, We
 
     @Override
     public void onException(WebSocketExceptionData e) {
-        eventViewer.log("Received error on subscription: "+e.getMessage());
+        eventViewer.log("Received error on subscription: " + e.getMessage());
     }
 }

@@ -85,8 +85,6 @@ import org.yamcs.ui.PrefsObject;
 import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.websocket.CommandQueueResource;
-import org.yamcs.web.websocket.PacketResource;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.DataEncoding;
@@ -972,8 +970,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                 }
 
             }
-            WebSocketRequest wsr = new WebSocketRequest(PacketResource.RESOURCE_NAME,
-                    CommandQueueResource.OP_subscribe + " " + streamName);
+            WebSocketRequest wsr = new WebSocketRequest("packets", "subscribe " + streamName);
             yconnector.performSubscription(wsr, this, e -> {
                 showError("Error subscribing to " + streamName + ": " + e.getMessage());
             });
