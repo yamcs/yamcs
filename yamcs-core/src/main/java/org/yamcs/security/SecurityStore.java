@@ -78,6 +78,16 @@ public class SecurityStore {
         return authModules;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T extends AuthModule> T getAuthModule(Class<T> clazz) {
+        for (AuthModule authModule : authModules) {
+            if (authModule.getClass() == clazz) {
+                return (T) authModule;
+            }
+        }
+        return null;
+    }
+
     /**
      * Returns the system user. This user object is only intended for internal use when actions require a user, yet
      * cannot be linked to an actual user. The System user is granted all privileges.

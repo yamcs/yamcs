@@ -10,10 +10,13 @@ import java.util.concurrent.ExecutionException;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Web.AccessTokenResponse;
+import org.yamcs.protobuf.Web.AuthFlow;
+import org.yamcs.protobuf.Web.AuthFlow.Type;
 import org.yamcs.protobuf.Web.AuthInfo;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.SecurityStore;
+import org.yamcs.security.SpnegoAuthModule;
 import org.yamcs.security.ThirdPartyAuthorizationCode;
 import org.yamcs.security.User;
 import org.yamcs.security.UsernamePasswordToken;
@@ -75,6 +78,12 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         if (req.method() == HttpMethod.GET) {
             AuthInfo.Builder responseb = AuthInfo.newBuilder();
             responseb.setRequireAuthentication(SecurityStore.getInstance().isEnabled());
+            for (AuthModule authModule : SecurityStore.getInstance().getAuthModules()) {
+                if (authModule instanceof SpnegoAuthModule) {
+                    responseb.addFlow(AuthFlow.newBuilder().setType(Type.SPNEGO));
+                }
+            }
+            responseb.addFlow(AuthFlow.newBuilder().setType(Type.PASSWORD));
             HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, responseb.build(), true);
         } else {
             HttpRequestHandler.sendPlainTextError(ctx, req, METHOD_NOT_ALLOWED);
@@ -96,6 +105,10 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
                     String password = getStringFromForm(formDecoder, "password");
                     AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
                     user = SecurityStore.getInstance().login(token).get();
+                    // TODO ? } else if ("spnego".equals(grantType)) {
+                    // Could maybe move the http handling from SpnegoAuthModule here.
+                    // Saves us a roundtrip, an intermediate authorization_code, and moves
+                    // http dependency from security layer.
                 } else if ("authorization_code".equals(grantType)) {
                     // This code must have been previously granted via an extension path such as /auth/spnego
                     // (which is a special case due to the use of Negotiate).
@@ -143,7 +156,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     String getStringFromForm(HttpPostRequestDecoder formDecoder, String attributeName) throws IOException {
-        InterfaceHttpData d = formDecoder.getBodyHttpData("name");
+        InterfaceHttpData d = formDecoder.getBodyHttpData(attributeName);
         if (d.getHttpDataType() == HttpDataType.Attribute) {
             return ((Attribute) d).getValue();
         }

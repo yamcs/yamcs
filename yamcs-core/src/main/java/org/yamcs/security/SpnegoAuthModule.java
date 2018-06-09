@@ -98,7 +98,7 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
             yamcsLogin.login();
             gssManager = GSSManager.getInstance();
         } catch (Exception e) {
-            throw new ConfigurationException("Cannot login to kerberos");
+            throw new ConfigurationException("Cannot login to kerberos", e);
         }
     }
 

@@ -15807,26 +15807,681 @@ public final class Web {
 
   }
 
+  public interface AuthFlowOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.AuthFlow)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+     *optional string state; //the client has to send this to the POST link and then back to Yamcs
+     * </pre>
+     *
+     * <code>optional .web.AuthFlow.Type type = 1;</code>
+     */
+    boolean hasType();
+    /**
+     * <pre>
+     *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+     *optional string state; //the client has to send this to the POST link and then back to Yamcs
+     * </pre>
+     *
+     * <code>optional .web.AuthFlow.Type type = 1;</code>
+     */
+    org.yamcs.protobuf.Web.AuthFlow.Type getType();
+  }
+  /**
+   * Protobuf type {@code web.AuthFlow}
+   */
+  public  static final class AuthFlow extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:web.AuthFlow)
+      AuthFlowOrBuilder {
+    // Use AuthFlow.newBuilder() to construct.
+    private AuthFlow(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private AuthFlow() {
+      type_ = 1;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AuthFlow(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.Web.AuthFlow.Type value = org.yamcs.protobuf.Web.AuthFlow.Type.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                type_ = rawValue;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Web.internal_static_web_AuthFlow_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Web.internal_static_web_AuthFlow_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Web.AuthFlow.class, org.yamcs.protobuf.Web.AuthFlow.Builder.class);
+    }
+
+    /**
+     * Protobuf enum {@code web.AuthFlow.Type}
+     */
+    public enum Type
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <pre>
+       * Login to Yamcs via standard username/password form
+       * </pre>
+       *
+       * <code>PASSWORD = 1;</code>
+       */
+      PASSWORD(1),
+      /**
+       * <pre>
+       * Instruct client to login via an external URL (not yet implemented)
+       * </pre>
+       *
+       * <code>REDIRECT = 2;</code>
+       */
+      REDIRECT(2),
+      /**
+       * <pre>
+       * Login to Yamcs via HTTP Negotiate
+       * </pre>
+       *
+       * <code>SPNEGO = 3;</code>
+       */
+      SPNEGO(3),
+      ;
+
+      /**
+       * <pre>
+       * Login to Yamcs via standard username/password form
+       * </pre>
+       *
+       * <code>PASSWORD = 1;</code>
+       */
+      public static final int PASSWORD_VALUE = 1;
+      /**
+       * <pre>
+       * Instruct client to login via an external URL (not yet implemented)
+       * </pre>
+       *
+       * <code>REDIRECT = 2;</code>
+       */
+      public static final int REDIRECT_VALUE = 2;
+      /**
+       * <pre>
+       * Login to Yamcs via HTTP Negotiate
+       * </pre>
+       *
+       * <code>SPNEGO = 3;</code>
+       */
+      public static final int SPNEGO_VALUE = 3;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static Type valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static Type forNumber(int value) {
+        switch (value) {
+          case 1: return PASSWORD;
+          case 2: return REDIRECT;
+          case 3: return SPNEGO;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Type>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          Type> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Type>() {
+              public Type findValueByNumber(int number) {
+                return Type.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Web.AuthFlow.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Type[] VALUES = values();
+
+      public static Type valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private Type(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:web.AuthFlow.Type)
+    }
+
+    private int bitField0_;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private int type_;
+    /**
+     * <pre>
+     *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+     *optional string state; //the client has to send this to the POST link and then back to Yamcs
+     * </pre>
+     *
+     * <code>optional .web.AuthFlow.Type type = 1;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <pre>
+     *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+     *optional string state; //the client has to send this to the POST link and then back to Yamcs
+     * </pre>
+     *
+     * <code>optional .web.AuthFlow.Type type = 1;</code>
+     */
+    public org.yamcs.protobuf.Web.AuthFlow.Type getType() {
+      org.yamcs.protobuf.Web.AuthFlow.Type result = org.yamcs.protobuf.Web.AuthFlow.Type.valueOf(type_);
+      return result == null ? org.yamcs.protobuf.Web.AuthFlow.Type.PASSWORD : result;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, type_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, type_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.AuthFlow)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.AuthFlow other = (org.yamcs.protobuf.Web.AuthFlow) obj;
+
+      boolean result = true;
+      result = result && (hasType() == other.hasType());
+      if (hasType()) {
+        result = result && type_ == other.type_;
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasType()) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + type_;
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.AuthFlow prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code web.AuthFlow}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.AuthFlow)
+        org.yamcs.protobuf.Web.AuthFlowOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Web.internal_static_web_AuthFlow_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Web.internal_static_web_AuthFlow_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Web.AuthFlow.class, org.yamcs.protobuf.Web.AuthFlow.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Web.AuthFlow.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        type_ = 1;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Web.internal_static_web_AuthFlow_descriptor;
+      }
+
+      public org.yamcs.protobuf.Web.AuthFlow getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Web.AuthFlow.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Web.AuthFlow build() {
+        org.yamcs.protobuf.Web.AuthFlow result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Web.AuthFlow buildPartial() {
+        org.yamcs.protobuf.Web.AuthFlow result = new org.yamcs.protobuf.Web.AuthFlow(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.type_ = type_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Web.AuthFlow) {
+          return mergeFrom((org.yamcs.protobuf.Web.AuthFlow)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Web.AuthFlow other) {
+        if (other == org.yamcs.protobuf.Web.AuthFlow.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Web.AuthFlow parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Web.AuthFlow) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private int type_ = 1;
+      /**
+       * <pre>
+       *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+       *optional string state; //the client has to send this to the POST link and then back to Yamcs
+       * </pre>
+       *
+       * <code>optional .web.AuthFlow.Type type = 1;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <pre>
+       *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+       *optional string state; //the client has to send this to the POST link and then back to Yamcs
+       * </pre>
+       *
+       * <code>optional .web.AuthFlow.Type type = 1;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlow.Type getType() {
+        org.yamcs.protobuf.Web.AuthFlow.Type result = org.yamcs.protobuf.Web.AuthFlow.Type.valueOf(type_);
+        return result == null ? org.yamcs.protobuf.Web.AuthFlow.Type.PASSWORD : result;
+      }
+      /**
+       * <pre>
+       *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+       *optional string state; //the client has to send this to the POST link and then back to Yamcs
+       * </pre>
+       *
+       * <code>optional .web.AuthFlow.Type type = 1;</code>
+       */
+      public Builder setType(org.yamcs.protobuf.Web.AuthFlow.Type value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        type_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+       *optional string state; //the client has to send this to the POST link and then back to Yamcs
+       * </pre>
+       *
+       * <code>optional .web.AuthFlow.Type type = 1;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = 1;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:web.AuthFlow)
+    }
+
+    // @@protoc_insertion_point(class_scope:web.AuthFlow)
+    private static final org.yamcs.protobuf.Web.AuthFlow DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.AuthFlow();
+    }
+
+    public static org.yamcs.protobuf.Web.AuthFlow getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<AuthFlow>
+        PARSER = new com.google.protobuf.AbstractParser<AuthFlow>() {
+      public AuthFlow parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new AuthFlow(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<AuthFlow> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AuthFlow> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.AuthFlow getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface AuthInfoOrBuilder extends
       // @@protoc_insertion_point(interface_extends:web.AuthInfo)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <pre>
-     * repeated AuthResource authResources;
-     * </pre>
-     *
      * <code>optional bool requireAuthentication = 1;</code>
      */
     boolean hasRequireAuthentication();
     /**
-     * <pre>
-     * repeated AuthResource authResources;
-     * </pre>
-     *
      * <code>optional bool requireAuthentication = 1;</code>
      */
     boolean getRequireAuthentication();
+
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Web.AuthFlow> 
+        getFlowList();
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    org.yamcs.protobuf.Web.AuthFlow getFlow(int index);
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    int getFlowCount();
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Web.AuthFlowOrBuilder> 
+        getFlowOrBuilderList();
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    org.yamcs.protobuf.Web.AuthFlowOrBuilder getFlowOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code web.AuthInfo}
@@ -15841,6 +16496,7 @@ public final class Web {
     }
     private AuthInfo() {
       requireAuthentication_ = false;
+      flow_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -15876,6 +16532,15 @@ public final class Web {
               requireAuthentication_ = input.readBool();
               break;
             }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                flow_ = new java.util.ArrayList<org.yamcs.protobuf.Web.AuthFlow>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              flow_.add(
+                  input.readMessage(org.yamcs.protobuf.Web.AuthFlow.PARSER, extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -15884,6 +16549,9 @@ public final class Web {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          flow_ = java.util.Collections.unmodifiableList(flow_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -15904,24 +16572,51 @@ public final class Web {
     public static final int REQUIREAUTHENTICATION_FIELD_NUMBER = 1;
     private boolean requireAuthentication_;
     /**
-     * <pre>
-     * repeated AuthResource authResources;
-     * </pre>
-     *
      * <code>optional bool requireAuthentication = 1;</code>
      */
     public boolean hasRequireAuthentication() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <pre>
-     * repeated AuthResource authResources;
-     * </pre>
-     *
      * <code>optional bool requireAuthentication = 1;</code>
      */
     public boolean getRequireAuthentication() {
       return requireAuthentication_;
+    }
+
+    public static final int FLOW_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.Web.AuthFlow> flow_;
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Web.AuthFlow> getFlowList() {
+      return flow_;
+    }
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Web.AuthFlowOrBuilder> 
+        getFlowOrBuilderList() {
+      return flow_;
+    }
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    public int getFlowCount() {
+      return flow_.size();
+    }
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    public org.yamcs.protobuf.Web.AuthFlow getFlow(int index) {
+      return flow_.get(index);
+    }
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    public org.yamcs.protobuf.Web.AuthFlowOrBuilder getFlowOrBuilder(
+        int index) {
+      return flow_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -15939,6 +16634,9 @@ public final class Web {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBool(1, requireAuthentication_);
       }
+      for (int i = 0; i < flow_.size(); i++) {
+        output.writeMessage(2, flow_.get(i));
+      }
       unknownFields.writeTo(output);
     }
 
@@ -15950,6 +16648,10 @@ public final class Web {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(1, requireAuthentication_);
+      }
+      for (int i = 0; i < flow_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, flow_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -15973,6 +16675,8 @@ public final class Web {
         result = result && (getRequireAuthentication()
             == other.getRequireAuthentication());
       }
+      result = result && getFlowList()
+          .equals(other.getFlowList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -15988,6 +16692,10 @@ public final class Web {
         hash = (37 * hash) + REQUIREAUTHENTICATION_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getRequireAuthentication());
+      }
+      if (getFlowCount() > 0) {
+        hash = (37 * hash) + FLOW_FIELD_NUMBER;
+        hash = (53 * hash) + getFlowList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -16103,12 +16811,19 @@ public final class Web {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getFlowFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
         requireAuthentication_ = false;
         bitField0_ = (bitField0_ & ~0x00000001);
+        if (flowBuilder_ == null) {
+          flow_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          flowBuilder_.clear();
+        }
         return this;
       }
 
@@ -16137,6 +16852,15 @@ public final class Web {
           to_bitField0_ |= 0x00000001;
         }
         result.requireAuthentication_ = requireAuthentication_;
+        if (flowBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            flow_ = java.util.Collections.unmodifiableList(flow_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.flow_ = flow_;
+        } else {
+          result.flow_ = flowBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -16182,6 +16906,32 @@ public final class Web {
         if (other.hasRequireAuthentication()) {
           setRequireAuthentication(other.getRequireAuthentication());
         }
+        if (flowBuilder_ == null) {
+          if (!other.flow_.isEmpty()) {
+            if (flow_.isEmpty()) {
+              flow_ = other.flow_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureFlowIsMutable();
+              flow_.addAll(other.flow_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.flow_.isEmpty()) {
+            if (flowBuilder_.isEmpty()) {
+              flowBuilder_.dispose();
+              flowBuilder_ = null;
+              flow_ = other.flow_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              flowBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getFlowFieldBuilder() : null;
+            } else {
+              flowBuilder_.addAllMessages(other.flow_);
+            }
+          }
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -16212,30 +16962,18 @@ public final class Web {
 
       private boolean requireAuthentication_ ;
       /**
-       * <pre>
-       * repeated AuthResource authResources;
-       * </pre>
-       *
        * <code>optional bool requireAuthentication = 1;</code>
        */
       public boolean hasRequireAuthentication() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <pre>
-       * repeated AuthResource authResources;
-       * </pre>
-       *
        * <code>optional bool requireAuthentication = 1;</code>
        */
       public boolean getRequireAuthentication() {
         return requireAuthentication_;
       }
       /**
-       * <pre>
-       * repeated AuthResource authResources;
-       * </pre>
-       *
        * <code>optional bool requireAuthentication = 1;</code>
        */
       public Builder setRequireAuthentication(boolean value) {
@@ -16245,10 +16983,6 @@ public final class Web {
         return this;
       }
       /**
-       * <pre>
-       * repeated AuthResource authResources;
-       * </pre>
-       *
        * <code>optional bool requireAuthentication = 1;</code>
        */
       public Builder clearRequireAuthentication() {
@@ -16256,6 +16990,246 @@ public final class Web {
         requireAuthentication_ = false;
         onChanged();
         return this;
+      }
+
+      private java.util.List<org.yamcs.protobuf.Web.AuthFlow> flow_ =
+        java.util.Collections.emptyList();
+      private void ensureFlowIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          flow_ = new java.util.ArrayList<org.yamcs.protobuf.Web.AuthFlow>(flow_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Web.AuthFlow, org.yamcs.protobuf.Web.AuthFlow.Builder, org.yamcs.protobuf.Web.AuthFlowOrBuilder> flowBuilder_;
+
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Web.AuthFlow> getFlowList() {
+        if (flowBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(flow_);
+        } else {
+          return flowBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public int getFlowCount() {
+        if (flowBuilder_ == null) {
+          return flow_.size();
+        } else {
+          return flowBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlow getFlow(int index) {
+        if (flowBuilder_ == null) {
+          return flow_.get(index);
+        } else {
+          return flowBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder setFlow(
+          int index, org.yamcs.protobuf.Web.AuthFlow value) {
+        if (flowBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFlowIsMutable();
+          flow_.set(index, value);
+          onChanged();
+        } else {
+          flowBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder setFlow(
+          int index, org.yamcs.protobuf.Web.AuthFlow.Builder builderForValue) {
+        if (flowBuilder_ == null) {
+          ensureFlowIsMutable();
+          flow_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          flowBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder addFlow(org.yamcs.protobuf.Web.AuthFlow value) {
+        if (flowBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFlowIsMutable();
+          flow_.add(value);
+          onChanged();
+        } else {
+          flowBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder addFlow(
+          int index, org.yamcs.protobuf.Web.AuthFlow value) {
+        if (flowBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFlowIsMutable();
+          flow_.add(index, value);
+          onChanged();
+        } else {
+          flowBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder addFlow(
+          org.yamcs.protobuf.Web.AuthFlow.Builder builderForValue) {
+        if (flowBuilder_ == null) {
+          ensureFlowIsMutable();
+          flow_.add(builderForValue.build());
+          onChanged();
+        } else {
+          flowBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder addFlow(
+          int index, org.yamcs.protobuf.Web.AuthFlow.Builder builderForValue) {
+        if (flowBuilder_ == null) {
+          ensureFlowIsMutable();
+          flow_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          flowBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder addAllFlow(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Web.AuthFlow> values) {
+        if (flowBuilder_ == null) {
+          ensureFlowIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, flow_);
+          onChanged();
+        } else {
+          flowBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder clearFlow() {
+        if (flowBuilder_ == null) {
+          flow_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          flowBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder removeFlow(int index) {
+        if (flowBuilder_ == null) {
+          ensureFlowIsMutable();
+          flow_.remove(index);
+          onChanged();
+        } else {
+          flowBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlow.Builder getFlowBuilder(
+          int index) {
+        return getFlowFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlowOrBuilder getFlowOrBuilder(
+          int index) {
+        if (flowBuilder_ == null) {
+          return flow_.get(index);  } else {
+          return flowBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Web.AuthFlowOrBuilder> 
+           getFlowOrBuilderList() {
+        if (flowBuilder_ != null) {
+          return flowBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(flow_);
+        }
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlow.Builder addFlowBuilder() {
+        return getFlowFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Web.AuthFlow.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlow.Builder addFlowBuilder(
+          int index) {
+        return getFlowFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Web.AuthFlow.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Web.AuthFlow.Builder> 
+           getFlowBuilderList() {
+        return getFlowFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Web.AuthFlow, org.yamcs.protobuf.Web.AuthFlow.Builder, org.yamcs.protobuf.Web.AuthFlowOrBuilder> 
+          getFlowFieldBuilder() {
+        if (flowBuilder_ == null) {
+          flowBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Web.AuthFlow, org.yamcs.protobuf.Web.AuthFlow.Builder, org.yamcs.protobuf.Web.AuthFlowOrBuilder>(
+                  flow_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          flow_ = null;
+        }
+        return flowBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -17428,6 +18402,11 @@ public final class Web {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_ConnectionInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_web_AuthFlow_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_web_AuthFlow_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_AuthInfo_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -17508,12 +18487,15 @@ public final class Web {
       "ement.ProcessorInfo\"\207\001\n\016ConnectionInfo\022\020",
       "\n\010clientId\030\001 \001(\005\0220\n\010instance\030\002 \001(\0132\036.yam" +
       "csManagement.YamcsInstance\0221\n\tprocessor\030" +
-      "\003 \001(\0132\036.yamcsManagement.ProcessorInfo\")\n" +
-      "\010AuthInfo\022\035\n\025requireAuthentication\030\001 \001(\010" +
-      "\"|\n\023AccessTokenResponse\022\024\n\014access_token\030" +
-      "\001 \001(\t\022\022\n\ntoken_type\030\002 \001(\t\022\022\n\nexpires_in\030" +
-      "\003 \001(\005\022\'\n\004user\030\004 \001(\0132\031.yamcsManagement.Us" +
-      "erInfoB\024\n\022org.yamcs.protobuf"
+      "\003 \001(\0132\036.yamcsManagement.ProcessorInfo\"\\\n" +
+      "\010AuthFlow\022 \n\004type\030\001 \001(\0162\022.web.AuthFlow.T" +
+      "ype\".\n\004Type\022\014\n\010PASSWORD\020\001\022\014\n\010REDIRECT\020\002\022" +
+      "\n\n\006SPNEGO\020\003\"F\n\010AuthInfo\022\035\n\025requireAuthen" +
+      "tication\030\001 \001(\010\022\033\n\004flow\030\002 \003(\0132\r.web.AuthF" +
+      "low\"|\n\023AccessTokenResponse\022\024\n\014access_tok" +
+      "en\030\001 \001(\t\022\022\n\ntoken_type\030\002 \001(\t\022\022\n\nexpires_" +
+      "in\030\003 \001(\005\022\'\n\004user\030\004 \001(\0132\031.yamcsManagement",
+      ".UserInfoB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -17623,14 +18605,20 @@ public final class Web {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ConnectionInfo_descriptor,
         new java.lang.String[] { "ClientId", "Instance", "Processor", });
-    internal_static_web_AuthInfo_descriptor =
+    internal_static_web_AuthFlow_descriptor =
       getDescriptor().getMessageTypes().get(12);
+    internal_static_web_AuthFlow_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_web_AuthFlow_descriptor,
+        new java.lang.String[] { "Type", });
+    internal_static_web_AuthInfo_descriptor =
+      getDescriptor().getMessageTypes().get(13);
     internal_static_web_AuthInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_AuthInfo_descriptor,
-        new java.lang.String[] { "RequireAuthentication", });
+        new java.lang.String[] { "RequireAuthentication", "Flow", });
     internal_static_web_AccessTokenResponse_descriptor =
-      getDescriptor().getMessageTypes().get(13);
+      getDescriptor().getMessageTypes().get(14);
     internal_static_web_AccessTokenResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_AccessTokenResponse_descriptor,
