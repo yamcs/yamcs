@@ -8,8 +8,9 @@ bin/
 .idea/
 *.iml
 
+/dist/
+/live/
 target/
-live/
 server.lock
 make-live-devel-local.sh
 *.xtce.consistency_date

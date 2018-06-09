@@ -35,12 +35,14 @@ cp $yamcshome/yamcs-client/etc/event-viewer.yaml.sample etc/event-viewer.yaml
 
 cd /tmp
 
+mkdir $yamcshome/dist
+
 echo "creating tarball"
-tar czfh $yamcshome/$dist.tar.gz $dist
+tar czfh $yamcshome/dist/$dist.tar.gz $dist
 echo "creating zipfile"
-zip -r $yamcshome/$dist.zip $dist
+zip -r $yamcshome/dist/$dist.zip $dist
 
 echo "cleanup"
 rm -r $dist
 cd $yamcshome
-ls -l $dist*
+ls -l dist/$dist*
