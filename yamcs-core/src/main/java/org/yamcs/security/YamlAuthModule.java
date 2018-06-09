@@ -42,7 +42,9 @@ public class YamlAuthModule implements AuthModule {
             YConfiguration yconf = YConfiguration.getConfiguration("roles");
             Map<String, Object> roleConfig = yconf.getRoot();
             for (String role : roleConfig.keySet()) {
-                roleDefs.put(role, YConfiguration.getMap(roleConfig, role));
+                if (!YConfiguration.isNull(roleConfig, role)) {
+                    roleDefs.put(role, YConfiguration.getMap(roleConfig, role));
+                }
             }
         }
     }

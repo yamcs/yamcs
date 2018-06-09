@@ -46,6 +46,9 @@ public class SecurityStore {
                 unauthenticatedUser.setSuperuser(YConfiguration.getBoolean(userProps, "superuser", false));
 
                 // TODO allow configuring privileges? Probably shouldn't come from an AuthModule because enabled=false
+            } else {
+                unauthenticatedUser = new User("admin");
+                unauthenticatedUser.setSuperuser(true);
             }
         }
 

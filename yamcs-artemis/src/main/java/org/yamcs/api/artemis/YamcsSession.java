@@ -133,12 +133,12 @@ public class YamcsSession {
             return setConnectionParams(host, port, null, null);
         }
 
-        public Builder setConnectionParams(String host, int port, String username, String password) {
+        public Builder setConnectionParams(String host, int port, String username, char[] password) {
             result.invm = false;
             result.ycd = new YamcsConnectionProperties();
             result.ycd.setHost(host);
             result.ycd.setPort(port);
-            result.ycd.setCredentials(username, password.toCharArray());
+            result.ycd.setCredentials(username, password);
             return this;
         }
 

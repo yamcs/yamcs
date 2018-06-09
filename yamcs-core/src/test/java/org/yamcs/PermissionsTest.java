@@ -98,7 +98,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
                     HttpMethod.POST, toJson(cmdreq)).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getCause().getMessage().contains("No TC authorization"));
+            assertTrue(e.getCause() instanceof YamcsApiException);
         }
 
     }

@@ -13,7 +13,7 @@ Operator:
   WriteParameter: []
   ReadPacket: [".*"]
   Command: [".*"]
-  InsertCommandQueue: ["Operator"]
+  InsertCommandQueue: ["ops"]
   System:
     - ControlProcessor
     - ModifyCommandHistory

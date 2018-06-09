@@ -178,6 +178,11 @@ public class YConfiguration {
         }
     }
 
+    public static boolean isNull(Map m, String key) {
+        Object o = m.get(key);
+        return o == null;
+    }
+
     public static String getGlobalProperty(String key) {
         return System.getProperty(key);
     }

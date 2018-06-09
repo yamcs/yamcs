@@ -266,9 +266,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
                     toJson(bulkb.build())).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getMessage().contains("Cannot find a local(software)"));
+            assertTrue(e.getCause() instanceof YamcsApiException);
         }
-
     }
 
     @Test
@@ -284,7 +283,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                     toJson(bulkb.build())).get();
             fail("Should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getMessage().contains("Cannot assign"));
+            assertTrue(e.getCause() instanceof YamcsApiException);
         }
     }
 

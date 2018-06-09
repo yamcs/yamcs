@@ -86,6 +86,10 @@ public class User {
     }
 
     public boolean hasSystemPrivilege(SystemPrivilege systemPrivilege) {
+        if (superuser) {
+            return true;
+        }
+
         return systemPrivileges.contains(systemPrivilege);
     }
 
