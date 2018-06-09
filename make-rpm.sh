@@ -48,7 +48,7 @@ echo "done: $dist"
 cat "$yamcshome/yamcs.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs.spec
 rpmbuild --define "_buildweb $buildweb" -ba $HOME/rpmbuild/SPECS/yamcs.spec
 
-cd `dirname $0`
+cd "$yamcshome"
 mkdir -p dist
 cp $HOME/rpmbuild/RPMS/noarch/$dist*.noarch.rpm dist/
 ls -l dist/$dist*
