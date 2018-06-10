@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AccessTokenResponse, UserInfo } from '@yamcs/client';
+import { AccessTokenResponse, AuthInfo, UserInfo } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from './YamcsService';
 
@@ -20,7 +20,7 @@ const TOKEN_CHECK_INTERVAL = 10000;
 })
 export class AuthService implements OnDestroy {
 
-  public authRequired$ = new BehaviorSubject<boolean | null>(null);
+  public authInfo$ = new BehaviorSubject<AuthInfo | null>(null);
   public userInfo$ = new BehaviorSubject<UserInfo | null>(null);
 
   // Indicates when the access_token is due to expire
@@ -47,11 +47,19 @@ export class AuthService implements OnDestroy {
     }, TOKEN_CHECK_INTERVAL);
 
     yamcsService.yamcsClient.getAuthInfo().then(authInfo => {
-      this.authRequired$.next(authInfo.requireAuthentication);
+      this.authInfo$.next(authInfo);
     });
 
-    yamcsService.yamcsClient.addHttpInterceptor((url: string) => {
-      if (this.authRequired$.value && !this.isAccessTokenAvailable()) {
+    yamcsService.yamcsClient.addHttpInInterceptor((url: string) => {
+      if (this.authInfo$.value && !this.isAccessTokenAvailable()) {
+        this.logout(); // Navigate user to login page
+      }
+      return Promise.resolve();
+    });
+    yamcsService.yamcsClient.addHttpOutInterceptor((url: string, response: Response) => {
+      console.log(response.status + ', ' + url);
+      if (response.status === 401 && url !== '/auth/spnego') {
+        // Local token may have expired, or otherwise became invalid
         this.logout(); // Navigate user to login page
       }
       return Promise.resolve();
@@ -93,6 +101,16 @@ export class AuthService implements OnDestroy {
     });
   }
 
+  loginWithAuthorizationCode(authorizationCode: string) {
+    // Store in cookie so that the token survives browser refreshes
+    // and so it is added to the header of a websocket request.
+    return this.yamcsService.yamcsClient.login(authorizationCode).then(loginInfo => {
+      this.updateCookie(loginInfo);
+      this.userInfo$.next(loginInfo.user);
+      return this.extractClaims(loginInfo.access_token);
+    });
+  }
+
   private updateCookie(tokenResponse: AccessTokenResponse) {
     const expireMillis = tokenResponse.expires_in * 1000;
     const cookieExpiration = new Date();
@@ -113,9 +131,6 @@ export class AuthService implements OnDestroy {
   }
 
   hasSystemPrivilege(privilege: string) {
-    if (!this.authRequired$.value) {
-      return true;
-    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.systemPrivileges) {
       for (const expression of userInfo.systemPrivileges) {
@@ -128,9 +143,6 @@ export class AuthService implements OnDestroy {
   }
 
   hasParameterPrivilege(parameter: string) {
-    if (!this.authRequired$.value) {
-      return true;
-    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.tmParaPrivileges) {
       for (const expression of userInfo.tmParaPrivileges) {
@@ -143,9 +155,6 @@ export class AuthService implements OnDestroy {
   }
 
   hasSetParameterPrivilege(parameter: string) {
-    if (!this.authRequired$.value) {
-      return true;
-    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.tmParaSetPrivileges) {
       for (const expression of userInfo.tmParaSetPrivileges) {
@@ -158,9 +167,6 @@ export class AuthService implements OnDestroy {
   }
 
   hasPacketPrivilege(packet: string) {
-    if (!this.authRequired$.value) {
-      return true;
-    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.tmPacketPrivileges) {
       for (const expression of userInfo.tmPacketPrivileges) {
@@ -173,9 +179,6 @@ export class AuthService implements OnDestroy {
   }
 
   hasCommandPrivilege(command: string) {
-    if (!this.authRequired$.value) {
-      return true;
-    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.tcPrivileges) {
       for (const expression of userInfo.tcPrivileges) {
@@ -188,9 +191,6 @@ export class AuthService implements OnDestroy {
   }
 
   hasStreamPrivilege(stream: string) {
-    if (!this.authRequired$.value) {
-      return true;
-    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.streamPrivileges) {
       for (const expression of userInfo.streamPrivileges) {
@@ -203,9 +203,6 @@ export class AuthService implements OnDestroy {
   }
 
   hasCommandHistoryPrivilege(command: string) {
-    if (!this.authRequired$.value) {
-      return true;
-    }
     const userInfo = this.userInfo$.value;
     if (userInfo && userInfo.cmdHistoryPrivileges) {
       for (const expression of userInfo.cmdHistoryPrivileges) {

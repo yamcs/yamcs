@@ -8,12 +8,15 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Web.AccessTokenResponse;
 import org.yamcs.protobuf.Web.AuthFlow;
 import org.yamcs.protobuf.Web.AuthFlow.Type;
 import org.yamcs.protobuf.Web.AuthInfo;
 import org.yamcs.security.AuthModule;
+import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SpnegoAuthModule;
@@ -46,6 +49,8 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
  */
 @Sharable
 public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthHandler.class);
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
@@ -94,15 +99,17 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
      * Issues time-limited access tokens based on provided password credentials.
      */
     private void handleTokenRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        User user = null;
         if ("application/x-www-form-urlencoded".equals(req.headers().get("Content-Type"))) {
+            User user = null;
             HttpPostRequestDecoder formDecoder = new HttpPostRequestDecoder(req);
             try {
                 String grantType = getStringFromForm(formDecoder, "grant_type");
+                System.out.println("Attempt to get token using " + grantType);
 
                 if ("password".equals(grantType)) {
                     String username = getStringFromForm(formDecoder, "username");
                     String password = getStringFromForm(formDecoder, "password");
+                    System.out.println("username " + username + ", " + password);
                     AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
                     user = SecurityStore.getInstance().login(token).get();
                     // TODO ? } else if ("spnego".equals(grantType)) {
@@ -116,6 +123,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
                     // name 'ThirdParty'. This may need to be revised when we add general support for the /authorize
                     // endpoint.
                     String authcode = getStringFromForm(formDecoder, "code");
+                    System.out.println("Attempt token request with code " + authcode);
                     user = SecurityStore.getInstance().login(new ThirdPartyAuthorizationCode(authcode)).get();
                 } else {
                     HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST,
@@ -123,35 +131,40 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
                     return;
                 }
             } catch (ExecutionException e) {
-                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-                return;
+                if (e.getCause() instanceof AuthenticationException) {
+                    log.debug(e.getCause().getMessage());
+                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
+                    return;
+                } else {
+                    log.error("Unexpected error while attempting user login", e);
+                    HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                    return;
+                }
             } catch (IOException e) {
+                log.error("Unexpected error while attempting user login", e);
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
                 return;
             } finally {
                 formDecoder.destroy();
             }
-        }
 
-        if (user == null) {
-            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
-            return;
-        }
+            try {
+                int ttl = 500; // in seconds
+                String jwt = JwtHelper.generateHS256Token(user, YamcsServer.getSecretKey(), ttl);
 
-        try {
-            int ttl = 500; // in seconds
-            String jwt = JwtHelper.generateHS256Token(user, YamcsServer.getSecretKey(), ttl);
+                AccessTokenResponse.Builder responseb = AccessTokenResponse.newBuilder();
+                responseb.setTokenType("bearer");
+                responseb.setAccessToken(jwt);
+                responseb.setExpiresIn(ttl);
+                responseb.setUser(UserRestHandler.toUserInfo(user, false));
 
-            AccessTokenResponse.Builder responseb = AccessTokenResponse.newBuilder();
-            responseb.setTokenType("bearer");
-            responseb.setAccessToken(jwt);
-            responseb.setExpiresIn(ttl);
-            responseb.setUser(UserRestHandler.toUserInfo(user, false));
-
-            HttpRequestHandler.getAuthorizationChecker().storeTokenToUserMapping(jwt, user);
-            HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, responseb.build(), true);
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                HttpRequestHandler.getAuthorizationChecker().storeTokenToUserMapping(jwt, user);
+                HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, responseb.build(), true);
+            } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+                HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            }
+        } else {
+            HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.BAD_REQUEST);
         }
     }
 

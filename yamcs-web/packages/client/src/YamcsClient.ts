@@ -1,5 +1,6 @@
 import { HttpError } from './HttpError';
-import { HttpInterceptor } from './HttpInterceptor';
+import { HttpInInterceptor } from './HttpInInterceptor';
+import { HttpOutInterceptor } from './HttpOutInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { BucketsWrapper, InstancesWrapper, ObjectsWrapper, ServicesWrapper } from './types/internal';
 import { AccessTokenResponse, AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, GeneralInfo, Instance, ListObjectsOptions, ObjectInfo, Service, UserInfo } from './types/system';
@@ -13,7 +14,8 @@ export default class YamcsClient {
 
   public accessToken?: string;
 
-  private interceptors: HttpInterceptor[] = [];
+  private inInterceptors: HttpInInterceptor[] = [];
+  private outInterceptors: HttpOutInterceptor[] = [];
 
   createInstanceClient(instance: string) {
     return new InstanceClient(instance, this);
@@ -29,17 +31,24 @@ export default class YamcsClient {
   }
 
   /**
-   * Log in to the Yamcs API via a username and a password.
-   * This will return a JWT reponse with a certain
-   * expiration time.
+   * Log in to the Yamcs API.
+   * This will return a JWT reponse with a certain expiration time.
    */
-  async login(username: string, password: string) {
+  async login(authorizationCode: string): Promise<AccessTokenResponse>;
+  async login(username: string, password: string): Promise<AccessTokenResponse>;
+  async login(usernameOrCode: string, password?: string) {
     const headers = new Headers();
     headers.append('Content-Type', 'application/x-www-form-urlencoded')
 
-    let body = 'grant_type=password';
-    body += `&username=${encodeURIComponent(username)}`;
-    body += `&password=${encodeURIComponent(password)}`;
+    let body;
+    if (password) {
+      body = 'grant_type=password';
+      body += `&username=${encodeURIComponent(usernameOrCode)}`;
+      body += `&password=${encodeURIComponent(password)}`;
+    } else {
+      body = 'grant_type=authorization_code';
+      body += `&code=${encodeURIComponent(usernameOrCode)}`;
+    }
 
     const response = await fetch(`${this.authUrl}/token`, {
       method: 'POST',
@@ -62,8 +71,7 @@ export default class YamcsClient {
    * was already expired, this will fail.
    */
   async refreshAccessToken() {
-    const response = await this.doFetch(`${this.authUrl}/token`);
-    const tokenResponse = await response.json() as AccessTokenResponse;
+    const tokenResponse = await this.login(;
     this.accessToken = tokenResponse.access_token;
     return tokenResponse;
   }
@@ -72,8 +80,16 @@ export default class YamcsClient {
    * Register an interceptor that will have the opportunity
    * to inspect, modify or halt any request.
    */
-  addHttpInterceptor(interceptor: HttpInterceptor) {
-    this.interceptors.push(interceptor);
+  addHttpInInterceptor(interceptor: HttpInInterceptor) {
+    this.inInterceptors.push(interceptor);
+  }
+
+  /**
+   * Register an interceptor that will have the to
+   * respond to any response.
+   */
+  addHttpOutInterceptor(interceptor: HttpOutInterceptor) {
+    this.outInterceptors.push(interceptor);
   }
 
   async getGeneralInfo() {
@@ -213,21 +229,29 @@ export default class YamcsClient {
       const headers = init.headers as Headers;
       headers.append('Authorization', `Bearer ${this.accessToken}`);
     }
-    for (const interceptor of this.interceptors) {
+    for (const interceptor of this.inInterceptors) {
       try {
         await interceptor(url, init);
       } catch (err) {
         return Promise.reject(err);
       }
     }
-    return fetch(url, init).then(response => {
-      // Make non 2xx responses available to clients via 'catch' instead of 'then'.
-      if (response.status >= 200 && response.status < 300) {
-        return Promise.resolve(response);
-      } else {
-        return Promise.reject(new HttpError(response.status, response.statusText));
+
+    const response = await fetch(url, init);
+    for (const interceptor of this.outInterceptors) {
+      try {
+        await interceptor(url, response);
+      } catch (err) {
+        return Promise.reject(err);
       }
-    });
+    }
+
+    // Make non 2xx responses available to clients via 'catch' instead of 'then'.
+    if (response.status >= 200 && response.status < 300) {
+      return Promise.resolve(response);
+    } else {
+      return Promise.reject(new HttpError(response.status, response.statusText));
+    }
   }
 
   private queryString(options: {[key: string]: any}) {

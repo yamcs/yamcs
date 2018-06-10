@@ -3,6 +3,11 @@ import { CommandQueueEntry, Value } from './monitoring';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
+  flow: AuthFlow[];
+}
+
+export interface AuthFlow {
+  type: 'PASSWORD' | 'REDIRECT' | 'SPNEGO';
 }
 
 export interface AccessTokenResponse {

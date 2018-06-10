@@ -107,7 +107,7 @@
       }
     ],
     "typeof-compare": true,
-    "unified-signatures": true,
+    "unified-signatures": false,
     "variable-name": false,
     "whitespace": [
       true,

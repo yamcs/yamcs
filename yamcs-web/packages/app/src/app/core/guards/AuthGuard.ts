@@ -1,7 +1,8 @@
-import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivateChild } from '@angular/router';
 import { Injectable } from '@angular/core';
-import { AuthService } from '../services/AuthService';
+import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
+import { AuthInfo } from '@yamcs/client';
 import { filter, take } from 'rxjs/operators';
+import { AuthService } from '../services/AuthService';
 
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild {
@@ -9,7 +10,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   constructor(private authService: AuthService, private router: Router) {
   }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
+  async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
     if (this.authService.isLoggedIn()) {
       return Promise.resolve(true);
     }
@@ -21,31 +22,59 @@ export class AuthGuard implements CanActivate, CanActivateChild {
     }
 
     // Check if authentication is maybe disabled for this server
-    // This wait until the /auth http request triggered in AuthService
+    // This waits until the /auth http request triggered in AuthService
     // is back. This should only happen once at app init.
-    const authRequired = this.authService.authRequired$.value;
-    if (authRequired !== null) {
-      if (authRequired) {
-        this.router.navigate(['/login'], { queryParams: { next: state.url } });
-      }
-      return Promise.resolve(!authRequired);
+    let authInfo = this.authService.authInfo$.value;
+    if (authInfo !== null) {
+      return this.handleAuthInfo(authInfo, state);
     }
 
     // AuthService must still be initialising. Await the outcome
-    return new Promise<boolean>((resolve, reject) => {
-      this.authService.authRequired$.pipe(
-        filter(isRequired => isRequired !== null),
-        take(1),
-      ).subscribe(isRequired => {
-        if (isRequired) {
-          this.router.navigate(['/login'], { queryParams: { next: state.url } });
-        }
-        resolve(!isRequired);
-      });
-    });
+    authInfo = await this.authService.authInfo$.pipe(
+      filter(x => x !== null),
+      take(1),
+    ).toPromise();
+
+    return this.handleAuthInfo(authInfo!, state);
   }
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
+  async canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
     return this.canActivate(route, state);
+  }
+
+  private async handleAuthInfo(authInfo: AuthInfo, state: RouterStateSnapshot): Promise<boolean> {
+    if (!authInfo.requireAuthentication) {
+      return true;
+    }
+
+    for (const flow of authInfo.flow) {
+      console.log('try flow ', flow.type);
+      console.log('would go to ', state.url);
+      if (flow.type === 'PASSWORD') {
+        this.router.navigate(['/login'], { queryParams: { next: state.url } });
+        return false;
+      } else if (flow.type === 'SPNEGO') {
+        try {
+          await this.attemptSpnego();
+          return true;
+        } catch {
+          continue;
+        }
+      } else {
+        console.warn('Unrecognized flow type ' + flow.type);
+      }
+    }
+    return false;
+  }
+
+  private async attemptSpnego() {
+    const response = await fetch('/auth/spnego', {
+      credentials: 'include',
+    });
+
+    if (response.status === 200) {
+      const authorizationCode = (await response.text()).trim();
+      await this.authService.loginWithAuthorizationCode(authorizationCode);
+    }
   }
 }

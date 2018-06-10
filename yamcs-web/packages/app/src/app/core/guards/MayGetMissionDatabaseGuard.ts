@@ -1,5 +1,5 @@
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivateChild, Router } from '@angular/router';
 import { Injectable } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/AuthService';
 
 @Injectable()
@@ -9,9 +9,6 @@ export class MayGetMissionDatabaseGuard implements CanActivate, CanActivateChild
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    if (!this.authService.authRequired$.value) {
-      return true;
-    }
     const userInfo = this.authService.getUserInfo();
     if (userInfo) {
       const systemPrivileges = userInfo.systemPrivileges || [];

@@ -25,9 +25,6 @@ export class SystemPage {
   }
 
   showStreamsItem() {
-    if (!this.authService.authRequired$.value) {
-      return true;
-    }
     const userInfo = this.authService.getUserInfo();
     if (userInfo && userInfo.streamPrivileges) {
       return userInfo.streamPrivileges.length > 0;
