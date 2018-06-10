@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
@@ -22,6 +21,7 @@ import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
+import org.yamcs.security.CryptoUtils;
 import org.yamcs.spi.Plugin;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
@@ -380,7 +380,7 @@ public class YamcsServer {
             staticlog.warn("Generating random non-persisted secret key."
                     + " Cryptographic verifications will not work across server restarts."
                     + " Set 'secretKey: <secret>' in yamcs.yaml to avoid this message.");
-            secretKey = UUID.randomUUID().toString();
+            secretKey = CryptoUtils.generateRandomKey();
         }
     }
 
