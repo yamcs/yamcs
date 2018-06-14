@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanDataEncoding;
@@ -209,5 +210,45 @@ public class DataEncodingDecoder {
         buffer.getByteArray(b);
         pv.setRawValue(b);
         pv.setBitSize(sizeInBytes<<3);
+    }
+    
+    
+    /**
+     * return the nominal Value.Type of a raw value corresponding to the given XTCE data encoding definition
+     * @param type
+     * @return
+     */
+    public static org.yamcs.protobuf.Yamcs.Value.Type getRawType(DataEncoding encoding) {
+        if(encoding instanceof IntegerDataEncoding) {
+            IntegerDataEncoding ide = (IntegerDataEncoding)encoding;
+            if (ide.getSizeInBits() <= 32) {
+                if(ide.getEncoding()==Encoding.UNSIGNED) {
+                    return Type.UINT32;
+                } else {
+                    return Type.SINT32;
+                }
+            } else {
+                if(ide.getEncoding()==Encoding.UNSIGNED) {
+                    return Type.UINT32;
+                } else {
+                    return Type.SINT32;
+                }
+            }
+        } else if(encoding instanceof FloatDataEncoding) {
+            FloatDataEncoding fpt = (FloatDataEncoding) encoding;
+            if(fpt.getSizeInBits()<=32) {
+                return Type.FLOAT;
+            } else {
+                return Type.DOUBLE;
+            }
+        } else if (encoding instanceof BooleanDataEncoding) {
+            return Type.BOOLEAN;
+        } else if (encoding instanceof BinaryDataEncoding) {
+            return Type.BINARY;
+        } else if (encoding instanceof StringDataEncoding) {
+            return Type.STRING;
+        } else {
+            throw new IllegalStateException("Unknonw data encoding '"+encoding+"'");
+        }
     }
 }

@@ -457,4 +457,47 @@ public class ParameterTypeProcessor {
         }
         return v;
     }
+    
+    /**
+     * return the nominal Value.Type of a parameter of the given XTCE parameter type definition
+     * @param type
+     * @return
+     */
+    public static org.yamcs.protobuf.Yamcs.Value.Type getEngType(ParameterType ptype) {
+        if(ptype instanceof IntegerParameterType) {
+            IntegerParameterType ipt = (IntegerParameterType)ptype;
+            if (ipt.getSizeInBits() <= 32) {
+                if (ipt.isSigned()) {
+                    return Type.SINT32;
+                } else {
+                    return Type.UINT32;
+                }
+            } else {
+                if (ipt.isSigned()) {
+                    return Type.SINT64;
+                } else {
+                    return Type.UINT64;
+                }
+            }
+        } else if(ptype instanceof FloatParameterType) {
+            FloatParameterType fpt = (FloatParameterType) ptype;
+            if(fpt.getSizeInBits()<=32) {
+                return Type.FLOAT;
+            } else {
+                return Type.DOUBLE;
+            }
+        } else if (ptype instanceof BooleanParameterType) {
+            return Type.BOOLEAN;
+        } else if (ptype instanceof BinaryParameterType) {
+            return Type.BINARY;
+        } else if (ptype instanceof StringParameterType) {
+            return Type.STRING;
+        } else if (ptype instanceof EnumeratedParameterType) {
+            return Type.STRING;
+        } else if (ptype instanceof AbsoluteTimeParameterType){
+            return Type.TIMESTAMP;
+        } else {
+            throw new IllegalStateException("Unknonw parameter type '"+ptype+"'");
+        }
+    }
 }
