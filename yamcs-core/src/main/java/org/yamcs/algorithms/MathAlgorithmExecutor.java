@@ -37,7 +37,6 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
         evaluator = getEvaluator(algorithm);
     }
 
-   
 
     @Override
     public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
