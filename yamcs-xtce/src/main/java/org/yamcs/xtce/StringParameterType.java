@@ -1,6 +1,5 @@
 package org.yamcs.xtce;
 
-import java.util.Set;
 
 public class StringParameterType extends StringDataType implements ParameterType {
     private static final long serialVersionUID = 1L;

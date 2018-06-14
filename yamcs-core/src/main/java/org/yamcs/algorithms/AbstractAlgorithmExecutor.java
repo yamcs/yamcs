@@ -26,7 +26,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     final protected Algorithm algorithmDef;
 
     final protected CopyOnWriteArrayList<AlgorithmExecListener> execListeners = new CopyOnWriteArrayList<>();
-    static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmExecutor.class);
+    static protected final Logger log = LoggerFactory.getLogger(AbstractAlgorithmExecutor.class);
 
     // Collect all the input values here - the indexes match one to one the algorithm def input list
     final protected List<ParameterValue> inputValues;

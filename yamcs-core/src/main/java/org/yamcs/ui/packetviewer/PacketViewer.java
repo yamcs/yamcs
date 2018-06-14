@@ -598,7 +598,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                         buf = ByteBuffer.allocate(16);
                         long gentime = TimeEncoding.INVALID_INSTANT;
                         int seqcount = -1;
-                        if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
+                        if (true || (fourb[0] & 0xe8) == 0x08) {// CCSDS packet
                             buf.put(fourb, 0, 4);
                             if ((r = reader.read(buf.array(), 4, 12)) != 12) {
                                 throw new ShortReadException(16, r, offset);
@@ -642,7 +642,8 @@ public class PacketViewer extends JFrame implements ActionListener,
                                 i++;
                             }
                             if ((r = reader.read(buf.array())) != 16) {
-                                throw new ShortReadException(16, r, offset);
+                              //  throw new ShortReadException(16, r, offset);
+                                break;
                             }
                         }
                         len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
@@ -654,7 +655,8 @@ public class PacketViewer extends JFrame implements ActionListener,
                         System.arraycopy(buf.array(), 0, bufn, 0, 16);
                         r = reader.read(bufn, 16, len - 16);
                         if (r != len - 16) {
-                            throw new ShortReadException(len - 16, r, offset);
+                            //throw new ShortReadException(len - 16, r, offset);
+                            break;
                         }
 
                         TmPacketData.Builder packetb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
@@ -703,6 +705,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
             @Override
             protected void done() {
+                System.out.println("lastFile : "+lastFile);
                 if (progress != null) {
                     if (progress.isCanceled()) {
                         clearWindow();

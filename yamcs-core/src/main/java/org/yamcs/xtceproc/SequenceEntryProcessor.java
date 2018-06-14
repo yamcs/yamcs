@@ -4,8 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.utils.DecodingException;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.ContainerEntry;
+import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterType;
@@ -28,7 +30,7 @@ public class SequenceEntryProcessor {
             } else {
                 throw new UnsupportedOperationException("processing type "+se+" not implemented");
             }
-        } catch (RuntimeException e) {
+        } catch (XtceProcException e) {
             log.warn("Exception when extracting\n {} :\n",se, e);
             throw e;
         }
@@ -58,9 +60,16 @@ public class SequenceEntryProcessor {
 
         Parameter param = pe.getParameter();
         ParameterType ptype = param.getParameterType();
+        if(ptype == null) {
+            throw new XtceProcException("Encountered parameter entry with a parameter '"+param.getName()+" without a type");
+        }
+        DataEncoding encoding = ((BaseDataType)ptype).getEncoding();
+        if(encoding == null) {
+            throw new XtceProcException("Encountered parameter entry with a parameter '"+param.getName()+" without an encoding");
+        }
         ParameterValue pv = new ParameterValue(param);
         pv.setAbsoluteBitOffset(pcontext.containerAbsoluteByteOffset*8+buf.getPosition());
-        pv.setBitSize(((BaseDataType)ptype).getEncoding().getSizeInBits());
+        pv.setBitSize(encoding.getSizeInBits());
         pcontext.dataEncodingProcessor.extractRaw(((BaseDataType)ptype).getEncoding(), pv);
         pcontext.pdata.parameterTypeProcessor.calibrate(pcontext, pv);
         
