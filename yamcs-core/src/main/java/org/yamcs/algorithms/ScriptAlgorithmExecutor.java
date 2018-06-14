@@ -42,25 +42,22 @@ import org.yamcs.xtceproc.ParameterTypeProcessor;
 import com.google.protobuf.ByteString;
 
 /**
- * Represents the execution context of one algorithm. An AlgorithmEngine is reused upon each update of one or more of
+ * Represents the execution context of one algorithm. An AlgorithmExecutor is reused upon each update of one or more of
  * its InputParameters.
  * <p>
  * This class will create and compile on-the-fly ValueBinding implementations for every unique combination of raw and
- * eng types. The reason for this is to get the mapping correct from Java to JavaScript. Rhino (the default JavaScript
- * engine for JDK &le; 7) will map java Float, Integer, etc towards javascript Object, instead of Number. As a result,
- * in javascript, using the plus operator on two supposed numbers would do a string concatenation instead of an
- * addition.
- * <p>
- * Rather than changing the Rhino configuration (which would require drastic tampering of the maven-compiler-plugin in
- * order to lift Sun's Access Restrictions on these internal classes), we generate classes with primitive raw/eng values
- * when needed.
+ * eng types. 
  */
 public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     static final Logger log = LoggerFactory.getLogger(ScriptAlgorithmExecutor.class);
 
     final Invocable invocable;
+    //stores both the function inputs and outputs
+    //the position of the inputs corresponds to the position of AlgorithmDef input respectively output List   
     final Object[] functionArgs;
-    final Map<Object, Integer> argumentPosition = new HashMap<>();
+  
+    final int numInputs;
+    final int numOutputs;
 
     // Each ValueBinding class represent a unique raw/eng type combination (== key)
     private static Map<String, Class<ValueBinding>> valueBindingClasses = Collections
@@ -76,25 +73,22 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         this.invocable = invocable;
         this.eventProducer = eventProducer;
         
-        functionArgs = new Object[algorithmDef.getInputSet().size() + algorithmDef.getOutputSet().size()];
-        int position = 0;
-        for (InputParameter inputParameter : algorithmDef.getInputSet()) {
-            argumentPosition.put(inputParameter, position++);
-        }
+        numInputs = algorithmDef.getInputList().size();
+        List<OutputParameter> outputList = algorithmDef.getOutputList();
+        numOutputs = outputList.size();
+        functionArgs = new Object[numInputs+numOutputs];
+
         // Set empty output bindings so that algorithms can write their attributes
-        for (OutputParameter outputParameter : algorithmDef.getOutputSet()) {
-            OutputValueBinding valueBinding = new OutputValueBinding();
-            functionArgs[position] = valueBinding;
-            argumentPosition.put(outputParameter, position++);
+        for (int k = 0; k<numOutputs; k++) {
+            functionArgs[numInputs+k] = new OutputValueBinding();;
         }
     }
 
     @Override
-    protected void updateInput(InputParameter inputParameter, ParameterValue newValue) {
+    protected void updateInput(int position, InputParameter inputParameter, ParameterValue newValue) {
         if(log.isTraceEnabled()) {
             log.trace("Algo {} updating input {} with value {}", algorithmDef.getName(), ScriptAlgorithmManager.getArgName(inputParameter), newValue);
         }
-        int position = argumentPosition.get(inputParameter);
         ValueBinding valueBinding = (ValueBinding) functionArgs[position];
         // First time for an inputParameter, it will create a ValueBinding object.
         // Further calls will just update that object
@@ -113,28 +107,15 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     @Override
     public synchronized List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
         if(log.isTraceEnabled()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Running algorithm ").append(algorithmDef.getName())
-            .append("( ");
-            int pos = 0;
-            for(InputParameter p: algorithmDef.getInputList()) {
-                if(pos!=0) {
-                    sb.append(", ");
-                }
-                sb.append(ScriptAlgorithmManager.getArgName(p)).append(": ")
-                .append(String.valueOf(functionArgs[pos]));
-                pos++;
-            }
-            sb.append(")");
-
-            log.trace(sb.toString());
+            log.trace(getRunningTraceString());
         }
         try {
             Object returnValue = invocable.invokeFunction(functionName, functionArgs);
             List<ParameterValue> outputValues = new ArrayList<>();
-            for (OutputParameter outputParameter : algorithmDef.getOutputSet()) {
-                int pos = argumentPosition.get(outputParameter);
-                OutputValueBinding res = (OutputValueBinding) functionArgs[pos];
+            List<OutputParameter> outputList = algorithmDef.getOutputList();
+            for (int k = 0; k<numOutputs; k++) {
+                OutputParameter outputParameter = outputList.get(k);
+                OutputValueBinding res = (OutputValueBinding) functionArgs[numInputs+k];
                 if (res.updated && res.value != null) {
                     ParameterValue pv = convertScriptOutputToParameterValue(outputParameter.getParameter(), res);
                     pv.setAcquisitionTime(acqTime);
@@ -152,6 +133,24 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
         }
     }
 
+    
+    private String getRunningTraceString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Running algorithm ").append(algorithmDef.getName())
+        .append("( ");
+        int pos = 0;
+        for(InputParameter p: algorithmDef.getInputList()) {
+            if(pos!=0) {
+                sb.append(", ");
+            }
+            sb.append(ScriptAlgorithmManager.getArgName(p)).append(": ")
+            .append(String.valueOf(functionArgs[pos]));
+            pos++;
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+    
     private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding) {
         ParameterValue pval = new ParameterValue(parameter);
         ParameterType ptype = parameter.getParameterType();

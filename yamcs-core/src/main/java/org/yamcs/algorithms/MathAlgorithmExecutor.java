@@ -27,15 +27,13 @@ import org.yamcs.xtceproc.MathOperationCalibratorFactory;
 public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
     final Parameter outParam;
     final double[] input;
-    final List<InputParameter> inputList;
     final MathOperationEvaluator evaluator;
 
     public MathAlgorithmExecutor(Algorithm algorithmDef, AlgorithmExecutionContext execCtx, MathAlgorithm algorithm) {
         super(algorithmDef, execCtx);
         OutputParameter op = algorithmDef.getOutputList().get(0);
         outParam = op.getParameter();
-        inputList = algorithmDef.getInputList();
-        input = new double[inputList.size()];
+        input = new double[algorithmDef.getInputList().size()];
         evaluator = getEvaluator(algorithm);
     }
 
@@ -53,12 +51,7 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
     }
 
     @Override
-    protected void updateInput(InputParameter inputParameter, ParameterValue newValue) {
-        final int idx = inputList.indexOf(inputParameter);
-        if (idx == -1) {
-            log.warn("Received value for input parameter {} that is not in the list", inputParameter);
-            return;
-        }
+    protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue) {
         Value v = inputParameter.getParameterInstance().useCalibratedValue() ? newValue.getEngValue()
                 : newValue.getRawValue();
 

@@ -141,7 +141,7 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        protected void updateInput(InputParameter inputParameter, ParameterValue newValue) {
+        protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue) {
             v = newValue.getEngValue().getFloatValue();
         }
     }
@@ -164,7 +164,7 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        protected void updateInput(InputParameter inputParameter, ParameterValue newValue) {
+        protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue) {
             v = newValue.getEngValue().getFloatValue();
         }
     }
@@ -191,7 +191,7 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        protected void updateInput(InputParameter inputParameter, ParameterValue newValue) {
+        protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue) {
             v = newValue.getEngValue().getFloatValue();
         }
     }

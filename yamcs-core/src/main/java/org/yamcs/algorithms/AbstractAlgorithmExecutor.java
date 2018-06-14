@@ -2,12 +2,11 @@ package org.yamcs.algorithms;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.BitSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,34 +17,27 @@ import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
 
+/**
+ *  Skeleton implementation for algorithms conforming to the XTCE {@link Algorithm} definition.
+ *  
+ */
 public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     final protected AlgorithmExecutionContext execCtx;
     final protected Algorithm algorithmDef;
-    final protected CopyOnWriteArrayList<AlgorithmExecListener> execListeners = new CopyOnWriteArrayList<>();
-    // Keep only unique arguments (for subscription purposes)
-    protected Set<Parameter> requiredParameters = new HashSet<>();
-    protected Set<InputParameter>mandatoryToRun = new HashSet<>();
-    private Map<InputParameter,ParameterValue> inputValues = new HashMap<>();
     
+    final protected CopyOnWriteArrayList<AlgorithmExecListener> execListeners = new CopyOnWriteArrayList<>();
+    protected Set<InputParameter> mandatoryToRun;
+    //used to keep track which input parameters have been set
+    private BitSet inputSet;
     
     static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmExecutor.class);
     
     public AbstractAlgorithmExecutor(Algorithm algorithmDef, AlgorithmExecutionContext execCtx) {
         this.algorithmDef = algorithmDef;
         this.execCtx = execCtx;
-        for(InputParameter inputParameter:algorithmDef.getInputSet()) {
-            requiredParameters.add(inputParameter.getParameterInstance().getParameter());
-
-            // Default-define all input values to null to prevent ugly runtime errors
-            String scriptName = inputParameter.getInputName();
-            if(scriptName==null) {
-                scriptName = inputParameter.getParameterInstance().getParameter().getName();
-            }
-           
-            if(inputParameter.isMandatory()) {
-                mandatoryToRun.add(inputParameter);
-            }
-        }
+        List<InputParameter> l = algorithmDef.getInputList();
+        inputSet = new BitSet(l.size());
+        mandatoryToRun = l.stream().filter(ip -> ip.isMandatory()).collect(Collectors.toSet());
     }
     
     /**
@@ -56,25 +48,27 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     public synchronized boolean updateParameters(List<ParameterValue> items) {
         ArrayList<ParameterValue> allItems = new ArrayList<>(items);
         boolean skipRun=false;
-
+        List<InputParameter> l = algorithmDef.getInputList();
+        
         // Set algorithm arguments based on incoming values
-        for(InputParameter inputParameter:algorithmDef.getInputSet()) {
+        for(int k = 0; k<l.size(); k++) {
+            InputParameter inputParameter = l.get(k);
             ParameterInstanceRef pInstance = inputParameter.getParameterInstance();
             for(ParameterValue pval:allItems) {
                 if(pInstance.getParameter().equals(pval.getParameter())) {
                     if(getLookbackSize(pInstance.getParameter())==0) {
-                        updateInput(inputParameter, pval);
-                        inputValues.put(inputParameter, pval);
+                        updateInput(k, inputParameter, pval);
+                        inputSet.set(k);
                     } else {
                         ParameterValue historicValue=execCtx.getHistoricValue(pInstance);
                         if(historicValue!=null) {
-                            updateInput(inputParameter, historicValue);
-                            inputValues.put(inputParameter, historicValue);
+                            updateInput(k, inputParameter, historicValue);
+                            inputSet.set(k);
                         }
                     }
                 }
             }
-            if(!skipRun && inputParameter.isMandatory() && !inputValues.containsKey(inputParameter)) {
+            if(!skipRun && inputParameter.isMandatory() && !inputSet.get(k)) {
                 log.trace("Not running algorithm {} because mandatory input {} is not present", algorithmDef.getName(), inputParameter.getInputName());
                 skipRun = true;
             }
@@ -98,7 +92,15 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     }
    
 
-    abstract protected void updateInput(InputParameter inputParameter, ParameterValue newValue);
+    /**
+     * Called when the given inputParameter receives a value.
+     * idx is the index of the inputParameter in the algorithm definition input list
+     * 
+     * @param inputParameter
+     * @param newValue
+     */
+    abstract protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue);
+        
     
     protected void propagateToListeners(Object returnValue,  List<ParameterValue> outputValues){
         for(AlgorithmExecListener listener: execListeners) {
@@ -129,7 +131,9 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     }
     @Override
     public Set<Parameter> getRequiredParameters() {
-        return requiredParameters;
+        return algorithmDef.getInputList().stream()
+                .map(ip -> ip.getParameterInstance().getParameter())
+                .collect(Collectors.toSet());
     }
     @Override
     public Algorithm getAlgorithm() {
