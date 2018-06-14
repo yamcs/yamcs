@@ -2,18 +2,30 @@ package org.yamcs.xtce;
 
 import java.nio.charset.Charset;
 
-
 /**
  * For common encodings of string data
- * 
- * DIFFERS_FROM_XTCE: we rely on BinaryDataEncoding to extract binary data from the packet and this only takes care of encoding the binary to string.
- * 
- *
- *
+ * @author nm
  */
 public class StringDataEncoding extends DataEncoding {
     private static final long serialVersionUID = 1L;
-    public enum SizeType {FIXED, TERMINATION_CHAR, LEADING_SIZE, CUSTOM};
+    public enum SizeType {
+        /**
+         * fixed size has to be specified in the {@link #getSizeInBits}
+         */
+        FIXED,
+        /**
+         * Like C strings, they are terminated with a special string, usually a null character.
+         */
+        TERMINATION_CHAR,
+        /**
+         * Like PASCAL strings, the size of the string is given as an integer at the start of the string.  SizeTag must be an unsigned Integer
+         */
+        LEADING_SIZE,
+        /**
+         * {@link #getFromBinaryTransformAlgorithm} will be used to decode the data
+         */
+        CUSTOM
+    };
     private SizeType sizeType;
     private byte terminationChar = 0; //it's in fact the terminationByte but we call it like this for compatibility with XTCE
     int sizeInBitsOfSizeTag=16;

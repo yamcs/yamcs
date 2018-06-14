@@ -42,6 +42,7 @@ public class ProcessorData {
     static Logger log = LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
     final EventProducer eventProducer;
     
+    private Map<String, Object> userData = new HashMap<>();
     /**
      * 
      * @param xtcedb
@@ -58,6 +59,26 @@ public class ProcessorData {
         eventProducer.setRepeatedEventReduction(true, 10000);
     }
     
+    /**
+     * Set some object to be shared with all the users of this processor data
+     * @param key
+     * @param value
+     */
+    public <T>  void setUserData(String key, T value) {
+        userData.put(key,  value);
+    }
+    
+    /**
+     * Get the instance of the user defined object if any. Returns null if no data has been set.
+     * @param key
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getUserData(String key) {
+        return (T)userData.get(key);
+    }
+    
+   
     /**
      * returns a calibrator processor for the given data encoding. 
      * Can be null if the DataEncoding does not define a calibrator.

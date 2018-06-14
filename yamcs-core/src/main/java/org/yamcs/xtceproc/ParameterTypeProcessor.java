@@ -500,4 +500,76 @@ public class ParameterTypeProcessor {
             throw new IllegalStateException("Unknonw parameter type '"+ptype+"'");
         }
     }
+    
+    /**
+     * Returns a Value corresponding to the java object and the parameter type or null if the parameter cannot be converted
+     * 
+     * Note that the operation may involve some casting and loss of precision (e.g. from long to int or double to float)
+     * @param ptype
+     * @param value
+     * @return
+     */
+    public static Value getEngValue(ParameterType ptype, Object value) {
+        if (ptype instanceof IntegerParameterType) {
+            return getEngIntegerValue((IntegerParameterType) ptype, value);
+        } else if (ptype instanceof FloatParameterType) {
+            return getEngFloatValue((FloatParameterType) ptype, value);
+        } else if (ptype instanceof StringParameterType) {
+            if (value instanceof String) {
+                return ValueUtility.getStringValue((String) value);
+            } else {
+              return null;
+            }
+        } else if (ptype instanceof BooleanParameterType) {
+            if (value instanceof Boolean) {
+                return ValueUtility.getBooleanValue((Boolean) value);
+            } else {
+                return null;
+            }
+        } else if (ptype instanceof BinaryParameterType) {
+            if (value instanceof byte[]) {
+                return ValueUtility.getBinaryValue((byte[]) value);
+            } else {
+                return null;
+            }
+        } else {
+            throw new IllegalStateException("Unknown parameter type '"+ptype+"'");
+        }
+    }
+
+    static Value getEngIntegerValue(IntegerParameterType ptype, Object value) {
+        long longValue;
+        if (value instanceof Number) {
+            longValue = ((Number) value).longValue();
+        } else {            
+            return null;
+        }
+        if (ptype.getSizeInBits() <= 32) {
+            if (ptype.isSigned()) {
+                return ValueUtility.getSint32Value((int)longValue);
+            } else {
+                return ValueUtility.getUint32Value((int) longValue);
+            }
+        } else {
+            if (ptype.isSigned()) {
+                return ValueUtility.getSint64Value(longValue);
+            } else {
+                return ValueUtility.getUint64Value(longValue);
+            }
+        }
+    }
+    static private Value getEngFloatValue(FloatParameterType ptype, Object value) {
+        double doubleValue;
+        if (value instanceof Number) {
+            doubleValue = ((Number) value).doubleValue();
+        } else {
+            return null;
+        }
+        if (ptype.getSizeInBits() <= 32) {
+            return ValueUtility.getFloatValue((float) doubleValue);
+        } else {
+            return ValueUtility.getDoubleValue(doubleValue);
+        }
+    }
+
 }

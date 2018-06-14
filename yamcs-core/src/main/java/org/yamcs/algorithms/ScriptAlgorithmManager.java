@@ -100,7 +100,7 @@ public class ScriptAlgorithmManager {
             }    
         }
         
-        return new ScriptAlgorithmExecutor(calg, (Invocable) scriptEngine, functionName, execCtx, eventProducer);
+        return new ScriptAlgorithmExecutor(calg, (Invocable) scriptEngine, functionName, execCtx);
     }
     
     

@@ -15,28 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.EventProducer;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SInt32Value;
-import org.yamcs.parameter.SInt64Value;
-import org.yamcs.parameter.UInt32Value;
-import org.yamcs.parameter.UInt64Value;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.xtce.BooleanDataEncoding;
-import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtce.FloatDataEncoding;
-import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.InputParameter;
-import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.IntegerDataEncoding.Encoding;
-import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.StringDataEncoding;
-import org.yamcs.xtce.StringParameterType;
+import org.yamcs.xtceproc.DataEncodingDecoder;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
 
 import com.google.protobuf.ByteString;
@@ -66,12 +54,12 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     final String functionName;
     final EventProducer eventProducer;
     
-    public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, Invocable invocable,  String functionName, AlgorithmExecutionContext execCtx, EventProducer eventProducer) {
+    public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, Invocable invocable,  String functionName, AlgorithmExecutionContext execCtx) {
         super(algorithmDef, execCtx);
         this.parameterTypeProcessor = new ParameterTypeProcessor(execCtx.getProcessorData());
         this.functionName = functionName;
         this.invocable = invocable;
-        this.eventProducer = eventProducer;
+        this.eventProducer = execCtx.getProcessorData().getEventProducer();
         
         numInputs = algorithmDef.getInputList().size();
         List<OutputParameter> outputList = algorithmDef.getOutputList();
@@ -157,143 +145,28 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
 
         DataEncoding de = ptype.getEncoding();
         if (de != null) {
-            setRawValue(ptype.getEncoding(), pval, binding.value);
-            parameterTypeProcessor.calibrate(pval);
+            Value v = DataEncodingDecoder.getRawValue(de, binding.value);
+            if(v==null) {
+                eventProducer.sendWarning(getAlgorithm().getName(), "Cannot convert raw value from algorithm output "
+                        + "'"+binding.value+"' of type "+binding.value.getClass()+" into "+de);
+                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            } else {
+                pval.setEngineeringValue(v);
+                parameterTypeProcessor.calibrate(pval);
+            }
         } else {
-            setEngValue(ptype, pval, binding.value);
+            Value v = ParameterTypeProcessor.getEngValue(ptype, binding.value);
+            if(v==null) {
+                eventProducer.sendWarning(getAlgorithm().getName(), "Cannot convert eng value from algorithm output "
+                        + "'"+binding.value+"' of type "+binding.value.getClass()+" into "+ptype);
+                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            } else {
+                pval.setEngineeringValue(v);
+            }
         }
         return pval;
     }
 
-    static void setEngValue(ParameterType ptype, ParameterValue pval, Object outputValue) {
-        if (ptype instanceof IntegerParameterType) {
-            setEngIntegerValue((IntegerParameterType) ptype, pval, outputValue);
-        } else if (ptype instanceof FloatParameterType) {
-            setEngFloatValue((FloatParameterType) ptype, pval, outputValue);
-        } else if (ptype instanceof StringParameterType) {
-            if (outputValue instanceof String) {
-                pval.setStringValue((String) outputValue);
-            } else {
-                log.error("Could not set string value of parameter {}. Algorithm returned wrong type: {}",
-                        pval.getParameter().getName(), outputValue.getClass());
-            }
-        } else if (ptype instanceof BooleanParameterType) {
-            if (outputValue instanceof Boolean) {
-                pval.setBooleanValue((Boolean) outputValue);
-            } else {
-                log.error("Could not set boolean value of parameter {}. Algorithm returned wrong type: {}",
-                        pval.getParameter().getName(), outputValue.getClass());
-            }
-        } else {
-            log.error("ParameterType {} not implemented as a return type for algorithms", ptype);
-            pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
-        }
-    }
-
-    void setRawValue(DataEncoding de, ParameterValue pval, Object outputValue) {
-        if (de instanceof IntegerDataEncoding) {
-            setRawIntegerValue((IntegerDataEncoding) de, pval, outputValue);
-        } else if (de instanceof FloatDataEncoding) {
-            setRawFloatValue((FloatDataEncoding) de, pval, outputValue);
-        } else if (de instanceof StringDataEncoding) {
-            pval.setRawValue(outputValue.toString());
-        } else if (de instanceof BooleanDataEncoding) {
-            if (outputValue instanceof Boolean) {
-                pval.setRawValue((Boolean) outputValue);
-            } else {
-                log.error("Could not set boolean value of parameter {}. Algorithm returned wrong type: {}",
-                        pval.getParameter().getName(), outputValue.getClass());
-            }
-        } else {
-            log.error("DataEncoding {} not implemented as a raw return type for algorithms", de);
-            throw new IllegalArgumentException(
-                    "DataEncoding " + de + " not implemented as a raw return type for algorithms");
-        }
-    }
-
-    private void setRawIntegerValue(IntegerDataEncoding ide, ParameterValue pv, Object outputValue) {
-        long longValue;
-        if (outputValue instanceof Number) {
-            longValue = ((Number) outputValue).longValue();
-        } else {
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
-            log.warn("Unexpected script return type for " + pv.getParameter().getName()
-                    + ". Was expecting a number, but got: " + outputValue.getClass());
-            return;
-        }
-        if (ide.getSizeInBits() <= 32) {
-            if (ide.getEncoding() == Encoding.UNSIGNED) {
-                pv.setRawUnsignedInteger((int) longValue);
-            } else {
-                pv.setRawSignedInteger((int) longValue);
-            }
-        } else {
-            if (ide.getEncoding() == Encoding.UNSIGNED) {
-                pv.setRawUnsignedLong(longValue);
-            } else {
-                pv.setRawSignedLong(longValue);
-            }
-        }
-    }
-
-    static void setEngIntegerValue(IntegerParameterType ptype, ParameterValue pv, Object outputValue) {
-        long longValue;
-        if (outputValue instanceof Number) {
-            longValue = ((Number) outputValue).longValue();
-        } else {
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
-            log.warn("Unexpected script return type for " + pv.getParameter().getName()
-                    + ". Was expecting a number, but got: " + outputValue.getClass());
-            return;
-        }
-        if (ptype.getSizeInBits() <= 32) {
-            if (ptype.isSigned()) {
-                pv.setEngValue(new SInt32Value((int) longValue));
-            } else {
-                pv.setEngValue(new UInt32Value((int) longValue));
-            }
-        } else {
-            if (ptype.isSigned()) {
-                pv.setEngValue(new SInt64Value(longValue));
-            } else {
-                pv.setEngValue(new UInt64Value(longValue));
-            }
-        }
-    }
-
-    private void setRawFloatValue(FloatDataEncoding fde, ParameterValue pv, Object outputValue) {
-        double doubleValue;
-        if (outputValue instanceof Number) {
-            doubleValue = ((Number) outputValue).doubleValue();
-        } else {
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
-            log.warn("Unexpected script return type for {}. Was expecting a number, but got: {}",
-                    pv.getParameter().getName(), outputValue.getClass());
-            return;
-        }
-        if (fde.getSizeInBits() <= 32) {
-            pv.setRawFloatValue((float) doubleValue);
-        } else {
-            pv.setRawDoubleValue(doubleValue);
-        }
-    }
-
-    static private void setEngFloatValue(FloatParameterType ptype, ParameterValue pv, Object outputValue) {
-        double doubleValue;
-        if (outputValue instanceof Number) {
-            doubleValue = ((Number) outputValue).doubleValue();
-        } else {
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
-            log.warn("Unexpected script return type for {}. Was expecting a number, but got: {}",
-                    pv.getParameter().getName(), outputValue.getClass());
-            return;
-        }
-        if (ptype.getSizeInBits() <= 32) {
-            pv.setFloatValue((float) doubleValue);
-        } else {
-            pv.setDoubleValue(doubleValue);
-        }
-    }
 
   
     private static ValueBinding toValueBinding(ParameterValue pval) {

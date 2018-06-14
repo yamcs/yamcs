@@ -5,9 +5,11 @@ import java.nio.charset.Charset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.DataEncoding;
@@ -86,7 +88,7 @@ public class DataEncodingDecoder {
             rv = (rv <<n)>>n;
             break;
 
-            case SIGN_MAGNITUDE:
+        case SIGN_MAGNITUDE:
                 boolean negative = ((rv>>>(numBits-1) & 1L) == 1L);
 
                 if (negative) {
@@ -94,16 +96,17 @@ public class DataEncodingDecoder {
                     rv = -rv;
                 }
                 break;
-            case ONES_COMPLEMENT:
+        case ONES_COMPLEMENT:
                 negative = ((rv>>>(numBits-1) & 1L) == 1L);
                 if (negative) {
                     n = 64-numBits;
                     rv = (rv <<n)>>n;
                     rv = ~rv;
                     rv = -rv;
-
                 }
                 break;
+        default: //shouldn't happen
+            throw new IllegalStateException();
         }
         setRawValue(ide, pv, rv);
     }
@@ -146,6 +149,8 @@ public class DataEncodingDecoder {
             }
             buffer.setPosition(p);
             break;
+        default: //shouldn't happen, CUSTOM should have an binary transform algorithm 
+            throw new IllegalStateException();
         }
         byte[] b = new byte[sizeInBytes];
         buffer.getByteArray(b);
@@ -251,4 +256,64 @@ public class DataEncodingDecoder {
             throw new IllegalStateException("Unknonw data encoding '"+encoding+"'");
         }
     }
+    
+    
+
+    public static Value getRawValue(DataEncoding de, Object value) {
+        if (de instanceof IntegerDataEncoding) {
+            return getRawIntegerValue((IntegerDataEncoding) de, value);
+        } else if (de instanceof FloatDataEncoding) {
+            return getRawFloatValue((FloatDataEncoding) de, value);
+        } else if (de instanceof StringDataEncoding) {
+            return ValueUtility.getStringValue(value.toString());
+        } else if (de instanceof BooleanDataEncoding) {
+            if (value instanceof Boolean) {
+                return ValueUtility.getBooleanValue((Boolean) value);
+            } else {
+               return null;
+            }
+        } else {
+            throw new IllegalStateException("Unknown data encoding '"+de+"'");
+        }
+    }
+
+    static private Value getRawIntegerValue(IntegerDataEncoding ide, Object value) {
+        long longValue;
+        if (value instanceof Number) {
+            longValue = ((Number) value).longValue();
+        } else {
+            return null;
+        }
+        //limit the value to the number of defined bits
+        longValue = longValue & (-1 >>> (64-ide.getSizeInBits()));
+        
+        if (ide.getSizeInBits() <= 32) {
+            if (ide.getEncoding() == Encoding.UNSIGNED) {
+                return ValueUtility.getUint32Value((int) longValue);
+            } else {
+                return ValueUtility.getSint32Value((int) longValue);
+            }
+        } else {
+            if (ide.getEncoding() == Encoding.UNSIGNED) {
+                return ValueUtility.getUint64Value((int) longValue);
+            } else {
+                return ValueUtility.getSint64Value((int) longValue);
+            }
+        }
+    }
+
+    static private Value getRawFloatValue(FloatDataEncoding fde, Object value) {
+        double doubleValue;
+        if (value instanceof Number) {
+            doubleValue = ((Number) value).doubleValue();
+        } else {
+           return null;
+        }
+        if (fde.getSizeInBits() <= 32) {
+            return ValueUtility.getFloatValue((float) doubleValue);
+        } else {
+            return ValueUtility.getDoubleValue(doubleValue);
+        }
+    }
+    
 }

@@ -8,6 +8,7 @@ import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.util.LocatedException;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
@@ -15,6 +16,7 @@ import org.yamcs.xtce.MathAlgorithm;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.MathOperationCalibratorFactory;
+import org.yamcs.xtceproc.ParameterTypeProcessor;
 
 /**
  * Executes XTCE math algorithms {@link MathAlgorithm}
@@ -44,8 +46,15 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
         pv.setAcquisitionTime(acqTime);
         pv.setGenerationTime(genTime);
         double value = evaluator.evaluate(input);
-        ScriptAlgorithmExecutor.setEngValue(outParam.getParameterType(), pv, Double.valueOf(value));
-
+        Value engValue = ParameterTypeProcessor.getEngValue(outParam.getParameterType(), Double.valueOf(value));
+        if(engValue==null) {
+            execCtx.getProcessorData().getEventProducer()
+            .sendWarning(getAlgorithm().getName(), "Cannot convert raw value from algorithm output "
+                    + "'"+value+"' into "+outParam.getParameterType());
+            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
+        } else {
+            pv.setEngineeringValue(engValue);
+        }
         return Arrays.asList(pv);
     }
 
