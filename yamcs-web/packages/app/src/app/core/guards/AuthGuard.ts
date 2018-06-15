@@ -13,6 +13,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
       await this.authService.loginAutomatically();
       return true;
     } catch {
+      this.authService.logout(false);
       this.router.navigate(['/login'], { queryParams: { next: state.url } });
       return false;
     }

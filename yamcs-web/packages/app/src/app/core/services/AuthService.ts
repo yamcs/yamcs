@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthInfo, TokenResponse, UserInfo } from '@yamcs/client';
+import { AuthInfo, HttpHandler, TokenResponse, UserInfo } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { YamcsService } from './YamcsService';
@@ -43,30 +43,28 @@ export class AuthService {
      * tokens should (still) work. If not, then the user is navigated
      * to the login page.
      */
-    yamcsService.yamcsClient.addHttpInInterceptor(async (url: string) => {
-      if (url === '/api/user') { // Bypass to prevent loginAutomatically loop
-        return Promise.resolve();
-      }
+    yamcsService.yamcsClient.setHttpInterceptor(async (next: HttpHandler, url: string, init?: RequestInit) => {
       try {
-        await this.loginAutomatically();
-      } catch (err) {
-        this.router.navigate(['/login'], { queryParams: { next: '/' } });
-        throw err;
-      }
-    });
 
-    /*
-     * Responds to 401 issues that may still occur despite our good intentions.
-     */
-    yamcsService.yamcsClient.addHttpOutInterceptor(async (url: string, response: Response) => {
-      if (response.status === 401) {
-        this.logout();
-        try {
+        // Verify or fetch a token when necessary
+        await this.loginAutomatically();
+
+        let response = await next.handle(url, init);
+        if (response.status === 401) {
+          // Server must have refused our token.
+          console.log('server must have logged us out');
+          this.logout(false);
+
+          // Depending on configuration of Yamcs, it could be that we can
+          // login automatically (e.g. SPNEGO) and try a second attempt.
           await this.loginAutomatically();
-        } catch (err) {
-          this.router.navigate(['/login'], { queryParams: { next: '/' } });
-          throw err;
+          response = await next.handle(url, init);
         }
+
+        return response;
+      } catch (err) {
+        this.logout(true);
+        throw err;
       }
     });
   }
@@ -90,18 +88,31 @@ export class AuthService {
 
     if (!authInfo!.requireAuthentication) {
       if (!this.userInfo$.value) {
-        const userInfo = await this.yamcsService.yamcsClient.getUserInfo();
-        this.userInfo$.next(userInfo);
+        // Written such that it bypasses our interceptor
+        const response = await fetch('/api/user');
+        this.userInfo$.next(await response.json() as UserInfo);
       }
-      return; // TODO get user details
+      return;
     }
 
     // Use already available tokens when we can
+    console.log('aa1');
     const accessToken = this.getCookie('access_token');
     if (accessToken) {
       if (!this.userInfo$.value) {
-        const userInfo = await this.yamcsService.yamcsClient.getUserInfo();
-        this.userInfo$.next(userInfo);
+        // Written such that it bypasses our interceptor
+        const headers = new Headers();
+        headers.append('Authorization', `Bearer ${accessToken}`);
+        const response = await fetch('/api/user', { headers });
+        if (response.status === 200) {
+          const userInfo = await response.json() as UserInfo;
+          this.userInfo$.next(userInfo);
+        } else if (response.status === 401) {
+          this.logout(false);
+          return await this.loginAutomatically();
+        } else {
+          return Promise.reject('Unexpected response when retrieving user info');
+        }
       }
       return this.extractClaims(accessToken);
     }
@@ -114,7 +125,7 @@ export class AuthService {
         // Ignore
       }
     }
-
+    console.log('aa2');
     // If server supports spnego, attempt browser negotiation.
     // This is done before any other flows, because it does not
     // require user intervention when successful.
@@ -125,10 +136,12 @@ export class AuthService {
       }
     }
     if (spnego) {
+      console.log('aa3');
       return await this.loginWithSpnego();
     }
 
-    this.logout();
+    console.log('aa4');
+    this.logout(false);
     throw new Error('Could not login automatically');
   }
 
@@ -199,12 +212,16 @@ export class AuthService {
   /**
    * Clear all data from a previous login session
    */
-  logout() {
+  logout(navigateToLoginPage: boolean) {
     document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     this.yamcsService.unselectInstance(); // TODO needed here?
     this.yamcsService.yamcsClient.clearAccessToken();
     this.userInfo$.next(null);
+
+    if (navigateToLoginPage) {
+      this.router.navigate(['/login'], { queryParams: { next: '/' } });
+    }
   }
 
   hasSystemPrivilege(privilege: string) {

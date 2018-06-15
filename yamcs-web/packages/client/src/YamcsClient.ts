@@ -1,11 +1,11 @@
 import { HttpError } from './HttpError';
-import { HttpInInterceptor } from './HttpInInterceptor';
-import { HttpOutInterceptor } from './HttpOutInterceptor';
+import { HttpHandler } from './HttpHandler';
+import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { BucketsWrapper, InstancesWrapper, ObjectsWrapper, ServicesWrapper } from './types/internal';
 import { AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, GeneralInfo, Instance, ListObjectsOptions, ObjectInfo, Service, TokenResponse, UserInfo } from './types/system';
 
-export default class YamcsClient {
+export default class YamcsClient implements HttpHandler {
 
   readonly baseUrl = '';
   readonly apiUrl = `${this.baseUrl}/api`;
@@ -14,8 +14,7 @@ export default class YamcsClient {
 
   private accessToken?: string;
 
-  private inInterceptors: HttpInInterceptor[] = [];
-  private outInterceptors: HttpOutInterceptor[] = [];
+  private interceptor: HttpInterceptor;
 
   createInstanceClient(instance: string) {
     return new InstanceClient(instance, this);
@@ -98,18 +97,10 @@ export default class YamcsClient {
 
   /**
    * Register an interceptor that will have the opportunity
-   * to inspect, modify or halt any request.
+   * to inspect, modify, halt, or respond to any request.
    */
-  addHttpInInterceptor(interceptor: HttpInInterceptor) {
-    this.inInterceptors.push(interceptor);
-  }
-
-  /**
-   * Register an interceptor that will have the to
-   * respond to any response.
-   */
-  addHttpOutInterceptor(interceptor: HttpOutInterceptor) {
-    this.outInterceptors.push(interceptor);
+  setHttpInterceptor(interceptor: HttpInterceptor) {
+    this.interceptor = interceptor;
   }
 
   async getGeneralInfo() {
@@ -249,21 +240,16 @@ export default class YamcsClient {
       const headers = init.headers as Headers;
       headers.append('Authorization', `Bearer ${this.accessToken}`);
     }
-    for (const interceptor of this.inInterceptors) {
-      try {
-        await interceptor(url, init);
-      } catch (err) {
-        return Promise.reject(err);
-      }
-    }
 
-    const response = await fetch(url, init);
-    for (const interceptor of this.outInterceptors) {
+    let response: Response;
+    if (this.interceptor) {
       try {
-        await interceptor(url, response);
+        response = await this.interceptor(this, url, init);
       } catch (err) {
         return Promise.reject(err);
       }
+    } else {
+      response = await this.handle(url, init);
     }
 
     // Make non 2xx responses available to clients via 'catch' instead of 'then'.
@@ -272,6 +258,13 @@ export default class YamcsClient {
     } else {
       return Promise.reject(new HttpError(response.status, response.statusText));
     }
+  }
+
+  handle(url: string, init?: RequestInit) {
+    // Our handler uses Fetch API, available in modern browsers.
+    // For older browsers, the end application should include an
+    // appropriate polyfill.
+    return fetch(url, init);
   }
 
   private queryString(options: {[key: string]: any}) {

@@ -22,9 +22,12 @@ import org.yaml.snakeyaml.error.YAMLException;
  * This class loads yamcs configurations. There are a number of "subsystems", each using a corresponding subsystem.yaml
  * file
  *
- * There are three places where a configuration file is looked up in order: - in the prefix/file.yaml via the classpath
- * if the prefix is set in the setup method (used in the unittests) - in the userConfigDirectory .yamcs/etc/file.yaml -
- * in the file.yaml via the classpath.
+ * There are three places where a configuration file is looked up in order:
+ * <ul>
+ * <li>in the prefix/file.yaml via the classpath if the prefix is set in the setup method (used in the unittests)
+ * <li>in the userConfigDirectory .yamcs/etc/file.yaml
+ * <li>in the file.yaml via the classpath.
+ * </ul>
  *
  * @author nm
  */
@@ -178,7 +181,24 @@ public class YConfiguration {
         }
     }
 
+    public boolean isMap(String key) {
+        return isMap(root, key);
+    }
+
+    public static boolean isMap(Map m, String key) {
+        checkKey(m, key);
+        Object o = m.get(key);
+        return (o instanceof Map);
+    }
+
+    public boolean isNull(String key) {
+        return isNull(root, key);
+    }
+
     public static boolean isNull(Map m, String key) {
+        if (!m.containsKey(key)) {
+            throw new ConfigurationException(confPath.get(m), "cannot find a mapping for key '" + key + "'");
+        }
         Object o = m.get(key);
         return o == null;
     }

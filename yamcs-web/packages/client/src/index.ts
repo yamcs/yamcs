@@ -1,6 +1,6 @@
 export { HttpError } from './HttpError';
-export { HttpInInterceptor } from './HttpInInterceptor';
-export { HttpOutInterceptor } from './HttpOutInterceptor';
+export { HttpHandler } from './HttpHandler';
+export { HttpInterceptor } from './HttpInterceptor';
 export { InstanceClient } from './InstanceClient';
 export * from './types/mdb';
 export * from './types/monitoring';
