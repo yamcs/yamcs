@@ -252,16 +252,16 @@ public abstract class RestHandler extends RouteHandler {
     }
 
     protected static NamedObjectId verifyParameterId(RestRequest req, XtceDb mdb, String pathName)
-            throws NotFoundException {
+            throws HttpException {
         return verifyParameterWithId(req, mdb, pathName).getRequestedId();
     }
 
-    protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+    protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws HttpException {
         return verifyParameterWithId(req, mdb, pathName).getItem();
     }
 
     protected static NameDescriptionWithId<Parameter> verifyParameterWithId(RestRequest req, XtceDb mdb,
-            String pathName) throws NotFoundException {
+            String pathName) throws HttpException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such parameter (missing namespace?)");
@@ -280,9 +280,7 @@ public abstract class RestHandler extends RouteHandler {
         }
 
         if (p != null && !hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
-            log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead",
-                    StringConverter.idToString(id));
-            p = null;
+            throw new ForbiddenException("Unsufficient privileges to access parameter " + p.getQualifiedName());
         }
 
         if (p == null) {

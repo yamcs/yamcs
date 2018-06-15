@@ -1,7 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Router } from '@angular/router';
+import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -16,6 +17,7 @@ export class SaveLayoutDialog {
     private dialogRef: MatDialogRef<SaveLayoutDialog>,
     private yamcs: YamcsService,
     private router: Router,
+    private authService: AuthService,
     @Inject(MAT_DIALOG_DATA) readonly data: any) {
   }
 
@@ -25,7 +27,8 @@ export class SaveLayoutDialog {
     const objectValue = new Blob([JSON.stringify(this.data.state)], {
       type: 'application/json',
     });
-    this.yamcs.getInstanceClient()!.uploadObject('user.admin' /* FIXME */, objectName, objectValue).then(() => {
+    const username = this.authService.getUserInfo()!.login;
+    this.yamcs.getInstanceClient()!.uploadObject(`user.${username}`, objectName, objectValue).then(() => {
       this.dialogRef.close();
       this.router.navigateByUrl(`/monitor/layouts/${this.name.value}?instance=${instance.name}`);
     });

@@ -32,19 +32,9 @@ public class SystemPrivilege {
     public static final SystemPrivilege ControlServices = new SystemPrivilege("ControlServices");
 
     /**
-     * Allows to create a bucket of any kind
+     * Allows to manage buckets of any kind
      */
-    public static final SystemPrivilege CreateAnyBucket = new SystemPrivilege("CreateAnyBucket");
-
-    /**
-     * Allows to update a bucket of any kind
-     */
-    public static final SystemPrivilege UpdateAnyBucket = new SystemPrivilege("UpdateAnyBucket");
-
-    /**
-     * Allows to read contents of any bucket
-     */
-    public static final SystemPrivilege ReadAnyBucket = new SystemPrivilege("ReadAnyBucket");
+    public static final SystemPrivilege ManageAnyBucket = new SystemPrivilege("ManageAnyBucket");
 
     public static final SystemPrivilege ReadEvents = new SystemPrivilege("ReadEvents");
     public static final SystemPrivilege WriteEvents = new SystemPrivilege("WriteEvents");

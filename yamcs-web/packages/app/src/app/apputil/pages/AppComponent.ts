@@ -40,7 +40,7 @@ export class AppComponent implements OnDestroy {
     this.user$ = authService.userInfo$;
 
     this.userSubscription = this.user$.subscribe(user => {
-      this.showMdbItem$.next(authService.hasSystemPrivilege('MayGetMissionDatabase'));
+      this.showMdbItem$.next(authService.hasSystemPrivilege('GetMissionDatabase'));
     });
 
     this.darkMode$ = preferenceStore.darkMode$;

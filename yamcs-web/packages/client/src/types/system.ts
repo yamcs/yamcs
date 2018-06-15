@@ -81,14 +81,13 @@ export interface UserInfo {
   clientInfo: ClientInfo[];
   superuser: boolean;
 
-  roles: string[];
-  tmParaPrivileges: string[];
-  tmParaSetPrivileges: string[];
-  tmPacketPrivileges: string[];
-  tcPrivileges: string[];
-  systemPrivileges: string[];
-  streamPrivileges: string[];
-  cmdHistoryPrivileges: string[];
+  systemPrivilege: string[];
+  objectPrivilege: ObjectPrivilege[];
+}
+
+export interface ObjectPrivilege {
+  type: string;
+  object: string[];
 }
 
 export interface Service {

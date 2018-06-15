@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { Instance, ObjectInfo } from '@yamcs/client';
+import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -15,11 +16,12 @@ export class LayoutsPage {
   displayedColumns = ['name'];
   dataSource = new MatTableDataSource<ObjectInfo>([]);
 
-  constructor(title: Title, yamcs: YamcsService) {
+  constructor(title: Title, yamcs: YamcsService, authService: AuthService) {
     title.setTitle('Layouts - Yamcs');
     this.instance = yamcs.getInstance();
 
-    yamcs.getInstanceClient()!.listObjects('user.admin' /* FIXME */, {
+    const username = authService.getUserInfo()!.login;
+    yamcs.getInstanceClient()!.listObjects(`user.${username}`, {
       prefix: 'layouts',
     }).then(objects => {
       this.dataSource.data = objects;

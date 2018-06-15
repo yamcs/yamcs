@@ -11,15 +11,7 @@ export class MayGetMissionDatabaseGuard implements CanActivate, CanActivateChild
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     const userInfo = this.authService.getUserInfo();
     if (userInfo) {
-      if (userInfo.superuser) {
-        return true;
-      }
-      const systemPrivileges = userInfo.systemPrivileges || [];
-      for (const expression of systemPrivileges) {
-        if ('MayGetMissionDatabase'.match(expression)) {
-          return true;
-        }
-      }
+      return this.authService.hasSystemPrivilege('GetMissionDatabase');
     }
 
     this.router.navigate(['/403'], { queryParams: { page: state.url } });

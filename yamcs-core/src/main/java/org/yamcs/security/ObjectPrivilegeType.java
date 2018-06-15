@@ -9,8 +9,7 @@ import java.util.Objects;
  */
 public class ObjectPrivilegeType {
 
-    public static final ObjectPrivilegeType ReadBucket = new ObjectPrivilegeType("ReadBucket");
-    public static final ObjectPrivilegeType WriteBucket = new ObjectPrivilegeType("WriteBucket");
+    public static final ObjectPrivilegeType ManageBucket = new ObjectPrivilegeType("ManageBucket");
     public static final ObjectPrivilegeType CommandHistory = new ObjectPrivilegeType("CommandHistory");
     public static final ObjectPrivilegeType Stream = new ObjectPrivilegeType("Stream");
     public static final ObjectPrivilegeType Command = new ObjectPrivilegeType("Command");

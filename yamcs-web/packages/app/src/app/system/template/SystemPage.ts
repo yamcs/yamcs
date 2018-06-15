@@ -17,18 +17,15 @@ export class SystemPage {
   }
 
   showServicesItem() {
-    return this.authService.hasSystemPrivilege('MayControlServices');
+    return this.authService.hasSystemPrivilege('ControlServices');
   }
 
   showTablesItem() {
-    return this.authService.hasSystemPrivilege('MayReadTables');
+    return this.authService.hasSystemPrivilege('ReadTables');
   }
 
   showStreamsItem() {
-    const userInfo = this.authService.getUserInfo();
-    if (userInfo && userInfo.streamPrivileges) {
-      return userInfo.streamPrivileges.length > 0;
-    }
-    return false;
+    const userInfo = this.authService.getUserInfo()!;
+    return userInfo.systemPrivilege && userInfo.systemPrivilege.length > 0;
   }
 }

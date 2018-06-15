@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { DownloadEventsOptions, GetEventsOptions } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { APP_CONFIG, AppConfig, ExtraColumnInfo } from '../../core/config/AppConfig';
+import { AppConfig, APP_CONFIG, ExtraColumnInfo } from '../../core/config/AppConfig';
 import { AuthService } from '../../core/services/AuthService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -305,7 +305,7 @@ export class EventsPage {
   }
 
   mayWriteEvents() {
-    return this.authService.hasSystemPrivilege('MayWriteEvents');
+    return this.authService.hasSystemPrivilege('WriteEvents');
   }
 
   createEvent() {
