@@ -683,7 +683,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         File file2 = File.createTempFile("test2_", null, dir);
         FileOutputStream file2Out = new FileOutputStream(file2);
 
-        httpClient.doBulkReceiveRequest("http://localhost:9190/_static/" + file1.getName(), HttpMethod.GET, null,
+        httpClient.doBulkReceiveRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null,
                 adminUsername, adminPassword, data -> {
                     try {
                         file2Out.write(data);
@@ -701,7 +701,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified()));
         YamcsApiException e1 = null;
         try {
-            httpClient.doAsyncRequest("http://localhost:9190/_static/" + file1.getName(), HttpMethod.GET, null,
+            httpClient.doAsyncRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null,
                     adminUsername, adminPassword, httpHeaders).get();
         } catch (ExecutionException e) {
             e1 = (YamcsApiException) e.getCause();
@@ -711,7 +711,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         httpHeaders = new DefaultHttpHeaders();
         httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified() - 1000));
-        byte[] b1 = httpClient.doAsyncRequest("http://localhost:9190/_static/" + file1.getName(), HttpMethod.GET, null,
+        byte[] b1 = httpClient.doAsyncRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null,
                 adminUsername, adminPassword, httpHeaders).get();
         assertEquals(file1.length(), b1.length);
 

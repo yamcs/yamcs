@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { delay, filter, first, map, retryWhen, take } from 'rxjs/operators';
-import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
+import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { SubscriptionModel } from './SubscriptionModel';
 import { WebSocketServerMessage } from './types/internal';
 import { Alarm, AlarmSubscriptionResponse, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
