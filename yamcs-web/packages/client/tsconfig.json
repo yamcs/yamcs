@@ -16,10 +16,6 @@
     "strictFunctionTypes": false, // TODO
     "strictPropertyInitialization": false, // TODO
 
-    // This mainly to detect unused imports
-    // (tslint has terrible support for this)
-    "noUnusedLocals": false,
-
     "declarationDir": "dist/types",
     "outDir": "dist/lib",
     "typeRoots": [

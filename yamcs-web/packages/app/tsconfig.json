@@ -21,10 +21,6 @@
     "strictFunctionTypes": false, // TODO
     "strictPropertyInitialization": false, // TODO
 
-    // This mainly to detect unused imports
-    // (tslint has terrible support for this)
-    "noUnusedLocals": true,
-
     "typeRoots": [
       "node_modules/@types"
     ]
