@@ -151,7 +151,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
                         + "'"+binding.value+"' of type "+binding.value.getClass()+" into "+de);
                 pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
             } else {
-                pval.setEngineeringValue(v);
+                pval.setRawValue(v);
                 parameterTypeProcessor.calibrate(pval);
             }
         } else {
