@@ -279,7 +279,7 @@ public class ParameterTypeProcessor {
         if(ptype.needsScaling()) {
             return (long)(epochMillisec + 1000*ptype.getOffset()+1000*ptype.getScale()*offset);
         } else {
-            return (long)(epochMillisec + offset);
+            return (long)(epochMillisec + 1000*offset);
         }
     }
     private long getParaReferenceTime(ParameterValueList context, Parameter p, ParameterInstanceRef ref) {
