@@ -202,4 +202,8 @@ public class IntegerParameterType extends IntegerDataType implements ParameterTy
         return "integer";
     }
 
+    @Override
+    public ParameterType copy() {
+        return new IntegerParameterType(this);
+    }
 }

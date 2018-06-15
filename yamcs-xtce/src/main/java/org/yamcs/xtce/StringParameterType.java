@@ -30,5 +30,9 @@ public class StringParameterType extends StringDataType implements ParameterType
     public String toString() {
         return "StringParameterType name:"+name+" encoding:"+encoding;
     }
-   
+
+    @Override
+    public ParameterType copy() {
+        return new StringParameterType(this);
+    }
 }

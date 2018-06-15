@@ -1,7 +1,7 @@
 package org.yamcs.xtceproc;
 
 import org.yamcs.algorithms.AlgorithmExecutor;
-import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.DataEncoding;
 
@@ -17,5 +17,12 @@ import org.yamcs.xtce.DataEncoding;
  *
  */
 public interface DataDecoder extends AlgorithmExecutor {
-    void extractRaw(DataEncoding de, BitBuffer buffer, ParameterValue pv);
+    /**
+     * Extracts the raw value from the buffer.
+     * The offset inside the buffer shall be moved to the end of the parameter
+     * @param de
+     * @param buffer
+     * @return
+     */
+    Value extractRaw(DataEncoding de, BitBuffer buffer);
 }

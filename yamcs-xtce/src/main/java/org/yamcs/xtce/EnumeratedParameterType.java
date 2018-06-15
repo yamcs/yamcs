@@ -132,4 +132,9 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
     public void setContextAlarmList(List<EnumerationContextAlarm> contextAlarmList) {
         this.contextAlarmList = contextAlarmList;
     }
+    
+    @Override
+    public ParameterType copy() {
+        return new EnumeratedParameterType(this);
+    }
 }

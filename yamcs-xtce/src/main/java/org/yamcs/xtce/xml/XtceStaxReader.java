@@ -632,14 +632,14 @@ public class XtceStaxReader {
         log.trace(XTCE_REFERENCE_TIME);
         checkStartElementPreconditions();
 
-        ReferenceTime referenceTime = new ReferenceTime();
+        ReferenceTime referenceTime = null;
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_OFFSET_FROM)) {
-                referenceTime.setOffsetFrom(readParameterInstanceRef(spaceSystem));
+               referenceTime = new ReferenceTime(readParameterInstanceRef(spaceSystem));
             } else if (isStartElementWithName(XTCE_EPOCH)) {
-                referenceTime.setEpoch(readXtceEpoch());
+                referenceTime = new ReferenceTime(readXtceEpoch());
             } else if (isEndElementWithName(XTCE_REFERENCE_TIME)) {
                 return referenceTime;
             }

@@ -19,47 +19,13 @@ public class TestCloning {
         for(Parameter p: xtceDb.getParameters()) {
             ParameterType t1 = p.getParameterType();
             if(t1==null) continue;
-            ParameterType t2 = clone(t1);
+            ParameterType t2 = t1.copy();
             assertNotEquals(t1, t2);
             try {
                 verifyEquals(t1, t2);
             } catch (AssertionError e) {
                 throw new AssertionError("failed to verify "+t1+": "+e.getMessage());
             }
-        }
-    }
-
-
-
-    ParameterType clone(ParameterType ptype) {
-        if(ptype instanceof BinaryParameterType) {
-            BinaryParameterType t = (BinaryParameterType) ptype;
-            return new BinaryParameterType(t);
-
-        } else if (ptype instanceof BooleanParameterType) {
-            BooleanParameterType t = (BooleanParameterType) ptype;
-            return new BooleanParameterType(t);
-
-        } else if (ptype instanceof EnumeratedParameterType) {
-            EnumeratedParameterType t = (EnumeratedParameterType) ptype;
-            return new EnumeratedParameterType(t);
-
-        } else if (ptype instanceof FloatParameterType) {
-            FloatParameterType t = (FloatParameterType) ptype;
-            return new FloatParameterType(t);
-
-        } else if (ptype instanceof IntegerParameterType) {
-            IntegerParameterType t = (IntegerParameterType) ptype;
-            return new IntegerParameterType(t);
-
-        } else if (ptype instanceof StringParameterType) {
-            StringParameterType t = (StringParameterType) ptype;
-            return new StringParameterType(t);
-        } else if (ptype instanceof AbsoluteTimeParameterType) {
-            AbsoluteTimeParameterType t = (AbsoluteTimeParameterType) ptype;
-            return new AbsoluteTimeParameterType(t);
-        } else {
-            throw new IllegalArgumentException("Cannot clone type "+ptype);
         }
     }
 

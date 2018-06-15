@@ -48,4 +48,8 @@ public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements P
                 + ((getReferenceTime() != null) ? ", referenceTime:" + getReferenceTime() : "");
 
     }
+    @Override
+    public ParameterType copy() {
+        return new AbsoluteTimeParameterType(this);
+    }
 }

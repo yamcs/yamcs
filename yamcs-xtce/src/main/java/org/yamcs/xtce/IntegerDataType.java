@@ -3,12 +3,14 @@ package org.yamcs.xtce;
 public class IntegerDataType extends NumericDataType {
     private static final long serialVersionUID = 200706051146L;
     int sizeInBits = 32;
-    protected boolean signed=true;
+    protected boolean signed = true;
 
     /**
-     * XTCE: The Valid Range bounds the universe of possible values this Parameter may have. 
-     *        For Telemetry the valid range is always applied before calibration, regardless of the value of validRangeAppliesToCalibrated. 
-     *        For commanding, if validRangeAppliesToCalibrated is false -- it is applied before calibration to the link DataEncoding.
+     * XTCE: The Valid Range bounds the universe of possible values this Parameter may have.
+     * For Telemetry the valid range is always applied before calibration, regardless of the value of
+     * validRangeAppliesToCalibrated.
+     * For commanding, if validRangeAppliesToCalibrated is false -- it is applied before calibration to the link
+     * DataEncoding.
      */
     IntegerValidRange validRange;
 
@@ -17,19 +19,19 @@ public class IntegerDataType extends NumericDataType {
      */
     String initialValue;
 
-
-    IntegerDataType(String name){
+    IntegerDataType(String name) {
         super(name);
     }
-    
+
     protected IntegerDataType(IntegerDataType t) {
         super(t);
         this.sizeInBits = t.sizeInBits;
         this.signed = t.signed;
         this.initialValue = t.initialValue;
     }
+
     public void setSigned(boolean signed) {
-        this.signed=signed;
+        this.signed = signed;
     }
 
     public boolean isSigned() {
@@ -41,11 +43,13 @@ public class IntegerDataType extends NumericDataType {
     }
 
     public void setSizeInBits(int sizeInBits) {
-        this.sizeInBits=sizeInBits;
+        this.sizeInBits = sizeInBits;
     }
 
     /**
-     * returns the range for the values of this type to be valid or null if there is no range set (meaning that all values are valid)
+     * returns the range for the values of this type to be valid or null if there is no range set (meaning that all
+     * values are valid)
+     * 
      * @return
      */
     public IntegerValidRange getValidRange() {
@@ -53,7 +57,7 @@ public class IntegerDataType extends NumericDataType {
     }
 
     public void setValidRange(IntegerValidRange range) {
-        this.validRange = range;		
+        this.validRange = range;
     }
 
     public void setInitialValue(String initialValue) {
@@ -66,11 +70,11 @@ public class IntegerDataType extends NumericDataType {
 
     @Override
     public Object parseString(String stringValue) {
-        if(sizeInBits>32) {
+        if (sizeInBits > 32) {
             return Long.decode(stringValue);
         } else {
             return Long.decode(stringValue).intValue();
         }
     }
-  
+
 }

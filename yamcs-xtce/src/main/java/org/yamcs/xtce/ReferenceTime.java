@@ -15,7 +15,12 @@ public class ReferenceTime  implements Serializable {
     
     private ParameterInstanceRef offsetFrom = null;
     private TimeEpoch epoch = null;
-    
+    public ReferenceTime(TimeEpoch epoch) {
+        this.epoch = epoch;
+    }
+    public ReferenceTime(ParameterInstanceRef offsetFrom) {
+        this.offsetFrom = offsetFrom;
+    }
     public void setOffsetFrom(ParameterInstanceRef paramInstRef) {
         this.offsetFrom = paramInstRef;        
     }

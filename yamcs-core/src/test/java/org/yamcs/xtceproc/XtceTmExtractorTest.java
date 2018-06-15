@@ -33,9 +33,11 @@ import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.Parameter;
@@ -721,9 +723,9 @@ public class XtceTmExtractorTest {
             
         }
         @Override
-        public void extractRaw(DataEncoding de, BitBuffer buf, ParameterValue pv) {
+        public Value extractRaw(DataEncoding de, BitBuffer buf) {
             buf.setPosition(buf.getPosition()+32);
-            pv.setRawValue(fixedValue);            
+            return ValueUtility.getBinaryValue(fixedValue);            
         }
     }
 }

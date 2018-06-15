@@ -48,7 +48,7 @@ public class DataEncodingDecoder {
     public void extractRaw(DataEncoding de, ParameterValue pv) {
         if(de.getFromBinaryTransformAlgorithm()!=null) { //custom algorithm
             DataDecoder dd = pdata.getDataDecoder(de);
-            dd.extractRaw(de, buffer, pv);
+            pv.setRawValue(dd.extractRaw(de, buffer));
         } else {
             if(de instanceof IntegerDataEncoding) {
                 extractRawInteger((IntegerDataEncoding) de, pv);
@@ -135,12 +135,15 @@ public class DataEncodingDecoder {
         }
 
         int sizeInBytes=0;
+        int totalSizeInBits;
         switch(sde.getSizeType()) {
         case FIXED:
             sizeInBytes = sde.getSizeInBits()>>3;
+            totalSizeInBits = sde.getSizeInBits();
         break;
         case LEADING_SIZE:
             sizeInBytes = (int) buffer.getBits(sde.getSizeInBitsOfSizeTag());
+            totalSizeInBits = (sizeInBytes << 3) + sde.getSizeInBitsOfSizeTag();
             break;
         case TERMINATION_CHAR:
             int p = buffer.getPosition();
@@ -148,6 +151,7 @@ public class DataEncodingDecoder {
                 sizeInBytes++;
             }
             buffer.setPosition(p);
+            totalSizeInBits = (sizeInBytes << 3) + 8;
             break;
         default: //shouldn't happen, CUSTOM should have an binary transform algorithm 
             throw new IllegalStateException();
@@ -159,7 +163,7 @@ public class DataEncodingDecoder {
             buffer.getByte();//the termination char
         }
         pv.setRawValue(new String(b, Charset.forName(sde.getEncoding())));
-        pv.setBitSize(b.length<<3);
+        pv.setBitSize(totalSizeInBits);
     }
 
 
@@ -198,12 +202,15 @@ public class DataEncodingDecoder {
         }
 
         int sizeInBytes;
+        int totalSizeInBits;
         switch(bde.getType()) {
         case FIXED_SIZE:
             sizeInBytes = bde.getSizeInBits()/8;
+            totalSizeInBits = (sizeInBytes<<3);
             break;
         case LEADING_SIZE:
             sizeInBytes = (int) buffer.getBits(bde.getSizeInBitsOfSizeTag());
+            totalSizeInBits = (sizeInBytes<<3) + bde.getSizeInBitsOfSizeTag();
             break;
         default: //shouldn't happen
             throw new IllegalStateException();
@@ -214,7 +221,7 @@ public class DataEncodingDecoder {
         byte[] b = new byte[sizeInBytes];
         buffer.getByteArray(b);
         pv.setRawValue(b);
-        pv.setBitSize(sizeInBytes<<3);
+        pv.setBitSize(totalSizeInBits);
     }
     
     

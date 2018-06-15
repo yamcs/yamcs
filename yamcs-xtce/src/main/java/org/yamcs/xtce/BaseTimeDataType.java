@@ -30,7 +30,13 @@ public abstract class BaseTimeDataType extends BaseDataType {
     public Object parseStringForRawValue(String stringValue) {
         return encoding.parseString(stringValue);
     }
-
+    /**
+     * Scale and offset are used in a y = m*x + b type relationship (m is the scale and b is the offset) 
+     * to make adjustments to the encoded value so that it matches the time units.
+     * @param needsScaling
+     * @param offset
+     * @param scale
+     */
     public void setScaling(boolean needsScaling, double offset, double scale) {
         this.needsScaling = needsScaling;
         this.offset = offset;

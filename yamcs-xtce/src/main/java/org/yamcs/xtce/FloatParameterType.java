@@ -190,5 +190,8 @@ public class FloatParameterType extends FloatDataType implements ParameterType {
                 +((contextAlarmList!=null)?", contextAlarmList:"+contextAlarmList:"");
     }
     
-   
+    @Override
+    public ParameterType copy() {
+        return new FloatParameterType(this);
+    }
 }

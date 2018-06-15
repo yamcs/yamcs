@@ -26,5 +26,8 @@ public class BooleanParameterType extends BooleanDataType implements ParameterTy
         return "boolean";
     }
     
-    
+    @Override
+    public ParameterType copy() {
+        return new BooleanParameterType(this);
+    }
 }

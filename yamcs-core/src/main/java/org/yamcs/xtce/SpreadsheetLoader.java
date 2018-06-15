@@ -566,8 +566,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             String epochs = ref.substring(6).toUpperCase();
             try {
                 TimeEpoch.CommonEpochs ce = TimeEpoch.CommonEpochs.valueOf(epochs);
-                ReferenceTime rt = new ReferenceTime();
-                rt.setEpoch(new TimeEpoch(ce));
+                ReferenceTime rt = new ReferenceTime(new TimeEpoch(ce));
                 ptype.setReferenceTime(rt);
             } catch (IllegalArgumentException e) {
                 throw new SpreadsheetLoadException(ctx1,
@@ -582,8 +581,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 parameterInstance.setParameter((Parameter) nd);
                 return true;
             });
-            ReferenceTime rt = new ReferenceTime();
-            rt.setOffsetFrom(parameterInstance);
+            ReferenceTime rt = new ReferenceTime(parameterInstance);
             ptype.setReferenceTime(rt);
 
         } else {
