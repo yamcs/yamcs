@@ -61,7 +61,7 @@ public class SequenceEntryProcessor {
         Parameter param = pe.getParameter();
         ParameterType ptype = param.getParameterType();
         if(ptype == null) {
-            throw new XtceProcException("Encountered parameter entry with a parameter '"+param.getName()+" without a type");
+            throw new XtceProcException("Encountered entry for parameter '"+param.getName()+" without a type");
         }
         DataEncoding encoding = ((BaseDataType)ptype).getEncoding();
         if(encoding == null) {
