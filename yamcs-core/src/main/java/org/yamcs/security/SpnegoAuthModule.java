@@ -234,7 +234,7 @@ public class SpnegoAuthModule implements AuthModule, AuthModuleHttpHandler {
             HttpUtil.setContentLength(res, buf.readableBytes());
             res.headers().set(HttpHeaderNames.WWW_AUTHENTICATE, NEGOTIATE);
 
-            log.info("{} {} {} Sending Authenticate Negotiate", req.method(), req.uri(), res.status().code());
+            log.info("{} {} {} Sending WWW-Authenticate: Negotiate", req.method(), req.uri(), res.status().code());
             ctx.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE);
         }
     }

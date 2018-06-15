@@ -170,9 +170,10 @@ message AuthInfo {
 }
 
 // Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework
-message AccessTokenResponse {
+message TokenResponse {
   optional string access_token = 1;
   optional string token_type = 2;
   optional int32 expires_in = 3; // In seconds
-  optional yamcsManagement.UserInfo user = 4;
+  optional string refresh_token = 4;
+  optional yamcsManagement.UserInfo user = 5;
 }

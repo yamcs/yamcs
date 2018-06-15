@@ -10,10 +10,11 @@ export interface AuthFlow {
   type: 'PASSWORD' | 'REDIRECT' | 'SPNEGO';
 }
 
-export interface AccessTokenResponse {
+export interface TokenResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
+  refresh_token: string;
   user: UserInfo;
 }
 
@@ -78,6 +79,8 @@ export interface ClientSubscriptionResponse {
 export interface UserInfo {
   login: string;
   clientInfo: ClientInfo[];
+  superuser: boolean;
+
   roles: string[];
   tmParaPrivileges: string[];
   tmParaSetPrivileges: string[];

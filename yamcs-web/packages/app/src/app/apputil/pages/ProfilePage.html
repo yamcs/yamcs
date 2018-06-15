@@ -6,14 +6,12 @@
     <dt>Login</dt>
     <dd>{{ user.login }}</dd>
 
-    <dt>Roles</dt>
-    <dd>
-      <ng-container *ngIf="user.roles; else dash">
-        <ng-container *ngFor="let role of user.roles">
-          {{ role }}
-        </ng-container>
-      </ng-container>
-    </dd>
+    <ng-container *ngIf="user.superuser">
+      <dt>Attributes</dt>
+      <dd>
+        <mat-icon class="icon12" style="color: gold">flash_on</mat-icon> superuser
+      </dd>
+    </ng-container>
   </dl>
 
   <mat-divider></mat-divider>
@@ -21,7 +19,8 @@
   <dl class="dl-horizontal">
     <dt>Privileges</dt>
     <dd>
-      <table yaDataTable>
+      <ng-container *ngIf="user.superuser">All privileges implied</ng-container>
+      <table *ngIf="!user.superuser" yaDataTable>
         <tr>
           <th class="lcolumn">tmParaPrivileges</th>
           <td>

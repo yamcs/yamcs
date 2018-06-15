@@ -14,7 +14,7 @@ public class JwtToken {
 
     private JsonObject claims;
 
-    public JwtToken(String jwt, String secretKey) throws JwtDecodeException {
+    public JwtToken(String jwt, byte[] secretKey) throws JwtDecodeException {
         try {
             this.claims = JwtHelper.decode(jwt, secretKey);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {

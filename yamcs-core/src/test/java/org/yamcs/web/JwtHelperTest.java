@@ -12,7 +12,7 @@ import org.yamcs.web.JwtHelper.JwtDecodeException;
 
 import com.google.gson.JsonObject;
 
-public class JwtTest {
+public class JwtHelperTest {
 
     @Test()
     public void testUnsigned() throws JwtDecodeException {
@@ -27,22 +27,24 @@ public class JwtTest {
 
     @Test
     public void testHS256() throws InvalidKeyException, NoSuchAlgorithmException, JwtDecodeException {
+        byte[] secret = "secret".getBytes();
+
         User testUser = new User("someUser");
-        String signedToken = JwtHelper.generateHS256Token(testUser, "secret", 1000);
+        String signedToken = JwtHelper.generateHS256Token(testUser, secret, 1000);
 
         JsonObject unverifiedClaims = JwtHelper.decodeUnverified(signedToken);
         assertEquals("Yamcs", unverifiedClaims.get("iss").getAsString());
         assertEquals("someUser", unverifiedClaims.get("sub").getAsString());
         assertEquals(1000L, unverifiedClaims.get("exp").getAsLong() - unverifiedClaims.get("iat").getAsLong());
 
-        JsonObject verifiedClaims = JwtHelper.decode(signedToken, "secret");
+        JsonObject verifiedClaims = JwtHelper.decode(signedToken, secret);
         assertEquals("Yamcs", verifiedClaims.get("iss").getAsString());
         assertEquals("someUser", verifiedClaims.get("sub").getAsString());
         assertEquals(1000L, verifiedClaims.get("exp").getAsLong() - verifiedClaims.get("iat").getAsLong());
 
         boolean throwsException = false;
         try {
-            JwtHelper.decode(signedToken, "wrong-secret");
+            JwtHelper.decode(signedToken, "wrong-secret".getBytes());
         } catch (JwtDecodeException e) {
             throwsException = true;
         }

@@ -3,6 +3,7 @@ package org.yamcs;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -65,7 +66,7 @@ public class YamcsServer {
     static TimeService mockupTimeService;
 
     private static String serverId;
-    private static String secretKey;
+    private static byte[] secretKey;
 
     static CrashHandler globalCrashHandler = new LogCrashHandler();
 
@@ -169,7 +170,7 @@ public class YamcsServer {
         return serverId;
     }
 
-    public static String getSecretKey() {
+    public static byte[] getSecretKey() {
         return secretKey;
     }
 
@@ -375,12 +376,13 @@ public class YamcsServer {
     private static void deriveSecretKey() {
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
         if (yconf.containsKey(SECRET_KEY)) {
-            secretKey = yconf.getString(SECRET_KEY);
+            // Should maybe only allow base64 encoded secret keys
+            secretKey = yconf.getString(SECRET_KEY).getBytes(StandardCharsets.UTF_8);
         } else {
             staticlog.warn("Generating random non-persisted secret key."
                     + " Cryptographic verifications will not work across server restarts."
                     + " Set 'secretKey: <secret>' in yamcs.yaml to avoid this message.");
-            secretKey = CryptoUtils.generateRandomKey();
+            secretKey = CryptoUtils.generateRandomSecretKey();
         }
     }
 

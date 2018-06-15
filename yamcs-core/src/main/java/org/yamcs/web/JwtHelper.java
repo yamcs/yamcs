@@ -36,7 +36,7 @@ public class JwtHelper {
      * Generates a signed JSON Web Token appended with a signature which can be used to validate the JWT by whoever
      * knows the specified secret.
      */
-    public static String generateHS256Token(User user, String secret, int ttl)
+    public static String generateHS256Token(User user, byte[] secret, int ttl)
             throws InvalidKeyException, NoSuchAlgorithmException {
         String joseHeader = HS256_HEADER;
         String payload = generatePayload(user, ttl);
@@ -62,9 +62,9 @@ public class JwtHelper {
                 .encodeToString(claims.toString().getBytes(StandardCharsets.UTF_8));
     }
 
-    private static String hmacSha256(String secret, String data) throws NoSuchAlgorithmException, InvalidKeyException {
+    private static String hmacSha256(byte[] secret, String data) throws NoSuchAlgorithmException, InvalidKeyException {
         Mac hmac = Mac.getInstance("HmacSHA256");
-        hmac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+        hmac.init(new SecretKeySpec(secret, "HmacSHA256"));
         byte[] macResult = hmac.doFinal(data.getBytes());
         return Base64.getUrlEncoder().withoutPadding().encodeToString(macResult);
     }
@@ -88,7 +88,7 @@ public class JwtHelper {
         }
     }
 
-    public static JsonObject decode(String token, String secret)
+    public static JsonObject decode(String token, byte[] secret)
             throws JwtDecodeException, InvalidKeyException, NoSuchAlgorithmException {
         String parts[] = token.split("\\.");
         if (parts.length < 2) {

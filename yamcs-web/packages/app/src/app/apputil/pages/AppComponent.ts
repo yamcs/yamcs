@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
+import { Router } from '@angular/router';
 import { ConnectionInfo, UserInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
@@ -30,6 +31,7 @@ export class AppComponent implements OnDestroy {
 
   constructor(
     yamcs: YamcsService,
+    private router: Router,
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
     private dialog: MatDialog,
@@ -64,6 +66,7 @@ export class AppComponent implements OnDestroy {
 
   logout() {
     this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   private enableDarkMode() {

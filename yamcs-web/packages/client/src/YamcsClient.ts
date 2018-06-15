@@ -3,7 +3,7 @@ import { HttpInInterceptor } from './HttpInInterceptor';
 import { HttpOutInterceptor } from './HttpOutInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { BucketsWrapper, InstancesWrapper, ObjectsWrapper, ServicesWrapper } from './types/internal';
-import { AccessTokenResponse, AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, GeneralInfo, Instance, ListObjectsOptions, ObjectInfo, Service, UserInfo } from './types/system';
+import { AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, GeneralInfo, Instance, ListObjectsOptions, ObjectInfo, Service, TokenResponse, UserInfo } from './types/system';
 
 export default class YamcsClient {
 
@@ -12,7 +12,7 @@ export default class YamcsClient {
   readonly authUrl = `${this.baseUrl}/auth`;
   readonly staticUrl = `${this.baseUrl}/_static`;
 
-  public accessToken?: string;
+  private accessToken?: string;
 
   private inInterceptors: HttpInInterceptor[] = [];
   private outInterceptors: HttpOutInterceptor[] = [];
@@ -32,24 +32,56 @@ export default class YamcsClient {
 
   /**
    * Log in to the Yamcs API.
-   * This will return a JWT reponse with a certain expiration time.
+   * This will return a short-lived access token and an indeterminate refresh token.
    */
-  async login(authorizationCode: string): Promise<AccessTokenResponse>;
-  async login(username: string, password: string): Promise<AccessTokenResponse>;
-  async login(usernameOrCode: string, password?: string) {
+  async fetchAccessTokenWithPassword(username: string, password: string) {
+    let body = 'grant_type=password';
+    body += `&username=${encodeURIComponent(username)}`;
+    body += `&password=${encodeURIComponent(password)}`;
+    return this.doFetchAccessToken(body);
+  }
+
+  async fetchAccessTokenWithAuthorizationCode(authorizationCode: string) {
+    let body = 'grant_type=authorization_code';
+    body += `&code=${encodeURIComponent(authorizationCode)}`;
+    return this.doFetchAccessToken(body);
+  }
+
+  async fetchAccessTokenWithRefreshToken(refreshToken: string) {
+    let body = 'grant_type=refresh_token';
+    body += `&refresh_token=${encodeURIComponent(refreshToken)}`;
+    return this.doFetchAccessToken(body);
+  }
+
+  /**
+   * Set or update the access token for use by this client. Access tokens are short-lived, so you
+   * probably have to call this method regularly by first using your refresh token to request
+   * a new access token. This client does not automatically refresh for you, as it does not keep
+   * track of any issued refresh tokens.
+   *
+   * In order to handle common token problems, consider adding an In and/or Out Interceptor.
+   *
+   * - An In Interceptor can prevent requests with expired access tokens. If you still have
+   *   access to a refresh token, you can fetch and install a new access token before continuing
+   *   the request. Else you may need to ask the user to re-login.
+   *
+   * - An Out Interceptor can respond to any 401 issues that may still occur. For example,
+   *   because an access token was used that is not or no longer accepted by
+   *   the server. If you still have access to a refresh token, you can fetch and install
+   *   a new access token before re-issuing the request. Else you may need to ask the user
+   *   to re-login.
+   */
+  public setAccessToken(accessToken: string) {
+    this.accessToken = accessToken;
+  }
+
+  public clearAccessToken() {
+    this.accessToken = undefined;
+  }
+
+  private async doFetchAccessToken(body: string) {
     const headers = new Headers();
     headers.append('Content-Type', 'application/x-www-form-urlencoded')
-
-    let body;
-    if (password) {
-      body = 'grant_type=password';
-      body += `&username=${encodeURIComponent(usernameOrCode)}`;
-      body += `&password=${encodeURIComponent(password)}`;
-    } else {
-      body = 'grant_type=authorization_code';
-      body += `&code=${encodeURIComponent(usernameOrCode)}`;
-    }
-
     const response = await fetch(`${this.authUrl}/token`, {
       method: 'POST',
       headers,
@@ -57,23 +89,11 @@ export default class YamcsClient {
     });
 
     if (response.status >= 200 && response.status < 300) {
-      const tokenResponse = await response.json() as AccessTokenResponse;
-      this.accessToken = tokenResponse.access_token;
+      const tokenResponse = await response.json() as TokenResponse;
       return Promise.resolve(tokenResponse);
     } else {
       return Promise.reject(new HttpError(response.status, response.statusText));
     }
-  }
-
-  /**
-   * Uses the current access token to request a new access token that
-   * will be used in subsequent requests. If the original access token
-   * was already expired, this will fail.
-   */
-  async refreshAccessToken() {
-    const tokenResponse = await this.login(;
-    this.accessToken = tokenResponse.access_token;
-    return tokenResponse;
   }
 
   /**
