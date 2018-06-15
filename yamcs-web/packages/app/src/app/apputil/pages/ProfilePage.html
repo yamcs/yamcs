@@ -21,7 +21,7 @@
     <dd>
       <ng-container *ngIf="user.superuser">All privileges implied</ng-container>
       <table *ngIf="!user.superuser" yaDataTable>
-        <tr *ngFor="let privilege of user.systemPrivilege">
+      <tr *ngFor="let privilege of user.systemPrivilege">
           <td>{{ privilege }}</td>
         </tr>
       </table>
@@ -41,16 +41,6 @@
             <ng-container *ngIf="p.object; else dash">
               <ng-container *ngFor="let object of p.object">
                 {{ object }}<br>
-              </ng-container>
-            </ng-container>
-          </td>
-        </tr>
-        <tr>
-          <th class="lcolumn">systemPrivileges</th>
-          <td>
-            <ng-container *ngIf="user.systemPrivileges; else dash">
-              <ng-container *ngFor="let privilege of user.systemPrivileges">
-                {{ privilege }}<br>
               </ng-container>
             </ng-container>
           </td>

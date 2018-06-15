@@ -23,6 +23,9 @@ export class AuthService {
   public authInfo$ = new BehaviorSubject<AuthInfo | null>(null);
   public userInfo$ = new BehaviorSubject<UserInfo | null>(null);
 
+  private accessToken?: string;
+  private refreshToken?: string;
+
   constructor(private yamcsService: YamcsService, private router: Router) {
     yamcsService.yamcsClient.getAuthInfo().then(authInfo => {
       this.authInfo$.next(authInfo);
@@ -33,9 +36,10 @@ export class AuthService {
     // The refresh token gives us enough.
     // It's only really useful to pass authentication info on the websocket
     // client. So maybe we should refactor this stuff in the yamcsclient.
-    const accessToken = this.getCookie('access_token');
-    if (accessToken) {
-      yamcsService.yamcsClient.setAccessToken(accessToken);
+    this.accessToken = this.getCookie('access_token');
+    this.refreshToken = this.getCookie('refresh_token');
+    if (this.accessToken) {
+      yamcsService.yamcsClient.setAccessToken(this.accessToken);
     }
 
     /*
@@ -52,7 +56,6 @@ export class AuthService {
         let response = await next.handle(url, init);
         if (response.status === 401) {
           // Server must have refused our token.
-          console.log('server must have logged us out');
           this.logout(false);
 
           // Depending on configuration of Yamcs, it could be that we can
@@ -96,13 +99,11 @@ export class AuthService {
     }
 
     // Use already available tokens when we can
-    console.log('aa1');
-    const accessToken = this.getCookie('access_token');
-    if (accessToken) {
+    if (this.accessToken) {
       if (!this.userInfo$.value) {
         // Written such that it bypasses our interceptor
         const headers = new Headers();
-        headers.append('Authorization', `Bearer ${accessToken}`);
+        headers.append('Authorization', `Bearer ${this.accessToken}`);
         const response = await fetch('/api/user', { headers });
         if (response.status === 200) {
           const userInfo = await response.json() as UserInfo;
@@ -114,18 +115,16 @@ export class AuthService {
           return Promise.reject('Unexpected response when retrieving user info');
         }
       }
-      return this.extractClaims(accessToken);
+      return this.extractClaims(this.accessToken);
     }
-    const refreshToken = this.getCookie('refresh_token');
-    if (refreshToken) {
+    if (this.refreshToken) {
       try {
-        return await this.loginWithRefreshToken(refreshToken);
+        return await this.loginWithRefreshToken(this.refreshToken);
       } catch {
         console.log('Server refused our refresh token');
-        // Ignore
+        this.logout(false);
       }
     }
-    console.log('aa2');
     // If server supports spnego, attempt browser negotiation.
     // This is done before any other flows, because it does not
     // require user intervention when successful.
@@ -136,11 +135,9 @@ export class AuthService {
       }
     }
     if (spnego) {
-      console.log('aa3');
       return await this.loginWithSpnego();
     }
 
-    console.log('aa4');
     this.logout(false);
     throw new Error('Could not login automatically');
   }
@@ -213,8 +210,9 @@ export class AuthService {
    * Clear all data from a previous login session
    */
   logout(navigateToLoginPage: boolean) {
-    document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    this.accessToken = undefined;
+    this.refreshToken = undefined;
+
     this.yamcsService.unselectInstance(); // TODO needed here?
     this.yamcsService.yamcsClient.clearAccessToken();
     this.userInfo$.next(null);
@@ -270,6 +268,6 @@ export class AuthService {
     if (parts.length === 2) {
       return parts.pop()!.split(';').shift();
     }
-    return null;
+    return undefined;
   }
 }
