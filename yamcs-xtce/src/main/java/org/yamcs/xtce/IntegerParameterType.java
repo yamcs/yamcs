@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.yamcs.utils.DoubleRange;
 
-public class IntegerParameterType extends IntegerDataType implements ParameterType {
+public class IntegerParameterType extends IntegerDataType implements NumericParameterType {
     private static final long serialVersionUID = 2L;
     List<NumericContextAlarm> contextAlarmList = null;
 

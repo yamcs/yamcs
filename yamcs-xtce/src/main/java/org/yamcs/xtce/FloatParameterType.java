@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.yamcs.utils.DoubleRange;
 
-public class FloatParameterType extends FloatDataType implements ParameterType {
+public class FloatParameterType extends FloatDataType implements NumericParameterType {
     private static final long serialVersionUID = 2L;
     private NumericAlarm defaultAlarm = null;
     private List<NumericContextAlarm> contextAlarmList = null;
