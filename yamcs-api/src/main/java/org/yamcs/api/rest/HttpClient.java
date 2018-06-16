@@ -20,8 +20,6 @@ import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.protobuf.Table;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.UsernamePasswordToken;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -80,19 +78,19 @@ public class HttpClient {
     }
 
     public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body,
-            AuthenticationToken authToken) throws URISyntaxException {
-        return doAsyncRequest(url, httpMethod, body, authToken, null);
+            String username, char[] password) throws URISyntaxException {
+        return doAsyncRequest(url, httpMethod, body, username, password, null);
     }
 
     public CompletableFuture<byte[]> doAsyncRequest(String url, HttpMethod httpMethod, byte[] body,
-            AuthenticationToken authToken, HttpHeaders extraHeaders) throws URISyntaxException {
+            String username, char[] password, HttpHeaders extraHeaders) throws URISyntaxException {
         URI uri = new URI(url);
         HttpObjectAggregator aggregator = new HttpObjectAggregator(maxResponseLength);
 
         CompletableFuture<byte[]> cf = new CompletableFuture<>();
 
         ResponseHandler respHandler = new ResponseHandler(cf);
-        HttpRequest request = setupRequest(uri, httpMethod, body, authToken);
+        HttpRequest request = setupRequest(uri, httpMethod, body, username, password);
         if (extraHeaders != null) {
             request.headers().add(extraHeaders);
         }
@@ -110,14 +108,14 @@ public class HttpClient {
     }
 
     public CompletableFuture<BulkRestDataSender> doBulkSendRequest(String url, HttpMethod httpMethod,
-            AuthenticationToken authToken) throws URISyntaxException {
+            String username, char[] password) throws URISyntaxException {
         URI uri = new URI(url);
         CompletableFuture<BulkRestDataSender> cf = new CompletableFuture<>();
         BulkRestDataSender.ContinuationHandler chandler = new BulkRestDataSender.ContinuationHandler(cf);
 
         ChannelFuture chf = setupChannel(uri, chandler);
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, httpMethod, getPathWithQuery(uri));
-        fillInHeaders(request, uri, authToken);
+        fillInHeaders(request, uri, username, password);
         request.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
         HttpUtil.set100ContinueExpected(request, true);
 
@@ -211,12 +209,12 @@ public class HttpClient {
      * @throws URISyntaxException
      */
     public CompletableFuture<Void> doBulkReceiveRequest(String url, HttpMethod httpMethod, byte[] body,
-            AuthenticationToken authToken, BulkRestDataReceiver receiver) throws URISyntaxException {
+            String username, char[] password, BulkRestDataReceiver receiver) throws URISyntaxException {
         URI uri = new URI(url);
         BulkChannelHandler channelHandler = new BulkChannelHandler(receiver);
 
         ChannelFuture chf = setupChannel(uri, channelHandler);
-        HttpRequest request = setupRequest(uri, httpMethod, body, authToken);
+        HttpRequest request = setupRequest(uri, httpMethod, body, username, password);
         CompletableFuture<Void> cf = new CompletableFuture<>();
 
         chf.addListener(f -> {
@@ -245,8 +243,8 @@ public class HttpClient {
     }
 
     public CompletableFuture<Void> doBulkRequest(String url, HttpMethod httpMethod, String body,
-            AuthenticationToken authToken, BulkRestDataReceiver receiver) throws URISyntaxException {
-        return doBulkReceiveRequest(url, httpMethod, body.getBytes(), authToken, receiver);
+            String username, char[] password, BulkRestDataReceiver receiver) throws URISyntaxException {
+        return doBulkReceiveRequest(url, httpMethod, body.getBytes(), username, password, receiver);
     }
 
     private ChannelFuture setupChannel(URI uri, ChannelHandler... channelHandler) {
@@ -279,7 +277,8 @@ public class HttpClient {
         return b.connect(host, port);
     }
 
-    private void fillInHeaders(HttpRequest request, URI uri, AuthenticationToken authToken) throws URISyntaxException {
+    private void fillInHeaders(HttpRequest request, URI uri, String username, char[] password)
+            throws URISyntaxException {
         String host = uri.getHost() == null ? "127.0.0.1" : uri.getHost();
         request.headers().set(HttpHeaderNames.HOST, host);
         request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
@@ -289,27 +288,23 @@ public class HttpClient {
             String c = ClientCookieEncoder.STRICT.encode(cookies);
             request.headers().set(HttpHeaderNames.COOKIE, c);
         }
-        if (authToken != null) {
-            if (authToken instanceof UsernamePasswordToken) {
-                UsernamePasswordToken up = (UsernamePasswordToken) authToken;
-                String credentialsClear = up.getUsername();
-                if (up.getPasswordS() != null)
-                    credentialsClear += ":" + up.getPasswordS();
-                String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
-                String authorization = "Basic " + credentialsB64;
-                request.headers().set(HttpHeaderNames.AUTHORIZATION, authorization);
-            } else {
-                throw new RuntimeException(authToken.getClass() + " not supported");
+        if (username != null) {
+            String credentialsClear = username;
+            if (password != null) {
+                credentialsClear += ":" + new String(password);
             }
+            String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
+            String authorization = "Basic " + credentialsB64;
+            request.headers().set(HttpHeaderNames.AUTHORIZATION, authorization);
         }
     }
 
-    private HttpRequest setupRequest(URI uri, HttpMethod httpMethod, byte[] body, AuthenticationToken authToken)
+    private HttpRequest setupRequest(URI uri, HttpMethod httpMethod, byte[] body, String username, char[] password)
             throws URISyntaxException {
         ByteBuf content = (body == null) ? Unpooled.EMPTY_BUFFER : Unpooled.copiedBuffer(body);
         HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, httpMethod, getPathWithQuery(uri),
                 content);
-        fillInHeaders(request, uri, authToken);
+        fillInHeaders(request, uri, username, password);
         int length = body == null ? 0 : body.length;
         HttpUtil.setContentLength(request, length);
         return request;

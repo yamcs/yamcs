@@ -39,9 +39,15 @@ mkdir -p %{buildroot}/%{prefix}/lib/yamcs-web
 mkdir -p %{buildroot}/%{prefix}/lib/xtce
 mkdir -p %{buildroot}/%{prefix}/web/
 
-cp -a yamcs-core/lib %{buildroot}/%{prefix}/
+cp -a yamcs-server/lib %{buildroot}/%{prefix}/
+cp -an yamcs-client/lib %{buildroot}/%{prefix}/
+
 cp -a yamcs-core/etc %{buildroot}/%{prefix}/
-cp -a yamcs-core/bin %{buildroot}/%{prefix}/
+cp -an yamcs-client/etc %{buildroot}/%{prefix}/
+
+cp -a yamcs-server/bin %{buildroot}/%{prefix}/
+cp -an yamcs-client/bin %{buildroot}/%{prefix}/
+
 rm yamcs-core/target/yamcs-*-sources.jar
 cp yamcs-core/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 
@@ -115,7 +121,7 @@ fi
 - add the yamcs-busoc subpackage
 * Thu Mar 31 2011 nm
 - accomodate the yamcs-core yamcs-api split
-* Thu Nov 20 2010 nm
+* Sat Nov 20 2010 nm
 - added yamcscontrol.idl in the lib directory
 * Tue Nov 16 2010 nm
 - fixed permissions 
@@ -125,5 +131,5 @@ fi
 - Marked the init.d files as configuration files
 * Fri Sep 07 2007 nm
 - Changed ownership and access rights for a few configuration files containing passwords
-* Fri Jul 26 2007 nm
+* Thu Jul 26 2007 nm
 - First version of the rpm

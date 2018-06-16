@@ -1,5 +1,7 @@
+import { HttpHandler } from './HttpHandler';
+
 /**
- * Returns a resolved promise when the http request may continue,
- * or a rejected promise when the http request may not continue.
+ * Should pass url and init to the given HttpHandler.
+ * Both the request and the response can be intercepted.
  */
-export type HttpInterceptor = (url: string, init?: RequestInit) => Promise<void>;
+export type HttpInterceptor = (next: HttpHandler, url: string, init?: RequestInit) => Promise<Response>;

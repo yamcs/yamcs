@@ -37,7 +37,6 @@ import javax.swing.table.TableRowSorter;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.ui.PacketListener;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueComparator;
 import org.yamcs.xtce.Parameter;
@@ -159,10 +158,11 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         } else if (!isCellSelected(row, column)) {
             row = convertRowIndexToModel(row);
             int packetNr = (Integer) getModel().getValueAt(row, 0);
-            if (markedPacketNrs.contains(packetNr))
+            if (markedPacketNrs.contains(packetNr)) {
                 component.setBackground(Color.YELLOW);
-            else
+            } else {
                 component.setBackground(Color.WHITE);
+            }
         }
         return component;
     }
@@ -349,10 +349,11 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
                 if (rowIndex != -1) {
                     rowIndex = convertRowIndexToModel(rowIndex);
                     int packetNr = (Integer) getModel().getValueAt(rowIndex, 0);
-                    if (markedPacketNrs.contains(packetNr))
+                    if (markedPacketNrs.contains(packetNr)) {
                         markedPacketNrs.remove(packetNr);
-                    else
+                    } else {
                         markedPacketNrs.add(packetNr);
+                    }
                 }
             }
         };
@@ -426,8 +427,9 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
                     history.add(historyPosition, packetNumber);
 
                     // Clear Forward history (if any)
-                    for (int i = history.size() - 1; i > historyPosition; i--)
+                    for (int i = history.size() - 1; i > historyPosition; i--) {
                         history.remove(i);
+                    }
 
                     // Limit total history size to 10
                     if (history.size() > 10) {
@@ -451,10 +453,11 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
             toggleMark.setEnabled(true);
             rowIndex = convertRowIndexToModel(rowIndex);
             int packetNr = (Integer) getModel().getValueAt(rowIndex, 0);
-            if (markedPacketNrs.contains(packetNr))
+            if (markedPacketNrs.contains(packetNr)) {
                 toggleMark.putValue(Action.NAME, UNMARK_PACKET);
-            else
+            } else {
                 toggleMark.putValue(Action.NAME, MARK_PACKET);
+            }
         }
 
         // Activate "Go to Packet" only for non-empty packet table
@@ -489,8 +492,9 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         int historyIndex = history.indexOf(packetNr);
         if (historyIndex != -1) {
             history.remove(historyIndex);
-            if (historyIndex <= historyPosition)
+            if (historyIndex <= historyPosition) {
                 historyPosition--;
+            }
         }
 
         tableModel.removeRow(0);
@@ -524,8 +528,9 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         packet.setName(name);
         SwingUtilities.invokeLater(() -> {
             tableModel.addPacket(packet);
-            if (getRowCount() == 1)
+            if (getRowCount() == 1) {
                 updateActionStates();
+            }
             if (maxLines > 0) {
                 while (tableModel.getRowCount() > maxLines) {
                     removeRow(0);
@@ -674,13 +679,15 @@ public class PacketsTable extends JTable implements ListSelectionListener, Packe
         private void maybeShowPopup(MouseEvent e) {
             if (e.isPopupTrigger()) {
                 int row = rowAtPoint(e.getPoint());
-                if (row >= 0 && row < getRowCount())
+                if (row >= 0 && row < getRowCount()) {
                     setRowSelectionInterval(row, row);
-                else
+                } else {
                     clearSelection();
+                }
 
-                if (getSelectedRow() < 0)
+                if (getSelectedRow() < 0) {
                     return;
+                }
                 if (e.isPopupTrigger() && e.getComponent() instanceof JTable) {
                     popup.show(e.getComponent(), e.getX(), e.getY());
                     repaint(); // !

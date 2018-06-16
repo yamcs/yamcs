@@ -17,14 +17,15 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 public class RestStreams {
     private static AtomicInteger streamCounter = new AtomicInteger();
     private static final Logger log = LoggerFactory.getLogger(RestStreams.class);
-    
-    
+
     public static void stream(String instance, String selectSql, RestStreamSubscriber s) throws HttpException {
-        stream(instance, selectSql, Collections.EMPTY_LIST, s);
+        stream(instance, selectSql, Collections.emptyList(), s);
     }
-    public static void stream(String instance, String selectSql, List<Object> args, RestStreamSubscriber s) throws HttpException {
+
+    public static void stream(String instance, String selectSql, List<Object> args, RestStreamSubscriber s)
+            throws HttpException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        
+
         String streamName = "rest_archive" + streamCounter.incrementAndGet();
         String sql = new StringBuilder("create stream ")
                 .append(streamName)
@@ -32,15 +33,14 @@ public class RestStreams {
                 .append(selectSql)
                 .append(" nofollow")
                 .toString();
-        
+
         log.debug("Executing: {}", sql);
         try {
             ydb.execute(sql, args.toArray());
         } catch (StreamSqlException | ParseException e) {
             throw new InternalServerErrorException(e);
         }
-        
-        
+
         Stream stream = ydb.getStream(streamName);
         stream.addSubscriber(s);
         stream.start();

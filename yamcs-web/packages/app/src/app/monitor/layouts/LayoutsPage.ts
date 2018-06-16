@@ -1,9 +1,8 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material';
-import { Instance } from '@yamcs/client';
-import { NamedLayout, LayoutStorage } from '../displays/LayoutStorage';
 import { Title } from '@angular/platform-browser';
+import { Instance, ObjectInfo } from '@yamcs/client';
+import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -15,13 +14,17 @@ export class LayoutsPage {
   instance: Instance;
 
   displayedColumns = ['name'];
-  dataSource = new MatTableDataSource<NamedLayout>([]);
+  dataSource = new MatTableDataSource<ObjectInfo>([]);
 
-  constructor(title: Title, yamcs: YamcsService) {
+  constructor(title: Title, yamcs: YamcsService, authService: AuthService) {
     title.setTitle('Layouts - Yamcs');
     this.instance = yamcs.getInstance();
 
-    const layouts = LayoutStorage.getLayouts(this.instance.name);
-    this.dataSource.data = layouts;
+    const username = authService.getUserInfo()!.login;
+    yamcs.getInstanceClient()!.listObjects(`user.${username}`, {
+      prefix: 'layouts',
+    }).then(objects => {
+      this.dataSource.data = objects;
+    });
   }
 }

@@ -13,8 +13,8 @@
       <ng-container cdkColumnDef="name">
         <th mat-header-cell *cdkHeaderCellDef>Name</th>
         <td mat-cell *cdkCellDef="let layout">
-          <a [routerLink]="layout.name"
-             [queryParams]="{instance: instance.name}">{{ layout.name }}</a>
+          <a [routerLink]="layout.name | slice:8"
+             [queryParams]="{instance: instance.name}">{{ layout.name | slice:8 }}</a>
         </td>
       </ng-container>
 

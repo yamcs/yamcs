@@ -1,8 +1,8 @@
-<app-monitor-page>
+<app-monitor-page *ngIf="layout$ | async as layout">
   <app-monitor-toolbar>
     <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> {{ layout?.name }}
+    </a> {{ layoutName }}
 
     &nbsp;&nbsp;&nbsp;
     <button mat-button

@@ -3,6 +3,7 @@ package org.yamcs;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -11,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
-import org.yamcs.security.Privilege;
+import org.yamcs.security.CryptoUtils;
 import org.yamcs.spi.Plugin;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
@@ -66,7 +66,7 @@ public class YamcsServer {
     static TimeService mockupTimeService;
 
     private static String serverId;
-    private static String secretKey;
+    private static byte[] secretKey;
 
     static CrashHandler globalCrashHandler = new LogCrashHandler();
 
@@ -170,7 +170,7 @@ public class YamcsServer {
         return serverId;
     }
 
-    public static String getSecretKey() {
+    public static byte[] getSecretKey() {
         return secretKey;
     }
 
@@ -376,21 +376,18 @@ public class YamcsServer {
     private static void deriveSecretKey() {
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
         if (yconf.containsKey(SECRET_KEY)) {
-            secretKey = yconf.getString(SECRET_KEY);
+            // Should maybe only allow base64 encoded secret keys
+            secretKey = yconf.getString(SECRET_KEY).getBytes(StandardCharsets.UTF_8);
         } else {
             staticlog.warn("Generating random non-persisted secret key."
                     + " Cryptographic verifications will not work across server restarts."
                     + " Set 'secretKey: <secret>' in yamcs.yaml to avoid this message.");
-            secretKey = UUID.randomUUID().toString();
+            secretKey = CryptoUtils.generateRandomSecretKey();
         }
     }
 
     public static YamcsServerInstance getInstance(String yamcsInstance) {
         return instances.get(yamcsInstance);
-    }
-
-    private static void setupSecurity() {
-        Privilege.getInstance();
     }
 
     private static void printOptionsAndExit() {
@@ -416,6 +413,22 @@ public class YamcsServer {
         return new ArrayList<>(globalServiceList);
     }
 
+    public static ServiceWithConfig getGlobalServiceWithConfig(String serviceName) {
+        if (globalServiceList == null) {
+            return null;
+        }
+
+        synchronized (globalServiceList) {
+            for (ServiceWithConfig swc : globalServiceList) {
+                Service s = swc.service;
+                if (s.getClass().getName().equals(serviceName)) {
+                    return swc;
+                }
+            }
+        }
+        return null;
+    }
+
     public static <T extends Service> T getService(String yamcsInstance, Class<T> serviceClass) {
         YamcsServerInstance ys = YamcsServer.getInstance(yamcsInstance);
         if (ys == null) {
@@ -429,19 +442,8 @@ public class YamcsServer {
     }
 
     public static Service getGlobalService(String serviceName) {
-        if (globalServiceList == null) {
-            return null;
-        }
-
-        synchronized (globalServiceList) {
-            for (ServiceWithConfig swc : globalServiceList) {
-                Service s = swc.service;
-                if (s.getClass().getName().equals(serviceName)) {
-                    return s;
-                }
-            }
-        }
-        return null;
+        ServiceWithConfig serviceWithConfig = getGlobalServiceWithConfig(serviceName);
+        return serviceWithConfig != null ? serviceWithConfig.getService() : null;
     }
 
     @SuppressWarnings("unchecked")
@@ -511,9 +513,7 @@ public class YamcsServer {
 
         try {
             YConfiguration.setup();
-            setupSecurity();
             setupYamcsServer();
-
         } catch (ConfigurationException e) {
             staticlog.error("Could not start Yamcs Server", e);
             System.err.println(e.toString());

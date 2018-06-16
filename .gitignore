@@ -8,10 +8,9 @@ bin/
 .idea/
 *.iml
 
+/dist/
+/live/
 target/
-yamcs-artemis/lib/
-yamcs-core/lib/
-live/
 server.lock
 make-live-devel-local.sh
 *.xtce.consistency_date

@@ -1,5 +1,5 @@
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivateChild, Router } from '@angular/router';
 import { Injectable } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/AuthService';
 
 @Injectable()
@@ -9,17 +9,9 @@ export class MayControlServicesGuard implements CanActivate, CanActivateChild {
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    if (!this.authService.authRequired$.value) {
-      return true;
-    }
     const userInfo = this.authService.getUserInfo();
     if (userInfo) {
-      const systemPrivileges = userInfo.systemPrivileges || [];
-      for (const expression of systemPrivileges) {
-        if ('MayControlServices'.match(expression)) {
-          return true;
-        }
-      }
+      return this.authService.hasSystemPrivilege('ControlServices');
     }
 
     this.router.navigate(['/403'], { queryParams: { page: state.url } });

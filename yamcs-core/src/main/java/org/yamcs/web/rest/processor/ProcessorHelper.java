@@ -5,7 +5,6 @@ import org.yamcs.protobuf.Alarms.AcknowledgeInfo;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.Privilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.mdb.XtceToGpbAssembler;
 import org.yamcs.web.rest.mdb.XtceToGpbAssembler.DetailLevel;
@@ -29,9 +28,8 @@ public class ProcessorHelper {
         if (activeAlarm.acknowledged) {
             AcknowledgeInfo.Builder acknowledgeb = AcknowledgeInfo.newBuilder();
             String username = activeAlarm.usernameThatAcknowledged;
-            if (username == null) {
-                username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged"
-                        : Privilege.getInstance().getDefaultUser();
+            if (activeAlarm.autoAcknowledge) {
+                username = "autoAcknowledged";
             }
 
             acknowledgeb.setAcknowledgedBy(username);

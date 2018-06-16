@@ -39,8 +39,7 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.security.Privilege;
-import org.yamcs.security.UsernamePasswordToken;
+import org.yamcs.security.SecurityStore;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.ParameterSink;
 import org.yamcs.tctm.TmPacketDataLink;
@@ -66,7 +65,9 @@ public abstract class AbstractIntegrationTest {
     MyWsListener wsListener;
     WebSocketClient wsClient;
     RestClient restClient;
-    protected UsernamePasswordToken adminToken = new UsernamePasswordToken("admin", "rootpassword");
+
+    protected String adminUsername = "admin";
+    protected char[] adminPassword = "rootpassword".toCharArray();
     RefMdbPacketGenerator packetGenerator;
     static {
         // LoggingUtils.enableLogging();
@@ -80,8 +81,8 @@ public abstract class AbstractIntegrationTest {
     @Before
     public void before() throws InterruptedException {
 
-        if (Privilege.getInstance().isEnabled()) {
-            ycp.setAuthenticationToken(adminToken);
+        if (SecurityStore.getInstance().isEnabled()) {
+            ycp.setCredentials(adminUsername, adminPassword);
         }
 
         packetProvider = PacketProvider.instance;
@@ -170,20 +171,19 @@ public abstract class AbstractIntegrationTest {
         return builder;
     }
 
-    
     void generatePkt13AndPps(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i = 0; i < numPackets; i++) {
             packetGenerator.setGenerationTime(t0 + 1000 * i);
             packetGenerator.generate_PKT1_1();
             packetGenerator.generate_PKT1_3();
-            
+
             // parameters are 10ms later than packets to make sure that we have a predictable order during replay
             parameterProvider.setGenerationTime(t0 + 1000 * i + 10);
             parameterProvider.generateParameters(i);
         }
     }
-    
+
     static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
@@ -213,7 +213,6 @@ public abstract class AbstractIntegrationTest {
         public void disconnected() {
             onDisconnect.release();
         }
-
 
         @Override
         public void onMessage(WebSocketSubscriptionData data) {
@@ -429,7 +428,6 @@ public abstract class AbstractIntegrationTest {
 
             seqNum++;
         }
-        
-        
+
     }
 }

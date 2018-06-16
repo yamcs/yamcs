@@ -2,8 +2,7 @@ package org.yamcs.web.rest.mdb;
 
 import org.yamcs.protobuf.Mdb.CommandInfo;
 import org.yamcs.protobuf.Rest.ListCommandInfoResponse;
-import org.yamcs.security.Privilege;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
@@ -22,7 +21,7 @@ public class MDBCommandRestHandler extends RestHandler {
     @Route(path = "/api/mdb/:instance/commands", method = "GET")
     @Route(path = "/api/mdb/:instance/commands/:name*", method = "GET")
     public void getCommand(RestRequest req) throws HttpException {
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
+        checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
         if (req.hasRouteParam("name")) {
             getCommandInfo(req);
@@ -59,10 +58,8 @@ public class MDBCommandRestHandler extends RestHandler {
         ListCommandInfoResponse.Builder responseb = ListCommandInfoResponse.newBuilder();
         if (req.hasQueryParameter("namespace")) {
             String namespace = req.getQueryParameter("namespace");
-
-            Privilege privilege = Privilege.getInstance();
             for (MetaCommand cmd : mdb.getMetaCommands()) {
-                if (!privilege.hasPrivilege1(req.getAuthToken(), PrivilegeType.TC, cmd.getQualifiedName())) {
+                if (!hasObjectPrivilege(req, ObjectPrivilegeType.Command, cmd.getQualifiedName())) {
                     continue;
                 }
                 if (matcher != null && !matcher.matches(cmd)) {
