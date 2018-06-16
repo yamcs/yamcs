@@ -75,7 +75,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     @Override
     protected void updateInput(int position, InputParameter inputParameter, ParameterValue newValue) {
         if(log.isTraceEnabled()) {
-            log.trace("Algo {} updating input {} with value {}", algorithmDef.getName(), ScriptAlgorithmManager.getArgName(inputParameter), newValue);
+            log.trace("Algo {} updating input {} with value {}", algorithmDef.getName(), ScriptAlgorithmExecutorFactory.getArgName(inputParameter), newValue);
         }
         ValueBinding valueBinding = (ValueBinding) functionArgs[position];
         // First time for an inputParameter, it will create a ValueBinding object.
@@ -131,7 +131,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             if(pos!=0) {
                 sb.append(", ");
             }
-            sb.append(ScriptAlgorithmManager.getArgName(p)).append(": ")
+            sb.append(ScriptAlgorithmExecutorFactory.getArgName(p)).append(": ")
             .append(String.valueOf(functionArgs[pos]));
             pos++;
         }

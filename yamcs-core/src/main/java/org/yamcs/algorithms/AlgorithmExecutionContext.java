@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import org.yamcs.api.EventProducer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
@@ -114,5 +115,9 @@ public class AlgorithmExecutionContext {
 
     public XtceDb getXtceDb() {
         return procData.getXtceDb();
+    }
+
+    public EventProducer getEventProducer() {
+        return procData.getEventProducer();
     }
 }

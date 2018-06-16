@@ -1,6 +1,5 @@
 package org.yamcs.algorithms;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,9 +10,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 
 import org.slf4j.Logger;
@@ -30,7 +28,6 @@ import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataSource;
@@ -42,7 +39,6 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.XtceDb;
-import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractService;
@@ -57,9 +53,10 @@ import com.google.common.util.concurrent.AbstractService;
  * Algorithms and any needed algorithms that require earlier execution, will be activated as soon as a request for one
  * of its output parameters is registered.
  * <p>
- * Algorithms default to JavaScript, but this can be overridden to other scripting languages as long as they are
- * included in the classpath. As a design choice all algorithms within the same AlgorithmManager, share the same
- * language.
+ * Algorithm executors are created by {@link AlgorithmExecutorFactory} which themselves are created by the {@link AlgorithmEngine}.
+ * The algorithm engines are registered at server startup using the {@link #registerAlgorithmEngine(String, AlgorithmEngine)} method.
+ * 
+ * javascript will be automatically registered as well as python if available.
  */
 public class AlgorithmManager extends AbstractService
         implements ParameterProvider, DVParameterConsumer, ProcessorService {
@@ -67,7 +64,7 @@ public class AlgorithmManager extends AbstractService
     static final String KEY_ALGO_NAME = "algoName";
 
     XtceDb xtcedb;
-    ScriptEngineManager scriptEngineManager;
+    
     String yamcsInstance;
 
     // the id used for subscribing to the parameterManager
@@ -83,40 +80,56 @@ public class AlgorithmManager extends AbstractService
 
     // For scheduling OnPeriodicRate algorithms
     ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
-    Processor yproc;
+    Processor processor;
     AlgorithmExecutionContext globalCtx;
-
-    Map<String, ScriptAlgorithmManager> scriptAlgManagerByLanguage = new HashMap<>();
 
     Map<String, List<String>> libraries = null;
     EventProducer eventProducer;
 
+    
+    final static Map<String, AlgorithmEngine> algorithmEngines = new HashMap<>();
+    
+    final Map<String, AlgorithmExecutorFactory> factories = new HashMap<>();
+    final Map<String, Object> config;
+    static {
+        registerScriptEngines();
+        registerAlgorithmEngine("Java", new JavaAlgorithmEngine());
+    }
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
         this(yamcsInstance, (Map<String, Object>) null);
+    }
+
+    /**
+     * Create a ScriptEngineManager for each of the script engines available in the jre.
+     */
+    private static void registerScriptEngines() {
+        ScriptEngineManager sem = new ScriptEngineManager();
+        for(ScriptEngineFactory sef: sem.getEngineFactories()) {
+            List<String> engineNames = sef.getNames();
+            ScriptAlgorithmEngine engine = new ScriptAlgorithmEngine();
+            for(String name: engineNames) {
+                registerAlgorithmEngine(name, engine);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
     public AlgorithmManager(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
         this.yamcsInstance = yamcsInstance;
+        this.config = config;
+    }
 
-        if (config != null) {
-            if (config.containsKey("libraries")) {
-                libraries = (Map<String, List<String>>) config.get("libraries");
-            }
-        }
-        scriptEngineManager = new ScriptEngineManager();
+    public static void registerAlgorithmEngine(String name, AlgorithmEngine eng) {
+        algorithmEngines.put(name,  eng);
     }
 
     @Override
     public void init(Processor yproc) {
-        this.yproc = yproc;
+        this.processor = yproc;
         this.eventProducer = yproc.getProcessorData().getEventProducer();
         this.parameterRequestManager = yproc.getParameterRequestManager();
         this.parameterRequestManager.addParameterProvider(this);
         xtcedb = yproc.getXtceDb();
-
-        scriptEngineManager.put("Yamcs",
-                new AlgorithmUtils(yproc.getInstance(), yproc.getProcessorData(), yproc, xtcedb));
 
         globalCtx = new AlgorithmExecutionContext("global", null, yproc.getProcessorData());
         subscriptionId = parameterRequestManager.addRequest(new ArrayList<Parameter>(0), this);
@@ -126,24 +139,9 @@ public class AlgorithmManager extends AbstractService
                 loadAlgorithm(algo, globalCtx);
             }
         }
-
     }
 
-    private ScriptAlgorithmManager getScriptManagerByLanguage(String language) {
-        ScriptAlgorithmManager sam = scriptAlgManagerByLanguage.get(language);
-        if (sam == null) {
-            sam = new ScriptAlgorithmManager(scriptEngineManager, language, getLibraries(language), eventProducer);
-            scriptAlgManagerByLanguage.put(language, sam);
-        }
-        return sam;
-    }
-
-    private List<String> getLibraries(String language) {
-        if (libraries == null) {
-            return null;
-        }
-        return libraries.get(language);
-    }
+    
 
     private void loadAlgorithm(Algorithm algo, AlgorithmExecutionContext ctx) {
         for (OutputParameter oParam : algo.getOutputSet()) {
@@ -165,7 +163,7 @@ public class AlgorithmManager extends AbstractService
                 final AlgorithmExecutor engine = ctx.getExecutor(algo);
                 for (OnPeriodicRateTrigger trigger : timedTriggers) {
                     timer.scheduleAtFixedRate(() -> {
-                        long t = yproc.getCurrentTime();
+                        long t = processor.getCurrentTime();
                         List<ParameterValue> params = engine.runAlgorithm(t, t);
                         parameterRequestManager.update(params);
                     }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
@@ -203,7 +201,7 @@ public class AlgorithmManager extends AbstractService
      * @return the newly created context
      */
     public AlgorithmExecutionContext createContext(String name) {
-        return new AlgorithmExecutionContext(name, globalCtx, yproc.getProcessorData());
+        return new AlgorithmExecutionContext(name, globalCtx, processor.getProcessorData());
     }
 
     /**
@@ -233,11 +231,25 @@ public class AlgorithmManager extends AbstractService
                 eventProducer.sendCritical("no language specified for algorithm '"+algorithm.getQualifiedName()+"'");    
                 return;
             }
-            if ("java".equalsIgnoreCase(algLang)) {
-                executor = loadJavaExecutor(calg, execCtx);
-            } else {
-                ScriptAlgorithmManager sam = getScriptManagerByLanguage(calg.getLanguage());
-                executor = sam.createExecutor(calg, execCtx);
+            AlgorithmExecutorFactory factory  = factories.get(algLang);
+            if(factory == null) {
+                AlgorithmEngine eng = algorithmEngines.get(algLang);
+                if(eng==null) {
+                    eventProducer.sendCritical("no algorithm engine found for language '"+algLang+"'");
+                    return;
+                }
+                factory = eng.makeExecutorFactory(this, algLang, config);
+                factories.put(algLang, factory);
+                for(String s: factory.getLanguages()) {
+                    factories.put(s, factory);
+                }
+            }
+            try {
+                executor = factory.makeExecutor(calg, execCtx);
+            } catch (AlgorithmException e) {
+                log.warn("Failed to create algorithm executor", e);
+                eventProducer.sendCritical("Failed to create executor for algorithm "+calg.getQualifiedName()+": "+e);
+                return;
             }
         } else if (algorithm instanceof MathAlgorithm) {
             executor = new MathAlgorithmExecutor(algorithm, execCtx, (MathAlgorithm) algorithm);
@@ -289,35 +301,6 @@ public class AlgorithmManager extends AbstractService
         } catch (InvalidRequestIdentification e) {
             log.error("InvalidRequestIdentification caught when subscribing to the items required for the algorithm {}",
                     executor.getAlgorithm().getName(), e);
-        }
-    }
-
-    private AlgorithmExecutor loadJavaExecutor(CustomAlgorithm alg, AlgorithmExecutionContext execCtx) {
-        Pattern p = Pattern.compile("([\\w\\$\\.]+)(\\(.*\\))?", Pattern.DOTALL);
-        Matcher m = p.matcher(alg.getAlgorithmText());
-        if (!m.matches()) {
-            log.warn("Cannot parse algorithm text '{}'", alg.getAlgorithmText());
-            throw new IllegalArgumentException("Cannot parse algorithm text '" + alg.getAlgorithmText() + "'");
-        }
-        String className = m.group(1);
-
-        try {
-            String s = m.group(2); // this includes the parentheses
-            Object arg = null;
-            if (s != null && s.length() > 2) {// s.length>2 is to make sure there is something in between the
-                // parentheses
-                Yaml yaml = new Yaml();
-                arg = yaml.load(s.substring(1, s.length() - 1));
-            }
-
-            if (arg == null) {
-                return YObjectLoader.loadObject(className, alg, execCtx);
-            } else {
-                return YObjectLoader.loadObject(className, alg, execCtx, arg);
-            }
-        } catch (IOException e) {
-            log.warn("Cannot load object for algorithm", e);
-            throw new IllegalArgumentException(e);
         }
     }
 
@@ -435,7 +418,7 @@ public class AlgorithmManager extends AbstractService
         ArrayList<ParameterValue> newItems = new ArrayList<>();
 
         ctx.updateHistoryWindows(items);
-        long acqTime = yproc.getCurrentTime();
+        long acqTime = processor.getCurrentTime();
         long genTime = items.get(0).getGenerationTime();
 
         ArrayList<ParameterValue> allItems = new ArrayList<>(items);
@@ -472,5 +455,9 @@ public class AlgorithmManager extends AbstractService
             timer.shutdownNow();
         }
         notifyStopped();
+    }
+
+    public Processor getProcessor() {
+        return processor;
     }
 }

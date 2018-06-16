@@ -29,13 +29,13 @@ public class AlgorithmUtils {
 
     //can be null if the algorithms are not running inside a processor
     private final Processor processor;
-    public AlgorithmUtils(String yamcsInstance, ProcessorData processorData, Processor processor, XtceDb xtcedb) {
-        this.yamcsInstance = yamcsInstance;
+    public AlgorithmUtils(Processor processor) {
+        this.yamcsInstance = processor.getInstance();
         
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
         eventProducer.setSource(defaultSource);
-        this.xtcedb = xtcedb;
-        this.processorData = processorData;
+        this.xtcedb = processor.getXtceDb();
+        this.processorData = processor.getProcessorData();
         this.processor = processor;
     }
     

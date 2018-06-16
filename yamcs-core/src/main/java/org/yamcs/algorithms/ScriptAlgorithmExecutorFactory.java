@@ -17,7 +17,6 @@ import javax.script.ScriptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.api.EventProducer;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OutputParameter;
@@ -29,14 +28,13 @@ import org.yamcs.xtce.OutputParameter;
  * There might be multiple executors for the same algorithm: for example in the command verifier there will be one algorithm executor for each command.
  * However there will be only one function created in the script engine.
  *
+ * 
  */
-public class ScriptAlgorithmManager {
+public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory {
     final ScriptEngine scriptEngine;
-    static final Logger log = LoggerFactory.getLogger(ScriptAlgorithmManager.class);
-    final EventProducer eventProducer;
+    static final Logger log = LoggerFactory.getLogger(ScriptAlgorithmExecutorFactory.class);
     
-    public  ScriptAlgorithmManager(ScriptEngineManager scriptEngineManager, String language, List<String> libraryNames, EventProducer eventProducer) {
-        this.eventProducer = eventProducer;
+    public  ScriptAlgorithmExecutorFactory(ScriptEngineManager scriptEngineManager, String language, List<String> libraryNames) {
         scriptEngine = scriptEngineManager.getEngineByName(language);
         if (scriptEngine == null) {
             throw new ConfigurationException("Cannot get a script engine for language " + language);
@@ -85,7 +83,7 @@ public class ScriptAlgorithmManager {
     }
 
 
-    ScriptAlgorithmExecutor createExecutor(CustomAlgorithm calg,  AlgorithmExecutionContext execCtx) {
+    public ScriptAlgorithmExecutor makeExecutor(CustomAlgorithm calg,  AlgorithmExecutionContext execCtx) {
         String functionName = calg.getQualifiedName().replace("/", "_");
         if(scriptEngine.get(functionName)==null) {
             String functionScript = generateFunctionCode(functionName, calg);
@@ -95,7 +93,7 @@ public class ScriptAlgorithmManager {
                 scriptEngine.put(ScriptEngine.FILENAME, calg.getQualifiedName());
                 scriptEngine.eval(functionScript);
             } catch (ScriptException e) {
-                eventProducer.sendWarning("Error evaluating script "+functionScript+": "+e.getMessage());
+                execCtx.getEventProducer().sendWarning("Error evaluating script "+functionScript+": "+e.getMessage());
                 log.warn("Error while evaluating script {}: {}", functionScript, e.getMessage(), e);
             }    
         }
@@ -169,5 +167,11 @@ public class ScriptAlgorithmManager {
             r = inputParameter.getParameterInstance().getParameter().getName();
         }
         return r;
+    }
+
+
+    @Override
+    public List<String> getLanguages() {
+        return scriptEngine.getFactory().getNames();
     }
 }
