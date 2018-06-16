@@ -55,7 +55,7 @@ public class ProcessorData {
         } else {//instance can be null when running in test or as a library - in this case we don't generate events
             eventProducer = new QuietEventProducer();
         }
-        eventProducer.setSource("PROC_"+procName);
+        eventProducer.setSource("PROCESOR("+procName+")");
         eventProducer.setRepeatedEventReduction(true, 10000);
     }
     

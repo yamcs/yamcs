@@ -4,14 +4,21 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
+
+import sun.misc.JavaLangAccess;
+import sun.misc.SharedSecrets;
 
 /**
  * Default implementation of an EventProducer that provides shortcut methods for sending message of different severity
  * types.
  */
 public abstract class AbstractEventProducer implements EventProducer {
+    private static final Logger log = LoggerFactory.getLogger(EventProducer.class);
+    protected boolean logAllMessages = true;
     String source;
     AtomicInteger seqNo = new AtomicInteger();
 
@@ -43,7 +50,7 @@ public abstract class AbstractEventProducer implements EventProducer {
     public synchronized void sendWarning(String type, String msg) {
         sendMessage(EventSeverity.WARNING, type, msg);
     }
-
+ 
     @Override
     public synchronized void sendInfo(String type, String msg) {
         sendMessage(EventSeverity.INFO, type, msg);
@@ -68,8 +75,54 @@ public abstract class AbstractEventProducer implements EventProducer {
     public synchronized void sendSevere(String type, String msg) {
         sendMessage(EventSeverity.SEVERE, type, msg);
     }
+    
+    @Override
+    public void sendInfo(String msg) {
+        sendWarning(getInvokingClass(), msg);
+    }
+    
+    @Override
+    public void sendWatch(String msg) {
+        sendWatch(getInvokingClass(), msg);
+    }
+    
+    @Override
+    public void sendWarning(String msg) {
+        sendWarning(getInvokingClass(), msg);
+    }
+    
+    @Override
+    public void sendCritical(String msg) {
+        sendCritical(getInvokingClass(), msg);
+    }
+
+    @Override
+    public void sendDistress(String msg) {
+        sendDistress(getInvokingClass(), msg);
+    }
+
+    @Override
+    public void sendSevere(String msg) {
+        sendSevere(getInvokingClass(), msg);
+    }
+
+    private String getInvokingClass() {
+        Throwable throwable = new Throwable();
+        String classname  =  throwable.getStackTrace()[2].getClassName();
+        int idx = classname.lastIndexOf('.');
+        return classname.substring(idx+1);
+    }
+
+   
 
     private void sendMessage(EventSeverity severity, String type, String msg) {
+        if(logAllMessages) {
+            if(severity==EventSeverity.INFO) {
+                log.info("event: {}; {}; {}", severity, type, msg);
+            } else { //we do not use log.error - this is reserved for problems inside the software
+                log.warn("event: {}; {}; {}", severity, type, msg);
+            }
+        }
         Event.Builder eventb = newEvent().setSeverity(severity).setMessage(msg);
         if (type != null) {
             eventb.setType(type);

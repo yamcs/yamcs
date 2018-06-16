@@ -30,7 +30,6 @@ import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CustomAlgorithm;
@@ -41,6 +40,7 @@ import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.OnPeriodicRateTrigger;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.XtceDb;
 import org.yaml.snakeyaml.Yaml;
 
@@ -154,18 +154,22 @@ public class AlgorithmManager extends AbstractService
         if (algo.getOutputSet().isEmpty() && !ctx.containsAlgorithm(algo)) {
             activateAlgorithm(algo, ctx, null);
         }
-
-        List<OnPeriodicRateTrigger> timedTriggers = algo.getTriggerSet().getOnPeriodicRateTriggers();
-        if (!timedTriggers.isEmpty()) {
-            // acts as a fixed-size pool
-            activateAlgorithm(algo, ctx, null);
-            final AlgorithmExecutor engine = ctx.getExecutor(algo);
-            for (OnPeriodicRateTrigger trigger : timedTriggers) {
-                timer.scheduleAtFixedRate(() -> {
-                    long t = yproc.getCurrentTime();
-                    List<ParameterValue> params = engine.runAlgorithm(t, t);
-                    parameterRequestManager.update(params);
-                }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
+        TriggerSetType tst = algo.getTriggerSet();
+        if (tst == null) {
+            eventProducer.sendWarning("No trigger set for algorithm '" + algo.getQualifiedName() + "'");
+        } else {
+            List<OnPeriodicRateTrigger> timedTriggers = tst.getOnPeriodicRateTriggers();
+            if (!timedTriggers.isEmpty()) {
+                // acts as a fixed-size pool
+                activateAlgorithm(algo, ctx, null);
+                final AlgorithmExecutor engine = ctx.getExecutor(algo);
+                for (OnPeriodicRateTrigger trigger : timedTriggers) {
+                    timer.scheduleAtFixedRate(() -> {
+                        long t = yproc.getCurrentTime();
+                        List<ParameterValue> params = engine.runAlgorithm(t, t);
+                        parameterRequestManager.update(params);
+                    }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
+                }
             }
         }
     }
@@ -225,7 +229,11 @@ public class AlgorithmManager extends AbstractService
         if (algorithm instanceof CustomAlgorithm) {
             CustomAlgorithm calg = (CustomAlgorithm) algorithm;
             String algLang = calg.getLanguage();
-            if (algLang.equalsIgnoreCase("java")) {
+            if(algLang == null) {
+                eventProducer.sendCritical("no language specified for algorithm '"+algorithm.getQualifiedName()+"'");    
+                return;
+            }
+            if ("java".equalsIgnoreCase(algLang)) {
                 executor = loadJavaExecutor(calg, execCtx);
             } else {
                 ScriptAlgorithmManager sam = getScriptManagerByLanguage(calg.getLanguage());

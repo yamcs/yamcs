@@ -116,7 +116,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             return outputValues;
         } catch (ScriptException | NoSuchMethodException e) {
             log.warn("Error while executing algorithm: " + e.getMessage(), e);
-            eventProducer.sendWarning(EventProducer.TYPE_ALGO_RUN, "Error while executing algorithm: "+e.getMessage());
+            eventProducer.sendWarning("Error while executing algorithm: "+e.getMessage());
             return Collections.emptyList();
         }
     }

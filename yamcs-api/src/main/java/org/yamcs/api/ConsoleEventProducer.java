@@ -13,6 +13,9 @@ import org.yamcs.utils.TimeEncoding;
 public class ConsoleEventProducer extends AbstractEventProducer {
     Queue<Event> mockupQueue;
 
+    public ConsoleEventProducer() {
+        this.logAllMessages = false;
+    }
     @Override
     public void sendEvent(Event event) {
         System.out.println(event);

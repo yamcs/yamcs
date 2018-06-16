@@ -95,7 +95,7 @@ public class ScriptAlgorithmManager {
                 scriptEngine.put(ScriptEngine.FILENAME, calg.getQualifiedName());
                 scriptEngine.eval(functionScript);
             } catch (ScriptException e) {
-                eventProducer.sendWarning(EventProducer.TYPE_ALGO_COMPILE, "Error evaluating script "+functionScript+": "+e.getMessage());
+                eventProducer.sendWarning("Error evaluating script "+functionScript+": "+e.getMessage());
                 log.warn("Error while evaluating script {}: {}", functionScript, e.getMessage(), e);
             }    
         }
