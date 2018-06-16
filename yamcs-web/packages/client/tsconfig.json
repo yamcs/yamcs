@@ -12,16 +12,9 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
 
-    //"strict": true,
-    "alwaysStrict": true,
-    "noImplicitThis": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    // "strictFunctionTypes": true, // TS2.6+
-
-    // This mainly to detect unused imports
-    // (tslint has terrible support for this)
-    "noUnusedLocals": false,
+    "strict": true,
+    "strictFunctionTypes": false, // TODO
+    "strictPropertyInitialization": false, // TODO
 
     "declarationDir": "dist/types",
     "outDir": "dist/lib",

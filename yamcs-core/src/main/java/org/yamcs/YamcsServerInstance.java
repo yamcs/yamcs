@@ -37,7 +37,7 @@ public class YamcsServerInstance extends AbstractService {
     List<ServiceWithConfig> serviceList;
     private XtceDb xtceDb;
 
-    //guava doesn't allow to fail inside the init so we save the exception and we fail in the start
+    // guava doesn't allow to fail inside the init so we save the exception and we fail in the start
     private Exception initFailed;
 
     YamcsServerInstance(String instance) {
@@ -61,7 +61,7 @@ public class YamcsServerInstance extends AbstractService {
             serviceList = YamcsServer.createServices(instanceName, services);
         } catch (Exception e) {
             initFailed = e;
-            //trick to get it to the FAILED state
+            // trick to get it to the FAILED state
             startAsync();
             throw e;
         }
@@ -77,21 +77,21 @@ public class YamcsServerInstance extends AbstractService {
             Map<String, Object> m = conf.getMap("timeService");
             String servclass = YConfiguration.getString(m, "class");
             Object args = m.get("args");
-            try  {
+            try {
                 if (args == null) {
                     timeService = YObjectLoader.loadObject(servclass, instanceName);
                 } else {
                     timeService = YObjectLoader.loadObject(servclass, instanceName, args);
                 }
             } catch (IOException e) {
-                throw new ConfigurationException("Failed to load time service :"+e.getMessage(), e);
+                throw new ConfigurationException("Failed to load time service :" + e.getMessage(), e);
             }
         } else {
             timeService = new RealtimeTimeService();
         }
     }
 
-    public Service getService(String serviceName) {
+    public ServiceWithConfig getServiceWithConfig(String serviceName) {
         if (serviceList == null) {
             return null;
         }
@@ -99,10 +99,15 @@ public class YamcsServerInstance extends AbstractService {
         for (ServiceWithConfig swc : serviceList) {
             Service s = swc.service;
             if (s.getClass().getName().equals(serviceName)) {
-                return s;
+                return swc;
             }
         }
         return null;
+    }
+
+    public Service getService(String serviceName) {
+        ServiceWithConfig serviceWithConfig = getServiceWithConfig(serviceName);
+        return serviceWithConfig != null ? serviceWithConfig.getService() : null;
     }
 
     @SuppressWarnings("unchecked")
@@ -141,7 +146,7 @@ public class YamcsServerInstance extends AbstractService {
 
     @Override
     protected void doStart() {
-        if(initFailed != null) {
+        if (initFailed != null) {
             notifyFailed(initFailed);
         } else {
             YamcsServer.startServices(serviceList);

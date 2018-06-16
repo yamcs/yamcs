@@ -17,16 +17,9 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
 
-    //"strict": true,
-    "alwaysStrict": true,
-    "noImplicitThis": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    // "strictFunctionTypes": true,
-
-    // This mainly to detect unused imports
-    // (tslint has terrible support for this)
-    "noUnusedLocals": true,
+    "strict": true,
+    "strictFunctionTypes": false, // TODO
+    "strictPropertyInitialization": false, // TODO
 
     "typeRoots": [
       "node_modules/@types"

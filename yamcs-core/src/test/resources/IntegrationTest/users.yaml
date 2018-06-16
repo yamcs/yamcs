@@ -1,0 +1,11 @@
+testuser:
+  password: password
+  roles: [Role1, EmptyRole]
+  
+operator:
+  password: password
+  roles: [Operator]
+  
+admin:
+  password: rootpassword
+  roles: [Administrator, Operator]

@@ -234,8 +234,9 @@ public class CcsdsTmIndex implements TmIndex {
         if (time1 < time2) {
             if (((time2 - time1) <= maxApidInterval) && (((seq2 - seq1) & 0x3FFF) == 1)) {
                 return -1;
-            } else
+            } else {
                 return -0x3FFF;
+            }
         } else if (time1 == time2) {
             int d = (seq1 - seq2) & 0x3FFF;
             if (d < 0x2000) {
@@ -245,8 +246,9 @@ public class CcsdsTmIndex implements TmIndex {
         } else {
             if (((time1 - time2) <= maxApidInterval) && (((seq1 - seq2) & 0x3FFF) == 1)) {
                 return 1;
-            } else
+            } else {
                 return 0x3FFF;
+            }
         }
     }
 
@@ -432,10 +434,12 @@ public class CcsdsTmIndex implements TmIndex {
         Record curr;
 
         public CcsdsIndexIterator(short apid, long start, long stop) {
-            if (start < 0)
+            if (start < 0) {
                 start = -1;
-            if (stop < 0)
+            }
+            if (stop < 0) {
                 stop = -1;
+            }
             this.apid = apid;
             this.start = start;
             this.stop = stop;
@@ -636,7 +640,7 @@ public class CcsdsTmIndex implements TmIndex {
     public class CcsdsTmIndexRestHandler extends RestHandler {
         @Route(path = "/api/ccsdstmindex/:instance/rebuild", method = { "PUT", "POST" })
         public void rebuildIndex(RestRequest req) throws HttpException {
-            checkSystemPrivilege(req, SystemPrivilege.MayControlArchiving);
+            checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
             TimeInterval interval = req.scanForInterval().asTimeInterval();
             try {

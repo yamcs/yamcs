@@ -66,7 +66,7 @@ public class ArchiveEventRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         verifyEventArchiveSupport(instance);
 
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadEvents);
+        checkSystemPrivilege(req, SystemPrivilege.ReadEvents);
 
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
@@ -176,7 +176,7 @@ public class ArchiveEventRestHandler extends RestHandler {
         log.warn("Deprecated use of legacy API. "
                 + "Use new API at /api/archive/:instance/events2 instead of /api/archive/:instance/events");
 
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayWriteEvents);
+        checkSystemPrivilege(req, SystemPrivilege.WriteEvents);
 
         // get event from request
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -200,7 +200,7 @@ public class ArchiveEventRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/events2", method = "POST")
     public void postEvent2(RestRequest req) throws HttpException {
 
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayWriteEvents);
+        checkSystemPrivilege(req, SystemPrivilege.WriteEvents);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         CreateEventRequest request = req.bodyAsMessage(CreateEventRequest.newBuilder()).build();
@@ -211,7 +211,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
         Event.Builder eventb = Event.newBuilder();
         eventb.setSource("User");
-        eventb.setCreatedBy(req.getUsername());
+        eventb.setCreatedBy(req.getUser().getUsername());
         eventb.setSeqNumber(eventSequenceNumber.getAndIncrement());
         eventb.setMessage(request.getMessage());
 
@@ -264,7 +264,7 @@ public class ArchiveEventRestHandler extends RestHandler {
     public void listSources(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         verifyEventArchiveSupport(instance);
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadEvents);
+        checkSystemPrivilege(req, SystemPrivilege.ReadEvents);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 

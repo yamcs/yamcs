@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.web.rest.RestHandler;
 import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
@@ -24,7 +23,7 @@ public class ProcessorCreatorService extends AbstractService {
     Processor processor;
     String yamcsInstance;
 
-    private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ProcessorCreatorService.class);
 
     public ProcessorCreatorService(String yamcsInstance, Map<String, String> config)
             throws ConfigurationException, StreamSqlException, ProcessorException, ParseException {

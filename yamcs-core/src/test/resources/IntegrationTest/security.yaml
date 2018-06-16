@@ -1,0 +1,4 @@
+enabled: true
+
+authModules: 
+  - class: org.yamcs.security.YamlAuthModule

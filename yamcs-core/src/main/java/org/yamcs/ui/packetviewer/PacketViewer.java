@@ -70,6 +70,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.YamcsConnector;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
@@ -82,11 +83,8 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.tctm.IssPacketPreprocessor;
 import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.ui.PrefsObject;
-import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.websocket.CommandQueueResource;
-import org.yamcs.web.websocket.PacketResource;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.DataEncoding;
@@ -975,8 +973,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                 }
 
             }
-            WebSocketRequest wsr = new WebSocketRequest(PacketResource.RESOURCE_NAME,
-                    CommandQueueResource.OP_subscribe + " " + streamName);
+            WebSocketRequest wsr = new WebSocketRequest("packets", "subscribe " + streamName);
             yconnector.performSubscription(wsr, this, e -> {
                 showError("Error subscribing to " + streamName + ": " + e.getMessage());
             });

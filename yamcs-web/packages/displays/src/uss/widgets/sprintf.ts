@@ -54,12 +54,12 @@ const re = {
   sign: /^[\+\-]/
 };
 
-export function sprintf(key, ...args) {
+export function sprintf(key: any, ...args: any[]) {
   // `arguments` is not an array, but should be fine for this call
   return sprintf_format(sprintf_parse(key), args);
 }
 
-function sprintf_format(parse_tree, argv) {
+function sprintf_format(parse_tree: any, argv: any) {
   var cursor = 1, tree_length = parse_tree.length, arg, output = '', i, k, match, pad, pad_character, pad_length, is_positive, sign
   for (i = 0; i < tree_length; i++) {
     if (typeof parse_tree[i] === 'string') {
@@ -166,7 +166,7 @@ function sprintf_format(parse_tree, argv) {
 
 const sprintf_cache = Object.create(null);
 
-function sprintf_parse(fmt) {
+function sprintf_parse(fmt: any) {
   if (sprintf_cache[fmt]) {
     return sprintf_cache[fmt];
   }

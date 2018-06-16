@@ -29,7 +29,7 @@
   "devDependencies": {
     "@types/jasmine": "^2.8.6",
     "@types/jasminewd2": "~2.0.2",
-    "@types/node": "^9.4.7",
+    "@types/node": "^10.3.3",
     "@types/pegjs": "^0.10.0",
     "jasmine-core": "^3.1.0",
     "jasmine-spec-reporter": "~4.2.1",
@@ -38,13 +38,13 @@
     "karma-cli": "~1.0.1",
     "karma-jasmine": "~1.1.0",
     "pegjs": "^0.10.0",
-    "rollup": "^0.59.0",
+    "rollup": "^0.60.1",
     "rollup-plugin-commonjs": "^9.0.0",
     "rollup-plugin-node-resolve": "^3.2.0",
     "rollup-plugin-peer-deps-external": "^2.1.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
-    "rollup-plugin-typescript2": "^0.14.0",
-    "ts-pegjs": "^0.1.13",
+    "rollup-plugin-typescript2": "^0.15.0",
+    "ts-pegjs": "^0.2.1",
     "tslint": "^5.8.0",
     "typescript": "~2.7.2"
   }

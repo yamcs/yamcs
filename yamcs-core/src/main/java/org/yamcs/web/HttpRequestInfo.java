@@ -1,6 +1,6 @@
 package org.yamcs.web;
 
-import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.User;
 
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
@@ -17,7 +17,7 @@ public class HttpRequestInfo {
 
     // optional
     private String yamcsInstance;
-    private AuthenticationToken authenticationToken;
+    private User user;
 
     public HttpRequestInfo(HttpRequest req) {
         method = req.method();
@@ -45,11 +45,11 @@ public class HttpRequestInfo {
         return yamcsInstance;
     }
 
-    public void setAuthenticationToken(AuthenticationToken authenticationToken) {
-        this.authenticationToken = authenticationToken;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public AuthenticationToken getAuthenticationToken() {
-        return authenticationToken;
+    public User getUser() {
+        return user;
     }
 }

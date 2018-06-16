@@ -18,8 +18,7 @@ import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
+import org.yamcs.security.User;
 import org.yamcs.utils.LoggingUtils;
 
 import com.google.common.util.concurrent.Service;
@@ -34,8 +33,7 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
     private final Logger log;
     private final int clientId;
     private final String applicationName;
-    private final String username;
-    private final AuthenticationToken authToken;
+    private final User user;
 
     private Processor processor;
 
@@ -43,15 +41,9 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
     private WebSocketFrameHandler wsHandler;
 
     public WebSocketProcessorClient(String yamcsInstance, WebSocketFrameHandler wsHandler, String applicationName,
-            AuthenticationToken authToken) {
+            User user) {
         this.applicationName = applicationName;
-        this.authToken = authToken;
-        if (authToken != null) {
-            username = authToken.getPrincipal().toString();
-        } else {
-            username = Privilege.getInstance().getDefaultUser();
-        }
-
+        this.user = user;
         this.wsHandler = wsHandler;
         log = LoggingUtils.getLogger(WebSocketProcessorClient.class, yamcsInstance);
         processor = Processor.getFirstProcessor(yamcsInstance);
@@ -102,8 +94,8 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
         return clientId;
     }
 
-    public AuthenticationToken getAuthToken() {
-        return authToken;
+    public User getUser() {
+        return user;
     }
 
     public WebSocketFrameHandler getWebSocketFrameHandler() {
@@ -116,7 +108,7 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
 
     @Override
     public String getUsername() {
-        return username;
+        return user.getUsername();
     }
 
     @Override

@@ -1,10 +1,10 @@
 import { Observable } from 'rxjs';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
-import { AlarmsWrapper, AlgorithmsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
+import { AlarmsWrapper, AlgorithmsWrapper, BucketsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, ObjectsWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, Command, Container, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, SpaceSystem } from './types/mdb';
 import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DisplayFolder, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
-import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
+import { Bucket, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, CreateBucketRequest, EditCommandQueueEntryOptions, EditCommandQueueOptions, Link, LinkSubscriptionResponse, ListObjectsOptions, ObjectInfo, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
 
 export class InstanceClient {
 
@@ -241,11 +241,17 @@ export class InstanceClient {
     return wrapper.service || [];
   }
 
+  async getService(name: string): Promise<Service> {
+    const url = `${this.yamcs.apiUrl}/services/${this.instance}/${name}`;
+    const response = await this.yamcs.doFetch(url);
+    return await response.json() as Service;
+  }
+
   async startService(name: string) {
     const body = JSON.stringify({
       state: 'running'
     })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}`, {
       body,
       method: 'PATCH',
     });
@@ -255,7 +261,7 @@ export class InstanceClient {
     const body = JSON.stringify({
       state: 'stopped'
     })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}`, {
       body,
       method: 'PATCH',
     });
@@ -460,6 +466,57 @@ export class InstanceClient {
     const url = `${this.yamcs.apiUrl}/mdb/${this.instance}/algorithms${qualifiedName}`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as Algorithm;
+  }
+
+  async createBucket(options: CreateBucketRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${this.instance}`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Event;
+  }
+
+  async getBuckets(): Promise<Bucket[]> {
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${this.instance}`);
+    const wrapper = await response.json() as BucketsWrapper;
+    return wrapper.bucket || [];
+  }
+
+  async deleteBucket(name: string) {
+    const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${name}`;
+    return await this.yamcs.doFetch(url, {
+      method: 'DELETE',
+    });
+  }
+
+  async listObjects(bucket: string, options: ListObjectsOptions = {}): Promise<ObjectInfo[]> {
+    const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}`;
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
+    const wrapper = await response.json() as ObjectsWrapper;
+    return wrapper.object || [];
+  }
+
+  async getObject(bucket: string, name: string) {
+    const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}/${name}`;
+    return await this.yamcs.doFetch(url);
+  }
+
+  async uploadObject(bucket: string, name: string, value: Blob) {
+    const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}`;
+    const formData = new FormData();
+    formData.set(name, value, name);
+    return await this.yamcs.doFetch(url, {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async deleteObject(bucket: string, name: string) {
+    const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}/${name}`;
+    return await this.yamcs.doFetch(url, {
+      method: 'DELETE',
+    });
   }
 
   async getDisplayInfo() {

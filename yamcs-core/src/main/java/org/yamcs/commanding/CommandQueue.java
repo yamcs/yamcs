@@ -8,44 +8,39 @@ import org.yamcs.Processor;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersCollector;
 import org.yamcs.protobuf.Commanding.QueueState;
-import org.yamcs.security.Privilege;
 
 public class CommandQueue {
     String name;
     private ConcurrentLinkedQueue<PreparedCommand> commands = new ConcurrentLinkedQueue<>();
-    QueueState defaultState=QueueState.BLOCKED;
-    QueueState state=QueueState.BLOCKED;
+    QueueState defaultState = QueueState.BLOCKED;
+    QueueState state = QueueState.BLOCKED;
     Processor processor;
 
     int nbSentCommands = 0;
     int nbRejectedCommands = 0;
     int stateExpirationTimeS = 0;
 
-
     int stateExpirationRemainingS = -1;
     ScheduledFuture<?> stateExpirationJob = null;
-    
-    List<String> roles;
+
     List<String> significances;
     String spQueueState;
     String spNumSentCommands;
     String spNumRejectedCommands;
     String spNumCommands;
 
-    CommandQueue(Processor channel, String name) {
-        this.processor=channel;
-        this.name=name;
-        if(!Privilege.getInstance().isEnabled()) {
-            state=QueueState.ENABLED;
-        }
+    CommandQueue(Processor channel, String name, QueueState initialState) {
+        this.processor = channel;
+        this.name = name;
+        this.state = initialState;
     }
 
     void setupSysParameters() {
         SystemParametersCollector sysParamCollector = SystemParametersCollector.getInstance(processor.getInstance());
-        spQueueState = sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/state";
-        spNumCommands = sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/numCommands";
-        spNumSentCommands = sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/numSentCommands";
-        spNumRejectedCommands = sysParamCollector.getNamespace()+"/cmdQueue/"+name+"/numRejectedCommands";
+        spQueueState = sysParamCollector.getNamespace() + "/cmdQueue/" + name + "/state";
+        spNumCommands = sysParamCollector.getNamespace() + "/cmdQueue/" + name + "/numCommands";
+        spNumSentCommands = sysParamCollector.getNamespace() + "/cmdQueue/" + name + "/numSentCommands";
+        spNumRejectedCommands = sysParamCollector.getNamespace() + "/cmdQueue/" + name + "/numRejectedCommands";
     }
 
     public ConcurrentLinkedQueue<PreparedCommand> getCommands() {
@@ -55,7 +50,7 @@ public class CommandQueue {
     public String getName() {
         return name;
     }
-    
+
     public QueueState getState() {
         return state;
     }
@@ -82,17 +77,20 @@ public class CommandQueue {
 
     /**
      * remove the command from the queue and return true if it has been removed
+     * 
      * @param pc
-     * @param isSent: true if the command has been sent, false if the commmand has been rejected
+     * @param isSent:
+     *            true if the command has been sent, false if the commmand has been rejected
      * @return
      */
     public boolean remove(PreparedCommand pc, boolean isSent) {
         boolean removed = commands.remove(pc);
-        if(removed) {
-            if(isSent)
+        if (removed) {
+            if (isSent) {
                 nbSentCommands++;
-            else
+            } else {
                 nbRejectedCommands++;
+            }
         }
         return removed;
     }
@@ -100,7 +98,7 @@ public class CommandQueue {
     public void clear(boolean areSent) {
         int nbCommands = commands.size();
         commands.clear();
-        if(areSent) {
+        if (areSent) {
             nbSentCommands += nbCommands;
         } else {
             nbRejectedCommands += nbCommands;
@@ -110,7 +108,6 @@ public class CommandQueue {
     public int getNbRejectedCommands() {
         return nbRejectedCommands;
     }
-
 
     public int getStateExpirationRemainingS() {
         return stateExpirationRemainingS;

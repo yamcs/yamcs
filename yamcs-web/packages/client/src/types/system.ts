@@ -3,12 +3,18 @@ import { CommandQueueEntry, Value } from './monitoring';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
+  flow: AuthFlow[];
 }
 
-export interface AccessTokenResponse {
+export interface AuthFlow {
+  type: 'PASSWORD' | 'REDIRECT' | 'SPNEGO';
+}
+
+export interface TokenResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
+  refresh_token: string;
   user: UserInfo;
 }
 
@@ -73,14 +79,15 @@ export interface ClientSubscriptionResponse {
 export interface UserInfo {
   login: string;
   clientInfo: ClientInfo[];
-  roles: string[];
-  tmParaPrivileges: string[];
-  tmParaSetPrivileges: string[];
-  tmPacketPrivileges: string[];
-  tcPrivileges: string[];
-  systemPrivileges: string[];
-  streamPrivileges: string[];
-  cmdHistoryPrivileges: string[];
+  superuser: boolean;
+
+  systemPrivilege: string[];
+  objectPrivilege: ObjectPrivilege[];
+}
+
+export interface ObjectPrivilege {
+  type: string;
+  object: string[];
 }
 
 export interface Service {
@@ -240,4 +247,25 @@ export interface CommandQueueEventSubscriptionResponse {
 
 export interface EditCommandQueueEntryOptions {
   state: 'released' | 'rejected';
+}
+
+export interface Bucket {
+  name: string;
+  size: number;
+  numObjects: number;
+}
+
+export interface ObjectInfo {
+  name: string;
+  created: string;
+  size: number;
+  metadata: { [key: string]: string };
+}
+
+export interface CreateBucketRequest {
+  name: string;
+}
+
+export interface ListObjectsOptions {
+  prefix?: string;
 }

@@ -1,166 +1,114 @@
 package org.yamcs.security;
 
-import java.util.Date;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by msc on 05/05/15.
+ * A user contains identifying information and a convenient set of methods to perform access control.
+ * <p>
+ * Users may be assigned two kinds of different privileges:
+ * 
+ * <ul>
+ * <li>System privileges that grant the user the right to perform an action on any object.
+ * <li>Object privileges that grant the user the right to perform an action on a specific object.
+ * </ul>
+ * 
+ * Additionally a special attribute <tt>superuser</tt> may have been granted to a user. Users with this attribute are
+ * not subjected to privilege checking (i.e. they are allowed everything, even without being assigned privileges).
  */
 public class User {
 
-    private AuthenticationToken authToken;
-    private Date lastUpdated;
+    private String username;
 
-    private Set<String> roles = new HashSet<>();
-    private Set<String> tmParaPrivileges = new HashSet<>();
-    private Set<String> tmParaSetPrivileges = new HashSet<>();
-    private Set<String> tmPacketPrivileges = new HashSet<>();
-    private Set<String> tcPrivileges = new HashSet<>();
-    private Set<String> streamPrivileges = new HashSet<>();
-    private Set<String> cmdHistoryPrivileges = new HashSet<>();
-    private Set<String> systemPrivileges = new HashSet<>();
+    /**
+     * May contain contextual security information of use to a specific AuthModule. (e.g. expiration of an externally
+     * issued token)
+     */
+    private AuthenticationInfo authenticationInfo;
 
-    public User(AuthenticationToken authToken) {
-        this.authToken = authToken;
-        lastUpdated = new Date();
+    private boolean superuser = false;
+
+    private Set<SystemPrivilege> systemPrivileges = new HashSet<>();
+    private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
+
+    public User(AuthenticationInfo authenticationInfo) {
+        this.authenticationInfo = authenticationInfo;
+        this.username = authenticationInfo.getPrincipal();
     }
 
-    public Date getLastUpdated() {
-        return lastUpdated;
+    public User(String username) {
+        this.username = username;
     }
 
-    public void addRole(String role) {
-        roles.add(role);
+    public String getUsername() {
+        return username;
     }
 
-    public Set<String> getTmParaPrivileges() {
-        return tmParaPrivileges;
+    public AuthenticationInfo getAuthenticationInfo() {
+        return authenticationInfo;
     }
 
-    public Set<String> getTmParaSetPrivileges() {
-        return tmParaSetPrivileges;
+    public boolean isSuperuser() {
+        return superuser;
     }
 
-    public Set<String> getTmPacketPrivileges() {
-        return tmPacketPrivileges;
+    public void setSuperuser(boolean superuser) {
+        this.superuser = superuser;
     }
 
-    public Set<String> getTcPrivileges() {
-        return tcPrivileges;
-    }
-
-    public Set<String> getStreamPrivileges() {
-        return streamPrivileges;
-    }
-
-    public Set<String> getCmdHistoryPrivileges() {
-        return cmdHistoryPrivileges;
-    }
-
-    public Set<String> getSystemPrivileges() {
+    public Set<SystemPrivilege> getSystemPrivileges() {
         return systemPrivileges;
     }
 
-    public void addTmParaPrivilege(String privilege) {
-        tmParaPrivileges.add(privilege);
+    public Map<ObjectPrivilegeType, Set<ObjectPrivilege>> getObjectPrivileges() {
+        return objectPrivileges;
     }
 
-    public void addTmParaSetPrivilege(String privilege) {
-        tmParaSetPrivileges.add(privilege);
+    public Set<ObjectPrivilege> getObjectPrivileges(ObjectPrivilegeType type) {
+        Set<ObjectPrivilege> privilegesForType = objectPrivileges.get(type);
+        return privilegesForType != null ? privilegesForType : Collections.emptySet();
     }
 
-    public void addTmPacketPrivilege(String privilege) {
-        tmPacketPrivileges.add(privilege);
+    public void addSystemPrivilege(SystemPrivilege systemPrivilege) {
+        systemPrivileges.add(systemPrivilege);
     }
 
-    public void addTcPrivilege(String privilege) {
-        tcPrivileges.add(privilege);
+    public void addObjectPrivilege(ObjectPrivilege objectPrivilege) {
+        Set<ObjectPrivilege> privilegesForType = objectPrivileges.get(objectPrivilege.getType());
+        if (privilegesForType == null) {
+            privilegesForType = new HashSet<>();
+            objectPrivileges.put(objectPrivilege.getType(), privilegesForType);
+        }
+        privilegesForType.add(objectPrivilege);
     }
 
-    public void addStreamPrivilege(String privilege) {
-        streamPrivileges.add(privilege);
-    }
-
-    public void addCmdHistoryPrivilege(String privilege) {
-        cmdHistoryPrivileges.add(privilege);
-    }
-
-    public void addSystemPrivilege(String privilege) {
-        systemPrivileges.add(privilege);
-    }
-
-    public AuthenticationToken getAuthenticationToken() {
-        return authToken;
-    }
-
-    public String getPrincipalName() {
-        Object principal = authToken.getPrincipal();
-        return principal != null ? principal.toString() : null;
-    }
-
-    /**
-     * @return the roles of the calling user
-     */
-    public String[] getRoles() {
-        if (roles == null)
-            return new String[0];
-        return roles.toArray(new String[roles.size()]);
-    }
-
-    public boolean hasRole(String role) {
-        if (this.roles == null)
-            return false;
-        return (this.roles.contains(role));
-    }
-
-    public boolean hasPrivilege(PrivilegeType type, String privilege) {
-        Set<String> priv = null;
-        if (privilege == null)
+    public boolean hasSystemPrivilege(SystemPrivilege systemPrivilege) {
+        if (superuser) {
             return true;
-        switch (type) {
-        case TM_PARAMETER:
-            priv = this.tmParaPrivileges;
-            break;
-        case TM_PARAMETER_SET:
-            priv = this.tmParaSetPrivileges;
-            break;
-        case TC:
-            priv = this.tcPrivileges;
-            break;
-        case TM_PACKET:
-            priv = this.tmPacketPrivileges;
-            break;
-        case SYSTEM:
-            priv = this.systemPrivileges;
-            break;
-        case STREAM:
-            priv = this.streamPrivileges;
-            break;
-        case CMD_HISTORY:
-            priv = this.cmdHistoryPrivileges;
-            break;
         }
-        if (priv == null) {
-            return false;
+
+        return systemPrivileges.contains(systemPrivilege);
+    }
+
+    public boolean hasObjectPrivilege(ObjectPrivilegeType type, String object) {
+        if (superuser) {
+            return true;
         }
-        for (String p : priv) {
-            if (privilege.matches(p)) {
+
+        for (ObjectPrivilege privilege : getObjectPrivileges(type)) {
+            if (object.matches(privilege.getObject())) {
                 return true;
             }
         }
+
         return false;
     }
 
     @Override
     public String toString() {
-        return "User: " + authToken.getPrincipal().toString()
-                + "\n roles: " + roles
-                + "\n   tm parameter privileges:" + tmParaPrivileges
-                + "\n   tm parameter set privileges:" + tmParaSetPrivileges
-                + "\n   tm packet privileges:" + tmPacketPrivileges
-                + "\n   tc privileges:" + tcPrivileges
-                + "\n   system privileges:" + systemPrivileges
-                + "\n   lastUpdated:" + lastUpdated;
+        return username;
     }
 }

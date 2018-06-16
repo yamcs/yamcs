@@ -40,7 +40,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
 
-        verifyAuthorization(ctx.getRequestId(), SystemPrivilege.MayControlCommandQueue);
+        checkSystemPrivilege(ctx.getRequestId(), SystemPrivilege.ControlCommandQueue);
 
         switch (ctx.getOperation()) {
         case OP_subscribe:

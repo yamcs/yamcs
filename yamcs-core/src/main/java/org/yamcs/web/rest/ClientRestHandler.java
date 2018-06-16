@@ -13,8 +13,6 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest.Operation;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -64,7 +62,7 @@ public class ClientRestHandler extends RestHandler {
                 throw new BadRequestException(String.format("Cannot switch user to non-existing processor %s/%s",
                         newInstance, request.getProcessor()));
             }
-            verifyPermission(newProcessor, ci.getId(), restReq.getAuthToken());
+            verifyPermission(newProcessor, ci.getId(), restReq);
 
             ManagementService mservice = ManagementService.getInstance();
             ProcessorManagementRequest.Builder procReq = ProcessorManagementRequest.newBuilder();
@@ -82,13 +80,14 @@ public class ClientRestHandler extends RestHandler {
         completeOK(restReq);
     }
 
-    private void verifyPermission(Processor processor, int clientId, AuthenticationToken authToken)
+    private void verifyPermission(Processor processor, int clientId, RestRequest req)
             throws HttpException {
-        String username = Privilege.getInstance().getUsername(authToken);
-        if (Privilege.getInstance().hasPrivilege1(authToken, SystemPrivilege.MayControlProcessor)) {
-            // MayControlProcesor can do whatever they want
+        if (hasSystemPrivilege(req, SystemPrivilege.ControlProcessor)) {
+            // With this privilege, everything is allowed
             return;
         }
+
+        String username = req.getUser().getUsername();
 
         // other users can only connect clients to the processor they own
         if (!(processor.isPersistent() || processor.getCreator().equals(username))) {
@@ -106,5 +105,4 @@ public class ClientRestHandler extends RestHandler {
             throw new ForbiddenException("Not allowed to connect other client than your own");
         }
     }
-
 }

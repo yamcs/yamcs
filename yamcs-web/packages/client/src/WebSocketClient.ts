@@ -80,7 +80,7 @@ export class WebSocketClient {
           console.error(`Server error:  ${msg[3].et}`, msg[3].msg);
         }
       },
-      (err) => console.log(err)
+      (err: any) => console.log(err)
     );
   }
 
