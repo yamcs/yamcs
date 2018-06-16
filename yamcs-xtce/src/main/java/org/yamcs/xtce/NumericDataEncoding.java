@@ -10,4 +10,6 @@ import java.util.List;
 public interface NumericDataEncoding {
     public List<ContextCalibrator> getContextCalibratorList();
     public Calibrator getDefaultCalibrator();
+    public void setDefaultCalibrator(Calibrator calibrator);
+    public void setContextCalibratorList(List<ContextCalibrator> contextCalibratorList);
 }
