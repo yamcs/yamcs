@@ -1,8 +1,8 @@
-import { Component, ChangeDetectionStrategy, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { Instance } from '@yamcs/client';
-import { YamcsService } from '../../core/services/YamcsService';
-import { AuthService } from '../../core/services/AuthService';
 import { AppConfig, APP_CONFIG, SidebarItem } from '../../core/config/AppConfig';
+import { AuthService } from '../../core/services/AuthService';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './MonitorPage.html',
@@ -27,6 +27,6 @@ export class MonitorPage {
   }
 
   showEventsItem() {
-    return this.authService.hasSystemPrivilege('MayReadEvents');
+    return this.authService.getUser()!.hasSystemPrivilege('ReadEvents');
   }
 }

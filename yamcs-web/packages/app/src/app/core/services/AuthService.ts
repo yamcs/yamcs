@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthInfo, HttpHandler, TokenResponse, UserInfo } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
+import { User } from '../../shared/User';
 import { YamcsService } from './YamcsService';
 
 export interface Claims {
@@ -21,7 +22,7 @@ export interface Claims {
 export class AuthService {
 
   public authInfo$ = new BehaviorSubject<AuthInfo | null>(null);
-  public userInfo$ = new BehaviorSubject<UserInfo | null>(null);
+  public user$ = new BehaviorSubject<User | null>(null);
 
   private accessToken?: string;
   private refreshToken?: string;
@@ -49,7 +50,6 @@ export class AuthService {
      */
     yamcsService.yamcsClient.setHttpInterceptor(async (next: HttpHandler, url: string, init?: RequestInit) => {
       try {
-
         // Verify or fetch a token when necessary
         await this.loginAutomatically();
 
@@ -72,8 +72,8 @@ export class AuthService {
     });
   }
 
-  getUserInfo() {
-    return this.userInfo$.value;
+  getUser() {
+    return this.user$.value;
   }
 
   /**
@@ -90,24 +90,24 @@ export class AuthService {
     ).toPromise();
 
     if (!authInfo!.requireAuthentication) {
-      if (!this.userInfo$.value) {
+      if (!this.user$.value) {
         // Written such that it bypasses our interceptor
         const response = await fetch('/api/user');
-        this.userInfo$.next(await response.json() as UserInfo);
+        this.user$.next(new User(await response.json() as UserInfo));
       }
       return;
     }
 
     // Use already available tokens when we can
     if (this.accessToken) {
-      if (!this.userInfo$.value) {
+      if (!this.user$.value) {
         // Written such that it bypasses our interceptor
         const headers = new Headers();
         headers.append('Authorization', `Bearer ${this.accessToken}`);
         const response = await fetch('/api/user', { headers });
         if (response.status === 200) {
-          const userInfo = await response.json() as UserInfo;
-          this.userInfo$.next(userInfo);
+          const user = new User(await response.json() as UserInfo);
+          this.user$.next(user);
         } else if (response.status === 401) {
           this.logout(false);
           return await this.loginAutomatically();
@@ -147,23 +147,19 @@ export class AuthService {
    * to come from our login page.
    */
   public login(username: string, password: string) {
-    // Store in cookie so that the token survives browser refreshes
-    // and so it is added to the header of a websocket request.
     return this.yamcsService.yamcsClient.fetchAccessTokenWithPassword(username, password).then(loginInfo => {
       this.updateLoginCookies(loginInfo);
       this.yamcsService.yamcsClient.setAccessToken(loginInfo.access_token);
-      this.userInfo$.next(loginInfo.user);
+      this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
     });
   }
 
   private loginWithAuthorizationCode(authorizationCode: string) {
-    // Store in cookie so that the token survives browser refreshes
-    // and so it is added to the header of a websocket request.
     return this.yamcsService.yamcsClient.fetchAccessTokenWithAuthorizationCode(authorizationCode).then(loginInfo => {
       this.updateLoginCookies(loginInfo);
       this.yamcsService.yamcsClient.setAccessToken(loginInfo.access_token);
-      this.userInfo$.next(loginInfo.user);
+      this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
     });
   }
@@ -186,11 +182,15 @@ export class AuthService {
     return this.yamcsService.yamcsClient.fetchAccessTokenWithRefreshToken(refreshToken).then(loginInfo => {
       this.updateLoginCookies(loginInfo);
       this.yamcsService.yamcsClient.setAccessToken(loginInfo.access_token);
-      this.userInfo$.next(loginInfo.user);
+      this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
     });
   }
 
+  /*
+   * Store in cookie so that the token survives browser refreshes and so it
+   * is added to the header of a websocket request.
+   */
   private updateLoginCookies(tokenResponse: TokenResponse) {
     const expireMillis = tokenResponse.expires_in * 1000;
     const cookieExpiration = new Date();
@@ -215,45 +215,11 @@ export class AuthService {
 
     this.yamcsService.unselectInstance(); // TODO needed here?
     this.yamcsService.yamcsClient.clearAccessToken();
-    this.userInfo$.next(null);
+    this.user$.next(null);
 
     if (navigateToLoginPage) {
       this.router.navigate(['/login'], { queryParams: { next: '/' } });
     }
-  }
-
-  hasSystemPrivilege(privilege: string) {
-    const userInfo = this.userInfo$.value;
-    if (userInfo && userInfo.superuser) {
-      return true;
-    }
-    if (userInfo && userInfo.systemPrivilege) {
-      for (const userPrivilege of userInfo.systemPrivilege) {
-        if (privilege === userPrivilege) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  hasObjectPrivilege(type: string, object: string) {
-    const userInfo = this.userInfo$.value;
-    if (userInfo && userInfo.superuser) {
-      return true;
-    }
-    if (userInfo && userInfo.objectPrivilege) {
-      for (const p of userInfo.objectPrivilege) {
-        if (p.type === type) {
-          for (const expression of p.object) {
-            if (object.match(expression)) {
-              return true;
-            }
-          }
-        }
-      }
-    }
-    return false;
   }
 
   private extractClaims(jwt: string): Claims {

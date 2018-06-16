@@ -405,8 +405,8 @@ acorn-dynamic-import@^3.0.0:
     acorn "^5.0.0"
 
 acorn@^5.0.0:
-  version "5.6.2"
-  resolved "https://nexus.spaceapplications.com/repository/npm/acorn/-/acorn-5.6.2.tgz#b1da1d7be2ac1b4a327fb9eab851702c5045b4e7"
+  version "5.7.1"
+  resolved "https://nexus.spaceapplications.com/repository/npm/acorn/-/acorn-5.7.1.tgz#f095829297706a7c9776958c0afc8930a9b9d9d8"
 
 add-stream@^1.0.0:
   version "1.0.0"
@@ -1200,8 +1200,8 @@ camelcase@^4.0.0, camelcase@^4.1.0:
   resolved "https://nexus.spaceapplications.com/repository/npm/camelcase/-/camelcase-4.1.0.tgz#d545635be1e33c542649c69173e5de6acfae34dd"
 
 caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30000851:
-  version "1.0.30000855"
-  resolved "https://nexus.spaceapplications.com/repository/npm/caniuse-lite/-/caniuse-lite-1.0.30000855.tgz#d5a26a9093b932d6266bf4ed9294b41b84945d14"
+  version "1.0.30000856"
+  resolved "https://nexus.spaceapplications.com/repository/npm/caniuse-lite/-/caniuse-lite-1.0.30000856.tgz#ecc16978135a6f219b138991eb62009d25ee8daa"
 
 capture-stack-trace@^1.0.0:
   version "1.0.0"
@@ -1252,7 +1252,7 @@ chardet@^0.4.0:
   version "0.4.2"
   resolved "https://nexus.spaceapplications.com/repository/npm/chardet/-/chardet-0.4.2.tgz#b5473b33dc97c424e5d98dc87d55d4d8a29c8bf2"
 
-chokidar@^1.4.1, chokidar@^1.4.2, chokidar@^1.6.0:
+chokidar@^1.4.2, chokidar@^1.6.0:
   version "1.7.0"
   resolved "https://nexus.spaceapplications.com/repository/npm/chokidar/-/chokidar-1.7.0.tgz#798e689778151c8076b4b360e5edd28cda2bb468"
   dependencies:
@@ -4112,12 +4112,12 @@ karma-source-map-support@^1.2.0:
     source-map-support "^0.5.5"
 
 karma@^2.0.0:
-  version "2.0.2"
-  resolved "https://nexus.spaceapplications.com/repository/npm/karma/-/karma-2.0.2.tgz#4d2db9402850a66551fa784b0164fb0824ed8c4b"
+  version "2.0.3"
+  resolved "https://nexus.spaceapplications.com/repository/npm/karma/-/karma-2.0.3.tgz#4d5e13d25f5a51331c5378b24c4984709c01120b"
   dependencies:
     bluebird "^3.3.0"
     body-parser "^1.16.1"
-    chokidar "^1.4.1"
+    chokidar "^2.0.3"
     colors "^1.1.0"
     combine-lists "^1.0.0"
     connect "^3.6.0"
@@ -4130,7 +4130,7 @@ karma@^2.0.0:
     http-proxy "^1.13.0"
     isbinaryfile "^3.0.0"
     lodash "^4.17.4"
-    log4js "^2.3.9"
+    log4js "^2.5.3"
     mime "^1.3.4"
     minimatch "^3.0.2"
     optimist "^0.6.1"
@@ -4380,7 +4380,7 @@ log-symbols@^2.1.0:
   dependencies:
     chalk "^2.0.1"
 
-log4js@^2.3.9:
+log4js@^2.5.3:
   version "2.9.0"
   resolved "https://nexus.spaceapplications.com/repository/npm/log4js/-/log4js-2.9.0.tgz#41d99ac2f140b7da54001a21a3bca61a164746a7"
   dependencies:
@@ -6179,8 +6179,8 @@ resolve@1.1.x:
   resolved "https://nexus.spaceapplications.com/repository/npm/resolve/-/resolve-1.1.7.tgz#203114d82ad2c5ed9e8e0411b3932875e889e97b"
 
 resolve@^1.1.6, resolve@^1.1.7, resolve@^1.3.2, resolve@^1.5.0, resolve@^1.7.1:
-  version "1.7.1"
-  resolved "https://nexus.spaceapplications.com/repository/npm/resolve/-/resolve-1.7.1.tgz#aadd656374fd298aee895bc026b8297418677fd3"
+  version "1.8.0"
+  resolved "https://nexus.spaceapplications.com/repository/npm/resolve/-/resolve-1.8.0.tgz#a7f2ac27b78480ecc09c83782741d9f26e4f0c3e"
   dependencies:
     path-parse "^1.0.5"
 

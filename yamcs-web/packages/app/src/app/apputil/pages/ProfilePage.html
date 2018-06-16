@@ -4,9 +4,9 @@
 <div class="panel-content mat-typography" *ngIf="user$ | async as user">
   <dl class="dl-horizontal no-lead">
     <dt>Login</dt>
-    <dd>{{ user.login }}</dd>
+    <dd>{{ user.getUsername() }}</dd>
 
-    <ng-container *ngIf="user.superuser">
+    <ng-container *ngIf="user.isSuperuser()">
       <dt>Attributes</dt>
       <dd>
         <mat-icon class="icon12" style="color: gold">flash_on</mat-icon> superuser
@@ -16,11 +16,11 @@
 
   <mat-divider></mat-divider>
 
-  <dl class="dl-horizontal" *ngIf="user.superuser || user.systemPrivilege">
+  <dl class="dl-horizontal" *ngIf="user.isSuperuser() || user.systemPrivilege">
     <dt>System Privileges</dt>
     <dd>
-      <ng-container *ngIf="user.superuser">All privileges implied</ng-container>
-      <table *ngIf="!user.superuser" yaDataTable>
+      <ng-container *ngIf="user.isSuperuser()">All privileges implied</ng-container>
+      <table *ngIf="!user.isSuperuser()" yaDataTable>
       <tr *ngFor="let privilege of user.systemPrivilege">
           <td>{{ privilege }}</td>
         </tr>
@@ -33,8 +33,8 @@
   <dl class="dl-horizontal">
     <dt>Object Privileges</dt>
     <dd>
-      <ng-container *ngIf="user.superuser">All privileges implied</ng-container>
-      <table *ngIf="!user.superuser && user.objectPrivilege" yaDataTable>
+      <ng-container *ngIf="user.isSuperuser()">All privileges implied</ng-container>
+      <table *ngIf="!user.isSuperuser() && user.objectPrivilege" yaDataTable>
         <tr *ngFor="let p of user.objectPrivilege">
           <th class="lcolumn">{{ p.type }}</th>
           <td>

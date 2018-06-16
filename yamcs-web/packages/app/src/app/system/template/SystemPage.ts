@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Instance } from '@yamcs/client';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { User } from '../../shared/User';
 
 @Component({
   templateUrl: './SystemPage.html',
@@ -11,21 +12,22 @@ import { YamcsService } from '../../core/services/YamcsService';
 export class SystemPage {
 
   instance: Instance;
+  user: User;
 
-  constructor(yamcs: YamcsService, private authService: AuthService) {
+  constructor(yamcs: YamcsService, authService: AuthService) {
     this.instance = yamcs.getInstance();
+    this.user = authService.getUser()!;
   }
 
   showServicesItem() {
-    return this.authService.hasSystemPrivilege('ControlServices');
+    return this.user.hasSystemPrivilege('ControlServices');
   }
 
   showTablesItem() {
-    return this.authService.hasSystemPrivilege('ReadTables');
+    return this.user.hasSystemPrivilege('ReadTables');
   }
 
   showStreamsItem() {
-    const userInfo = this.authService.getUserInfo()!;
-    return userInfo.systemPrivilege && userInfo.systemPrivilege.length > 0;
+    return this.user.getSystemPrivileges().length > 0;
   }
 }

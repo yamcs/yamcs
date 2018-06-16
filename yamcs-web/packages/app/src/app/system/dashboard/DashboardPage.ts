@@ -52,7 +52,7 @@ export class DashboardPage implements OnDestroy {
   }
 
   hasParameterPrivilege(parameter: string) {
-    return this.authService.hasObjectPrivilege('ReadParameter', parameter);
+    return this.authService.getUser()!.hasObjectPrivilege('ReadParameter', parameter);
   }
 
   ngOnDestroy() {

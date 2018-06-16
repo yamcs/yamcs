@@ -20,7 +20,7 @@ export class LayoutsPage {
     title.setTitle('Layouts - Yamcs');
     this.instance = yamcs.getInstance();
 
-    const username = authService.getUserInfo()!.login;
+    const username = authService.getUser()!.getUsername();
     yamcs.getInstanceClient()!.listObjects(`user.${username}`, {
       prefix: 'layouts',
     }).then(objects => {

@@ -27,7 +27,7 @@ export class SaveLayoutDialog {
     const objectValue = new Blob([JSON.stringify(this.data.state)], {
       type: 'application/json',
     });
-    const username = this.authService.getUserInfo()!.login;
+    const username = this.authService.getUser()!.getUsername();
     this.yamcs.getInstanceClient()!.uploadObject(`user.${username}`, objectName, objectValue).then(() => {
       this.dialogRef.close();
       this.router.navigateByUrl(`/monitor/layouts/${this.name.value}?instance=${instance.name}`);
