@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import org.yamcs.api.rest.RestClient;
+import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
@@ -94,6 +95,17 @@ public class YamcsClient {
                 throw new CompletionException(e);
             }
         });
+    }
+
+    public CompletableFuture<Void> createBucket(CreateBucketRequest options) {
+        String url = "/buckets/_global";
+        byte[] body = options.toByteArray();
+        return restClient.doRequest(url, HttpMethod.POST, body).thenApply(response -> null);
+    }
+
+    public CompletableFuture<Void> deleteBucket(String name) {
+        String url = "/buckets/_global/" + name;
+        return restClient.doRequest(url, HttpMethod.DELETE).thenApply(response -> null);
     }
 
     public CompletableFuture<ListObjectsResponse> getObjects(String bucket) {

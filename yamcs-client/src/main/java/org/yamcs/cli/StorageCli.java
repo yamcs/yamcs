@@ -9,6 +9,7 @@ import org.yamcs.api.InstanceClient;
 import org.yamcs.api.YamcsClient;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.protobuf.Rest.BucketInfo;
+import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.ObjectInfo;
 
 import com.beust.jcommander.Parameter;
@@ -21,6 +22,8 @@ public class StorageCli extends Command {
         super("storage", parent);
         addSubCommand(new StorageCat());
         addSubCommand(new StorageList());
+        addSubCommand(new StorageMakeBuckets());
+        addSubCommand(new StorageRemoveBuckets());
         setYcpRequired(true, true);
     }
 
@@ -114,6 +117,63 @@ public class StorageCli extends Command {
                         throw new CompletionException(e);
                     }
                 }).get();
+            }
+        }
+    }
+
+    @Parameters(commandDescription = "Make buckets")
+    class StorageMakeBuckets extends Command {
+
+        @Parameter(required = true, description = "bucket...")
+        List<String> main = new ArrayList<>();
+
+        @Parameter(names = { "-g", "--global" }, description = "Do not use instance-specific data")
+        boolean global = false;
+
+        public StorageMakeBuckets() {
+            super("mb", StorageCli.this);
+        }
+
+        @Override
+        public void execute() throws Exception {
+            YamcsConnectionProperties ycp = getYamcsConnectionProperties();
+            YamcsClient yamcsClient = new YamcsClient(ycp);
+            for (String bucket : main) {
+                CreateBucketRequest req = CreateBucketRequest.newBuilder().setName(bucket).build();
+                if (global) {
+                    yamcsClient.createBucket(req).get();
+                } else {
+                    InstanceClient instanceClient = yamcsClient.selectInstance(ycp.getInstance());
+                    instanceClient.createBucket(req).get();
+                }
+            }
+        }
+    }
+
+    @Parameters(commandDescription = "Remove buckets")
+    class StorageRemoveBuckets extends Command {
+
+        @Parameter(required = true, description = "bucket...")
+        List<String> main = new ArrayList<>();
+
+        @Parameter(names = { "-g", "--global" }, description = "Do not use instance-specific data")
+        boolean global = false;
+
+        public StorageRemoveBuckets() {
+            super("rb", StorageCli.this);
+        }
+
+        @Override
+        public void execute() throws Exception {
+            YamcsConnectionProperties ycp = getYamcsConnectionProperties();
+            YamcsClient yamcsClient = new YamcsClient(ycp);
+            for (String bucket : main) {
+                if (global) {
+                    yamcsClient.deleteBucket(bucket).get();
+                } else {
+                    InstanceClient instanceClient = yamcsClient.selectInstance(ycp.getInstance());
+                    instanceClient.deleteBucket(bucket).get();
+                }
             }
         }
     }
