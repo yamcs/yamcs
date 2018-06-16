@@ -14,20 +14,20 @@
   <licenses>
     <license>
       <name>GNU Affero General Public License (AGPL)</name>
-      <url>http://www.gnu.org/licenses/agpl-3.0.html</url>
+      <url>https://www.gnu.org/licenses/agpl-3.0.html</url>
     </license>
   </licenses>  
   
   <scm>
     <connection>scm:git:git@github.com:yamcs/yamcs.git</connection>
     <developerConnection>scm:git:git@github.com:yamcs/yamcs.git</developerConnection>
-    <url>http://github.com/yamcs/yamcs</url>
+    <url>https://github.com/yamcs/yamcs</url>
     <tag>HEAD</tag>
   </scm>
 
   <organization>
     <name>Space Applications Services</name>
-    <url>http://www.spaceapplications.com</url>
+    <url>https://www.spaceapplications.com</url>
   </organization>
 
   <developers>
