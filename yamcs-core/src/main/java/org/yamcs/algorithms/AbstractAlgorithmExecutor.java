@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
@@ -48,14 +49,16 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
      * @return true if the algorithm should run
      */
     public synchronized boolean updateParameters(List<ParameterValue> items) {
-        ArrayList<ParameterValue> allItems = new ArrayList<>(items);
         boolean skipRun = false;
         List<InputParameter> l = algorithmDef.getInputList();
 
         for (int k = 0; k < l.size(); k++) {
             InputParameter inputParameter = l.get(k);
             ParameterInstanceRef pInstance = inputParameter.getParameterInstance();
-            for (ParameterValue pval : allItems) {
+            for (ParameterValue pval : items) {
+                if(pval.getAcquisitionStatus() == AcquisitionStatus.INVALID) {
+                    continue;
+                }
                 if (pInstance.getParameter().equals(pval.getParameter())) {
                     if (getLookbackSize(pInstance.getParameter()) == 0) {
                         updateInput(k, inputParameter, pval);
@@ -82,7 +85,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
             if (triggered) {
                 break;
             }
-            for (ParameterValue pval : allItems) {
+            for (ParameterValue pval : items) {
                 if (pval.getParameter().equals(trigger.getParameter())) {
                     triggered = true;
                     break;
