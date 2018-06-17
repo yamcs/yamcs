@@ -125,6 +125,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             }
         }
         if (!invalid.isEmpty()) {
+            log.info("Throwing invalid identification for the following items :{}", invalid);
             throw new InvalidIdentification(invalid);
         }
         return result;
