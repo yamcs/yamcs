@@ -76,17 +76,7 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
         this.defaultCalibrator = calibrator;
     }
 
-    @Override
-    public String toString() {
-        if (stringEncoding == null) {
-            return "IntegerDataEncoding(sizeInBits:" + sizeInBits + ", encoding:" + encoding + ", defaultCalibrator:"
-                    + defaultCalibrator + " byteOrder:" + byteOrder + ")";
-        } else {
-            return "IntegerDataEncoding(StringEncoding: " + stringEncoding + " defaultCalibrator:" + defaultCalibrator
-                    + " byteOrder:" + byteOrder + ")";
-        }
-    }
-
+  
     @Override
     public Object parseString(String stringValue) {
         if (encoding == Encoding.STRING) {
@@ -120,4 +110,25 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
             return Collections.emptySet();
         }
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("IntegerDaataEncoding[sizeInBits: ").append(sizeInBits)
+        .append(", byteOrder: ").append(byteOrder);
+        if (stringEncoding == null) {
+            sb.append(", encoding:").append(encoding);
+        } else {
+            sb.append(", stringEncoding: ").append(stringEncoding);
+        }
+        if(defaultCalibrator!=null) {
+            sb.append("defaultCalibrator: ").append(defaultCalibrator);
+        }
+        if(contextCalibratorList!=null) {
+            sb.append(", contextCalibrators: ").append(contextCalibratorList);
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
 }
