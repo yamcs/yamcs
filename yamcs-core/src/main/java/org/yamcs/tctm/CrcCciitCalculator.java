@@ -17,6 +17,9 @@ public class CrcCciitCalculator implements ErrorDetectionWordCalculator {
     final int initialValue;
     final int polynomial = 0x1021;   // 0001 0000 0010 0001  (0, 5, 12) 
 
+    public CrcCciitCalculator() {
+        initialValue = 0xFFFF;
+    }
     public CrcCciitCalculator(Map<String, Object> c) {
         initialValue = YConfiguration.getInt(c, "initialValue", 0xFFFF);
     }
