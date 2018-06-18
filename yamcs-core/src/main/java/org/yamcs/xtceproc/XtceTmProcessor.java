@@ -8,12 +8,12 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.TmProcessor;
 import org.yamcs.Processor;
+import org.yamcs.TmProcessor;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.container.ContainerProvider;
-import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterListener;
+import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.LoggingUtils;
@@ -27,8 +27,8 @@ import com.google.common.util.concurrent.AbstractService;
 
 /**
  * 
- * Does the job of getting containers and transforming them into parameters which are then sent to the
- * parameter request manager for the distribution to the requesters.
+ * Does the job of getting containers and transforming them into parameters which are then sent to the parameter request
+ * manager for the distribution to the requesters.
  * 
  * Relies on {@link XtceTmExtractor} for extracting the parameters out of containers
  * 
@@ -108,9 +108,9 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     }
 
     /**
-     * Adds a parameter to the current subscription list:
-     * finds all the SequenceContainers in which this parameter may appear and adds them to the list.
-     * also for each sequence container adds the parameter needed to instantiate the sequence container.
+     * Adds a parameter to the current subscription list: finds all the SequenceContainers in which this parameter may
+     * appear and adds them to the list. also for each sequence container adds the parameter needed to instantiate the
+     * sequence container.
      * 
      * @param param
      *            parameter to be added to the current subscription list
@@ -172,15 +172,16 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public void processPacket(PacketWithTime pwrt) {
         try {
-            tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(), getCurrentTime());
+            long rectime = pwrt.getReceptionTime();
+            if (rectime == TimeEncoding.INVALID_INSTANT) {
+                rectime = getCurrentTime();
+            }
+            tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(), rectime);
 
             ParameterValueList paramResult = tmExtractor.getParameterResult();
             List<ContainerExtractionResult> containerResult = tmExtractor.getContainerResult();
 
             if ((parameterRequestManager != null) && (paramResult.size() > 0)) {
-                // careful out of the synchronized block in order to avoid dead locks
-                // with the parameterRequestManager trying to add/remove parameters
-                // while we are sending updates
                 parameterRequestManager.update(paramResult);
             }
 
@@ -196,15 +197,16 @@ public class XtceTmProcessor extends AbstractService implements TmProcessor, Par
     @Override
     public void processPacket(PacketWithTime pwrt, SequenceContainer sc) {
         try {
-            tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(), TimeEncoding.getWallclockTime(), sc);
+            long rectime = pwrt.getReceptionTime();
+            if (rectime == TimeEncoding.INVALID_INSTANT) {
+                rectime = TimeEncoding.getWallclockTime();
+            }
+            tmExtractor.processPacket(pwrt.getPacket(), pwrt.getGenerationTime(), rectime, sc);
 
             ParameterValueList paramResult = tmExtractor.getParameterResult();
             List<ContainerExtractionResult> containerResult = tmExtractor.getContainerResult();
 
             if ((parameterRequestManager != null) && (paramResult.size() > 0)) {
-                // careful out of the synchronized block in order to avoid dead locks
-                // with the parameterRequestManager trying to add/remove parameters
-                // while we are sending updates
                 parameterRequestManager.update(paramResult);
             }
 
