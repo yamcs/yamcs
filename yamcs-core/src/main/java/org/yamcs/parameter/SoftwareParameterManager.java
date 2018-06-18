@@ -29,7 +29,7 @@ import com.google.common.util.concurrent.AbstractService;
  * Implements software parameters - these are parameters that can be set from the clients.
  * 
  * 
- * All the parameters are send from the executor thread.
+ * All the parameters are sent from the executor thread.
  * 
  * @author nm
  *

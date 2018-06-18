@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A simple ParameterInstanceRef to value comparison.  
+ * A simple ParameterInstanceRef to value comparison.
  * DIFFERS_FROM_XTCE:
  * 1) in xtce the value is stored as a string and it's not very clear how it's compared with an integer
  * 2) in xtce Comparison extends ParameterInstanceRef, and MatchCriteria is a choice of Comparison, ComparisonList, ...
@@ -18,17 +18,18 @@ public class Comparison implements MatchCriteria {
 
     OperatorType comparisonOperator;
 
-    //the string is used to create the object and then is changed to the other type, depending on the valueType
+    // the string is used to create the object and then is changed to the other type, depending on the valueType
     String stringValue;
 
     Object value;
 
-    transient static Logger log=LoggerFactory.getLogger(Comparison.class.getName());
+    transient static Logger log = LoggerFactory.getLogger(Comparison.class.getName());
 
     /**
-     * Makes a new comparison with a generic stringValue 
+     * Makes a new comparison with a generic stringValue
      * at this step the paraRef could be pointing to an unknown parameter.
      * resolveValueType can(should) be called later to create the correct value if it's not string
+     * 
      * @param paraRef
      * @param stringValue
      * @param op
@@ -38,6 +39,7 @@ public class Comparison implements MatchCriteria {
         this.stringValue = stringValue;
         this.value = stringValue;
         this.comparisonOperator = op;
+        checkParaRef(paraRef);
     }
 
     public Comparison(ParameterInstanceRef paraRef, int intValue, OperatorType op) {
@@ -45,6 +47,7 @@ public class Comparison implements MatchCriteria {
         this.value = intValue;
         this.stringValue = Integer.toString(intValue);
         this.comparisonOperator = op;
+        checkParaRef(paraRef);
     }
 
     public Comparison(ParameterInstanceRef paraRef, long longValue, OperatorType op) {
@@ -52,28 +55,35 @@ public class Comparison implements MatchCriteria {
         this.value = longValue;
         this.stringValue = Long.toString(longValue);
         this.comparisonOperator = op;
+        checkParaRef(paraRef);
     }
 
+    private void checkParaRef(ParameterInstanceRef paraRef) {
+        if(paraRef.getInstance()!=0) {
+            throw new UnsupportedOperationException("Condition on parameter values from history are not supported");
+        }
+    }
     @Override
     public boolean isMet(CriteriaEvaluator evaluator) {
         return evaluator.evaluate(comparisonOperator, instanceRef, value);
     }
 
     /**
-     * Called when the type of the parameter used for comparison is known, 
-     * so we have to find the value from stringValue that we can compare to it 
+     * Called when the type of the parameter used for comparison is known,
+     * so we have to find the value from stringValue that we can compare to it
      */
     public void resolveValueType() {
         boolean useCalibratedValue = instanceRef.useCalibratedValue();
         ParameterType ptype = instanceRef.getParameter().getParameterType();
         try {
-            if(useCalibratedValue) {
+            if (useCalibratedValue) {
                 value = ptype.parseString(stringValue);
             } else {
                 value = ptype.parseStringForRawValue(stringValue);
             }
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Cannot parse value required for comparing with "+instanceRef.getParameter().getName()+": "+e.getMessage(), e);
+            throw new IllegalArgumentException("Cannot parse value required for comparing with "
+                    + instanceRef.getParameter().getName() + ": " + e.getMessage(), e);
         }
     }
 
@@ -85,10 +95,9 @@ public class Comparison implements MatchCriteria {
         return comparisonOperator;
     }
 
-
     @Override
     public Set<Parameter> getDependentParameters() {
-        Set<Parameter> pset=new HashSet<>();
+        Set<Parameter> pset = new HashSet<>();
         pset.add(instanceRef.getParameter());
         return pset;
     }
@@ -118,20 +127,20 @@ public class Comparison implements MatchCriteria {
     }
 
     public static OperatorType stringToOperator(String s) {
-        if("==".equals(s)) {
+        if ("==".equals(s)) {
             return OperatorType.EQUALITY;
-        } else if("!=".equals(s)) {
+        } else if ("!=".equals(s)) {
             return OperatorType.INEQUALITY;
-        } else if(">".equals(s)) {
+        } else if (">".equals(s)) {
             return OperatorType.LARGERTHAN;
-        } else if(">=".equals(s)) {
+        } else if (">=".equals(s)) {
             return OperatorType.LARGEROREQUALTHAN;
-        } else if("<".equals(s)) {
+        } else if ("<".equals(s)) {
             return OperatorType.SMALLERTHAN;
-        } else if("<=".equals(s)) {
+        } else if ("<=".equals(s)) {
             return OperatorType.SMALLEROREQUALTHAN;
         } else {
-            log.warn("unknown operator type "+s);
+            log.warn("unknown operator type " + s);
         }
         return null;
     }
@@ -140,23 +149,22 @@ public class Comparison implements MatchCriteria {
         return instanceRef.getParameter();
     }
 
-    public Object getValue(){
+    public Object getValue() {
         return value;
     }
 
-
-    public String getStringValue(){
+    public String getStringValue() {
         return stringValue;
     }
 
     @Override
     public String toString() {
         if (instanceRef.getParameter() != null) {
-            return "Comparison: paraName("+ instanceRef.getParameter().getName()
-                    +(instanceRef.useCalibratedValue()?".eng":".raw")+")" + 
+            return "Comparison: paraName(" + instanceRef.getParameter().getName()
+                    + (instanceRef.useCalibratedValue() ? ".eng" : ".raw") + ")" +
                     operatorToString(comparisonOperator) + stringValue;
         } else {
-            return "Comparison: paraName(unresolved)" + 
+            return "Comparison: paraName(unresolved)" +
                     operatorToString(comparisonOperator) + stringValue;
         }
     }

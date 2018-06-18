@@ -44,7 +44,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     private Map<Integer, ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<>();
 
     // these are the consumers that may update the list of parameters
-    // they are delivered with priority such that in onde update cycle the algorithms (or derived values) are also
+    // they are delivered with priority such that in one update cycle the algorithms (or derived values) are also
     // computed
     private Map<Integer, DVParameterConsumer> request2DVParameterConsumerMap = new HashMap<>();
 
@@ -64,6 +64,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     SoftwareParameterManager spm;
     ParameterCache parameterCache;
     ParameterCacheConfig cacheConfig;
+    LastValueCache lastValueCache;
 
     /**
      * Creates a new ParameterRequestManager, configured to listen to the
@@ -74,7 +75,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         log = LoggingUtils.getLogger(this.getClass(), yproc);
         cacheConfig = yproc.getPameterCacheConfig();
         cacheAll = cacheConfig.cacheAll;
-
+        this.lastValueCache = yproc.getLastValueCache();
+        
         tmProcessor.setParameterListener(this);
         addParameterProvider(tmProcessor);
         if (yproc.hasAlarmChecker()) {
@@ -427,6 +429,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     @Override
     public void update(Collection<ParameterValue> params) {
         log.trace("ParamRequestManager.updateItems with {} parameters", params.size());
+        
+        lastValueCache.update(params);
         // maps subscription id to a list of (value,id) to be delivered for that subscription
         HashMap<Integer, ArrayList<ParameterValue>> delivery = new HashMap<>();
 
@@ -438,8 +442,9 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         for (Map.Entry<Integer, DVParameterConsumer> entry : request2DVParameterConsumerMap.entrySet()) {
             Integer subscriptionId = entry.getKey();
             if (delivery.containsKey(subscriptionId)) {
-                updateDelivery(delivery,
-                        entry.getValue().updateParameters(subscriptionId, delivery.get(subscriptionId)));
+                List<ParameterValue> pvList = entry.getValue().updateParameters(subscriptionId, delivery.get(subscriptionId));
+                lastValueCache.update(pvList);
+                updateDelivery(delivery, pvList);
             }
         }
 
@@ -509,11 +514,6 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             }
         }
         if (alarmChecker != null) {
-            // update the alarmChecker and check for alarms
-            ArrayList<ParameterValue> pvlist = delivery.get(alarmChecker.getSubscriptionId());
-            if (pvlist != null) {
-                alarmChecker.updateParameters(pvlist);
-            }
             try {
                 alarmChecker.performAlarmChecking(params);
             } catch (Exception e) {
@@ -567,8 +567,26 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         return parameterCache != null;
     }
 
+    /**
+     * Returns the last value from the cache for each parameter.
+     * If the {@link ParameterCache} is available, it returns the values from there 
+     *  - this has the advantage that the values are consistent vs the delivery - parameters that were part of the same delivery are given back together.
+     * Otherwise, the {@link LastValueCache} is used.
+     * 
+     *  
+     * @param plist
+     * @return
+     */
     public List<ParameterValue> getValuesFromCache(List<Parameter> plist) {
-        return parameterCache.getValues(plist);
+        if(parameterCache != null) {
+            return parameterCache.getValues(plist);
+        } else {
+            List<ParameterValue> al = new ArrayList<>();
+            for(Parameter p: plist) {
+                al.add(lastValueCache.getValue(p));
+            }
+            return al;
+        }
     }
 
     /**
@@ -578,13 +596,14 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @return
      */
     public ParameterValue getLastValueFromCache(Parameter param) {
-        return parameterCache.getLastValue(param);
+        return lastValueCache.getValue(param);
     }
 
     /**
      * Get all the values from cache for a specific parameters
      * 
-     * The parameter are returned in descending order (newest parameter is returned first)
+     * The parameter are returned in descending order (newest parameter is returned first).
+     * Note that you can only all this function if the {@link hasCache} returns true.
      * 
      * @param param
      * @return
@@ -615,5 +634,9 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             alarmServer.stopAsync();
         }
         notifyStopped();
+    }
+
+    public LastValueCache getLastValueCache() {
+        return lastValueCache;
     }
 }

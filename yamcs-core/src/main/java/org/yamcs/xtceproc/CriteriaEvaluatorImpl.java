@@ -4,12 +4,14 @@ import java.util.Comparator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.OperatorType;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
 
 import com.google.common.primitives.UnsignedBytes;
@@ -17,10 +19,22 @@ import com.google.common.primitives.UnsignedLongs;
 
 public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
     private static Logger LOG = LoggerFactory.getLogger(CriteriaEvaluatorImpl.class.getName());
-    ParameterValueList params;
 
-    public CriteriaEvaluatorImpl(ParameterValueList params) {
-        this.params = params;
+    ParameterValueList currentDelivery;
+    final LastValueCache lastValueCache;
+
+    /**
+     * 
+     * @param currentDelivery
+     *            - called in the context of XTCE packet processing - this contains the parameters just being extracted
+     *            (they are not yet part of the lastValueCache)
+     *            could be null if the evaluator is not running inside a packet processing
+     * @param lastValueCache
+     *            - contains the last know value of each parameter
+     */
+    public CriteriaEvaluatorImpl(ParameterValueList currentDelivery, LastValueCache lastValueCache) {
+        this.currentDelivery = currentDelivery;
+        this.lastValueCache = lastValueCache;
     }
 
     @Override
@@ -75,7 +89,14 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
     }
 
     private ResolvedValue resolveParameter(ParameterInstanceRef paramRef) {
-        ParameterValue pv = params.getLastInserted((paramRef).getParameter());
+        ParameterValue pv = null;
+        Parameter p = paramRef.getParameter();
+        if (currentDelivery != null) {
+            pv = currentDelivery.getLastInserted(p);
+        }
+        if (pv == null) {
+            pv = lastValueCache.getValue(p);
+        }
         if (pv == null) {
             return null;
         }

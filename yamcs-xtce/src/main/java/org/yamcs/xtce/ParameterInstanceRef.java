@@ -4,9 +4,10 @@ import java.io.Serializable;
 
 /**
  * A reference to an instance of a Parameter.
- * Used when the value of a parameter is required for a calculation or as an index value.  
- * A positive value for instance is forward in time, a negative value for count is backward in time, 
+ * Used when the value of a parameter is required for a calculation or as an index value.
+ * A positive value for instance is forward in time, a negative value for count is backward in time,
  * a 0 value for count means use the current value of the parameter or the first value in a container.
+ * 
  * @author nm
  *
  */
@@ -14,19 +15,19 @@ public class ParameterInstanceRef implements Serializable {
     private static final long serialVersionUID = 200906191236L;
     private Parameter parameter;
 
-    private boolean useCalibratedValue=true;
-    private int instance=0;
+    private boolean useCalibratedValue = true;
+    private int instance = 0;
 
     /**
-     * Constructor to be used when the parameter is not yet known. 
+     * Constructor to be used when the parameter is not yet known.
      * The parameter will have to be set later with setParameter()
      */
     public ParameterInstanceRef() {
         super();
     }
-    
+
     public ParameterInstanceRef(Parameter para) {
-        this.parameter=para;
+        this.parameter = para;
     }
 
     public ParameterInstanceRef(Parameter para, boolean useCalibratedValue) {
@@ -35,12 +36,12 @@ public class ParameterInstanceRef implements Serializable {
     }
 
     public ParameterInstanceRef(boolean useCalibratedValue) {
-        this.useCalibratedValue=useCalibratedValue;
+        this.useCalibratedValue = useCalibratedValue;
     }
 
     public void setParameter(Parameter para) {
         this.parameter = para;
-    }	
+    }
 
     public Parameter getParameter() {
         return parameter;
@@ -59,8 +60,9 @@ public class ParameterInstanceRef implements Serializable {
     }
 
     /**
-     * A positive value for instance is forward in time, a negative value for count is backward in time, 
+     * A positive value for instance is forward in time, a negative value for count is backward in time,
      * a 0 value for count means use the current value of the parameter or the first value in a container.
+     * 
      * @return instance of the parameter that is required
      */
     public int getInstance() {
@@ -69,6 +71,6 @@ public class ParameterInstanceRef implements Serializable {
 
     @Override
     public String toString() {
-        return parameter!=null?parameter.getQualifiedName():null+" instance:"+instance;
+        return parameter != null ? parameter.getQualifiedName() : null + " instance:" + instance;
     }
 }

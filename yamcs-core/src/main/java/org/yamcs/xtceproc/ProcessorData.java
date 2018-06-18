@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.QuietEventProducer;
+import org.yamcs.parameter.LastValueCache;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.CriteriaEvaluator;
@@ -24,9 +25,8 @@ import org.yamcs.xtce.XtceDb;
  * Holds information related and required for XTCE processing. 
  * It is separated from Processor because it has to be usable when not a full blown processor is available (e.g. XTCE packet processing)
  *  
- *  Ultimately should be connected with the ParameterCache for things that depend on the history (contextual alarms, contextual calibrations, algorithms, etc)
- *  
- *  Not thread safe
+ * 
+ *  Contains a cache of the last known value for each parameter
  *
  */
 public class ProcessorData {
@@ -43,8 +43,10 @@ public class ProcessorData {
     final EventProducer eventProducer;
     
     private Map<String, Object> userData = new HashMap<>();
+    
+    private LastValueCache lastValueCache = new LastValueCache();
+    
     /**
-     * 
      * @param xtcedb
      * @param generateEvents - generate events in case of errors when processing data 
      */
@@ -165,5 +167,9 @@ public class ProcessorData {
 
     public EventProducer getEventProducer() {
         return eventProducer;
+    }
+
+    public LastValueCache getLastValueCache() {
+        return lastValueCache;
     }
 }

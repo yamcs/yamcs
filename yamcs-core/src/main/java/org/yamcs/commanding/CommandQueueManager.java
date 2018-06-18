@@ -18,6 +18,7 @@ import org.yamcs.Processor;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
+import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
@@ -73,7 +74,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
     int paramSubscriptionRequestId = -1;
 
     private final ScheduledThreadPoolExecutor timer;
-
+    private final LastValueCache lastValueCache;
     /**
      * Constructs a Command Queue Manager.
      * 
@@ -93,6 +94,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
         this.instance = yproc.getInstance();
         this.processorName = yproc.getName();
         this.timer = yproc.getTimer();
+        this.lastValueCache = yproc.getLastValueCache();
 
         SecurityStore security = SecurityStore.getInstance();
         QueueState initialState = security.isEnabled() ? QueueState.BLOCKED : QueueState.ENABLED;
@@ -630,7 +632,7 @@ public class CommandQueueManager extends AbstractService implements ParameterCon
                 return;
             }
 
-            CriteriaEvaluator condEvaluator = new CriteriaEvaluatorImpl(pvList);
+            CriteriaEvaluator condEvaluator = new CriteriaEvaluatorImpl(pvList, lastValueCache);
 
             aggregateStatus = TCStatus.OK;
             long scheduleNextCheck = Long.MAX_VALUE;

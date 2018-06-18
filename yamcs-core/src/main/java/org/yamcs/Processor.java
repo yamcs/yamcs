@@ -23,6 +23,7 @@ import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.container.ContainerRequestManager;
+import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -724,5 +725,9 @@ public class Processor extends AbstractService {
      */
     public ProcessorData getProcessorData() {
         return processorData;
+    }
+
+    public LastValueCache getLastValueCache() {
+        return processorData.getLastValueCache();
     }
 }

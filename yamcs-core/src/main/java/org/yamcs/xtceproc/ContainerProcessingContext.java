@@ -38,7 +38,7 @@ public class ContainerProcessingContext {
         this.pdata = pdata;
         this.buffer = buffer;
         this.subscription = subscription;
-        this.criteriaEvaluator = new CriteriaEvaluatorImpl(result.params);
+        this.criteriaEvaluator = new CriteriaEvaluatorImpl(result.params, pdata.getLastValueCache());
         this.result = result;
         this.options = options;
 
