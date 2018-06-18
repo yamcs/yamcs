@@ -114,7 +114,7 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("IntegerDaataEncoding[sizeInBits: ").append(sizeInBits)
+        sb.append("IntegerDataEncoding[sizeInBits: ").append(sizeInBits)
         .append(", byteOrder: ").append(byteOrder);
         if (stringEncoding == null) {
             sb.append(", encoding:").append(encoding);
@@ -122,7 +122,7 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
             sb.append(", stringEncoding: ").append(stringEncoding);
         }
         if(defaultCalibrator!=null) {
-            sb.append("defaultCalibrator: ").append(defaultCalibrator);
+            sb.append(", defaultCalibrator: ").append(defaultCalibrator);
         }
         if(contextCalibratorList!=null) {
             sb.append(", contextCalibrators: ").append(contextCalibratorList);
