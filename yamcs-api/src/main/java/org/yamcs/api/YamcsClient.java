@@ -7,9 +7,12 @@ import org.yamcs.api.rest.RestClient;
 import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
+import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
+import org.yamcs.protobuf.Rest.ListProcessorsResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
@@ -57,6 +60,36 @@ public class YamcsClient {
     public CompletableFuture<YamcsInstance> getInstance(String instance) {
         return restClient.doRequest("/instances/" + instance, HttpMethod.GET)
                 .thenApply(response -> decode(response, YamcsInstance.getDefaultInstance()));
+    }
+
+    public CompletableFuture<ListClientsResponse> getClients() {
+        return restClient.doRequest("/clients", HttpMethod.GET).thenApply(response -> {
+            try {
+                return ListClientsResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<ClientInfo> getClients(int clientId) {
+        return restClient.doRequest("/clients/" + clientId, HttpMethod.GET).thenApply(response -> {
+            try {
+                return ClientInfo.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<ListProcessorsResponse> getProcessors() {
+        return restClient.doRequest("/processors", HttpMethod.GET).thenApply(response -> {
+            try {
+                return ListProcessorsResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
     }
 
     public CompletableFuture<ListServiceInfoResponse> getServices() {

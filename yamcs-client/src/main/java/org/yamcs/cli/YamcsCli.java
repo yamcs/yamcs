@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -31,11 +32,13 @@ public class YamcsCli extends Command {
         addSubCommand(new ArchiveCli(this));
         addSubCommand(new Backup(this));
         addSubCommand(new CheckConfig(this));
+        addSubCommand(new ClientsCli(this));
         addSubCommand(new Config(this));
         addSubCommand(new InstancesCli(this));
         addSubCommand(new LinksCli(this));
         addSubCommand(new ParameterArchiveCli(this));
         addSubCommand(new PasswordHashCli(this));
+        addSubCommand(new ProcessorsCli(this));
         addSubCommand(new RocksDbCli(this));
         addSubCommand(new ServicesCli(this));
         addSubCommand(new StorageCli(this));
@@ -87,6 +90,9 @@ public class YamcsCli extends Command {
         try {
             yamcsCli.validate();
             yamcsCli.execute();
+        } catch (ExecutionException e) {
+            System.err.println(e.getCause());
+            System.exit(1);
         } catch (Exception e) {
             System.err.println(e);
             System.exit(1);

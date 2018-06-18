@@ -64,7 +64,7 @@ public class TablesCli extends Command {
         }
     }
 
-    @Parameters(commandDescription = "Dumps table data to file, Connection to a live Yamcs server (-y option) is required.")
+    @Parameters(commandDescription = "Dumps table data to file")
     class TablesDump extends Command {
 
         @Parameter(names = "-d", description = "Name of the output directory. If not specified, the current directory will be used. The directory has to exist.")

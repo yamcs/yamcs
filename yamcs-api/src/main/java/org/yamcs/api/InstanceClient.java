@@ -8,11 +8,14 @@ import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.EditLinkRequest;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
+import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListLinkInfoResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
+import org.yamcs.protobuf.Rest.ListProcessorsResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
 import org.yamcs.protobuf.Rest.ListTablesResponse;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
+import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -31,6 +34,37 @@ public class InstanceClient {
 
     public String getInstance() {
         return instance;
+    }
+
+    public CompletableFuture<ListClientsResponse> getClients() {
+        return restClient.doRequest("/instances/" + instance + "/clients", HttpMethod.GET).thenApply(response -> {
+            try {
+                return ListClientsResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<ListProcessorsResponse> getProcessors() {
+        return restClient.doRequest("/processors/" + instance, HttpMethod.GET).thenApply(response -> {
+            try {
+                return ListProcessorsResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<ProcessorInfo> getProcessor(String name) {
+        String url = "/processors/" + instance + "/" + name;
+        return restClient.doRequest(url, HttpMethod.GET).thenApply(response -> {
+            try {
+                return ProcessorInfo.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
     }
 
     public CompletableFuture<ListServiceInfoResponse> getServices() {
