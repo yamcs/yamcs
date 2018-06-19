@@ -441,19 +441,19 @@ public class YamcsServer {
         mockupTimeService = timeService;
     }
 
-    public static Service getGlobalService(String serviceName) {
+    public static YamcsService getGlobalService(String serviceName) {
         ServiceWithConfig serviceWithConfig = getGlobalServiceWithConfig(serviceName);
         return serviceWithConfig != null ? serviceWithConfig.getService() : null;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Service> T getGlobalService(Class<T> serviceClass) {
+    public static <T extends YamcsService> T getGlobalService(Class<T> serviceClass) {
         return (T) getGlobalService(serviceClass.getName());
     }
 
     static ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args)
             throws ConfigurationException, IOException {
-        Service serv;
+        YamcsService serv;
         if (instance != null) {
             if (args == null) {
                 serv = YObjectLoader.loadObject(serviceClass, instance);
@@ -471,7 +471,7 @@ public class YamcsServer {
     }
 
     // starts a service that has stopped or not yet started
-    static Service startService(String instance, String serviceName, List<ServiceWithConfig> serviceList)
+    static YamcsService startService(String instance, String serviceName, List<ServiceWithConfig> serviceList)
             throws ConfigurationException, IOException {
         for (int i = 0; i < serviceList.size(); i++) {
             ServiceWithConfig swc = serviceList.get(i);
