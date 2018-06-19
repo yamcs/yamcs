@@ -14,7 +14,10 @@ public class DynamicIntegerValue extends IntegerValue {
     transient static Logger log=LoggerFactory.getLogger(DynamicIntegerValue.class.getName());
     ParameterInstanceRef instanceRef;;
 
-
+    public DynamicIntegerValue(ParameterInstanceRef pir) {
+        this.instanceRef = pir;
+    }
+    
     public void setParameterInstanceRef(ParameterInstanceRef pir) {
         this.instanceRef = pir;
     }

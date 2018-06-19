@@ -2277,19 +2277,16 @@ public class SpreadsheetLoader extends AbstractFileLoader {
      */
     private int addRepeat(SequenceEntry se, String repeat) {
         if (!repeat.equals("")) {
-            se.repeatEntry = new Repeat();
             try {
                 int rep = Integer.decode(repeat);
-                se.repeatEntry.count = new FixedIntegerValue(rep);
+                se.repeatEntry = new Repeat(new FixedIntegerValue(rep));
                 return rep;
             } catch (NumberFormatException e) {
-                se.repeatEntry.count = new DynamicIntegerValue();
                 Parameter repeatparam = parameters.get(repeat);
                 if (repeatparam == null) {
                     throw new SpreadsheetLoadException(ctx, "Cannot find the parameter for repeat " + repeat);
                 }
-                ((DynamicIntegerValue) se.repeatEntry.count)
-                .setParameterInstanceRef(new ParameterInstanceRef(repeatparam, true));
+                se.repeatEntry = new Repeat(new DynamicIntegerValue(new ParameterInstanceRef(repeatparam, true)));
                 return -1;
             }
         } else {

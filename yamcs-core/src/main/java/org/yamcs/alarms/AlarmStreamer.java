@@ -67,16 +67,7 @@ public class AlarmStreamer implements AlarmListener {
 
     @Override
     public void notifyParameterValueUpdate(ActiveAlarm activeAlarm) {
-        TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.UPDATED);
-
-        tdef.addColumn("updatedPV", PARAMETER_DATA_TYPE);
-        NamedObjectId id = NamedObjectId.newBuilder()
-                .setName(activeAlarm.currentValue.getParameter().getQualifiedName()).build();
-        al.add(activeAlarm.currentValue.toGpb(id));
-
-        Tuple t = new Tuple(tdef, al);
-        stream.emitTuple(t);
+        //do not send parameter updates
     }
 
     @Override

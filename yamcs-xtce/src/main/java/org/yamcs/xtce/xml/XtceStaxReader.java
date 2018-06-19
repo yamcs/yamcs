@@ -2152,12 +2152,12 @@ public class XtceStaxReader {
 
     private Repeat readXtceRepeatEntry(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_REPEAT_ENTRY);
-        Repeat r = new Repeat();
+        Repeat r = null;
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(XTCE_COUNT)) {
-                r.setCount(readXtceIntegerValue(spaceSystem));
+                r = new Repeat(readXtceIntegerValue(spaceSystem));
             } else if (isStartElementWithName("FromBinaryTransformAlgorithm")) {
                 skipXtceSection("FromBinaryTransformAlgorithm");
             } else if (isStartElementWithName("ToBinaryTransformAlgorithm")) {
@@ -2190,14 +2190,16 @@ public class XtceStaxReader {
         log.trace(XTCE_DYNAMIC_VALUE);
 
         checkStartElementPreconditions();
-        DynamicIntegerValue v = new DynamicIntegerValue();
+        DynamicIntegerValue v = null;
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_PARAMETER_INSTANCE_REF)) {
-                ParameterInstanceRef pir = readParameterInstanceRef(spaceSystem);
-                v.setParameterInstanceRef(pir);
+                v = new DynamicIntegerValue(readParameterInstanceRef(spaceSystem));
             } else if (isEndElementWithName(XTCE_DYNAMIC_VALUE)) {
+                if(v==null) {
+                    throw new XMLStreamException("No "+XTCE_PARAMETER_INSTANCE_REF+" section found");
+                }
                 return v;
             }
         }
