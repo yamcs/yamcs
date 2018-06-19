@@ -7,8 +7,8 @@ package org.yamcs.security;
  * The type of code is an implementation choice of the AuthModule. It may directly represent an externally issued token,
  * although ideally the AuthModule should not expose such information, and instead manage an internal mapping via
  * self-issued transient tokens.
- * 
- * @see {@link SpnegoAuthModule} for a representative example
+ * <p>
+ * See {@link SpnegoAuthModule} for a representative example
  */
 public class ThirdPartyAuthorizationCode implements AuthenticationToken {
 

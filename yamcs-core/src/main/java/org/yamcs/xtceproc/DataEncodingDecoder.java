@@ -227,8 +227,6 @@ public class DataEncodingDecoder {
     
     /**
      * return the nominal Value.Type of a raw value corresponding to the given XTCE data encoding definition
-     * @param type
-     * @return
      */
     public static org.yamcs.protobuf.Yamcs.Value.Type getRawType(DataEncoding encoding) {
         if(encoding instanceof IntegerDataEncoding) {
@@ -260,7 +258,7 @@ public class DataEncodingDecoder {
         } else if (encoding instanceof StringDataEncoding) {
             return Type.STRING;
         } else {
-            throw new IllegalStateException("Unknonw data encoding '"+encoding+"'");
+            throw new IllegalStateException("Unknown data encoding '"+encoding+"'");
         }
     }
     

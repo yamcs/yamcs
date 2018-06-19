@@ -39,11 +39,7 @@ public class ReplayServer extends AbstractService {
     /**
      * create a new packet replay object
      * 
-     * @param replayRequest
-     * @param replayListener
-     * @param authToken
      * @return a replay object
-     * @throws YamcsException
      */
     public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener)
             throws YamcsException {

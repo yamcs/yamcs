@@ -198,15 +198,10 @@ public class HttpClient {
     /**
      * Perform a request that potentially retrieves large amount of data. The data is forwarded to the client.
      * 
-     * @param url
-     * @param httpMethod
-     * @param body
-     * @param authToken
      * @param receiver
-     *            - send all the data to this receiver. To find out when the request has been finished, the Future has
-     *            to be used
+     *            send all the data to this receiver. To find out when the request has been finished, the Future has to
+     *            be used
      * @return a future indicating when the operation is completed.
-     * @throws URISyntaxException
      */
     public CompletableFuture<Void> doBulkReceiveRequest(String url, HttpMethod httpMethod, byte[] body,
             String username, char[] password, BulkRestDataReceiver receiver) throws URISyntaxException {

@@ -102,6 +102,20 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.0.1</version>
+          <configuration>
+            <additionalOptions>
+              <additionalOption>-Xdoclint:none</additionalOption>
+              <additionalOption>-Xdoclint:html</additionalOption>
+              <additionalOption>-Xdoclint:reference</additionalOption>
+              <!-- the 'syntax' group is too strict with @param and @throws -->
+              <!-- additionalOption>-Xdoclint:syntax</additionalOption-->
+            </additionalOptions>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>3.0.0</version>
@@ -196,7 +210,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.9.1</version>
             <executions>
               <execution>
                 <id>attach-javadocs</id>

@@ -240,11 +240,10 @@ public class YamcsServer {
     /**
      * Restarts a yamcs instance. As we cannot restart instances, we create a new one and replace the old one.
      * 
-     * @param name
+     * @param instanceName
      *            the name of the instance
      * 
      * @return the newly created instance
-     * @throws IOException
      */
     public static YamcsServerInstance restartYamcsInstance(String instanceName) {
         YamcsServerInstance ysi = instances.get(instanceName);

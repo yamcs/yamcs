@@ -410,8 +410,6 @@ public class ParameterTypeProcessor {
 
     /**
      * return the nominal Value.Type of a parameter of the given XTCE parameter type definition
-     * @param type
-     * @return
      */
     public static org.yamcs.protobuf.Yamcs.Value.Type getEngType(ParameterType ptype) {
         if(ptype instanceof IntegerParameterType) {
@@ -447,7 +445,7 @@ public class ParameterTypeProcessor {
         } else if (ptype instanceof AbsoluteTimeParameterType){
             return Type.TIMESTAMP;
         } else {
-            throw new IllegalStateException("Unknonw parameter type '"+ptype+"'");
+            throw new IllegalStateException("Unknown parameter type '"+ptype+"'");
         }
     }
     
