@@ -10,6 +10,10 @@ import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.QuietEventProducer;
 import org.yamcs.parameter.LastValueCache;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.CriteriaEvaluator;
@@ -17,6 +21,8 @@ import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.NumericDataEncoding;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.XtceDb;
@@ -59,6 +65,23 @@ public class ProcessorData {
         }
         eventProducer.setSource("PROCESOR("+procName+")");
         eventProducer.setRepeatedEventReduction(true, 10000);
+
+        // populate last value cache with the default (initial) value for each parameter that has one
+        long t = TimeEncoding.getWallclockTime();
+        for(Parameter p: xtcedb.getParameters()) {
+            ParameterType ptype = p.getParameterType();
+            if(ptype != null) {
+                Value v = DataTypeProcessor.getInitialValue(ptype);
+                if(v!=null) {
+                    ParameterValue pv = new ParameterValue(p);
+                    pv.setEngineeringValue(v);
+                    pv.setGenerationTime(t);
+                    pv.setAcquisitionTime(t);
+                    lastValueCache.put(p, pv);
+                }
+            }
+        }
+        log.debug("Initialized lastValueCache with {} entries", lastValueCache.size());
     }
     
     /**

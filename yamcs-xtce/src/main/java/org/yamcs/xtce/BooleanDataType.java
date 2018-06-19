@@ -37,5 +37,12 @@ public class BooleanDataType extends BaseDataType {
         return Boolean.parseBoolean(stringValue);
     }
 
-
+    @Override
+    public void setInitialValue(String initialValue) {
+        if("true".equalsIgnoreCase(initialValue) || "1".equalsIgnoreCase(initialValue)) {
+            this.initialValue = Boolean.TRUE;
+        } else {
+            this.initialValue = Boolean.FALSE;
+        }
+    }
 }

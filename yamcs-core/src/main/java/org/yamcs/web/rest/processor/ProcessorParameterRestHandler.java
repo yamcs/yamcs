@@ -223,9 +223,6 @@ public class ProcessorParameterRestHandler extends RestHandler {
         List<ParameterValue> pvals = new ArrayList<>();
         try {
             if (fromCache) {
-                if (!prm.hasParameterCache()) {
-                    throw new BadRequestException("ParameterCache not activated for this processor");
-                }
                 List<ParameterValueWithId> l;
                 l = pwirh.getValuesFromCache(ids, user);
                 for (ParameterValueWithId pvwi : l) {

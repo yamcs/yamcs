@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class BaseDataType extends NameDescription {
+public abstract class BaseDataType extends NameDescription implements DataType {
     private static final long serialVersionUID = 3L;
     List<UnitType> unitSet = new ArrayList<>();
     protected DataEncoding encoding;
 
-    BaseDataType(String name){
+    BaseDataType(String name) {
 	super(name);
     }
 

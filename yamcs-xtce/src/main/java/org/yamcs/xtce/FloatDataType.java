@@ -50,6 +50,7 @@ public class FloatDataType extends NumericDataType {
     public FloatValidRange getValidRange() {
         return validRange;
     }
+    
     @Override
     public Object parseString(String stringValue) {
         if(sizeInBits==32) {
@@ -58,5 +59,9 @@ public class FloatDataType extends NumericDataType {
             return Double.parseDouble(stringValue);
         }
     }
-    
+
+    @Override
+    public void setInitialValue(String initialValue) {
+        this.initialValue = Double.parseDouble(initialValue);
+    }
 }

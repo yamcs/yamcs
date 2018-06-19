@@ -19,7 +19,7 @@ import org.yamcs.xtce.Parameter;
 // - we will need to allow in limited cases multiple historical values to be kept. This will correspond to the ParameterInstanceRef with instance<0
 // - 
 public class LastValueCache {
-    private ConcurrentHashMap<Parameter, ParameterValue> m = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Parameter, ParameterValue> m = new ConcurrentHashMap<>();
     
     /**
      * Returns the latest known value for p or null if there is none.
@@ -52,5 +52,13 @@ public class LastValueCache {
     
     public int size() {
         return m.size();
+    }
+
+    /**
+     * returns all the values from the cache
+     * @return
+     */
+    public Collection<ParameterValue> getValues() {
+        return m.values();
     }
 }

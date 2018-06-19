@@ -76,7 +76,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         cacheConfig = yproc.getPameterCacheConfig();
         cacheAll = cacheConfig.cacheAll;
         this.lastValueCache = yproc.getLastValueCache();
-        
+
         tmProcessor.setParameterListener(this);
         addParameterProvider(tmProcessor);
         if (yproc.hasAlarmChecker()) {
@@ -158,12 +158,11 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     public int addRequest(final List<Parameter> paraList, final ParameterConsumer tpc) {
-        
+
         final int id = lastSubscriptionId.incrementAndGet();
         log.debug("new request with subscriptionId {} with {} items", id, paraList.size());
         subscribeToProviders(paraList);
-        
-        
+
         for (int i = 0; i < paraList.size(); i++) {
             log.trace("adding to subscriptionID: {} item:{} ", id, paraList.get(i).getQualifiedName());
             addItemToRequest(id, paraList.get(i));
@@ -181,7 +180,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @return
      */
     public int addRequest(final Parameter para, final ParameterConsumer tpc) {
-        
+
         final int id = lastSubscriptionId.incrementAndGet();
         log.debug("new request with subscriptionId {} for parameter: {}", id, para.getQualifiedName());
         subscribeToProviders(para);
@@ -201,7 +200,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     public int addRequest(List<Parameter> paraList, DVParameterConsumer dvtpc) {
         int id = lastSubscriptionId.incrementAndGet();
         log.debug("new request with subscriptionId {} for itemList={}", id, paraList);
-        
+
         subscribeToProviders(paraList);
         for (int i = 0; i < paraList.size(); i++) {
             log.trace("adding to subscriptionID:{} item:{}", id, paraList.get(i));
@@ -257,7 +256,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @throws InvalidIdentification
      * @throws InvalidRequestIdentification
      */
-    public void addItemsToRequest(final int subscriptionId, final List<Parameter> paraList) throws InvalidRequestIdentification {
+    public void addItemsToRequest(final int subscriptionId, final List<Parameter> paraList)
+            throws InvalidRequestIdentification {
         log.debug("adding to subscriptionID {}: {} items ", subscriptionId, paraList.size());
         final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
         if ((consumer == null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
@@ -374,25 +374,25 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     private void subscribeToProviders(Parameter param) throws NoProviderException {
-        if(cacheAll) {
+        if (cacheAll) {
             return;
         }
         boolean providerFound = false;
-        
+
         for (ParameterProvider provider : parameterProviders.values()) {
             if (provider.canProvide(param)) {
                 providerFound = true;
                 provider.startProviding(param);
             }
         }
-        if(!providerFound) {
+        if (!providerFound) {
             throw new NoProviderException("No provider found for " + param);
         }
 
     }
 
     private void subscribeToProviders(List<Parameter> itemList) {
-        if(cacheAll) {
+        if (cacheAll) {
             return;
         }
         for (int i = 0; i < itemList.size(); i++) {
@@ -429,7 +429,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     @Override
     public void update(Collection<ParameterValue> params) {
         log.trace("ParamRequestManager.updateItems with {} parameters", params.size());
-        
+
         lastValueCache.update(params);
         // maps subscription id to a list of (value,id) to be delivered for that subscription
         HashMap<Integer, ArrayList<ParameterValue>> delivery = new HashMap<>();
@@ -442,7 +442,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         for (Map.Entry<Integer, DVParameterConsumer> entry : request2DVParameterConsumerMap.entrySet()) {
             Integer subscriptionId = entry.getKey();
             if (delivery.containsKey(subscriptionId)) {
-                List<ParameterValue> pvList = entry.getValue().updateParameters(subscriptionId, delivery.get(subscriptionId));
+                List<ParameterValue> pvList = entry.getValue().updateParameters(subscriptionId,
+                        delivery.get(subscriptionId));
                 lastValueCache.update(pvList);
                 updateDelivery(delivery, pvList);
             }
@@ -568,25 +569,20 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Returns the last value from the cache for each parameter.
-     * If the {@link ParameterCache} is available, it returns the values from there 
-     *  - this has the advantage that the values are consistent vs the delivery - parameters that were part of the same delivery are given back together.
-     * Otherwise, the {@link LastValueCache} is used.
+     * Returns the last known value for each parameter.
      * 
-     *  
      * @param plist
      * @return
      */
     public List<ParameterValue> getValuesFromCache(List<Parameter> plist) {
-        if(parameterCache != null) {
-            return parameterCache.getValues(plist);
-        } else {
-            List<ParameterValue> al = new ArrayList<>();
-            for(Parameter p: plist) {
-                al.add(lastValueCache.getValue(p));
+        List<ParameterValue> al = new ArrayList<>(plist.size());
+        for (Parameter p : plist) {
+            ParameterValue pv = lastValueCache.getValue(p);
+            if(pv!=null) {
+                al.add(pv);
             }
-            return al;
         }
+        return al;
     }
 
     /**

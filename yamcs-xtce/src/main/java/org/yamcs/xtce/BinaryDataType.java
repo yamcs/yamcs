@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.utils.StringConverter;
+
 public class BinaryDataType extends BaseDataType {
     private static final long serialVersionUID = 1L;
 
@@ -73,5 +75,11 @@ public class BinaryDataType extends BaseDataType {
         return b;
     }
 
- 
+    /**
+     * sets the initial value which is interpreted as a hex string
+     */
+    @Override
+    public void setInitialValue(String hexString) {
+        setInitialValue(StringConverter.hexStringToArray(hexString));
+    }
 }

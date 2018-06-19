@@ -114,8 +114,9 @@ public class MetaCommandContainerProcessor {
         Parameter para = paraEntry.getParameter();
         Value paraValue = pcontext.getParameterValue(para);
         if (paraValue == null) {
-            paraValue = ParameterTypeProcessor.getDefaultValue(para.getParameterType());
+            throw new CommandEncodingException("No value found for parameter '"+para.getName()+"'");
         }
+     
         Value rawValue = paraValue; // TBD if this is correct
         ParameterType ptype = para.getParameterType();
         DataEncoding encoding = ((BaseDataType) ptype).getEncoding();

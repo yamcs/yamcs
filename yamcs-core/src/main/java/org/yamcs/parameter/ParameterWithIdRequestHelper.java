@@ -290,10 +290,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         return invalid;
     }
 
-    public boolean hasParameterCache() {
-        return prm.hasParameterCache();
-    }
-
     private long getAquisitionTime(List<ParameterValue> items) {
         for (ParameterValue pv : items) {
             if (pv.hasAcquisitionTime()) {

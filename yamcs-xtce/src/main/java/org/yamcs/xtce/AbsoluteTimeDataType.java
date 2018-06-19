@@ -22,7 +22,7 @@ public class AbsoluteTimeDataType extends BaseTimeDataType {
     /**
      * Used mainly for command arguments to specify the default value
      */
-    String initialValue;
+    long initialValue;
 
     ReferenceTime referenceTime;
 
@@ -44,11 +44,14 @@ public class AbsoluteTimeDataType extends BaseTimeDataType {
         return referenceTime;
     }
     
+    /**
+     * sets the initial value in UTC ISO 8860 string 
+     */
     public void setInitialValue(String initialValue) {
-        this.initialValue = initialValue;
+        this.initialValue = TimeEncoding.parse(initialValue);
     }
 
-    public String getInitialValue() {
+    public Long getInitialValue() {
         return initialValue;
     }
 

@@ -408,56 +408,6 @@ public class ParameterTypeProcessor {
         return v;
     }
 
-    public static Value getDefaultValue(ParameterType type) {
-        Value v;
-        if(type instanceof IntegerParameterType) {
-            IntegerParameterType intType = (IntegerParameterType) type;
-            String sv = intType.getInitialValue();
-            if(intType.isSigned()) {
-                long l = sv==null?0:Long.decode(sv);
-                v = ValueUtility.getSint64Value(l);
-            } else {
-                long l = sv==null?0:UnsignedLongs.decode(sv);
-                v = ValueUtility.getUint64Value(l);
-            }
-            
-       } else if(type instanceof FloatParameterType) {
-            Double d = ((FloatParameterType)type).getInitialValue();
-            if(d==null) {
-                d = 0.0;
-            }
-            v = ValueUtility.getDoubleValue(d);
-        } else if(type instanceof StringParameterType) {
-            String sv = ((StringParameterType)type).getInitialValue();
-            if(sv==null) {
-                sv="";
-            }
-            v = ValueUtility.getStringValue(sv);
-        } else if (type instanceof BinaryParameterType) {
-            byte[] b = ((BinaryParameterType)type).getInitialValue();
-            if(b==null) {
-                b = new byte[0];
-            }
-            v = ValueUtility.getBinaryValue(b);
-        } else if (type instanceof EnumeratedArgumentType) {
-            EnumeratedArgumentType enumType = (EnumeratedArgumentType)type;
-            String sv = enumType.getInitialValue();
-            if(sv==null) {
-                sv = enumType.getValueEnumerationList().get(0).getLabel();
-            }
-            v = ValueUtility.getStringValue(sv);
-        } else if (type instanceof BooleanParameterType) {
-            Boolean b = ((BooleanParameterType)type).getInitialValue();
-            if(b==null) {
-                b = Boolean.FALSE;
-            }
-            v = ValueUtility.getBooleanValue(b);
-        } else {
-            throw new IllegalArgumentException("Cannot parse values of type "+type);
-        }
-        return v;
-    }
-    
     /**
      * return the nominal Value.Type of a parameter of the given XTCE parameter type definition
      * @param type

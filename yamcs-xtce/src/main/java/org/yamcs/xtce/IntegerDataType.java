@@ -17,7 +17,7 @@ public class IntegerDataType extends NumericDataType {
     /**
      * Used mainly for command arguments to specify the default value
      */
-    String initialValue;
+    Long initialValue;
 
     IntegerDataType(String name) {
         super(name);
@@ -61,10 +61,18 @@ public class IntegerDataType extends NumericDataType {
     }
 
     public void setInitialValue(String initialValue) {
+        if(signed) {
+            this.initialValue = Long.parseLong(initialValue);
+        } else {
+            this.initialValue = Long.parseUnsignedLong(initialValue);
+        }
+    }
+
+    public void setInitialValue(Long initialValue) {
         this.initialValue = initialValue;
     }
 
-    public String getInitialValue() {
+    public Long getInitialValue() {
         return initialValue;
     }
 

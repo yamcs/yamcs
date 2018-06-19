@@ -1,7 +1,6 @@
 package org.yamcs.xtce;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -9,7 +8,7 @@ import java.util.Set;
  * @author nm
  *
  */
-public interface ParameterType {
+public interface ParameterType extends DataType {
     /**    
      * 
      * @return the set of parameters on which this one depends in order to be extracted or alarm checked 
@@ -46,30 +45,11 @@ public interface ParameterType {
     Object parseStringForRawValue(String stringValue);
     
     /**
-     * 
-     * @return the list of units
-     */
-    public List<UnitType> getUnitSet();
-    
-    /**
-     * 
-     * @return the data encoding for the parameter type
-     */
-    public DataEncoding getEncoding();
-    
-    /**
      * set the data encoding for the parameter type
      * @param dataEncoding
      */
     void setEncoding(DataEncoding dataEncoding);
 
-    /**
-     * 
-     * @return the name of the type
-     */
-    String getName();
-    
-    
     /**
      * Create a shallow copy of the parameter type
      *  - the object itself (and the primitive fields) are new 

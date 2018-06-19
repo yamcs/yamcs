@@ -154,7 +154,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                 }
             }
             wsHandler.sendReply(reply);
-            if (pidrm.hasParameterCache() && (!req.hasSendFromCache() || req.getSendFromCache())) {
+            if ((!req.hasSendFromCache() || req.getSendFromCache())) {
                 List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idList, user);
                 if (!pvlist.isEmpty()) {
                     update(subscriptionId, pvlist);
