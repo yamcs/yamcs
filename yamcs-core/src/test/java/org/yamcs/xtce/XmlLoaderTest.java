@@ -89,6 +89,10 @@ public class XmlLoaderTest {
         assertEquals(10000, ris.getMaxInterval());
         assertEquals(100, ris.getMinInterval());
         
+        Parameter p1 = busElectronics.getParameter("Battery_Current");
+        FloatParameterType fpt1 = (FloatParameterType)p1.getParameterType();
+        assertEquals(0.2, fpt1.getInitialValue(), 1e-5);
+        
         
         
         MetaCommand mc = payload1.getMetaCommand("Adjust_Payload_1_Config");
@@ -127,6 +131,7 @@ public class XmlLoaderTest {
         assertEquals(SizeType.FIXED, sencoding.getSizeType());
         assertEquals(128, bencoding.getSizeInBits());
         
+       
     }
     
     

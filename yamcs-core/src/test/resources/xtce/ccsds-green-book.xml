@@ -4,8 +4,7 @@
 	xsi:schemaLocation="http://www.omg.org/space/xtce SpaceSystemV1.1.xsd">
 	<xtce:TelemetryMetaData>
 		<xtce:ParameterTypeSet>
-			<xtce:IntegerParameterType signed="false"
-				name="IDType">
+			<xtce:IntegerParameterType signed="false" name="IDType">
 				<xtce:UnitSet />
 				<xtce:IntegerDataEncoding sizeInBits="8" />
 			</xtce:IntegerParameterType>
@@ -19,13 +18,11 @@
 				<xtce:UnitSet />
 				<xtce:IntegerDataEncoding sizeInBits="7" />
 			</xtce:IntegerParameterType>
-			<xtce:IntegerParameterType signed="false"
-				name="LengthType">
+			<xtce:IntegerParameterType signed="false" name="LengthType" initialValue="0">
 				<xtce:UnitSet />
 				<xtce:IntegerDataEncoding sizeInBits="16" />
 			</xtce:IntegerParameterType>
-			<xtce:EnumeratedParameterType name="PSWHLTIMFLGType"
-				initialValue="TIMER_OFF">
+			<xtce:EnumeratedParameterType name="PSWHLTIMFLGType" initialValue="TIMER_OFF">
 				<xtce:UnitSet />
 				<xtce:IntegerDataEncoding sizeInBits="16" />
 				<xtce:EnumerationList>
@@ -34,8 +31,7 @@
 					<xtce:Enumeration label="TIMER_COMPLETED" value="2" />
 				</xtce:EnumerationList>
 			</xtce:EnumeratedParameterType>
-			<xtce:FloatParameterType sizeInBits="64"
-				name="PBATMTEMPType">
+			<xtce:FloatParameterType sizeInBits="64" name="PBATMTEMPType">
 				<xtce:UnitSet>
 					<xtce:Unit description="Bq">units:Becquerel</xtce:Unit>
 				</xtce:UnitSet>
@@ -133,8 +129,7 @@
 				signed="false">
 				<xtce:UnitSet />
 			</xtce:IntegerParameterType>
-			<xtce:IntegerParameterType name="CheckSumType"
-				signed="false">
+			<xtce:IntegerParameterType name="CheckSumType" signed="false" initialValue="0">
 				<xtce:UnitSet />
 				<xtce:IntegerDataEncoding />
 			</xtce:IntegerParameterType>

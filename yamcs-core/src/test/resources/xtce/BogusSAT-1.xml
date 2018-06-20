@@ -272,7 +272,7 @@ limitations under the License.
 							</xtce:ContextAlarm>
 						</xtce:ContextAlarmList>
 					</xtce:FloatParameterType>
-					<xtce:FloatParameterType name="Battery_Current_Type" sizeInBits="32" shortDescription="This parameter describes the measured current draw">
+					<xtce:FloatParameterType name="Battery_Current_Type" sizeInBits="32" shortDescription="This parameter describes the measured current draw" initialValue="0.2">
 						<xtce:LongDescription>The battery on BogusSAT is a modeled by a typical flooded lead acid car battery.</xtce:LongDescription>
 						<xtce:UnitSet>
 							<xtce:Unit description="Current">Amperes</xtce:Unit>

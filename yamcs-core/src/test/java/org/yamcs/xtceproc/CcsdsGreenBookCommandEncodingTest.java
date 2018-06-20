@@ -13,7 +13,9 @@ import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.ArgumentAssignment;
+import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 
 public class CcsdsGreenBookCommandEncodingTest {
@@ -31,6 +33,8 @@ public class CcsdsGreenBookCommandEncodingTest {
     @Test
     public void test1() throws ErrorInCommand {
         // encode command
+        Parameter p = xtcedb.getParameter("/SpaceVehicle/Length");
+        IntegerParameterType ipt = (IntegerParameterType) p.getParameterType();
         MetaCommand mc = xtcedb.getMetaCommand("/SpaceVehicle/PWHTMR");
         List<ArgumentAssignment> arguments = new LinkedList<ArgumentAssignment>() ;
         ArgumentAssignment argumentAssignment1 = new ArgumentAssignment("TimerStartStop", "TIMER_START");
