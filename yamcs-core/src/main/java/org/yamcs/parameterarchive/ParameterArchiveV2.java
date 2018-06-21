@@ -1,5 +1,7 @@
 package org.yamcs.parameterarchive;
 
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.YamcsService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.DatabaseCorruptionException;
@@ -29,19 +32,18 @@ import org.yamcs.yarch.TimePartitionInfo;
 import org.yamcs.yarch.TimePartitionSchema;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.oldrocksdb.StringColumnFamilySerializer;
 import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.rocksdb.Tablespace;
-import org.yamcs.yarch.oldrocksdb.StringColumnFamilySerializer;
 import org.yamcs.yarch.rocksdb.YRDB;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
 
 import com.google.common.util.concurrent.AbstractService;
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 
-public class ParameterArchiveV2 extends AbstractService {
+public class ParameterArchiveV2 extends AbstractService implements YamcsService {
     public static final boolean STORE_RAW_VALUES = true;
 
     private final Logger log = LoggerFactory.getLogger(ParameterArchiveV2.class);
@@ -50,7 +52,7 @@ public class ParameterArchiveV2 extends AbstractService {
     private Tablespace tablespace;
 
     TimePartitionSchema partitioningSchema = TimePartitionSchema.getInstance("YYYY");
-    
+
     // the tbsIndex used to encode partition information
     int partitionTbsIndex;
 
@@ -67,20 +69,20 @@ public class ParameterArchiveV2 extends AbstractService {
     Map<String, Object> backFillerConfig;
     boolean realtimeFillerEnabled;
     boolean backFillerEnabled;
-    
+
     public ParameterArchiveV2(String instance, Map<String, Object> args) throws IOException, RocksDBException {
         this.yamcsInstance = instance;
         this.timeService = YamcsServer.getTimeService(instance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         tablespace = RdbStorageEngine.getInstance().getTablespace(ydb.getTablespaceName());
         partitioningSchema = ydb.getDefaultPartitioningSchema();
-        
+
         if (args != null) {
             processConfig(args);
         } else {
             backFiller = new BackFiller(this, null);
         }
-        
+
         TablespaceRecord.Type trType = TablespaceRecord.Type.PARCHIVE_PINFO;
         List<TablespaceRecord> trl = tablespace.filter(trType, yamcsInstance, trb -> true);
         if (trl.size() > 1) {
@@ -90,38 +92,37 @@ public class ParameterArchiveV2 extends AbstractService {
         parameterIdMap = new ParameterIdDb(yamcsInstance, tablespace);
         parameterGroupIdMap = new ParameterGroupIdDb(yamcsInstance, tablespace);
 
-        
         TablespaceRecord tr;
         if (trl.isEmpty()) { // new database
             initializeDb();
-        } else {//existing database
+        } else {// existing database
             tr = trl.get(0);
             partitionTbsIndex = tr.getTbsIndex();
-            if(tr.hasPartitioningSchema()) {
+            if (tr.hasPartitioningSchema()) {
                 partitioningSchema = TimePartitionSchema.getInstance(tr.getPartitioningSchema());
             }
             readPartitions();
         }
-        if(partitioningSchema==null) {
+        if (partitioningSchema == null) {
             partitions.insert(new Partition());
         }
     }
+
     public ParameterArchiveV2(String instance) throws RocksDBException, IOException {
         this(instance, null);
     }
 
     private void initializeDb() throws RocksDBException {
         log.debug("initializing db");
-       
+
         TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(Type.PARCHIVE_PINFO);
-        if(partitioningSchema!=null) {
+        if (partitioningSchema != null) {
             trb.setPartitioningSchema(partitioningSchema.getName());
         }
-        
+
         TablespaceRecord tr = tablespace.createMetadataRecord(yamcsInstance, trb);
         partitionTbsIndex = tr.getTbsIndex();
     }
-
 
     public TimePartitionSchema getPartitioningSchema() {
         return partitioningSchema;
@@ -130,20 +131,20 @@ public class ParameterArchiveV2 extends AbstractService {
     private void processConfig(Map<String, Object> args) {
         for (String s : args.keySet()) {
             if ("backFiller".equals(s)) {
-                 backFillerConfig = YConfiguration.getMap(args, s);
+                backFillerConfig = YConfiguration.getMap(args, s);
                 log.debug("backFillerConfig: {}", backFillerConfig);
                 backFillerEnabled = YConfiguration.getBoolean(backFillerConfig, "enabled", true);
             } else if ("realtimeFiller".equals(s)) {
                 realtimeFillerConfig = YConfiguration.getMap(args, s);
                 realtimeFillerEnabled = YConfiguration.getBoolean(realtimeFillerConfig, "enabled", false);
                 log.debug("realtimeFillerConfig: {}", realtimeFillerConfig);
-                
-            }  else if ("partitioningSchema".equals(s)) {
-                String schema = YConfiguration.getString(args,  s);
-                if("none".equalsIgnoreCase(schema)) {
+
+            } else if ("partitioningSchema".equals(s)) {
+                String schema = YConfiguration.getString(args, s);
+                if ("none".equalsIgnoreCase(schema)) {
                     partitioningSchema = null;
                 } else {
-                    partitioningSchema = TimePartitionSchema.getInstance(YConfiguration.getString(args,  s));
+                    partitioningSchema = TimePartitionSchema.getInstance(YConfiguration.getString(args, s));
                 }
             } else {
                 throw new ConfigurationException(
@@ -282,15 +283,15 @@ public class ParameterArchiveV2 extends AbstractService {
     public Partition createAndGetPartition(long segStart) throws RocksDBException {
         synchronized (partitions) {
             Partition p = partitions.getFit(segStart);
-            
+
             if (p == null) {
                 TimePartitionInfo pinfo = partitioningSchema.getPartitionInfo(segStart);
                 p = new Partition(pinfo.getStart(), pinfo.getEnd(), pinfo.getDir());
                 p = partitions.insert(p, 60000L);
                 assert p != null;
                 TimeBasedPartition tbp = TimeBasedPartition.newBuilder().setPartitionDir(p.partitionDir)
-                .setPartitionStart(p.getStart()).setPartitionEnd(p.getEnd()).build();
-                byte[] key = new byte[TBS_INDEX_SIZE+8];
+                        .setPartitionStart(p.getStart()).setPartitionEnd(p.getEnd()).build();
+                byte[] key = new byte[TBS_INDEX_SIZE + 8];
                 ByteArrayUtils.encodeInt(partitionTbsIndex, key, 0);
                 ByteArrayUtils.encodeLong(pinfo.getStart(), key, TBS_INDEX_SIZE);
                 tablespace.putData(key, tbp.toByteArray());
@@ -335,7 +336,7 @@ public class ParameterArchiveV2 extends AbstractService {
             backFiller = new BackFiller(this, backFillerConfig);
             backFiller.start();
         }
-        if(realtimeFillerEnabled) {
+        if (realtimeFillerEnabled) {
             realtimeFiller = new RealtimeArchiveFiller(this, realtimeFillerConfig);
             realtimeFiller.start();
         }
@@ -413,24 +414,25 @@ public class ParameterArchiveV2 extends AbstractService {
             return partitions.getFit(instant);
         }
     }
+
     public Tablespace getTablespace() {
         return tablespace;
     }
 
-    
-    public static class Partition extends TimeInterval {   
+    public static class Partition extends TimeInterval {
         final String partitionDir;
-        
+
         Partition() {
             super();
             this.partitionDir = null;
         }
-        
+
         Partition(long start, long end, String dir) {
             super(start, end);
             this.partitionDir = dir;
         }
 
+        @Override
         public String toString() {
             return "partition: " + partitionDir + "[" + TimeEncoding.toString(getStart()) + " - "
                     + TimeEncoding.toString(getEnd()) + "]";
@@ -440,5 +442,5 @@ public class ParameterArchiveV2 extends AbstractService {
             return partitionDir;
         }
     }
-    
+
 }

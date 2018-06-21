@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsService;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.utils.YObjectLoader;
 
@@ -18,7 +19,7 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ArtemisServer extends AbstractService {
+public class ArtemisServer extends AbstractService implements YamcsService {
     static Logger log = LoggerFactory.getLogger(ArtemisServer.class.getName());
 
     static EmbeddedActiveMQ artemisServer;

@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.YamcsService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
@@ -32,7 +33,7 @@ import org.yamcs.yarch.oldrocksdb.YRDB;
 import com.google.common.util.concurrent.AbstractService;
 
 @Deprecated
-public class ParameterArchive  extends AbstractService {
+public class ParameterArchive  extends AbstractService implements YamcsService {
     static final String CF_NAME_META_P2PID = "meta_p2pid";
     static final String CF_NAME_META_PGID2PG = "meta_pgid2pg"; 
     static final String CF_NAME_DATA_PREFIX = "data_";
