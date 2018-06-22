@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
-import { Parameter } from '@yamcs/client';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Instance, Parameter } from '@yamcs/client';
 
 @Component({
   selector: 'app-parameter-calibration',
@@ -7,6 +7,9 @@ import { Parameter } from '@yamcs/client';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParameterCalibration {
+
+  @Input()
+  instance: Instance;
 
   @Input()
   parameter: Parameter;

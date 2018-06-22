@@ -53,7 +53,7 @@
       </mat-menu>
       <button mat-icon-button
               [matMenuTriggerFor]="userMenu"
-              [matTooltip]="'Account: ' + user.login"
+              [matTooltip]="'Account: ' + user.getUsername()"
               matTooltipPosition="left">
         <mat-icon>account_circle</mat-icon>
       </button>

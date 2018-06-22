@@ -28,6 +28,6 @@ export class SystemPage {
   }
 
   showStreamsItem() {
-    return this.user.getSystemPrivileges().length > 0;
+    return this.user.isSuperuser() || this.user.getSystemPrivileges().length > 0;
   }
 }

@@ -20,7 +20,7 @@
         </mat-list-item>
 
         <br>
-        <mat-list-item>
+        <mat-list-item *ngIf="info.plugin">
           <h3 matLine>Plugins</h3>
           <table matLine yaDataTable>
             <tr>

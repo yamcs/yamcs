@@ -81,6 +81,7 @@ export interface DataEncoding {
   sizeInBits: number;
   encoding: string;
   defaultCalibrator: Calibrator;
+  contextCalibrator: Calibrator[];
 }
 
 export interface Calibrator {

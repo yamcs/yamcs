@@ -13,7 +13,7 @@
         </div>
 
         <h4>Calibration</h4>
-        <app-parameter-calibration [parameter]="parameter"></app-parameter-calibration>
+        <app-parameter-calibration [instance]="instance" [parameter]="parameter"></app-parameter-calibration>
         <p>&nbsp;</p>
       </ng-container>
 
@@ -50,7 +50,7 @@
         </div>
 
         <h4>Alarm Levels</h4>
-        <table yaDataTable *ngIf="parameter.type?.defaultAlarm?.staticAlarmRange as ranges">
+        <table yaDataTable *ngIf="parameter.type?.defaultAlarm?.staticAlarmRange as ranges; else noLevels">
           <tr>
             <th>Alarm Level (default)</th>
             <th>Range</th>
@@ -63,6 +63,7 @@
             <td>{{ describeRange(range) }}</td>
           </tr>
         </table>
+        <ng-template #noLevels>None</ng-template>
         <p>&nbsp;</p>
       </ng-container>
 
