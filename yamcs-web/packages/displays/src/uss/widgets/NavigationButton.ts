@@ -1,21 +1,10 @@
-import * as utils from '../utils';
-
-import { AbstractWidget } from './AbstractWidget';
+import { OpenDisplayCommandOptions } from '../../OpenDisplayCommandOptions';
 import { G, Rect } from '../../tags';
 import { Color } from '../Color';
-import { Label } from './Label';
 import { DataSourceBinding } from '../DataSourceBinding';
-
-interface OpenDisplayCommandOptions {
-  target: string;
-  openInNewWindow: boolean;
-  coordinates?: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
-}
+import * as utils from '../utils';
+import { AbstractWidget } from './AbstractWidget';
+import { Label } from './Label';
 
 export class NavigationButton extends AbstractWidget {
 
@@ -35,7 +24,7 @@ export class NavigationButton extends AbstractWidget {
     this.commandClass = utils.parseStringAttribute(pressCmd, 'class');
     switch (this.commandClass) {
       case 'OpenDisplayCommand':
-        const relto = this.display.frame.id;
+        const relto = this.display.holder.getBaseId();
         const base = relto.substring(0, relto.lastIndexOf('/'));
         this.openDisplayCommandOptions = {
           target: `${base}/${utils.parseStringChild(pressCmd, 'DisplayBasename')}.uss`,
@@ -135,26 +124,16 @@ export class NavigationButton extends AbstractWidget {
   }
 
   private executeOpenDisplayCommand() {
-    const frame = this.display.frame;
-    if (frame) {
-      const opts = this.openDisplayCommandOptions;
-      const alreadyOpenFrame = frame.layout.getDisplayFrame(opts.target);
-      if (alreadyOpenFrame) {
-        frame.layout.bringToFront(alreadyOpenFrame);
-      } else {
-        if (!opts.openInNewWindow) {
-          frame.layout.closeDisplayFrame(frame);
-        }
-        frame.layout.createDisplayFrame(opts.target, opts.coordinates);
-      }
+    const holder = this.display.holder;
+    if (holder) {
+      holder.openDisplay(this.openDisplayCommandOptions);
     }
   }
 
   private executeCloseDisplayCommand() {
-    const frame = this.display.frame;
-    if (frame) {
-      const layout = frame.layout;
-      layout.closeDisplayFrame(frame);
+    const holder = this.display.holder;
+    if (holder) {
+      holder.closeDisplay();
     }
   }
 

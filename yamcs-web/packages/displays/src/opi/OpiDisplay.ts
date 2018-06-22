@@ -1,11 +1,11 @@
-import { Svg, Rect, Tag, Defs, Pattern } from '../tags';
-import { DisplayCommunicator } from '../DisplayCommunicator';
-import { DisplayFrame } from '../DisplayFrame';
-import { ParameterValue, NamedObjectId } from '@yamcs/client';
+import { NamedObjectId, ParameterValue } from '@yamcs/client';
 import { Display } from '../Display';
-
-import * as utils from './utils';
+import { DisplayCommunicator } from '../DisplayCommunicator';
+import { DisplayHolder } from '../DisplayHolder';
+import { Defs, Pattern, Rect, Svg, Tag } from '../tags';
 import { Color } from './Color';
+import * as utils from './utils';
+
 
 export class OpiDisplay implements Display {
 
@@ -17,7 +17,7 @@ export class OpiDisplay implements Display {
   container: HTMLDivElement;
 
   constructor(
-    readonly frame: DisplayFrame,
+    readonly holder: DisplayHolder,
     private targetEl: HTMLDivElement,
     readonly displayCommunicator: DisplayCommunicator,
   ) {

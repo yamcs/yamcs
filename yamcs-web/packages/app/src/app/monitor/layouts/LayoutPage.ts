@@ -6,7 +6,7 @@ import { LayoutState } from '@yamcs/displays';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { LayoutComponent } from '../displays/LayoutComponent';
+import { LayoutComponent } from '../layouts/LayoutComponent';
 
 @Component({
   templateUrl: './LayoutPage.html',

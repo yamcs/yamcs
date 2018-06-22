@@ -1,6 +1,6 @@
-import { DisplayFrame, Coordinates } from './DisplayFrame';
-import { LayoutState, FrameState } from './LayoutState';
 import { DisplayCommunicator } from './DisplayCommunicator';
+import { Coordinates, DisplayFrame } from './DisplayFrame';
+import { FrameState, LayoutState } from './LayoutState';
 
 export interface LayoutListener {
 
@@ -139,7 +139,7 @@ export class Layout {
   getLayoutState(): LayoutState {
     const frameStates: FrameState[] = [];
     for (const frame of this.frames) { // Keep front-to-back order
-      frameStates.push({ id: frame.id, ...frame.getCoordinates() });
+      frameStates.push({ id: frame.getBaseId(), ...frame.getCoordinates() });
     }
     return { frames: frameStates };
   }

@@ -92,14 +92,14 @@
     rxjs "^6.0.0"
 
 "@angular/animations@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/animations/-/animations-6.0.5.tgz#3964bc2a60facf3c3b417925c4a395b3f44abb94"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/animations/-/animations-6.0.6.tgz#90a6e5acd693d2860017cdf83ec7fcd5daa74717"
   dependencies:
     tslib "^1.9.0"
 
 "@angular/cdk@^6.0.0":
-  version "6.2.1"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/cdk/-/cdk-6.2.1.tgz#6ac6e58e8557623e6615ebcb673d74bcc575641c"
+  version "6.3.0"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/cdk/-/cdk-6.3.0.tgz#fd914e4e145e48db1d51f38012178b97ddb78772"
   dependencies:
     tslib "^1.7.1"
 
@@ -121,14 +121,14 @@
     yargs-parser "^10.0.0"
 
 "@angular/common@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/common/-/common-6.0.5.tgz#7960e1cfc180afb4a1bd56371c48840173cc5a92"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/common/-/common-6.0.6.tgz#0e0dd67d2a360bc1f232277b29c9be2471b315f5"
   dependencies:
     tslib "^1.9.0"
 
 "@angular/compiler-cli@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/compiler-cli/-/compiler-cli-6.0.5.tgz#e3ae6a1042e4a08c43f2554685718a4402710958"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/compiler-cli/-/compiler-cli-6.0.6.tgz#d0d01cbfb8fcea161b686c0fdf8990556858ddba"
   dependencies:
     chokidar "^1.4.2"
     minimist "^1.2.0"
@@ -136,14 +136,14 @@
     tsickle "^0.29.0"
 
 "@angular/compiler@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/compiler/-/compiler-6.0.5.tgz#cb8fdb17b0d736c9054c1c9ab382c9cd2cc7ba5d"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/compiler/-/compiler-6.0.6.tgz#95e73a5c9884dd0a729c826abedd41ae3c125e74"
   dependencies:
     tslib "^1.9.0"
 
 "@angular/core@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/core/-/core-6.0.5.tgz#5846f1b3143f43657dc704fe4bcf9e75b94ec325"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/core/-/core-6.0.6.tgz#d7d9ee10bd895ad4115ca7ace40c678039d0bc32"
   dependencies:
     tslib "^1.9.0"
 
@@ -154,42 +154,42 @@
     tslib "^1.7.1"
 
 "@angular/forms@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/forms/-/forms-6.0.5.tgz#d3ec7886d8b61a97b2c0b7501b304b449a2dcae6"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/forms/-/forms-6.0.6.tgz#da187c024db7c86acd30ae48a155fd866fad7601"
   dependencies:
     tslib "^1.9.0"
 
 "@angular/http@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/http/-/http-6.0.5.tgz#53835564bb5c7a4eac7893a28bcaaf0e73fec2cd"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/http/-/http-6.0.6.tgz#bfb3ef8177c424c2a7b9af2bcfd9f3503913cbf1"
   dependencies:
     tslib "^1.9.0"
 
 "@angular/language-service@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/language-service/-/language-service-6.0.5.tgz#824c8cb43ab3976ddb9442ba39562e1dd0108155"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/language-service/-/language-service-6.0.6.tgz#270db3e6ff3eda2c1e828af7ea2fe2e16a8e17cb"
 
 "@angular/material@^6.0.0":
-  version "6.2.1"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/material/-/material-6.2.1.tgz#aec3387db755145b80d66d8497d4a834f88b61be"
+  version "6.3.0"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/material/-/material-6.3.0.tgz#c78ca3c0d9651d4d8786b9693a83dca0916cfe01"
   dependencies:
     tslib "^1.7.1"
 
 "@angular/platform-browser-dynamic@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/platform-browser-dynamic/-/platform-browser-dynamic-6.0.5.tgz#21c9a702fbd4a153ae8aa35fef89ca1a6dfaa658"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/platform-browser-dynamic/-/platform-browser-dynamic-6.0.6.tgz#20c5cf50d9c3b08cf8e34ee1d5f15af6921fee98"
   dependencies:
     tslib "^1.9.0"
 
 "@angular/platform-browser@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/platform-browser/-/platform-browser-6.0.5.tgz#b6b15424a7aa9342284ce7fba6a700f7aad2fd9c"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/platform-browser/-/platform-browser-6.0.6.tgz#004ebc0265c7b472be6868bbd177c85bcf310f97"
   dependencies:
     tslib "^1.9.0"
 
 "@angular/router@^6.0.0":
-  version "6.0.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/router/-/router-6.0.5.tgz#e9e9e5986e238588020d0531aff3362e836db2a8"
+  version "6.0.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@angular/router/-/router-6.0.6.tgz#30a2281e88fbdb5b530fe4cd14bb5b18bae96c52"
   dependencies:
     tslib "^1.9.0"
 
@@ -253,12 +253,16 @@
     "@types/jasmine" "*"
 
 "@types/node@*", "@types/node@^10.3.3":
-  version "10.3.3"
-  resolved "https://nexus.spaceapplications.com/repository/npm/@types/node/-/node-10.3.3.tgz#8798d9e39af2fa604f715ee6a6b19796528e46c3"
+  version "10.3.4"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@types/node/-/node-10.3.4.tgz#c74e8aec19e555df44609b8057311052a2c84d9e"
 
 "@types/pegjs@^0.10.0":
   version "0.10.1"
   resolved "https://nexus.spaceapplications.com/repository/npm/@types/pegjs/-/pegjs-0.10.1.tgz#9a2f3961dc62430fdb21061eb0ddbd890f9e3b94"
+
+"@types/screenfull@^3.3.1":
+  version "3.3.1"
+  resolved "https://nexus.spaceapplications.com/repository/npm/@types/screenfull/-/screenfull-3.3.1.tgz#9d9919025c47327c6012110ebd7880cae9e0913e"
 
 "@webassemblyjs/ast@1.4.3":
   version "1.4.3"
@@ -705,11 +709,11 @@ atob@^2.1.1:
   resolved "https://nexus.spaceapplications.com/repository/npm/atob/-/atob-2.1.1.tgz#ae2d5a729477f289d60dd7f96a6314a22dd6c22a"
 
 autoprefixer@^8.0.0, autoprefixer@^8.4.1:
-  version "8.6.2"
-  resolved "https://nexus.spaceapplications.com/repository/npm/autoprefixer/-/autoprefixer-8.6.2.tgz#51d42ff13243820a582a53ecca20dedaeb7f2efd"
+  version "8.6.3"
+  resolved "https://nexus.spaceapplications.com/repository/npm/autoprefixer/-/autoprefixer-8.6.3.tgz#1d38a129e6a4582a565b6570d16f2d7d3de9cbf9"
   dependencies:
     browserslist "^3.2.8"
-    caniuse-lite "^1.0.30000851"
+    caniuse-lite "^1.0.30000856"
     normalize-range "^0.1.2"
     num2fraction "^1.2.2"
     postcss "^6.0.22"
@@ -1199,7 +1203,7 @@ camelcase@^4.0.0, camelcase@^4.1.0:
   version "4.1.0"
   resolved "https://nexus.spaceapplications.com/repository/npm/camelcase/-/camelcase-4.1.0.tgz#d545635be1e33c542649c69173e5de6acfae34dd"
 
-caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30000851:
+caniuse-lite@^1.0.30000844, caniuse-lite@^1.0.30000856:
   version "1.0.30000856"
   resolved "https://nexus.spaceapplications.com/repository/npm/caniuse-lite/-/caniuse-lite-1.0.30000856.tgz#ecc16978135a6f219b138991eb62009d25ee8daa"
 
@@ -1268,8 +1272,8 @@ chokidar@^1.4.2, chokidar@^1.6.0:
     fsevents "^1.0.0"
 
 chokidar@^2.0.0, chokidar@^2.0.2, chokidar@^2.0.3:
-  version "2.0.3"
-  resolved "https://nexus.spaceapplications.com/repository/npm/chokidar/-/chokidar-2.0.3.tgz#dcbd4f6cbb2a55b4799ba8a840ac527e5f4b1176"
+  version "2.0.4"
+  resolved "https://nexus.spaceapplications.com/repository/npm/chokidar/-/chokidar-2.0.4.tgz#356ff4e2b0e8e43e322d18a372460bbcf3accd26"
   dependencies:
     anymatch "^2.0.0"
     async-each "^1.0.0"
@@ -1278,12 +1282,13 @@ chokidar@^2.0.0, chokidar@^2.0.2, chokidar@^2.0.3:
     inherits "^2.0.1"
     is-binary-path "^1.0.0"
     is-glob "^4.0.0"
+    lodash.debounce "^4.0.8"
     normalize-path "^2.1.1"
     path-is-absolute "^1.0.0"
     readdirp "^2.0.0"
-    upath "^1.0.0"
+    upath "^1.0.5"
   optionalDependencies:
-    fsevents "^1.1.2"
+    fsevents "^1.2.2"
 
 chownr@^1.0.1:
   version "1.0.1"
@@ -2247,8 +2252,8 @@ ejs@^2.5.7:
   resolved "https://nexus.spaceapplications.com/repository/npm/ejs/-/ejs-2.6.1.tgz#498ec0d495655abc6f23cd61868d926464071aa0"
 
 electron-to-chromium@^1.3.47:
-  version "1.3.48"
-  resolved "https://nexus.spaceapplications.com/repository/npm/electron-to-chromium/-/electron-to-chromium-1.3.48.tgz#d3b0d8593814044e092ece2108fc3ac9aea4b900"
+  version "1.3.49"
+  resolved "https://nexus.spaceapplications.com/repository/npm/electron-to-chromium/-/electron-to-chromium-1.3.49.tgz#651384b0d81f078a96639b2b36975141b7915004"
 
 elliptic@^6.0.0:
   version "6.4.0"
@@ -2338,8 +2343,8 @@ errno@^0.1.1, errno@^0.1.3, errno@~0.1.7:
     prr "~1.0.1"
 
 error-ex@^1.2.0, error-ex@^1.3.1:
-  version "1.3.1"
-  resolved "https://nexus.spaceapplications.com/repository/npm/error-ex/-/error-ex-1.3.1.tgz#f855a86ce61adc4e8621c3cda21e7a7612c3a8dc"
+  version "1.3.2"
+  resolved "https://nexus.spaceapplications.com/repository/npm/error-ex/-/error-ex-1.3.2.tgz#b4ac40648107fdcdcfae242f428bea8a14d4f1bf"
   dependencies:
     is-arrayish "^0.2.1"
 
@@ -2914,7 +2919,7 @@ fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://nexus.spaceapplications.com/repository/npm/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
 
-fsevents@^1.0.0, fsevents@^1.1.2:
+fsevents@^1.0.0, fsevents@^1.2.2:
   version "1.2.4"
   resolved "https://nexus.spaceapplications.com/repository/npm/fsevents/-/fsevents-1.2.4.tgz#f41dcb1af2582af3692da36fc55cbd8e1041c426"
   dependencies:
@@ -3509,8 +3514,8 @@ ignore-walk@^3.0.1:
     minimatch "^3.0.4"
 
 ignore@^3.3.5:
-  version "3.3.8"
-  resolved "https://nexus.spaceapplications.com/repository/npm/ignore/-/ignore-3.3.8.tgz#3f8e9c35d38708a3a7e0e9abb6c73e7ee7707b2b"
+  version "3.3.10"
+  resolved "https://nexus.spaceapplications.com/repository/npm/ignore/-/ignore-3.3.10.tgz#0a97fb876986e8081c631160f8f9f389157f0043"
 
 image-size@~0.5.0:
   version "0.5.5"
@@ -4349,6 +4354,10 @@ lodash.clonedeep@^4.3.2, lodash.clonedeep@^4.5.0:
   version "4.5.0"
   resolved "https://nexus.spaceapplications.com/repository/npm/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
 
+lodash.debounce@^4.0.8:
+  version "4.0.8"
+  resolved "https://nexus.spaceapplications.com/repository/npm/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
+
 lodash.mergewith@^4.6.0:
   version "4.6.1"
   resolved "https://nexus.spaceapplications.com/repository/npm/lodash.mergewith/-/lodash.mergewith-4.6.1.tgz#639057e726c3afbdb3e7d42741caa8d6e4335927"
@@ -4472,8 +4481,8 @@ mailcomposer@4.0.1:
     libmime "3.0.0"
 
 mailgun-js@^0.18.0:
-  version "0.18.0"
-  resolved "https://nexus.spaceapplications.com/repository/npm/mailgun-js/-/mailgun-js-0.18.0.tgz#81fed0c66a411d3ff6c4354861ad21387afcfaaa"
+  version "0.18.1"
+  resolved "https://nexus.spaceapplications.com/repository/npm/mailgun-js/-/mailgun-js-0.18.1.tgz#ee39aa18d7bb598a5ce9ede84afb681defc8a6b0"
   dependencies:
     async "~2.6.0"
     debug "~3.1.0"
@@ -4827,8 +4836,8 @@ next-tick@1:
   resolved "https://nexus.spaceapplications.com/repository/npm/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
 
 ng-packagr@^3.0.0:
-  version "3.0.2"
-  resolved "https://nexus.spaceapplications.com/repository/npm/ng-packagr/-/ng-packagr-3.0.2.tgz#f54b00bb64d246a7ecaede172329464229f6aa45"
+  version "3.0.3"
+  resolved "https://nexus.spaceapplications.com/repository/npm/ng-packagr/-/ng-packagr-3.0.3.tgz#389d72ddc76fd67bb8e8965852d2025b76efa048"
   dependencies:
     "@ngtools/json-schema" "^1.1.0"
     autoprefixer "^8.0.0"
@@ -5134,8 +5143,8 @@ object-copy@^0.1.0:
     kind-of "^3.0.3"
 
 object-keys@^1.0.11, object-keys@^1.0.8:
-  version "1.0.11"
-  resolved "https://nexus.spaceapplications.com/repository/npm/object-keys/-/object-keys-1.0.11.tgz#c54601778ad560f1142ce0e01bcca8b56d13426d"
+  version "1.0.12"
+  resolved "https://nexus.spaceapplications.com/repository/npm/object-keys/-/object-keys-1.0.12.tgz#09c53855377575310cca62f55bb334abff7b3ed2"
 
 object-visit@^1.0.0:
   version "1.0.1"
@@ -6179,8 +6188,8 @@ resolve@1.1.x:
   resolved "https://nexus.spaceapplications.com/repository/npm/resolve/-/resolve-1.1.7.tgz#203114d82ad2c5ed9e8e0411b3932875e889e97b"
 
 resolve@^1.1.6, resolve@^1.1.7, resolve@^1.3.2, resolve@^1.5.0, resolve@^1.7.1:
-  version "1.8.0"
-  resolved "https://nexus.spaceapplications.com/repository/npm/resolve/-/resolve-1.8.0.tgz#a7f2ac27b78480ecc09c83782741d9f26e4f0c3e"
+  version "1.8.1"
+  resolved "https://nexus.spaceapplications.com/repository/npm/resolve/-/resolve-1.8.1.tgz#82f1ec19a423ac1fbd080b0bab06ba36e84a7a26"
   dependencies:
     path-parse "^1.0.5"
 
@@ -6240,8 +6249,8 @@ rollup-plugin-node-resolve@^3.0.0, rollup-plugin-node-resolve@^3.2.0:
     resolve "^1.1.6"
 
 rollup-plugin-peer-deps-external@^2.1.0:
-  version "2.1.1"
-  resolved "https://nexus.spaceapplications.com/repository/npm/rollup-plugin-peer-deps-external/-/rollup-plugin-peer-deps-external-2.1.1.tgz#49bba4965bedd0b8e1aa613bec4c4ab718b39360"
+  version "2.2.0"
+  resolved "https://nexus.spaceapplications.com/repository/npm/rollup-plugin-peer-deps-external/-/rollup-plugin-peer-deps-external-2.2.0.tgz#99ef9231aa01736f3e9605b7c3084a0d627f665b"
 
 rollup-plugin-sourcemaps@^0.4.2:
   version "0.4.2"
@@ -6280,9 +6289,9 @@ rollup@^0.59.0:
     "@types/estree" "0.0.39"
     "@types/node" "*"
 
-rollup@^0.60.1:
-  version "0.60.7"
-  resolved "https://nexus.spaceapplications.com/repository/npm/rollup/-/rollup-0.60.7.tgz#2b62ef9306f719b1ab85a7814b3e6596ac51fae8"
+rollup@^0.61.1:
+  version "0.61.1"
+  resolved "https://nexus.spaceapplications.com/repository/npm/rollup/-/rollup-0.61.1.tgz#65a12f27c2094e6d643fb9cca6a3057190ecc5fe"
   dependencies:
     "@types/estree" "0.0.39"
     "@types/node" "*"
@@ -6372,6 +6381,10 @@ schema-utils@^0.4.0, schema-utils@^0.4.2, schema-utils@^0.4.3, schema-utils@^0.4
   dependencies:
     ajv "^6.1.0"
     ajv-keywords "^3.1.0"
+
+screenfull@^3.3.2:
+  version "3.3.2"
+  resolved "https://nexus.spaceapplications.com/repository/npm/screenfull/-/screenfull-3.3.2.tgz#a6adf3b3f5556da812725385880600f5b39fbf25"
 
 scss-tokenizer@^0.2.3:
   version "0.2.3"
@@ -7340,8 +7353,8 @@ uglify-js@^2.6:
     uglify-to-browserify "~1.0.0"
 
 uglify-js@^3.0.7:
-  version "3.4.0"
-  resolved "https://nexus.spaceapplications.com/repository/npm/uglify-js/-/uglify-js-3.4.0.tgz#796762282b5b5f0eafe7d5c8c708d1d7bd5ba11d"
+  version "3.4.1"
+  resolved "https://nexus.spaceapplications.com/repository/npm/uglify-js/-/uglify-js-3.4.1.tgz#006da540dc25e9319d106a99a5ef1d24ae04ce60"
   dependencies:
     commander "~2.15.0"
     source-map "~0.6.1"
@@ -7351,8 +7364,8 @@ uglify-to-browserify@~1.0.0:
   resolved "https://nexus.spaceapplications.com/repository/npm/uglify-to-browserify/-/uglify-to-browserify-1.0.2.tgz#6e0924d6bda6b5afe349e39a6d632850a0f882b7"
 
 uglifyjs-webpack-plugin@^1.2.4, uglifyjs-webpack-plugin@^1.2.5:
-  version "1.2.5"
-  resolved "https://nexus.spaceapplications.com/repository/npm/uglifyjs-webpack-plugin/-/uglifyjs-webpack-plugin-1.2.5.tgz#2ef8387c8f1a903ec5e44fa36f9f3cbdcea67641"
+  version "1.2.6"
+  resolved "https://nexus.spaceapplications.com/repository/npm/uglifyjs-webpack-plugin/-/uglifyjs-webpack-plugin-1.2.6.tgz#f4bb44f02431e82b301d8d4624330a6a35729381"
   dependencies:
     cacache "^10.0.4"
     find-cache-dir "^1.0.0"
@@ -7399,8 +7412,8 @@ unique-string@^1.0.0:
     crypto-random-string "^1.0.0"
 
 universalify@^0.1.0:
-  version "0.1.1"
-  resolved "https://nexus.spaceapplications.com/repository/npm/universalify/-/universalify-0.1.1.tgz#fa71badd4437af4c148841e3b3b165f9e9e590b7"
+  version "0.1.2"
+  resolved "https://nexus.spaceapplications.com/repository/npm/universalify/-/universalify-0.1.2.tgz#b646f69be3942dabcecc9d6639c80dc105efaa66"
 
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"
@@ -7417,7 +7430,7 @@ unzip-response@^2.0.1:
   version "2.0.1"
   resolved "https://nexus.spaceapplications.com/repository/npm/unzip-response/-/unzip-response-2.0.1.tgz#d2f0f737d16b0615e72a6935ed04214572d56f97"
 
-upath@^1.0.0:
+upath@^1.0.5:
   version "1.1.0"
   resolved "https://nexus.spaceapplications.com/repository/npm/upath/-/upath-1.1.0.tgz#35256597e46a581db4793d0ce47fa9aebfc9fabd"
 

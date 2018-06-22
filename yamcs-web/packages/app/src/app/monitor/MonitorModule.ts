@@ -1,16 +1,17 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
-import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
 import { AlarmDetail } from './alarms/AlarmDetail';
 import { DownloadDumpDialog } from './archive/DownloadDumpDialog';
 import { JumpToDialog } from './archive/JumpToDialog';
 import { TimelineTooltip } from './archive/TimelineTooltip';
-import { DisplayNavigator } from './displays/DisplayNavigator';
-import { LayoutComponent } from './displays/LayoutComponent';
-import { SaveLayoutDialog } from './displays/SaveLayoutDialog';
 import { CreateEventDialog } from './events/CreateEventDialog';
 import { EventSeverity } from './events/EventSeverity';
 import { PageContentHost } from './ext/PageContentHost';
+import { DisplayNavigator } from './layouts/DisplayNavigator';
+import { LayoutComponent } from './layouts/LayoutComponent';
+import { SaveLayoutDialog } from './layouts/SaveLayoutDialog';
+import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
+import { DisplayTypePipe } from './pipes/DisplayTypePipe';
 import { MonitorPageTemplate } from './template/MonitorPageTemplate';
 import { MonitorToolbar } from './template/MonitorToolbar';
 import { StartReplayDialog } from './template/StartReplayDialog';
@@ -23,6 +24,10 @@ const dialogComponents = [
   StartReplayDialog,
 ];
 
+const pipes = [
+  DisplayTypePipe,
+];
+
 @NgModule({
   imports: [
     SharedModule,
@@ -31,6 +36,7 @@ const dialogComponents = [
   declarations: [
     routingComponents,
     dialogComponents,
+    pipes,
     AlarmDetail,
     DisplayNavigator,
     EventSeverity,

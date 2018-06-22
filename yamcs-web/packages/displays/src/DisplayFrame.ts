@@ -1,9 +1,11 @@
-import { Layout } from './Layout';
-import { UssDisplay } from './uss/UssDisplay';
-import { ParameterValue, NamedObjectId } from '@yamcs/client';
+import { NamedObjectId, ParameterValue } from '@yamcs/client';
 import { Display } from './Display';
+import { DisplayHolder } from './DisplayHolder';
+import { Layout } from './Layout';
+import { OpenDisplayCommandOptions } from './OpenDisplayCommandOptions';
 import { OpiDisplay } from './opi/OpiDisplay';
 import { ParDisplay } from './par/ParDisplay';
+import { UssDisplay } from './uss/UssDisplay';
 
 export interface Coordinates {
   x: number;
@@ -12,7 +14,10 @@ export interface Coordinates {
   height?: number;
 }
 
-export class DisplayFrame {
+/**
+ * A frame shows a display inside a layout
+ */
+export class DisplayFrame implements DisplayHolder {
 
   container: HTMLDivElement;
 
@@ -29,7 +34,7 @@ export class DisplayFrame {
   display: Display;
 
   constructor(
-    readonly id: string,
+    private id: string,
     private targetEl: HTMLDivElement,
     readonly layout: Layout,
     private coordinates: Coordinates) {
@@ -173,6 +178,26 @@ export class DisplayFrame {
 
   processParameterValues(pvals: ParameterValue[]) {
     this.display.processParameterValues(pvals);
+  }
+
+  getBaseId() {
+    return this.id;
+  }
+
+  openDisplay(options: OpenDisplayCommandOptions) {
+    const alreadyOpenFrame = this.layout.getDisplayFrame(options.target);
+    if (alreadyOpenFrame) {
+      this.layout.bringToFront(alreadyOpenFrame);
+    } else {
+      if (!options.openInNewWindow) {
+        this.layout.closeDisplayFrame(this);
+      }
+      this.layout.createDisplayFrame(options.target, options.coordinates);
+    }
+  }
+
+  closeDisplay() {
+    this.layout.closeDisplayFrame(this);
   }
 
   private addEventHandlers() {

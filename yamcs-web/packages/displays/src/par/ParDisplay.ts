@@ -1,8 +1,7 @@
-import { Svg, Rect, Tag, Defs, Pattern } from '../tags';
-import { DisplayCommunicator } from '../DisplayCommunicator';
-import { DisplayFrame } from '../DisplayFrame';
-import { ParameterValue, NamedObjectId, Value } from '@yamcs/client';
+import { NamedObjectId, ParameterValue, Value } from '@yamcs/client';
 import { Display } from '../Display';
+import { DisplayCommunicator } from '../DisplayCommunicator';
+import { DisplayHolder } from '../DisplayHolder';
 
 export class ParDisplay implements Display {
 
@@ -15,7 +14,7 @@ export class ParDisplay implements Display {
   rowElementsByQualifiedName = new Map<string, HTMLTableRowElement[]>();
 
   constructor(
-    readonly frame: DisplayFrame,
+    readonly holder: DisplayHolder,
     private targetEl: HTMLDivElement,
     readonly displayCommunicator: DisplayCommunicator,
   ) {}

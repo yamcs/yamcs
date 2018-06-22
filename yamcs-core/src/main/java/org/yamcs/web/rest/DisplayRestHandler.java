@@ -52,7 +52,7 @@ public class DisplayRestHandler extends RestHandler {
             if (child.isDirectory()) {
                 DisplayFolder.Builder subfolderb = DisplayFolder.newBuilder();
                 subfolderb.setName(child.getName());
-                subfolderb.setPath(parentPath + child.getName() + "/");
+                subfolderb.setPath(parentPath + child.getName());
                 writeFilesFromDir(child, subfolderb, parentPath + child.getName() + "/");
                 folderb.addFolder(subfolderb);
             } else if (!child.isHidden()) {

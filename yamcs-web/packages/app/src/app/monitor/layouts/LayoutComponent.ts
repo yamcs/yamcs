@@ -1,28 +1,10 @@
-import {
-  Component,
-  ViewChild,
-  ElementRef,
-  ChangeDetectionStrategy,
-  Output,
-  EventEmitter,
-  Input,
-  OnInit,
-  OnChanges,
-} from '@angular/core';
-import {
-  Coordinates,
-  DisplayCommunicator,
-  DisplayFrame,
-  Layout,
-  LayoutListener,
-  LayoutStateListener,
-  LayoutState,
-} from '@yamcs/displays';
-import { YamcsService } from '../../core/services/YamcsService';
-import { DisplayFolder } from '@yamcs/client';
-import { BehaviorSubject } from 'rxjs';
-import { MyDisplayCommunicator } from './MyDisplayCommunicator';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
+import { DisplayFolder } from '@yamcs/client';
+import { Coordinates, DisplayCommunicator, DisplayFrame, Layout, LayoutListener, LayoutState, LayoutStateListener } from '@yamcs/displays';
+import { BehaviorSubject } from 'rxjs';
+import { YamcsService } from '../../core/services/YamcsService';
+import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
 
 @Component({
   selector: 'app-layout-component',

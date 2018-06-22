@@ -9,6 +9,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   template: '<router-outlet></router-outlet>',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DisplaysPage {
+export class DisplayPage {
 
 }

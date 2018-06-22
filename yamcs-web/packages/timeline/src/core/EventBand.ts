@@ -1,9 +1,8 @@
-import { Action } from '../Action';
+import { EventChangedEvent, EventEvent } from '../events';
 import Point from '../Point';
 import RenderContext from '../RenderContext';
-import Timeline from '../Timeline';
-import { EventChangedEvent, EventEvent } from '../events';
 import { ClipPath, Ellipse, G, Line, Path, Rect, Set, Text, Title } from '../tags';
+import Timeline from '../Timeline';
 import { isAfter, isBefore, toDate } from '../utils';
 import Band, { BandOptions } from './Band';
 
