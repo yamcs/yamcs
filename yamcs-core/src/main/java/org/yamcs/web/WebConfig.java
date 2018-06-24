@@ -58,16 +58,14 @@ public class WebConfig {
             }
             if (webConfig.containsKey("cors")) {
                 Map<String, Object> ycors = YConfiguration.getMap(webConfig, "cors");
-                if (YConfiguration.getBoolean(ycors, "enabled")) {
-                    if (YConfiguration.isList(ycors, "allowOrigin")) {
-                        List<String> originConf = YConfiguration.getList(ycors, "allowOrigin");
-                        corsb = CorsConfigBuilder.forOrigins(originConf.toArray(new String[originConf.size()]));
-                    } else {
-                        corsb = CorsConfigBuilder.forOrigin(YConfiguration.getString(ycors, "allowOrigin"));
-                    }
-                    if (YConfiguration.getBoolean(ycors, "allowCredentials")) {
-                        corsb.allowCredentials();
-                    }
+                if (YConfiguration.isList(ycors, "allowOrigin")) {
+                    List<String> originConf = YConfiguration.getList(ycors, "allowOrigin");
+                    corsb = CorsConfigBuilder.forOrigins(originConf.toArray(new String[originConf.size()]));
+                } else {
+                    corsb = CorsConfigBuilder.forOrigin(YConfiguration.getString(ycors, "allowOrigin"));
+                }
+                if (YConfiguration.getBoolean(ycors, "allowCredentials")) {
+                    corsb.allowCredentials();
                 }
             }
 
@@ -79,12 +77,7 @@ public class WebConfig {
                     extension.field = YConfiguration.getString(conf, "field");
                     gpbExtensions.add(extension);
                 }
-
             }
-        } else {
-            // Allow CORS requests for unprotected Yamcs instances
-            // (Browsers would anyway strip Authorization header)
-            corsb = CorsConfigBuilder.forAnyOrigin();
         }
 
         if (corsb != null) {
