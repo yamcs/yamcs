@@ -1,3 +1,6 @@
+## 1.3.1 - Release 25-Jun-2018
+* Fix issue with event titles not rendering
+
 ## 1.3.0 - Released 21-Jun-2018
 * Emit new events sidebarMouseEnter, sidebarMouseLeave and sidebarContextMenu
 * Event Band: the `id` option is now mandatory

@@ -211,8 +211,8 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
             // draggable: true,
             interactive: true,
             interactiveSidebar: false,
+            wrap: false,
             style: {
-              wrap: false,
               marginTop: 8,
               marginBottom: 8,
             },

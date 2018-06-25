@@ -1,3 +1,4 @@
+import { Action } from '../Action';
 import { EventChangedEvent, EventEvent } from '../events';
 import Point from '../Point';
 import RenderContext from '../RenderContext';
@@ -218,7 +219,7 @@ export default class EventBand extends Band {
           }
 
           textOutside = false;
-          if (this.opts.wrap && availableTitleWidth < fm.width) {
+          if (this.opts.wrap !== false && availableTitleWidth < fm.width) {
             renderStopX += fm.width + this.style.eventLeftMargin;
             textOutside = true;
           }
