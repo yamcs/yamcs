@@ -555,6 +555,7 @@ public class XtceDb implements Serializable {
      * <li>if system.getParent() does not return null
      * <li>if the parent SpaceSystem does not exist
      * <li>if the space system is not empty
+     * </ul>
      *
      * This method also sets the parent of the passed spacesystem to its parent object.
      *
