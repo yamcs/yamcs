@@ -1,16 +1,14 @@
 package org.yamcs.artemis;
 
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
-import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.TupleDefinition;
-
-import com.google.protobuf.ByteString;
-
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.tctm.TmDataLinkInitialiser;
-import org.yamcs.tctm.TmProviderAdapter;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
+
+import com.google.protobuf.ByteString;
 
 /**
  * Translates between tuples as defined in {@link TmProviderAdapter} and ActiveMQ messages containing TmPacketData
@@ -44,5 +42,4 @@ public class TmTupleTranslator implements TupleTranslator {
             throw new IllegalArgumentException(e.toString(), e);
         }
     }
-
 }

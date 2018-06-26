@@ -15,6 +15,7 @@ import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.YamcsService;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.time.TimeService;
@@ -39,42 +40,46 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * Records XTCE TM sequence containers.
  * 
- * It creates a stream for each sequence container under the root. 
+ * It creates a stream for each sequence container under the root.
  * 
  * @author nm
  *
  */
-public class XtceTmRecorder extends AbstractService {
+public class XtceTmRecorder extends AbstractService implements YamcsService {
     private long totalNumPackets;
     protected Logger log;
 
     String yamcsInstance;
-    final Tuple END_MARK=new Tuple(TmDataLinkInitialiser.TM_TUPLE_DEFINITION, new Object[] {null,  null, null, null});
-   
+    final Tuple END_MARK = new Tuple(TmDataLinkInitialiser.TM_TUPLE_DEFINITION,
+            new Object[] { null, null, null, null });
+
     static public String REALTIME_TM_STREAM_NAME = "tm_realtime";
     static public String DUMP_TM_STREAM_NAME = "tm_dump";
     static public final String TABLE_NAME = "tm";
     static public final String PNAME_COLUMN = "pname";
     XtceDb xtceDb;
-    
+
     private final List<StreamRecorder> recorders = new ArrayList<>();
 
-    static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION=new TupleDefinition();
+    static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION = new TupleDefinition();
     static {
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.GENTIME_COLUMN, DataType.TIMESTAMP);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.SEQNUM_COLUMN, DataType.INT);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.RECTIME_COLUMN, DataType.TIMESTAMP);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.PACKET_COLUMN, DataType.BINARY);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); //container name (XTCE qualified name) 
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); // container name (XTCE qualified name)
     }
 
-    public XtceTmRecorder(String yamcsInstance) throws IOException, StreamSqlException, ParseException, YamcsApiException {
+    public XtceTmRecorder(String yamcsInstance)
+            throws IOException, StreamSqlException, ParseException, YamcsApiException {
         this(yamcsInstance, null);
     }
+
     final TimeService timeService;
-    
+
     /**
      * old constructor for compatibility with older configuration files
+     * 
      * @param yamcsInstance
      * @throws IOException
      * @throws ConfigurationException
@@ -82,92 +87,90 @@ public class XtceTmRecorder extends AbstractService {
      * @throws ParseException
      * @throws YamcsApiException
      */
-    public XtceTmRecorder(String yamcsInstance, Map<String, Object> config) throws IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
+    public XtceTmRecorder(String yamcsInstance, Map<String, Object> config)
+            throws IOException, ConfigurationException, StreamSqlException, ParseException, YamcsApiException {
 
         this.yamcsInstance = yamcsInstance;
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
 
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-       
-        if(ydb.getTable(TABLE_NAME)==null) {
-            String query="create table "+TABLE_NAME+"("+RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()+", primary key(gentime, seqNum)) histogram(pname) partition by time_and_value(gentime"+getTimePartitioningSchemaSql()+", pname) table_format=compressed";
-            
+
+        if (ydb.getTable(TABLE_NAME) == null) {
+            String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
+                    + ", primary key(gentime, seqNum)) histogram(pname) partition by time_and_value(gentime"
+                    + getTimePartitioningSchemaSql() + ", pname) table_format=compressed";
+
             ydb.execute(query);
         }
-        ydb.execute("create stream tm_is"+RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
-        ydb.execute("insert into "+TABLE_NAME+" select * from tm_is");
-        xtceDb=XtceDbFactory.getInstance(yamcsInstance);
-       
+        ydb.execute("create stream tm_is" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
+        ydb.execute("insert into " + TABLE_NAME + " select * from tm_is");
+        xtceDb = XtceDbFactory.getInstance(yamcsInstance);
 
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
-        if(config==null || !config.containsKey("streams")) {
+        if (config == null || !config.containsKey("streams")) {
             List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.tm);
-            for(StreamConfigEntry sce: sceList){
+            for (StreamConfigEntry sce : sceList) {
                 createRecorder(sce);
             }
-        } else if(config != null && config.containsKey("streams")){
+        } else if (config != null && config.containsKey("streams")) {
             List<String> streamNames = YConfiguration.getList(config, "streams");
-            for(String sn: streamNames) {
+            for (String sn : streamNames) {
                 StreamConfigEntry sce = sc.getEntry(StandardStreamType.tm, sn);
-                if(sce==null) {
-                    throw new ConfigurationException("No stream config found for '"+sn+"'");
+                if (sce == null) {
+                    throw new ConfigurationException("No stream config found for '" + sn + "'");
                 }
                 createRecorder(sce);
             }
         }
-        
+
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
     static String getTimePartitioningSchemaSql() {
         YConfiguration yconfig = YConfiguration.getConfiguration("yamcs");
         String partSchema = "";
-        if(yconfig.containsKey("archiveConfig", "timePartitioningSchema")) {
-            partSchema = "('"+yconfig.getString("archiveConfig", "timePartitioningSchema")+"')";
+        if (yconfig.containsKey("archiveConfig", "timePartitioningSchema")) {
+            partSchema = "('" + yconfig.getString("archiveConfig", "timePartitioningSchema") + "')";
         }
         return partSchema;
     }
-    private void createRecorder(StreamConfigEntry streamConf) {       
+
+    private void createRecorder(StreamConfigEntry streamConf) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-        SequenceContainer rootsc = streamConf.getRootContainer() ;
-        if(rootsc == null) {
-            rootsc=xtceDb.getRootSequenceContainer();
+        SequenceContainer rootsc = streamConf.getRootContainer();
+        if (rootsc == null) {
+            rootsc = xtceDb.getRootSequenceContainer();
         }
-        if(rootsc==null) {
-            throw new ConfigurationException("XtceDb does not have a root sequence container and no container was specified for decoding packets from "+streamConf.getName()+" stream");
+        if (rootsc == null) {
+            throw new ConfigurationException(
+                    "XtceDb does not have a root sequence container and no container was specified for decoding packets from "
+                            + streamConf.getName() + " stream");
         }
 
+        Stream inputStream = ydb.getStream(streamConf.getName());
 
-      
-       
-        Stream inputStream=ydb.getStream(streamConf.getName());
-
-        if(inputStream==null) {
-            throw new ConfigurationException("Cannot find stream '"+streamConf.getName()+"'");
+        if (inputStream == null) {
+            throw new ConfigurationException("Cannot find stream '" + streamConf.getName() + "'");
         }
         Stream tm_is = ydb.getStream("tm_is");
         StreamRecorder recorder = new StreamRecorder(inputStream, tm_is, rootsc, streamConf.isAsync());
         recorders.add(recorder);
     }
 
-  
-    
     @Override
     protected void doStart() {
-        for(StreamRecorder sr: recorders) {
+        for (StreamRecorder sr : recorders) {
             sr.inputStream.addSubscriber(sr);
-            if(sr.async) {
+            if (sr.async) {
                 new Thread(sr).start();
             }
         }
         notifyStarted();
     }
 
-
-
     @Override
     protected void doStop() {
-        for(StreamRecorder sr: recorders) {
+        for (StreamRecorder sr : recorders) {
             sr.quit();
             sr.inputStream.removeSubscriber(sr);
         }
@@ -175,25 +178,23 @@ public class XtceTmRecorder extends AbstractService {
         Stream s = ydb.getStream("tm_is");
         Collection<StreamSubscriber> subscribers = s.getSubscribers();
         s.close();
-        for(StreamSubscriber ss:subscribers) {
-            if(ss instanceof TableWriter) {
-                ((TableWriter)ss).close();
+        for (StreamSubscriber ss : subscribers) {
+            if (ss instanceof TableWriter) {
+                ((TableWriter) ss).close();
             }
         }
         notifyStopped();
     }
-
-
-
 
     public long getNumProcessedPackets() {
         return totalNumPackets;
     }
 
     /**
-     * Records telemetry from one stream. The decoding starts with the specified sequence container 
+     * Records telemetry from one stream. The decoding starts with the specified sequence container
      * 
      * If async is set to true, the tuples are put in a queue and processed from a different thread.
+     * 
      * @author nm
      *
      */
@@ -205,14 +206,14 @@ public class XtceTmRecorder extends AbstractService {
 
         LinkedBlockingQueue<Tuple> tmQueue;
         XtceTmExtractor tmExtractor;
-        
+
         StreamRecorder(Stream inputStream, Stream outputStream, SequenceContainer sc, boolean async) {
             this.outputStream = outputStream;
             this.inputStream = inputStream;
             this.rootSequenceContainer = sc;
             this.async = async;
-            if(async) {
-                tmQueue = new LinkedBlockingQueue<Tuple>(100000);
+            if (async) {
+                tmQueue = new LinkedBlockingQueue<>(100000);
             }
             tmExtractor = new XtceTmExtractor(xtceDb);
             subscribeContainers(rootSequenceContainer);
@@ -223,12 +224,12 @@ public class XtceTmRecorder extends AbstractService {
          */
         @Override
         public void run() {
-            Thread.currentThread().setName(this.getClass().getSimpleName()+"["+yamcsInstance+"]");
+            Thread.currentThread().setName(this.getClass().getSimpleName() + "[" + yamcsInstance + "]");
             try {
                 Tuple t;
-                while(true) {
-                    t=tmQueue.take();
-                    if(t==END_MARK) {
+                while (true) {
+                    t = tmQueue.take();
+                    if (t == END_MARK) {
                         break;
                     }
                     saveTuple(t);
@@ -238,18 +239,19 @@ public class XtceTmRecorder extends AbstractService {
                 Thread.currentThread().interrupt();
             }
         }
-        //subscribe all containers that have useAsArchivePartition set
+
+        // subscribe all containers that have useAsArchivePartition set
         private void subscribeContainers(SequenceContainer sc) {
-            if(sc==null) {
+            if (sc == null) {
                 return;
             }
-            
-            if(sc.useAsArchivePartition()) {
+
+            if (sc.useAsArchivePartition()) {
                 tmExtractor.startProviding(sc);
             }
-            
-            if(xtceDb.getInheritingContainers(sc) != null) {
-                for(SequenceContainer sc1:xtceDb.getInheritingContainers(sc)) {
+
+            if (xtceDb.getInheritingContainers(sc) != null) {
+                for (SequenceContainer sc1 : xtceDb.getInheritingContainers(sc)) {
                     subscribeContainers(sc1);
                 }
             }
@@ -258,10 +260,10 @@ public class XtceTmRecorder extends AbstractService {
         @Override
         public void onTuple(Stream istream, Tuple t) {
             try {
-                if(async) {
+                if (async) {
                     tmQueue.put(t);
                 } else {
-                    synchronized(this) {
+                    synchronized (this) {
                         saveTuple(t);
                     }
                 }
@@ -273,12 +275,12 @@ public class XtceTmRecorder extends AbstractService {
 
         @Override
         public void streamClosed(Stream istream) {
-            //shouldn't happen
+            // shouldn't happen
             log.error("stream {} closed", istream);
         }
 
         public void quit() {
-            if(!async) {
+            if (!async) {
                 return;
             }
 
@@ -290,36 +292,38 @@ public class XtceTmRecorder extends AbstractService {
             }
         }
 
-        /**saves a TM tuple. The definition is in  * TmProviderAdapter
+        /**
+         * saves a TM tuple. The definition is in * TmProviderAdapter
          * 
          * it finds the XTCE names and puts them inside the recording
+         * 
          * @param t
          */
         protected void saveTuple(Tuple t) {
-            long gentime=(Long)t.getColumn(0);
-            byte[] packet=(byte[])t.getColumn(3);
+            long gentime = (Long) t.getColumn(0);
+            byte[] packet = (byte[]) t.getColumn(3);
             totalNumPackets++;
 
             tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(), rootSequenceContainer);
 
-            //the result contains a list with all the matching containers, the first one is the root container
-            //we should normally have just two elements in the list
+            // the result contains a list with all the matching containers, the first one is the root container
+            // we should normally have just two elements in the list
             List<ContainerExtractionResult> result = tmExtractor.getContainerResult();
-            SequenceContainer partitionBySc=null;
-            for(int i=result.size()-1; i>=0; i--) {
+            SequenceContainer partitionBySc = null;
+            for (int i = result.size() - 1; i >= 0; i--) {
                 SequenceContainer sc = result.get(i).getContainer();
-                if(sc.useAsArchivePartition()) {
+                if (sc.useAsArchivePartition()) {
                     partitionBySc = sc;
                     break;
                 }
             }
-            if(partitionBySc==null) {
+            if (partitionBySc == null) {
                 partitionBySc = result.get(0).getContainer();
             }
 
             try {
-                List<Object> c=t.getColumns();
-                List<Object> columns=new ArrayList<Object>(c.size()+1);
+                List<Object> c = t.getColumns();
+                List<Object> columns = new ArrayList<>(c.size() + 1);
                 columns.addAll(c);
 
                 columns.add(c.size(), partitionBySc.getQualifiedName());

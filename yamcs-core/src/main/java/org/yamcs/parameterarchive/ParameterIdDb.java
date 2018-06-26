@@ -207,8 +207,6 @@ public class ParameterIdDb {
     }
     /**
      * returns ParameterId based on numeric id
-     * @param parameterId
-     * @return
      */
     public ParameterId getParameterId(int pid) {
         for(Map.Entry<String, Map<Integer, Integer>> e: p2pidCache.entrySet()) {

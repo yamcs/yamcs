@@ -9,9 +9,8 @@ export class MayReadTablesGuard implements CanActivate, CanActivateChild {
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    const userInfo = this.authService.getUserInfo();
-    if (userInfo) {
-      return this.authService.hasSystemPrivilege('ReadTables');
+    if (this.authService.getUser()!.hasSystemPrivilege('ReadTables')) {
+      return true;
     }
 
     this.router.navigate(['/403'], { queryParams: { page: state.url } });

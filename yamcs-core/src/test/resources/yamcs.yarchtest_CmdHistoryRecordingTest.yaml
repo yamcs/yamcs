@@ -1,5 +1,4 @@
 services:
-    - org.yamcs.archive.ReplayServer
-    
-    
+  - class: org.yamcs.archive.ReplayServer
+
 mdb: refmdb

@@ -305,7 +305,7 @@ export class EventsPage {
   }
 
   mayWriteEvents() {
-    return this.authService.hasSystemPrivilege('WriteEvents');
+    return this.authService.getUser()!.hasSystemPrivilege('WriteEvents');
   }
 
   createEvent() {

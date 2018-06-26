@@ -28,11 +28,11 @@ import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.XtceDb;
 
 /**
- * Holds information related and required for XTCE processing. 
- * It is separated from Processor because it has to be usable when not a full blown processor is available (e.g. XTCE packet processing)
- *  
+ * Holds information related and required for XTCE processing. It is separated from Processor because it has to be
+ * usable when not a full blown processor is available (e.g. XTCE packet processing)
  * 
- *  Contains a cache of the last known value for each parameter
+ * 
+ * Contains a cache of the last known value for each parameter
  *
  */
 public class ProcessorData {
@@ -47,23 +47,24 @@ public class ProcessorData {
     final XtceDb xtcedb;
     static Logger log = LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
     final EventProducer eventProducer;
-    
+
     private Map<String, Object> userData = new HashMap<>();
-    
+
     private LastValueCache lastValueCache = new LastValueCache();
-    
+
     /**
      * @param xtcedb
-     * @param generateEvents - generate events in case of errors when processing data 
+     * @param generateEvents
+     *            - generate events in case of errors when processing data
      */
     public ProcessorData(String instance, String procName, XtceDb xtcedb, boolean generateEvents) {
         this.xtcedb = xtcedb;
-        if((instance != null) && generateEvents) { 
+        if ((instance != null) && generateEvents) {
             eventProducer = EventProducerFactory.getEventProducer(instance);
-        } else {//instance can be null when running in test or as a library - in this case we don't generate events
+        } else {// instance can be null when running in test or as a library - in this case we don't generate events
             eventProducer = new QuietEventProducer();
         }
-        eventProducer.setSource("PROCESOR("+procName+")");
+        eventProducer.setSource("PROCESOR(" + procName + ")");
         eventProducer.setRepeatedEventReduction(true, 10000);
 
         // populate last value cache with the default (initial) value for each parameter that has one
@@ -83,48 +84,46 @@ public class ProcessorData {
         }
         log.debug("Initialized lastValueCache with {} entries", lastValueCache.size());
     }
-    
+
     /**
      * Set some object to be shared with all the users of this processor data
+     * 
      * @param key
      * @param value
      */
-    public <T>  void setUserData(String key, T value) {
-        userData.put(key,  value);
+    public <T> void setUserData(String key, T value) {
+        userData.put(key, value);
     }
-    
+
     /**
      * Get the instance of the user defined object if any. Returns null if no data has been set.
+     * 
      * @param key
      * @return
      */
     @SuppressWarnings("unchecked")
     public <T> T getUserData(String key) {
-        return (T)userData.get(key);
+        return (T) userData.get(key);
     }
-    
-   
+
     /**
-     * returns a calibrator processor for the given data encoding. 
-     * Can be null if the DataEncoding does not define a calibrator.
-     * 
-     * @param de
-     * @param result - if used in the context of container processing, this represents the intermediate result
+     * returns a calibrator processor for the given data encoding. Can be null if the DataEncoding does not define a
+     * calibrator.
      * 
      * @return a calibrator processor or null
      */
     public CalibratorProc getCalibrator(CriteriaEvaluator contextEvaluator, DataEncoding de) {
-        if(de instanceof NumericDataEncoding) {
-            NumericDataEncoding nde =  (NumericDataEncoding) de;
+        if (de instanceof NumericDataEncoding) {
+            NumericDataEncoding nde = (NumericDataEncoding) de;
             Calibrator c = nde.getDefaultCalibrator();
 
             List<ContextCalibrator> clist = nde.getContextCalibratorList();
-            if(clist!=null) {
-                if(contextEvaluator==null) {
+            if (clist != null) {
+                if (contextEvaluator == null) {
                     log.warn("For {} : context calibrators without a context evaluator", de);
                 } else {
-                    for(ContextCalibrator cc: clist) {
-                        if(cc.getContextMatch().isMet(contextEvaluator)) {
+                    for (ContextCalibrator cc : clist) {
+                        if (cc.getContextMatch().isMet(contextEvaluator)) {
                             c = cc.getCalibrator();
                             break;
                         }
@@ -134,11 +133,11 @@ public class ProcessorData {
             try {
                 return getCalibrator(c);
             } catch (Exception e) {
-                eventProducer.sendWarning("Could not get calibrator processor for "+c+": "+ e.getMessage());
+                eventProducer.sendWarning("Could not get calibrator processor for " + c + ": " + e.getMessage());
                 return null;
             }
         } else {
-            throw new IllegalStateException("Calibrators not supported for: "+de);
+            throw new IllegalStateException("Calibrators not supported for: " + de);
         }
     }
 
@@ -147,21 +146,21 @@ public class ProcessorData {
     }
 
     private CalibratorProc getCalibrator(Calibrator c) {
-        if(c==null) {
+        if (c == null) {
             return null;
         }
         CalibratorProc calibrator = calibrators.get(c);
-        if(calibrator==null) {
-            if(c instanceof PolynomialCalibrator) {
-                calibrator= new PolynomialCalibratorProc((PolynomialCalibrator) c);
-            } else if(c instanceof SplineCalibrator) {
+        if (calibrator == null) {
+            if (c instanceof PolynomialCalibrator) {
+                calibrator = new PolynomialCalibratorProc((PolynomialCalibrator) c);
+            } else if (c instanceof SplineCalibrator) {
                 calibrator = new SplineCalibratorProc((SplineCalibrator) c);
-            } else if(c instanceof JavaExpressionCalibrator) {
+            } else if (c instanceof JavaExpressionCalibrator) {
                 calibrator = JavaExpressionCalibratorFactory.compile((JavaExpressionCalibrator) c);
-            } else if(c instanceof MathOperationCalibrator) {
+            } else if (c instanceof MathOperationCalibrator) {
                 calibrator = MathOperationCalibratorFactory.compile((MathOperationCalibrator) c);
-            }  else {
-                throw new IllegalStateException("No calibrator processor for "+c);
+            } else {
+                throw new IllegalStateException("No calibrator processor for " + c);
             }
             calibrators.put(c, calibrator);
         }
@@ -170,7 +169,7 @@ public class ProcessorData {
 
     public DataDecoder getDataDecoder(DataEncoding de) {
         DataDecoder dd = decoders.get(de);
-        if(dd==null) {
+        if (dd == null) {
             dd = DataDecoderFactory.get(de.getFromBinaryTransformAlgorithm());
         }
 
@@ -182,7 +181,9 @@ public class ProcessorData {
     }
 
     /**
-     * Returns the parameter type processor (this is the guy that converts from raw to engineering value) used by the associated processor.
+     * Returns the parameter type processor (this is the guy that converts from raw to engineering value) used by the
+     * associated processor.
+     * 
      * @return
      */
     public ParameterTypeProcessor getParameterTypeProcessor() {

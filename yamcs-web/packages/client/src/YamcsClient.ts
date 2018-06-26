@@ -10,7 +10,7 @@ export default class YamcsClient implements HttpHandler {
   readonly baseUrl = '';
   readonly apiUrl = `${this.baseUrl}/api`;
   readonly authUrl = `${this.baseUrl}/auth`;
-  readonly staticUrl = `${this.baseUrl}/_static`;
+  readonly staticUrl = `${this.baseUrl}/static`;
 
   private accessToken?: string;
 

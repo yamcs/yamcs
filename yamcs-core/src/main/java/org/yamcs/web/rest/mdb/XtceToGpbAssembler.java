@@ -688,6 +688,7 @@ public class XtceToGpbAssembler {
                     MatchCriteria matchCriteria = contextCalibrator.getContextMatch();
                     contextCalibratorb.addAllComparison(toComparisons(matchCriteria));
                     contextCalibratorb.setCalibrator(toCalibratorInfo(contextCalibrator.getCalibrator()));
+                    infob.addContextCalibrator(contextCalibratorb);
                 }
             }
         } else if (xtceDataEncoding instanceof IntegerDataEncoding) {
@@ -709,6 +710,7 @@ public class XtceToGpbAssembler {
                     MatchCriteria matchCriteria = contextCalibrator.getContextMatch();
                     contextCalibratorb.addAllComparison(toComparisons(matchCriteria));
                     contextCalibratorb.setCalibrator(toCalibratorInfo(contextCalibrator.getCalibrator()));
+                    infob.addContextCalibrator(contextCalibratorb);
                 }
             }
         } else if (xtceDataEncoding instanceof StringDataEncoding) {

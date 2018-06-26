@@ -15,7 +15,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -29,10 +28,8 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * Keeps track of which parameters are part of which subscriptions.
  * 
- * There are two types of subscriptions:
- * - subscribe all
- * - subscribe to a set
- * Both types have an unique id associated but different methods work with them
+ * There are two types of subscriptions: - subscribe all - subscribe to a set Both types have an unique id associated
+ * but different methods work with them
  * 
  */
 public class ParameterRequestManager extends AbstractService implements ParameterListener {
@@ -67,8 +64,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     LastValueCache lastValueCache;
 
     /**
-     * Creates a new ParameterRequestManager, configured to listen to the
-     * specified XtceTmProcessor.
+     * Creates a new ParameterRequestManager, configured to listen to the specified XtceTmProcessor.
      */
     public ParameterRequestManager(Processor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.yproc = yproc;
@@ -106,10 +102,9 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * This is called after all the parameter providers have been added but before the start.
-     * We subscribe to all parameters if cacheAll is enabled
-     * this way we give the opportunity to the ReplayService to find out what is required to retrieve from the
-     * ReplayServer
+     * This is called after all the parameter providers have been added but before the start. We subscribe to all
+     * parameters if cacheAll is enabled this way we give the opportunity to the ReplayService to find out what is
+     * required to retrieve from the ReplayServer
      */
     public void init() {
         if (cacheAll) {
@@ -252,8 +247,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * 
      * @param subscriptionId
      * @param paraList
-     *            - list of parameters that are added to the subscription
-     * @throws InvalidIdentification
+     *            list of parameters that are added to the subscription
      * @throws InvalidRequestIdentification
      */
     public void addItemsToRequest(final int subscriptionId, final List<Parameter> paraList)
@@ -277,15 +271,14 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * 
      * @param subscriptionID
      * @param param
-     * @throws InvalidIdentification
      */
     public void removeItemsFromRequest(int subscriptionID, Parameter param) {
         removeItemFromRequest(subscriptionID, param);
     }
 
     /**
-     * Removes a list of parameters from a request.
-     * Any parameter specified that is not in the subscription will be ignored.
+     * Removes a list of parameters from a request. Any parameter specified that is not in the subscription will be
+     * ignored.
      * 
      * @param subscriptionID
      * @param paraList
@@ -297,9 +290,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Adds a new item to an existing request. There is no check if the item is already there,
-     * so there can be duplicates (observed in the CGS CIS).
-     * This call also works with a new id
+     * Adds a new item to an existing request. There is no check if the item is already there, so there can be
+     * duplicates (observed in the CGS CIS). This call also works with a new id
      * 
      * @param id
      * @param para
@@ -340,15 +332,14 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Removes all the items from this subscription and returns them into an
-     * List. The result is usually used in the TelemetryImpl to move this
-     * subscription to a different ParameterRequestManager
+     * Removes all the items from this subscription and returns them into an List. The result is usually used in the
+     * TelemetryImpl to move this subscription to a different ParameterRequestManager
      */
     public List<Parameter> removeRequest(int subscriptionId) {
         log.debug("removing request for subscriptionId {}", subscriptionId);
         // It's a bit annoying that we have to loop through all the parameters to find the ones that
         // are relevant for this request. We could keep track of an additional map.
-        ArrayList<Parameter> result = new ArrayList<Parameter>();
+        ArrayList<Parameter> result = new ArrayList<>();
         // loop through all the parameter definitions
         // find all the subscriptions with the requested subscriptionId and add their corresponding
         // itemId to the list.
@@ -494,7 +485,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             for (int s : cowal.getArray()) {
                 ArrayList<ParameterValue> al = delivery.get(s);
                 if (al == null) {
-                    al = new ArrayList<ParameterValue>();
+                    al = new ArrayList<>();
                     delivery.put(s, al);
                 }
                 al.add(pv);
@@ -506,7 +497,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             ArrayList<ParameterValue> al = delivery.get(id);
 
             if (al == null) {
-                al = new ArrayList<ParameterValue>();
+                al = new ArrayList<>();
                 delivery.put(id, al);
             }
 
@@ -578,7 +569,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         List<ParameterValue> al = new ArrayList<>(plist.size());
         for (Parameter p : plist) {
             ParameterValue pv = lastValueCache.getValue(p);
-            if(pv!=null) {
+            if (pv != null) {
                 al.add(pv);
             }
         }
@@ -598,8 +589,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     /**
      * Get all the values from cache for a specific parameters
      * 
-     * The parameter are returned in descending order (newest parameter is returned first).
-     * Note that you can only all this function if the {@link hasCache} returns true.
+     * The parameter are returned in descending order (newest parameter is returned first). Note that you can only all
+     * this function if the {@link #hasParameterCache()} returns true.
      * 
      * @param param
      * @return

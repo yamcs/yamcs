@@ -4,11 +4,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import org.yamcs.api.rest.RestClient;
+import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
+import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
+import org.yamcs.protobuf.Rest.ListProcessorsResponse;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 
@@ -58,6 +62,36 @@ public class YamcsClient {
                 .thenApply(response -> decode(response, YamcsInstance.getDefaultInstance()));
     }
 
+    public CompletableFuture<ListClientsResponse> getClients() {
+        return restClient.doRequest("/clients", HttpMethod.GET).thenApply(response -> {
+            try {
+                return ListClientsResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<ClientInfo> getClients(int clientId) {
+        return restClient.doRequest("/clients/" + clientId, HttpMethod.GET).thenApply(response -> {
+            try {
+                return ClientInfo.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    public CompletableFuture<ListProcessorsResponse> getProcessors() {
+        return restClient.doRequest("/processors", HttpMethod.GET).thenApply(response -> {
+            try {
+                return ListProcessorsResponse.parseFrom(response);
+            } catch (InvalidProtocolBufferException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
     public CompletableFuture<ListServiceInfoResponse> getServices() {
         return restClient.doRequest("/services/_global", HttpMethod.GET).thenApply(response -> {
             try {
@@ -94,6 +128,17 @@ public class YamcsClient {
                 throw new CompletionException(e);
             }
         });
+    }
+
+    public CompletableFuture<Void> createBucket(CreateBucketRequest options) {
+        String url = "/buckets/_global";
+        byte[] body = options.toByteArray();
+        return restClient.doRequest(url, HttpMethod.POST, body).thenApply(response -> null);
+    }
+
+    public CompletableFuture<Void> deleteBucket(String name) {
+        String url = "/buckets/_global/" + name;
+        return restClient.doRequest(url, HttpMethod.DELETE).thenApply(response -> null);
     }
 
     public CompletableFuture<ListObjectsResponse> getObjects(String bucket) {

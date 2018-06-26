@@ -89,7 +89,7 @@ export class ParameterPage implements OnDestroy {
   maySetParameter() {
     const parameter = this.parameter$.value;
     if (parameter) {
-      return this.authService.hasObjectPrivilege('WriteParameter', parameter.qualifiedName);
+      return this.authService.getUser()!.hasObjectPrivilege('WriteParameter', parameter.qualifiedName);
     }
     return false;
   }

@@ -70,9 +70,9 @@ import io.netty.util.ReferenceCountUtil;
  */
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
-    private static final String STATIC_PATH = "_static";
     private static final String API_PATH = "api";
     private static final String AUTH_PATH = "auth";
+    private static final String STATIC_PATH = "static";
 
     public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey
             .valueOf("chunkedTransferStats");
@@ -177,7 +177,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
         switch (path[1]) {
         case STATIC_PATH:
-            if (path.length == 2) { // do not accept "/_static/" (i.e. directory listing) requests
+            if (path.length == 2) { // do not accept "/static/" (i.e. directory listing) requests
                 sendPlainTextError(ctx, req, FORBIDDEN);
                 return;
             }

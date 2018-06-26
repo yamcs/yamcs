@@ -6,6 +6,9 @@ import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { AlarmsPage } from './alarms/AlarmsPage';
 import { ArchivePage } from './archive/ArchivePage';
 import { CommandsPage } from './commands/CommandsPage';
+import { DisplayFilePage } from './displays/DisplayFilePage';
+import { DisplayFolderPage } from './displays/DisplayFolderPage';
+import { DisplayPage } from './displays/DisplayPage';
 import { DisplaysPage } from './displays/DisplaysPage';
 import { EventsPage } from './events/EventsPage';
 import { ExtensionPage } from './ext/ExtensionPage';
@@ -26,7 +29,7 @@ const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'displays',
+        redirectTo: 'displays/browse',
       },
       {
         path: 'alarms',
@@ -42,7 +45,28 @@ const routes: Routes = [
       },
       {
         path: 'displays',
+        pathMatch: 'full',
+        redirectTo: 'displays/browse'
+      },
+      {
+        path: 'displays/browse',
         component: DisplaysPage,
+        children: [
+          {
+            path: '**',
+            component: DisplayFolderPage,
+          }
+        ]
+      },
+      {
+        path: 'displays/files',
+        component: DisplayPage,
+        children: [
+          {
+            path: '**',
+            component: DisplayFilePage,
+          }
+        ]
       },
       {
         path: 'events',
@@ -77,6 +101,9 @@ export const routingComponents = [
   ArchivePage,
   CommandsPage,
   DisplaysPage,
+  DisplayFilePage,
+  DisplayFolderPage,
+  DisplayPage,
   EventsPage,
   ExtensionPage,
   LayoutsPage,

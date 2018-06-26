@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.YamcsService;
 import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
@@ -36,7 +37,7 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class SystemParametersCollector extends AbstractService implements Runnable {
+public class SystemParametersCollector extends AbstractService implements YamcsService, Runnable {
     static Map<String, SystemParametersCollector> instances = new HashMap<>();
     static long frequencyMillisec = 1000;
     List<SystemParametersProducer> providers = new CopyOnWriteArrayList<>();
@@ -133,7 +134,7 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     @Override
     public void run() {
         long gentime = timeService.getMissionTime();
-        
+
         List<ParameterValue> params = new ArrayList<>();
         if (provideJvmVariables) {
             jvmCollectionCountdown--;
@@ -150,14 +151,13 @@ public class SystemParametersCollector extends AbstractService implements Runnab
                 log.warn("Error getting parameters from provider {}", p, e);
             }
         }
-      
 
         if (params.isEmpty()) {
             return;
         }
 
         TupleDefinition tdef = ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION.copy();
-        List<Object> cols = new ArrayList<Object>(4 + params.size());
+        List<Object> cols = new ArrayList<>(4 + params.size());
         cols.add(gentime);
         cols.add(namespace);
         cols.add(seqCount);
@@ -178,7 +178,8 @@ public class SystemParametersCollector extends AbstractService implements Runnab
 
     private void collectJvmParameters(List<ParameterValue> params, long gentime) {
         Runtime r = Runtime.getRuntime();
-        ParameterValue jvmTotalMemory = SystemParametersCollector.getPV(spJvmTotalMemory, gentime, r.totalMemory() / 1024);
+        ParameterValue jvmTotalMemory = SystemParametersCollector.getPV(spJvmTotalMemory, gentime,
+                r.totalMemory() / 1024);
         ParameterValue jvmMemoryUsed = SystemParametersCollector.getPV(spJvmMemoryUsed, gentime,
                 (r.totalMemory() - r.freeMemory()) / 1024);
         ParameterValue jvmThreadCount = SystemParametersCollector.getUnsignedIntPV(spJvmTheadCount, gentime,
@@ -192,10 +193,9 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     /**
      * Register a parameter producer to be called each time the parameters are collected
      *
-     * @deprecated use {@link #registerProducer(SystemParametersProducer p)} instead.
-     *             There is no need to specify which paramameters will be provided
-     *             and in addition they don't even need to be part of the Xtcedb (i.e. the provider can make them up on
-     *             the fly)
+     * @deprecated use {@link #registerProducer(SystemParametersProducer p)} instead. There is no need to specify which
+     *             paramameters will be provided and in addition they don't even need to be part of the Xtcedb (i.e. the
+     *             provider can make them up on the fly)
      * 
      */
     @Deprecated
@@ -220,9 +220,9 @@ public class SystemParametersCollector extends AbstractService implements Runnab
     }
 
     /**
-     * Unregister producer - from now on it will not be invoked.
-     * Note that the collector collects parameters into a different thread taking all producer in turns,
-     * and there might be one collection already started when this method is called.
+     * Unregister producer - from now on it will not be invoked. Note that the collector collects parameters into a
+     * different thread taking all producer in turns, and there might be one collection already started when this method
+     * is called.
      * 
      */
     public void unregisterProducer(SystemParametersProducer p) {

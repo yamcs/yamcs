@@ -6,7 +6,7 @@ import { LayoutState } from '@yamcs/displays';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { LayoutComponent } from '../displays/LayoutComponent';
+import { LayoutComponent } from '../layouts/LayoutComponent';
 
 @Component({
   templateUrl: './LayoutPage.html',
@@ -36,7 +36,7 @@ export class LayoutPage {
     title.setTitle(this.layoutName + ' - Yamcs');
 
     this.layout$ = new Promise<LayoutState>((resolve, reject) => {
-      const username = authService.getUserInfo()!.login;
+      const username = authService.getUser()!.getUsername();
       const objectName = 'layouts/' + this.layoutName;
       yamcs.getInstanceClient()!.getObject(`user.${username}` /* FIXME */, objectName).then(response => {
         response.json().then(layoutState => resolve(layoutState)).catch(err => reject(err));
@@ -45,7 +45,7 @@ export class LayoutPage {
   }
 
   saveLayout() {
-    const username = this.authService.getUserInfo()!.login;
+    const username = this.authService.getUser()!.getUsername();
     const state = this.layoutComponent.getLayoutState();
     const objectName = `layouts/${this.layoutName}`;
     const objectValue = new Blob([JSON.stringify(state)], {
@@ -62,7 +62,7 @@ export class LayoutPage {
 
   removeLayout() {
     if (confirm('Do you want to permanently delete this layout?')) {
-      const username = this.authService.getUserInfo()!.login;
+      const username = this.authService.getUser()!.getUsername();
       const objectName = `layouts/${this.layoutName}`;
       this.yamcs.getInstanceClient()!.deleteObject(`user.${username}`, objectName).then(() => {
         this.router.navigateByUrl(`/monitor/layouts?instance=${this.instance.name}`);

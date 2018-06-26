@@ -9,6 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YamcsService;
 import org.yamcs.web.WebConfig.GpbExtension;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketResourceProvider;
@@ -39,7 +40,7 @@ import io.netty.util.concurrent.ThreadPerTaskExecutor;
  * <li>Static file serving
  * </ul>
  */
-public class HttpServer extends AbstractService {
+public class HttpServer extends AbstractService implements YamcsService {
 
     private static final Logger log = LoggerFactory.getLogger(HttpServer.class);
 

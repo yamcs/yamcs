@@ -6,38 +6,48 @@ import java.nio.ByteOrder;
  * Allows to read and write bits from a byte array (byte[]) keeps a bit position and the extractions are relative to the
  * position. It allows also to provide an offset (in bytes) inside the byte array and then the bit position is relative
  * to the offset.
- * 
- * Supported operations are - extract up to 64 bits into a long - big endian or little endian - extract a byte array
- * (throws exception if the position is not at the beginning of a byte) - exact a byte (throws exception if the position
- * is not at the beginning of a byte)
- * 
+ * <p>
+ * Supported operations are
+ * <ul>
+ * <li>extract up to 64 bits into a long
+ * <li>big endian or little endian
+ * <li>extract a byte array (throws exception if the position is not at the beginning of a byte)
+ * <li>extract a byte (throws exception if the position is not at the beginning of a byte)
+ * </ul>
  * 
  * Note on the Little Endian: it is designed to work on x86 architecture which uses internally little endian byte _and_
  * bit ordering but when accessing memory, full bytes are transferred in big endian order.
+ * <p>
+ * For example when in C you have a 32 bit structure:
  * 
- * For example when in C you have a 32 bit structure: 
- * struct S { 
- *    unsigned int a: 3; 
- *    unsigned int b: 12; 
- *    unsigned int c: 17; 
- * } 
+ * <pre>
+ * struct S {
+ *    unsigned int a: 3;
+ *    unsigned int b: 12;
+ *    unsigned int c: 17;
+ * }
+ * </pre>
  * 
  * and you pack that in a packet by just reading the corresponding 4 bytes memory, you will get the following
  * representation (0 is the most significant bit):
  * 
- * b7  b8 b9  b10 b11 a0  a1  a2 
- * c16 b0 b1  b2  b3  b4  b5  b6 
+ * <pre>
+ * b7  b8 b9  b10 b11 a0  a1  a2
+ * c16 b0 b1  b2  b3  b4  b5  b6
  * c8  c9 c10 c11 c12 c13 c14 c15
  * c0 c1  c2  c3  c4  c5  c6  c7
+ * </pre>
  * 
  * To read this with this BitBuffer you would naturally do like this:
  * 
- * BitBuffer bb = new BitBuffer(..., 0); 
+ * <pre>
+ * BitBuffer bb = new BitBuffer(..., 0);
  * bb.setOrder(LITTLE_ENDIAN);
  * 
- * a = bb.getBits(3); 
- * b = bb.getBits(12); 
+ * a = bb.getBits(3);
+ * b = bb.getBits(12);
  * c = bb.getBits(17);
+ * </pre>
  * 
  * Note how the first call (when the bb.position=0) reads the 3 bits at position 5 instead of those at position 0
  * 
@@ -52,8 +62,6 @@ public class BitBuffer {
 
     /**
      * Creates a new bit buffer that wraps array b starting at offset 0
-     * 
-     * @param b
      */
     public BitBuffer(byte[] b) {
         this(b, 0);
@@ -61,9 +69,6 @@ public class BitBuffer {
 
     /**
      * Creates a new bit buffer that wraps the array b starting at offset (in bytes)
-     * 
-     * @param b
-     * @param offset
      */
     public BitBuffer(byte[] b, int offset) {
         this.b = b;
@@ -75,10 +80,8 @@ public class BitBuffer {
     /**
      * reads numBits from the buffer and returns them into a long on the rightmost position.
      * 
-     * numBits has to be max 64.
-     * 
      * @param numBits
-     * @return
+     *            has to be max 64.
      */
     public long getBits(int numBits) {
         if (numBits > 64) {
@@ -145,9 +148,6 @@ public class BitBuffer {
 
     /**
      * put the least significant numBits from value into the buffer, increasing the position with numBits
-     * 
-     * @param value
-     * @param numBits
      */
     public void putBits(long value, int numBits) {
         if (numBits > 64) {
@@ -160,7 +160,7 @@ public class BitBuffer {
             putBitsLE(v, numBits);
             return;
         }
-        
+
         int bytepos = position >> 3;
         int n = numBits;
         int fbb = -position & 0x7; // how many bits are from position until the end of the byte
@@ -251,7 +251,7 @@ public class BitBuffer {
      */
     public void putByte(byte c) {
         ensureByteBoundary();
-        b[idx(position>>3)] = c;
+        b[idx(position >> 3)] = c;
         position += 8;
     }
 
@@ -266,8 +266,6 @@ public class BitBuffer {
 
     /**
      * set position in bits
-     * 
-     * @param position
      */
     public void setPosition(int position) {
         this.position = position;
@@ -306,7 +304,7 @@ public class BitBuffer {
      * IllegalStateException
      * 
      * @param dst
-     *            - destination array
+     *            destination array
      */
     public void getByteArray(byte[] dst) {
         ensureByteBoundary();
@@ -355,8 +353,6 @@ public class BitBuffer {
 
     /**
      * Returns the offset inside the byte array where this buffer starts
-     * 
-     * @return
      */
     public int offset() {
         return offset;
@@ -365,12 +361,9 @@ public class BitBuffer {
     /**
      * Returns the remaining bytes from position until the end of the buffer. Works only when position%8 = 0 - otherwise
      * throws an IllegalStateException
-     * 
-     * @return
      */
     public int remainingBytes() {
         ensureByteBoundary();
         return b.length - offset - (position >> 3);
     }
-
 }

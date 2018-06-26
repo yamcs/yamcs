@@ -9,9 +9,8 @@ export class MayControlServicesGuard implements CanActivate, CanActivateChild {
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    const userInfo = this.authService.getUserInfo();
-    if (userInfo) {
-      return this.authService.hasSystemPrivilege('ControlServices');
+    if (this.authService.getUser()!.hasSystemPrivilege('ControlServices')) {
+      return true;
     }
 
     this.router.navigate(['/403'], { queryParams: { page: state.url } });

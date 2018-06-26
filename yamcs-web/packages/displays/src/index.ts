@@ -1,5 +1,11 @@
 export { Display } from './Display';
-export { DisplayFrame, Coordinates } from './DisplayFrame';
-export { Layout, LayoutStateListener, LayoutListener } from './Layout';
-export { LayoutState } from './LayoutState';
 export { DisplayCommunicator } from './DisplayCommunicator';
+export { Coordinates, DisplayFrame } from './DisplayFrame';
+export { DisplayHolder } from './DisplayHolder';
+export { Layout, LayoutListener, LayoutStateListener } from './Layout';
+export { LayoutState } from './LayoutState';
+export { OpenDisplayCommandOptions } from './OpenDisplayCommandOptions';
+export { OpiDisplay } from './opi/OpiDisplay';
+export { ParDisplay } from './par/ParDisplay';
+export { UssDisplay } from './uss/UssDisplay';
+

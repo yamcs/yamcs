@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, HostBinding, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { Router } from '@angular/router';
-import { ConnectionInfo, UserInfo } from '@yamcs/client';
+import { ConnectionInfo } from '@yamcs/client';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SelectInstanceDialog } from '../../shared/dialogs/SelectInstanceDialog';
+import { User } from '../../shared/User';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,7 @@ export class AppComponent implements OnDestroy {
   title = 'Yamcs';
 
   connectionInfo$: Observable<ConnectionInfo | null>;
-  user$: Observable<UserInfo | null>;
+  user$: Observable<User | null>;
 
   darkMode$: Observable<boolean>;
   showMdbItem$ = new BehaviorSubject<boolean>(false);
@@ -37,10 +38,14 @@ export class AppComponent implements OnDestroy {
     private dialog: MatDialog,
   ) {
     this.connectionInfo$ = yamcs.connectionInfo$;
-    this.user$ = authService.userInfo$;
+    this.user$ = authService.user$;
 
     this.userSubscription = this.user$.subscribe(user => {
-      this.showMdbItem$.next(authService.hasSystemPrivilege('GetMissionDatabase'));
+      if (user) {
+        this.showMdbItem$.next(user.hasSystemPrivilege('GetMissionDatabase'));
+      } else {
+        this.showMdbItem$.next(false);
+      }
     });
 
     this.darkMode$ = preferenceStore.darkMode$;

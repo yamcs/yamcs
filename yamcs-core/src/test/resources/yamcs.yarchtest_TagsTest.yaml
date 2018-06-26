@@ -1,17 +1,14 @@
 #all services that are started for this instance instance
 services:
-    - org.yamcs.archive.TmProviderAdapter
-    - org.yamcs.archive.PpProviderAdapter
-    - org.yamcs.archive.TcUplinkerAdapter
-    - org.yamcs.archive.CcsdsTmRecorder
-    - org.yamcs.archive.PpRecorder
-    - org.yamcs.archive.ReplayServer
-    - org.yamcs.archive.IndexServer
-    - org.yamcs.YarchChannel
-
-
+  - class: org.yamcs.archive.TmDataLinkInitialiser
+  - class: org.yamcs.archive.ParameterDataLinkInitialiser
+  - class: org.yamcs.archive.TcDataLinkInitialiser
+  - class: org.yamcs.archive.CcsdsTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.IndexServer
 
 mdb: refmdb
 
 streamConfig:
-   tm: ["tm_realtime"]
+  tm: ["tm_realtime"]

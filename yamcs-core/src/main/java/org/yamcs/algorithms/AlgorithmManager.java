@@ -16,17 +16,17 @@ import javax.script.ScriptEngineManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.Processor;
-import org.yamcs.ProcessorService;
-import org.yamcs.api.EventProducer;
 import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
-import org.yamcs.parameter.ParameterValue;
+import org.yamcs.Processor;
+import org.yamcs.ProcessorService;
+import org.yamcs.api.EventProducer;
+import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
-import org.yamcs.parameter.ParameterListener;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.CustomAlgorithm;
@@ -53,8 +53,9 @@ import com.google.common.util.concurrent.AbstractService;
  * Algorithms and any needed algorithms that require earlier execution, will be activated as soon as a request for one
  * of its output parameters is registered.
  * <p>
- * Algorithm executors are created by {@link AlgorithmExecutorFactory} which themselves are created by the {@link AlgorithmEngine}.
- * The algorithm engines are registered at server startup using the {@link #registerAlgorithmEngine(String, AlgorithmEngine)} method.
+ * Algorithm executors are created by {@link AlgorithmExecutorFactory} which themselves are created by the
+ * {@link AlgorithmEngine}. The algorithm engines are registered at server startup using the
+ * {@link #registerAlgorithmEngine(String, AlgorithmEngine)} method.
  * 
  * javascript will be automatically registered as well as python if available.
  */
@@ -64,7 +65,7 @@ public class AlgorithmManager extends AbstractService
     static final String KEY_ALGO_NAME = "algoName";
 
     XtceDb xtcedb;
-    
+
     String yamcsInstance;
 
     // the id used for subscribing to the parameterManager
@@ -86,15 +87,15 @@ public class AlgorithmManager extends AbstractService
     Map<String, List<String>> libraries = null;
     EventProducer eventProducer;
 
-    
     final static Map<String, AlgorithmEngine> algorithmEngines = new HashMap<>();
-    
+
     final Map<String, AlgorithmExecutorFactory> factories = new HashMap<>();
     final Map<String, Object> config;
     static {
         registerScriptEngines();
         registerAlgorithmEngine("Java", new JavaAlgorithmEngine());
     }
+
     public AlgorithmManager(String yamcsInstance) throws ConfigurationException {
         this(yamcsInstance, (Map<String, Object>) null);
     }
@@ -104,10 +105,10 @@ public class AlgorithmManager extends AbstractService
      */
     private static void registerScriptEngines() {
         ScriptEngineManager sem = new ScriptEngineManager();
-        for(ScriptEngineFactory sef: sem.getEngineFactories()) {
+        for (ScriptEngineFactory sef : sem.getEngineFactories()) {
             List<String> engineNames = sef.getNames();
             ScriptAlgorithmEngine engine = new ScriptAlgorithmEngine();
-            for(String name: engineNames) {
+            for (String name : engineNames) {
                 registerAlgorithmEngine(name, engine);
             }
         }
@@ -120,7 +121,7 @@ public class AlgorithmManager extends AbstractService
     }
 
     public static void registerAlgorithmEngine(String name, AlgorithmEngine eng) {
-        algorithmEngines.put(name,  eng);
+        algorithmEngines.put(name, eng);
     }
 
     @Override
@@ -141,9 +142,8 @@ public class AlgorithmManager extends AbstractService
         }
     }
 
-    
-
     private void loadAlgorithm(Algorithm algo, AlgorithmExecutionContext ctx) {
+        System.out.println("Algo " + algo.getQualifiedName() + ", " + algo.getOutputSet());
         for (OutputParameter oParam : algo.getOutputSet()) {
             outParamIndex.add(oParam.getParameter());
         }
@@ -227,20 +227,21 @@ public class AlgorithmManager extends AbstractService
         if (algorithm instanceof CustomAlgorithm) {
             CustomAlgorithm calg = (CustomAlgorithm) algorithm;
             String algLang = calg.getLanguage();
-            if(algLang == null) {
-                eventProducer.sendCritical("no language specified for algorithm '"+algorithm.getQualifiedName()+"'");    
+            if (algLang == null) {
+                eventProducer
+                        .sendCritical("no language specified for algorithm '" + algorithm.getQualifiedName() + "'");
                 return;
             }
-            AlgorithmExecutorFactory factory  = factories.get(algLang);
-            if(factory == null) {
+            AlgorithmExecutorFactory factory = factories.get(algLang);
+            if (factory == null) {
                 AlgorithmEngine eng = algorithmEngines.get(algLang);
-                if(eng==null) {
-                    eventProducer.sendCritical("no algorithm engine found for language '"+algLang+"'");
+                if (eng == null) {
+                    eventProducer.sendCritical("no algorithm engine found for language '" + algLang + "'");
                     return;
                 }
                 factory = eng.makeExecutorFactory(this, algLang, config);
                 factories.put(algLang, factory);
-                for(String s: factory.getLanguages()) {
+                for (String s : factory.getLanguages()) {
                     factories.put(s, factory);
                 }
             }
@@ -248,7 +249,8 @@ public class AlgorithmManager extends AbstractService
                 executor = factory.makeExecutor(calg, execCtx);
             } catch (AlgorithmException e) {
                 log.warn("Failed to create algorithm executor", e);
-                eventProducer.sendCritical("Failed to create executor for algorithm "+calg.getQualifiedName()+": "+e);
+                eventProducer
+                        .sendCritical("Failed to create executor for algorithm " + calg.getQualifiedName() + ": " + e);
                 return;
             }
         } else if (algorithm instanceof MathAlgorithm) {

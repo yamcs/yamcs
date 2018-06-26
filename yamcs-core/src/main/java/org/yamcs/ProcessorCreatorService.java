@@ -15,7 +15,7 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ProcessorCreatorService extends AbstractService {
+public class ProcessorCreatorService extends AbstractService implements YamcsService {
     String processorName;
     String processorType;
     String processorConfig;

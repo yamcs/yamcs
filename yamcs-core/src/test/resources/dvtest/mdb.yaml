@@ -1,4 +1,0 @@
-dvtest:
-   - type: "sheet"
-     spec: "mdb/refmdb.xls"
-dvtest_derivedValuesProviders: [org.yamcs.derivedvalues.DerivedValuesTest$MyDerivedValuesProvider]

@@ -1,7 +1,7 @@
 import { NamedObjectId, ParameterValue } from '@yamcs/client';
 import { Display } from '../Display';
 import { DisplayCommunicator } from '../DisplayCommunicator';
-import { DisplayFrame } from '../DisplayFrame';
+import { DisplayHolder } from '../DisplayHolder';
 import { Defs, Pattern, Rect, Svg, Tag } from '../tags';
 import { Color } from './Color';
 import { ParameterSample } from './ParameterSample';
@@ -12,13 +12,12 @@ import { Compound } from './widgets/Compound';
 import { ExternalImage } from './widgets/ExternalImage';
 import { Field } from './widgets/Field';
 import { Label } from './widgets/Label';
-import { LineGraph } from './widgets/LineGraph';
 import { LinearTickMeter } from './widgets/LinearTickMeter';
+import { LineGraph } from './widgets/LineGraph';
 import { NavigationButton } from './widgets/NavigationButton';
 import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
 import { Symbol } from './widgets/Symbol';
-
 
 export class UssDisplay implements Display {
 
@@ -37,12 +36,12 @@ export class UssDisplay implements Display {
   styleSet: StyleSet;
 
   constructor(
-    readonly frame: DisplayFrame,
+    readonly holder: DisplayHolder,
     private targetEl: HTMLDivElement,
     readonly displayCommunicator: DisplayCommunicator,
   ) {
     this.container = document.createElement('div');
-    this.container.setAttribute('style', 'position: relative');
+    this.container.setAttribute('style', 'position: relative; line-height: 0');
     this.targetEl.appendChild(this.container);
 
     // Invisible SVG used to measure font metrics before drawing

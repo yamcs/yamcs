@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthInfo, HttpHandler, TokenResponse, UserInfo } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
+import { User } from '../../shared/User';
 import { YamcsService } from './YamcsService';
 
 export interface Claims {
@@ -21,7 +22,10 @@ export interface Claims {
 export class AuthService {
 
   public authInfo$ = new BehaviorSubject<AuthInfo | null>(null);
-  public userInfo$ = new BehaviorSubject<UserInfo | null>(null);
+  public user$ = new BehaviorSubject<User | null>(null);
+
+  private accessToken?: string;
+  private refreshToken?: string;
 
   constructor(private yamcsService: YamcsService, private router: Router) {
     yamcsService.yamcsClient.getAuthInfo().then(authInfo => {
@@ -33,9 +37,10 @@ export class AuthService {
     // The refresh token gives us enough.
     // It's only really useful to pass authentication info on the websocket
     // client. So maybe we should refactor this stuff in the yamcsclient.
-    const accessToken = this.getCookie('access_token');
-    if (accessToken) {
-      yamcsService.yamcsClient.setAccessToken(accessToken);
+    this.accessToken = this.getCookie('access_token');
+    this.refreshToken = this.getCookie('refresh_token');
+    if (this.accessToken) {
+      yamcsService.yamcsClient.setAccessToken(this.accessToken);
     }
 
     /*
@@ -45,14 +50,12 @@ export class AuthService {
      */
     yamcsService.yamcsClient.setHttpInterceptor(async (next: HttpHandler, url: string, init?: RequestInit) => {
       try {
-
         // Verify or fetch a token when necessary
         await this.loginAutomatically();
 
         let response = await next.handle(url, init);
         if (response.status === 401) {
           // Server must have refused our token.
-          console.log('server must have logged us out');
           this.logout(false);
 
           // Depending on configuration of Yamcs, it could be that we can
@@ -69,8 +72,8 @@ export class AuthService {
     });
   }
 
-  getUserInfo() {
-    return this.userInfo$.value;
+  getUser() {
+    return this.user$.value;
   }
 
   /**
@@ -87,26 +90,24 @@ export class AuthService {
     ).toPromise();
 
     if (!authInfo!.requireAuthentication) {
-      if (!this.userInfo$.value) {
+      if (!this.user$.value) {
         // Written such that it bypasses our interceptor
         const response = await fetch('/api/user');
-        this.userInfo$.next(await response.json() as UserInfo);
+        this.user$.next(new User(await response.json() as UserInfo));
       }
       return;
     }
 
     // Use already available tokens when we can
-    console.log('aa1');
-    const accessToken = this.getCookie('access_token');
-    if (accessToken) {
-      if (!this.userInfo$.value) {
+    if (this.accessToken) {
+      if (!this.user$.value) {
         // Written such that it bypasses our interceptor
         const headers = new Headers();
-        headers.append('Authorization', `Bearer ${accessToken}`);
+        headers.append('Authorization', `Bearer ${this.accessToken}`);
         const response = await fetch('/api/user', { headers });
         if (response.status === 200) {
-          const userInfo = await response.json() as UserInfo;
-          this.userInfo$.next(userInfo);
+          const user = new User(await response.json() as UserInfo);
+          this.user$.next(user);
         } else if (response.status === 401) {
           this.logout(false);
           return await this.loginAutomatically();
@@ -114,18 +115,16 @@ export class AuthService {
           return Promise.reject('Unexpected response when retrieving user info');
         }
       }
-      return this.extractClaims(accessToken);
+      return this.extractClaims(this.accessToken);
     }
-    const refreshToken = this.getCookie('refresh_token');
-    if (refreshToken) {
+    if (this.refreshToken) {
       try {
-        return await this.loginWithRefreshToken(refreshToken);
+        return await this.loginWithRefreshToken(this.refreshToken);
       } catch {
         console.log('Server refused our refresh token');
-        // Ignore
+        this.logout(false);
       }
     }
-    console.log('aa2');
     // If server supports spnego, attempt browser negotiation.
     // This is done before any other flows, because it does not
     // require user intervention when successful.
@@ -136,11 +135,9 @@ export class AuthService {
       }
     }
     if (spnego) {
-      console.log('aa3');
       return await this.loginWithSpnego();
     }
 
-    console.log('aa4');
     this.logout(false);
     throw new Error('Could not login automatically');
   }
@@ -150,23 +147,19 @@ export class AuthService {
    * to come from our login page.
    */
   public login(username: string, password: string) {
-    // Store in cookie so that the token survives browser refreshes
-    // and so it is added to the header of a websocket request.
     return this.yamcsService.yamcsClient.fetchAccessTokenWithPassword(username, password).then(loginInfo => {
       this.updateLoginCookies(loginInfo);
       this.yamcsService.yamcsClient.setAccessToken(loginInfo.access_token);
-      this.userInfo$.next(loginInfo.user);
+      this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
     });
   }
 
   private loginWithAuthorizationCode(authorizationCode: string) {
-    // Store in cookie so that the token survives browser refreshes
-    // and so it is added to the header of a websocket request.
     return this.yamcsService.yamcsClient.fetchAccessTokenWithAuthorizationCode(authorizationCode).then(loginInfo => {
       this.updateLoginCookies(loginInfo);
       this.yamcsService.yamcsClient.setAccessToken(loginInfo.access_token);
-      this.userInfo$.next(loginInfo.user);
+      this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
     });
   }
@@ -189,11 +182,15 @@ export class AuthService {
     return this.yamcsService.yamcsClient.fetchAccessTokenWithRefreshToken(refreshToken).then(loginInfo => {
       this.updateLoginCookies(loginInfo);
       this.yamcsService.yamcsClient.setAccessToken(loginInfo.access_token);
-      this.userInfo$.next(loginInfo.user);
+      this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
     });
   }
 
+  /*
+   * Store in cookie so that the token survives browser refreshes and so it
+   * is added to the header of a websocket request.
+   */
   private updateLoginCookies(tokenResponse: TokenResponse) {
     const expireMillis = tokenResponse.expires_in * 1000;
     const cookieExpiration = new Date();
@@ -213,49 +210,16 @@ export class AuthService {
    * Clear all data from a previous login session
    */
   logout(navigateToLoginPage: boolean) {
-    document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    document.cookie = 'refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    this.accessToken = undefined;
+    this.refreshToken = undefined;
+
     this.yamcsService.unselectInstance(); // TODO needed here?
     this.yamcsService.yamcsClient.clearAccessToken();
-    this.userInfo$.next(null);
+    this.user$.next(null);
 
     if (navigateToLoginPage) {
       this.router.navigate(['/login'], { queryParams: { next: '/' } });
     }
-  }
-
-  hasSystemPrivilege(privilege: string) {
-    const userInfo = this.userInfo$.value;
-    if (userInfo && userInfo.superuser) {
-      return true;
-    }
-    if (userInfo && userInfo.systemPrivilege) {
-      for (const userPrivilege of userInfo.systemPrivilege) {
-        if (privilege === userPrivilege) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  hasObjectPrivilege(type: string, object: string) {
-    const userInfo = this.userInfo$.value;
-    if (userInfo && userInfo.superuser) {
-      return true;
-    }
-    if (userInfo && userInfo.objectPrivilege) {
-      for (const p of userInfo.objectPrivilege) {
-        if (p.type === type) {
-          for (const expression of p.object) {
-            if (object.match(expression)) {
-              return true;
-            }
-          }
-        }
-      }
-    }
-    return false;
   }
 
   private extractClaims(jwt: string): Claims {
@@ -270,6 +234,6 @@ export class AuthService {
     if (parts.length === 2) {
       return parts.pop()!.split(';').shift();
     }
-    return null;
+    return undefined;
   }
 }

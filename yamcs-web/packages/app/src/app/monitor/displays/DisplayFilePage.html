@@ -1,0 +1,20 @@
+<app-monitor-page>
+  <app-monitor-toolbar>
+    <a mat-icon-button
+       [routerLink]="folderLink"
+       [queryParams]="{instance: instance.name}"
+       color="primary">
+      <mat-icon>arrow_back</mat-icon>
+    </a> {{ filename }}
+
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            (click)="goFullscreen()">
+      <mat-icon>fullscreen</mat-icon>
+      FULL SCREEN
+    </button>
+  </app-monitor-toolbar>
+
+  <div #displayContainer style="line-height: 0; text-align: center"></div>
+</app-monitor-page>

@@ -1,7 +1,5 @@
 package org.yamcs;
 
-import com.google.common.util.concurrent.Service;
-
 /**
  * Holder for a service together with its name and config. Services are used at three levels:
  * <ul>
@@ -13,12 +11,12 @@ import com.google.common.util.concurrent.Service;
  * @author nm
  */
 public class ServiceWithConfig {
-    final Service service;
+    final YamcsService service;
     final String serviceClass;
     final String name;
     final Object args;
 
-    public ServiceWithConfig(Service service, String serviceClass, String name, Object args) {
+    public ServiceWithConfig(YamcsService service, String serviceClass, String name, Object args) {
         super();
         this.service = service;
         this.serviceClass = serviceClass;
@@ -26,7 +24,7 @@ public class ServiceWithConfig {
         this.args = args;
     }
 
-    public Service getService() {
+    public YamcsService getService() {
         return service;
     }
 

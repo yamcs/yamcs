@@ -1,9 +1,12 @@
 package org.yamcs;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Queue;
 
 import org.junit.After;
@@ -24,6 +27,7 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class AlarmTest {
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         YConfiguration.setup("refmdb");
@@ -31,7 +35,7 @@ public class AlarmTest {
     }
 
     private XtceDb db;
-    private Processor c;
+    private Processor processor;
     private RefMdbPacketGenerator tmGenerator;
     private ParameterRequestManager prm;
     private Queue<Event> q;
@@ -47,32 +51,30 @@ public class AlarmTest {
 
         tmGenerator = new RefMdbPacketGenerator();
         try {
-            c = ProcessorFactory.create(yamcsInstance, "AlarmTest", tmGenerator);
+            processor = ProcessorFactory.create(yamcsInstance, "AlarmTest", tmGenerator);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        prm = c.getParameterRequestManager();
-        alarmReporter = new AlarmReporter(yamcsInstance, "AlarmTest");
+        prm = processor.getParameterRequestManager();
+
+        Map<String, Object> config = new HashMap<>();
+        config.put("processor", "AlarmTest");
+        alarmReporter = new AlarmReporter(yamcsInstance, config);
     }
 
     @After
     public void afterEachTest() { // Prevents us from wrapping our code in try-finally
-        c.quit();
+        processor.quit();
     }
 
     @Test
     public void testIntegerLimits() throws InvalidIdentification {
         Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_10_1");
 
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         prm.addRequest(p,
-                new ParameterConsumer() {
-                    @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                        params.addAll(items);
-                    }
-                });
-        c.start();
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+        processor.start();
         alarmReporter.startAsync();
 
         tmGenerator.generate_PKT1_10(30, 7, 0);
@@ -148,21 +150,16 @@ public class AlarmTest {
 
     @Test
     public void testFloatLimits() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         Parameter p = prm.getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/FloatPara1_10_3").build());
         prm.addRequest(p,
-                new ParameterConsumer() {
-                    @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                        params.addAll(items);
-                    }
-                });
-        c.start();
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+        processor.start();
         alarmReporter.startAsync();
 
         tmGenerator.generate_PKT1_10(0, 1, 30);
         ParameterValue pv = params.get(0);
-        
+
         // Check whether spreadsheet loads all levels ok
         assertEquals(-11, pv.getWatchRange().getMin(), 1e-17);
         assertEquals(30, pv.getWatchRange().getMax(), 1e-17);
@@ -216,17 +213,12 @@ public class AlarmTest {
 
     @Test
     public void testEnumerationAlarms() throws InvalidIdentification {
-        final ArrayList<ParameterValue> params = new ArrayList<ParameterValue>();
+        final ArrayList<ParameterValue> params = new ArrayList<>();
         Parameter p = prm
                 .getParameter(NamedObjectId.newBuilder().setName("/REFMDB/SUBSYS1/EnumerationPara1_10_2").build());
         prm.addRequest(p,
-                new ParameterConsumer() {
-                    @Override
-                    public void updateItems(int subscriptionId, List<ParameterValue> items) {
-                        params.addAll(items);
-                    }
-                });
-        c.start();
+                (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
+        processor.start();
         alarmReporter.startAsync();
 
         tmGenerator.generate_PKT1_10(0, 1, 0);
@@ -256,7 +248,7 @@ public class AlarmTest {
 
     @Test
     public void testAlarmReportingWithoutSubscription() {
-        c.start();
+        processor.start();
         alarmReporter.startAsync();
 
         tmGenerator.generate_PKT1_10(30, 1, 0);
@@ -268,7 +260,7 @@ public class AlarmTest {
 
     @Test
     public void testOnValueChangeReport() {
-        c.start();
+        processor.start();
         alarmReporter.startAsync();
 
         tmGenerator.generate_PKT1_10(20, 1, 0);

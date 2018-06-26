@@ -10,11 +10,30 @@
            class="ya-data-table"
            style="width: 100%">
 
+      <ng-container cdkColumnDef="select">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
+          <input type="checkbox" (change)="$event ? masterToggle() : null"
+                        [checked]="selection.hasValue() && isAllSelected()">
+        </th>
+        <td mat-cell *cdkCellDef="let row">
+          <input type="checkbox" (click)="$event.stopPropagation()"
+                        (change)="$event ? selection.toggle(row) : null"
+                        [checked]="selection.isSelected(row)">
+        </td>
+      </ng-container>
+
       <ng-container cdkColumnDef="name">
-        <th mat-header-cell *cdkHeaderCellDef>Name</th>
+        <th mat-header-cell *cdkHeaderCellDef width="300">Name</th>
         <td mat-cell *cdkCellDef="let layout">
           <a [routerLink]="layout.name | slice:8"
              [queryParams]="{instance: instance.name}">{{ layout.name | slice:8 }}</a>
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="visibility">
+        <th mat-header-cell *cdkHeaderCellDef>Visibility</th>
+        <td mat-cell *cdkCellDef="let layout">
+          Private
         </td>
       </ng-container>
 

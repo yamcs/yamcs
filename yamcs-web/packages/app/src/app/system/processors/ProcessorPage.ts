@@ -1,9 +1,9 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { YamcsService } from '../../core/services/YamcsService';
-import { Instance, Processor } from '@yamcs/client';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
+import { Instance, Processor } from '@yamcs/client';
 import { AuthService } from '../../core/services/AuthService';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: 'ProcessorPage.html',
@@ -28,6 +28,6 @@ export class ProcessorPage {
   }
 
   mayControlCommandQueue() {
-    return this.authService.hasSystemPrivilege('MayControlCommandQueue');
+    return this.authService.getUser()!.hasSystemPrivilege('ControlCommandQueue');
   }
 }

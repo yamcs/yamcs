@@ -1,5 +1,7 @@
 package org.yamcs.tctm;
 
+import java.util.Map;
+
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
@@ -9,15 +11,15 @@ import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
-
-import com.google.common.util.concurrent.AbstractService;
-
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.time.TimeService;
+
+import com.google.common.util.concurrent.AbstractService;
 
 /**
  * receives data from Artemis ActiveMQ and publishes it into a yamcs stream
@@ -36,10 +38,20 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     ClientSession artemisSession;
     ServerLocator locator;
 
+    boolean preserveIncomingReceptionTime = false;
+
     public ArtemisTmDataLink(String instance, String name, String artemisAddress) throws ConfigurationException {
         this.artemisAddress = artemisAddress;
         timeService = YamcsServer.getTimeService(instance);
         locator = AbstractArtemisTranslatorService.getServerLocator(instance);
+    }
+
+    public ArtemisTmDataLink(String instance, String name, Map<String, Object> args) throws ConfigurationException {
+        this(instance, name, YConfiguration.getString(args, "address"));
+
+        if (YConfiguration.getBoolean(args, "preserveIncomingReceptionTime", false)) {
+            preserveIncomingReceptionTime = true;
+        }
     }
 
     @Override
@@ -94,7 +106,8 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
             }
             TmPacketData tm = (TmPacketData) Protocol.decode(msg, TmPacketData.newBuilder());
             packetcount++;
-            PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(),
+            long rectime = preserveIncomingReceptionTime ? tm.getReceptionTime() : timeService.getMissionTime();
+            PacketWithTime pwt = new PacketWithTime(rectime,
                     tm.getGenerationTime(), tm.getSequenceNumber(), tm.getPacket().toByteArray());
             tmSink.processPacket(pwt);
         } catch (Exception e) {
@@ -104,7 +117,7 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
 
     @Override
     protected void doStart() {
-        
+
         try {
             artemisSession = locator.createSessionFactory().createSession(false, true, true, true);
             String queue = artemisAddress + "-ActiveMQTmProvider";
