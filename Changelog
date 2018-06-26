@@ -1,5 +1,14 @@
-Version 4.4.3 released 
+Version 4.5.0 released 26-Jun-2018
 - added a simple object storage API (buckets)
+- security improvements - it is possible now to stack multiple AuthModules to
+provide authentication/authorization from diferent sources.
+- added a Kerberos/Spnego authModule
+- Introduced YamcsService as a required interface for global and instance services
+- Show contextual calibrators in web interface
+- Added various CLI commands (for buckets, processors, clients)
+- General clean-up of Yaml configuration files to match closer to the upcoming
+Server manual
+- added a last value cache that is present all the time.
 
 Version 4.4.2 released 23-May-2018
 - yamcs-web: support multiple series plots
