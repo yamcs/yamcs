@@ -1,6 +1,6 @@
-package org.yamcs.xtce;
+package org.yamcs.xtce.xlsv6;
 
-import static org.yamcs.xtce.SpreadsheetLoaderBits.*;
+import static org.yamcs.xtce.xlsv6.SpreadsheetLoaderBits.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,16 +26,88 @@ import java.util.stream.Collectors;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.xtce.AbsoluteTimeParameterType;
+import org.yamcs.xtce.AbstractFileLoader;
+import org.yamcs.xtce.AlarmLevels;
+import org.yamcs.xtce.AlarmReportType;
+import org.yamcs.xtce.AlarmType;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
+import org.yamcs.xtce.Argument;
+import org.yamcs.xtce.ArgumentAssignment;
+import org.yamcs.xtce.ArgumentEntry;
+import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.BinaryArgumentType;
+import org.yamcs.xtce.BinaryDataEncoding;
+import org.yamcs.xtce.BinaryParameterType;
+import org.yamcs.xtce.BooleanArgumentType;
+import org.yamcs.xtce.BooleanDataEncoding;
+import org.yamcs.xtce.BooleanParameterType;
+import org.yamcs.xtce.Calibrator;
+import org.yamcs.xtce.CheckWindow;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
+import org.yamcs.xtce.CommandContainer;
+import org.yamcs.xtce.CommandVerifier;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
+import org.yamcs.xtce.ComparisonList;
+import org.yamcs.xtce.ContainerEntry;
+import org.yamcs.xtce.ContextCalibrator;
+import org.yamcs.xtce.CustomAlgorithm;
+import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DataSource;
+import org.yamcs.xtce.DynamicIntegerValue;
+import org.yamcs.xtce.EnumeratedArgumentType;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.FixedIntegerValue;
+import org.yamcs.xtce.FixedValueEntry;
+import org.yamcs.xtce.FloatArgumentType;
+import org.yamcs.xtce.FloatDataEncoding;
+import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.FloatValidRange;
+import org.yamcs.xtce.Header;
+import org.yamcs.xtce.History;
+import org.yamcs.xtce.InputParameter;
+import org.yamcs.xtce.IntegerArgumentType;
+import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.IntegerParameterType;
+import org.yamcs.xtce.IntegerValidRange;
+import org.yamcs.xtce.JavaExpressionCalibrator;
+import org.yamcs.xtce.MatchCriteria;
+import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.OnParameterUpdateTrigger;
+import org.yamcs.xtce.OnPeriodicRateTrigger;
+import org.yamcs.xtce.OutputParameter;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.PolynomialCalibrator;
+import org.yamcs.xtce.RateInStream;
+import org.yamcs.xtce.ReferenceTime;
+import org.yamcs.xtce.Repeat;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.SequenceEntry;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
-import org.yamcs.xtce.SpreadsheetLoaderBits.Position;
+import org.yamcs.xtce.Significance;
+import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.SplineCalibrator;
+import org.yamcs.xtce.SplinePoint;
+import org.yamcs.xtce.StringArgumentType;
+import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
+import org.yamcs.xtce.StringParameterType;
+import org.yamcs.xtce.TimeEpoch;
+import org.yamcs.xtce.TransmissionConstraint;
+import org.yamcs.xtce.TriggerSetType;
+import org.yamcs.xtce.UnitType;
+import org.yamcs.xtce.ValueEnumeration;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.ResolvedNameReference;
 import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.util.NameReference.Type;
+import org.yamcs.xtce.xlsv6.SpreadsheetLoaderBits.Position;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
@@ -435,10 +507,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             ParameterType ptype = null;
             if (PARAM_ENGTYPE_UINT32.equalsIgnoreCase(engtype)) {
                 ptype = new IntegerParameterType(name);
-                ((IntegerParameterType) ptype).signed = false;
+                ((IntegerParameterType) ptype).setSigned(false);
             } else if (PARAM_ENGTYPE_UINT64.equalsIgnoreCase(engtype)) {
                 ptype = new IntegerParameterType(name);
-                ((IntegerParameterType) ptype).signed = false;
+                ((IntegerParameterType) ptype).setSigned(false);
                 ((IntegerParameterType) ptype).setSizeInBits(64);
             } else if (PARAM_ENGTYPE_INT32.equalsIgnoreCase(engtype)) {
                 ptype = new IntegerParameterType(name);
@@ -505,11 +577,11 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                             throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '"
                                     + calib + "' but the calibrator does not exist");
                         }
-                        intStringEncoding.defaultCalibrator = c;
+                        intStringEncoding.setDefaultCalibrator(c);
                     }
-                    ((IntegerParameterType) ptype).encoding = intStringEncoding;
+                    ((IntegerParameterType) ptype).setEncoding(intStringEncoding);
                 } else {
-                    ((IntegerParameterType) ptype).encoding = encoding;
+                    ((IntegerParameterType) ptype).setEncoding(encoding);
                 }
             } else if (ptype instanceof FloatParameterType) {
                 // Floats can be encoded as strings
@@ -522,12 +594,12 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                             throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '"
                                     + calib + "' but the calibrator does not exist.");
                         } else {
-                            floatStringEncoding.defaultCalibrator = c;
+                            floatStringEncoding.setDefaultCalibrator(c);
                         }
                     }
-                    ((FloatParameterType) ptype).encoding = floatStringEncoding;
+                    ((FloatParameterType) ptype).setEncoding(floatStringEncoding);
                 } else {
-                    ((FloatParameterType) ptype).encoding = encoding;
+                    ((FloatParameterType) ptype).setEncoding(encoding);
                 }
             } else if (ptype instanceof EnumeratedParameterType) {
                 if (((EnumeratedParameterType) ptype).getEncoding() != null) {
@@ -686,7 +758,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                 }
                 int bitlength = parseInt(ctx, encodingArgs[0]);
                 encoding = new IntegerDataEncoding(bitlength);
-                ((IntegerDataEncoding) encoding).encoding = getIntegerEncoding(ctx, encodingType);
+                ((IntegerDataEncoding) encoding).setEncoding(getIntegerEncoding(ctx, encodingType));
                 if (encodingArgs.length > 1) {
                     ((IntegerDataEncoding) encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1]));
                 }
@@ -694,7 +766,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                ((IntegerDataEncoding) encoding).defaultCalibrator = getNumberCalibrator(paraArgDescr, calib);
+                ((IntegerDataEncoding) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
                 ((IntegerDataEncoding) encoding).setContextCalibratorList(contextCalibrators.get(calib));
             }
         } else if (PARAM_RAWTYPE_FLOAT.equalsIgnoreCase(rawtype)) {
@@ -719,7 +791,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             }
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                ((FloatDataEncoding) encoding).defaultCalibrator = getNumberCalibrator(paraArgDescr, calib);
+                ((FloatDataEncoding) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
                 ((FloatDataEncoding) encoding).setContextCalibratorList(contextCalibrators.get(calib));
             }
         } else if (PARAM_RAWTYPE_BOOLEAN.equalsIgnoreCase(rawtype)) {
@@ -948,7 +1020,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the
             // ORDINARY/SUB/AGGREGATE packets, and register that new SequenceContainer in the containers hashmap
             SequenceContainer container = new SequenceContainer(name);
-            container.sizeInBits = containerSizeInBits;
+            container.setSizeInBits(containerSizeInBits);
             containers.put(name, container);
             container.setRateInStream(rate);
             if (!description.isEmpty()) {
@@ -1042,7 +1114,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     }
                     // also check if the parameter should be added multiple times, and if so, do so
                     repeated = addRepeat(se, repeat);
-                    container.entryList.add(se);
+                    container.addEntry(se);
                 } else if (sc != null) {
                     // ok, we found it as an aggregate, so we add it to the entryList of container, as a new
                     // ContainerEntry
@@ -1058,7 +1130,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     }
                     // also check if the parameter should be added multiple times, and if so, do so
                     repeated = addRepeat(se, repeat);
-                    container.entryList.add(se);
+                    container.addEntry(se);
                 } else {
                     throw new SpreadsheetLoadException(ctx, "The measurement/container '" + paraname
                             + "' was not found in the parameters or containers map");
@@ -1114,8 +1186,8 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
                 // 2) extract the condition and create the restrictioncriteria
                 if (!"".equals(condition.trim())) {
-                    container.restrictionCriteria = toMatchCriteria(spaceSystem, condition);
-                    MatchCriteria.printParsedMatchCriteria(log, container.restrictionCriteria, "");
+                    container.setRestrictionCriteria(toMatchCriteria(spaceSystem, condition));
+                    MatchCriteria.printParsedMatchCriteria(log, container.getRestrictionCriteria(), "");
                 }
             } else {
                 if (spaceSystem.getRootSequenceContainer() == null) {
@@ -1275,7 +1347,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         fve = new FixedValueEntry(counter, container, pos.pos + ((extraOffset != -1) ? extraOffset : 0),
                                 ReferenceLocationType.containerStart, argname, binaryValue, sizeInBits);
                     }
-                    container.entryList.add(fve);
+                    container.addEntry(fve);
                 } else {
                     loadArgument(spaceSystem, cells, cmd, container, extraOffset, counter);
                 }
@@ -1311,7 +1383,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
                 // 2) extract the condition and create the restrictioncriteria
                 if (argAssignment != null) {
-                    cmd.argumentAssignmentList = toArgumentAssignmentList(argAssignment);
+                    cmd.setArgumentAssignmentList(toArgumentAssignmentList(argAssignment));
                 }
             }
 
@@ -1596,10 +1668,10 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         ArgumentType atype = null;
         if ("uint".equalsIgnoreCase(engType)) {
             atype = new IntegerArgumentType(name);
-            ((IntegerArgumentType) atype).signed = false;
+            ((IntegerArgumentType) atype).setSigned(false);
         } else if (PARAM_ENGTYPE_UINT64.equalsIgnoreCase(engType)) {
             atype = new IntegerArgumentType(name);
-            ((IntegerArgumentType) atype).signed = false;
+            ((IntegerArgumentType) atype).setSigned(false);
             ((IntegerArgumentType) atype).setSizeInBits(64);
         } else if ("int".equalsIgnoreCase(engType)) {
             atype = new IntegerArgumentType(name);
@@ -1715,7 +1787,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                     ReferenceLocationType.containerStart, arg);
         }
 
-        container.entryList.add(ae);
+        container.addEntry(ae);
         ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
         if ((flags != null) && (flags.contains("L") || flags.contains("l"))) {
             throw new SpreadsheetLoadException(ctx,
@@ -1745,14 +1817,14 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '" + calib
                                 + "' but the calibrator does not exist");
                     }
-                    intStringEncoding.defaultCalibrator = c;
+                    intStringEncoding.setDefaultCalibrator(c);
                 }
                 ((IntegerArgumentType) atype).setEncoding(intStringEncoding);
             } else {
                 ((IntegerArgumentType) atype).setEncoding(encoding);
             }
         } else if (atype instanceof BinaryArgumentType) {
-            ((BinaryArgumentType) atype).encoding = encoding;
+            ((BinaryArgumentType) atype).setEncoding(encoding);
         } else if (atype instanceof FloatArgumentType) {
             // Floats can be encoded as strings
             if (encoding instanceof StringDataEncoding) {
@@ -1764,7 +1836,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
                         throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '" + calib
                                 + "' but the calibrator does not exist.");
                     } else {
-                        floatStringEncoding.defaultCalibrator = c;
+                        floatStringEncoding.setDefaultCalibrator(c);
                     }
                 }
                 floatStringEncoding.setByteOrder(byteOrder);
@@ -2230,7 +2302,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
             ComparisonList cl = new ComparisonList();
             String splitted[] = criteriaString.split(";");
             for (String part : splitted) {
-                cl.comparisons.add(conditionParser.toComparison(spaceSystem, part));
+                cl.addComparison(conditionParser.toComparison(spaceSystem, part));
             }
             return cl;
         } else {
@@ -2263,14 +2335,14 @@ public class SpreadsheetLoader extends AbstractFileLoader {
 
             if ((de instanceof FloatDataEncoding) || (de instanceof IntegerDataEncoding)
                     || (de instanceof BinaryDataEncoding) || (de instanceof BooleanDataEncoding)) {
-                return de.sizeInBits;
+                return de.getSizeInBits();
             } else if (de instanceof StringDataEncoding) {
                 return -1;
             } else {
                 throw new SpreadsheetLoadException(ctx, "No known size for data encoding : " + de);
             }
         } else {
-            return sc.sizeInBits;
+            return sc.getSizeInBits();
         }
     }
 
@@ -2282,14 +2354,14 @@ public class SpreadsheetLoader extends AbstractFileLoader {
         if (!repeat.equals("")) {
             try {
                 int rep = Integer.decode(repeat);
-                se.repeatEntry = new Repeat(new FixedIntegerValue(rep));
+                se.setRepeatEntry(new Repeat(new FixedIntegerValue(rep)));
                 return rep;
             } catch (NumberFormatException e) {
                 Parameter repeatparam = parameters.get(repeat);
                 if (repeatparam == null) {
                     throw new SpreadsheetLoadException(ctx, "Cannot find the parameter for repeat " + repeat);
                 }
-                se.repeatEntry = new Repeat(new DynamicIntegerValue(new ParameterInstanceRef(repeatparam, true)));
+                se.setRepeatEntry(new Repeat(new DynamicIntegerValue(new ParameterInstanceRef(repeatparam, true))));
                 return -1;
             }
         } else {

@@ -1,4 +1,4 @@
-package org.yamcs.xtce;
+package org.yamcs.xtce.xlsv6;
 
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import org.yamcs.xtce.FloatDataEncoding;
+import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.IntegerDataEncoding.Encoding;
 
 import jxl.Cell;
 import jxl.CellType;

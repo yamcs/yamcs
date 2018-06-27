@@ -1,4 +1,4 @@
-package org.yamcs.xtce;
+package org.yamcs.xtce.xlsv6;
 
 /**
  * Keeps track of current whereabouts of the spreadsheet loader. For better

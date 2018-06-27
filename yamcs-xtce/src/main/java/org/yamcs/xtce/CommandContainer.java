@@ -10,7 +10,7 @@ public class CommandContainer extends Container {
         super(name);
     }
 
-    ArrayList<SequenceEntry> entryList =new ArrayList<SequenceEntry>();
+    ArrayList<SequenceEntry> entryList = new ArrayList<SequenceEntry>();
 
     /**
      * looks up in the argumentEntry list the first one that is linked to the passed on argument

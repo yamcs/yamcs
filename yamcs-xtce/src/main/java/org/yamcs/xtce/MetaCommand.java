@@ -233,4 +233,8 @@ public class MetaCommand extends NameDescription {
         
         commandContainer.print(out);
     }
+
+    public void setArgumentAssignmentList(List<ArgumentAssignment> argumentAssignmentList2) {
+        this.argumentAssignmentList = argumentAssignmentList;
+    }
 }
