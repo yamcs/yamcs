@@ -1,8 +1,10 @@
-package org.yamcs.xtce;
+package org.yamcs.xtce.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.yamcs.xtce.NameDescription;
 
 /**
  * Stores actions related to unresolved references and calls them once the reference has been resolved.

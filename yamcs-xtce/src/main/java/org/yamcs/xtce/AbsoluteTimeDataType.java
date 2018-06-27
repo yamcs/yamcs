@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -58,5 +60,15 @@ public class AbsoluteTimeDataType extends BaseTimeDataType {
     @Override
     public Object parseString(String stringValue) {
         return TimeEncoding.parse(stringValue);
+    }
+
+    @Override
+    public Type getValueType() {
+        return Value.Type.TIMESTAMP;
+    }
+
+    @Override
+    public String getTypeAsString() {
+        return "time";
     }
 }

@@ -119,10 +119,6 @@ public class EnumeratedParameterType extends EnumeratedDataType implements Param
         return "EnumeratedParameterType: "+enumeration;
     }
 
-    @Override
-    public String getTypeAsString() {
-        return "enumeration";
-    }
 
     @Override
     public String toString() {

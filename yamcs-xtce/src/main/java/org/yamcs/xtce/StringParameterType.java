@@ -21,12 +21,6 @@ public class StringParameterType extends StringDataType implements ParameterType
     }
 
     @Override
-    public String getTypeAsString() {
-        return "string";
-    }
-    
-
-    @Override
     public String toString() {
         return "StringParameterType name:"+name+" encoding:"+encoding;
     }

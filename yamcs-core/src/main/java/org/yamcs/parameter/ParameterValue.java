@@ -13,7 +13,7 @@ import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.SequenceEntry;
 
 /** 
  * Holds the value of a parameter
@@ -27,7 +27,7 @@ public class ParameterValue {
     private final String paramFqn;
 
 
-    ParameterEntry entry;
+    SequenceEntry entry;
     int absoluteBitOffset, bitSize;
 
     private Value rawValue;
@@ -80,11 +80,11 @@ public class ParameterValue {
         this.bitSize = bitSize;
     }
 
-    public void setParameterEntry(ParameterEntry entry) {
+    public void setSequenceEntry(SequenceEntry entry) {
         this.entry = entry;
     }
 
-    public ParameterEntry getParameterEntry() {
+    public SequenceEntry getSequenceEntry() {
         return entry;
     }
 

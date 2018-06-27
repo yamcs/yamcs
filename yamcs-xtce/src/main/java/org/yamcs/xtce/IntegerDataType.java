@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.protobuf.Yamcs.Value.Type;
+
 public class IntegerDataType extends NumericDataType {
     private static final long serialVersionUID = 200706051146L;
     int sizeInBits = 32;
@@ -61,7 +63,7 @@ public class IntegerDataType extends NumericDataType {
     }
 
     public void setInitialValue(String initialValue) {
-        if(signed) {
+        if (signed) {
             this.initialValue = Long.parseLong(initialValue);
         } else {
             this.initialValue = Long.parseUnsignedLong(initialValue);
@@ -83,6 +85,16 @@ public class IntegerDataType extends NumericDataType {
         } else {
             return Long.decode(stringValue).intValue();
         }
+    }
+
+    @Override
+    public Type getValueType() {
+        return sizeInBits > 32 ? (signed ? Type.SINT64 : Type.UINT64)
+                : (signed ? Type.SINT32 : Type.UINT32);
+    }
+    @Override
+    public String getTypeAsString() {
+        return "integer";
     }
 
 }

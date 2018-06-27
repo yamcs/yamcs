@@ -1,4 +1,7 @@
-package org.yamcs.xtce;
+package org.yamcs.xtce.util;
+
+import org.yamcs.xtce.NameDescription;
+
 /**
  * Used when referencing a directory style "NameType".
  *  All characters are legal.
@@ -25,8 +28,8 @@ public abstract class NameReference {
          * false can be returned in case the NameDescription refers to something which is not itself fully resolved
          */
         public boolean resolved(NameDescription nd);
+        
     }
-
     protected final String ref;
     protected final Type type;
 

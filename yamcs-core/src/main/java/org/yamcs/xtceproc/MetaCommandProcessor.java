@@ -149,7 +149,7 @@ public class MetaCommandProcessor {
                        Parameter param = c.getParameter();
                        if(param!=null) {
                            try {
-                               Value v = ParameterTypeProcessor.parseString(param.getParameterType(), c.getStringValue());
+                               Value v = ParameterTypeUtils.parseString(param.getParameterType(), c.getStringValue());
                                params.put(param, v);
                            } catch (IllegalArgumentException e) {
                                throw new ErrorInCommand("Cannot parse '"+c.getStringValue()+"' as value for parameter "+param.getQualifiedName());

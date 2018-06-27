@@ -29,10 +29,13 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandVerifier.TerminationAction;
-import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.SpreadsheetLoaderBits.Position;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
+import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.ResolvedNameReference;
+import org.yamcs.xtce.util.UnresolvedNameReference;
+import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
@@ -1125,7 +1128,7 @@ public class SpreadsheetLoader extends AbstractFileLoader {
     }
 
     private void checkThatParameterSizeCanBeComputed(Parameter param) {
-        DataEncoding encoding = param.getParameterType().getEncoding();
+        DataEncoding encoding = ((BaseDataType)param.getParameterType()).getEncoding();
         if (encoding == null) {
             throw new SpreadsheetLoadException(ctx,
                     "Parameter " + param.getName() + " is part of a container but has no data encoding specified");

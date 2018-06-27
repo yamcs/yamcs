@@ -8,6 +8,11 @@ import java.io.Serializable;
  * A positive value for instance is forward in time, a negative value for count is backward in time,
  * a 0 value for count means use the current value of the parameter or the first value in a container.
  * 
+ * If the parameter is an aggregate or an array, the reference can be made to a member of the aggregate/arraty or more
+ * generally to a path inside the aggregate (if a hierarchy of aggregates/arrays)
+ * Thus the reference can be something like:
+ * g1/g2/a[1]/g4[a3]/p7
+ * 
  * @author nm
  *
  */
@@ -17,6 +22,7 @@ public class ParameterInstanceRef implements Serializable {
 
     private boolean useCalibratedValue = true;
     private int instance = 0;
+    private PathElement[] path;
 
     /**
      * Constructor to be used when the parameter is not yet known.
@@ -69,8 +75,32 @@ public class ParameterInstanceRef implements Serializable {
         return instance;
     }
 
+    /**
+     * If the parameter is an aggregate or an array (or a nested structure of these), return the path
+     * to the referenced member inside the structure.
+     * 
+     * @return the path to the referenced member of the aggregate or array or null if this reference refers to the
+     *         parameter itself
+     */
+    public PathElement[] getMemberPath() {
+        return path;
+    }
+
+    public void setMemberPath(PathElement[] path) {
+        this.path = path;
+    }
+
     @Override
     public String toString() {
-        return parameter != null ? parameter.getQualifiedName() : null + " instance:" + instance;
+        StringBuilder sb = new StringBuilder();
+        if(parameter!=null) {
+            sb.append(parameter.getQualifiedName());
+        }
+        if(path!=null) {
+            sb.append("/");
+            sb.append(PathElement.pathToString(path));
+        }
+        return sb.toString();
     }
+
 }

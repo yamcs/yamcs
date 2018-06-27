@@ -198,12 +198,8 @@ public class IntegerParameterType extends IntegerDataType implements NumericPara
     }
 
     @Override
-    public String getTypeAsString() {
-        return "integer";
-    }
-
-    @Override
     public ParameterType copy() {
         return new IntegerParameterType(this);
     }
+
 }

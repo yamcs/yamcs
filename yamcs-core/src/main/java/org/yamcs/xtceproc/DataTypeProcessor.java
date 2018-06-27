@@ -1,14 +1,20 @@
 package org.yamcs.xtceproc;
 
+import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeDataType;
+import org.yamcs.xtce.AggregateDataType;
+import org.yamcs.xtce.ArrayDataType;
 import org.yamcs.xtce.BinaryDataType;
 import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.EnumeratedDataType;
 import org.yamcs.xtce.FloatDataType;
 import org.yamcs.xtce.IntegerDataType;
+import org.yamcs.xtce.Member;
+import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.StringDataType;
 
 public class DataTypeProcessor {
@@ -68,10 +74,33 @@ public class DataTypeProcessor {
                return null;
             }
             v = ValueUtility.getTimestampValue(t);
+        }  else if (type instanceof AggregateDataType) {
+            v =  getAggregateInitialValue((AggregateDataType) type);
+        }  else if (type instanceof ArrayDataType) {
+            return null; //TODO
         }  else {
             throw new IllegalArgumentException("Cannot parse values of type "+type);
         }
         return v;
     }
+
+    private static Value getAggregateInitialValue(AggregateDataType aggregateDataType) {
+        AggregateValue v = new AggregateValue();
+        for(Member m: aggregateDataType.getMemberList()) {
+            Value mv = getInitialValue(m.getType());
+            if(mv != null) {
+                v.setValue(m.getName(), mv);
+            }
+        }
+        if(v.numMembers() > 0) {
+            return v;
+        } else {
+            return null;
+        }
+    }
+    
+
+  
+
     
 }

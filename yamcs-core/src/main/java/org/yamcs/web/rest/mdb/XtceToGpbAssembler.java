@@ -363,7 +363,7 @@ public class XtceToGpbAssembler {
             b.setType(toArgumentTypeInfo(xtceType));
             if (!b.hasInitialValue()) {
                 String initialValue = null;
-                initialValue = getDataTypeInitialValue((BaseDataType)xtceArgument.getArgumentType());
+                initialValue = getDataTypeInitialValue((BaseDataType) xtceArgument.getArgumentType());
                 if (initialValue != null) {
                     b.setInitialValue(initialValue);
                 }
@@ -513,13 +513,21 @@ public class XtceToGpbAssembler {
 
     public static ParameterTypeInfo toParameterTypeInfo(ParameterType parameterType, DetailLevel detail) {
         ParameterTypeInfo.Builder infob = ParameterTypeInfo.newBuilder();
+
         infob.setEngType(parameterType.getTypeAsString());
-        for (UnitType ut : parameterType.getUnitSet()) {
-            infob.addUnitSet(toUnitInfo(ut));
+
+        if (parameterType instanceof BaseDataType) {
+            BaseDataType bdt = (BaseDataType) parameterType;
+            for (UnitType ut : bdt.getUnitSet()) {
+                infob.addUnitSet(toUnitInfo(ut));
+            }
         }
         if (detail == DetailLevel.FULL) {
-            if (parameterType.getEncoding() != null) {
-                infob.setDataEncoding(toDataEncodingInfo(parameterType.getEncoding()));
+            if (parameterType instanceof BaseDataType) {
+                BaseDataType bdt = (BaseDataType) parameterType;
+                if (bdt.getEncoding() != null) {
+                    infob.setDataEncoding(toDataEncodingInfo(bdt.getEncoding()));
+                }
             }
 
             if (parameterType instanceof IntegerParameterType) {
@@ -578,10 +586,10 @@ public class XtceToGpbAssembler {
         if (dataType instanceof IntegerDataType) {
             IntegerDataType idt = (IntegerDataType) dataType;
             Long l = idt.getInitialValue();
-            if(l==null) {
+            if (l == null) {
                 return null;
             } else {
-                if(idt.isSigned()) {
+                if (idt.isSigned()) {
                     return l.toString();
                 } else {
                     return Long.toUnsignedString(l);

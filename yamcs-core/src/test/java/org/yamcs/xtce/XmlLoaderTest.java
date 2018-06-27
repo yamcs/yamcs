@@ -176,4 +176,9 @@ public class XmlLoaderTest {
         
     }
 
+    @Test
+    public void testBogusSat2() throws XMLStreamException, IOException {
+        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
+        db.print(System.out);
+    }
 }

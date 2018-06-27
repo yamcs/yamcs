@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.yamcs.xtce.NameReference.Type;
+import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.NameReference.Type;
+import org.yamcs.xtce.util.UnresolvedNameReference;
 
 /**
  * used by the SpreadsheetLoader to parse conditions

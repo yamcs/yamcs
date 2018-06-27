@@ -17,5 +17,8 @@ public interface NumericParameterType extends ParameterType {
      * @return
      */
     public NumericAlarm createOrGetAlarm(MatchCriteria contextMatch);
+
+    
+    public DataEncoding getEncoding();
     
 }

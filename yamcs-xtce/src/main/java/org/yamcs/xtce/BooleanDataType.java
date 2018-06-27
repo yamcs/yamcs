@@ -1,7 +1,12 @@
 package org.yamcs.xtce;
 
+import org.yamcs.protobuf.Yamcs.Value.Type;
+
 public class BooleanDataType extends BaseDataType {
-    private static final long serialVersionUID = 4423703822819238835L;
+    private static final long serialVersionUID = 1L;
+   
+    String oneStringValue = "True";
+    String zeroStringValue = "False";
     /**
      * Used mainly for command arguments to specify the default value
      */
@@ -32,17 +37,45 @@ public class BooleanDataType extends BaseDataType {
 
     /**
      * Returns {@link Boolean#parseBoolean(String)}
-     */
-    public Object parseString(String stringValue) {
-        return Boolean.parseBoolean(stringValue);
+    */
+    public Boolean parseString(String stringValue) {
+        if(oneStringValue.equalsIgnoreCase(stringValue)) {
+            return Boolean.TRUE;
+        } else if (zeroStringValue.equalsIgnoreCase(stringValue)) {
+            return Boolean.FALSE;
+        } else {
+            throw new IllegalArgumentException("Invalid initialValue, should be '"+oneStringValue+"' or '"+zeroStringValue+"'");
+        }
     }
 
     @Override
-    public void setInitialValue(String initialValue) {
-        if("true".equalsIgnoreCase(initialValue) || "1".equalsIgnoreCase(initialValue)) {
-            this.initialValue = Boolean.TRUE;
-        } else {
-            this.initialValue = Boolean.FALSE;
-        }
+    public void setInitialValue(String stringValue) {
+        initialValue = parseString(stringValue);
+    }
+
+    public String getOneStringValue() {
+        return oneStringValue;
+    }
+
+    public void setOneStringValue(String oneStringValue) {
+        this.oneStringValue = oneStringValue;
+    }
+
+    public String getZeroStringValue() {
+        return zeroStringValue;
+    }
+
+    public void setZeroStringValue(String zeroStringValue) {
+        this.zeroStringValue = zeroStringValue;
+    }
+
+    @Override
+    public Type getValueType() {
+        return Type.BOOLEAN;
+    }
+
+    @Override
+    public String getTypeAsString() {
+        return "boolean";
     }
 }

@@ -18,3 +18,9 @@ BogusSAT:
     - type: xtce
       args:
           file: "src/test/resources/xtce/BogusSAT-1.xml"          
+
+BogusSAT2:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/BogusSAT-2.xml"          
+          

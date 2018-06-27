@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Base class for all simple XTCE types - tha is all types except {@link AggregateDataType} and {@link ArrayDataType}
+ *
+ * @author nm
+ *
+ */
 public abstract class BaseDataType extends NameDescription implements DataType {
     private static final long serialVersionUID = 3L;
     List<UnitType> unitSet = new ArrayList<>();

@@ -178,10 +178,6 @@ public class FloatParameterType extends FloatDataType implements NumericParamete
         return alarm.getStaticAlarmRanges();
     }
 
-    @Override
-    public String getTypeAsString() {
-        return "float";
-    }
 
     @Override
     public String toString() {

@@ -1,6 +1,7 @@
 package org.yamcs.xtce;
 
-import java.util.List;
+import org.yamcs.protobuf.Yamcs.Value;
+
 
 /**
  * Interface for all XTCE data types. 
@@ -11,16 +12,12 @@ import java.util.List;
  */
 public interface DataType {
     /**
-     * 
-     * @return the list of units
+     * String which represents the type.
+     * This string will be presented to the users of the system.
+     * @return
      */
-    public List<UnitType> getUnitSet();
-    /**
-     * 
-     * @return the data encoding for the data type
-     */
-    public DataEncoding getEncoding();
-    
+    String getTypeAsString();
+
     /**
      * 
      * @return the name of the type
@@ -34,4 +31,11 @@ public interface DataType {
      * @throws IllegalArgumentException if the string cannot be converted
      */
     void setInitialValue(String initialValue);
+    
+    
+    /**
+     * Return the expected Value type of an engineering value conforming to this XTCE data type
+     * @return
+     */
+    Value.Type getValueType();
 }

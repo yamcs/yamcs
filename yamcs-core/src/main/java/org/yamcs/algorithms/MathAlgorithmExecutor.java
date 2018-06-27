@@ -16,7 +16,7 @@ import org.yamcs.xtce.MathAlgorithm;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.MathOperationCalibratorFactory;
-import org.yamcs.xtceproc.ParameterTypeProcessor;
+import org.yamcs.xtceproc.ParameterTypeUtils;
 
 /**
  * Executes XTCE math algorithms {@link MathAlgorithm}
@@ -46,7 +46,7 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
         pv.setAcquisitionTime(acqTime);
         pv.setGenerationTime(genTime);
         double value = evaluator.evaluate(input);
-        Value engValue = ParameterTypeProcessor.getEngValue(outParam.getParameterType(), Double.valueOf(value));
+        Value engValue = ParameterTypeUtils.getEngValue(outParam.getParameterType(), Double.valueOf(value));
         if(engValue==null) {
             execCtx.getProcessorData().getEventProducer()
             .sendWarning(getAlgorithm().getName(), "Cannot convert raw value from algorithm output "

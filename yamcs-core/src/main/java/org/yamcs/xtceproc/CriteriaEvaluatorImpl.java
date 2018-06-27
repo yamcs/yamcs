@@ -4,15 +4,17 @@ import java.util.Comparator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.OperatorType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.PathElement;
 
 import com.google.common.primitives.UnsignedBytes;
 import com.google.common.primitives.UnsignedLongs;
@@ -41,7 +43,7 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
     public boolean evaluate(OperatorType op, Object lValueRef, Object rValueRef) {
         ResolvedValue lValue = resolveValue(lValueRef);
         ResolvedValue rValue = resolveValue(rValueRef);
-
+        
         if ((lValue == null) || (rValue == null)) {
             return false;
         }
@@ -107,28 +109,39 @@ public class CriteriaEvaluatorImpl implements CriteriaEvaluator {
         } else {
             v = pv.getRawValue();
         }
-        switch (v.getType().getNumber()) {
-        case Type.SINT32_VALUE:
-            return new ResolvedValue((long) v.getSint32Value(), false, intEvaluator);
-        case Type.SINT64_VALUE:
-            return new ResolvedValue(v.getSint64Value(), false, intEvaluator);
-        case Type.UINT32_VALUE:
-            return new ResolvedValue((long) v.getUint32Value() & 0xFFFFFFFFFFFFFFFFL, true, intEvaluator);
-        case Type.UINT64_VALUE:
-            return new ResolvedValue(v.getUint64Value(), true, intEvaluator);
-        case Type.FLOAT_VALUE:
-            return new ResolvedValue((double) v.getFloatValue(), false, floatEvaluator);
-        case Type.DOUBLE_VALUE:
-            return new ResolvedValue(v.getDoubleValue(), false, floatEvaluator);
-        case Type.STRING_VALUE:
-            return new ResolvedValue(v.getStringValue(), false, stringEvaluator);
-        case Type.BINARY_VALUE:
-            return new ResolvedValue(v.getBinaryValue(), false, binaryEvaluator);
-        case Type.BOOLEAN_VALUE:
-            return new ResolvedValue(v.getBooleanValue(), false, booleanEvaluator);
+        if ((v instanceof AggregateValue) || (v instanceof ArrayValue)) {
+            PathElement[] path = paramRef.getMemberPath();
+            if(path == null) {
+                return null;
+            }
+            v = Value.getMemberValue(v, path);
         }
 
-        return null;
+        if (v == null) {
+            return null;
+        }
+        switch (v.getType()) {
+        case SINT32:
+            return new ResolvedValue((long) v.getSint32Value(), false, intEvaluator);
+        case SINT64:
+            return new ResolvedValue(v.getSint64Value(), false, intEvaluator);
+        case UINT32:
+            return new ResolvedValue((long) v.getUint32Value() & 0xFFFFFFFFFFFFFFFFL, true, intEvaluator);
+        case UINT64:
+            return new ResolvedValue(v.getUint64Value(), true, intEvaluator);
+        case FLOAT:
+            return new ResolvedValue((double) v.getFloatValue(), false, floatEvaluator);
+        case DOUBLE:
+            return new ResolvedValue(v.getDoubleValue(), false, floatEvaluator);
+        case STRING:
+            return new ResolvedValue(v.getStringValue(), false, stringEvaluator);
+        case BINARY:
+            return new ResolvedValue(v.getBinaryValue(), false, binaryEvaluator);
+        case BOOLEAN:
+            return new ResolvedValue(v.getBooleanValue(), false, booleanEvaluator);
+        default:
+            return null;
+        }
     }
 
     static interface Evaluator {

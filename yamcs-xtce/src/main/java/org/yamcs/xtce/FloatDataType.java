@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.protobuf.Yamcs.Value.Type;
+
 public class FloatDataType extends NumericDataType {
     private static final long serialVersionUID = 200706061220L;
     /**
@@ -63,5 +65,15 @@ public class FloatDataType extends NumericDataType {
     @Override
     public void setInitialValue(String initialValue) {
         this.initialValue = Double.parseDouble(initialValue);
+    }
+
+    @Override
+    public Type getValueType() {
+        return (sizeInBits<=32)?Type.FLOAT:Type.DOUBLE;
+    }
+    
+    @Override
+    public String getTypeAsString() {
+        return "float";
     }
 }

@@ -11,10 +11,6 @@ package org.yamcs.xtce;
  *
  */
 public class EnumerationContextAlarm  extends EnumerationAlarm {
-	
-	/**
-     * 
-     */
     private static final long serialVersionUID = 201103300451L;
     private MatchCriteria contextMatch;
 	

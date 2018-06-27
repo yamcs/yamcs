@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.xtce.util.DataTypeUtil;
 
 /**
  * A simple ParameterInstanceRef to value comparison.
@@ -13,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * 2) in xtce Comparison extends ParameterInstanceRef, and MatchCriteria is a choice of Comparison, ComparisonList, ...
  */
 public class Comparison implements MatchCriteria {
-    private static final long serialVersionUID = 7L;
+    private static final long serialVersionUID = 9L;
     ParameterInstanceRef instanceRef;
 
     OperatorType comparisonOperator;
@@ -21,7 +22,7 @@ public class Comparison implements MatchCriteria {
     // the string is used to create the object and then is changed to the other type, depending on the valueType
     String stringValue;
 
-    Object value;
+    private Object value;
 
     transient static Logger log = LoggerFactory.getLogger(Comparison.class.getName());
 
@@ -35,10 +36,14 @@ public class Comparison implements MatchCriteria {
      * @param op
      */
     public Comparison(ParameterInstanceRef paraRef, String stringValue, OperatorType op) {
+        if(stringValue==null) {
+            throw new NullPointerException("stringValue");
+        }
         this.instanceRef = paraRef;
         this.stringValue = stringValue;
         this.value = stringValue;
         this.comparisonOperator = op;
+        
         checkParaRef(paraRef);
     }
 
@@ -75,6 +80,15 @@ public class Comparison implements MatchCriteria {
     public void resolveValueType() {
         boolean useCalibratedValue = instanceRef.useCalibratedValue();
         ParameterType ptype = instanceRef.getParameter().getParameterType();
+        
+        if(ptype instanceof AggregateParameterType) {
+            ParameterType ptype1  = (ParameterType) DataTypeUtil.getMemberType(ptype, instanceRef.getMemberPath());
+            if(ptype1 == null) {
+                throw new IllegalArgumentException("reference "+PathElement.pathToString(instanceRef.getMemberPath())
+                        +" points to un unexisting member inside the parameter type "+ptype.getName());
+            }
+            ptype = ptype1;
+        } 
         try {
             if (useCalibratedValue) {
                 value = ptype.parseString(stringValue);

@@ -2262,6 +2262,14 @@ public final class Yamcs {
        * <code>BOOLEAN = 9;</code>
        */
       BOOLEAN(9),
+      /**
+       * <code>AGGREGATE = 10;</code>
+       */
+      AGGREGATE(10),
+      /**
+       * <code>ARRAY = 11;</code>
+       */
+      ARRAY(11),
       ;
 
       /**
@@ -2304,6 +2312,14 @@ public final class Yamcs {
        * <code>BOOLEAN = 9;</code>
        */
       public static final int BOOLEAN_VALUE = 9;
+      /**
+       * <code>AGGREGATE = 10;</code>
+       */
+      public static final int AGGREGATE_VALUE = 10;
+      /**
+       * <code>ARRAY = 11;</code>
+       */
+      public static final int ARRAY_VALUE = 11;
 
 
       public final int getNumber() {
@@ -2330,6 +2346,8 @@ public final class Yamcs {
           case 7: return UINT64;
           case 8: return SINT64;
           case 9: return BOOLEAN;
+          case 10: return AGGREGATE;
+          case 11: return ARRAY;
           default: return null;
         }
       }
@@ -27952,99 +27970,100 @@ public final class Yamcs {
       "\n\013yamcs.proto\022\005yamcs\" \n\rStringMessage\022\017\n" +
       "\007message\030\001 \002(\t\"\032\n\007Instant\022\017\n\007instant\030\001 \002" +
       "(\003\"#\n\020MessagingAddress\022\017\n\007address\030\001 \002(\t\"" +
-      "\201\003\n\005Value\022\037\n\004type\030\001 \002(\0162\021.yamcs.Value.Ty" +
+      "\233\003\n\005Value\022\037\n\004type\030\001 \002(\0162\021.yamcs.Value.Ty" +
       "pe\022\022\n\nfloatValue\030\002 \001(\002\022\023\n\013doubleValue\030\003 " +
       "\001(\001\022\023\n\013sint32Value\030\004 \001(\021\022\023\n\013uint32Value\030" +
       "\005 \001(\r\022\023\n\013binaryValue\030\006 \001(\014\022\023\n\013stringValu" +
       "e\030\007 \001(\t\022\026\n\016timestampValue\030\010 \001(\003\022\023\n\013uint6" +
       "4Value\030\t \001(\004\022\023\n\013sint64Value\030\n \001(\022\022\024\n\014boo" +
-      "leanValue\030\013 \001(\010\"\201\001\n\004Type\022\t\n\005FLOAT\020\000\022\n\n\006D",
+      "leanValue\030\013 \001(\010\"\233\001\n\004Type\022\t\n\005FLOAT\020\000\022\n\n\006D",
       "OUBLE\020\001\022\n\n\006UINT32\020\002\022\n\n\006SINT32\020\003\022\n\n\006BINAR" +
       "Y\020\004\022\n\n\006STRING\020\005\022\r\n\tTIMESTAMP\020\006\022\n\n\006UINT64" +
-      "\020\007\022\n\n\006SINT64\020\010\022\013\n\007BOOLEAN\020\t\"0\n\rNamedObje" +
-      "ctId\022\014\n\004name\030\001 \002(\t\022\021\n\tnamespace\030\002 \001(\t\"5\n" +
-      "\017NamedObjectList\022\"\n\004list\030\001 \003(\0132\024.yamcs.N" +
-      "amedObjectId\"\300\003\n\014IndexRequest\022\020\n\010instanc" +
-      "e\030\001 \002(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\020\n\010" +
-      "utcStart\030\016 \001(\t\022\017\n\007utcStop\030\017 \001(\t\022\030\n\020defau" +
-      "ltNamespace\030\004 \001(\t\022\030\n\tsendAllTm\030\005 \001(\010:\005fa" +
-      "lse\022&\n\010tmPacket\030\006 \003(\0132\024.yamcs.NamedObjec",
-      "tId\022\030\n\tsendAllPp\030\007 \001(\010:\005false\022%\n\007ppGroup" +
-      "\030\010 \003(\0132\024.yamcs.NamedObjectId\022$\n\025sendComp" +
-      "letenessIndex\030\t \001(\010:\005false\022\031\n\nsendAllCmd" +
-      "\030\n \001(\010:\005false\022%\n\007cmdName\030\013 \003(\0132\024.yamcs.N" +
-      "amedObjectId\022\033\n\014sendAllEvent\030\014 \001(\010:\005fals" +
-      "e\022)\n\013eventSource\030\r \003(\0132\024.yamcs.NamedObje" +
-      "ctId\022\021\n\tmergeTime\030\020 \001(\r\"i\n\rArchiveRecord" +
-      "\022 \n\002id\030\001 \002(\0132\024.yamcs.NamedObjectId\022\r\n\005fi" +
-      "rst\030\002 \002(\003\022\014\n\004last\030\003 \002(\003\022\013\n\003num\030\004 \002(\005\022\014\n\004" +
-      "info\030\005 \001(\t\"g\n\013IndexResult\022\020\n\010instance\030\001 ",
-      "\002(\t\022%\n\007records\030\002 \003(\0132\024.yamcs.ArchiveReco" +
-      "rd\022\014\n\004type\030\003 \001(\t\022\021\n\ttableName\030\004 \001(\t\";\n\nT" +
-      "agRequest\022\020\n\010instance\030\001 \002(\t\022\r\n\005start\030\002 \001" +
-      "(\003\022\014\n\004stop\030\003 \001(\003\"g\n\nArchiveTag\022\n\n\002id\030\001 \001" +
-      "(\005\022\014\n\004name\030\002 \002(\t\022\r\n\005start\030\003 \001(\003\022\014\n\004stop\030" +
-      "\004 \001(\003\022\023\n\013description\030\005 \001(\t\022\r\n\005color\030\006 \001(" +
-      "\t\"=\n\tTagResult\022\020\n\010instance\030\001 \002(\t\022\036\n\003tag\030" +
-      "\002 \003(\0132\021.yamcs.ArchiveTag\"X\n\020UpsertTagReq" +
-      "uest\022!\n\006oldTag\030\001 \001(\0132\021.yamcs.ArchiveTag\022" +
-      "!\n\006newTag\030\002 \002(\0132\021.yamcs.ArchiveTag\"2\n\020De",
-      "leteTagRequest\022\036\n\003tag\030\003 \002(\0132\021.yamcs.Arch" +
-      "iveTag\"\212\001\n\013ReplaySpeed\0220\n\004type\030\001 \002(\0162\".y" +
-      "amcs.ReplaySpeed.ReplaySpeedType\022\r\n\005para" +
-      "m\030\002 \001(\002\":\n\017ReplaySpeedType\022\010\n\004AFAP\020\001\022\017\n\013" +
-      "FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003\"\271\003\n\rReplayRe" +
-      "quest\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010ut" +
-      "cStart\030\r \001(\t\022\017\n\007utcStop\030\016 \001(\t\022)\n\tendActi" +
-      "on\030\003 \001(\0162\020.yamcs.EndAction:\004QUIT\022!\n\005spee" +
-      "d\030\004 \001(\0132\022.yamcs.ReplaySpeed\022\017\n\007reverse\030\017" +
-      " \001(\010\0227\n\020parameterRequest\030\010 \001(\0132\035.yamcs.P",
-      "arameterReplayRequest\0221\n\rpacketRequest\030\t" +
-      " \001(\0132\032.yamcs.PacketReplayRequest\022/\n\014even" +
-      "tRequest\030\n \001(\0132\031.yamcs.EventReplayReques" +
-      "t\022A\n\025commandHistoryRequest\030\013 \001(\0132\".yamcs" +
-      ".CommandHistoryReplayRequest\022)\n\tppReques" +
-      "t\030\014 \001(\0132\026.yamcs.PpReplayRequest\"|\n\026Param" +
-      "eterReplayRequest\022(\n\nnameFilter\030\001 \003(\0132\024." +
-      "yamcs.NamedObjectId\022\026\n\007sendRaw\030\002 \001(\010:\005fa" +
-      "lse\022 \n\021performMonitoring\030\003 \001(\010:\005false\"?\n" +
-      "\023PacketReplayRequest\022(\n\nnameFilter\030\001 \003(\013",
-      "2\024.yamcs.NamedObjectId\"\024\n\022EventReplayReq" +
-      "uest\"G\n\033CommandHistoryReplayRequest\022(\n\nn" +
-      "ameFilter\030\001 \003(\0132\024.yamcs.NamedObjectId\"D\n" +
-      "\017PpReplayRequest\022\027\n\017groupNameFilter\030\001 \003(" +
-      "\t\022\030\n\020groupNameExclude\030\002 \003(\t\"\333\001\n\014ReplaySt" +
-      "atus\022.\n\005state\030\001 \002(\0162\037.yamcs.ReplayStatus" +
-      ".ReplayState\022%\n\007request\030\002 \001(\0132\024.yamcs.Re" +
-      "playRequest\022\024\n\014errorMessage\030\003 \001(\t\"^\n\013Rep" +
-      "layState\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUNNING\020" +
-      "\001\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n",
-      "\006CLOSED\020\005\"\207\001\n\014TmPacketData\022\025\n\rreceptionT" +
-      "ime\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016generationT" +
-      "ime\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022 \n\002id\030" +
-      "\005 \001(\0132\024.yamcs.NamedObjectId\"7\n\010TimeInfo\022" +
-      "\023\n\013currentTime\030\001 \001(\003\022\026\n\016currentTimeUTC\030\002" +
-      " \001(\t\"\341\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016genera" +
-      "tionTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n" +
-      "\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007messag" +
-      "e\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.yamcs.Event." +
-      "EventSeverity:\004INFO\022\031\n\021generationTimeUTC",
-      "\030\010 \001(\t\022\030\n\020receptionTimeUTC\030\t \001(\t\022\021\n\tcrea" +
-      "tedBy\030\n \001(\t\"d\n\rEventSeverity\022\010\n\004INFO\020\000\022\013" +
-      "\n\007WARNING\020\001\022\t\n\005ERROR\020\002\022\t\n\005WATCH\020\003\022\014\n\010DIS" +
-      "TRESS\020\005\022\014\n\010CRITICAL\020\006\022\n\n\006SEVERE\020\007*\005\010d\020\221N" +
-      "\"!\n\021ProcessorTypeInfo\022\014\n\004type\030\001 \003(\t*)\n\tE" +
-      "ndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*\357" +
-      "\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_" +
-      "CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT" +
-      "\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r" +
-      "\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCES",
-      "SOR_INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PROCESSIN" +
-      "G_STATISTICS\020\014\022\017\n\013STREAM_DATA\020\r\022\016\n\nALARM" +
-      "_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK_EVENT\020\020\022\026" +
-      "\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023COMMAND_QUEUE_" +
-      "EVENT\020\022\022\023\n\017CONNECTION_INFO\020\023\022\022\n\016EXTENSIO" +
-      "N_DATA\020dB\024\n\022org.yamcs.protobuf"
+      "\020\007\022\n\n\006SINT64\020\010\022\013\n\007BOOLEAN\020\t\022\r\n\tAGGREGATE" +
+      "\020\n\022\t\n\005ARRAY\020\013\"0\n\rNamedObjectId\022\014\n\004name\030\001" +
+      " \002(\t\022\021\n\tnamespace\030\002 \001(\t\"5\n\017NamedObjectLi" +
+      "st\022\"\n\004list\030\001 \003(\0132\024.yamcs.NamedObjectId\"\300" +
+      "\003\n\014IndexRequest\022\020\n\010instance\030\001 \002(\t\022\r\n\005sta" +
+      "rt\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\020\n\010utcStart\030\016 \001(\t" +
+      "\022\017\n\007utcStop\030\017 \001(\t\022\030\n\020defaultNamespace\030\004 " +
+      "\001(\t\022\030\n\tsendAllTm\030\005 \001(\010:\005false\022&\n\010tmPacke",
+      "t\030\006 \003(\0132\024.yamcs.NamedObjectId\022\030\n\tsendAll" +
+      "Pp\030\007 \001(\010:\005false\022%\n\007ppGroup\030\010 \003(\0132\024.yamcs" +
+      ".NamedObjectId\022$\n\025sendCompletenessIndex\030" +
+      "\t \001(\010:\005false\022\031\n\nsendAllCmd\030\n \001(\010:\005false\022" +
+      "%\n\007cmdName\030\013 \003(\0132\024.yamcs.NamedObjectId\022\033" +
+      "\n\014sendAllEvent\030\014 \001(\010:\005false\022)\n\013eventSour" +
+      "ce\030\r \003(\0132\024.yamcs.NamedObjectId\022\021\n\tmergeT" +
+      "ime\030\020 \001(\r\"i\n\rArchiveRecord\022 \n\002id\030\001 \002(\0132\024" +
+      ".yamcs.NamedObjectId\022\r\n\005first\030\002 \002(\003\022\014\n\004l" +
+      "ast\030\003 \002(\003\022\013\n\003num\030\004 \002(\005\022\014\n\004info\030\005 \001(\t\"g\n\013",
+      "IndexResult\022\020\n\010instance\030\001 \002(\t\022%\n\007records" +
+      "\030\002 \003(\0132\024.yamcs.ArchiveRecord\022\014\n\004type\030\003 \001" +
+      "(\t\022\021\n\ttableName\030\004 \001(\t\";\n\nTagRequest\022\020\n\010i" +
+      "nstance\030\001 \002(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001" +
+      "(\003\"g\n\nArchiveTag\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \002" +
+      "(\t\022\r\n\005start\030\003 \001(\003\022\014\n\004stop\030\004 \001(\003\022\023\n\013descr" +
+      "iption\030\005 \001(\t\022\r\n\005color\030\006 \001(\t\"=\n\tTagResult" +
+      "\022\020\n\010instance\030\001 \002(\t\022\036\n\003tag\030\002 \003(\0132\021.yamcs." +
+      "ArchiveTag\"X\n\020UpsertTagRequest\022!\n\006oldTag" +
+      "\030\001 \001(\0132\021.yamcs.ArchiveTag\022!\n\006newTag\030\002 \002(",
+      "\0132\021.yamcs.ArchiveTag\"2\n\020DeleteTagRequest" +
+      "\022\036\n\003tag\030\003 \002(\0132\021.yamcs.ArchiveTag\"\212\001\n\013Rep" +
+      "laySpeed\0220\n\004type\030\001 \002(\0162\".yamcs.ReplaySpe" +
+      "ed.ReplaySpeedType\022\r\n\005param\030\002 \001(\002\":\n\017Rep" +
+      "laySpeedType\022\010\n\004AFAP\020\001\022\017\n\013FIXED_DELAY\020\002\022" +
+      "\014\n\010REALTIME\020\003\"\271\003\n\rReplayRequest\022\r\n\005start" +
+      "\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010utcStart\030\r \001(\t\022\017" +
+      "\n\007utcStop\030\016 \001(\t\022)\n\tendAction\030\003 \001(\0162\020.yam" +
+      "cs.EndAction:\004QUIT\022!\n\005speed\030\004 \001(\0132\022.yamc" +
+      "s.ReplaySpeed\022\017\n\007reverse\030\017 \001(\010\0227\n\020parame",
+      "terRequest\030\010 \001(\0132\035.yamcs.ParameterReplay" +
+      "Request\0221\n\rpacketRequest\030\t \001(\0132\032.yamcs.P" +
+      "acketReplayRequest\022/\n\014eventRequest\030\n \001(\013" +
+      "2\031.yamcs.EventReplayRequest\022A\n\025commandHi" +
+      "storyRequest\030\013 \001(\0132\".yamcs.CommandHistor" +
+      "yReplayRequest\022)\n\tppRequest\030\014 \001(\0132\026.yamc" +
+      "s.PpReplayRequest\"|\n\026ParameterReplayRequ" +
+      "est\022(\n\nnameFilter\030\001 \003(\0132\024.yamcs.NamedObj" +
+      "ectId\022\026\n\007sendRaw\030\002 \001(\010:\005false\022 \n\021perform" +
+      "Monitoring\030\003 \001(\010:\005false\"?\n\023PacketReplayR",
+      "equest\022(\n\nnameFilter\030\001 \003(\0132\024.yamcs.Named" +
+      "ObjectId\"\024\n\022EventReplayRequest\"G\n\033Comman" +
+      "dHistoryReplayRequest\022(\n\nnameFilter\030\001 \003(" +
+      "\0132\024.yamcs.NamedObjectId\"D\n\017PpReplayReque" +
+      "st\022\027\n\017groupNameFilter\030\001 \003(\t\022\030\n\020groupName" +
+      "Exclude\030\002 \003(\t\"\333\001\n\014ReplayStatus\022.\n\005state\030" +
+      "\001 \002(\0162\037.yamcs.ReplayStatus.ReplayState\022%" +
+      "\n\007request\030\002 \001(\0132\024.yamcs.ReplayRequest\022\024\n" +
+      "\014errorMessage\030\003 \001(\t\"^\n\013ReplayState\022\022\n\016IN" +
+      "ITIALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007STOPPED\020\002",
+      "\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOSED\020\005\"\207\001\n\014" +
+      "TmPacketData\022\025\n\rreceptionTime\030\001 \002(\003\022\016\n\006p" +
+      "acket\030\002 \002(\014\022\026\n\016generationTime\030\003 \001(\003\022\026\n\016s" +
+      "equenceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(\0132\024.yamcs." +
+      "NamedObjectId\"7\n\010TimeInfo\022\023\n\013currentTime" +
+      "\030\001 \001(\003\022\026\n\016currentTimeUTC\030\002 \001(\t\"\341\002\n\005Event" +
+      "\022\016\n\006source\030\001 \002(\t\022\026\n\016generationTime\030\002 \002(\003" +
+      "\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n\tseqNumber\030\004 \002" +
+      "(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007message\030\006 \002(\t\0222\n\010sev" +
+      "erity\030\007 \001(\0162\032.yamcs.Event.EventSeverity:",
+      "\004INFO\022\031\n\021generationTimeUTC\030\010 \001(\t\022\030\n\020rece" +
+      "ptionTimeUTC\030\t \001(\t\022\021\n\tcreatedBy\030\n \001(\t\"d\n" +
+      "\rEventSeverity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n" +
+      "\005ERROR\020\002\022\t\n\005WATCH\020\003\022\014\n\010DISTRESS\020\005\022\014\n\010CRI" +
+      "TICAL\020\006\022\n\n\006SEVERE\020\007*\005\010d\020\221N\"!\n\021ProcessorT" +
+      "ypeInfo\022\014\n\004type\030\001 \003(\t*)\n\tEndAction\022\010\n\004LO" +
+      "OP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*\357\002\n\rProtoDataTy" +
+      "pe\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM" +
+      "_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_" +
+      "INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022",
+      "\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013" +
+      "CLIENT_INFO\020\013\022\031\n\025PROCESSING_STATISTICS\020\014" +
+      "\022\017\n\013STREAM_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIM" +
+      "E_INFO\020\017\022\016\n\nLINK_EVENT\020\020\022\026\n\022COMMAND_QUEU" +
+      "E_INFO\020\021\022\027\n\023COMMAND_QUEUE_EVENT\020\022\022\023\n\017CON" +
+      "NECTION_INFO\020\023\022\022\n\016EXTENSION_DATA\020dB\024\n\022or" +
+      "g.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

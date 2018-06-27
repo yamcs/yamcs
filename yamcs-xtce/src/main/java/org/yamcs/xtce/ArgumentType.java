@@ -7,7 +7,7 @@ import java.util.List;
  * @author nm
  *
  */
-public interface ArgumentType {
+public interface ArgumentType extends DataType {
     /**
      * String which represents the type.
      * This string will be presented to the users of the system.

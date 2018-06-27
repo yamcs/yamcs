@@ -18,6 +18,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.InputParameter;
@@ -26,6 +27,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtceproc.DataEncodingDecoder;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
+import org.yamcs.xtceproc.ParameterTypeUtils;
 
 import com.google.protobuf.ByteString;
 
@@ -142,8 +144,11 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding) {
         ParameterValue pval = new ParameterValue(parameter);
         ParameterType ptype = parameter.getParameterType();
+        DataEncoding de = null; 
 
-        DataEncoding de = ptype.getEncoding();
+        if(ptype instanceof BaseDataType) {
+            de = ((BaseDataType) ptype).getEncoding();
+        }
         if (de != null) {
             Value v = DataEncodingDecoder.getRawValue(de, binding.value);
             if(v==null) {
@@ -155,7 +160,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
                 parameterTypeProcessor.calibrate(pval);
             }
         } else {
-            Value v = ParameterTypeProcessor.getEngValue(ptype, binding.value);
+            Value v = ParameterTypeUtils.getEngValue(ptype, binding.value);
             if(v==null) {
                 eventProducer.sendWarning(getAlgorithm().getName(), "Cannot convert eng value from algorithm output "
                         + "'"+binding.value+"' of type "+binding.value.getClass()+" into "+ptype);

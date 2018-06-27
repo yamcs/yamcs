@@ -852,7 +852,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                     // add new leaf to the structure tree
                     // parameters become leaves, and sequence containers become nodes recursively
 
-                    getTreeNode(value.getParameterEntry().getSequenceContainer()).add(new TreeEntry(value));
+                    getTreeNode(value.getSequenceEntry().getSequenceContainer()).add(new TreeEntry(value));
 
                     // add new row for parameter table
 

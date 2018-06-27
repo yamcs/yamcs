@@ -1,42 +1,43 @@
 package org.yamcs.xtceproc;
 
 import java.nio.ByteBuffer;
-import java.util.List;
 
+import org.python.bouncycastle.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.UnsignedLong;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
+import org.yamcs.xtce.AggregateParameterType;
+import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.CriteriaEvaluator;
-import org.yamcs.xtce.EnumeratedArgumentType;
+import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatParameterType;
-import org.yamcs.xtce.FloatValidRange;
-import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerParameterType;
-import org.yamcs.xtce.IntegerRange;
-import org.yamcs.xtce.IntegerValidRange;
-import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.Member;
+import org.yamcs.xtce.NumericDataEncoding;
+import org.yamcs.xtce.NumericDataType;
+import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TimeEpoch.CommonEpochs;
-import org.yamcs.xtce.ValueEnumeration;
 
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.primitives.UnsignedLongs;
 
 /**
  * Responsible for converting between raw and engineering value by usage of calibrators or by simple type conversions.
@@ -47,255 +48,330 @@ import com.google.common.primitives.UnsignedLongs;
  */
 public class ParameterTypeProcessor {
     ProcessorData pdata;
-    static Logger log=LoggerFactory.getLogger(ParameterTypeProcessor.class.getName());
+    static Logger log = LoggerFactory.getLogger(ParameterTypeProcessor.class.getName());
 
     public ParameterTypeProcessor(ProcessorData pdata) {
         this.pdata = pdata;
     }
 
-    static Multimap<Class<? extends ParameterType>, org.yamcs.protobuf.Yamcs.Value.Type> allowedAssignments =
-            new ImmutableSetMultimap.Builder<Class<? extends ParameterType>, org.yamcs.protobuf.Yamcs.Value.Type>()
-            .putAll(BinaryParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.BINARY)
-            .putAll(BooleanParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.BOOLEAN)
-            .putAll(EnumeratedParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.STRING)
-            .putAll(FloatParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.FLOAT, org.yamcs.protobuf.Yamcs.Value.Type.DOUBLE)
-            .putAll(IntegerParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.UINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT32, org.yamcs.protobuf.Yamcs.Value.Type.SINT64, org.yamcs.protobuf.Yamcs.Value.Type.UINT64)
-            .putAll(StringParameterType.class, org.yamcs.protobuf.Yamcs.Value.Type.STRING)
-            .build();
-
     /**
-     * Sets the value of a pval, based on the raw value and the applicable calibrator
-     * @param pval 
+     * Sets the value of a pval, based on the raw value, the applicable calibrator and the expected parameter type
+     * 
+     * @param pval
      */
     public void calibrate(ContainerProcessingContext pcontext, ParameterValue pval) {
-        doCalibrate(pcontext.result.params, pcontext.criteriaEvaluator, pval, pval.getParameter().getParameterType());
-    }
-    public void calibrate(ParameterValue pval) {
-        doCalibrate(null, null, pval, pval.getParameter().getParameterType());
-    }
-
-    private void doCalibrate(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, ParameterValue pval, ParameterType ptype) {
-        if (ptype instanceof EnumeratedParameterType) {
-            calibrateEnumerated((EnumeratedParameterType) ptype, pval);
-        } else if (ptype instanceof IntegerParameterType) {
-            calibrateInteger(contextEvaluator, (IntegerParameterType) ptype, pval);
-        } else if (ptype instanceof FloatParameterType) {
-            calibrateFloat(contextEvaluator, (FloatParameterType) ptype, pval);
-        } else if (ptype instanceof BinaryParameterType) {
-            calibrateBinary((BinaryParameterType) ptype, pval);
-        } else if (ptype instanceof StringParameterType) {
-            calibrateString((StringParameterType) ptype, pval);
-        } else if (ptype instanceof BooleanParameterType) {
-            calibrateBoolean((BooleanParameterType) ptype, pval);
-        } else if (ptype instanceof AbsoluteTimeParameterType) {
-            calibrateAbsoluteTime(pvalues, (AbsoluteTimeParameterType) ptype, pval);
+        Value engValue = doCalibrate(pcontext.result.params, pcontext.criteriaEvaluator, pval.getParameter().getParameterType(), pval.getRawValue());
+        if(engValue!=null) {
+            pval.setEngineeringValue(engValue);
         } else {
-            throw new IllegalArgumentException("Extraction of "+ptype+" not implemented");
+            pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
         }
     }
 
+    public void calibrate(ParameterValue pval) {
+        Value engValue = doCalibrate(null, null, pval.getParameter().getParameterType(), pval.getRawValue());
+        if(engValue!=null) {
+            pval.setEngineeringValue(engValue);
+        } else {
+            pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+        }
+    }
 
-    private static void calibrateEnumerated(EnumeratedParameterType ept, ParameterValue pval) {
-        Value rawValue = pval.getRawValue();
-        if (rawValue.getType() == Type.UINT32) {
-            pval.setStringValue(ept.calibrate(rawValue.getUint32Value()));
-        } else if (rawValue.getType() == Type.UINT64) {
-            pval.setStringValue(ept.calibrate(rawValue.getUint64Value()));
-        } else if (rawValue.getType() == Type.SINT32) {
-            pval.setStringValue(ept.calibrate(rawValue.getSint32Value()));
-        } else if (rawValue.getType() == Type.SINT64) {
-            pval.setStringValue(ept.calibrate(rawValue.getSint64Value()));
-        }  else if (rawValue.getType() == Type.FLOAT) { // added for obcp simulator
-            pval.setStringValue(ept.calibrate((long)rawValue.getFloatValue()));
-        } else if (rawValue.getType() == Type.STRING) {
+    private Value doCalibrate(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, ParameterType ptype, Value rawValue) {
+        Value engValue;
+
+        if (ptype instanceof EnumeratedParameterType) {
+            engValue = calibrateEnumerated((EnumeratedParameterType) ptype, rawValue);
+        } else if (ptype instanceof IntegerParameterType) {
+            engValue = calibrateInteger(contextEvaluator, (IntegerParameterType) ptype, rawValue);
+        } else if (ptype instanceof FloatParameterType) {
+            engValue = calibrateFloat(contextEvaluator, (FloatParameterType) ptype, rawValue);
+        } else if (ptype instanceof BinaryParameterType) {
+            engValue = calibrateBinary((BinaryParameterType) ptype, rawValue);
+        } else if (ptype instanceof StringParameterType) {
+            engValue = calibrateString((StringParameterType) ptype, rawValue);
+        } else if (ptype instanceof BooleanParameterType) {
+            engValue = calibrateBoolean((BooleanParameterType) ptype, rawValue);
+        } else if (ptype instanceof AbsoluteTimeParameterType) {
+            engValue = calibrateAbsoluteTime(pvalues, (AbsoluteTimeParameterType) ptype, rawValue);
+        } else if (ptype instanceof AggregateParameterType) {
+            engValue = calibrateAggregate(pvalues, contextEvaluator, (AggregateParameterType) ptype, (AggregateValue) rawValue);
+        } else if (ptype instanceof ArrayParameterType) {
+            engValue = calibrateArray(pvalues, contextEvaluator, (ArrayParameterType) ptype, (ArrayValue) rawValue);
+        } else {
+            throw new IllegalArgumentException("Extraction of " + ptype + " not implemented");
+        }
+        return engValue;
+       
+    }
+
+    private static Value calibrateEnumerated(EnumeratedParameterType ept, Value rawValue) {
+        switch (rawValue.getType()) {
+        case UINT32:
+            return ValueUtility.getStringValue(ept.calibrate(rawValue.getUint32Value()));
+        case UINT64:
+            return ValueUtility.getStringValue(ept.calibrate(rawValue.getUint64Value()));
+        case SINT32:
+            return ValueUtility.getStringValue(ept.calibrate(rawValue.getSint32Value()));
+        case SINT64:
+            return ValueUtility.getStringValue(ept.calibrate(rawValue.getSint64Value()));
+        case FLOAT:
+            return ValueUtility.getStringValue(ept.calibrate((long) rawValue.getFloatValue()));
+        case DOUBLE:
+            return ValueUtility.getStringValue(ept.calibrate((long) rawValue.getDoubleValue()));
+        case STRING:
             try {
                 long l = Long.decode(rawValue.getStringValue());
-                pval.setStringValue(ept.calibrate(l));
+                return ValueUtility.getStringValue(ept.calibrate(l));
             } catch (NumberFormatException e) {
                 log.warn("{}: failed to parse string '{}' to long", ept.getName(), rawValue.getStringValue());
-                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+                return null;
             }
-        } else {
-            throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be calibrated as an enumeration");
+        case BINARY:
+            byte[] b = rawValue.getBinaryValue();
+            long l = binaryToLong(b);
+            return ValueUtility.getStringValue(ept.calibrate(l));
+        default:
+            throw new IllegalStateException(
+                    "Unsupported raw value type '" + rawValue.getType() + "' cannot be calibrated as an enumeration");
         }
     }
 
-    private static void calibrateBoolean(BooleanParameterType bpt, ParameterValue pval) {
-        Value rawValue = pval.getRawValue();
-        if(ValueUtility.processAsLong(rawValue, l -> {
-            pval.setBooleanValue(l != 0);            
-        })) return;
-        
-        if(ValueUtility.processAsDouble1(rawValue, d -> {
-            pval.setBooleanValue(d != 0);            
-        })) return;
-        
-        if (rawValue.getType() == Type.STRING) {
-            pval.setBooleanValue(rawValue.getStringValue() != null && !rawValue.getStringValue().isEmpty());
-        } else if (rawValue.getType() == Type.BOOLEAN) {
-            pval.setBooleanValue(rawValue.getBooleanValue());
-        } else if (rawValue.getType() == Type.BINARY) {
+    /*
+     * encode the most significant 8 bytes of b to a long
+     */
+    private static long binaryToLong(byte[] b) {
+        byte[] b1 = b;
+        if(b.length<8) {
+           b1 = new byte[8];
+           System.arraycopy(b, 0, b1, 8-b.length, b.length);
+        }
+        return ByteArrayUtils.decodeLong(b1, 0);
+    }
+
+    private static Value calibrateBoolean(BooleanParameterType bpt, Value rawValue) {
+        switch (rawValue.getType()) {
+        case SINT32:
+            return ValueUtility.getBooleanValue(rawValue.getSint32Value() != 0);
+        case SINT64:
+            return ValueUtility.getBooleanValue(rawValue.getSint64Value() != 0);
+        case UINT32:
+            return ValueUtility.getBooleanValue(rawValue.getUint32Value() != 0);
+        case UINT64:
+            return ValueUtility.getBooleanValue(rawValue.getUint64Value() != 0);
+        case FLOAT:
+            return ValueUtility.getBooleanValue(rawValue.getFloatValue() != 0);
+        case DOUBLE:
+            return ValueUtility.getBooleanValue(rawValue.getDoubleValue() != 0);
+        case STRING:
+            return ValueUtility
+                    .getBooleanValue(rawValue.getStringValue() != null && !rawValue.getStringValue().isEmpty());
+        case BOOLEAN:
+            return rawValue;
+        case BINARY:
             ByteBuffer buf = ByteBuffer.wrap(rawValue.getBinaryValue());
-            pval.setBooleanValue(false);
-            while(buf.hasRemaining()) {
-                if(buf.get()!=0xFF) {
-                    pval.setBooleanValue(true);
+            boolean b = false;
+            while (buf.hasRemaining()) {
+                if (buf.get() != 0xFF) {
+                    b = true;
                     break;
                 }
             }
-        } else {
-            throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be calibrated as a boolean");
+            return ValueUtility.getBooleanValue(b);
+        default:
+            throw new IllegalStateException(
+                    "Unsupported raw value type '" + rawValue.getType() + "' cannot be calibrated as a boolean");
         }
     }
 
-    private static void calibrateBinary(BinaryParameterType bpt, ParameterValue pval) {
-        pval.setEngineeringValue(pval.getRawValue());
+    private static Value calibrateBinary(BinaryParameterType bpt, Value rawValue) {
+        return rawValue;
     }
 
-    private void calibrateInteger(CriteriaEvaluator contextEvaluator, IntegerParameterType ipt, ParameterValue pval) {
-        Value rawValue = pval.getRawValue();
-        if(ValueUtility.processAsLong(rawValue, l -> {
-            doIntegerCalibration(contextEvaluator, ipt, pval, l);           
-        })) return;
-        
-        if(ValueUtility.processAsDouble1(rawValue, d -> {
-            doIntegerCalibration(contextEvaluator, ipt, pval, (long)d);            
-        })) return;
-       
-        if (rawValue.getType() == Type.STRING) {
+    private Value calibrateInteger(CriteriaEvaluator contextEvaluator, IntegerParameterType ipt, Value rawValue) {
+        if(!hasCalibrator(ipt) && ipt.getValueType() == rawValue.getType()) {
+            return rawValue;
+        }
+        switch (rawValue.getType()) {
+        case SINT32:
+            return doIntegerCalibration(contextEvaluator, ipt, rawValue.getSint32Value());
+        case SINT64:
+            return doIntegerCalibration(contextEvaluator, ipt, rawValue.getSint64Value());
+        case UINT32:
+            return doIntegerCalibration(contextEvaluator, ipt, rawValue.getUint32Value() & 0xFFFFFFFFL);
+        case UINT64:
+            return doIntegerCalibration(contextEvaluator, ipt, rawValue.getUint64Value());
+        case FLOAT:
+            return doIntegerCalibration(contextEvaluator, ipt, (long) rawValue.getFloatValue());
+        case DOUBLE:
+            return doIntegerCalibration(contextEvaluator, ipt, (long) rawValue.getDoubleValue());
+        case STRING:
             try {
                 long l = Long.decode(rawValue.getStringValue());
-                doIntegerCalibration(contextEvaluator, ipt, pval, l);
+                return doIntegerCalibration(contextEvaluator, ipt, l);
             } catch (NumberFormatException e) {
                 log.warn("{}: failed to parse string '{}' to long", ipt.getName(), rawValue.getStringValue());
-                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+                return null;
             }
-        } else {
-            throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be converted to integer");
+        default:
+            throw new IllegalStateException(
+                    "Unsupported raw value type '" + rawValue.getType() + "' cannot be converted to integer");
         }
     }
 
-    private void doIntegerCalibration(CriteriaEvaluator contextEvaluator, IntegerParameterType ipt, ParameterValue pval, long longValue) {
+    private boolean hasCalibrator(NumericParameterType npt) {
+        DataEncoding encoding = npt.getEncoding();
+        if(encoding==null) {
+            return false;
+        }
+        if(encoding instanceof NumericDataEncoding) {
+            NumericDataEncoding nde = (NumericDataEncoding) encoding;
+            return nde.getContextCalibratorList()!=null || nde.getDefaultCalibrator()!=null;
+        } else {
+            return false;
+        }
+    }
+
+    private Value doIntegerCalibration(CriteriaEvaluator contextEvaluator, IntegerParameterType ipt, long longValue) {
         CalibratorProc calibrator = pdata.getCalibrator(contextEvaluator, ipt.getEncoding());
 
-        long longCalValue = (calibrator == null) ? longValue: (long)calibrator.calibrate(longValue);
+        long longCalValue = (calibrator == null) ? longValue : (long) calibrator.calibrate(longValue);
 
         if (ipt.getSizeInBits() <= 32) {
             if (ipt.isSigned())
-                pval.setSignedIntegerValue((int) longCalValue);
+                return ValueUtility.getSint32Value((int) longCalValue);
             else
-                pval.setUnsignedIntegerValue((int) longCalValue);
+                return ValueUtility.getUint32Value((int) longCalValue);
         } else {
             if (ipt.isSigned())
-                pval.setSignedLongValue(longCalValue);
+                return ValueUtility.getSint64Value(longCalValue);
             else
-                pval.setUnsignedLongValue(longCalValue);
+                return ValueUtility.getUint64Value(longCalValue);
         }
     }
 
-    private static void calibrateString(StringParameterType spt, ParameterValue pval) {
-        Value rawValue = pval.getRawValue();
-        if(rawValue.getType() == Type.STRING) {
-            pval.setEngineeringValue(rawValue);
+    private static Value calibrateString(StringParameterType spt, Value rawValue) {
+        if (rawValue.getType() == Type.STRING) {
+            return rawValue;
         } else {
-            throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be converted to string");
+            throw new IllegalStateException(
+                    "Unsupported raw value type '" + rawValue.getType() + "' cannot be converted to string");
         }
     }
 
-    private void calibrateFloat(CriteriaEvaluator contextEvaluator, FloatParameterType ptype, ParameterValue pval) {
-        Value rawValue = pval.getRawValue();
-        
-        if(ValueUtility.processAsDouble(rawValue, d -> {
-            doFloatCalibration(contextEvaluator, ptype, d, pval);
-        })) return;
-            
-            
-        if(rawValue.getType() == Type.STRING) {
+    private Value calibrateFloat(CriteriaEvaluator contextEvaluator, FloatParameterType ptype, Value rawValue) {
+        if(!hasCalibrator(ptype) && ptype.getValueType() == rawValue.getType()) {
+            return rawValue;
+        }
+        switch (rawValue.getType()) {
+        case DOUBLE:
+            return doFloatCalibration(contextEvaluator, ptype, rawValue.getDoubleValue());
+        case FLOAT:
+            return doFloatCalibration(contextEvaluator, ptype, rawValue.getFloatValue());
+        case SINT32:
+            return doFloatCalibration(contextEvaluator, ptype, rawValue.getSint32Value());
+        case SINT64:
+            return doFloatCalibration(contextEvaluator, ptype, rawValue.getSint64Value());
+        case UINT32:
+            return doFloatCalibration(contextEvaluator, ptype, rawValue.getUint32Value() & 0xFFFFFFFFL);
+        case UINT64:
+            return doFloatCalibration(contextEvaluator, ptype, UnsignedLong.toDouble(rawValue.getUint64Value()));
+        case STRING:
             try {
                 Double d = Double.parseDouble(rawValue.getStringValue());
-                doFloatCalibration(contextEvaluator, ptype, d, pval);
+                return doFloatCalibration(contextEvaluator, ptype, d);
             } catch (NumberFormatException e) {
                 log.warn("{}: failed to parse string '{}' to double", ptype.getName(), rawValue.getStringValue());
-                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+                return null;
             }
-        } else {
-            throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be converted to float");
+        default:
+            throw new IllegalStateException(
+                    "Unsupported raw value type '" + rawValue.getType() + "' cannot be converted to float");
         }
     }
 
-    private void doFloatCalibration(CriteriaEvaluator contextEvaluator, FloatParameterType ptype, double doubleValue, ParameterValue pval) {
+    private Value doFloatCalibration(CriteriaEvaluator contextEvaluator, FloatParameterType ptype, double doubleValue) {
         CalibratorProc calibrator = pdata.getCalibrator(contextEvaluator, ptype.getEncoding());
 
-        double doubleCalValue = (calibrator == null) ? doubleValue:calibrator.calibrate(doubleValue);
-        if(ptype.getSizeInBits() == 32) {
-            pval.setFloatValue((float) doubleCalValue);
+        double doubleCalValue = (calibrator == null) ? doubleValue : calibrator.calibrate(doubleValue);
+        if (ptype.getSizeInBits() == 32) {
+            return ValueUtility.getFloatValue((float) doubleCalValue);
         } else {
-            pval.setDoubleValue(doubleCalValue);
+            return ValueUtility.getDoubleValue(doubleCalValue);
         }
     }
 
-
-    private void calibrateAbsoluteTime(ParameterValueList context, AbsoluteTimeParameterType ptype, ParameterValue pval) {
+    private Value calibrateAbsoluteTime(ParameterValueList context, AbsoluteTimeParameterType ptype, Value rawValue) {
         ReferenceTime rtime = ptype.getReferenceTime();
         TimeEpoch epoch = rtime.getEpoch();
-        Value rawValue = pval.getRawValue();
-        long referenceTime = 0 ;
-        
-        if(epoch!=null) {
+        long referenceTime = 0;
+
+        if (epoch != null) {
             referenceTime = getEpochTime(epoch);
         } else {
             ParameterInstanceRef ref = rtime.getOffsetFrom();
-            if(ref!=null) {
-                referenceTime = getParaReferenceTime(context, pval.getParameter(), ref);
-                if(referenceTime==TimeEncoding.INVALID_INSTANT) {
-                    pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            if (ref != null) {
+                referenceTime = getParaReferenceTime(context, ptype, ref);
+                if (referenceTime == TimeEncoding.INVALID_INSTANT) {
+                    return null;
                 }
             } else {
                 log.warn("{}: cannot calibrate with a epoch without a reference", ptype.getName());
-                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+                return null;
             }
         }
         long rt = referenceTime;
-        
-        if(ValueUtility.processAsLong(rawValue, l -> {
-            pval.setEngineeringValue(ValueUtility.getTimestampValue(computeTime(ptype, rt, l)));
-        })) return;
-        
-        if(ValueUtility.processAsDouble1(rawValue, d -> {
-            pval.setEngineeringValue(ValueUtility.getTimestampValue(computeTime(ptype, rt, d)));
-        })) return;
-        
-        throw new IllegalStateException("Unsupported raw value type '"+rawValue.getType()+"' cannot be converted to absolute time");
+        switch (rawValue.getType()) {
+        case SINT32:
+            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getSint32Value()));
+        case SINT64:
+            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getSint64Value()));
+        case UINT32:
+            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getUint32Value() & 0xFFFFFFFFL));
+        case UINT64:
+            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getUint64Value()));
+        case FLOAT:
+            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getFloatValue()));
+        case DOUBLE:
+            return ValueUtility.getTimestampValue(computeTime(ptype, rt, rawValue.getDoubleValue()));
+        default:
+            throw new IllegalStateException(
+                    "Unsupported raw value type '" + rawValue.getType() + "' cannot be converted to absolute time");
+        }
     }
-    
+
     private long computeTime(AbsoluteTimeParameterType ptype, long epochMillisec, long offset) {
-        if(ptype.needsScaling()) {
-            return (long)(epochMillisec + 1000*ptype.getOffset() + 1000*ptype.getScale()*offset);
+        if (ptype.needsScaling()) {
+            return (long) (epochMillisec + 1000 * ptype.getOffset() + 1000 * ptype.getScale() * offset);
         } else {
-            return epochMillisec + 1000*offset;
+            return epochMillisec + 1000 * offset;
         }
     }
+
     private long computeTime(AbsoluteTimeParameterType ptype, long epochMillisec, double offset) {
-        if(ptype.needsScaling()) {
-            return (long)(epochMillisec + 1000*ptype.getOffset()+1000*ptype.getScale()*offset);
+        if (ptype.needsScaling()) {
+            return (long) (epochMillisec + 1000 * ptype.getOffset() + 1000 * ptype.getScale() * offset);
         } else {
-            return (long)(epochMillisec + 1000*offset);
+            return (long) (epochMillisec + 1000 * offset);
         }
     }
-    private long getParaReferenceTime(ParameterValueList context, Parameter p, ParameterInstanceRef ref) {
-        if(context==null) {
-            log.warn("{}: no parameter processing context avaialble", p.getQualifiedName());
+
+    private long getParaReferenceTime(ParameterValueList context, ParameterType ptype, ParameterInstanceRef ref) {
+        if (context == null) {
+            log.warn("{}: no parameter processing context avaialble", ptype.getName());
             return TimeEncoding.INVALID_INSTANT;
         }
         ParameterValue pv = context.getLastInserted(ref.getParameter());
-        if(pv==null) {
-            log.warn("{}: no instance of {} found in the processing context", p.getQualifiedName(), ref.getParameter().getQualifiedName());
+        if (pv == null) {
+            log.warn("{}: no instance of {} found in the processing context", ptype.getName(),
+                    ref.getParameter().getQualifiedName());
             return TimeEncoding.INVALID_INSTANT;
         }
         Value v = pv.getEngValue();
-        
-        if(v.getType() != Type.TIMESTAMP) {
-            log.warn("{}: instance {} is of type {} instead of required TIMESTAMP", p.getQualifiedName(), ref.getParameter().getQualifiedName(), v.getType());
+
+        if (v.getType() != Type.TIMESTAMP) {
+            log.warn("{}: instance {} is of type {} instead of required TIMESTAMP", ptype.getName(),
+                    ref.getParameter().getQualifiedName(), v.getType());
             return TimeEncoding.INVALID_INSTANT;
         }
         return v.getTimestampValue();
@@ -303,221 +379,70 @@ public class ParameterTypeProcessor {
 
     private long getEpochTime(TimeEpoch epoch) {
         CommonEpochs ce = epoch.getCommonEpoch();
-        
-        if(ce!=null) {
-            switch(ce) {
+
+        if (ce != null) {
+            switch (ce) {
             case GPS:
                 return TimeEncoding.fromGpsMillisec(0);
             case J2000:
                 return TimeEncoding.fromJ2000Millisec(0);
             case TAI:
-                 return TimeEncoding.fromTaiMillisec(0);
+                return TimeEncoding.fromTaiMillisec(0);
             case UNIX:
                 return TimeEncoding.fromUnixMillisec(0);
             default:
-                throw new IllegalStateException("Unknonw epoch "+ce);
+                throw new IllegalStateException("Unknonw epoch " + ce);
             }
         } else {
             return TimeEncoding.parse(epoch.getDateTime());
         }
     }
 
-    /**
-     * Checks that a value can be assigned to a parameter as enginnering value
-     * Throws an IllegalArgumentException if not
-     *
-     * @param p
-     * @param engValue
-     */
-    public static void checkEngValueAssignment(Parameter p, Value engValue) {
-        ParameterType ptype = p.getParameterType();
-        if(!allowedAssignments.containsEntry(ptype.getClass(), engValue.getType())) {
-            throw new IllegalArgumentException("Cannot assign "+ptype.getTypeAsString()+" from "+engValue.getType());
-        }
-    }
-    
-    public static Value parseString(ParameterType type, String paramValue) {
-        Value v;
-        if(type instanceof IntegerParameterType) {
-            IntegerParameterType intType = (IntegerParameterType) type;
-            if(intType.isSigned()) {
-                long l = Long.decode(paramValue);
-                IntegerValidRange vr = ((IntegerArgumentType)type).getValidRange();
-                if(vr!=null) {
-                    if(!ValidRangeChecker.checkIntegerRange(vr, l)) {
-                        throw new IllegalArgumentException("Value "+l+" is not in the range required for the type "+type);
-                    }
-                }
-                v = ValueUtility.getSint64Value(l);
-            } else {
-                long l = UnsignedLongs.decode(paramValue);
-                IntegerValidRange vr = ((IntegerParameterType)type).getValidRange();
-                if(vr!=null) {
-                    if(!ValidRangeChecker.checkUnsignedIntegerRange(vr, l)) {
-                        throw new IllegalArgumentException("Value "+l+" is not in the range required for the type "+type);
-                    }
-                }
-                v = ValueUtility.getUint64Value(l);
-            }
-            
-       } else if(type instanceof FloatParameterType) {
-            double d = Double.parseDouble(paramValue);
-            FloatValidRange vr = ((FloatParameterType)type).getValidRange();
-            if(vr!=null) {
-                if(!ValidRangeChecker.checkFloatRange(vr, d)) {
-                    throw new IllegalArgumentException("Value "+d+" is not in the range required for the type "+type);
-                }
-            }
-            v = ValueUtility.getDoubleValue(d);
-        } else if(type instanceof StringParameterType) {
-            v = ValueUtility.getStringValue(paramValue);
-            IntegerRange r = ((StringParameterType)type).getSizeRangeInCharacters();
-
-            if(r!=null) {
-                int length = paramValue.length();
-                if (length<r.getMinInclusive()) {
-                    throw new IllegalArgumentException("Value "+paramValue+" supplied for parameter fo type "+type+" does not satisfy minimum length of "+r.getMinInclusive());
-                }
-                if(length>r.getMaxInclusive()) {
-                    throw new IllegalArgumentException("Value "+paramValue+" supplied for parameter fo type "+type+" does not satisfy maximum length of "+r.getMaxInclusive());
-                }
-            }
-
-        } else if (type instanceof BinaryParameterType) {
-            byte[] b = StringConverter.hexStringToArray(paramValue);
-            v = ValueUtility.getBinaryValue(b);
-        } else if (type instanceof EnumeratedArgumentType) {
-            EnumeratedArgumentType enumType = (EnumeratedArgumentType)type;
-            List<ValueEnumeration> vlist = enumType.getValueEnumerationList();
-            boolean found =false;
-            for(ValueEnumeration ve:vlist) {
-                if(ve.getLabel().equals(paramValue)) {
-                    found = true;
-                }
-            }
-            if(!found) {
-                throw new IllegalArgumentException("Value '"+paramValue+"' supplied for enumeration argument cannot be found in enumeration list "+vlist);
-            }
-            v = ValueUtility.getStringValue(paramValue);
-        } else if (type instanceof BooleanParameterType) {
-            boolean b = Boolean.parseBoolean(paramValue);
-            v = ValueUtility.getBooleanValue(b);
-        } else {
-            throw new IllegalArgumentException("Cannot parse values of type "+type);
-        }
-        return v;
-    }
-
-    /**
-     * return the nominal Value.Type of a parameter of the given XTCE parameter type definition
-     */
-    public static org.yamcs.protobuf.Yamcs.Value.Type getEngType(ParameterType ptype) {
-        if(ptype instanceof IntegerParameterType) {
-            IntegerParameterType ipt = (IntegerParameterType)ptype;
-            if (ipt.getSizeInBits() <= 32) {
-                if (ipt.isSigned()) {
-                    return Type.SINT32;
+    private Value calibrateAggregate(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, AggregateParameterType ptype, AggregateValue rawValue) {
+        AggregateValue engValue = new AggregateValue();
+        for(Member m: ptype.getMemberList()) {
+            Value rv = rawValue.getMemberValue(m.getName());
+            if(rv!=null) {
+                Value ev = doCalibrate(pvalues, contextEvaluator, (ParameterType) m.getType(), rv);
+                if(ev!=null) {
+                    engValue.setValue(m.getName(), ev);
                 } else {
-                    return Type.UINT32;
+                    return null;
                 }
-            } else {
-                if (ipt.isSigned()) {
-                    return Type.SINT64;
-                } else {
-                    return Type.UINT64;
-                }
-            }
-        } else if(ptype instanceof FloatParameterType) {
-            FloatParameterType fpt = (FloatParameterType) ptype;
-            if(fpt.getSizeInBits()<=32) {
-                return Type.FLOAT;
-            } else {
-                return Type.DOUBLE;
-            }
-        } else if (ptype instanceof BooleanParameterType) {
-            return Type.BOOLEAN;
-        } else if (ptype instanceof BinaryParameterType) {
-            return Type.BINARY;
-        } else if (ptype instanceof StringParameterType) {
-            return Type.STRING;
-        } else if (ptype instanceof EnumeratedParameterType) {
-            return Type.STRING;
-        } else if (ptype instanceof AbsoluteTimeParameterType){
-            return Type.TIMESTAMP;
-        } else {
-            throw new IllegalStateException("Unknown parameter type '"+ptype+"'");
-        }
-    }
-    
-    /**
-     * Returns a Value corresponding to the java object and the parameter type or null if the parameter cannot be converted
-     * 
-     * Note that the operation may involve some casting and loss of precision (e.g. from long to int or double to float)
-     * @param ptype
-     * @param value
-     * @return
-     */
-    public static Value getEngValue(ParameterType ptype, Object value) {
-        if (ptype instanceof IntegerParameterType) {
-            return getEngIntegerValue((IntegerParameterType) ptype, value);
-        } else if (ptype instanceof FloatParameterType) {
-            return getEngFloatValue((FloatParameterType) ptype, value);
-        } else if (ptype instanceof StringParameterType) {
-            if (value instanceof String) {
-                return ValueUtility.getStringValue((String) value);
-            } else {
-              return null;
-            }
-        } else if (ptype instanceof BooleanParameterType) {
-            if (value instanceof Boolean) {
-                return ValueUtility.getBooleanValue((Boolean) value);
             } else {
                 return null;
             }
-        } else if (ptype instanceof BinaryParameterType) {
-            if (value instanceof byte[]) {
-                return ValueUtility.getBinaryValue((byte[]) value);
+        }
+        return engValue;
+    }
+    
+    private Value calibrateArray(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, ArrayParameterType ptype, ArrayValue rawValue) {
+        ParameterType engValueType = (ParameterType) ptype.getType();
+        boolean hasCalibrator = (engValueType instanceof NumericParameterType) && hasCalibrator((NumericParameterType) engValueType);
+        if(!hasCalibrator && rawValue.getElementType() == engValueType.getValueType()) {
+            return rawValue;
+        } 
+        int fl = rawValue.flatLength();
+        Value rv = rawValue.getElementValue(0);
+        Value ev = doCalibrate(pvalues, contextEvaluator, engValueType, rv);
+        if(ev == null) {
+            return null;
+        }
+        ArrayValue engValue = new ArrayValue(rawValue.getDimensions(), ev.getType());
+        engValue.setElementValue(0, ev);
+        for(int i = 1; i<fl; i++) {
+            rv = rawValue.getElementValue(i);
+            if(rv!=null) {
+                ev = doCalibrate(pvalues, contextEvaluator, engValueType, rv);
+                if(ev!=null) {
+                    engValue.setElementValue(i, ev);
+                } else {
+                    return null;
+                }
             } else {
                 return null;
             }
-        } else {
-            throw new IllegalStateException("Unknown parameter type '"+ptype+"'");
         }
+        return engValue;
     }
-
-    static Value getEngIntegerValue(IntegerParameterType ptype, Object value) {
-        long longValue;
-        if (value instanceof Number) {
-            longValue = ((Number) value).longValue();
-        } else {            
-            return null;
-        }
-        if (ptype.getSizeInBits() <= 32) {
-            if (ptype.isSigned()) {
-                return ValueUtility.getSint32Value((int)longValue);
-            } else {
-                return ValueUtility.getUint32Value((int) longValue);
-            }
-        } else {
-            if (ptype.isSigned()) {
-                return ValueUtility.getSint64Value(longValue);
-            } else {
-                return ValueUtility.getUint64Value(longValue);
-            }
-        }
-    }
-    static private Value getEngFloatValue(FloatParameterType ptype, Object value) {
-        double doubleValue;
-        if (value instanceof Number) {
-            doubleValue = ((Number) value).doubleValue();
-        } else {
-            return null;
-        }
-        if (ptype.getSizeInBits() <= 32) {
-            return ValueUtility.getFloatValue((float) doubleValue);
-        } else {
-            return ValueUtility.getDoubleValue(doubleValue);
-        }
-    }
-
 }

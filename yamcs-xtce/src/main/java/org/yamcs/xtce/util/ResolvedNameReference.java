@@ -1,4 +1,6 @@
-package org.yamcs.xtce;
+package org.yamcs.xtce.util;
+
+import org.yamcs.xtce.NameDescription;
 
 /**
  * Reference that is resolved since the beginning - it calls any action immediately.

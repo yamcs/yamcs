@@ -22,6 +22,7 @@ import org.yamcs.xtce.NamedDescriptionIndex;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
+import org.yamcs.xtceproc.ParameterTypeUtils;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -115,7 +116,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
             if (p == null) {
                 throw new IllegalArgumentException("Cannot find a local(software) parameter for '" + gpv.getId() + "'");
             }
-            ParameterTypeProcessor.checkEngValueAssignment(p, ValueUtility.fromGpb(gpv.getEngValue()));
+            ParameterTypeUtils.checkEngValueAssignment(p, ValueUtility.fromGpb(gpv.getEngValue()));
         }
         // then filter out the subscribed ones and send it to PRM
         executor.submit(() -> doUpdate(gpvList));
@@ -128,7 +129,7 @@ public class SoftwareParameterManager extends AbstractService implements Paramet
         if (p.getDataSource() != DataSource.LOCAL) {
             throw new IllegalArgumentException("DataSource of parameter " + p.getQualifiedName() + " is not local");
         }
-        ParameterTypeProcessor.checkEngValueAssignment(p, engValue);
+        ParameterTypeUtils.checkEngValueAssignment(p, engValue);
         executor.submit(() -> {
             ParameterValue pv = new ParameterValue(p);
             pv.setEngineeringValue(engValue);

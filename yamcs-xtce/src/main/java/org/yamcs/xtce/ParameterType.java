@@ -19,13 +19,6 @@ public interface ParameterType extends DataType {
     }
 
     /**
-     * String which represents the type.
-     * This string will be presented to the users of the system.
-     * @return
-     */
-    String getTypeAsString();
-
-    /**
      * Whether this ParameterType has any alarms associated
      */
     boolean hasAlarm();
