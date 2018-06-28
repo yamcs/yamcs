@@ -1,4 +1,4 @@
-package org.yamcs.xtce;
+package org.yamcs.xtce.xlsv6;
 
 import static org.junit.Assert.*;
 
@@ -28,7 +28,7 @@ public class SpreadsheetLoaderTest {
     public void setupXtceDb() {
         YConfiguration.setup("refmdb");
         XtceDbFactory.reset();
-        db = XtceDbFactory.getInstance("refmdb");
+        db = XtceDbFactory.getInstanceByConfig("refmdb", "refmdb-v6");
     }
     
     @Test

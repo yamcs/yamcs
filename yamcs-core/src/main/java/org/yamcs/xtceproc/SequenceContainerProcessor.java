@@ -99,7 +99,6 @@ public class SequenceContainerProcessor {
                     continue;
                 }
                 if (sc.getRestrictionCriteria().isMet(pcontext.criteriaEvaluator)) {
-                    System.out.println("-------- sc goes to inherited " + sc.getName());
                     hasDerived = true;
                     buf.setPosition(bitp);
                     extract(sc);

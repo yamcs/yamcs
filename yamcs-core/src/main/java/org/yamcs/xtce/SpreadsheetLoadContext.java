@@ -1,4 +1,4 @@
-package org.yamcs.xtce.xlsv6;
+package org.yamcs.xtce;
 
 /**
  * Keeps track of current whereabouts of the spreadsheet loader. For better
@@ -9,9 +9,9 @@ package org.yamcs.xtce.xlsv6;
  * 
  */
 public class SpreadsheetLoadContext {
-    String file;
-    String sheet;
-    int row;
+    public String file;
+    public String sheet;
+    public int row;
     
     public SpreadsheetLoadContext(String file, String sheet, int row) {
        this.file = file;

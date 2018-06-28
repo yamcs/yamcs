@@ -1,7 +1,6 @@
-package org.yamcs.xtce.xlsv6;
+package org.yamcs.xtce.xlsv7;
 
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -9,13 +8,13 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.yamcs.xtce.BaseSpreadsheetLoader;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.IntegerDataEncoding.Encoding;
+import org.yamcs.xtce.SpreadsheetLoadContext;
+import org.yamcs.xtce.SpreadsheetLoadException;
 
 import jxl.Cell;
-import jxl.CellType;
-import jxl.NumberCell;
 import jxl.Sheet;
 import jxl.Workbook;
 
@@ -25,15 +24,11 @@ import jxl.Workbook;
  * @author nm
  *
  */
-public class SpreadsheetLoaderBits {
-    // columns in the parameters sheet (including local parameters)
-    static final int IDX_PARAM_NAME = 0;
-    static final int IDX_PARAM_ENCODING = 1;
-    static final int IDX_PARAM_RAWTYPE = 2;
-    static final int IDX_PARAM_ENGTYPE = 3;
-    static final int IDX_PARAM_ENGUNIT = 4;
-    static final int IDX_PARAM_CALIBRATION = 5;
-    static final int IDX_PARAM_DESCRIPTION = 6;
+public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
+
+    public V7LoaderBase(String filename) {
+        super(filename);
+    }
 
     // columns in the containers sheet
     static final int IDX_CONT_NAME = 0;
@@ -47,53 +42,44 @@ public class SpreadsheetLoaderBits {
     static final int IDX_CONT_DESCRIPTION = 8;
 
     // columns in the algorithms sheet
-    static final int IDX_ALGO_NAME = 0;
-    static final int IDX_ALGO_LANGUGAGE = 1;
-    static final int IDX_ALGO_TEXT = 2;
-    static final int IDX_ALGO_TRIGGER = 3;
-    static final int IDX_ALGO_PARA_INOUT = 4;
-    static final int IDX_ALGO_PARA_REF = 5;
-    static final int IDX_ALGO_PARA_INSTANCE = 6;
-    static final int IDX_ALGO_PARA_NAME = 7;
-    static final int IDX_ALGO_PARA_FLAGS = 8;
+    static final String CN_ALGO_NAME = "algorithm name";
+    static final String CN_ALGO_LANGUGAGE = "language";
+    static final String CN_ALGO_TEXT = "text";
+    static final String CN_ALGO_TRIGGER = "trigger";
+    static final String CN_ALGO_PARA_INOUT = "in/out";
+    static final String CN_ALGO_PARA_REF = "parameter reference";
+    static final String CN_ALGO_PARA_INSTANCE = "instance";
+    static final String CN_ALGO_PARA_NAME = "variable name";
+    static final String CN_ALGO_PARA_FLAGS = "flags";
 
     // columns in the alarms sheet
-    static final int IDX_ALARM_PARAM_NAME = 0;
-    static final int IDX_ALARM_CONTEXT = 1;
-    static final int IDX_ALARM_REPORT = 2;
-    static final int IDX_ALARM_MIN_VIOLATIONS = 3;
-    static final int IDX_ALARM_WATCH_TRIGGER = 4;
-    static final int IDX_ALARM_WATCH_VALUE = 5;
-    static final int IDX_ALARM_WARNING_TRIGGER = 6;
-    static final int IDX_ALARM_WARNING_VALUE = 7;
-    static final int IDX_ALARM_DISTRESS_TRIGGER = 8;
-    static final int IDX_ALARM_DISTRESS_VALUE = 9;
-    static final int IDX_ALARM_CRITICAL_TRIGGER = 10;
-    static final int IDX_ALARM_CRITICAL_VALUE = 11;
-    static final int IDX_ALARM_SEVERE_TRIGGER = 12;
-    static final int IDX_ALARM_SEVERE_VALUE = 13;
-
-    // columns in the processed parameters sheet
-    protected static final int IDX_PP_UMI = 0;
-    protected static final int IDX_PP_GROUP = 1;
-    protected static final int IDX_PP_ALIAS = 2;
+    static final String CN_ALARM_PARAM_NAME = "parameter reference";
+    static final String CN_ALARM_CONTEXT = "context";
+    static final String CN_ALARM_REPORT = "report";
+    static final String CN_ALARM_MIN_VIOLATIONS = "min violations";
+    static final String CN_ALARM_WATCH_TRIGGER = "watch trigger type";
+    static final String CN_ALARM_WATCH_VALUE = "watch trigger value";
+    static final String CN_ALARM_WARNING_TRIGGER = "warning trigger type";
+    static final String CN_ALARM_WARNING_VALUE = "warning trigger value";
+    static final String CN_ALARM_DISTRESS_TRIGGER = "distress trigger type";
+    static final String CN_ALARM_DISTRESS_VALUE = "distress trigger value";
+    static final String CN_ALARM_CRITICAL_TRIGGER = "critical trigger type";
+    static final String CN_ALARM_CRITICAL_VALUE = "critical trigger value";
+    static final String CN_ALARM_SEVERE_TRIGGER = "severe trigger type";
+    static final String CN_ALARM_SEVERE_VALUE = "severe trigger value";
 
     // columns in the command sheet
-    protected static final int IDX_CMD_NAME = 0;
-    protected static final int IDX_CMD_PARENT = 1;
-    protected static final int IDX_CMD_ARG_ASSIGNMENT = 2;
-    protected static final int IDX_CMD_FLAGS = 3;
-    protected static final int IDX_CMD_ARGNAME = 4;
-    protected static final int IDX_CMD_RELPOS = 5;
-    protected static final int IDX_CMD_ENCODING = 6;
-    protected static final int IDX_CMD_ENGTYPE = 7;
-    protected static final int IDX_CMD_RAWTYPE = 8;
-    protected static final int IDX_CMD_DEFVALUE = 9;
-    protected static final int IDX_CMD_ENGUNIT = 10;
-    protected static final int IDX_CMD_CALIBRATION = 11;
-    protected static final int IDX_CMD_RANGELOW = 12;
-    protected static final int IDX_CMD_RANGEHIGH = 13;
-    protected static final int IDX_CMD_DESCRIPTION = 14;
+    protected static final String CN_CMD_NAME = "command name";
+    protected static final String CN_CMD_PARENT = "parent";
+    protected static final String CN_CMD_ARG_ASSIGNMENT = "argument assignment";
+    protected static final String CN_CMD_FLAGS = "flags";
+    protected static final String CN_CMD_ARGNAME = "argument name";
+    protected static final String CN_CMD_POSITION = "position";
+    protected static final String CN_CMD_DTYPE = "data type";
+    protected static final String CN_CMD_DEFVALUE = "default value";
+    protected static final String CN_CMD_RANGELOW = "range low";
+    protected static final String CN_CMD_RANGEHIGH = "range high";
+    protected static final String CN_CMD_DESCRIPTION = "description";
 
     // columns in the command options sheet
     protected static final int IDX_CMDOPT_NAME = 0;
@@ -103,15 +89,15 @@ public class SpreadsheetLoaderBits {
     protected static final int IDX_CMDOPT_SIGNIFICANCE_REASON = 4;
 
     // columns in the command verification sheet
-    protected static final int IDX_CMDVERIF_NAME = 0;
-    protected static final int IDX_CMDVERIF_STAGE = 1;
-    protected static final int IDX_CMDVERIF_TYPE = 2;
-    protected static final int IDX_CMDVERIF_TEXT = 3;
-    protected static final int IDX_CMDVERIF_CHECKWINDOW = 4;
-    protected static final int IDX_CMDVERIF_CHECKWINDOW_RELATIVETO = 5;
-    protected static final int IDX_CMDVERIF_ONSUCCESS = 6;
-    protected static final int IDX_CMDVERIF_ONFAIL = 7;
-    protected static final int IDX_CMDVERIF_ONTIMEOUT = 8;
+    protected static final String CN_CMDVERIF_NAME = "Command name";
+    protected static final String CN_CMDVERIF_STAGE = "CmdVerifier Stage";
+    protected static final String CN_CMDVERIF_TYPE = "CmdVerifier Type";
+    protected static final String CN_CMDVERIF_TEXT = "CmdVerifier Text";;
+    protected static final String CN_CMDVERIF_CHECKWINDOW = "Time Check Window";
+    protected static final String CN_CMDVERIF_CHECKWINDOW_RELATIVETO = "checkWindow is relative to";
+    protected static final String CN_CMDVERIF_ONSUCCESS = "OnSuccess";
+    protected static final String CN_CMDVERIF_ONFAIL = "OnFail";
+    protected static final String CN_CMDVERIF_ONTIMEOUT = "OnTimeout";
 
     // columns in the changelog sheet
     protected static final int IDX_LOG_VERSION = 0;
@@ -125,28 +111,6 @@ public class SpreadsheetLoaderBits {
     protected static final String CALIB_TYPE_JAVA_EXPRESSION = "java-expression";
     protected static final String CALIB_TYPE_TIME = "time";
 
-    protected static final String PARAM_ENGTYPE_STRING = "string";
-    protected static final String PARAM_ENGTYPE_BOOLEAN = "boolean";
-    protected static final String PARAM_ENGTYPE_BINARY = "binary";
-    protected static final String PARAM_ENGTYPE_ENUMERATED = "enumerated";
-    protected static final String PARAM_ENGTYPE_DOUBLE = "double";
-    protected static final String PARAM_ENGTYPE_UINT32 = "uint32";
-    protected static final String PARAM_ENGTYPE_INT32 = "int32";
-    protected static final String PARAM_ENGTYPE_UINT64 = "uint64";
-    protected static final String PARAM_ENGTYPE_INT64 = "int64";
-    protected static final String PARAM_ENGTYPE_FLOAT = "float";
-    protected static final String PARAM_ENGTYPE_TIME = "time";
-
-    protected static final String PARAM_RAWTYPE_FLOAT = "float";
-    protected static final String PARAM_RAWTYPE_INT = "int";
-    protected static final String PARAM_RAWTYPE_UINT = "uint";
-    protected static final String PARAM_RAWTYPE_DOUBLE = "double";
-    protected static final String PARAM_RAWTYPE_BOOLEAN = "boolean";
-    protected static final String PARAM_RAWTYPE_BINARY = "binary";
-    protected static final String PARAM_RAWTYPE_BINARY_PREPENDED = "prependedbinary";
-    protected static final String PARAM_RAWTYPE_BINARY_TERMINATED = "terminatedbinary";
-    protected static final String PARAM_RAWTYPE_STRING = "string";
-
     static final Pattern ALGO_PARAMETER_PATTERN = Pattern.compile("OnParameterUpdate\\((.*)\\)");
     static final Pattern ALGO_FIRERATE_PATTERN = Pattern.compile("OnPeriodicRate\\((\\d+)\\)");
 
@@ -157,29 +121,20 @@ public class SpreadsheetLoaderBits {
     protected static final String PARAM_RAWTYPE_STRING_TERMINATED = "terminatedstring";
     protected static final String PARAM_RAWTYPE_STRING_FIXED = "fixedstring";
 
-    static final String CN_CONTEXT = "context";
+    // columns names in the data type sheet
+    static final String CN_DTYPE_NAME = "type name";
+    static final String CN_DTYPE_ENCODING = "encoding";
+    static final String CN_DTYPE_RAWTYPE = "raw type";
+    static final String CN_DTYPE_ENGTYPE = "eng type";
+    static final String CN_DTYPE_ENGUNIT = "eng unit";
+    static final String CN_DTYPE_CALIBRATION = "calibration";
+    static final String CN_DTYPE_DESCRIPTION = "description";
 
-    // columns names in calibrations sheet
-    static final String CN_CALIB_NAME = "calibrator name";
-    static final String CN_CALIB_TYPE = "type";
-    static final String CN_CALIB_CALIB1 = "calib1";
-    static final String CN_CALIB_CALIB2 = "calib2";
+    // columns names in the parameter type sheet
+    static final String CN_PARAM_NAME = "parameter name";
+    static final String CN_PARAM_DTYPE = "data type";
 
-    // sheet names
-    protected static final String SHEET_GENERAL = "General";
-    protected static final String SHEET_CHANGELOG = "ChangeLog";
-
-    protected static final String SHEET_CALIBRATION = "Calibration";
-    protected static final String SHEET_TELEMETERED_PARAMETERS = "Parameters";
-    protected static final String SHEET_LOCAL_PARAMETERS = "LocalParameters";
-    protected static final String SHEET_DERIVED_PARAMETERS = "DerivedParameters";
-    protected static final String SHEET_CONTAINERS = "Containers";
-
-    protected static final String SHEET_ALGORITHMS = "Algorithms";
-    protected static final String SHEET_ALARMS = "Alarms";
-    protected static final String SHEET_COMMANDS = "Commands";
-    protected static final String SHEET_COMMANDOPTIONS = "CommandOptions";
-    protected static final String SHEET_COMMANDVERIFICATION = "CommandVerification";
+    protected static final String SHEET_DATATYPES = "DataTypes";
 
     // the list of sheets that can be part of subsystems with a sub1/sub2/sub3/SheetName notation
     static String[] SUBSYSTEM_SHEET_NAMES = {
@@ -192,7 +147,8 @@ public class SpreadsheetLoaderBits {
             SHEET_ALARMS,
             SHEET_COMMANDS,
             SHEET_COMMANDOPTIONS,
-            SHEET_COMMANDVERIFICATION
+            SHEET_COMMANDVERIFICATION,
+            SHEET_DATATYPES
     };
 
     public static Map<String, Map<String, Integer>> readHeaders(Workbook workbook) {
@@ -368,119 +324,6 @@ public class SpreadsheetLoaderBits {
         }
     }
 
-    static int parseInt(SpreadsheetLoadContext ctx, String s) {
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            throw new SpreadsheetLoadException(ctx, "Could not parse integer from '" + s + "'");
-        }
-    }
-
-    static double parseDouble(SpreadsheetLoadContext ctx, Cell cell) {
-        // Important that we check cell type here. This avoid issues with french vs american commas.
-        if ((cell.getType() == CellType.NUMBER) || (cell.getType() == CellType.NUMBER_FORMULA)) {
-            return ((NumberCell) cell).getValue();
-        } else {
-            try {
-                return Double.parseDouble(cell.getContents());
-            } catch (NumberFormatException e) {
-                throw new SpreadsheetLoadException(ctx, "Could not parse double from '" + cell.getContents() + "'");
-            }
-        }
-    }
-
-    /*
-     * Used for parsing calibration and alarms with context
-     * 
-     * scans col1 starting with startRow until it finds some content
-     * then starts creating sub ranges based on col2
-     * 
-     * a range starts when the col1 is not empty. The start of the range automatically starts its first subRange
-     * 
-     * a subrange is finished in one of the three cases:
-     * - an empty line is encountered
-     * - another range starts (col1 is not empty)
-     * - another subRange starts(col2 is not empty)
-     * 
-     * the range is finished by the last line before the start of new range
-     * 
-     * if col2 is -1 then only one subRange is returned
-     * 
-     */
-    static Range findRange(Sheet sheet, int startRow, int col1, int col2) {
-        int numRows = sheet.getRows();
-        int rangeStart = -1;
-        int rangeStop = -1;
-        int subRangeStart = -1;
-        int i = startRow;
-        List<Range> subRange = new ArrayList<>();
-        while (i < numRows) {
-            Cell[] cells = sheet.getRow(i);
-            if (cells.length > 0 && cells[0].getContents().startsWith("#")) {// ignore comments
-                i++;
-                continue;
-            }
-            if (rangeStart == -1) { // looking for range start
-                if (!isCellEmpty(cells, col1)) {
-                    rangeStart = i;
-                    subRangeStart = i;
-                }
-            } else if (subRangeStart == -1) { // looking for subRange start (can only happen if col2 > -1)
-                if (!isCellEmpty(cells, col1)) {
-                    break;
-                }
-                if (!isCellEmpty(cells, col2)) {
-                    subRangeStart = i;
-                }
-            } else { // looking for range or subRange end
-                if (isRowEmpty(cells)) {
-                    subRange.add(new Range(subRangeStart, i));
-                    rangeStop = i;
-                    if (col2 > -1) {
-                        subRangeStart = -1;
-                    } else {
-                        break;
-                    }
-                } else if (!isCellEmpty(cells, col1)) {
-                    subRange.add(new Range(subRangeStart, i));
-                    rangeStop = i;
-                    break;
-                } else if (col2 > -1 && !isCellEmpty(cells, col2)) {
-                    subRange.add(new Range(subRangeStart, i));
-                    subRangeStart = i;
-                }
-            }
-            i++;
-        }
-        if (rangeStart == -1) {
-            return null;
-        }
-        if(i==numRows) {
-            if(rangeStop==-1) {
-                rangeStop = numRows;
-            }
-            if(subRangeStart!=-1) {
-                subRange.add(new Range(subRangeStart, numRows));
-            }
-        }
-        Range r = new Range(rangeStart, rangeStop);
-        r.subRanges = subRange;
-        return r;
-    }
-
-    private static boolean isCellEmpty(Cell[] cells, int col) {
-        return cells.length <= col || cells[col].getContents().isEmpty();
-    }
-
-    private static boolean isRowEmpty(Cell[] cells) {
-        for(Cell cell: cells) {
-            if(!cell.getContents().isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     static int findEnd(Sheet sheet, int startRow, int endRow, int col) {
         int r = startRow;
         int i = startRow + 1;
@@ -497,14 +340,6 @@ public class SpreadsheetLoaderBits {
             i++;
         }
         return r;
-    }
-
-    static byte parseByte(SpreadsheetLoadContext ctx, String s) {
-        try {
-            return Byte.decode(s);
-        } catch (NumberFormatException e) {
-            throw new SpreadsheetLoadException(ctx, "Could not parse byte from '" + s + "'");
-        }
     }
 
     static Position getPosition(SpreadsheetLoadContext ctx, String pos) {
@@ -552,21 +387,15 @@ public class SpreadsheetLoaderBits {
         }
     }
 
-    static class Range {
-        
+    static class DataTypeRecord {
+        int row;
+        String name;
+        String encoding;
+        String rawType;
+        String engType;
+        String engUnit;
+        String calibration;
 
-        final int firstRow;
-        final int lastRow;// note that lastRow is NOT part of the range
-
-        public Range(int firstRow, int lastRow) {
-            this.firstRow = firstRow;
-            this.lastRow = lastRow;
-        }
-
-        List<Range> subRanges;
-        @Override
-        public String toString() {
-            return "Range [firstRow=" + firstRow + ", lastRow=" + lastRow + ", subRanges=" + subRanges + "]";
-        }
     }
+
 }

@@ -18,7 +18,7 @@ import org.yamcs.utils.TimeEncoding;
  * @author nm
  *
  */
-public class AbsoluteTimeDataType extends BaseTimeDataType {
+public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
     private static final long serialVersionUID = 1;
 
     /**
@@ -28,7 +28,7 @@ public class AbsoluteTimeDataType extends BaseTimeDataType {
 
     ReferenceTime referenceTime;
 
-    AbsoluteTimeDataType(String name){
+    protected AbsoluteTimeDataType(String name){
         super(name);
     }
     

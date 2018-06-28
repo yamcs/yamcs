@@ -146,7 +146,6 @@ public class SequenceEntryProcessor {
         pv.setSequenceEntry(pe);
 
         pcontext.result.params.add(pv);
-        System.out.print("after extracting array, pos: " + pcontext.buffer.getPosition());
     }
 
     private Value extract(ParameterType ptype) {
@@ -174,7 +173,6 @@ public class SequenceEntryProcessor {
             Value v = extract(mptype);
             result.setValue(m.getName(), v);
         }
-        System.out.println("Returning aggregate result: " + result);
         return result;
     }
 

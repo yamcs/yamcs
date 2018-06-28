@@ -2,7 +2,6 @@ package org.yamcs.xtceproc;
 
 import java.nio.ByteBuffer;
 
-import org.python.bouncycastle.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.AggregateValue;
@@ -23,13 +22,11 @@ import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.NumericDataEncoding;
-import org.yamcs.xtce.NumericDataType;
 import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;

@@ -2,8 +2,8 @@ package org.yamcs.xtce;
 
 import org.yamcs.protobuf.Yamcs.Value.Type;
 
-public class IntegerDataType extends NumericDataType {
-    private static final long serialVersionUID = 200706051146L;
+public abstract class IntegerDataType extends NumericDataType {
+    private static final long serialVersionUID = 1L;
     int sizeInBits = 32;
     protected boolean signed = true;
 
@@ -21,7 +21,7 @@ public class IntegerDataType extends NumericDataType {
      */
     Long initialValue;
 
-    IntegerDataType(String name) {
+    protected IntegerDataType(String name) {
         super(name);
     }
 

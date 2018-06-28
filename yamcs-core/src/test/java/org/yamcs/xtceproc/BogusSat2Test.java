@@ -12,8 +12,6 @@ import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
-import org.yamcs.parameter.Value;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.XtceDb;
 
@@ -41,10 +39,6 @@ public class BogusSat2Test {
                 0, 0 };
         extractor.processPacket(buf, now, now);
         ParameterValueList pvl = extractor.getParameterResult();
-        System.out.println("got " + pvl);
-        for (ParameterValue pv : pvl) {
-            System.out.println(pv);
-        }
         assertEquals(4, pvl.size());
         ParameterValue pushdr = pvl.getFirstInserted(db.getParameter("/BogusSAT/PUS_Data_Field_Header"));
         assertTrue(pushdr.getEngValue() instanceof AggregateValue);
@@ -52,13 +46,6 @@ public class BogusSat2Test {
         assertEquals(3, v.getMemberValue("SeqCount").getUint32Value());
     }
 
-    @Test
-    public void test3() {
-        byte[] x = new byte[8];
-        ByteBuffer.wrap(x).putDouble(-2d);
-        System.out.println(StringConverter.arrayToHexString(x));
-        // db.print(System.out);
-    }
 
     @Test
     public void test2() {
@@ -75,11 +62,6 @@ public class BogusSat2Test {
                 x[0], x[1], x[2], x[3] }; // Battery Current
         extractor.processPacket(buf, now, now);
         ParameterValueList pvl = extractor.getParameterResult();
-        /*
-         * for(ParameterValue pv: pvl) {
-         * System.out.println(pv);
-         * }
-         */
         assertEquals(8, pvl.size());
         assertNull(pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/BusElectronics/Solar_Array_Voltage_1")));
         assertNotNull(pvl.getFirstInserted(db.getParameter("/BogusSAT/SC001/BusElectronics/Solar_Array_Voltage_2")));
@@ -142,12 +124,8 @@ public class BogusSat2Test {
                 (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xF9, // Basic_int32_onescomp
         };
 
-        System.out.print("buf.size " + buf.length);
         extractor.processPacket(buf, now, now);
         ParameterValueList pvl = extractor.getParameterResult();
-        for (ParameterValue pv : pvl) {
-            System.out.println(pv.getParameterQualifiedNamed() + ": " + pv.getRawValue());
-        }
         assertEquals(17, pvl.size());
 
         ParameterValue pv = pvl

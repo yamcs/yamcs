@@ -143,7 +143,6 @@ public class AlgorithmManager extends AbstractService
     }
 
     private void loadAlgorithm(Algorithm algo, AlgorithmExecutionContext ctx) {
-        System.out.println("Algo " + algo.getQualifiedName() + ", " + algo.getOutputSet());
         for (OutputParameter oParam : algo.getOutputSet()) {
             outParamIndex.add(oParam.getParameter());
         }

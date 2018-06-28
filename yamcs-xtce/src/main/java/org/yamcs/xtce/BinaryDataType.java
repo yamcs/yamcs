@@ -14,7 +14,7 @@ public class BinaryDataType extends BaseDataType {
     byte[] initialValue;
 
 
-    BinaryDataType(String name) {
+    protected BinaryDataType(String name) {
         super(name);
     }
     

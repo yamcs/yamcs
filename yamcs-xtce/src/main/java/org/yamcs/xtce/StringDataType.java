@@ -17,11 +17,11 @@ public class StringDataType extends BaseDataType {
      * Initial value - used as default value for arguments
      */
     String initialValue;
-    StringDataType(String name) {
+    protected StringDataType(String name) {
         super(name);
     }
     
-    StringDataType(StringDataType t) {
+    protected StringDataType(StringDataType t) {
         super(t);
         this.sizeRangeInCharacters = t.sizeRangeInCharacters;
         this.initialValue = t.initialValue;

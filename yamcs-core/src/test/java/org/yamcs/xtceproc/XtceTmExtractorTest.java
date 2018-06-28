@@ -287,15 +287,15 @@ public class XtceTmExtractorTest {
         assertEquals(10, received.size());
         
         ParameterValue pv = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/BooleanPara1_9_1"));
-        assertEquals(true, pv.getRawValue().getBooleanValue());
+        assertEquals(1, pv.getRawValue().getUint32Value());
         assertEquals(true, pv.getEngValue().getBooleanValue());
 
         pv = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/BooleanPara1_9_2"));
-        assertEquals(false, pv.getRawValue().getBooleanValue());
+        assertEquals(0, pv.getRawValue().getUint32Value());
         assertEquals(false, pv.getEngValue().getBooleanValue());
         
         pv = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/BooleanPara1_9_3"));
-        assertEquals(true, pv.getRawValue().getBooleanValue());
+        assertEquals(1, pv.getRawValue().getUint32Value());
         assertEquals(true, pv.getEngValue().getBooleanValue());
         
         pv = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/BooleanPara1_9_4"));

@@ -8,7 +8,6 @@ import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 import org.yamcs.YConfiguration;
-import org.yamcs.management.ManagementService;
 import org.yamcs.xtce.*;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.UnresolvedNameReference;
@@ -106,28 +105,28 @@ public class XtceDbFactoryTest {
         assertEquals(a_b2_c1_p1, rr.nd);
 
         rr = XtceDbFactory.findReference(root, new UnresolvedNameReference("../p1", Type.PARAMETER), a_b2_c1);
-        assertNull(rr.nd);
+        assertNull(rr);
 
         rr = XtceDbFactory.findReference(root, new UnresolvedNameReference("../../p1", Type.PARAMETER), a_b2_c1);
         assertEquals(a_p1, rr.nd);
 
         rr = XtceDbFactory.findReference(root, new UnresolvedNameReference("../../p1", Type.PARAMETER), a_b3);
-        assertNull(rr.nd);
+        assertNull(rr);
 
         rr = XtceDbFactory.findReference(root, new UnresolvedNameReference("./p1", Type.PARAMETER), a_b2_c1);
         assertEquals(rr.nd, a_b2_c1_p1);
 
         rr = XtceDbFactory.findReference(root, new UnresolvedNameReference("./p1", Type.PARAMETER), a_b2);
-        assertNull(rr.nd);
+        assertNull(rr);
 
         rr = XtceDbFactory.findReference(root, new UnresolvedNameReference("/a/b2/c1/.//p1", Type.PARAMETER), a_b2);
         assertEquals(a_b2_c1_p1, rr.nd);
 
         rr = XtceDbFactory.findReference(root, new UnresolvedNameReference("/a/..", Type.PARAMETER), a_b2);
-        assertNull(rr.nd);
+        assertNull(rr);
 
         rr = XtceDbFactory.findReference(root, new UnresolvedNameReference("p2", Type.PARAMETER), a_b2);
-        assertNull(rr.nd);
+        assertNull(rr);
     }
 
     @Test

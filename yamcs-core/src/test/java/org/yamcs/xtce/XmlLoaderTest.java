@@ -175,10 +175,4 @@ public class XmlLoaderTest {
         assertEquals(expectedResult, cproc.calibrate(value), 1E-10);
         
     }
-
-    @Test
-    public void testBogusSat2() throws XMLStreamException, IOException {
-        XtceDb db = XtceDbFactory.createInstanceByConfig("BogusSAT2");
-        db.print(System.out);
-    }
 }

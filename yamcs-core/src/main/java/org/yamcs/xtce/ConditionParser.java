@@ -1,4 +1,4 @@
-package org.yamcs.xtce.xlsv6;
+package org.yamcs.xtce;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -27,7 +27,7 @@ import org.yamcs.xtce.util.UnresolvedNameReference;
  */
 public class ConditionParser {
     final SpreadsheetLoadContext ctx;
-    ConditionParser(SpreadsheetLoadContext ctx) {
+    public ConditionParser(SpreadsheetLoadContext ctx) {
         this.ctx = ctx;
     }
 
@@ -53,7 +53,7 @@ public class ConditionParser {
      * @param rawExpression
      * @return
      */
-    BooleanExpression parseBooleanExpression(SpaceSystem spaceSystem, String rawExpression) {
+    public BooleanExpression parseBooleanExpression(SpaceSystem spaceSystem, String rawExpression) {
         String regex = "([\"”])([^\"”\\\\]*(?:\\\\.[^\"”\\\\]*)*)([\"”])";
 
         rawExpression = rawExpression.trim();
@@ -194,7 +194,7 @@ public class ConditionParser {
         return cond;
     }
 
-    Comparison toComparison(SpaceSystem spaceSystem, String comparisonString) {
+    public Comparison toComparison(SpaceSystem spaceSystem, String comparisonString) {
         Matcher m = Pattern.compile("(.*?)(==|=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
         if(!m.matches()) {
             throw new SpreadsheetLoadException(ctx, "Cannot parse condition '"+comparisonString+"'");
@@ -231,7 +231,7 @@ public class ConditionParser {
         final ParameterInstanceRef pInstRef = new ParameterInstanceRef(useCalibrated);
         final Comparison ucomp = new Comparison(pInstRef, value, opType);
         
-        NameReference pref = SpreadsheetLoader.getParameterReference(spaceSystem, pname, true);
+        NameReference pref = BaseSpreadsheetLoader.getParameterReference(spaceSystem, pname, true);
         pref.addResolvedAction(nd -> {
             pInstRef.setParameter((Parameter) nd);
                 ucomp.resolveValueType();
