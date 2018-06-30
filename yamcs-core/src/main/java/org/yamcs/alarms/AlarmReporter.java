@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorService;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsService;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.parameter.ParameterConsumer;
@@ -29,16 +31,21 @@ import org.yamcs.xtceproc.XtceDbFactory;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Generates realtime alarm events automatically, by subscribing to all relevant parameters.
+ * Generates alarm events for a processor, by subscribing to all relevant parameters.
  */
-public class AlarmReporter extends AbstractService implements ParameterConsumer, YamcsService {
+public class AlarmReporter extends AbstractService implements ParameterConsumer, ProcessorService {
+
+    private static final Logger log = LoggerFactory.getLogger(AlarmReporter.class);
+
+    private String yamcsInstance;
+    private Processor processor;
+
+    private String source;
 
     private EventProducer eventProducer;
     private Map<Parameter, ActiveAlarm> activeAlarms = new HashMap<>();
     // Last value of each param (for detecting changes in value)
     private Map<Parameter, ParameterValue> lastValuePerParameter = new HashMap<>();
-    final String yamcsInstance;
-    final String processorName;
 
     public AlarmReporter(String yamcsInstance) {
         this(yamcsInstance, Collections.emptyMap());
@@ -46,22 +53,24 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer,
 
     public AlarmReporter(String yamcsInstance, Map<String, Object> config) {
         this.yamcsInstance = yamcsInstance;
+        source = YConfiguration.getString(config, "source", "AlarmChecker");
+    }
 
-        Processor defaultProcessor = Processor.getFirstProcessor(yamcsInstance);
-        this.processorName = YConfiguration.getString(config, "processor", defaultProcessor.getName());
+    @Override
+    public void init(Processor processor) {
+        this.processor = processor;
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
-        eventProducer.setSource(YConfiguration.getString(config, "source", "AlarmChecker"));
+        eventProducer.setSource(source);
     }
 
     @Override
     public void doStart() {
-        Processor processor = Processor.getInstance(yamcsInstance, processorName);
         if (processor == null) {
-            ConfigurationException e = new ConfigurationException(
-                    "Cannot find a processor '" + processorName + "' in instance '" + yamcsInstance + "'");
-            notifyFailed(e);
-            return;
+            log.warn("DEPRECATION: Define AlarmReporter as a processor service in processor.yaml"
+                    + " rather than an instance service in yamcs.(instance).yaml");
+            init(Processor.getFirstProcessor(yamcsInstance));
         }
+
         ParameterRequestManager prm = processor.getParameterRequestManager();
         prm.getAlarmChecker().enableReporting(this);
 
@@ -279,7 +288,6 @@ public class AlarmReporter extends AbstractService implements ParameterConsumer,
         MonitoringResult monitoringResult;
         AlarmType alarmType;
         int violations = 1;
-        ParameterValue lastValue;
 
         ActiveAlarm(AlarmType alarmType, MonitoringResult monitoringResult) {
             this.alarmType = alarmType;
