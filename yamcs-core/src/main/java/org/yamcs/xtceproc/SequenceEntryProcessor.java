@@ -122,7 +122,7 @@ public class SequenceEntryProcessor {
                     + " exceeds the max allowed: " + ts + " > " + MAX_ARRAY_SIZE);
         }
         ArrayParameterType aptype = (ArrayParameterType) pe.getParameter().getParameterType();
-        ParameterType elementType = (ParameterType) aptype.getType();
+        ParameterType elementType = (ParameterType) aptype.getElementType();
         int offset = pcontext.buffer.getPosition();
         Value rv1 = extract(elementType);
 
@@ -170,6 +170,7 @@ public class SequenceEntryProcessor {
                 throw new XtceProcException("Encountered entry for aggregate parameter member'"
                         + ptype.getName() + "/" + m.getName() + " without a type");
             }
+             
             Value v = extract(mptype);
             result.setValue(m.getName(), v);
         }

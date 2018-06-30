@@ -1,10 +1,12 @@
 package org.yamcs.xtce.xlsv7;
 
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -136,6 +138,9 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
 
     protected static final String SHEET_DATATYPES = "DataTypes";
 
+    //final static Pattern AGGREGATE_PATTERN = Pattern.compile("aggregate:?\\(?\\{(.+)\\}\\)?");
+    final static Pattern AGGREGATE_PATTERN = Pattern.compile("\\s*\\(?\\s*\\{(.+)\\}\\s*\\)?");
+      
     // the list of sheets that can be part of subsystems with a sub1/sub2/sub3/SheetName notation
     static String[] SUBSYSTEM_SHEET_NAMES = {
             SHEET_CALIBRATION,
@@ -360,7 +365,41 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
             }
         }
     }
-
+    /**
+     * parses strings of type 
+     * <pre>
+     *   { 
+     *      type1 name1; 
+     *      type2 name2
+     *    }
+     * </pre>
+     * into a map mapping names to types
+     * @return
+     */
+    protected List<AggrMember> parseAggregateExpr(String engType) {
+        String s = engType.substring(1, engType.length()-1).replaceAll("\n\r", "").trim();
+        String[] a = s.split(";");
+        List<AggrMember> l = new ArrayList<>();
+        for(String b:a) {
+            String[] c = b.trim().split("\\s",3);
+            if(c.length!=2) {
+                throw new SpreadsheetLoadException(ctx, "Cannot parse member type '"+s+"', expression '"+b+"'");
+            }
+            l.add(new AggrMember(c[1], c[0]));
+        }
+        return l;
+    }
+    static class AggrMember {
+        final String name;
+        final String dataType;
+        
+        AggrMember(String name, String dataType) {
+            this.name = name;
+            this.dataType = dataType;
+        }
+        
+    }
+    
     static String getInvalidPositionMsg(String pos) {
         return "Invalid position '" + pos + "' specified. "
                 + "Use 'r:<d>' or 'a:<d>' for relative respectively absolute position. '<d>' can be used as a shortcut for 'r:<d>'";

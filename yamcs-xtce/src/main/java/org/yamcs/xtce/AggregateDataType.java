@@ -1,5 +1,6 @@
 package org.yamcs.xtce;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.protobuf.Yamcs.Value;
@@ -8,7 +9,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 public class AggregateDataType extends NameDescription implements DataType {
     private static final long serialVersionUID = 1L;
 
-    List<Member> memberList;
+    List<Member> memberList = new ArrayList<>();
 
     public AggregateDataType(String name) {
         super(name);
@@ -18,8 +19,8 @@ public class AggregateDataType extends NameDescription implements DataType {
         memberList.add(memberType);
     }
 
-    public void setMemberList(List<Member> memberList) {
-        this.memberList = memberList;
+    public void addMembers(List<Member> memberList) {
+        this.memberList.addAll(memberList);
     }
 
     public String getTypeAsString() {
@@ -30,10 +31,10 @@ public class AggregateDataType extends NameDescription implements DataType {
             if (first) {
                 first = false;
             } else {
-                sb.append(", ");
+                sb.append("; ");
             }
-            sb.append(m.getName()).append(":");
-            sb.append(m.getType().getTypeAsString());
+            sb.append(m.getType().getName());
+            sb.append(m.getName());
         }
         sb.append("}");
         return sb.toString();

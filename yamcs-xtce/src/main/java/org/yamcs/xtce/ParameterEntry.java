@@ -10,9 +10,15 @@ public class ParameterEntry extends SequenceEntry {
     private static final long serialVersionUID = 200805131551L;
     private Parameter parameter;
 
-    public ParameterEntry(int position, SequenceContainer container, int locationInContainerInBits,
-            ReferenceLocationType location, Parameter parameter) {
-        super(position, container, locationInContainerInBits, location);
+    /**
+     * Constructor for parameter entry. The parameter to which it reffers will be set later with {@link #setParameter(Parameter)}
+     * 
+     * @param locationInContainerInBits
+     * @param location
+     * @param parameter
+     */
+    public ParameterEntry(int locationInContainerInBits, ReferenceLocationType location, Parameter parameter) {
+        this(locationInContainerInBits, location);
         this.setParameter(parameter);
     }
 
@@ -24,9 +30,8 @@ public class ParameterEntry extends SequenceEntry {
      * @param locationInContainerInBits
      * @param location
      */
-    public ParameterEntry(int position, SequenceContainer container, int locationInContainerInBits,
-            ReferenceLocationType location) {
-        super(position, container, locationInContainerInBits, location);
+    public ParameterEntry(int locationInContainerInBits, ReferenceLocationType location) {
+        super(locationInContainerInBits, location);
     }
 
     public void setParameter(Parameter parameter) {

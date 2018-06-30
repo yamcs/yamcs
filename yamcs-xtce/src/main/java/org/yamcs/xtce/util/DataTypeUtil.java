@@ -36,7 +36,7 @@ public class DataTypeUtil {
 
             if (type instanceof ArrayDataType) {
                 if(pe.getIndex()!=null) {
-                    ptype = ((ArrayDataType) type).getType();
+                    ptype = ((ArrayDataType) type).getElementType();
                 } else {
                     return null;
                 }

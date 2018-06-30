@@ -88,8 +88,7 @@ public class SequenceContainerProcessor {
 
         Set<SequenceContainer> inheritingContainers = pcontext.subscription.getInheritingContainers(seq);
         boolean hasDerived = false;
-
-        if (inheritingContainers != null) {
+       if (inheritingContainers != null) {
             // And then any derived containers
             int bitp = buf.getPosition();
             for (SequenceContainer sc : inheritingContainers) {

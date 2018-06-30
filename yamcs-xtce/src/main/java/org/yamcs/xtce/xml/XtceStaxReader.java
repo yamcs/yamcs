@@ -623,7 +623,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_MEMBER_LIST)) {
-                ptype.setMemberList(readMemberList(spaceSystem, true));
+                ptype.addMembers(readMemberList(spaceSystem, true));
             } else if (isStartElementWithName(XTCE_LONG_DESCRIPTION)) {
                 ptype.setLongDescription(readStringBetweenTags(XTCE_LONG_DESCRIPTION));
             } else if (isEndElementWithName(XTCE_AGGREGATE_PARAMETER_TYPE)) {
@@ -698,7 +698,7 @@ public class XtceStaxReader {
         String refName = readMandatoryAttribute("arrayTypeRef", xmlEvent.asStartElement());
 
         NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER_TYPE).addResolvedAction(nd -> {
-            ptype.setType((ParameterType)nd);
+            ptype.setElementType((ParameterType)nd);
             return true;
         });
         spaceSystem.addUnresolvedReference(nr);
@@ -2171,7 +2171,6 @@ public class XtceStaxReader {
                 logUnknown();
             }
             if (entry != null) {
-                entry.setContainer(container);
                 container.addEntry(entry);
             }
         }
@@ -2246,8 +2245,7 @@ public class XtceStaxReader {
         String refName = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
 
         SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; // default
-        ParameterEntry parameterEntry = null;
-        parameterEntry = new ParameterEntry(-1, null, 0, locationType);
+        ParameterEntry parameterEntry = new ParameterEntry(0, locationType);
         final ParameterEntry finalpe = parameterEntry;
         NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
             finalpe.setParameter((Parameter) nd);
@@ -2284,9 +2282,9 @@ public class XtceStaxReader {
         SequenceContainer container = spaceSystem.getSequenceContainer(refName);
         ContainerEntry containerEntry = null;
         if (container != null) {
-            containerEntry = new ContainerEntry(-1, null, 0, locationType, container);
+            containerEntry = new ContainerEntry(0, locationType, container);
         } else {
-            containerEntry = new ContainerEntry(-1, null, 0, locationType);
+            containerEntry = new ContainerEntry(0, locationType);
             final ContainerEntry finalce = containerEntry;
             NameReference nr = new UnresolvedNameReference(refName, Type.SEQUENCE_CONTAINER).addResolvedAction(nd -> {
                 finalce.setRefContainer((SequenceContainer) nd);
@@ -2736,7 +2734,7 @@ public class XtceStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(XTCE_MEMBER_LIST)) {
-                argtype.setMemberList(readMemberList(spaceSystem, false));
+                argtype.addMembers(readMemberList(spaceSystem, false));
             } else if (isEndElementWithName(XTCE_AGGREGATE_ARGUMENT_TYPE)) {
                 return argtype;
             } else {

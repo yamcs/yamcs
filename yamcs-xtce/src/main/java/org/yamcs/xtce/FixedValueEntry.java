@@ -35,8 +35,8 @@ public class FixedValueEntry extends SequenceEntry {
         this.binaryValue = binaryValue;
         this.sizeInBits = sizeInBits;
     }
-    public FixedValueEntry(int position, CommandContainer container, int locationInContainerInBits, ReferenceLocationType location, String name, byte[] binaryValue, int sizeInBits) {
-        super(position, container, locationInContainerInBits, location);
+    public FixedValueEntry(int locationInContainerInBits, ReferenceLocationType location, String name, byte[] binaryValue, int sizeInBits) {
+        super(locationInContainerInBits, location);
         if(sizeInBits > binaryValue.length*8) {
             throw new IllegalArgumentException("binaryValue has to have at least sizeInBits("+sizeInBits+") bits, instead of "+(binaryValue.length*8));
         }

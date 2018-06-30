@@ -21,7 +21,7 @@ import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
-public class SpreadsheetLoaderTest {
+public class XlsV6LoaderTest {
     XtceDb db;
     
     @Before
@@ -117,4 +117,6 @@ public class SpreadsheetLoaderTest {
         
         assertEquals(1, encoding.getContextCalibratorList().size());
     }
+    
+    
 }

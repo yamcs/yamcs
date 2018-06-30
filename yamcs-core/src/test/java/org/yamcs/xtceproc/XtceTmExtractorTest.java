@@ -1,5 +1,6 @@
 package org.yamcs.xtceproc;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +29,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.RefMdbPacketGenerator;
 import org.yamcs.YConfiguration;
@@ -36,6 +39,7 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
@@ -659,6 +663,54 @@ public class XtceTmExtractorTest {
         
         ParameterValue pv2 = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/TimePara6_2"));
         assertEquals("1980-01-06T00:00:01.500Z", TimeEncoding.toString(pv2.getEngValue().getTimestampValue()));
+    }
+
+    @Test
+    public void testPKT7_Aggrgate() throws ConfigurationException {
+        
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+
+        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
+        tmExtractor.provideAll();
+        
+        byte[] bb = tmGenerator.generate_PKT7();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        
+        ParameterValueList received = tmExtractor.getParameterResult();
+        assertEquals(4, received.size() );
+
+        ParameterValue pv = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/aggregate_para1"));
+        AggregateValue aggrv = (AggregateValue) pv.getEngValue();
+        assertEquals(tmGenerator.paggr1_member1, aggrv.getMemberValue("member1").getUint32Value());
+        assertEquals(tmGenerator.paggr1_member2, aggrv.getMemberValue("member2").getUint32Value());
+        assertEquals(tmGenerator.paggr1_member3, aggrv.getMemberValue("member3").getFloatValue(), 1e-5);
+    }
+    
+    @Test
+    public void testPKT8_ArrayOfAggrgate() throws ConfigurationException {
+     //  xtcedb.print(System.out);
+        
+        RefMdbPacketGenerator tmGenerator=new RefMdbPacketGenerator();
+
+        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
+        tmExtractor.provideAll();
+        
+        byte[] bb = tmGenerator.generate_PKT8();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+        
+        ParameterValueList received = tmExtractor.getParameterResult();
+        assertEquals(5, received.size() );
+
+        ParameterValue pv = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/array_para1"));
+        ArrayValue arrv = (ArrayValue) pv.getEngValue();
+        assertArrayEquals(new int[] {tmGenerator.para_pkt8_count}, arrv.getDimensions());
+        for(int i=0; i<tmGenerator.para_pkt8_count; i++) {
+            AggregateValue aggrv = (AggregateValue) arrv.getElementValue(i);
+            assertEquals(i, aggrv.getMemberValue("member1").getUint32Value());
+            assertEquals(2*i, aggrv.getMemberValue("member2").getUint32Value());
+            assertEquals(i/2.0, aggrv.getMemberValue("member3").getFloatValue(), 1e-5);
+        }
+        assertEquals(pv.getRawValue(), pv.getEngValue());
     }
     
     @Test

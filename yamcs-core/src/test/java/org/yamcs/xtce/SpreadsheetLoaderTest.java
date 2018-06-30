@@ -117,4 +117,25 @@ public class SpreadsheetLoaderTest {
         
         assertEquals(1, encoding.getContextCalibratorList().size());
     }
+
+    @Test
+    public void testAggregates() throws Exception {
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/aggregate_para1");
+        AggregateParameterType ptype = (AggregateParameterType) p.getParameterType();
+        IntegerParameterType mtype = (IntegerParameterType) ptype.getMember("member1").getType();
+        IntegerDataEncoding enc = (IntegerDataEncoding) mtype.getEncoding();
+        assertEquals(8, enc.sizeInBits);
+        
+        FloatParameterType ftype = (FloatParameterType) ptype.getMember("member3").getType();
+        assertEquals(32, ftype.getSizeInBits());
+    }
+    
+    @Test
+    public void testArrays() throws Exception {
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/array_para1");
+        ArrayParameterType ptype = (ArrayParameterType) p.getParameterType();
+        IntegerParameterType mtype = (IntegerParameterType) ptype.getElementType();
+        IntegerDataEncoding enc = (IntegerDataEncoding) mtype.getEncoding();
+        assertEquals(8, enc.sizeInBits);
+    }
 }

@@ -24,6 +24,9 @@ import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeDataType;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
+import org.yamcs.xtce.AggregateArgumentType;
+import org.yamcs.xtce.AggregateDataType;
+import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
@@ -32,6 +35,10 @@ import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
 import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.ArrayArgumentType;
+import org.yamcs.xtce.ArrayDataType;
+import org.yamcs.xtce.ArrayParameterEntry;
+import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.BinaryDataEncoding;
@@ -70,8 +77,10 @@ import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerDataType;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerValidRange;
+import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
+import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.OnPeriodicRateTrigger;
@@ -129,20 +138,22 @@ import jxl.read.biff.BiffException;
  *
  */
 public class V7Loader extends V7LoaderBase {
-    protected HashMap<String, Calibrator> calibrators = new HashMap<>();
-    protected HashMap<String, List<ContextCalibrator>> contextCalibrators = new HashMap<>();
-    protected HashMap<String, String> timeCalibEpochs = new HashMap<>();
-    protected HashMap<String, String> timeCalibScales = new HashMap<>();
-    protected HashMap<String, SpreadsheetLoadContext> timeCalibContexts = new HashMap<>();
+    protected Map<String, Calibrator> calibrators = new HashMap<>();
+    protected Map<String, List<ContextCalibrator>> contextCalibrators = new HashMap<>();
+    protected Map<String, String> timeCalibEpochs = new HashMap<>();
+    protected Map<String, String> timeCalibScales = new HashMap<>();
+    protected Map<String, SpreadsheetLoadContext> timeCalibContexts = new HashMap<>();
 
-    protected HashMap<String, DataTypeRecord> dataTypes = new HashMap<>();
+    protected Map<String, DataTypeRecord> dataTypes = new HashMap<>();
 
-    protected HashMap<String, EnumerationDefinition> enumerations = new HashMap<>();
-    protected HashMap<String, Parameter> parameters = new HashMap<>();
-    protected HashSet<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
+    protected Map<String, EnumerationDefinition> enumerations = new HashMap<>();
+    protected Map<String, Parameter> parameters = new HashMap<>();
+    protected Set<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
+    Map<String, SequenceContainer> containers = new HashMap<>();
 
     final ConditionParser conditionParser = new ConditionParser(ctx);
     final Pattern FIXED_VALUE_PATTERN = Pattern.compile("FixedValue\\((\\d+)\\)");
+
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
     final static String FORMAT_VERSION = "7.0";
     // Explicitly support these versions (i.e. load without warning)
@@ -280,7 +291,7 @@ public class V7Loader extends V7LoaderBase {
                     String.format("Format version (%s) not supported by loader version (%s)", version, FORMAT_VERSION));
         }
         fileFormatVersion = version;
-        if(!hasColumn(cells, 1)) {
+        if (!hasColumn(cells, 1)) {
             throw new SpreadsheetLoadException(ctx, "No value provided for the system name");
         }
         String name = cells[1].getContents();
@@ -445,12 +456,12 @@ public class V7Loader extends V7LoaderBase {
             DataTypeRecord dtr = new DataTypeRecord();
             dtr.row = i;
             dtr.name = getContent(cells, CN_DTYPE_NAME);
-            if(dataTypes.containsKey(dtr.name)) {
-                throw new SpreadsheetLoadException(ctx, "There is already a type with the name '"+dtr.name+"'");
+            if (dataTypes.containsKey(dtr.name)) {
+                throw new SpreadsheetLoadException(ctx, "There is already a type with the name '" + dtr.name + "'");
             }
             validateNameType(dtr.name);
 
-            dtr.engType = getContent(cells, CN_DTYPE_ENGTYPE);
+            dtr.engType = getContent(cells, CN_DTYPE_ENGTYPE).trim();
             dtr.rawType = getContent(cells, CN_DTYPE_RAWTYPE, null);
             dtr.encoding = getContent(cells, CN_DTYPE_ENCODING, null);
             dtr.engUnit = getContent(cells, CN_DTYPE_ENGUNIT, null);
@@ -474,7 +485,7 @@ public class V7Loader extends V7LoaderBase {
         String calib = dtr.calibration;
         String units = dtr.engUnit;
 
-        DataType dtype = createParamOrArgType(name, engtype, param);
+        DataType dtype = createParamOrArgType(spaceSystem, name, engtype, param);
 
         if (units != null && dtype instanceof BaseDataType) {
             UnitType unitType = new UnitType(units);
@@ -541,11 +552,21 @@ public class V7Loader extends V7LoaderBase {
                         + " is supposed to have an enumeration '" + calib + "' but the enumeration does not exist");
             }
             for (Entry<Long, String> entry : enumeration.valueMap.entrySet()) {
-               edtype.addEnumerationValue(entry.getKey(), entry.getValue());
+                edtype.addEnumerationValue(entry.getKey(), entry.getValue());
             }
-        } else if(dtype instanceof AbsoluteTimeDataType) {
+        } else if (dtype instanceof AbsoluteTimeDataType) {
             ((AbsoluteTimeDataType) dtype).setEncoding(encoding);
-            populateTimeParameter(spaceSystem, (AbsoluteTimeDataType)dtype, calib);
+            populateTimeParameter(spaceSystem, (AbsoluteTimeDataType) dtype, calib);
+        } else if (dtype instanceof AggregateDataType) {
+            if (encodings != null || rawtype != null) {
+                throw new SpreadsheetLoadException(ctx,
+                        name + ": encoding or raw type cannot be specified for aggregate data types");
+            }
+        } else if (dtype instanceof ArrayDataType) {
+            if (encodings != null || rawtype != null) {
+                throw new SpreadsheetLoadException(ctx,
+                        name + ": encoding or raw type cannot be specified for array data types");
+            }
         } else {
             ((BaseDataType) dtype).setEncoding(encoding);
         }
@@ -561,7 +582,7 @@ public class V7Loader extends V7LoaderBase {
     }
 
     // creates either a ParameterDataType or ArgumentDataType
-    private DataType createParamOrArgType(String name, String engtype, boolean param) {
+    private DataType createParamOrArgType(SpaceSystem spaceSystem, String name, String engtype, boolean param) {
         if ("uint".equalsIgnoreCase(engtype)) {
             engtype = PARAM_ENGTYPE_UINT32;
         } else if ("int".equalsIgnoreCase(engtype)) {
@@ -599,10 +620,59 @@ public class V7Loader extends V7LoaderBase {
                 throw new SpreadsheetLoadException(ctx, "Absolute time arguments are not supported");
             }
             ptype = new AbsoluteTimeParameterType(name);
+        } else if (engtype.startsWith("{")) {
+            if (!engtype.endsWith("}")) {
+                throw new SpreadsheetLoadException(ctx, "Missing ending { from the aggregate");
+            }
+            ptype = createAggregateType(spaceSystem, name, engtype, param);
+        } else if (engtype.endsWith("]")) {
+            ptype = createArrayType(spaceSystem, name, engtype, param);
         } else {
             throw new SpreadsheetLoadException(ctx, "Unknown engineering type '" + engtype + "'");
         }
         return ptype;
+    }
+
+    private DataType createAggregateType(SpaceSystem spaceSystem, String name, String engtype, boolean param) {
+        AggregateDataType atype = param ? new AggregateParameterType(name) : new AggregateArgumentType(name);
+        List<AggrMember> l = parseAggregateExpr(engtype);
+        for (AggrMember m : l) {
+            validateNameType(m.name);
+            DataTypeRecord dtr = dataTypes.get(m.dataType);
+            if (dtr == null) {
+                throw new SpreadsheetLoadException(ctx,
+                        "Aggregate " + name + " makes reference to unknown type '" + m.dataType);
+            }
+            DataType dtype = createDataType(spaceSystem, dtr, param);
+            Member member = new Member(m.name);
+            member.setDataType(dtype);
+            atype.addMember(member);
+        }
+        return atype;
+    }
+
+    Pattern arrayPattern = Pattern.compile("(\\w+)(\\[\\d*\\])+");
+    Pattern sqBracket = Pattern.compile("\\[\\d*\\]");
+
+    private DataType createArrayType(SpaceSystem spaceSystem, String name, String engtype, boolean param) {
+        ArrayDataType atype = param ? new ArrayParameterType(name) : new ArrayArgumentType(name);
+        Matcher m = arrayPattern.matcher(engtype);
+        if (!m.matches()) {
+            throw new SpreadsheetLoadException(ctx, "Cannot match array '" + engtype + "'");
+        }
+        DataTypeRecord dtr = dataTypes.get(m.group(1));
+        if (dtr == null) {
+            throw new SpreadsheetLoadException(ctx,
+                    "Array " + name + " makes reference to unknown type '" + m.group(1));
+        }
+        m = sqBracket.matcher(engtype);
+        int c = 0;
+        while (m.find()) {
+            c++;
+        }
+        atype.setNumberOfDimensions(c);
+        atype.setElementType(createDataType(spaceSystem, dtr, param));
+        return atype;
     }
 
     protected void loadParametersSheet(SpaceSystem spaceSystem, String sheetName, DataSource dataSource) {
@@ -631,7 +701,7 @@ public class V7Loader extends V7LoaderBase {
             parameters.put(name, param);
             param.setParameterType(ptype);
             param.setDataSource(dataSource);
-            
+
             XtceAliasSet xas = getAliases(firstRow, cells);
             if (xas != null) {
                 param.setAliasSet(xas);
@@ -960,8 +1030,7 @@ public class V7Loader extends V7LoaderBase {
         if (sheet == null) {
             return;
         }
-
-        HashMap<String, SequenceContainer> containers = new HashMap<>();
+        containers.clear();
         HashMap<String, String> parents = new HashMap<>();
         Cell[] firstRow = jumpToRow(sheet, 0);
 
@@ -1052,113 +1121,21 @@ public class V7Loader extends V7LoaderBase {
             // one)
             i++;
 
-            // now, we start processing the parameters (or references to aggregate containers)
-            boolean end = false;
+            // now, we start processing the parameters (or references to containers)
             int counter = 0; // sequence number of the SequenceEntrys in the SequenceContainer
-            while (!end && (i < sheet.getRows())) {
-
-                // get the next row, containing a measurement/aggregate reference
+            while (i < sheet.getRows()) {
+                // get the next row, containing a measurement/container reference
                 cells = jumpToRow(sheet, i);
                 // determine whether we have not reached the end of the packet definition.
                 if (!hasColumn(cells, IDX_CONT_PARA_NAME)) {
-                    end = true;
-                    continue;
+                    break;
                 }
-
-                // extract a few variables, for further use
-                String flags = cells[IDX_CONT_FLAGS].getContents();
-                String paraname = cells[IDX_CONT_PARA_NAME].getContents();
-                int relpos = 0;
-                if (hasColumn(cells, IDX_CONT_RELPOS)) {
-                    relpos = Integer.decode(cells[IDX_CONT_RELPOS].getContents());
-                }
-
-                // we add the relative position to the absoluteOffset, to specify the location of the new parameter.
-                // We only do this if the absoluteOffset is not equal to -1,
-                // because that would mean that we cannot and should not use absolute positions anymore
-                if (absoluteoffset != -1) {
-                    absoluteoffset += relpos;
-                }
-                // the repeat string will contain the number of times a measurement (or aggregate container) should be
-                // repeated. It is a String because at this point it can be either a number or a reference to another
-                // measurement
-                String repeat = "";
-                // we check whether the measurement (or aggregate container) has a '*' inside it, meaning that it is a
-                // repeat measurement/aggregate
-                Matcher m = Pattern.compile("(.*)[*](.*)").matcher(paraname);
-                if (m.matches()) {
-                    repeat = m.group(1);
-                    paraname = m.group(2);
-                }
-
-                // check whether this measurement/aggregate actually has an entry in the parameters table
-                // first we check if it is a measurement by trying to retrieve it from the parameters map. If this
-                // succeeds we add it as a new parameterentry,
-                // otherwise, we search for it in the containersmap, as it is probably an aggregate. If it is not, we
-                // encountered an error
-                // note that one of the next 2 lines will return null, but this does not pose a problem, it makes
-                // programming easier along the way
-                Parameter param = parameters.get(paraname);
-                SequenceContainer sc = containers.get(paraname);
-                // if the sequenceentry is repeated a fixed number of times, this number is recorded in the 'repeated'
-                // variable and used to calculate the next absoluteoffset (done below)
-                int repeated = -1;
-                if (param != null) {
-                    checkThatParameterSizeCanBeComputed(param);
-                    SequenceEntry se;
-                    if (flags.contains("L") || flags.contains("l")) {
-                        throw new SpreadsheetLoadException(ctx,
-                                "Cannot specify (anymore) the endianess of a parameter in the container sheet. Please use the encoding column in the parameter sheet. ");
-                    }
-
-                    // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that
-                    // had as a result that the absoluteoffset could not be determined anymore; hence, a relative
-                    // position is added
-                    if (absoluteoffset == -1) {
-                        se = new ParameterEntry(counter, container, relpos, ReferenceLocationType.previousEntry, param);
-                    } else {
-                        se = new ParameterEntry(counter, container, absoluteoffset,
-                                ReferenceLocationType.containerStart, param);
-                    }
-                    // also check if the parameter should be added multiple times, and if so, do so
-                    repeated = addRepeat(se, repeat);
-                    container.getEntryList().add(se);
-                } else if (sc != null) {
-                    // ok, we found it as an aggregate, so we add it to the entryList of container, as a new
-                    // ContainerEntry
-                    // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that
-                    // had as a result that the absoluteoffset could not be determined anymore; hence, a relative
-                    // position is added
-                    SequenceEntry se;
-                    if (absoluteoffset == -1) {
-                        se = new ContainerEntry(counter, container, relpos, ReferenceLocationType.previousEntry, sc);
-                    } else {
-                        se = new ContainerEntry(counter, container, absoluteoffset,
-                                ReferenceLocationType.containerStart, sc);
-                    }
-                    // also check if the parameter should be added multiple times, and if so, do so
-                    repeated = addRepeat(se, repeat);
-                    container.getEntryList().add(se);
-                } else {
-                    throw new SpreadsheetLoadException(ctx, "The measurement/container '" + paraname
-                            + "' was not found in the parameters or containers map");
-                }
-                // after adding this measurement, we need to update the absoluteoffset for the next one. For this, we
-                // add the size of the current SequenceEntry to the absoluteoffset
-                int size = getSize(param, sc);
-                if ((repeated != -1) && (size != -1) && (absoluteoffset != -1)) {
-                    absoluteoffset += repeated * size;
-                } else {
-                    // from this moment on, absoluteoffset is set to -1, meaning that all subsequent SequenceEntries
-                    // must be relative
-                    absoluteoffset = -1;
-                }
-
+                absoluteoffset = addEntry(container, absoluteoffset, counter, cells);
                 i++;
                 counter++;
             }
 
-            // at this point, we have added all the parameters and aggregate containers to the current packets. What
+            // at this point, we have added all the parameters and containers to the current packets. What
             // remains to be done is link it with its base
             if (parent != null) {
                 parents.put(name, parent);
@@ -1171,22 +1148,11 @@ public class V7Loader extends V7LoaderBase {
                 }
                 if (sc != null) {
                     container.setBaseContainer(sc);
-                    if (("5.2".compareTo(fileFormatVersion) > 0) && (!parents.containsKey(parent))) {
-                        // prior to version 5.2 of the format, the second level of containers were used as archive
-                        // partitions
-                        // TODO: remove when switching to 6.x format
-                        container.useAsArchivePartition(true);
-                    }
                 } else {
                     NameReference nr = new UnresolvedNameReference(parent, Type.SEQUENCE_CONTAINER)
                             .addResolvedAction(nd -> {
                                 SequenceContainer sc1 = (SequenceContainer) nd;
                                 container.setBaseContainer(sc1);
-                                if ("5.2".compareTo(fileFormatVersion) > 0) {
-                                    if (sc1.getBaseContainer() == null) {
-                                        container.useAsArchivePartition(true);
-                                    }
-                                }
                                 return true;
                             });
                     spaceSystem.addUnresolvedReference(nr);
@@ -1207,27 +1173,143 @@ public class V7Loader extends V7LoaderBase {
         }
     }
 
-    private void checkThatParameterSizeCanBeComputed(Parameter param) {
-        DataEncoding encoding = ((BaseDataType) param.getParameterType()).getEncoding();
-        if (encoding == null) {
+    private int addEntry(SequenceContainer container, int absoluteoffset, int counter, Cell[] cells) {
+        String paraname = cells[IDX_CONT_PARA_NAME].getContents();
+        int relpos = 0;
+        if (hasColumn(cells, IDX_CONT_RELPOS)) {
+            relpos = Integer.decode(cells[IDX_CONT_RELPOS].getContents());
+        }
+
+        int pos;
+        ReferenceLocationType location;
+        // absoluteOffset = -1 means we have to add relative entries.
+        // We prefer absolute if possible because we can process them without processing the previous ones
+        if (absoluteoffset != -1) {
+            absoluteoffset += relpos;
+            pos = absoluteoffset;
+            location = ReferenceLocationType.containerStart;
+        } else {
+            pos = relpos;
+            location = ReferenceLocationType.previousEntry;
+        }
+        // the repeat string will contain the number of times a measurement (or container) should be
+        // repeated. It is a String because at this point it can be either a number or a reference to another
+        // measurement
+        String repeat = null;
+        // we check whether the measurement (or container) has a '*' inside it, meaning that it is a
+        // repeat measurement/container
+        Matcher m = Pattern.compile("(.*)[*](.*)").matcher(paraname);
+        if (m.matches()) {
+            repeat = m.group(1);
+            paraname = m.group(2);
+        }
+        m = Pattern.compile("(\\w+)(\\[[\\w\\d]+\\])+").matcher(paraname);
+        SequenceEntry se;
+        int size;
+        if (m.matches()) {
+            se = makeArrayEntry(m.group(1), m.group(2));
+            size = -1;
+        } else if (parameters.containsKey(paraname)) {
+            Parameter param = parameters.get(paraname);
+            checkThatParameterSizeCanBeComputed(param.getName(), param.getParameterType());
+            se = new ParameterEntry(pos, location, param);
+            size = getParameterSize(param.getName(), param.getParameterType());
+        } else if (containers.containsKey(paraname)) {
+            SequenceContainer sc = containers.get(paraname);
+            se = new ContainerEntry(pos, location, sc);
+            size = sc.getSizeInBits();
+        } else {
+            throw new SpreadsheetLoadException(ctx, "The measurement/container '" + paraname
+                    + "' was not found in the parameters or containers map");
+        }
+
+        int repeated = addRepeat(se, repeat);
+        container.addEntry(se);
+        // after adding this measurement, we need to update the absoluteoffset for the next one. For this, we
+        // add the size of the current SequenceEntry to the absoluteoffset
+        if ((repeated != -1) && (size != -1) && (absoluteoffset != -1)) {
+            absoluteoffset += repeated * size;
+        } else {
+            // from this moment on, absoluteoffset is set to -1, meaning that all subsequent SequenceEntries
+            // must be relative
+            absoluteoffset = -1;
+        }
+        
+        return absoluteoffset;
+    }
+
+    private ArrayParameterEntry makeArrayEntry(String arrayparam, String arraystr) {
+        // array parameter
+        ArrayParameterEntry se = new ArrayParameterEntry();
+        Parameter param = parameters.get(arrayparam);
+        if (param == null) {
+            throw new SpreadsheetLoadException(ctx, "The array parameter '" + arrayparam
+                    + "' was not found in the parameters or containers map");
+        }
+        if (!(param.getParameterType() instanceof ArrayParameterType)) {
+            throw new SpreadsheetLoadException(ctx, "The parameter '" + arrayparam
+                    + "' is not an array parameter but " + param.getParameterType().getClass().getTypeName());
+        }
+        se.setParameter(param);
+
+        ArrayParameterType aptype = (ArrayParameterType) param.getParameterType();
+        Matcher m1 = Pattern.compile("\\[([\\d\\w]+)\\]").matcher(arraystr);
+        List<IntegerValue> l = new ArrayList<>();
+        while (m1.find()) {
+            String dim = m1.group(1);
+            try {
+                int rep = Integer.decode(dim);
+                l.add(new FixedIntegerValue(rep));
+            } catch (NumberFormatException e) {
+                Parameter repeatparam = parameters.get(dim);
+                if (repeatparam == null) {
+                    throw new SpreadsheetLoadException(ctx,
+                            "Cannot find the parameter for array dimension '" + dim + "'");
+                }
+                l.add(new DynamicIntegerValue(new ParameterInstanceRef(repeatparam, true)));
+            }
+
+        }
+        if (l.size() != aptype.getNumberOfDimensions()) {
             throw new SpreadsheetLoadException(ctx,
-                    "Parameter " + param.getName() + " is part of a container but has no data encoding specified");
+                    "Invalid number of dimensions " + l.size() + " specified for array parameter '" + arrayparam
+                            + "' should be " + aptype.getNumberOfDimensions());
         }
-        if (encoding.getSizeInBits() > 0) {
-            return;
-        }
-        if (encoding instanceof IntegerDataEncoding) {
-            IntegerDataEncoding intenc = (IntegerDataEncoding) encoding;
-            if (intenc.getEncoding() != IntegerDataEncoding.Encoding.STRING) {
-                throw new SpreadsheetLoadException(ctx, "Parameter " + param.getName()
-                        + " is part of a container and encoded as integer but has no size in bits specified");
+        se.setSize(l);
+
+        return se;
+    }
+
+    private void checkThatParameterSizeCanBeComputed(String paraName, ParameterType ptype) {
+        if (ptype instanceof BaseDataType) {
+            DataEncoding encoding = ((BaseDataType) ptype).getEncoding();
+            if (encoding == null) {
+                throw new SpreadsheetLoadException(ctx,
+                        "Parameter " + paraName + " is part of a container but has no data encoding specified");
             }
-        } else if (encoding instanceof FloatDataEncoding) {
-            FloatDataEncoding fenc = (FloatDataEncoding) encoding;
-            if (fenc.getEncoding() != FloatDataEncoding.Encoding.STRING) {
-                throw new SpreadsheetLoadException(ctx, "Parameter " + param.getName()
-                        + " is part of a container and encoded as float but has no size in bits specified");
+            if (encoding.getSizeInBits() > 0) {
+                return;
             }
+            if (encoding instanceof IntegerDataEncoding) {
+                IntegerDataEncoding intenc = (IntegerDataEncoding) encoding;
+                if (intenc.getEncoding() != IntegerDataEncoding.Encoding.STRING) {
+                    throw new SpreadsheetLoadException(ctx, "Parameter " + paraName
+                            + " is part of a container and encoded as integer but has no size in bits specified");
+                }
+            } else if (encoding instanceof FloatDataEncoding) {
+                FloatDataEncoding fenc = (FloatDataEncoding) encoding;
+                if (fenc.getEncoding() != FloatDataEncoding.Encoding.STRING) {
+                    throw new SpreadsheetLoadException(ctx, "Parameter " + paraName
+                            + " is part of a container and encoded as float but has no size in bits specified");
+                }
+            }
+        } else if (ptype instanceof AggregateParameterType) {
+            for (Member m : ((AggregateParameterType) ptype).getMemberList()) {
+                checkThatParameterSizeCanBeComputed(paraName + "/" + m.getName(), (ParameterType) m.getType());
+            }
+        } else if (ptype instanceof ArrayParameterType) {
+            checkThatParameterSizeCanBeComputed(paraName,
+                    (ParameterType) ((ArrayParameterType) ptype).getElementType());
         }
     }
 
@@ -1256,7 +1338,7 @@ public class V7Loader extends V7LoaderBase {
             String name = getContent(cells, CN_CMD_NAME);
             String parent = getContent(cells, CN_CMD_PARENT, null);
             String argAssignment = null;
-            if(parent!=null) {
+            if (parent != null) {
                 argAssignment = getContent(cells, CN_CMD_ARG_ASSIGNMENT, null);
             }
 
@@ -1282,7 +1364,7 @@ public class V7Loader extends V7LoaderBase {
                 cmd.setAliasSet(xas);
             }
             String flags = getContent(cells, CN_CMD_FLAGS, null);
-            if(flags!=null && flags.contains("A")) {
+            if (flags != null && flags.contains("A")) {
                 cmd.setAbstract(true);
             }
             cmd.setShortDescription(getContent(cells, CN_CMD_DESCRIPTION, null));
@@ -1295,7 +1377,7 @@ public class V7Loader extends V7LoaderBase {
             int counter = 0; // sequence number of the SequenceEntrys in the SequenceContainer
             while (!end && (i < sheet.getRows())) {
 
-                // get the next row, containing a measurement/aggregate reference
+                // get the next row, containing a measurement/container reference
                 cells = jumpToRow(sheet, i);
 
                 // determine whether we have not reached the end of the command definition.
@@ -1314,25 +1396,26 @@ public class V7Loader extends V7LoaderBase {
                     pos = new Position(pos.pos, false);
                 }
                 String dataType = getContent(cells, CN_CMD_DTYPE);
-                        
+
                 if (dataType.startsWith("FixedValue")) {
                     Matcher m = FIXED_VALUE_PATTERN.matcher(dataType);
-                    if(!m.matches()) {
-                            throw new SpreadsheetLoadException(ctx, "FixedValue does not specify sizeInBits for " + argname
-                                + " on line " + (i + 1)+". Please use something like FixedValue(n) where n is the size in bits.");
+                    if (!m.matches()) {
+                        throw new SpreadsheetLoadException(ctx, "FixedValue does not specify sizeInBits for " + argname
+                                + " on line " + (i + 1)
+                                + ". Please use something like FixedValue(n) where n is the size in bits.");
                     }
                     int sizeInBits = Integer.parseInt(m.group(1));
                     String hexValue = getContent(cells, CN_CMD_DEFVALUE);
                     byte[] binaryValue = StringConverter.hexStringToArray(hexValue);
                     FixedValueEntry fve;
                     if (pos.relative) {
-                        fve = new FixedValueEntry(counter, container, pos.pos, ReferenceLocationType.previousEntry,
-                                argname, binaryValue, sizeInBits);
+                        fve = new FixedValueEntry(pos.pos, ReferenceLocationType.previousEntry, argname, binaryValue,
+                                sizeInBits);
                     } else {
-                        fve = new FixedValueEntry(counter, container, pos.pos + ((extraOffset != -1) ? extraOffset : 0),
+                        fve = new FixedValueEntry(pos.pos + ((extraOffset != -1) ? extraOffset : 0),
                                 ReferenceLocationType.containerStart, argname, binaryValue, sizeInBits);
                     }
-                    container.getEntryList().add(fve);
+                    container.addEntry(fve);
                 } else {
                     loadArgument(spaceSystem, cells, cmd, container, extraOffset, counter);
                 }
@@ -1340,7 +1423,7 @@ public class V7Loader extends V7LoaderBase {
                 counter++;
             }
 
-            // at this point, we have added all the parameters and aggregate containers to the current packets. What
+            // at this point, we have added all the parameters and containers to the current packets. What
             // remains to be done is link it with its base
             if (parent != null) {
                 // the condition is parsed and used to create the container.restrictionCriteria
@@ -1374,12 +1457,11 @@ public class V7Loader extends V7LoaderBase {
             spaceSystem.addMetaCommand(cmd);
         }
     }
-    
 
     private void loadArgument(SpaceSystem spaceSystem, Cell[] cells, MetaCommand cmd, CommandContainer container,
             int extraOffset, int counter) {
         String dtype = getContent(cells, CN_CMD_DTYPE);
-        String name =  getContent(cells, CN_CMD_ARGNAME);
+        String name = getContent(cells, CN_CMD_ARGNAME);
         Position pos = Position.RELATIVE_ZERO;
 
         if (hasColumn(cells, CN_CMD_POSITION)) {
@@ -1388,21 +1470,21 @@ public class V7Loader extends V7LoaderBase {
         if (pos.relative && counter == 0 && extraOffset != -1) {
             pos = new Position(pos.pos, false);
         }
-        
+
         DataTypeRecord dtr = dataTypes.get(dtype);
         if (dtr == null) {
             throw new SpreadsheetLoadException(ctx, "Cannot find a  data type on name '" + dtype + "'");
         }
         ArgumentType atype = (ArgumentType) createDataType(spaceSystem, dtr, false);
-        
+
         if (cmd.getArgument(name) != null) {
             throw new SpreadsheetLoadException(ctx, "Duplicate argument with name '" + name + "'");
         }
         Argument arg = new Argument(name);
         cmd.addArgument(arg);
-        
+
         arg.setArgumentType(atype);
-     
+
         if (hasColumn(cells, CN_CMD_DEFVALUE)) {
             String v = getContent(cells, CN_CMD_DEFVALUE);
             if (atype instanceof IntegerArgumentType) {
@@ -1466,18 +1548,17 @@ public class V7Loader extends V7LoaderBase {
         arg.setShortDescription(getContent(cells, CN_CMD_DESCRIPTION, null));
 
         ArgumentEntry ae;
-        // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a
+        // if absoluteoffset is -1, somewhere along the line we came across a measurement or container that had as a
         // result that the absoluteoffset could not be determined anymore; hence, a relative position is added
         if (pos.relative) {
-            ae = new ArgumentEntry(counter, container, pos.pos, ReferenceLocationType.previousEntry, arg);
+            ae = new ArgumentEntry(pos.pos, ReferenceLocationType.previousEntry, arg);
         } else {
-            ae = new ArgumentEntry(counter, container, pos.pos + ((extraOffset != -1) ? extraOffset : 0),
+            ae = new ArgumentEntry(pos.pos + ((extraOffset != -1) ? extraOffset : 0),
                     ReferenceLocationType.containerStart, arg);
         }
 
-        container.getEntryList().add(ae);
+        container.addEntry(ae);
     }
-
 
     protected void loadCommandOptionsSheet(SpaceSystem spaceSystem, String sheetName) {
         Sheet sheet = switchToSheet(sheetName, false);
@@ -2009,13 +2090,13 @@ public class V7Loader extends V7LoaderBase {
                     }
                 }
 
-                checkAndAddAlarm(cells, AlarmLevels.watch, paraRef, context
-                        , CN_ALARM_WATCH_TRIGGER, CN_ALARM_WATCH_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.warning, paraRef, context, 
+                checkAndAddAlarm(cells, AlarmLevels.watch, paraRef, context, CN_ALARM_WATCH_TRIGGER,
+                        CN_ALARM_WATCH_VALUE);
+                checkAndAddAlarm(cells, AlarmLevels.warning, paraRef, context,
                         CN_ALARM_WARNING_TRIGGER, CN_ALARM_WARNING_VALUE);
                 checkAndAddAlarm(cells, AlarmLevels.distress, paraRef, context,
                         CN_ALARM_DISTRESS_TRIGGER, CN_ALARM_DISTRESS_VALUE);
-                checkAndAddAlarm(cells, AlarmLevels.critical, paraRef, context, 
+                checkAndAddAlarm(cells, AlarmLevels.critical, paraRef, context,
                         CN_ALARM_CRITICAL_TRIGGER, CN_ALARM_CRITICAL_VALUE);
                 checkAndAddAlarm(cells, AlarmLevels.severe, paraRef, context,
                         CN_ALARM_SEVERE_TRIGGER, CN_ALARM_SEVERE_VALUE);
@@ -2143,33 +2224,39 @@ public class V7Loader extends V7LoaderBase {
         }
     }
 
-    private int getSize(Parameter param, SequenceContainer sc) {
-        // either we have a Parameter or we have a SequenceContainer, we cannot have both or neither
-        if (param != null) {
-            DataEncoding de = ((BaseDataType) param.getParameterType()).getEncoding();
+    private int getParameterSize(String paramName, ParameterType ptype) {
+        if (ptype instanceof BaseDataType) {
+            DataEncoding de = ((BaseDataType) ptype).getEncoding();
             if (de == null) {
-                throw new SpreadsheetLoadException(ctx, "Cannot determine the data encoding for " + param.getName());
+                throw new SpreadsheetLoadException(ctx,
+                        "Cannot determine the data encoding for " + paramName);
             }
-
-            if ((de instanceof FloatDataEncoding) || (de instanceof IntegerDataEncoding)
-                    || (de instanceof BinaryDataEncoding) || (de instanceof BooleanDataEncoding)) {
-                return de.getSizeInBits();
-            } else if (de instanceof StringDataEncoding) {
-                return -1;
-            } else {
-                throw new SpreadsheetLoadException(ctx, "No known size for data encoding : " + de);
+            return de.getSizeInBits();
+        } else if (ptype instanceof AggregateParameterType) {
+            int ts = 0;
+            for (Member m : ((AggregateParameterType) ptype).getMemberList()) {
+                int s = getParameterSize(paramName + "/" + m.getName(), (ParameterType) m.getType());
+                if (s == -1) {
+                    return -1;
+                } else {
+                    ts += s;
+                }
             }
+            return ts;
+        } else if (ptype instanceof ArrayParameterType) {
+            return -1;
         } else {
-            return sc.getSizeInBits();
+            throw new SpreadsheetLoadException(ctx, "Unknown parameter type " + ptype);
         }
     }
 
     /**
-     * If repeat != "", decodes it to either an integer or a parameter and adds it to the SequenceEntry If repeat is an
+     * If repeat != null, decodes it to either an integer or a parameter and adds it to the SequenceEntry If repeat is
+     * an
      * integer, this integer is returned
      */
     private int addRepeat(SequenceEntry se, String repeat) {
-        if (!repeat.equals("")) {
+        if (repeat != null) {
             try {
                 int rep = Integer.decode(repeat);
                 se.setRepeatEntry(new Repeat(new FixedIntegerValue(rep)));

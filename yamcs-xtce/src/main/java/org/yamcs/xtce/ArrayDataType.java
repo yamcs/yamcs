@@ -9,7 +9,7 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
  * @author nm
  *
  */
-public class ArrayDataType extends NameDescription {
+public class ArrayDataType extends NameDescription implements DataType {
     private static final long serialVersionUID = 1L;
 
     private DataType type;
@@ -24,7 +24,7 @@ public class ArrayDataType extends NameDescription {
      * 
      * @param type
      */
-    public void setType(DataType type) {
+    public void setElementType(DataType type) {
         this.type = type;
     }
 
@@ -34,7 +34,7 @@ public class ArrayDataType extends NameDescription {
      * @param type
      * @return
      */
-    public DataType getType() {
+    public DataType getElementType() {
         return type;
     }
 
@@ -48,5 +48,20 @@ public class ArrayDataType extends NameDescription {
 
     public Type getValueType() {
         return Type.ARRAY;
+    }
+
+    @Override
+    public String getTypeAsString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(type.getName());
+        for(int i = 0; i<numberOfDimensions; i++) {
+            sb.append("[]");
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public void setInitialValue(String initialValue) {
+        
     }
 }

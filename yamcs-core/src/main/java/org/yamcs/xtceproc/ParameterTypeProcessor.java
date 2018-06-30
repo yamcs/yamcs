@@ -414,7 +414,7 @@ public class ParameterTypeProcessor {
     }
     
     private Value calibrateArray(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, ArrayParameterType ptype, ArrayValue rawValue) {
-        ParameterType engValueType = (ParameterType) ptype.getType();
+        ParameterType engValueType = (ParameterType) ptype.getElementType();
         boolean hasCalibrator = (engValueType instanceof NumericParameterType) && hasCalibrator((NumericParameterType) engValueType);
         if(!hasCalibrator && rawValue.getElementType() == engValueType.getValueType()) {
             return rawValue;

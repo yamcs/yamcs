@@ -54,9 +54,8 @@ public class SequenceContainer extends Container {
         getEntryList().add(entry);
         // set the entries position in the list
         entry.setIndex( getEntryList().size() - 1 );
+        entry.setContainer(this);
     }
-
-   
    
     public void setEntryList(List<SequenceEntry> entryList) {
         this.entryList = entryList;

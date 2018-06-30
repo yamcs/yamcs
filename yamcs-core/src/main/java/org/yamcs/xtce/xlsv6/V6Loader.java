@@ -1072,10 +1072,9 @@ public class V6Loader extends V6LoaderBase {
                     // had as a result that the absoluteoffset could not be determined anymore; hence, a relative
                     // position is added
                     if (absoluteoffset == -1) {
-                        se = new ParameterEntry(counter, container, relpos, ReferenceLocationType.previousEntry, param);
+                        se = new ParameterEntry(relpos, ReferenceLocationType.previousEntry, param);
                     } else {
-                        se = new ParameterEntry(counter, container, absoluteoffset,
-                                ReferenceLocationType.containerStart, param);
+                        se = new ParameterEntry(absoluteoffset, ReferenceLocationType.containerStart, param);
                     }
                     // also check if the parameter should be added multiple times, and if so, do so
                     repeated = addRepeat(se, repeat);
@@ -1088,9 +1087,9 @@ public class V6Loader extends V6LoaderBase {
                     // position is added
                     SequenceEntry se;
                     if (absoluteoffset == -1) {
-                        se = new ContainerEntry(counter, container, relpos, ReferenceLocationType.previousEntry, sc);
+                        se = new ContainerEntry(relpos, ReferenceLocationType.previousEntry, sc);
                     } else {
-                        se = new ContainerEntry(counter, container, absoluteoffset,
+                        se = new ContainerEntry(absoluteoffset,
                                 ReferenceLocationType.containerStart, sc);
                     }
                     // also check if the parameter should be added multiple times, and if so, do so
@@ -1306,10 +1305,10 @@ public class V6Loader extends V6LoaderBase {
                     int sizeInBits = parseInt(ctx, cells[IDX_CMD_ENCODING].getContents());
                     FixedValueEntry fve;
                     if (pos.relative) {
-                        fve = new FixedValueEntry(counter, container, pos.pos, ReferenceLocationType.previousEntry,
+                        fve = new FixedValueEntry(pos.pos, ReferenceLocationType.previousEntry,
                                 argname, binaryValue, sizeInBits);
                     } else {
-                        fve = new FixedValueEntry(counter, container, pos.pos + ((extraOffset != -1) ? extraOffset : 0),
+                        fve = new FixedValueEntry(pos.pos + ((extraOffset != -1) ? extraOffset : 0),
                                 ReferenceLocationType.containerStart, argname, binaryValue, sizeInBits);
                     }
                     container.addEntry(fve);
@@ -1746,10 +1745,9 @@ public class V6Loader extends V6LoaderBase {
         // if absoluteoffset is -1, somewhere along the line we came across a measurement or aggregate that had as a
         // result that the absoluteoffset could not be determined anymore; hence, a relative position is added
         if (pos.relative) {
-            ae = new ArgumentEntry(counter, container, pos.pos, ReferenceLocationType.previousEntry, arg);
+            ae = new ArgumentEntry(pos.pos, ReferenceLocationType.previousEntry, arg);
         } else {
-            ae = new ArgumentEntry(counter, container, pos.pos + ((extraOffset != -1) ? extraOffset : 0),
-                    ReferenceLocationType.containerStart, arg);
+            ae = new ArgumentEntry(pos.pos + ((extraOffset != -1) ? extraOffset : 0), ReferenceLocationType.containerStart, arg);
         }
 
         container.addEntry(ae);

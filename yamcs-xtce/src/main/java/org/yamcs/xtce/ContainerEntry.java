@@ -12,29 +12,15 @@ public class ContainerEntry extends SequenceEntry {
     private static final long serialVersionUID = 200706050737L;
     private SequenceContainer refContainer;
 
-    public ContainerEntry(SequenceContainer container, int locationInContainerInBits, ReferenceLocationType location,
+    public ContainerEntry(int locationInContainerInBits, ReferenceLocationType location,
             SequenceContainer refContainer) {
-        this(-1, container, locationInContainerInBits, location);
+        this(locationInContainerInBits, location);
         this.setRefContainer(refContainer);
     }
 
-    /**
-     * Create a new containere reference
-     * 
-     * @param index
-     * @param container
-     * @param locationInContainerInBits
-     * @param location
-     */
-    public ContainerEntry(int index, SequenceContainer container, int locationInContainerInBits,
-            ReferenceLocationType location, SequenceContainer refContainer) {
-        super(index, container, locationInContainerInBits, location);
-        this.setRefContainer(refContainer);
-    }
 
-    public ContainerEntry(int index, SequenceContainer container, int locationInContainerInBits,
-            ReferenceLocationType location) {
-        super(index, container, locationInContainerInBits, location);
+    public ContainerEntry(int locationInContainerInBits, ReferenceLocationType location) {
+        super(locationInContainerInBits, location);
     }
 
     @Override

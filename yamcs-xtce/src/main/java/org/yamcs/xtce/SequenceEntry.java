@@ -55,19 +55,16 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
     public SequenceEntry() {
         
     }
-    public SequenceEntry(int position, Container container, int locationInContainerInBits,
-            ReferenceLocationType location) {
-        this.container = container;
+    public SequenceEntry(int locationInContainerInBits, ReferenceLocationType location) {
         this.locationInContainerInBits = locationInContainerInBits;
         this.referenceLocation = location;
-        this.index = position;
     }
 
-    public void setContainer(Container container) {
+    void setContainer(Container container) {
         this.container = container;
     }
 
-    public void setIndex(int index) {
+    void setIndex(int index) {
         this.index = index;
     }
 
