@@ -87,7 +87,8 @@ public class PGSegment {
         case DOUBLE:
             return new DoubleValueSegment();
         case BOOLEAN:
-            return new BooleanValueSegment();            
+            return new BooleanValueSegment();
+            
        default:
          throw new IllegalStateException("Unknown type "+type);
         }

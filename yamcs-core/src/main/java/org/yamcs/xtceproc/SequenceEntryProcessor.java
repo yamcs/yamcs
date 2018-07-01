@@ -162,7 +162,7 @@ public class SequenceEntryProcessor {
     }
 
     private Value extractAggregateDataType(AggregateDataType ptype) {
-        AggregateValue result = new AggregateValue();
+        AggregateValue result = new AggregateValue(ptype.getMemberNames());
 
         for (Member m : ptype.getMemberList()) {
             ParameterType mptype = (ParameterType) m.getType();

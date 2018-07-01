@@ -396,7 +396,7 @@ public class ParameterTypeProcessor {
     }
 
     private Value calibrateAggregate(ParameterValueList pvalues, CriteriaEvaluator contextEvaluator, AggregateParameterType ptype, AggregateValue rawValue) {
-        AggregateValue engValue = new AggregateValue();
+        AggregateValue engValue = new AggregateValue(ptype.getMemberNames());
         for(Member m: ptype.getMemberList()) {
             Value rv = rawValue.getMemberValue(m.getName());
             if(rv!=null) {

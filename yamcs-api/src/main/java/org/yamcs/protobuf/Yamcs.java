@@ -2073,6 +2073,43 @@ public final class Yamcs {
      * <code>optional bool booleanValue = 11;</code>
      */
     boolean getBooleanValue();
+
+    /**
+     * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+     */
+    boolean hasAggregateValue();
+    /**
+     * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+     */
+    org.yamcs.protobuf.Yamcs.AggregateValue getAggregateValue();
+    /**
+     * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+     */
+    org.yamcs.protobuf.Yamcs.AggregateValueOrBuilder getAggregateValueOrBuilder();
+
+    /**
+     * <code>repeated .yamcs.Value arrayValue = 13;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Yamcs.Value> 
+        getArrayValueList();
+    /**
+     * <code>repeated .yamcs.Value arrayValue = 13;</code>
+     */
+    org.yamcs.protobuf.Yamcs.Value getArrayValue(int index);
+    /**
+     * <code>repeated .yamcs.Value arrayValue = 13;</code>
+     */
+    int getArrayValueCount();
+    /**
+     * <code>repeated .yamcs.Value arrayValue = 13;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Yamcs.ValueOrBuilder> 
+        getArrayValueOrBuilderList();
+    /**
+     * <code>repeated .yamcs.Value arrayValue = 13;</code>
+     */
+    org.yamcs.protobuf.Yamcs.ValueOrBuilder getArrayValueOrBuilder(
+        int index);
   }
   /**
    * <pre>
@@ -2101,6 +2138,7 @@ public final class Yamcs {
       uint64Value_ = 0L;
       sint64Value_ = 0L;
       booleanValue_ = false;
+      arrayValue_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -2193,6 +2231,28 @@ public final class Yamcs {
               booleanValue_ = input.readBool();
               break;
             }
+            case 98: {
+              org.yamcs.protobuf.Yamcs.AggregateValue.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000800) == 0x00000800)) {
+                subBuilder = aggregateValue_.toBuilder();
+              }
+              aggregateValue_ = input.readMessage(org.yamcs.protobuf.Yamcs.AggregateValue.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(aggregateValue_);
+                aggregateValue_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000800;
+              break;
+            }
+            case 106: {
+              if (!((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+                arrayValue_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.Value>();
+                mutable_bitField0_ |= 0x00001000;
+              }
+              arrayValue_.add(
+                  input.readMessage(org.yamcs.protobuf.Yamcs.Value.PARSER, extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -2201,6 +2261,9 @@ public final class Yamcs {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+          arrayValue_ = java.util.Collections.unmodifiableList(arrayValue_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -2591,6 +2654,62 @@ public final class Yamcs {
       return booleanValue_;
     }
 
+    public static final int AGGREGATEVALUE_FIELD_NUMBER = 12;
+    private org.yamcs.protobuf.Yamcs.AggregateValue aggregateValue_;
+    /**
+     * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+     */
+    public boolean hasAggregateValue() {
+      return ((bitField0_ & 0x00000800) == 0x00000800);
+    }
+    /**
+     * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.AggregateValue getAggregateValue() {
+      return aggregateValue_ == null ? org.yamcs.protobuf.Yamcs.AggregateValue.getDefaultInstance() : aggregateValue_;
+    }
+    /**
+     * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.AggregateValueOrBuilder getAggregateValueOrBuilder() {
+      return aggregateValue_ == null ? org.yamcs.protobuf.Yamcs.AggregateValue.getDefaultInstance() : aggregateValue_;
+    }
+
+    public static final int ARRAYVALUE_FIELD_NUMBER = 13;
+    private java.util.List<org.yamcs.protobuf.Yamcs.Value> arrayValue_;
+    /**
+     * <code>repeated .yamcs.Value arrayValue = 13;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Yamcs.Value> getArrayValueList() {
+      return arrayValue_;
+    }
+    /**
+     * <code>repeated .yamcs.Value arrayValue = 13;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Yamcs.ValueOrBuilder> 
+        getArrayValueOrBuilderList() {
+      return arrayValue_;
+    }
+    /**
+     * <code>repeated .yamcs.Value arrayValue = 13;</code>
+     */
+    public int getArrayValueCount() {
+      return arrayValue_.size();
+    }
+    /**
+     * <code>repeated .yamcs.Value arrayValue = 13;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.Value getArrayValue(int index) {
+      return arrayValue_.get(index);
+    }
+    /**
+     * <code>repeated .yamcs.Value arrayValue = 13;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.ValueOrBuilder getArrayValueOrBuilder(
+        int index) {
+      return arrayValue_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2600,6 +2719,18 @@ public final class Yamcs {
       if (!hasType()) {
         memoizedIsInitialized = 0;
         return false;
+      }
+      if (hasAggregateValue()) {
+        if (!getAggregateValue().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      for (int i = 0; i < getArrayValueCount(); i++) {
+        if (!getArrayValue(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -2639,6 +2770,12 @@ public final class Yamcs {
       }
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         output.writeBool(11, booleanValue_);
+      }
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        output.writeMessage(12, getAggregateValue());
+      }
+      for (int i = 0; i < arrayValue_.size(); i++) {
+        output.writeMessage(13, arrayValue_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -2690,6 +2827,14 @@ public final class Yamcs {
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(11, booleanValue_);
+      }
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(12, getAggregateValue());
+      }
+      for (int i = 0; i < arrayValue_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(13, arrayValue_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2766,6 +2911,13 @@ public final class Yamcs {
         result = result && (getBooleanValue()
             == other.getBooleanValue());
       }
+      result = result && (hasAggregateValue() == other.hasAggregateValue());
+      if (hasAggregateValue()) {
+        result = result && getAggregateValue()
+            .equals(other.getAggregateValue());
+      }
+      result = result && getArrayValueList()
+          .equals(other.getArrayValueList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -2826,6 +2978,14 @@ public final class Yamcs {
         hash = (37 * hash) + BOOLEANVALUE_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getBooleanValue());
+      }
+      if (hasAggregateValue()) {
+        hash = (37 * hash) + AGGREGATEVALUE_FIELD_NUMBER;
+        hash = (53 * hash) + getAggregateValue().hashCode();
+      }
+      if (getArrayValueCount() > 0) {
+        hash = (37 * hash) + ARRAYVALUE_FIELD_NUMBER;
+        hash = (53 * hash) + getArrayValueList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -2945,6 +3105,8 @@ public final class Yamcs {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getAggregateValueFieldBuilder();
+          getArrayValueFieldBuilder();
         }
       }
       public Builder clear() {
@@ -2971,6 +3133,18 @@ public final class Yamcs {
         bitField0_ = (bitField0_ & ~0x00000200);
         booleanValue_ = false;
         bitField0_ = (bitField0_ & ~0x00000400);
+        if (aggregateValueBuilder_ == null) {
+          aggregateValue_ = null;
+        } else {
+          aggregateValueBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000800);
+        if (arrayValueBuilder_ == null) {
+          arrayValue_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00001000);
+        } else {
+          arrayValueBuilder_.clear();
+        }
         return this;
       }
 
@@ -3039,6 +3213,23 @@ public final class Yamcs {
           to_bitField0_ |= 0x00000400;
         }
         result.booleanValue_ = booleanValue_;
+        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
+          to_bitField0_ |= 0x00000800;
+        }
+        if (aggregateValueBuilder_ == null) {
+          result.aggregateValue_ = aggregateValue_;
+        } else {
+          result.aggregateValue_ = aggregateValueBuilder_.build();
+        }
+        if (arrayValueBuilder_ == null) {
+          if (((bitField0_ & 0x00001000) == 0x00001000)) {
+            arrayValue_ = java.util.Collections.unmodifiableList(arrayValue_);
+            bitField0_ = (bitField0_ & ~0x00001000);
+          }
+          result.arrayValue_ = arrayValue_;
+        } else {
+          result.arrayValue_ = arrayValueBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3116,6 +3307,35 @@ public final class Yamcs {
         if (other.hasBooleanValue()) {
           setBooleanValue(other.getBooleanValue());
         }
+        if (other.hasAggregateValue()) {
+          mergeAggregateValue(other.getAggregateValue());
+        }
+        if (arrayValueBuilder_ == null) {
+          if (!other.arrayValue_.isEmpty()) {
+            if (arrayValue_.isEmpty()) {
+              arrayValue_ = other.arrayValue_;
+              bitField0_ = (bitField0_ & ~0x00001000);
+            } else {
+              ensureArrayValueIsMutable();
+              arrayValue_.addAll(other.arrayValue_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.arrayValue_.isEmpty()) {
+            if (arrayValueBuilder_.isEmpty()) {
+              arrayValueBuilder_.dispose();
+              arrayValueBuilder_ = null;
+              arrayValue_ = other.arrayValue_;
+              bitField0_ = (bitField0_ & ~0x00001000);
+              arrayValueBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getArrayValueFieldBuilder() : null;
+            } else {
+              arrayValueBuilder_.addAllMessages(other.arrayValue_);
+            }
+          }
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -3124,6 +3344,16 @@ public final class Yamcs {
       public final boolean isInitialized() {
         if (!hasType()) {
           return false;
+        }
+        if (hasAggregateValue()) {
+          if (!getAggregateValue().isInitialized()) {
+            return false;
+          }
+        }
+        for (int i = 0; i < getArrayValueCount(); i++) {
+          if (!getArrayValue(i).isInitialized()) {
+            return false;
+          }
         }
         return true;
       }
@@ -3549,6 +3779,364 @@ public final class Yamcs {
         onChanged();
         return this;
       }
+
+      private org.yamcs.protobuf.Yamcs.AggregateValue aggregateValue_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Yamcs.AggregateValue, org.yamcs.protobuf.Yamcs.AggregateValue.Builder, org.yamcs.protobuf.Yamcs.AggregateValueOrBuilder> aggregateValueBuilder_;
+      /**
+       * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+       */
+      public boolean hasAggregateValue() {
+        return ((bitField0_ & 0x00000800) == 0x00000800);
+      }
+      /**
+       * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.AggregateValue getAggregateValue() {
+        if (aggregateValueBuilder_ == null) {
+          return aggregateValue_ == null ? org.yamcs.protobuf.Yamcs.AggregateValue.getDefaultInstance() : aggregateValue_;
+        } else {
+          return aggregateValueBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+       */
+      public Builder setAggregateValue(org.yamcs.protobuf.Yamcs.AggregateValue value) {
+        if (aggregateValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          aggregateValue_ = value;
+          onChanged();
+        } else {
+          aggregateValueBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000800;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+       */
+      public Builder setAggregateValue(
+          org.yamcs.protobuf.Yamcs.AggregateValue.Builder builderForValue) {
+        if (aggregateValueBuilder_ == null) {
+          aggregateValue_ = builderForValue.build();
+          onChanged();
+        } else {
+          aggregateValueBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000800;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+       */
+      public Builder mergeAggregateValue(org.yamcs.protobuf.Yamcs.AggregateValue value) {
+        if (aggregateValueBuilder_ == null) {
+          if (((bitField0_ & 0x00000800) == 0x00000800) &&
+              aggregateValue_ != null &&
+              aggregateValue_ != org.yamcs.protobuf.Yamcs.AggregateValue.getDefaultInstance()) {
+            aggregateValue_ =
+              org.yamcs.protobuf.Yamcs.AggregateValue.newBuilder(aggregateValue_).mergeFrom(value).buildPartial();
+          } else {
+            aggregateValue_ = value;
+          }
+          onChanged();
+        } else {
+          aggregateValueBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000800;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+       */
+      public Builder clearAggregateValue() {
+        if (aggregateValueBuilder_ == null) {
+          aggregateValue_ = null;
+          onChanged();
+        } else {
+          aggregateValueBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000800);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.AggregateValue.Builder getAggregateValueBuilder() {
+        bitField0_ |= 0x00000800;
+        onChanged();
+        return getAggregateValueFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.AggregateValueOrBuilder getAggregateValueOrBuilder() {
+        if (aggregateValueBuilder_ != null) {
+          return aggregateValueBuilder_.getMessageOrBuilder();
+        } else {
+          return aggregateValue_ == null ?
+              org.yamcs.protobuf.Yamcs.AggregateValue.getDefaultInstance() : aggregateValue_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.AggregateValue aggregateValue = 12;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Yamcs.AggregateValue, org.yamcs.protobuf.Yamcs.AggregateValue.Builder, org.yamcs.protobuf.Yamcs.AggregateValueOrBuilder> 
+          getAggregateValueFieldBuilder() {
+        if (aggregateValueBuilder_ == null) {
+          aggregateValueBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.protobuf.Yamcs.AggregateValue, org.yamcs.protobuf.Yamcs.AggregateValue.Builder, org.yamcs.protobuf.Yamcs.AggregateValueOrBuilder>(
+                  getAggregateValue(),
+                  getParentForChildren(),
+                  isClean());
+          aggregateValue_ = null;
+        }
+        return aggregateValueBuilder_;
+      }
+
+      private java.util.List<org.yamcs.protobuf.Yamcs.Value> arrayValue_ =
+        java.util.Collections.emptyList();
+      private void ensureArrayValueIsMutable() {
+        if (!((bitField0_ & 0x00001000) == 0x00001000)) {
+          arrayValue_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.Value>(arrayValue_);
+          bitField0_ |= 0x00001000;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> arrayValueBuilder_;
+
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Yamcs.Value> getArrayValueList() {
+        if (arrayValueBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(arrayValue_);
+        } else {
+          return arrayValueBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public int getArrayValueCount() {
+        if (arrayValueBuilder_ == null) {
+          return arrayValue_.size();
+        } else {
+          return arrayValueBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Value getArrayValue(int index) {
+        if (arrayValueBuilder_ == null) {
+          return arrayValue_.get(index);
+        } else {
+          return arrayValueBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public Builder setArrayValue(
+          int index, org.yamcs.protobuf.Yamcs.Value value) {
+        if (arrayValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureArrayValueIsMutable();
+          arrayValue_.set(index, value);
+          onChanged();
+        } else {
+          arrayValueBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public Builder setArrayValue(
+          int index, org.yamcs.protobuf.Yamcs.Value.Builder builderForValue) {
+        if (arrayValueBuilder_ == null) {
+          ensureArrayValueIsMutable();
+          arrayValue_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          arrayValueBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public Builder addArrayValue(org.yamcs.protobuf.Yamcs.Value value) {
+        if (arrayValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureArrayValueIsMutable();
+          arrayValue_.add(value);
+          onChanged();
+        } else {
+          arrayValueBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public Builder addArrayValue(
+          int index, org.yamcs.protobuf.Yamcs.Value value) {
+        if (arrayValueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureArrayValueIsMutable();
+          arrayValue_.add(index, value);
+          onChanged();
+        } else {
+          arrayValueBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public Builder addArrayValue(
+          org.yamcs.protobuf.Yamcs.Value.Builder builderForValue) {
+        if (arrayValueBuilder_ == null) {
+          ensureArrayValueIsMutable();
+          arrayValue_.add(builderForValue.build());
+          onChanged();
+        } else {
+          arrayValueBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public Builder addArrayValue(
+          int index, org.yamcs.protobuf.Yamcs.Value.Builder builderForValue) {
+        if (arrayValueBuilder_ == null) {
+          ensureArrayValueIsMutable();
+          arrayValue_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          arrayValueBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public Builder addAllArrayValue(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.Value> values) {
+        if (arrayValueBuilder_ == null) {
+          ensureArrayValueIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, arrayValue_);
+          onChanged();
+        } else {
+          arrayValueBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public Builder clearArrayValue() {
+        if (arrayValueBuilder_ == null) {
+          arrayValue_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00001000);
+          onChanged();
+        } else {
+          arrayValueBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public Builder removeArrayValue(int index) {
+        if (arrayValueBuilder_ == null) {
+          ensureArrayValueIsMutable();
+          arrayValue_.remove(index);
+          onChanged();
+        } else {
+          arrayValueBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Value.Builder getArrayValueBuilder(
+          int index) {
+        return getArrayValueFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.ValueOrBuilder getArrayValueOrBuilder(
+          int index) {
+        if (arrayValueBuilder_ == null) {
+          return arrayValue_.get(index);  } else {
+          return arrayValueBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Yamcs.ValueOrBuilder> 
+           getArrayValueOrBuilderList() {
+        if (arrayValueBuilder_ != null) {
+          return arrayValueBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(arrayValue_);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Value.Builder addArrayValueBuilder() {
+        return getArrayValueFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Yamcs.Value.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Value.Builder addArrayValueBuilder(
+          int index) {
+        return getArrayValueFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Yamcs.Value.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.Value arrayValue = 13;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Yamcs.Value.Builder> 
+           getArrayValueBuilderList() {
+        return getArrayValueFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> 
+          getArrayValueFieldBuilder() {
+        if (arrayValueBuilder_ == null) {
+          arrayValueBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder>(
+                  arrayValue_,
+                  ((bitField0_ & 0x00001000) == 0x00001000),
+                  getParentForChildren(),
+                  isClean());
+          arrayValue_ = null;
+        }
+        return arrayValueBuilder_;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
@@ -3593,6 +4181,958 @@ public final class Yamcs {
     }
 
     public org.yamcs.protobuf.Yamcs.Value getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface AggregateValueOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.AggregateValue)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    java.util.List<java.lang.String>
+        getNameList();
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    int getNameCount();
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    java.lang.String getName(int index);
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes(int index);
+
+    /**
+     * <code>repeated .yamcs.Value value = 2;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Yamcs.Value> 
+        getValueList();
+    /**
+     * <code>repeated .yamcs.Value value = 2;</code>
+     */
+    org.yamcs.protobuf.Yamcs.Value getValue(int index);
+    /**
+     * <code>repeated .yamcs.Value value = 2;</code>
+     */
+    int getValueCount();
+    /**
+     * <code>repeated .yamcs.Value value = 2;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Yamcs.ValueOrBuilder> 
+        getValueOrBuilderList();
+    /**
+     * <code>repeated .yamcs.Value value = 2;</code>
+     */
+    org.yamcs.protobuf.Yamcs.ValueOrBuilder getValueOrBuilder(
+        int index);
+  }
+  /**
+   * <pre>
+   *an aggregate value is an ordered list of (member name, member value)
+   *we use two arrays in order to be able to send just the values (since the names will not change)
+   * </pre>
+   *
+   * Protobuf type {@code yamcs.AggregateValue}
+   */
+  public  static final class AggregateValue extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.AggregateValue)
+      AggregateValueOrBuilder {
+    // Use AggregateValue.newBuilder() to construct.
+    private AggregateValue(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private AggregateValue() {
+      name_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      value_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AggregateValue(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                name_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              name_.add(bs);
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                value_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.Value>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              value_.add(
+                  input.readMessage(org.yamcs.protobuf.Yamcs.Value.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          name_ = name_.getUnmodifiableView();
+        }
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          value_ = java.util.Collections.unmodifiableList(value_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_AggregateValue_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Yamcs.internal_static_yamcs_AggregateValue_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Yamcs.AggregateValue.class, org.yamcs.protobuf.Yamcs.AggregateValue.Builder.class);
+    }
+
+    public static final int NAME_FIELD_NUMBER = 1;
+    private com.google.protobuf.LazyStringList name_;
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getNameList() {
+      return name_;
+    }
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    public int getNameCount() {
+      return name_.size();
+    }
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    public java.lang.String getName(int index) {
+      return name_.get(index);
+    }
+    /**
+     * <code>repeated string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes(int index) {
+      return name_.getByteString(index);
+    }
+
+    public static final int VALUE_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.Yamcs.Value> value_;
+    /**
+     * <code>repeated .yamcs.Value value = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Yamcs.Value> getValueList() {
+      return value_;
+    }
+    /**
+     * <code>repeated .yamcs.Value value = 2;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Yamcs.ValueOrBuilder> 
+        getValueOrBuilderList() {
+      return value_;
+    }
+    /**
+     * <code>repeated .yamcs.Value value = 2;</code>
+     */
+    public int getValueCount() {
+      return value_.size();
+    }
+    /**
+     * <code>repeated .yamcs.Value value = 2;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.Value getValue(int index) {
+      return value_.get(index);
+    }
+    /**
+     * <code>repeated .yamcs.Value value = 2;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.ValueOrBuilder getValueOrBuilder(
+        int index) {
+      return value_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getValueCount(); i++) {
+        if (!getValue(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < name_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_.getRaw(i));
+      }
+      for (int i = 0; i < value_.size(); i++) {
+        output.writeMessage(2, value_.get(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < name_.size(); i++) {
+          dataSize += computeStringSizeNoTag(name_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getNameList().size();
+      }
+      for (int i = 0; i < value_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, value_.get(i));
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Yamcs.AggregateValue)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Yamcs.AggregateValue other = (org.yamcs.protobuf.Yamcs.AggregateValue) obj;
+
+      boolean result = true;
+      result = result && getNameList()
+          .equals(other.getNameList());
+      result = result && getValueList()
+          .equals(other.getValueList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getNameCount() > 0) {
+        hash = (37 * hash) + NAME_FIELD_NUMBER;
+        hash = (53 * hash) + getNameList().hashCode();
+      }
+      if (getValueCount() > 0) {
+        hash = (37 * hash) + VALUE_FIELD_NUMBER;
+        hash = (53 * hash) + getValueList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Yamcs.AggregateValue parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Yamcs.AggregateValue parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Yamcs.AggregateValue parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Yamcs.AggregateValue parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Yamcs.AggregateValue parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Yamcs.AggregateValue parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Yamcs.AggregateValue parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Yamcs.AggregateValue parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Yamcs.AggregateValue parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Yamcs.AggregateValue parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Yamcs.AggregateValue prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *an aggregate value is an ordered list of (member name, member value)
+     *we use two arrays in order to be able to send just the values (since the names will not change)
+     * </pre>
+     *
+     * Protobuf type {@code yamcs.AggregateValue}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.AggregateValue)
+        org.yamcs.protobuf.Yamcs.AggregateValueOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Yamcs.internal_static_yamcs_AggregateValue_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Yamcs.internal_static_yamcs_AggregateValue_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Yamcs.AggregateValue.class, org.yamcs.protobuf.Yamcs.AggregateValue.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Yamcs.AggregateValue.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getValueFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        name_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (valueBuilder_ == null) {
+          value_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          valueBuilder_.clear();
+        }
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Yamcs.internal_static_yamcs_AggregateValue_descriptor;
+      }
+
+      public org.yamcs.protobuf.Yamcs.AggregateValue getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Yamcs.AggregateValue.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Yamcs.AggregateValue build() {
+        org.yamcs.protobuf.Yamcs.AggregateValue result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Yamcs.AggregateValue buildPartial() {
+        org.yamcs.protobuf.Yamcs.AggregateValue result = new org.yamcs.protobuf.Yamcs.AggregateValue(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          name_ = name_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.name_ = name_;
+        if (valueBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            value_ = java.util.Collections.unmodifiableList(value_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.value_ = value_;
+        } else {
+          result.value_ = valueBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Yamcs.AggregateValue) {
+          return mergeFrom((org.yamcs.protobuf.Yamcs.AggregateValue)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Yamcs.AggregateValue other) {
+        if (other == org.yamcs.protobuf.Yamcs.AggregateValue.getDefaultInstance()) return this;
+        if (!other.name_.isEmpty()) {
+          if (name_.isEmpty()) {
+            name_ = other.name_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureNameIsMutable();
+            name_.addAll(other.name_);
+          }
+          onChanged();
+        }
+        if (valueBuilder_ == null) {
+          if (!other.value_.isEmpty()) {
+            if (value_.isEmpty()) {
+              value_ = other.value_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureValueIsMutable();
+              value_.addAll(other.value_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.value_.isEmpty()) {
+            if (valueBuilder_.isEmpty()) {
+              valueBuilder_.dispose();
+              valueBuilder_ = null;
+              value_ = other.value_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              valueBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getValueFieldBuilder() : null;
+            } else {
+              valueBuilder_.addAllMessages(other.value_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getValueCount(); i++) {
+          if (!getValue(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Yamcs.AggregateValue parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Yamcs.AggregateValue) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private com.google.protobuf.LazyStringList name_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureNameIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          name_ = new com.google.protobuf.LazyStringArrayList(name_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getNameList() {
+        return name_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public int getNameCount() {
+        return name_.size();
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public java.lang.String getName(int index) {
+        return name_.get(index);
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes(int index) {
+        return name_.getByteString(index);
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public Builder setName(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureNameIsMutable();
+        name_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public Builder addName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureNameIsMutable();
+        name_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public Builder addAllName(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureNameIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, name_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public Builder clearName() {
+        name_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string name = 1;</code>
+       */
+      public Builder addNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureNameIsMutable();
+        name_.add(value);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<org.yamcs.protobuf.Yamcs.Value> value_ =
+        java.util.Collections.emptyList();
+      private void ensureValueIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          value_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.Value>(value_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> valueBuilder_;
+
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Yamcs.Value> getValueList() {
+        if (valueBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(value_);
+        } else {
+          return valueBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public int getValueCount() {
+        if (valueBuilder_ == null) {
+          return value_.size();
+        } else {
+          return valueBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Value getValue(int index) {
+        if (valueBuilder_ == null) {
+          return value_.get(index);
+        } else {
+          return valueBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public Builder setValue(
+          int index, org.yamcs.protobuf.Yamcs.Value value) {
+        if (valueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureValueIsMutable();
+          value_.set(index, value);
+          onChanged();
+        } else {
+          valueBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public Builder setValue(
+          int index, org.yamcs.protobuf.Yamcs.Value.Builder builderForValue) {
+        if (valueBuilder_ == null) {
+          ensureValueIsMutable();
+          value_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          valueBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public Builder addValue(org.yamcs.protobuf.Yamcs.Value value) {
+        if (valueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureValueIsMutable();
+          value_.add(value);
+          onChanged();
+        } else {
+          valueBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public Builder addValue(
+          int index, org.yamcs.protobuf.Yamcs.Value value) {
+        if (valueBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureValueIsMutable();
+          value_.add(index, value);
+          onChanged();
+        } else {
+          valueBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public Builder addValue(
+          org.yamcs.protobuf.Yamcs.Value.Builder builderForValue) {
+        if (valueBuilder_ == null) {
+          ensureValueIsMutable();
+          value_.add(builderForValue.build());
+          onChanged();
+        } else {
+          valueBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public Builder addValue(
+          int index, org.yamcs.protobuf.Yamcs.Value.Builder builderForValue) {
+        if (valueBuilder_ == null) {
+          ensureValueIsMutable();
+          value_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          valueBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public Builder addAllValue(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.Value> values) {
+        if (valueBuilder_ == null) {
+          ensureValueIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, value_);
+          onChanged();
+        } else {
+          valueBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public Builder clearValue() {
+        if (valueBuilder_ == null) {
+          value_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          valueBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public Builder removeValue(int index) {
+        if (valueBuilder_ == null) {
+          ensureValueIsMutable();
+          value_.remove(index);
+          onChanged();
+        } else {
+          valueBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Value.Builder getValueBuilder(
+          int index) {
+        return getValueFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.ValueOrBuilder getValueOrBuilder(
+          int index) {
+        if (valueBuilder_ == null) {
+          return value_.get(index);  } else {
+          return valueBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Yamcs.ValueOrBuilder> 
+           getValueOrBuilderList() {
+        if (valueBuilder_ != null) {
+          return valueBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(value_);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Value.Builder addValueBuilder() {
+        return getValueFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Yamcs.Value.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.Value.Builder addValueBuilder(
+          int index) {
+        return getValueFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Yamcs.Value.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.Value value = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Yamcs.Value.Builder> 
+           getValueBuilderList() {
+        return getValueFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder> 
+          getValueFieldBuilder() {
+        if (valueBuilder_ == null) {
+          valueBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Yamcs.Value, org.yamcs.protobuf.Yamcs.Value.Builder, org.yamcs.protobuf.Yamcs.ValueOrBuilder>(
+                  value_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          value_ = null;
+        }
+        return valueBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.AggregateValue)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.AggregateValue)
+    private static final org.yamcs.protobuf.Yamcs.AggregateValue DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Yamcs.AggregateValue();
+    }
+
+    public static org.yamcs.protobuf.Yamcs.AggregateValue getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<AggregateValue>
+        PARSER = new com.google.protobuf.AbstractParser<AggregateValue>() {
+      public AggregateValue parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new AggregateValue(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<AggregateValue> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AggregateValue> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Yamcs.AggregateValue getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -27849,6 +29389,11 @@ public final class Yamcs {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_Value_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_AggregateValue_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_AggregateValue_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_NamedObjectId_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -27970,100 +29515,103 @@ public final class Yamcs {
       "\n\013yamcs.proto\022\005yamcs\" \n\rStringMessage\022\017\n" +
       "\007message\030\001 \002(\t\"\032\n\007Instant\022\017\n\007instant\030\001 \002" +
       "(\003\"#\n\020MessagingAddress\022\017\n\007address\030\001 \002(\t\"" +
-      "\233\003\n\005Value\022\037\n\004type\030\001 \002(\0162\021.yamcs.Value.Ty" +
+      "\354\003\n\005Value\022\037\n\004type\030\001 \002(\0162\021.yamcs.Value.Ty" +
       "pe\022\022\n\nfloatValue\030\002 \001(\002\022\023\n\013doubleValue\030\003 " +
       "\001(\001\022\023\n\013sint32Value\030\004 \001(\021\022\023\n\013uint32Value\030" +
       "\005 \001(\r\022\023\n\013binaryValue\030\006 \001(\014\022\023\n\013stringValu" +
       "e\030\007 \001(\t\022\026\n\016timestampValue\030\010 \001(\003\022\023\n\013uint6" +
       "4Value\030\t \001(\004\022\023\n\013sint64Value\030\n \001(\022\022\024\n\014boo" +
-      "leanValue\030\013 \001(\010\"\233\001\n\004Type\022\t\n\005FLOAT\020\000\022\n\n\006D",
-      "OUBLE\020\001\022\n\n\006UINT32\020\002\022\n\n\006SINT32\020\003\022\n\n\006BINAR" +
-      "Y\020\004\022\n\n\006STRING\020\005\022\r\n\tTIMESTAMP\020\006\022\n\n\006UINT64" +
-      "\020\007\022\n\n\006SINT64\020\010\022\013\n\007BOOLEAN\020\t\022\r\n\tAGGREGATE" +
-      "\020\n\022\t\n\005ARRAY\020\013\"0\n\rNamedObjectId\022\014\n\004name\030\001" +
-      " \002(\t\022\021\n\tnamespace\030\002 \001(\t\"5\n\017NamedObjectLi" +
-      "st\022\"\n\004list\030\001 \003(\0132\024.yamcs.NamedObjectId\"\300" +
-      "\003\n\014IndexRequest\022\020\n\010instance\030\001 \002(\t\022\r\n\005sta" +
-      "rt\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\022\020\n\010utcStart\030\016 \001(\t" +
-      "\022\017\n\007utcStop\030\017 \001(\t\022\030\n\020defaultNamespace\030\004 " +
-      "\001(\t\022\030\n\tsendAllTm\030\005 \001(\010:\005false\022&\n\010tmPacke",
-      "t\030\006 \003(\0132\024.yamcs.NamedObjectId\022\030\n\tsendAll" +
-      "Pp\030\007 \001(\010:\005false\022%\n\007ppGroup\030\010 \003(\0132\024.yamcs" +
-      ".NamedObjectId\022$\n\025sendCompletenessIndex\030" +
-      "\t \001(\010:\005false\022\031\n\nsendAllCmd\030\n \001(\010:\005false\022" +
-      "%\n\007cmdName\030\013 \003(\0132\024.yamcs.NamedObjectId\022\033" +
-      "\n\014sendAllEvent\030\014 \001(\010:\005false\022)\n\013eventSour" +
-      "ce\030\r \003(\0132\024.yamcs.NamedObjectId\022\021\n\tmergeT" +
-      "ime\030\020 \001(\r\"i\n\rArchiveRecord\022 \n\002id\030\001 \002(\0132\024" +
-      ".yamcs.NamedObjectId\022\r\n\005first\030\002 \002(\003\022\014\n\004l" +
-      "ast\030\003 \002(\003\022\013\n\003num\030\004 \002(\005\022\014\n\004info\030\005 \001(\t\"g\n\013",
-      "IndexResult\022\020\n\010instance\030\001 \002(\t\022%\n\007records" +
-      "\030\002 \003(\0132\024.yamcs.ArchiveRecord\022\014\n\004type\030\003 \001" +
-      "(\t\022\021\n\ttableName\030\004 \001(\t\";\n\nTagRequest\022\020\n\010i" +
-      "nstance\030\001 \002(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003 \001" +
-      "(\003\"g\n\nArchiveTag\022\n\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \002" +
-      "(\t\022\r\n\005start\030\003 \001(\003\022\014\n\004stop\030\004 \001(\003\022\023\n\013descr" +
-      "iption\030\005 \001(\t\022\r\n\005color\030\006 \001(\t\"=\n\tTagResult" +
-      "\022\020\n\010instance\030\001 \002(\t\022\036\n\003tag\030\002 \003(\0132\021.yamcs." +
-      "ArchiveTag\"X\n\020UpsertTagRequest\022!\n\006oldTag" +
-      "\030\001 \001(\0132\021.yamcs.ArchiveTag\022!\n\006newTag\030\002 \002(",
-      "\0132\021.yamcs.ArchiveTag\"2\n\020DeleteTagRequest" +
-      "\022\036\n\003tag\030\003 \002(\0132\021.yamcs.ArchiveTag\"\212\001\n\013Rep" +
-      "laySpeed\0220\n\004type\030\001 \002(\0162\".yamcs.ReplaySpe" +
-      "ed.ReplaySpeedType\022\r\n\005param\030\002 \001(\002\":\n\017Rep" +
-      "laySpeedType\022\010\n\004AFAP\020\001\022\017\n\013FIXED_DELAY\020\002\022" +
-      "\014\n\010REALTIME\020\003\"\271\003\n\rReplayRequest\022\r\n\005start" +
-      "\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010utcStart\030\r \001(\t\022\017" +
-      "\n\007utcStop\030\016 \001(\t\022)\n\tendAction\030\003 \001(\0162\020.yam" +
-      "cs.EndAction:\004QUIT\022!\n\005speed\030\004 \001(\0132\022.yamc" +
-      "s.ReplaySpeed\022\017\n\007reverse\030\017 \001(\010\0227\n\020parame",
-      "terRequest\030\010 \001(\0132\035.yamcs.ParameterReplay" +
-      "Request\0221\n\rpacketRequest\030\t \001(\0132\032.yamcs.P" +
-      "acketReplayRequest\022/\n\014eventRequest\030\n \001(\013" +
-      "2\031.yamcs.EventReplayRequest\022A\n\025commandHi" +
-      "storyRequest\030\013 \001(\0132\".yamcs.CommandHistor" +
-      "yReplayRequest\022)\n\tppRequest\030\014 \001(\0132\026.yamc" +
-      "s.PpReplayRequest\"|\n\026ParameterReplayRequ" +
+      "leanValue\030\013 \001(\010\022-\n\016aggregateValue\030\014 \001(\0132",
+      "\025.yamcs.AggregateValue\022 \n\narrayValue\030\r \003" +
+      "(\0132\014.yamcs.Value\"\233\001\n\004Type\022\t\n\005FLOAT\020\000\022\n\n\006" +
+      "DOUBLE\020\001\022\n\n\006UINT32\020\002\022\n\n\006SINT32\020\003\022\n\n\006BINA" +
+      "RY\020\004\022\n\n\006STRING\020\005\022\r\n\tTIMESTAMP\020\006\022\n\n\006UINT6" +
+      "4\020\007\022\n\n\006SINT64\020\010\022\013\n\007BOOLEAN\020\t\022\r\n\tAGGREGAT" +
+      "E\020\n\022\t\n\005ARRAY\020\013\";\n\016AggregateValue\022\014\n\004name" +
+      "\030\001 \003(\t\022\033\n\005value\030\002 \003(\0132\014.yamcs.Value\"0\n\rN" +
+      "amedObjectId\022\014\n\004name\030\001 \002(\t\022\021\n\tnamespace\030" +
+      "\002 \001(\t\"5\n\017NamedObjectList\022\"\n\004list\030\001 \003(\0132\024" +
+      ".yamcs.NamedObjectId\"\300\003\n\014IndexRequest\022\020\n",
+      "\010instance\030\001 \002(\t\022\r\n\005start\030\002 \001(\003\022\014\n\004stop\030\003" +
+      " \001(\003\022\020\n\010utcStart\030\016 \001(\t\022\017\n\007utcStop\030\017 \001(\t\022" +
+      "\030\n\020defaultNamespace\030\004 \001(\t\022\030\n\tsendAllTm\030\005" +
+      " \001(\010:\005false\022&\n\010tmPacket\030\006 \003(\0132\024.yamcs.Na" +
+      "medObjectId\022\030\n\tsendAllPp\030\007 \001(\010:\005false\022%\n" +
+      "\007ppGroup\030\010 \003(\0132\024.yamcs.NamedObjectId\022$\n\025" +
+      "sendCompletenessIndex\030\t \001(\010:\005false\022\031\n\nse" +
+      "ndAllCmd\030\n \001(\010:\005false\022%\n\007cmdName\030\013 \003(\0132\024" +
+      ".yamcs.NamedObjectId\022\033\n\014sendAllEvent\030\014 \001" +
+      "(\010:\005false\022)\n\013eventSource\030\r \003(\0132\024.yamcs.N",
+      "amedObjectId\022\021\n\tmergeTime\030\020 \001(\r\"i\n\rArchi" +
+      "veRecord\022 \n\002id\030\001 \002(\0132\024.yamcs.NamedObject" +
+      "Id\022\r\n\005first\030\002 \002(\003\022\014\n\004last\030\003 \002(\003\022\013\n\003num\030\004" +
+      " \002(\005\022\014\n\004info\030\005 \001(\t\"g\n\013IndexResult\022\020\n\010ins" +
+      "tance\030\001 \002(\t\022%\n\007records\030\002 \003(\0132\024.yamcs.Arc" +
+      "hiveRecord\022\014\n\004type\030\003 \001(\t\022\021\n\ttableName\030\004 " +
+      "\001(\t\";\n\nTagRequest\022\020\n\010instance\030\001 \002(\t\022\r\n\005s" +
+      "tart\030\002 \001(\003\022\014\n\004stop\030\003 \001(\003\"g\n\nArchiveTag\022\n" +
+      "\n\002id\030\001 \001(\005\022\014\n\004name\030\002 \002(\t\022\r\n\005start\030\003 \001(\003\022" +
+      "\014\n\004stop\030\004 \001(\003\022\023\n\013description\030\005 \001(\t\022\r\n\005co",
+      "lor\030\006 \001(\t\"=\n\tTagResult\022\020\n\010instance\030\001 \002(\t" +
+      "\022\036\n\003tag\030\002 \003(\0132\021.yamcs.ArchiveTag\"X\n\020Upse" +
+      "rtTagRequest\022!\n\006oldTag\030\001 \001(\0132\021.yamcs.Arc" +
+      "hiveTag\022!\n\006newTag\030\002 \002(\0132\021.yamcs.ArchiveT" +
+      "ag\"2\n\020DeleteTagRequest\022\036\n\003tag\030\003 \002(\0132\021.ya" +
+      "mcs.ArchiveTag\"\212\001\n\013ReplaySpeed\0220\n\004type\030\001" +
+      " \002(\0162\".yamcs.ReplaySpeed.ReplaySpeedType" +
+      "\022\r\n\005param\030\002 \001(\002\":\n\017ReplaySpeedType\022\010\n\004AF" +
+      "AP\020\001\022\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIME\020\003\"\271\003\n\r" +
+      "ReplayRequest\022\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001",
+      "(\003\022\020\n\010utcStart\030\r \001(\t\022\017\n\007utcStop\030\016 \001(\t\022)\n" +
+      "\tendAction\030\003 \001(\0162\020.yamcs.EndAction:\004QUIT" +
+      "\022!\n\005speed\030\004 \001(\0132\022.yamcs.ReplaySpeed\022\017\n\007r" +
+      "everse\030\017 \001(\010\0227\n\020parameterRequest\030\010 \001(\0132\035" +
+      ".yamcs.ParameterReplayRequest\0221\n\rpacketR" +
+      "equest\030\t \001(\0132\032.yamcs.PacketReplayRequest" +
+      "\022/\n\014eventRequest\030\n \001(\0132\031.yamcs.EventRepl" +
+      "ayRequest\022A\n\025commandHistoryRequest\030\013 \001(\013" +
+      "2\".yamcs.CommandHistoryReplayRequest\022)\n\t" +
+      "ppRequest\030\014 \001(\0132\026.yamcs.PpReplayRequest\"",
+      "|\n\026ParameterReplayRequest\022(\n\nnameFilter\030" +
+      "\001 \003(\0132\024.yamcs.NamedObjectId\022\026\n\007sendRaw\030\002" +
+      " \001(\010:\005false\022 \n\021performMonitoring\030\003 \001(\010:\005" +
+      "false\"?\n\023PacketReplayRequest\022(\n\nnameFilt" +
+      "er\030\001 \003(\0132\024.yamcs.NamedObjectId\"\024\n\022EventR" +
+      "eplayRequest\"G\n\033CommandHistoryReplayRequ" +
       "est\022(\n\nnameFilter\030\001 \003(\0132\024.yamcs.NamedObj" +
-      "ectId\022\026\n\007sendRaw\030\002 \001(\010:\005false\022 \n\021perform" +
-      "Monitoring\030\003 \001(\010:\005false\"?\n\023PacketReplayR",
-      "equest\022(\n\nnameFilter\030\001 \003(\0132\024.yamcs.Named" +
-      "ObjectId\"\024\n\022EventReplayRequest\"G\n\033Comman" +
-      "dHistoryReplayRequest\022(\n\nnameFilter\030\001 \003(" +
-      "\0132\024.yamcs.NamedObjectId\"D\n\017PpReplayReque" +
-      "st\022\027\n\017groupNameFilter\030\001 \003(\t\022\030\n\020groupName" +
-      "Exclude\030\002 \003(\t\"\333\001\n\014ReplayStatus\022.\n\005state\030" +
-      "\001 \002(\0162\037.yamcs.ReplayStatus.ReplayState\022%" +
-      "\n\007request\030\002 \001(\0132\024.yamcs.ReplayRequest\022\024\n" +
-      "\014errorMessage\030\003 \001(\t\"^\n\013ReplayState\022\022\n\016IN" +
-      "ITIALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007STOPPED\020\002",
-      "\022\t\n\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOSED\020\005\"\207\001\n\014" +
-      "TmPacketData\022\025\n\rreceptionTime\030\001 \002(\003\022\016\n\006p" +
-      "acket\030\002 \002(\014\022\026\n\016generationTime\030\003 \001(\003\022\026\n\016s" +
-      "equenceNumber\030\004 \001(\005\022 \n\002id\030\005 \001(\0132\024.yamcs." +
-      "NamedObjectId\"7\n\010TimeInfo\022\023\n\013currentTime" +
-      "\030\001 \001(\003\022\026\n\016currentTimeUTC\030\002 \001(\t\"\341\002\n\005Event" +
-      "\022\016\n\006source\030\001 \002(\t\022\026\n\016generationTime\030\002 \002(\003" +
-      "\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n\tseqNumber\030\004 \002" +
-      "(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007message\030\006 \002(\t\0222\n\010sev" +
-      "erity\030\007 \001(\0162\032.yamcs.Event.EventSeverity:",
-      "\004INFO\022\031\n\021generationTimeUTC\030\010 \001(\t\022\030\n\020rece" +
-      "ptionTimeUTC\030\t \001(\t\022\021\n\tcreatedBy\030\n \001(\t\"d\n" +
-      "\rEventSeverity\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n" +
-      "\005ERROR\020\002\022\t\n\005WATCH\020\003\022\014\n\010DISTRESS\020\005\022\014\n\010CRI" +
-      "TICAL\020\006\022\n\n\006SEVERE\020\007*\005\010d\020\221N\"!\n\021ProcessorT" +
-      "ypeInfo\022\014\n\004type\030\001 \003(\t*)\n\tEndAction\022\010\n\004LO" +
-      "OP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*\357\002\n\rProtoDataTy" +
-      "pe\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM" +
-      "_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_" +
-      "INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022",
-      "\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013" +
-      "CLIENT_INFO\020\013\022\031\n\025PROCESSING_STATISTICS\020\014" +
-      "\022\017\n\013STREAM_DATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIM" +
-      "E_INFO\020\017\022\016\n\nLINK_EVENT\020\020\022\026\n\022COMMAND_QUEU" +
-      "E_INFO\020\021\022\027\n\023COMMAND_QUEUE_EVENT\020\022\022\023\n\017CON" +
-      "NECTION_INFO\020\023\022\022\n\016EXTENSION_DATA\020dB\024\n\022or" +
-      "g.yamcs.protobuf"
+      "ectId\"D\n\017PpReplayRequest\022\027\n\017groupNameFil" +
+      "ter\030\001 \003(\t\022\030\n\020groupNameExclude\030\002 \003(\t\"\333\001\n\014" +
+      "ReplayStatus\022.\n\005state\030\001 \002(\0162\037.yamcs.Repl",
+      "ayStatus.ReplayState\022%\n\007request\030\002 \001(\0132\024." +
+      "yamcs.ReplayRequest\022\024\n\014errorMessage\030\003 \001(" +
+      "\t\"^\n\013ReplayState\022\022\n\016INITIALIZATION\020\000\022\013\n\007" +
+      "RUNNING\020\001\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAU" +
+      "SED\020\004\022\n\n\006CLOSED\020\005\"\207\001\n\014TmPacketData\022\025\n\rre" +
+      "ceptionTime\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016gen" +
+      "erationTime\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(" +
+      "\005\022 \n\002id\030\005 \001(\0132\024.yamcs.NamedObjectId\"7\n\010T" +
+      "imeInfo\022\023\n\013currentTime\030\001 \001(\003\022\026\n\016currentT" +
+      "imeUTC\030\002 \001(\t\"\341\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026",
+      "\n\016generationTime\030\002 \002(\003\022\025\n\rreceptionTime\030" +
+      "\003 \002(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017" +
+      "\n\007message\030\006 \002(\t\0222\n\010severity\030\007 \001(\0162\032.yamc" +
+      "s.Event.EventSeverity:\004INFO\022\031\n\021generatio" +
+      "nTimeUTC\030\010 \001(\t\022\030\n\020receptionTimeUTC\030\t \001(\t" +
+      "\022\021\n\tcreatedBy\030\n \001(\t\"d\n\rEventSeverity\022\010\n\004" +
+      "INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002\022\t\n\005WATCH\020" +
+      "\003\022\014\n\010DISTRESS\020\005\022\014\n\010CRITICAL\020\006\022\n\n\006SEVERE\020" +
+      "\007*\005\010d\020\221N\"!\n\021ProcessorTypeInfo\022\014\n\004type\030\001 " +
+      "\003(\t*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004",
+      "STOP\020\003*\357\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020" +
+      "\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022" +
+      "\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE" +
+      "_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022" +
+      "\n\016PROCESSOR_INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025P" +
+      "ROCESSING_STATISTICS\020\014\022\017\n\013STREAM_DATA\020\r\022" +
+      "\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK_E" +
+      "VENT\020\020\022\026\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023COMMAN" +
+      "D_QUEUE_EVENT\020\022\022\023\n\017CONNECTION_INFO\020\023\022\022\n\016" +
+      "EXTENSION_DATA\020dB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -28100,135 +29648,141 @@ public final class Yamcs {
     internal_static_yamcs_Value_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_Value_descriptor,
-        new java.lang.String[] { "Type", "FloatValue", "DoubleValue", "Sint32Value", "Uint32Value", "BinaryValue", "StringValue", "TimestampValue", "Uint64Value", "Sint64Value", "BooleanValue", });
-    internal_static_yamcs_NamedObjectId_descriptor =
+        new java.lang.String[] { "Type", "FloatValue", "DoubleValue", "Sint32Value", "Uint32Value", "BinaryValue", "StringValue", "TimestampValue", "Uint64Value", "Sint64Value", "BooleanValue", "AggregateValue", "ArrayValue", });
+    internal_static_yamcs_AggregateValue_descriptor =
       getDescriptor().getMessageTypes().get(4);
+    internal_static_yamcs_AggregateValue_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_AggregateValue_descriptor,
+        new java.lang.String[] { "Name", "Value", });
+    internal_static_yamcs_NamedObjectId_descriptor =
+      getDescriptor().getMessageTypes().get(5);
     internal_static_yamcs_NamedObjectId_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_NamedObjectId_descriptor,
         new java.lang.String[] { "Name", "Namespace", });
     internal_static_yamcs_NamedObjectList_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_yamcs_NamedObjectList_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_NamedObjectList_descriptor,
         new java.lang.String[] { "List", });
     internal_static_yamcs_IndexRequest_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(7);
     internal_static_yamcs_IndexRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_IndexRequest_descriptor,
         new java.lang.String[] { "Instance", "Start", "Stop", "UtcStart", "UtcStop", "DefaultNamespace", "SendAllTm", "TmPacket", "SendAllPp", "PpGroup", "SendCompletenessIndex", "SendAllCmd", "CmdName", "SendAllEvent", "EventSource", "MergeTime", });
     internal_static_yamcs_ArchiveRecord_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(8);
     internal_static_yamcs_ArchiveRecord_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_ArchiveRecord_descriptor,
         new java.lang.String[] { "Id", "First", "Last", "Num", "Info", });
     internal_static_yamcs_IndexResult_descriptor =
-      getDescriptor().getMessageTypes().get(8);
+      getDescriptor().getMessageTypes().get(9);
     internal_static_yamcs_IndexResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_IndexResult_descriptor,
         new java.lang.String[] { "Instance", "Records", "Type", "TableName", });
     internal_static_yamcs_TagRequest_descriptor =
-      getDescriptor().getMessageTypes().get(9);
+      getDescriptor().getMessageTypes().get(10);
     internal_static_yamcs_TagRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_TagRequest_descriptor,
         new java.lang.String[] { "Instance", "Start", "Stop", });
     internal_static_yamcs_ArchiveTag_descriptor =
-      getDescriptor().getMessageTypes().get(10);
+      getDescriptor().getMessageTypes().get(11);
     internal_static_yamcs_ArchiveTag_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_ArchiveTag_descriptor,
         new java.lang.String[] { "Id", "Name", "Start", "Stop", "Description", "Color", });
     internal_static_yamcs_TagResult_descriptor =
-      getDescriptor().getMessageTypes().get(11);
+      getDescriptor().getMessageTypes().get(12);
     internal_static_yamcs_TagResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_TagResult_descriptor,
         new java.lang.String[] { "Instance", "Tag", });
     internal_static_yamcs_UpsertTagRequest_descriptor =
-      getDescriptor().getMessageTypes().get(12);
+      getDescriptor().getMessageTypes().get(13);
     internal_static_yamcs_UpsertTagRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_UpsertTagRequest_descriptor,
         new java.lang.String[] { "OldTag", "NewTag", });
     internal_static_yamcs_DeleteTagRequest_descriptor =
-      getDescriptor().getMessageTypes().get(13);
+      getDescriptor().getMessageTypes().get(14);
     internal_static_yamcs_DeleteTagRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_DeleteTagRequest_descriptor,
         new java.lang.String[] { "Tag", });
     internal_static_yamcs_ReplaySpeed_descriptor =
-      getDescriptor().getMessageTypes().get(14);
+      getDescriptor().getMessageTypes().get(15);
     internal_static_yamcs_ReplaySpeed_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_ReplaySpeed_descriptor,
         new java.lang.String[] { "Type", "Param", });
     internal_static_yamcs_ReplayRequest_descriptor =
-      getDescriptor().getMessageTypes().get(15);
+      getDescriptor().getMessageTypes().get(16);
     internal_static_yamcs_ReplayRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_ReplayRequest_descriptor,
         new java.lang.String[] { "Start", "Stop", "UtcStart", "UtcStop", "EndAction", "Speed", "Reverse", "ParameterRequest", "PacketRequest", "EventRequest", "CommandHistoryRequest", "PpRequest", });
     internal_static_yamcs_ParameterReplayRequest_descriptor =
-      getDescriptor().getMessageTypes().get(16);
+      getDescriptor().getMessageTypes().get(17);
     internal_static_yamcs_ParameterReplayRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_ParameterReplayRequest_descriptor,
         new java.lang.String[] { "NameFilter", "SendRaw", "PerformMonitoring", });
     internal_static_yamcs_PacketReplayRequest_descriptor =
-      getDescriptor().getMessageTypes().get(17);
+      getDescriptor().getMessageTypes().get(18);
     internal_static_yamcs_PacketReplayRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_PacketReplayRequest_descriptor,
         new java.lang.String[] { "NameFilter", });
     internal_static_yamcs_EventReplayRequest_descriptor =
-      getDescriptor().getMessageTypes().get(18);
+      getDescriptor().getMessageTypes().get(19);
     internal_static_yamcs_EventReplayRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_EventReplayRequest_descriptor,
         new java.lang.String[] { });
     internal_static_yamcs_CommandHistoryReplayRequest_descriptor =
-      getDescriptor().getMessageTypes().get(19);
+      getDescriptor().getMessageTypes().get(20);
     internal_static_yamcs_CommandHistoryReplayRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_CommandHistoryReplayRequest_descriptor,
         new java.lang.String[] { "NameFilter", });
     internal_static_yamcs_PpReplayRequest_descriptor =
-      getDescriptor().getMessageTypes().get(20);
+      getDescriptor().getMessageTypes().get(21);
     internal_static_yamcs_PpReplayRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_PpReplayRequest_descriptor,
         new java.lang.String[] { "GroupNameFilter", "GroupNameExclude", });
     internal_static_yamcs_ReplayStatus_descriptor =
-      getDescriptor().getMessageTypes().get(21);
+      getDescriptor().getMessageTypes().get(22);
     internal_static_yamcs_ReplayStatus_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_ReplayStatus_descriptor,
         new java.lang.String[] { "State", "Request", "ErrorMessage", });
     internal_static_yamcs_TmPacketData_descriptor =
-      getDescriptor().getMessageTypes().get(22);
+      getDescriptor().getMessageTypes().get(23);
     internal_static_yamcs_TmPacketData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_TmPacketData_descriptor,
         new java.lang.String[] { "ReceptionTime", "Packet", "GenerationTime", "SequenceNumber", "Id", });
     internal_static_yamcs_TimeInfo_descriptor =
-      getDescriptor().getMessageTypes().get(23);
+      getDescriptor().getMessageTypes().get(24);
     internal_static_yamcs_TimeInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_TimeInfo_descriptor,
         new java.lang.String[] { "CurrentTime", "CurrentTimeUTC", });
     internal_static_yamcs_Event_descriptor =
-      getDescriptor().getMessageTypes().get(24);
+      getDescriptor().getMessageTypes().get(25);
     internal_static_yamcs_Event_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_Event_descriptor,
         new java.lang.String[] { "Source", "GenerationTime", "ReceptionTime", "SeqNumber", "Type", "Message", "Severity", "GenerationTimeUTC", "ReceptionTimeUTC", "CreatedBy", });
     internal_static_yamcs_ProcessorTypeInfo_descriptor =
-      getDescriptor().getMessageTypes().get(25);
+      getDescriptor().getMessageTypes().get(26);
     internal_static_yamcs_ProcessorTypeInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_ProcessorTypeInfo_descriptor,

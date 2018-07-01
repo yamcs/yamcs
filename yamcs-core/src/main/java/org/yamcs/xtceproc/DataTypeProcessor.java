@@ -85,7 +85,7 @@ public class DataTypeProcessor {
     }
 
     private static Value getAggregateInitialValue(AggregateDataType aggregateDataType) {
-        AggregateValue v = new AggregateValue();
+        AggregateValue v = new AggregateValue(aggregateDataType.getMemberNames());
         for(Member m: aggregateDataType.getMemberList()) {
             Value mv = getInitialValue(m.getType());
             if(mv != null) {

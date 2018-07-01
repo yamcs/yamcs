@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -66,7 +67,10 @@ class ArchiveFillerTask implements ParameterConsumer {
                 log.warn("No qualified name for parameter value {}, ignoring", pv);
                 continue;
             }
-            
+            if(pv.getEngValue() instanceof AggregateValue) {
+              //  log.warn("{}: aggregate values not supported, ignoring", pv.getParameterQualifiedNamed());
+                continue;
+            }
             SortedParameterList l = m.get(t);
             if(l==null) {
                 l = new SortedParameterList();

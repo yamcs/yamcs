@@ -570,8 +570,10 @@ public class ArrayParameterCache implements ParameterCache {
                 return ValueUtility.getStringValue((String)((Object[]) o)[idx]);
             case BINARY:
                 return ValueUtility.getBinaryValue((byte[]) (((Object[]) o)[idx]));
+            case AGGREGATE:
+                return (Value) (((Object[]) o)[idx]);
             default:
-                throw new IllegalStateException("Unnown type " + type); 
+                throw new IllegalStateException("Unknown type " + type); 
             }
         }
 
@@ -641,8 +643,11 @@ public class ArrayParameterCache implements ParameterCache {
             case BINARY:
                 ((Object[]) o)[pos] = v.getBinaryValue();
                 break;
+            case AGGREGATE:
+                ((Object[]) o)[pos] = v;
+                break;
             default:
-                throw new IllegalStateException("Unnown type " + type);
+                throw new IllegalStateException("Uknnown type " + type);
             }
         }
 
@@ -663,6 +668,7 @@ public class ArrayParameterCache implements ParameterCache {
                 return new long[INITIAL_CAPACITY];
             case STRING:                
             case BINARY:
+            case AGGREGATE:
                 return new Object[INITIAL_CAPACITY];
             }
             throw new IllegalStateException("Unnown type " + type);
