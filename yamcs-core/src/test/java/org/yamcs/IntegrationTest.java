@@ -44,6 +44,7 @@ import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Yamcs;
+import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
@@ -251,6 +252,31 @@ public class IntegrationTest extends AbstractIntegrationTest {
         bulkPvals = fromJson(new String(responseFuture.get()), BulkGetParameterValueResponse.newBuilder()).build();
 
         checkPvals(bulkPvals.getValueList(), packetGenerator);
+    }
+
+    
+    @Test
+    public void testRestArrayAggregateParameterGet() throws Exception {
+        packetGenerator.generate_PKT8();
+        
+        ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/array_para1");
+        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(subscrList.getIdList())
+                .build();
+
+        String response = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget",
+                HttpMethod.GET, toJson(req)).get();
+        BulkGetParameterValueResponse pvals = fromJson(response, BulkGetParameterValueResponse.newBuilder())
+                .build();
+        assertEquals(1, pvals.getValueCount());
+        ParameterValue pv = pvals.getValue(0);
+        Value v = pv.getEngValue();
+        assertEquals(Value.Type.ARRAY, v.getType());
+        
+        Value v1 = v.getArrayValue(10);
+        assertEquals(Value.Type.AGGREGATE, v1.getType());
+        AggregateValue av = v1.getAggregateValue();
+        assertEquals("member1", av.getName(0));
+        assertEquals(5.0, av.getValue(2).getFloatValue(), 1e-5);
     }
 
     @Test

@@ -1,3 +1,6 @@
+Version 4.6.0
+- introduced aggregate and array data types
+
 Version 4.5.0 released 26-Jun-2018
 - added a simple object storage API (buckets)
 - security improvements - it is possible now to stack multiple AuthModules to
