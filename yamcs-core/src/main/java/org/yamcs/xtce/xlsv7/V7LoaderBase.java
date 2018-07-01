@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -91,15 +90,15 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     protected static final int IDX_CMDOPT_SIGNIFICANCE_REASON = 4;
 
     // columns in the command verification sheet
-    protected static final String CN_CMDVERIF_NAME = "Command name";
-    protected static final String CN_CMDVERIF_STAGE = "CmdVerifier Stage";
-    protected static final String CN_CMDVERIF_TYPE = "CmdVerifier Type";
-    protected static final String CN_CMDVERIF_TEXT = "CmdVerifier Text";;
-    protected static final String CN_CMDVERIF_CHECKWINDOW = "Time Check Window";
-    protected static final String CN_CMDVERIF_CHECKWINDOW_RELATIVETO = "checkWindow is relative to";
-    protected static final String CN_CMDVERIF_ONSUCCESS = "OnSuccess";
-    protected static final String CN_CMDVERIF_ONFAIL = "OnFail";
-    protected static final String CN_CMDVERIF_ONTIMEOUT = "OnTimeout";
+    protected static final String CN_CMDVERIF_NAME = "command name";
+    protected static final String CN_CMDVERIF_STAGE = "cmdverifier stage";
+    protected static final String CN_CMDVERIF_TYPE = "cmdverifier type";
+    protected static final String CN_CMDVERIF_TEXT = "cmdverifier text";;
+    protected static final String CN_CMDVERIF_CHECKWINDOW = "time check window";
+    protected static final String CN_CMDVERIF_CHECKWINDOW_RELATIVETO = "checkwindow is relative to";
+    protected static final String CN_CMDVERIF_ONSUCCESS = "onsuccess";
+    protected static final String CN_CMDVERIF_ONFAIL = "onfail";
+    protected static final String CN_CMDVERIF_ONTIMEOUT = "ontimeout";
 
     // columns in the changelog sheet
     protected static final int IDX_LOG_VERSION = 0;
@@ -168,7 +167,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
             Sheet sheet = workbook.getSheet(sheetName);
             Cell[] cells = sheet.getRow(0);
             for (int i = 0; i < cells.length; i++) {
-                String hname = cells[i].getContents();
+                String hname = cells[i].getContents().toLowerCase();
                 if (hname != null && !hname.isEmpty()) {
                     if (m.containsKey(hname)) {
                         throw new SpreadsheetLoadException(new SpreadsheetLoadContext(),

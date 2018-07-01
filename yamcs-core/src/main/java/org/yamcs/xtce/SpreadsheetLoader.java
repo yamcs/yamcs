@@ -49,5 +49,4 @@ public class SpreadsheetLoader extends BaseSpreadsheetLoader {
     public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
         return delegate.load();
     }
-
 }
