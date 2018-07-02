@@ -84,36 +84,46 @@ public class YamcsServer {
      * This must be done in a second step, so that components can ask YamcsServer for other service instantiations.
      *
      * @param services
-     *            - list of service configuration; each of them is a string (=classname) or a map
+     *            list of service configuration; each of them is a string (=classname) or a map
      * @param instance
-     *            - if null, then start a server-wide service, otherwise an instance-specific service
+     *            if null, then start a server-wide service, otherwise an instance-specific service
      * @throws IOException
      * @throws ConfigurationException
      */
     @SuppressWarnings("unchecked")
     static List<ServiceWithConfig> createServices(String instance, List<Object> servicesConfig)
             throws ConfigurationException, IOException {
+        int count = 1;
         ManagementService managementService = ManagementService.getInstance();
+        Set<String> names = new HashSet<>();
         List<ServiceWithConfig> serviceList = new CopyOnWriteArrayList<>();
         for (Object servobj : servicesConfig) {
             String servclass;
             Object args = null;
+            String name = "service" + count;
             if (servobj instanceof String) {
                 servclass = (String) servobj;
             } else if (servobj instanceof Map<?, ?>) {
                 Map<String, Object> m = (Map<String, Object>) servobj;
                 servclass = YConfiguration.getString(m, "class");
                 args = m.get("args");
+                if (m.containsKey("name")) {
+                    name = m.get("name").toString();
+                }
             } else {
                 throw new ConfigurationException(
                         "Services can either be specified by classname, or by {class: classname, args: ....} map. Cannot load a service from "
                                 + servobj);
-
             }
+            if (names.contains(name)) {
+                throw new ConfigurationException(
+                        "There is already a service named '" + name + "'");
+            }
+
             staticlog.info("Loading {} service {}", (instance == null) ? "server-wide" : instance, servclass);
             ServiceWithConfig swc;
             try {
-                swc = createService(instance, servclass, servclass, args);
+                swc = createService(instance, servclass, name, args);
                 serviceList.add(swc);
             } catch (NoClassDefFoundError e) {
                 staticlog.error("Cannot create service {}, with arguments {}: class {} not found", servclass, args,
@@ -124,8 +134,10 @@ public class YamcsServer {
                 throw t;
             }
             if (managementService != null) {
-                managementService.registerService(instance, servclass, swc.service);
+                managementService.registerService(instance, name, swc.service);
             }
+            names.add(name);
+            count++;
         }
 
         return serviceList;
