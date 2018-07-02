@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
 import { LayoutState } from '@yamcs/displays';
 import { BehaviorSubject } from 'rxjs';
+import * as screenfull from 'screenfull';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { LayoutComponent } from '../layouts/LayoutComponent';
@@ -12,7 +13,7 @@ import { LayoutComponent } from '../layouts/LayoutComponent';
   templateUrl: './LayoutPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LayoutPage {
+export class LayoutPage implements OnDestroy {
 
   @ViewChild('layoutComponent')
   private layoutComponent: LayoutComponent;
@@ -24,6 +25,9 @@ export class LayoutPage {
 
   dirty$ = new BehaviorSubject<boolean>(false);
 
+  fullscreen$ = new BehaviorSubject<boolean>(false);
+  fullscreenListener: () => void;
+
   constructor(
     route: ActivatedRoute,
     private yamcs: YamcsService,
@@ -34,6 +38,9 @@ export class LayoutPage {
     this.instance = yamcs.getInstance();
     this.layoutName = route.snapshot.paramMap.get('name')!;
     title.setTitle(this.layoutName + ' - Yamcs');
+
+    this.fullscreenListener = () => this.fullscreen$.next(screenfull.isFullscreen);
+    screenfull.on('change', this.fullscreenListener);
 
     this.layout$ = new Promise<LayoutState>((resolve, reject) => {
       const username = authService.getUser()!.getUsername();
@@ -72,5 +79,17 @@ export class LayoutPage {
 
   onStateChange(state: LayoutState) {
     this.dirty$.next(true);
+  }
+
+  goFullscreen() {
+    if (screenfull.enabled) {
+      screenfull.request(this.layoutComponent.wrapperRef.nativeElement);
+    } else {
+      alert('Your browser does not appear to support going full screen');
+    }
+  }
+
+  ngOnDestroy() {
+    screenfull.off('change', this.fullscreenListener);
   }
 }

@@ -14,6 +14,9 @@ import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
 })
 export class LayoutComponent implements OnInit, OnChanges, LayoutListener, LayoutStateListener {
 
+  @ViewChild('wrapper')
+  public wrapperRef: ElementRef;
+
   @Input()
   startWithOpenedNavigator = true;
 
