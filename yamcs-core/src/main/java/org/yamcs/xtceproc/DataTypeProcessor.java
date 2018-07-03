@@ -13,8 +13,6 @@ import org.yamcs.xtce.EnumeratedDataType;
 import org.yamcs.xtce.FloatDataType;
 import org.yamcs.xtce.IntegerDataType;
 import org.yamcs.xtce.Member;
-import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.StringDataType;
 
 public class DataTypeProcessor {
