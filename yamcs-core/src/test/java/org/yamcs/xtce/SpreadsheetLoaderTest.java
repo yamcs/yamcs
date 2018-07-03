@@ -134,8 +134,9 @@ public class SpreadsheetLoaderTest {
     public void testArrays() throws Exception {
         Parameter p = db.getParameter("/REFMDB/SUBSYS1/array_para1");
         ArrayParameterType ptype = (ArrayParameterType) p.getParameterType();
-        IntegerParameterType mtype = (IntegerParameterType) ptype.getElementType();
-        IntegerDataEncoding enc = (IntegerDataEncoding) mtype.getEncoding();
+        AggregateParameterType mtype = (AggregateParameterType) ptype.getElementType();
+        IntegerDataType itype = (IntegerDataType) mtype.getMember("member1").getType();
+        IntegerDataEncoding enc = (IntegerDataEncoding) itype.getEncoding();
         assertEquals(8, enc.sizeInBits);
     }
 }

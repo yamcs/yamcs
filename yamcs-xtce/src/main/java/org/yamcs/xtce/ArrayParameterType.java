@@ -13,6 +13,10 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
         super(name);
     }
 
+    public ArrayParameterType(ArrayParameterType t) {
+        super(t);
+    }
+
     private static final long serialVersionUID = 1L;
 
     @Override
@@ -43,9 +47,8 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
     }
 
     @Override
-    public ParameterType copy() {
-        // TODO Auto-generated method stub
-        return null;
+    public ArrayParameterType copy() {
+        return new ArrayParameterType(this);
     }
     
     @Override

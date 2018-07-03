@@ -1,30 +1,34 @@
 package org.yamcs.parameter;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.xtce.AggregateDataType;
+import org.yamcs.xtce.util.AggregateMemberNames;
 
 public class AggregateValue extends Value {
-    String[] names;
+    AggregateMemberNames names;
     Value[] values;
     
-    public AggregateValue(String[] memberNames) {
+    /**
+     * Create a new aggregate value with the member names. 
+     * Make sure that the memberNames are interned string (see {@link String#intern()}, 
+     * for example as returned by {@link AggregateDataType#getMemberNames()}   
+     * 
+     *  
+     * @param memberNames
+     */
+    public AggregateValue(AggregateMemberNames memberNames) {
         this.names = memberNames;
-        this.values = new Value[memberNames.length];
+        this.values = new Value[memberNames.size()];
     }
 
     private int idx(String name) {
-        String internedName = name.intern();
-        for(int i = 0; i<names.length ; i++) {
-            if(names[i] == internedName) {
-                return i;
-            }
-        }
-        throw new IllegalArgumentException("No member named '"+name+"'");
+       int idx = names.indexOf(name);
+       if(idx==-1) {
+           throw new IllegalArgumentException("No member named '"+name+"'");
+       }
+       return idx;
     }
+    
     public void setValue(String name, Value value) {
         values[idx(name)] = value;
     }
@@ -59,13 +63,13 @@ public class AggregateValue extends Value {
             } else {
                 sb.append(", ");
             }
-            sb.append(names[i]).append(" : ").append(values[i]);
+            sb.append(names.get(i)).append(" : ").append(values[i]);
         }
        return sb.toString();
     }
 
     public String getMemberName(int idx) {
-        return names[idx];
+        return names.get(idx);
     }
 
     public Value getMemberValue(int i) {

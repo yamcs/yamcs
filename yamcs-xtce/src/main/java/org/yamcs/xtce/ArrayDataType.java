@@ -18,6 +18,12 @@ public class ArrayDataType extends NameDescription implements DataType {
     public ArrayDataType(String name) {
         super(name);
     }
+    
+    public ArrayDataType(ArrayDataType t) {
+        super(t);
+        this.type = t.type;
+        this.numberOfDimensions = t.numberOfDimensions;
+    }
 
     /**
      * Sets the type of the elements of the array

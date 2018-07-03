@@ -1,7 +1,5 @@
 package org.yamcs.xtce;
 
-import java.util.List;
-
 /**
  * AggegateParameters are analogous to a C struct, they are an aggregation of related data items. Each of these data
  * items is defined here as a 'Member'
@@ -12,6 +10,10 @@ import java.util.List;
 public class AggregateParameterType extends AggregateDataType implements ParameterType {
     public AggregateParameterType(String name) {
         super(name);
+    }
+
+    public AggregateParameterType(AggregateParameterType t) {
+        super(t);
     }
 
     private static final long serialVersionUID = 1L;
@@ -40,9 +42,8 @@ public class AggregateParameterType extends AggregateDataType implements Paramet
     }
 
     @Override
-    public ParameterType copy() {
-        // TODO Auto-generated method stub
-        return null;
+    public AggregateParameterType copy() {
+        return new AggregateParameterType(this);
     }
 
     @Override
