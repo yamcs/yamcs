@@ -748,12 +748,11 @@ public class V6Loader extends V6LoaderBase {
                     throw new SpreadsheetLoadException(ctx, "Size in bits mandatory for float encoding.");
                 }
                 int bitlength = parseInt(ctx, encodingArgs[0]);
-
-                encoding = new FloatDataEncoding(bitlength);
-                ((FloatDataEncoding) encoding).setEncoding(getFloatEncoding(ctx, encodingType));
+                ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
                 if (encodingArgs.length > 1) {
-                    ((FloatDataEncoding) encoding).setByteOrder(getByteOrder(ctx, encodingArgs[1]));
+                    byteOrder = getByteOrder(ctx, encodingArgs[1]);
                 }
+                encoding = new FloatDataEncoding(bitlength, byteOrder, getFloatEncoding(ctx, encodingType));
             }
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {

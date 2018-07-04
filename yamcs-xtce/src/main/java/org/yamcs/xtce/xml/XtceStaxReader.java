@@ -57,6 +57,7 @@ import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.FixedValueEntry;
 import org.yamcs.xtce.FloatArgumentType;
 import org.yamcs.xtce.FloatDataEncoding;
+import org.yamcs.xtce.FloatDataEncoding.Encoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
@@ -869,29 +870,21 @@ public class XtceStaxReader {
         FloatDataEncoding floatDataEncoding = null;
 
         // sizeInBits attribute
-        String value = readAttribute("sizeInBits", xmlEvent.asStartElement(), null);
-        if (value != null) {
-            floatDataEncoding = new FloatDataEncoding(Integer.parseInt(value));
-        } else {
-            // default value is 32
-            floatDataEncoding = new FloatDataEncoding(32);
-        }
+        int sizeInBits = readIntAttribute("sizeInBits", xmlEvent.asStartElement(), 32); 
 
         // encoding attribute
-        value = readAttribute("encoding", xmlEvent.asStartElement(), null);
+        String value = readAttribute("encoding", xmlEvent.asStartElement(), null);
+        Encoding enc = Encoding.IEEE754_1985;
         if (value != null) {
             if ("IEEE754_1985".equalsIgnoreCase(value)) {
-                // ok, this encoding is supported by the class implicitly
+                // ok, this encoding is the default
             } else if ("MILSTD_1750A".equalsIgnoreCase(value)) {
-                log.error("Encoding MILSTD_1750A is not currently supported.");
-                throwException("Encoding MILSTD_1750A is not currently supported.");
+                enc = Encoding.MILSTD_1750A;
             } else {
                 throwException("Unknown encoding '" + value + "'");
             }
-        } else {
-            // default is IEEE754_1985
-            // this encoding is supported by the class implicitly
         }
+        floatDataEncoding = new FloatDataEncoding(sizeInBits, enc);
 
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();

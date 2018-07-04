@@ -1,5 +1,6 @@
 Version 4.6.0
 - introduced aggregate and array data types
+- added support for MIL-STD-1750A floating point encoding (32 and 48 bits)
 
 Version 4.5.0 released 26-Jun-2018
 - added a simple object storage API (buckets)

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.utils.MilStd1750A;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanDataEncoding;
@@ -167,6 +168,8 @@ public class DataEncodingDecoder {
         switch (de.getEncoding()) {
         case IEEE754_1985:
             return extractRawIEEE754_1985(de);
+        case MILSTD_1750A:
+            return extractRawMILSTD_1750A(de);
         case STRING:
             return extractRaw(de.getStringDataEncoding());
         default:
@@ -181,6 +184,16 @@ public class DataEncodingDecoder {
             return ValueUtility.getFloatValue(Float.intBitsToFloat((int) buffer.getBits(32)));
         } else {
             return ValueUtility.getDoubleValue(Double.longBitsToDouble(buffer.getBits(64)));
+        }
+    }
+    
+    private Value extractRawMILSTD_1750A(FloatDataEncoding de) {
+        buffer.setByteOrder(de.getByteOrder());
+
+        if (de.getSizeInBits() == 32) {
+            return ValueUtility.getFloatValue((float)MilStd1750A.decode32((int) buffer.getBits(32)));
+        } else {
+            return ValueUtility.getDoubleValue(MilStd1750A.decode48(buffer.getBits(64)));
         }
     }
 
