@@ -13023,6 +13023,30 @@ public final class YamcsManagement {
         getLoginBytes();
 
     /**
+     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+     */
+    java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> 
+        getClientInfoList();
+    /**
+     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo(int index);
+    /**
+     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+     */
+    int getClientInfoCount();
+    /**
+     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> 
+        getClientInfoOrBuilderList();
+    /**
+     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+     */
+    org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder(
+        int index);
+
+    /**
      * <code>repeated string systemPrivilege = 11;</code>
      */
     java.util.List<java.lang.String>
@@ -13075,35 +13099,11 @@ public final class YamcsManagement {
     boolean getSuperuser();
 
     /**
-     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-     */
-    java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> 
-        getClientInfoList();
-    /**
-     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-     */
-    org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo(int index);
-    /**
-     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-     */
-    int getClientInfoCount();
-    /**
-     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-     */
-    java.util.List<? extends org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> 
-        getClientInfoOrBuilderList();
-    /**
-     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-     */
-    org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder(
-        int index);
-
-    /**
      * <pre>
      * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
      * </pre>
      *
-     * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
      */
     @java.lang.Deprecated java.util.List<java.lang.String>
         getSystemPrivilegesList();
@@ -13112,7 +13112,7 @@ public final class YamcsManagement {
      * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
      * </pre>
      *
-     * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
      */
     @java.lang.Deprecated int getSystemPrivilegesCount();
     /**
@@ -13120,7 +13120,7 @@ public final class YamcsManagement {
      * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
      * </pre>
      *
-     * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
      */
     @java.lang.Deprecated java.lang.String getSystemPrivileges(int index);
     /**
@@ -13128,7 +13128,7 @@ public final class YamcsManagement {
      * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
      * </pre>
      *
-     * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
      */
     @java.lang.Deprecated com.google.protobuf.ByteString
         getSystemPrivilegesBytes(int index);
@@ -13146,10 +13146,10 @@ public final class YamcsManagement {
     }
     private UserInfo() {
       login_ = "";
+      clientInfo_ = java.util.Collections.emptyList();
       systemPrivilege_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       objectPrivilege_ = java.util.Collections.emptyList();
       superuser_ = false;
-      clientInfo_ = java.util.Collections.emptyList();
       systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
 
@@ -13188,6 +13188,15 @@ public final class YamcsManagement {
               break;
             }
             case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                clientInfo_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ClientInfo>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              clientInfo_.add(
+                  input.readMessage(org.yamcs.protobuf.YamcsManagement.ClientInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 66: {
               com.google.protobuf.ByteString bs = input.readBytes();
               if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
                 systemPrivileges_ = new com.google.protobuf.LazyStringArrayList();
@@ -13198,17 +13207,17 @@ public final class YamcsManagement {
             }
             case 90: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
                 systemPrivilege_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000004;
               }
               systemPrivilege_.add(bs);
               break;
             }
             case 98: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
                 objectPrivilege_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfo>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000008;
               }
               objectPrivilege_.add(
                   input.readMessage(org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfo.PARSER, extensionRegistry));
@@ -13219,15 +13228,6 @@ public final class YamcsManagement {
               superuser_ = input.readBool();
               break;
             }
-            case 114: {
-              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-                clientInfo_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ClientInfo>();
-                mutable_bitField0_ |= 0x00000010;
-              }
-              clientInfo_.add(
-                  input.readMessage(org.yamcs.protobuf.YamcsManagement.ClientInfo.PARSER, extensionRegistry));
-              break;
-            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -13236,17 +13236,17 @@ public final class YamcsManagement {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          clientInfo_ = java.util.Collections.unmodifiableList(clientInfo_);
+        }
         if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
           systemPrivileges_ = systemPrivileges_.getUnmodifiableView();
         }
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
           systemPrivilege_ = systemPrivilege_.getUnmodifiableView();
         }
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           objectPrivilege_ = java.util.Collections.unmodifiableList(objectPrivilege_);
-        }
-        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-          clientInfo_ = java.util.Collections.unmodifiableList(clientInfo_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -13305,6 +13305,41 @@ public final class YamcsManagement {
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
+    }
+
+    public static final int CLIENTINFO_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> clientInfo_;
+    /**
+     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> getClientInfoList() {
+      return clientInfo_;
+    }
+    /**
+     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> 
+        getClientInfoOrBuilderList() {
+      return clientInfo_;
+    }
+    /**
+     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+     */
+    public int getClientInfoCount() {
+      return clientInfo_.size();
+    }
+    /**
+     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo(int index) {
+      return clientInfo_.get(index);
+    }
+    /**
+     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+     */
+    public org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder(
+        int index) {
+      return clientInfo_.get(index);
     }
 
     public static final int SYSTEMPRIVILEGE_FIELD_NUMBER = 11;
@@ -13386,49 +13421,14 @@ public final class YamcsManagement {
       return superuser_;
     }
 
-    public static final int CLIENTINFO_FIELD_NUMBER = 14;
-    private java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> clientInfo_;
-    /**
-     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-     */
-    public java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> getClientInfoList() {
-      return clientInfo_;
-    }
-    /**
-     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-     */
-    public java.util.List<? extends org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> 
-        getClientInfoOrBuilderList() {
-      return clientInfo_;
-    }
-    /**
-     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-     */
-    public int getClientInfoCount() {
-      return clientInfo_.size();
-    }
-    /**
-     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-     */
-    public org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo(int index) {
-      return clientInfo_.get(index);
-    }
-    /**
-     * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-     */
-    public org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder(
-        int index) {
-      return clientInfo_.get(index);
-    }
-
-    public static final int SYSTEMPRIVILEGES_FIELD_NUMBER = 2;
+    public static final int SYSTEMPRIVILEGES_FIELD_NUMBER = 8;
     private com.google.protobuf.LazyStringList systemPrivileges_;
     /**
      * <pre>
      * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
      * </pre>
      *
-     * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
      */
     @java.lang.Deprecated public com.google.protobuf.ProtocolStringList
         getSystemPrivilegesList() {
@@ -13439,7 +13439,7 @@ public final class YamcsManagement {
      * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
      * </pre>
      *
-     * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
      */
     @java.lang.Deprecated public int getSystemPrivilegesCount() {
       return systemPrivileges_.size();
@@ -13449,7 +13449,7 @@ public final class YamcsManagement {
      * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
      * </pre>
      *
-     * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
      */
     @java.lang.Deprecated public java.lang.String getSystemPrivileges(int index) {
       return systemPrivileges_.get(index);
@@ -13459,7 +13459,7 @@ public final class YamcsManagement {
      * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
      * </pre>
      *
-     * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
      */
     @java.lang.Deprecated public com.google.protobuf.ByteString
         getSystemPrivilegesBytes(int index) {
@@ -13487,8 +13487,11 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, login_);
       }
+      for (int i = 0; i < clientInfo_.size(); i++) {
+        output.writeMessage(2, clientInfo_.get(i));
+      }
       for (int i = 0; i < systemPrivileges_.size(); i++) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, systemPrivileges_.getRaw(i));
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, systemPrivileges_.getRaw(i));
       }
       for (int i = 0; i < systemPrivilege_.size(); i++) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 11, systemPrivilege_.getRaw(i));
@@ -13498,9 +13501,6 @@ public final class YamcsManagement {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBool(13, superuser_);
-      }
-      for (int i = 0; i < clientInfo_.size(); i++) {
-        output.writeMessage(14, clientInfo_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -13512,6 +13512,10 @@ public final class YamcsManagement {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, login_);
+      }
+      for (int i = 0; i < clientInfo_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, clientInfo_.get(i));
       }
       {
         int dataSize = 0;
@@ -13537,10 +13541,6 @@ public final class YamcsManagement {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(13, superuser_);
       }
-      for (int i = 0; i < clientInfo_.size(); i++) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(14, clientInfo_.get(i));
-      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -13563,6 +13563,8 @@ public final class YamcsManagement {
         result = result && getLogin()
             .equals(other.getLogin());
       }
+      result = result && getClientInfoList()
+          .equals(other.getClientInfoList());
       result = result && getSystemPrivilegeList()
           .equals(other.getSystemPrivilegeList());
       result = result && getObjectPrivilegeList()
@@ -13572,8 +13574,6 @@ public final class YamcsManagement {
         result = result && (getSuperuser()
             == other.getSuperuser());
       }
-      result = result && getClientInfoList()
-          .equals(other.getClientInfoList());
       result = result && getSystemPrivilegesList()
           .equals(other.getSystemPrivilegesList());
       result = result && unknownFields.equals(other.unknownFields);
@@ -13591,6 +13591,10 @@ public final class YamcsManagement {
         hash = (37 * hash) + LOGIN_FIELD_NUMBER;
         hash = (53 * hash) + getLogin().hashCode();
       }
+      if (getClientInfoCount() > 0) {
+        hash = (37 * hash) + CLIENTINFO_FIELD_NUMBER;
+        hash = (53 * hash) + getClientInfoList().hashCode();
+      }
       if (getSystemPrivilegeCount() > 0) {
         hash = (37 * hash) + SYSTEMPRIVILEGE_FIELD_NUMBER;
         hash = (53 * hash) + getSystemPrivilegeList().hashCode();
@@ -13603,10 +13607,6 @@ public final class YamcsManagement {
         hash = (37 * hash) + SUPERUSER_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getSuperuser());
-      }
-      if (getClientInfoCount() > 0) {
-        hash = (37 * hash) + CLIENTINFO_FIELD_NUMBER;
-        hash = (53 * hash) + getClientInfoList().hashCode();
       }
       if (getSystemPrivilegesCount() > 0) {
         hash = (37 * hash) + SYSTEMPRIVILEGES_FIELD_NUMBER;
@@ -13726,30 +13726,30 @@ public final class YamcsManagement {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
-          getObjectPrivilegeFieldBuilder();
           getClientInfoFieldBuilder();
+          getObjectPrivilegeFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
         login_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
+        if (clientInfoBuilder_ == null) {
+          clientInfo_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          clientInfoBuilder_.clear();
+        }
         systemPrivilege_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         if (objectPrivilegeBuilder_ == null) {
           objectPrivilege_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
         } else {
           objectPrivilegeBuilder_.clear();
         }
         superuser_ = false;
-        bitField0_ = (bitField0_ & ~0x00000008);
-        if (clientInfoBuilder_ == null) {
-          clientInfo_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000010);
-        } else {
-          clientInfoBuilder_.clear();
-        }
+        bitField0_ = (bitField0_ & ~0x00000010);
         systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000020);
         return this;
@@ -13780,33 +13780,33 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000001;
         }
         result.login_ = login_;
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          systemPrivilege_ = systemPrivilege_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000002);
-        }
-        result.systemPrivilege_ = systemPrivilege_;
-        if (objectPrivilegeBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004)) {
-            objectPrivilege_ = java.util.Collections.unmodifiableList(objectPrivilege_);
-            bitField0_ = (bitField0_ & ~0x00000004);
-          }
-          result.objectPrivilege_ = objectPrivilege_;
-        } else {
-          result.objectPrivilege_ = objectPrivilegeBuilder_.build();
-        }
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.superuser_ = superuser_;
         if (clientInfoBuilder_ == null) {
-          if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
             clientInfo_ = java.util.Collections.unmodifiableList(clientInfo_);
-            bitField0_ = (bitField0_ & ~0x00000010);
+            bitField0_ = (bitField0_ & ~0x00000002);
           }
           result.clientInfo_ = clientInfo_;
         } else {
           result.clientInfo_ = clientInfoBuilder_.build();
         }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          systemPrivilege_ = systemPrivilege_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.systemPrivilege_ = systemPrivilege_;
+        if (objectPrivilegeBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
+            objectPrivilege_ = java.util.Collections.unmodifiableList(objectPrivilege_);
+            bitField0_ = (bitField0_ & ~0x00000008);
+          }
+          result.objectPrivilege_ = objectPrivilege_;
+        } else {
+          result.objectPrivilege_ = objectPrivilegeBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.superuser_ = superuser_;
         if (((bitField0_ & 0x00000020) == 0x00000020)) {
           systemPrivileges_ = systemPrivileges_.getUnmodifiableView();
           bitField0_ = (bitField0_ & ~0x00000020);
@@ -13859,50 +13859,11 @@ public final class YamcsManagement {
           login_ = other.login_;
           onChanged();
         }
-        if (!other.systemPrivilege_.isEmpty()) {
-          if (systemPrivilege_.isEmpty()) {
-            systemPrivilege_ = other.systemPrivilege_;
-            bitField0_ = (bitField0_ & ~0x00000002);
-          } else {
-            ensureSystemPrivilegeIsMutable();
-            systemPrivilege_.addAll(other.systemPrivilege_);
-          }
-          onChanged();
-        }
-        if (objectPrivilegeBuilder_ == null) {
-          if (!other.objectPrivilege_.isEmpty()) {
-            if (objectPrivilege_.isEmpty()) {
-              objectPrivilege_ = other.objectPrivilege_;
-              bitField0_ = (bitField0_ & ~0x00000004);
-            } else {
-              ensureObjectPrivilegeIsMutable();
-              objectPrivilege_.addAll(other.objectPrivilege_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.objectPrivilege_.isEmpty()) {
-            if (objectPrivilegeBuilder_.isEmpty()) {
-              objectPrivilegeBuilder_.dispose();
-              objectPrivilegeBuilder_ = null;
-              objectPrivilege_ = other.objectPrivilege_;
-              bitField0_ = (bitField0_ & ~0x00000004);
-              objectPrivilegeBuilder_ = 
-                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getObjectPrivilegeFieldBuilder() : null;
-            } else {
-              objectPrivilegeBuilder_.addAllMessages(other.objectPrivilege_);
-            }
-          }
-        }
-        if (other.hasSuperuser()) {
-          setSuperuser(other.getSuperuser());
-        }
         if (clientInfoBuilder_ == null) {
           if (!other.clientInfo_.isEmpty()) {
             if (clientInfo_.isEmpty()) {
               clientInfo_ = other.clientInfo_;
-              bitField0_ = (bitField0_ & ~0x00000010);
+              bitField0_ = (bitField0_ & ~0x00000002);
             } else {
               ensureClientInfoIsMutable();
               clientInfo_.addAll(other.clientInfo_);
@@ -13915,7 +13876,7 @@ public final class YamcsManagement {
               clientInfoBuilder_.dispose();
               clientInfoBuilder_ = null;
               clientInfo_ = other.clientInfo_;
-              bitField0_ = (bitField0_ & ~0x00000010);
+              bitField0_ = (bitField0_ & ~0x00000002);
               clientInfoBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getClientInfoFieldBuilder() : null;
@@ -13923,6 +13884,45 @@ public final class YamcsManagement {
               clientInfoBuilder_.addAllMessages(other.clientInfo_);
             }
           }
+        }
+        if (!other.systemPrivilege_.isEmpty()) {
+          if (systemPrivilege_.isEmpty()) {
+            systemPrivilege_ = other.systemPrivilege_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureSystemPrivilegeIsMutable();
+            systemPrivilege_.addAll(other.systemPrivilege_);
+          }
+          onChanged();
+        }
+        if (objectPrivilegeBuilder_ == null) {
+          if (!other.objectPrivilege_.isEmpty()) {
+            if (objectPrivilege_.isEmpty()) {
+              objectPrivilege_ = other.objectPrivilege_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+            } else {
+              ensureObjectPrivilegeIsMutable();
+              objectPrivilege_.addAll(other.objectPrivilege_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.objectPrivilege_.isEmpty()) {
+            if (objectPrivilegeBuilder_.isEmpty()) {
+              objectPrivilegeBuilder_.dispose();
+              objectPrivilegeBuilder_ = null;
+              objectPrivilege_ = other.objectPrivilege_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+              objectPrivilegeBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getObjectPrivilegeFieldBuilder() : null;
+            } else {
+              objectPrivilegeBuilder_.addAllMessages(other.objectPrivilege_);
+            }
+          }
+        }
+        if (other.hasSuperuser()) {
+          setSuperuser(other.getSuperuser());
         }
         if (!other.systemPrivileges_.isEmpty()) {
           if (systemPrivileges_.isEmpty()) {
@@ -14043,11 +14043,251 @@ public final class YamcsManagement {
         return this;
       }
 
+      private java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> clientInfo_ =
+        java.util.Collections.emptyList();
+      private void ensureClientInfoIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          clientInfo_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ClientInfo>(clientInfo_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> clientInfoBuilder_;
+
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> getClientInfoList() {
+        if (clientInfoBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(clientInfo_);
+        } else {
+          return clientInfoBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public int getClientInfoCount() {
+        if (clientInfoBuilder_ == null) {
+          return clientInfo_.size();
+        } else {
+          return clientInfoBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo(int index) {
+        if (clientInfoBuilder_ == null) {
+          return clientInfo_.get(index);
+        } else {
+          return clientInfoBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public Builder setClientInfo(
+          int index, org.yamcs.protobuf.YamcsManagement.ClientInfo value) {
+        if (clientInfoBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureClientInfoIsMutable();
+          clientInfo_.set(index, value);
+          onChanged();
+        } else {
+          clientInfoBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public Builder setClientInfo(
+          int index, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder builderForValue) {
+        if (clientInfoBuilder_ == null) {
+          ensureClientInfoIsMutable();
+          clientInfo_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          clientInfoBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public Builder addClientInfo(org.yamcs.protobuf.YamcsManagement.ClientInfo value) {
+        if (clientInfoBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureClientInfoIsMutable();
+          clientInfo_.add(value);
+          onChanged();
+        } else {
+          clientInfoBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public Builder addClientInfo(
+          int index, org.yamcs.protobuf.YamcsManagement.ClientInfo value) {
+        if (clientInfoBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureClientInfoIsMutable();
+          clientInfo_.add(index, value);
+          onChanged();
+        } else {
+          clientInfoBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public Builder addClientInfo(
+          org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder builderForValue) {
+        if (clientInfoBuilder_ == null) {
+          ensureClientInfoIsMutable();
+          clientInfo_.add(builderForValue.build());
+          onChanged();
+        } else {
+          clientInfoBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public Builder addClientInfo(
+          int index, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder builderForValue) {
+        if (clientInfoBuilder_ == null) {
+          ensureClientInfoIsMutable();
+          clientInfo_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          clientInfoBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public Builder addAllClientInfo(
+          java.lang.Iterable<? extends org.yamcs.protobuf.YamcsManagement.ClientInfo> values) {
+        if (clientInfoBuilder_ == null) {
+          ensureClientInfoIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, clientInfo_);
+          onChanged();
+        } else {
+          clientInfoBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public Builder clearClientInfo() {
+        if (clientInfoBuilder_ == null) {
+          clientInfo_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          clientInfoBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public Builder removeClientInfo(int index) {
+        if (clientInfoBuilder_ == null) {
+          ensureClientInfoIsMutable();
+          clientInfo_.remove(index);
+          onChanged();
+        } else {
+          clientInfoBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder getClientInfoBuilder(
+          int index) {
+        return getClientInfoFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder(
+          int index) {
+        if (clientInfoBuilder_ == null) {
+          return clientInfo_.get(index);  } else {
+          return clientInfoBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> 
+           getClientInfoOrBuilderList() {
+        if (clientInfoBuilder_ != null) {
+          return clientInfoBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(clientInfo_);
+        }
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder addClientInfoBuilder() {
+        return getClientInfoFieldBuilder().addBuilder(
+            org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder addClientInfoBuilder(
+          int index) {
+        return getClientInfoFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder> 
+           getClientInfoBuilderList() {
+        return getClientInfoFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> 
+          getClientInfoFieldBuilder() {
+        if (clientInfoBuilder_ == null) {
+          clientInfoBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder>(
+                  clientInfo_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          clientInfo_ = null;
+        }
+        return clientInfoBuilder_;
+      }
+
       private com.google.protobuf.LazyStringList systemPrivilege_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureSystemPrivilegeIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
           systemPrivilege_ = new com.google.protobuf.LazyStringArrayList(systemPrivilege_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000004;
          }
       }
       /**
@@ -14118,7 +14358,7 @@ public final class YamcsManagement {
        */
       public Builder clearSystemPrivilege() {
         systemPrivilege_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000004);
         onChanged();
         return this;
       }
@@ -14139,9 +14379,9 @@ public final class YamcsManagement {
       private java.util.List<org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfo> objectPrivilege_ =
         java.util.Collections.emptyList();
       private void ensureObjectPrivilegeIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
           objectPrivilege_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfo>(objectPrivilege_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000008;
          }
       }
 
@@ -14291,7 +14531,7 @@ public final class YamcsManagement {
       public Builder clearObjectPrivilege() {
         if (objectPrivilegeBuilder_ == null) {
           objectPrivilege_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
           onChanged();
         } else {
           objectPrivilegeBuilder_.clear();
@@ -14368,7 +14608,7 @@ public final class YamcsManagement {
           objectPrivilegeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfo, org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfo.Builder, org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfoOrBuilder>(
                   objectPrivilege_,
-                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  ((bitField0_ & 0x00000008) == 0x00000008),
                   getParentForChildren(),
                   isClean());
           objectPrivilege_ = null;
@@ -14381,7 +14621,7 @@ public final class YamcsManagement {
        * <code>optional bool superuser = 13;</code>
        */
       public boolean hasSuperuser() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
        * <code>optional bool superuser = 13;</code>
@@ -14393,7 +14633,7 @@ public final class YamcsManagement {
        * <code>optional bool superuser = 13;</code>
        */
       public Builder setSuperuser(boolean value) {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         superuser_ = value;
         onChanged();
         return this;
@@ -14402,250 +14642,10 @@ public final class YamcsManagement {
        * <code>optional bool superuser = 13;</code>
        */
       public Builder clearSuperuser() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         superuser_ = false;
         onChanged();
         return this;
-      }
-
-      private java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> clientInfo_ =
-        java.util.Collections.emptyList();
-      private void ensureClientInfoIsMutable() {
-        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
-          clientInfo_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.ClientInfo>(clientInfo_);
-          bitField0_ |= 0x00000010;
-         }
-      }
-
-      private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> clientInfoBuilder_;
-
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo> getClientInfoList() {
-        if (clientInfoBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(clientInfo_);
-        } else {
-          return clientInfoBuilder_.getMessageList();
-        }
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public int getClientInfoCount() {
-        if (clientInfoBuilder_ == null) {
-          return clientInfo_.size();
-        } else {
-          return clientInfoBuilder_.getCount();
-        }
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public org.yamcs.protobuf.YamcsManagement.ClientInfo getClientInfo(int index) {
-        if (clientInfoBuilder_ == null) {
-          return clientInfo_.get(index);
-        } else {
-          return clientInfoBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public Builder setClientInfo(
-          int index, org.yamcs.protobuf.YamcsManagement.ClientInfo value) {
-        if (clientInfoBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureClientInfoIsMutable();
-          clientInfo_.set(index, value);
-          onChanged();
-        } else {
-          clientInfoBuilder_.setMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public Builder setClientInfo(
-          int index, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder builderForValue) {
-        if (clientInfoBuilder_ == null) {
-          ensureClientInfoIsMutable();
-          clientInfo_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          clientInfoBuilder_.setMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public Builder addClientInfo(org.yamcs.protobuf.YamcsManagement.ClientInfo value) {
-        if (clientInfoBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureClientInfoIsMutable();
-          clientInfo_.add(value);
-          onChanged();
-        } else {
-          clientInfoBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public Builder addClientInfo(
-          int index, org.yamcs.protobuf.YamcsManagement.ClientInfo value) {
-        if (clientInfoBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureClientInfoIsMutable();
-          clientInfo_.add(index, value);
-          onChanged();
-        } else {
-          clientInfoBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public Builder addClientInfo(
-          org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder builderForValue) {
-        if (clientInfoBuilder_ == null) {
-          ensureClientInfoIsMutable();
-          clientInfo_.add(builderForValue.build());
-          onChanged();
-        } else {
-          clientInfoBuilder_.addMessage(builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public Builder addClientInfo(
-          int index, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder builderForValue) {
-        if (clientInfoBuilder_ == null) {
-          ensureClientInfoIsMutable();
-          clientInfo_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          clientInfoBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public Builder addAllClientInfo(
-          java.lang.Iterable<? extends org.yamcs.protobuf.YamcsManagement.ClientInfo> values) {
-        if (clientInfoBuilder_ == null) {
-          ensureClientInfoIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, clientInfo_);
-          onChanged();
-        } else {
-          clientInfoBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public Builder clearClientInfo() {
-        if (clientInfoBuilder_ == null) {
-          clientInfo_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000010);
-          onChanged();
-        } else {
-          clientInfoBuilder_.clear();
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public Builder removeClientInfo(int index) {
-        if (clientInfoBuilder_ == null) {
-          ensureClientInfoIsMutable();
-          clientInfo_.remove(index);
-          onChanged();
-        } else {
-          clientInfoBuilder_.remove(index);
-        }
-        return this;
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder getClientInfoBuilder(
-          int index) {
-        return getClientInfoFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder getClientInfoOrBuilder(
-          int index) {
-        if (clientInfoBuilder_ == null) {
-          return clientInfo_.get(index);  } else {
-          return clientInfoBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public java.util.List<? extends org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> 
-           getClientInfoOrBuilderList() {
-        if (clientInfoBuilder_ != null) {
-          return clientInfoBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(clientInfo_);
-        }
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder addClientInfoBuilder() {
-        return getClientInfoFieldBuilder().addBuilder(
-            org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder addClientInfoBuilder(
-          int index) {
-        return getClientInfoFieldBuilder().addBuilder(
-            index, org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance());
-      }
-      /**
-       * <code>repeated .yamcsManagement.ClientInfo clientInfo = 14;</code>
-       */
-      public java.util.List<org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder> 
-           getClientInfoBuilderList() {
-        return getClientInfoFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder> 
-          getClientInfoFieldBuilder() {
-        if (clientInfoBuilder_ == null) {
-          clientInfoBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.yamcs.protobuf.YamcsManagement.ClientInfo, org.yamcs.protobuf.YamcsManagement.ClientInfo.Builder, org.yamcs.protobuf.YamcsManagement.ClientInfoOrBuilder>(
-                  clientInfo_,
-                  ((bitField0_ & 0x00000010) == 0x00000010),
-                  getParentForChildren(),
-                  isClean());
-          clientInfo_ = null;
-        }
-        return clientInfoBuilder_;
       }
 
       private com.google.protobuf.LazyStringList systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
@@ -14660,7 +14660,7 @@ public final class YamcsManagement {
        * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
        * </pre>
        *
-       * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
        */
       @java.lang.Deprecated public com.google.protobuf.ProtocolStringList
           getSystemPrivilegesList() {
@@ -14671,7 +14671,7 @@ public final class YamcsManagement {
        * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
        * </pre>
        *
-       * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
        */
       @java.lang.Deprecated public int getSystemPrivilegesCount() {
         return systemPrivileges_.size();
@@ -14681,7 +14681,7 @@ public final class YamcsManagement {
        * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
        * </pre>
        *
-       * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
        */
       @java.lang.Deprecated public java.lang.String getSystemPrivileges(int index) {
         return systemPrivileges_.get(index);
@@ -14691,7 +14691,7 @@ public final class YamcsManagement {
        * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
        * </pre>
        *
-       * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
        */
       @java.lang.Deprecated public com.google.protobuf.ByteString
           getSystemPrivilegesBytes(int index) {
@@ -14702,7 +14702,7 @@ public final class YamcsManagement {
        * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
        * </pre>
        *
-       * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder setSystemPrivileges(
           int index, java.lang.String value) {
@@ -14719,7 +14719,7 @@ public final class YamcsManagement {
        * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
        * </pre>
        *
-       * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder addSystemPrivileges(
           java.lang.String value) {
@@ -14736,7 +14736,7 @@ public final class YamcsManagement {
        * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
        * </pre>
        *
-       * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder addAllSystemPrivileges(
           java.lang.Iterable<java.lang.String> values) {
@@ -14751,7 +14751,7 @@ public final class YamcsManagement {
        * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
        * </pre>
        *
-       * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder clearSystemPrivileges() {
         systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
@@ -14764,7 +14764,7 @@ public final class YamcsManagement {
        * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
        * </pre>
        *
-       * <code>repeated string systemPrivileges = 2 [deprecated = true];</code>
+       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
        */
       @java.lang.Deprecated public Builder addSystemPrivilegesBytes(
           com.google.protobuf.ByteString value) {
@@ -24692,12 +24692,12 @@ public final class YamcsManagement {
       "\001(\003\022\024\n\014loginTimeUTC\030\t \001(\t\".\n\013ClientState" +
       "\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020\001\"3\n\023Obj",
       "ectPrivilegeInfo\022\014\n\004type\030\001 \001(\t\022\016\n\006object" +
-      "\030\002 \003(\t\"\323\001\n\010UserInfo\022\r\n\005login\030\001 \001(\t\022\027\n\017sy" +
-      "stemPrivilege\030\013 \003(\t\022=\n\017objectPrivilege\030\014" +
-      " \003(\0132$.yamcsManagement.ObjectPrivilegeIn" +
-      "fo\022\021\n\tsuperuser\030\r \001(\010\022/\n\nclientInfo\030\016 \003(" +
-      "\0132\033.yamcsManagement.ClientInfo\022\034\n\020system" +
-      "Privileges\030\002 \003(\tB\002\030\001\"\277\001\n\014TmStatistics\022\022\n" +
+      "\030\002 \003(\t\"\323\001\n\010UserInfo\022\r\n\005login\030\001 \001(\t\022/\n\ncl" +
+      "ientInfo\030\002 \003(\0132\033.yamcsManagement.ClientI" +
+      "nfo\022\027\n\017systemPrivilege\030\013 \003(\t\022=\n\017objectPr" +
+      "ivilege\030\014 \003(\0132$.yamcsManagement.ObjectPr" +
+      "ivilegeInfo\022\021\n\tsuperuser\030\r \001(\010\022\034\n\020system" +
+      "Privileges\030\010 \003(\tB\002\030\001\"\277\001\n\014TmStatistics\022\022\n" +
       "\npacketName\030\001 \002(\t\022\027\n\017receivedPackets\030\002 \001" +
       "(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n\017lastReceived" +
       "UTC\030\010 \001(\t\022\026\n\016lastPacketTime\030\004 \001(\003\022\031\n\021las",
@@ -24808,7 +24808,7 @@ public final class YamcsManagement {
     internal_static_yamcsManagement_UserInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcsManagement_UserInfo_descriptor,
-        new java.lang.String[] { "Login", "SystemPrivilege", "ObjectPrivilege", "Superuser", "ClientInfo", "SystemPrivileges", });
+        new java.lang.String[] { "Login", "ClientInfo", "SystemPrivilege", "ObjectPrivilege", "Superuser", "SystemPrivileges", });
     internal_static_yamcsManagement_TmStatistics_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_yamcsManagement_TmStatistics_fieldAccessorTable = new
