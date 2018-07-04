@@ -10,6 +10,7 @@ import java.util.List;
 import org.yamcs.protobuf.Rest.DisplayFile;
 import org.yamcs.protobuf.Rest.DisplayFile.DisplaySource;
 import org.yamcs.protobuf.Rest.DisplayFolder;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
@@ -22,9 +23,11 @@ import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 
 /**
- * provides information about available displays
+ * Provides information about available displays.
  * 
- * Currently the only method supported is "list"
+ * Currently this API covers both file system displays and displays stored in a bucket. As soon as we have an upload
+ * component on the web interface, the file system displays will be phased out, and so will this API in favour of the
+ * bucket API.
  * 
  * @author nm
  *
@@ -32,6 +35,62 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
 public class DisplayRestHandler extends RestHandler {
 
     private static final String DISPLAY_BUCKET = "displays";
+
+    @Route(path = "/api/displays:instance", method = "DELETE")
+    @Route(path = "/api/displays/:instance/:path*", method = "DELETE")
+    public void deleteDisplays(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+
+        checkObjectPrivileges(req, ObjectPrivilegeType.ManageBucket, DISPLAY_BUCKET);
+
+        String prefix = "";
+        if (req.hasRouteParam("path")) {
+            prefix = req.getRouteParam("path");
+        }
+
+        if (prefix.contains("..")) {
+            throw new BadRequestException("Illegal path name");
+        }
+
+        // Delete from display dir
+        File displayDir = locateDisplayRoot(instance);
+        if (displayDir != null) {
+            File deletable = new File(displayDir, prefix);
+            System.out.println("delete ? " + deletable);
+            if (deletable.exists() && !deletable.isHidden()) {
+                if (deletable.isFile()) {
+                    System.out.println("a");
+                    deletable.delete();
+                } else if (deletable.isDirectory()) {
+                    System.out.println("b");
+                    deleteFolder(deletable);
+                }
+            }
+        }
+
+        // Delete from bucket
+        Bucket bucket = getOrCreateDisplayBucket(req);
+        try {
+            for (ObjectProperties object : bucket.listObjects(prefix)) {
+                bucket.deleteObject(object.getName());
+            }
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+        completeOK(req);
+    }
+
+    private static void deleteFolder(File folder) {
+        File[] files = folder.listFiles();
+        for (File f : files) {
+            if (f.isDirectory()) {
+                deleteFolder(f);
+            } else {
+                f.delete();
+            }
+        }
+        folder.delete();
+    }
 
     @Route(path = "/api/displays/:instance", method = "GET")
     @Route(path = "/api/displays/:instance/:path*", method = "GET")
@@ -102,15 +161,7 @@ public class DisplayRestHandler extends RestHandler {
             throw new InternalServerErrorException(e);
         }
 
-        File displayDir = null;
-        for (String webRoot : WebConfig.getInstance().getWebRoots()) {
-            File dir = new File(webRoot, instance + File.separator + "displays");
-            if (dir.exists()) {
-                displayDir = dir;
-                break;
-            }
-        }
-
+        File displayDir = locateDisplayRoot(instance);
         if (displayDir != null) {
             displayDir = new File(displayDir, prefix);
             writeFilesFromDir(displayDir, responseb, "/" + prefix);
@@ -131,6 +182,16 @@ public class DisplayRestHandler extends RestHandler {
         responseb.addAllFile(sortedFiles);
 
         completeOK(req, responseb.build());
+    }
+
+    private File locateDisplayRoot(String instance) {
+        for (String webRoot : WebConfig.getInstance().getWebRoots()) {
+            File dir = new File(webRoot, instance + File.separator + "displays");
+            if (dir.exists()) {
+                return dir;
+            }
+        }
+        return null;
     }
 
     private Bucket getOrCreateDisplayBucket(RestRequest req) throws HttpException {

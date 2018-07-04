@@ -29,7 +29,7 @@ export class DisplayFolderPage implements OnDestroy {
 
   constructor(
     private dialog: MatDialog,
-    yamcs: YamcsService,
+    private yamcs: YamcsService,
     title: Title,
     router: Router,
     private route: ActivatedRoute,
@@ -52,6 +52,7 @@ export class DisplayFolderPage implements OnDestroy {
   }
 
   private changedir(dir: DisplayFolder) {
+    this.selection.clear();
     this.currentFolder$.next(dir);
     const items: BrowseItem[] = [];
     for (const folder of dir.folder || []) {
@@ -77,7 +78,7 @@ export class DisplayFolderPage implements OnDestroy {
   isAllSelected() {
     const numSelected = this.selection.selected.length;
     const numRows = this.dataSource.data.length;
-    return numSelected === numRows;
+    return numSelected === numRows && numRows > 0;
   }
 
   masterToggle() {
@@ -105,6 +106,22 @@ export class DisplayFolderPage implements OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       console.log(result);
     });
+  }
+
+  deleteSelectedDisplays() {
+    if (confirm('Are you sure you want to delete the selected items?')) {
+      const promises = [];
+      for (const item of this.selection.selected) {
+        promises.push(this.yamcs.getInstanceClient()!.deleteDisplay(item.path));
+      }
+      Promise.all(promises).then(() => {
+        const currentFolder = this.currentFolder$.value!;
+        this.yamcs.getInstanceClient()!.getDisplayFolder(currentFolder.path).then(dir => {
+          this.updateBrowsePath();
+          this.changedir(dir);
+        });
+      });
+    }
   }
 
   private updateBrowsePath() {

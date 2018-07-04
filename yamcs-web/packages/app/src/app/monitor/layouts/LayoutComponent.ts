@@ -78,7 +78,6 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   }
 
   pathChange(path: string) {
-    console.log('............... ', path);
     this.yamcs.getInstanceClient()!.getDisplayFolder(path).then(folder => {
       this.currentFolder$.next(folder);
     });

@@ -525,6 +525,13 @@ export class InstanceClient {
     return await response.json() as DisplayFolder;
   }
 
+  async deleteDisplay(path?: string) {
+    const url = `${this.yamcs.apiUrl}/displays/${this.instance}${path || ''}`;
+    return await this.yamcs.doFetch(url, {
+      method: 'DELETE',
+    });
+  }
+
   /**
    * Returns a string representation of the display definition file
    */

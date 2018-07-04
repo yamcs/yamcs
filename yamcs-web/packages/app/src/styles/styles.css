@@ -92,6 +92,10 @@ body {
   width: 16px !important;
 }
 
+.ya-data-table .selected {
+  background-color: #f0f4fd !important;
+}
+
 .ya-data-table .mat-button, .ya-data-table .mat-stroked-button {
   line-height: 16px;
   min-width: 0;
