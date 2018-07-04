@@ -30,7 +30,6 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
  * bucket API.
  * 
  * @author nm
- *
  */
 public class DisplayRestHandler extends RestHandler {
 
@@ -56,13 +55,10 @@ public class DisplayRestHandler extends RestHandler {
         File displayDir = locateDisplayRoot(instance);
         if (displayDir != null) {
             File deletable = new File(displayDir, prefix);
-            System.out.println("delete ? " + deletable);
             if (deletable.exists() && !deletable.isHidden()) {
                 if (deletable.isFile()) {
-                    System.out.println("a");
                     deletable.delete();
                 } else if (deletable.isDirectory()) {
-                    System.out.println("b");
                     deleteFolder(deletable);
                 }
             }

@@ -245,3 +245,12 @@ a.ya-link.ya-header-link {
 .alert, .ERROR td, .DISTRESS td, .CRITICAL td, .SEVERE td {
   color: red !important;
 }
+
+/*
+ * Fix for scrollbar being invisible on Safari.
+ * https://github.com/ajaxorg/ace/issues/2872
+ */
+.ace_scrollbar-inner {
+  background-color: white;
+  opacity: 0.01;
+}
