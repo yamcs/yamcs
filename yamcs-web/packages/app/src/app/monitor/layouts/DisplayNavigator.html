@@ -1,17 +1,17 @@
-<table yaSimpleTable class="display-navigator mat-typography" *ngIf="displayInfo">
-  <tr *ngIf="currentFolder !== displayInfo"
+<table yaSimpleTable class="display-navigator mat-typography" *ngIf="folder">
+  <tr *ngIf="folder.name !== '/'"
       class="no-select"
       (click)="selectParent()">
     <td class="icon" width="1"><mat-icon class="icon12">folder</mat-icon></td>
     <td>..</td>
   </tr>
-  <tr *ngFor="let folder of currentFolder.folder"
+  <tr *ngFor="let subfolder of folder.folder"
       class="no-select"
-      (click)="selectFolder(folder)">
+      (click)="selectFolder(subfolder)">
     <td class="icon" width="1"><mat-icon class="icon12">folder</mat-icon></td>
-    <td style="white-space: nowrap">{{ folder.name }}/</td>
+    <td style="white-space: nowrap">{{ subfolder.name }}/</td>
   </tr>
-  <tr *ngFor="let file of currentFolder.file"
+  <tr *ngFor="let file of folder.file"
       class="no-select"
       (click)="selectFile(file)">
     <td class="icon" width="1"><mat-icon class="icon12">bookmark_border</mat-icon></td>

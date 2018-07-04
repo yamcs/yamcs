@@ -1,7 +1,7 @@
+import { Router } from '@angular/router';
+import { DisplaySource, NamedObjectId } from '@yamcs/client';
 import { DisplayCommunicator } from '@yamcs/displays';
 import { YamcsService } from '../../core/services/YamcsService';
-import { NamedObjectId } from '@yamcs/client';
-import { Router } from '@angular/router';
 
 /**
  * Resolves resources by fetching them from the server as
@@ -33,15 +33,14 @@ export class MyDisplayCommunicator implements DisplayCommunicator {
     return this.yamcs.yamcsClient.getStaticXML(path);
   }
 
-  retrieveDisplayResource(path: string) {
-    const instance = this.yamcs.getInstanceClient()!.instance;
-    const displayPath = `${instance}/displays/${path}`;
-    return this.yamcs.yamcsClient.getStaticText(displayPath);
+  async retrieveDisplayResource(path: string, source: DisplaySource) {
+
+    return this.yamcs.getInstanceClient()!.getDisplay(path, source);
   }
 
-  retrieveXMLDisplayResource(path: string) {
-    const instance = this.yamcs.getInstanceClient()!.instance;
-    const displayPath = `${instance}/displays/${path}`;
-    return this.yamcs.yamcsClient.getStaticXML(displayPath);
+  async retrieveXMLDisplayResource(path: string, source: DisplaySource) {
+    const text = await this.retrieveDisplayResource(path, source);
+    const xmlParser = new DOMParser();
+    return xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
   }
 }

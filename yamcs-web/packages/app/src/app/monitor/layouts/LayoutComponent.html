@@ -1,7 +1,8 @@
 <div #wrapper class="wrapper">
   <mat-sidenav-container>
     <mat-sidenav mode="side" [opened]="showNavigator$ | async">
-      <app-display-navigator [displayInfo]="displayInfo$ | async"
+      <app-display-navigator [folder]="currentFolder$ | async"
+                             (pathChange)="pathChange($event)"
                              (select)="openDisplay($event.path)">
       </app-display-navigator>
     </mat-sidenav>

@@ -273,9 +273,14 @@ message DisplayFolder {
 }
 
 message DisplayFile {
+  enum DisplaySource {
+    BUCKET = 0;
+    FILE_SYSTEM = 1;
+  }
   optional string name = 1;
   optional string path = 2;
   optional string url = 3;
+  optional DisplaySource source = 4;
 }
 
 message CreateBucketRequest {

@@ -30,6 +30,7 @@ public class AggregateDataType extends NameDescription implements DataType {
         this.memberList.addAll(memberList);
     }
 
+    @Override
     public String getTypeAsString() {
         StringBuilder sb = new StringBuilder();
         sb.append("aggregate {");
@@ -41,6 +42,7 @@ public class AggregateDataType extends NameDescription implements DataType {
                 sb.append("; ");
             }
             sb.append(m.getType().getName());
+            sb.append(" ");
             sb.append(m.getName());
         }
         sb.append("}");
@@ -48,11 +50,10 @@ public class AggregateDataType extends NameDescription implements DataType {
     }
 
     /**
-     * Returns a member on the given name.
-     * If no such member is present return null
+     * Returns a member on the given name. If no such member is present return null
      * 
      * @param name
-     *            - the name of the member to be returned
+     *            the name of the member to be returned
      * @return the member with the given name
      */
     public Member getMember(String name) {
@@ -68,6 +69,7 @@ public class AggregateDataType extends NameDescription implements DataType {
         return memberList;
     }
 
+    @Override
     public Type getValueType() {
         return Value.Type.AGGREGATE;
     }

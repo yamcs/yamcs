@@ -1,10 +1,10 @@
 import { Observable } from 'rxjs';
-import { WebSocketClient } from './WebSocketClient';
-import YamcsClient from './YamcsClient';
 import { AlarmsWrapper, AlgorithmsWrapper, BucketsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, ObjectsWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, Command, Container, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, SpaceSystem } from './types/mdb';
-import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DisplayFolder, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
+import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DisplayFolder, DisplaySource, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
 import { Bucket, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, CreateBucketRequest, EditCommandQueueEntryOptions, EditCommandQueueOptions, Link, LinkSubscriptionResponse, ListObjectsOptions, ObjectInfo, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
+import { WebSocketClient } from './WebSocketClient';
+import YamcsClient from './YamcsClient';
 
 export class InstanceClient {
 
@@ -519,8 +519,8 @@ export class InstanceClient {
     });
   }
 
-  async getDisplayInfo() {
-    const url = `${this.yamcs.apiUrl}/displays/${this.instance}`;
+  async getDisplayFolder(path?: string) {
+    const url = `${this.yamcs.apiUrl}/displays/${this.instance}${path || ''}`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as DisplayFolder;
   }
@@ -528,10 +528,17 @@ export class InstanceClient {
   /**
    * Returns a string representation of the display definition file
    */
-  async getDisplay(path: string) {
-    const url = `${this.yamcs.staticUrl}/${this.instance}/displays${path}`;
-    const response = await this.yamcs.doFetch(url);
-    return await response.text();
+  async getDisplay(path: string, source: DisplaySource = 'BUCKET') {
+    if (source === 'BUCKET') {
+      const response = await this.getObject('displays', path.substring(1));
+      return await response.text();
+    } else if (source === 'FILE_SYSTEM') {
+      const url = `${this.yamcs.staticUrl}/${this.instance}/displays${path}`;
+      const response = await this.yamcs.doFetch(url);
+      return await response.text();
+    } else {
+      throw new Error('Unexpected display source ' + source);
+    }
   }
 
   closeConnection() {

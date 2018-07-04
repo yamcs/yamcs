@@ -30,20 +30,20 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   private displayContainerRef: ElementRef;
 
   showNavigator$: BehaviorSubject<boolean>;
-  displayInfo$ = new BehaviorSubject<DisplayFolder | null>(null);
+  currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
 
   private displayCommunicator: DisplayCommunicator;
   private layout: Layout;
 
   constructor(private yamcs: YamcsService, router: Router) {
-    this.yamcs.getInstanceClient()!.getDisplayInfo().then(displayInfo => {
-      this.displayInfo$.next(displayInfo);
-    });
     this.displayCommunicator = new MyDisplayCommunicator(yamcs, router);
   }
 
   ngOnInit() {
     this.showNavigator$ = new BehaviorSubject<boolean>(this.startWithOpenedNavigator);
+    this.yamcs.getInstanceClient()!.getDisplayFolder().then(folder => {
+      this.currentFolder$.next(folder);
+    });
   }
 
   ngOnChanges() {
@@ -75,6 +75,13 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
       }
     }
     return Promise.resolve();
+  }
+
+  pathChange(path: string) {
+    console.log('............... ', path);
+    this.yamcs.getInstanceClient()!.getDisplayFolder(path).then(folder => {
+      this.currentFolder$.next(folder);
+    });
   }
 
   tileFrames() {

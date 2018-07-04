@@ -3,10 +3,11 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { DisplayFolder, Instance } from '@yamcs/client';
+import { DisplayFolder, DisplaySource, Instance } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/YamcsService';
+import { CreateDisplayDialog } from './CreateDisplayDialog';
 
 @Component({
   templateUrl: './DisplayFolderPage.html',
@@ -17,7 +18,6 @@ export class DisplayFolderPage implements OnDestroy {
 
   instance: Instance;
 
-  displayInfo: DisplayFolder;
   currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
 
@@ -37,26 +37,23 @@ export class DisplayFolderPage implements OnDestroy {
     title.setTitle('Displays - Yamcs');
     this.instance = yamcs.getInstance();
 
-    yamcs.getInstanceClient()!.getDisplayInfo().then(displayInfo => {
-      this.displayInfo = displayInfo;
-      this.openFolderForPath();
-      this.routerSubscription = router.events.pipe(
-        filter(evt => evt instanceof NavigationEnd)
-      ).subscribe(() => this.openFolderForPath());
+    this.routerSubscription = router.events.pipe(
+      filter(evt => evt instanceof NavigationEnd)
+    ).subscribe(() => {
+      let path = '';
+      for (const segment of this.route.snapshot.url) {
+        path += '/' + segment.path;
+      }
+      yamcs.getInstanceClient()!.getDisplayFolder(path).then(dir => {
+        this.updateBrowsePath();
+        this.changedir(dir);
+      });
     });
-  }
-
-  private openFolderForPath() {
-    const path = this.updateBrowsePath();
-    const folder = this.findDisplayFolder(path, this.displayInfo);
-    if (folder) {
-      this.changedir(folder);
-    }
   }
 
   private changedir(dir: DisplayFolder) {
     this.currentFolder$.next(dir);
-    const items = [];
+    const items: BrowseItem[] = [];
     for (const folder of dir.folder || []) {
       items.push({
         folder: true,
@@ -71,6 +68,7 @@ export class DisplayFolderPage implements OnDestroy {
         name: file.name,
         path: file.path,
         route: '/monitor/displays/files' + file.path,
+        source: file.source,
       });
     }
     this.dataSource.data = items;
@@ -93,6 +91,22 @@ export class DisplayFolderPage implements OnDestroy {
     this.selection.toggle(row);
   }
 
+  createDisplay() {
+    let path = '';
+    for (const segment of this.route.snapshot.url) {
+      path += '/' + segment.path;
+    }
+    const dialogRef = this.dialog.open(CreateDisplayDialog, {
+      width: '400px',
+      data: {
+        path: path || '/',
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(result);
+    });
+  }
+
   private updateBrowsePath() {
     const breadcrumb: BreadCrumbItem[] = [];
     let path = '';
@@ -107,23 +121,6 @@ export class DisplayFolderPage implements OnDestroy {
     return path || '/';
   }
 
-  private findDisplayFolder(path: string, start: DisplayFolder): DisplayFolder | undefined {
-    if (path === '/') {
-      return this.displayInfo;
-    }
-
-    for (const folder of start.folder || []) {
-      if (folder.path === path) {
-        return folder;
-      } else {
-        const sub = this.findDisplayFolder(path, folder);
-        if (sub) {
-          return sub;
-        }
-      }
-    }
-  }
-
   ngOnDestroy() {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
@@ -136,6 +133,7 @@ class BrowseItem {
   name: string;
   path: string;
   route: string;
+  source?: DisplaySource;
 }
 
 interface BreadCrumbItem {

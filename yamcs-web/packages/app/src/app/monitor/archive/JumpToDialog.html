@@ -1,9 +1,10 @@
 <h2 mat-dialog-title>Jump to date</h2>
 
-<mat-dialog-content>
-  <mat-form-field style="width: 100%">
-    <input matInput [formControl]="date" placeholder="Date">
-  </mat-form-field>
+<mat-dialog-content class="ya-form mat-typography">
+  <label>
+    Date
+    <input type="text" [formControl]="date">
+  </label>
   <p>&nbsp;</p>
 </mat-dialog-content>
 

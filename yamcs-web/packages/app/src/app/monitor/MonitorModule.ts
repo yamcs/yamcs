@@ -4,6 +4,7 @@ import { AlarmDetail } from './alarms/AlarmDetail';
 import { DownloadDumpDialog } from './archive/DownloadDumpDialog';
 import { JumpToDialog } from './archive/JumpToDialog';
 import { TimelineTooltip } from './archive/TimelineTooltip';
+import { CreateDisplayDialog } from './displays/CreateDisplayDialog';
 import { CreateEventDialog } from './events/CreateEventDialog';
 import { EventSeverity } from './events/EventSeverity';
 import { PageContentHost } from './ext/PageContentHost';
@@ -17,6 +18,7 @@ import { MonitorToolbar } from './template/MonitorToolbar';
 import { StartReplayDialog } from './template/StartReplayDialog';
 
 const dialogComponents = [
+  CreateDisplayDialog,
   CreateEventDialog,
   DownloadDumpDialog,
   JumpToDialog,

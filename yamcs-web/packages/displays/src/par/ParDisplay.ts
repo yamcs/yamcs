@@ -20,7 +20,7 @@ export class ParDisplay implements Display {
   ) {}
 
   parseAndDraw(id: string, grid = false) {
-    return this.displayCommunicator.retrieveDisplayResource(id).then(json => {
+    return this.displayCommunicator.retrieveDisplayResource(id, 'BUCKET').then(json => {
       const obj = JSON.parse(json);
       // console.log('got back', obj);
 

@@ -4,7 +4,8 @@
 
     &nbsp;&nbsp;&nbsp;
     <button mat-button
-            color="primary">
+            color="primary"
+            (click)="createDisplay()">
       <mat-icon>add_box</mat-icon>
       CREATE DISPLAY
     </button>
@@ -55,7 +56,7 @@
           </ng-container>
           <ng-container *ngIf="!item.folder">
             <a [routerLink]="item.route"
-               [queryParams]="{instance: instance.name}">
+               [queryParams]="{instance: instance.name, source: item.source}">
                 <mat-icon class="icon12">description</mat-icon>
                 {{ item.name }}</a>
           </ng-container>

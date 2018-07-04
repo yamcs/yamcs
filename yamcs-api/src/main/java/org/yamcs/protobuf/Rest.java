@@ -43556,6 +43556,15 @@ public final class Rest {
      */
     com.google.protobuf.ByteString
         getUrlBytes();
+
+    /**
+     * <code>optional .parameters.DisplayFile.DisplaySource source = 4;</code>
+     */
+    boolean hasSource();
+    /**
+     * <code>optional .parameters.DisplayFile.DisplaySource source = 4;</code>
+     */
+    org.yamcs.protobuf.Rest.DisplayFile.DisplaySource getSource();
   }
   /**
    * Protobuf type {@code parameters.DisplayFile}
@@ -43572,6 +43581,7 @@ public final class Rest {
       name_ = "";
       path_ = "";
       url_ = "";
+      source_ = 0;
     }
 
     @java.lang.Override
@@ -43620,6 +43630,17 @@ public final class Rest {
               url_ = bs;
               break;
             }
+            case 32: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.Rest.DisplayFile.DisplaySource value = org.yamcs.protobuf.Rest.DisplayFile.DisplaySource.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(4, rawValue);
+              } else {
+                bitField0_ |= 0x00000008;
+                source_ = rawValue;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -43642,6 +43663,96 @@ public final class Rest {
       return org.yamcs.protobuf.Rest.internal_static_parameters_DisplayFile_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.Rest.DisplayFile.class, org.yamcs.protobuf.Rest.DisplayFile.Builder.class);
+    }
+
+    /**
+     * Protobuf enum {@code parameters.DisplayFile.DisplaySource}
+     */
+    public enum DisplaySource
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>BUCKET = 0;</code>
+       */
+      BUCKET(0),
+      /**
+       * <code>FILE_SYSTEM = 1;</code>
+       */
+      FILE_SYSTEM(1),
+      ;
+
+      /**
+       * <code>BUCKET = 0;</code>
+       */
+      public static final int BUCKET_VALUE = 0;
+      /**
+       * <code>FILE_SYSTEM = 1;</code>
+       */
+      public static final int FILE_SYSTEM_VALUE = 1;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static DisplaySource valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static DisplaySource forNumber(int value) {
+        switch (value) {
+          case 0: return BUCKET;
+          case 1: return FILE_SYSTEM;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<DisplaySource>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          DisplaySource> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<DisplaySource>() {
+              public DisplaySource findValueByNumber(int number) {
+                return DisplaySource.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.DisplayFile.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final DisplaySource[] VALUES = values();
+
+      public static DisplaySource valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private DisplaySource(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:parameters.DisplayFile.DisplaySource)
     }
 
     private int bitField0_;
@@ -43771,6 +43882,22 @@ public final class Rest {
       }
     }
 
+    public static final int SOURCE_FIELD_NUMBER = 4;
+    private int source_;
+    /**
+     * <code>optional .parameters.DisplayFile.DisplaySource source = 4;</code>
+     */
+    public boolean hasSource() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional .parameters.DisplayFile.DisplaySource source = 4;</code>
+     */
+    public org.yamcs.protobuf.Rest.DisplayFile.DisplaySource getSource() {
+      org.yamcs.protobuf.Rest.DisplayFile.DisplaySource result = org.yamcs.protobuf.Rest.DisplayFile.DisplaySource.valueOf(source_);
+      return result == null ? org.yamcs.protobuf.Rest.DisplayFile.DisplaySource.BUCKET : result;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -43792,6 +43919,9 @@ public final class Rest {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, url_);
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeEnum(4, source_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -43808,6 +43938,10 @@ public final class Rest {
       }
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, url_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(4, source_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -43841,6 +43975,10 @@ public final class Rest {
         result = result && getUrl()
             .equals(other.getUrl());
       }
+      result = result && (hasSource() == other.hasSource());
+      if (hasSource()) {
+        result = result && source_ == other.source_;
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -43863,6 +44001,10 @@ public final class Rest {
       if (hasUrl()) {
         hash = (37 * hash) + URL_FIELD_NUMBER;
         hash = (53 * hash) + getUrl().hashCode();
+      }
+      if (hasSource()) {
+        hash = (37 * hash) + SOURCE_FIELD_NUMBER;
+        hash = (53 * hash) + source_;
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -43988,6 +44130,8 @@ public final class Rest {
         bitField0_ = (bitField0_ & ~0x00000002);
         url_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
+        source_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -44024,6 +44168,10 @@ public final class Rest {
           to_bitField0_ |= 0x00000004;
         }
         result.url_ = url_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.source_ = source_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -44080,6 +44228,9 @@ public final class Rest {
           bitField0_ |= 0x00000004;
           url_ = other.url_;
           onChanged();
+        }
+        if (other.hasSource()) {
+          setSource(other.getSource());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -44333,6 +44484,42 @@ public final class Rest {
   }
   bitField0_ |= 0x00000004;
         url_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int source_ = 0;
+      /**
+       * <code>optional .parameters.DisplayFile.DisplaySource source = 4;</code>
+       */
+      public boolean hasSource() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional .parameters.DisplayFile.DisplaySource source = 4;</code>
+       */
+      public org.yamcs.protobuf.Rest.DisplayFile.DisplaySource getSource() {
+        org.yamcs.protobuf.Rest.DisplayFile.DisplaySource result = org.yamcs.protobuf.Rest.DisplayFile.DisplaySource.valueOf(source_);
+        return result == null ? org.yamcs.protobuf.Rest.DisplayFile.DisplaySource.BUCKET : result;
+      }
+      /**
+       * <code>optional .parameters.DisplayFile.DisplaySource source = 4;</code>
+       */
+      public Builder setSource(org.yamcs.protobuf.Rest.DisplayFile.DisplaySource value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000008;
+        source_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .parameters.DisplayFile.DisplaySource source = 4;</code>
+       */
+      public Builder clearSource() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        source_ = 0;
         onChanged();
         return this;
       }
@@ -48966,19 +49153,21 @@ public final class Rest {
       " \003(\t\"}\n\rDisplayFolder\022\014\n\004name\030\001 \001(\t\022\014\n\004p" +
       "ath\030\002 \001(\t\022)\n\006folder\030\003 \003(\0132\031.parameters.D" +
       "isplayFolder\022%\n\004file\030\004 \003(\0132\027.parameters." +
-      "DisplayFile\"6\n\013DisplayFile\022\014\n\004name\030\001 \001(\t" +
-      "\022\014\n\004path\030\002 \001(\t\022\013\n\003url\030\003 \001(\t\"#\n\023CreateBuc" +
-      "ketRequest\022\014\n\004name\030\001 \001(\t\"<\n\nBucketInfo\022\014",
-      "\n\004name\030\001 \001(\t\022\014\n\004size\030\002 \001(\004\022\022\n\nnumObjects" +
-      "\030\003 \001(\r\"\242\001\n\nObjectInfo\022\014\n\004name\030\001 \001(\t\022\017\n\007c" +
-      "reated\030\002 \001(\t\022\014\n\004size\030\003 \001(\004\0226\n\010metadata\030\004" +
-      " \003(\0132$.parameters.ObjectInfo.MetadataEnt" +
-      "ry\032/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005valu" +
-      "e\030\002 \001(\t:\0028\001\"=\n\023ListBucketsResponse\022&\n\006bu" +
-      "cket\030\001 \003(\0132\026.parameters.BucketInfo\"M\n\023Li" +
-      "stObjectsResponse\022\016\n\006prefix\030\001 \003(\t\022&\n\006obj" +
-      "ect\030\002 \003(\0132\026.parameters.ObjectInfoB\024\n\022org" +
-      ".yamcs.protobuf"
+      "DisplayFile\"\233\001\n\013DisplayFile\022\014\n\004name\030\001 \001(" +
+      "\t\022\014\n\004path\030\002 \001(\t\022\013\n\003url\030\003 \001(\t\0225\n\006source\030\004" +
+      " \001(\0162%.parameters.DisplayFile.DisplaySou",
+      "rce\",\n\rDisplaySource\022\n\n\006BUCKET\020\000\022\017\n\013FILE" +
+      "_SYSTEM\020\001\"#\n\023CreateBucketRequest\022\014\n\004name" +
+      "\030\001 \001(\t\"<\n\nBucketInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004si" +
+      "ze\030\002 \001(\004\022\022\n\nnumObjects\030\003 \001(\r\"\242\001\n\nObjectI" +
+      "nfo\022\014\n\004name\030\001 \001(\t\022\017\n\007created\030\002 \001(\t\022\014\n\004si" +
+      "ze\030\003 \001(\004\0226\n\010metadata\030\004 \003(\0132$.parameters." +
+      "ObjectInfo.MetadataEntry\032/\n\rMetadataEntr" +
+      "y\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"=\n\023Lis" +
+      "tBucketsResponse\022&\n\006bucket\030\001 \003(\0132\026.param" +
+      "eters.BucketInfo\"M\n\023ListObjectsResponse\022",
+      "\016\n\006prefix\030\001 \003(\t\022&\n\006object\030\002 \003(\0132\026.parame" +
+      "ters.ObjectInfoB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -49304,7 +49493,7 @@ public final class Rest {
     internal_static_parameters_DisplayFile_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_DisplayFile_descriptor,
-        new java.lang.String[] { "Name", "Path", "Url", });
+        new java.lang.String[] { "Name", "Path", "Url", "Source", });
     internal_static_parameters_CreateBucketRequest_descriptor =
       getDescriptor().getMessageTypes().get(45);
     internal_static_parameters_CreateBucketRequest_fieldAccessorTable = new

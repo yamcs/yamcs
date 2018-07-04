@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { DisplayFile, DisplayFolder } from '@yamcs/client';
 
 @Component({
@@ -10,7 +10,10 @@ import { DisplayFile, DisplayFolder } from '@yamcs/client';
 export class DisplayNavigator implements OnChanges {
 
   @Input()
-  displayInfo: DisplayFolder;
+  folder: DisplayFolder;
+
+  @Output()
+  pathChange = new EventEmitter<string>();
 
   @Output()
   select = new EventEmitter<DisplayFile>();
@@ -18,47 +21,24 @@ export class DisplayNavigator implements OnChanges {
   @Output()
   close = new EventEmitter<void>();
 
-  currentFolder: DisplayFolder;
-
   ngOnChanges() {
-    if (!this.displayInfo) {
+    if (!this.folder) {
       return;
     }
-
-    this.currentFolder = this.displayInfo;
   }
 
   selectFolder(folder: DisplayFolder) {
-    this.currentFolder = folder;
+    this.pathChange.emit(folder.path);
   }
 
   selectParent() {
-    const currentPath = this.currentFolder.path;
-    const nameLen = this.currentFolder.name.length + 1;
+    const currentPath = this.folder.path;
+    const nameLen = this.folder.name.length + 1;
     const parentPath = currentPath.substring(0, currentPath.length - nameLen);
-    const match = this.findDisplayFolder(parentPath, this.displayInfo);
-    if (match) {
-      this.currentFolder = match;
-    }
+    this.pathChange.emit(parentPath);
   }
 
   selectFile(file: DisplayFile) {
     this.select.next(file);
-  }
-
-  findDisplayFolder(path: string, start: DisplayFolder): DisplayFolder | undefined {
-    if (path === '/') {
-      return this.displayInfo;
-    }
-    for (const folder of start.folder || []) {
-      if (folder.path === path) {
-        return folder;
-      } else {
-        const childFolder = this.findDisplayFolder(path, folder);
-        if (childFolder) {
-          return childFolder;
-        }
-      }
-    }
   }
 }
