@@ -89,6 +89,7 @@ import org.yamcs.xtce.RateInStream;
 import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
@@ -2176,9 +2177,7 @@ public class XtceStaxReader {
 
         String refName = readMandatoryAttribute("parameterRef", xmlEvent.asStartElement());
 
-        SequenceEntry.ReferenceLocationType locationType = SequenceEntry.ReferenceLocationType.previousEntry; // default
         ArrayParameterEntry parameterEntry = new ArrayParameterEntry();
-        parameterEntry.setReferenceLocation(locationType);
 
         final ArrayParameterEntry finalpe = parameterEntry;
         NameReference nr = new UnresolvedNameReference(refName, Type.PARAMETER).addResolvedAction(nd -> {
@@ -2389,15 +2388,12 @@ public class XtceStaxReader {
 
         int locationInContainerInBits = 0;
 
-        String value = readAttribute("referenceLocation", xmlEvent.asStartElement(), null);
-        if (value == null) {
-            value = "previousEntry"; // default
-        }
-
+        ReferenceLocationType location;
+        String value = readAttribute("referenceLocation", xmlEvent.asStartElement(), "previousEntry");
         if (value.equalsIgnoreCase("previousEntry")) {
-            entry.setReferenceLocation(SequenceEntry.ReferenceLocationType.previousEntry);
+            location = ReferenceLocationType.previousEntry;
         } else if (value.equalsIgnoreCase("containerStart")) {
-            entry.setReferenceLocation(SequenceEntry.ReferenceLocationType.containerStart);
+            location =  ReferenceLocationType.containerStart;
         } else {
             throw new XMLStreamException("Currently unsupported reference location: " + value);
         }
@@ -2412,7 +2408,7 @@ public class XtceStaxReader {
             } else if (isStartElementWithName(XTCE_DISCRETE_LOOKUP_LIST)) {
                 skipXtceSection(XTCE_DISCRETE_LOOKUP_LIST);
             } else if (isEndElementWithName(XTCE_LOCATION_IN_CONTAINER_IN_BITS)) {
-                entry.setLocationInContainerInBits(locationInContainerInBits);
+                entry.setLocation(location, locationInContainerInBits);
                 return;
             } else {
                 logUnknown();

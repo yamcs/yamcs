@@ -2,6 +2,8 @@ package org.yamcs.xtce;
 
 import java.io.Serializable;
 
+import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
+
 /**
  * An abstract type used by sequence containers.
  * An entry contains a location in the container. The location may be either fixed or dynamic,
@@ -92,6 +94,17 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
         this.referenceLocation = type;
     }
 
+    
+    /**
+     * Set the location of this entry in the container. 
+     * 
+     * @param type - where to count the bits from
+     * @param locationInBits - number of bits to count
+     */
+    public void setLocation(ReferenceLocationType type, int locationInBits) {
+        this.referenceLocation = type;
+        this.locationInContainerInBits = locationInBits;
+    }
     /**
      * @param se
      * @return the difference in indexes

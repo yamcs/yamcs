@@ -6,11 +6,35 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A type definition used as the base type for a CommandDefinition
+ * The MetaCommand is the base type for a tele-command.
  * 
  * 
+ * <p>
+ * The rules for MetaCommand inheritance as follows:
+ * <ul>
+ * <li>A MetaCommand may extend another using the BaseMetaCommand element</li>
+ * <li>BaseMetaCommands that form loops are illegal</li>
+ * <li>Its CommandContainer is only inherited if the BaseContainer is explicitly set between the child and parent.</li>
+ * <li>The same rules apply to MetaCommand/CommandContainer inheritance as described in
+ * SequenceContainer/BaseContainer.</li>
+ * </ul>
+ * 
+ * <p>
+ * Specific rules by element and attribute are:
+ * <ul>
+ * <li>BaseMetaCommand/ArgumentAssignment Child’s content will override parent’s content if present, otherwise child
+ * gets parent’s content if it is specified.</li>
+ * <li>If argument is the same name, it overrides the parent’s ArgumentAssignment.</li>
+ * <li>ArgumentList Child’s content is appended to parent’s content if present</li>
+ * <li>CommandContainer Special Case: inherited like other containers if CommandContainer/BaseContainer set. Otherwise
+ * it is not inherited.</li>
+ *  <li>TransmissionConstraintList Child’s content prefixed to parent’s content if present</li>
+ *  <li>DefaultSignificance Child’s content will override parent’s content if present, otherwise child gets parent’s
+ * content if specified</li>
+ * <li>VerifierSet Child’s content prefixed to parent’s content if present but: - Same verifiers are overridden by the
+ * child</li>
+ * </ul>
  * @author nm
- *
  */
 public class MetaCommand extends NameDescription {
     private static final long serialVersionUID = 5L;
@@ -34,47 +58,6 @@ public class MetaCommand extends NameDescription {
      */
     CommandContainer commandContainer;
 
-    /**
-     * Command inheritance
-     * 
-     * From XTCE:
-     * The rules for MetaCommand inheritance as follows:
-     * A MetaCommand may extend another using the BaseMetaCommand element --- BaseMetaCommands that form loops are
-     * illegal
-     * --- Its CommandContainer is only inherited if the BaseContainer is explicitly set between the child and parent.
-     * The same rules apply to MetaCommand/CommandContainer inheritance as described in SequenceContainer/BaseContainer.
-     * Specific rules by element and attribute are:
-     * BaseMetaCommand/ArgumentAssignment Child’s content will override parent’s content if present, otherwise child
-     * gets parent’s content if it is specified.
-     * If argument is the same name, it overrides the parent’s ArgumentAssignment. ---
-     * 
-     * ArgumentList Child’s content prefixed to parent’s content if present --
-     * CommandContainer Special Case: inherited like other containers if CommandContainer/BaseContainer set. Otherwise
-     * it is not inherited. ---
-     * 
-     * 
-     * Below, nothing is implemented TODO:
-     * AncillaryDataSet Child’s content prefixed to parent’s content if present ---
-     * TransmissionConstraintList Child’s content prefixed to parent’s content if present --
-     * DefaultSignificance Child’s content will override parent’s content if present, otherwise child gets parent’s
-     * content if specified ---
-     * ContextSignificanceList Child’s content prefixed to parent’s content if present ---
-     * Interlock Child’s content will override parent’s content if present, otherwise child gets parent’s content if
-     * specified ---
-     * VerifierSet Child’s content prefixed to parent’s content if present but: - Same verifiers are overridden by the
-     * child -
-     * CommandCompletes are accrued (child elements prefixed to parent’s). - If the child’s CommandComplete has the
-     * same @name as parent’s, the child overrides it ---
-     * ParameterToSetList Child’s content prefixed to parent’s content if present. If the @parameterRef is the same, the
-     * child overrides the parent’s ---
-     * ParameterToSuspendAlarmsOnSet Child’s content prefixed to parent’s content if present. If the @parameterRef is
-     * the same, the child overrides the parent’s.
-     * 
-     * DIFFERS_FROM_XTCE: the prefixing of base attributes by child does not make sense to me. We instead implement
-     * appending - that is the argument of the parent come first, then the child.
-     * Note that if argument entries are specified by absolute positions, it doesn't matter whichever comes first except
-     * maybe the order in the user interface.
-     */
     MetaCommand baseMetaCommand;
     // assignment for inheritance
     List<ArgumentAssignment> argumentAssignmentList;
@@ -186,8 +169,10 @@ public class MetaCommand extends NameDescription {
     }
 
     /**
-     * Adds an argument to the command. 
+     * Adds an argument to the command.
+     * 
      * @param arg
+     *            - the argument to be added
      */
     public void addArgument(Argument arg) {
         argumentList.stream().filter(a -> a.getName().equals(arg.getName())).findFirst().ifPresent(a -> {
