@@ -6,7 +6,6 @@ import org.junit.Test;
 
 public class Mil1750ATest {
 
-
     @Test
     public void testEncode32() {
         assertEquals(0, MilStd1750A.encode32(0));
@@ -22,6 +21,8 @@ public class Mil1750ATest {
         assertEquals(0x8000_00_00, MilStd1750A.encode32(-1));
         assertEquals(0xBFFF_FF_80, MilStd1750A.encode32(-0.5000001 * Math.pow(2, -128)));
         assertEquals(0x9FFF_FF_04, MilStd1750A.encode32(-0.7500001 * 16));
+        
+        assertEquals(0xBFFF_FF_80, MilStd1750A.encode32(-1.4693682324014469e-39));
 
         assertEquals(MilStd1750A.MAX_FLOAT32_VALUE, MilStd1750A.encode32(1e200));
         assertEquals(MilStd1750A.MIN_FLOAT32_VALUE, MilStd1750A.encode32(-1e200));
@@ -42,6 +43,7 @@ public class Mil1750ATest {
         assertEquals(-1, MilStd1750A.decode32(0x8000_00_00), 1E-5);
         assertEquals(-0.5000001 * Math.pow(2, -128), MilStd1750A.decode32(0xBFFF_FF_80), 1E-5);
         assertEquals(-0.7500001 * 16, MilStd1750A.decode32(0x9FFF_FF_04), 1E-5);
+        assertEquals(-1.4693682324014469e-39, MilStd1750A.decode32(0xBFFF_FF_80), 1E-45);
     }
     
     @Test
