@@ -2,6 +2,13 @@ package org.yamcs.xtce;
 
 import org.yamcs.protobuf.Yamcs.Value.Type;
 
+/**
+ * Contains an integral value.
+ * 
+ *
+ * @author nm
+ *
+ */
 public abstract class IntegerDataType extends NumericDataType {
     private static final long serialVersionUID = 1L;
     int sizeInBits = 32;
