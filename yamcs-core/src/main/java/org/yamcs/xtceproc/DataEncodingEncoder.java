@@ -172,6 +172,8 @@ public class DataEncodingEncoder {
             bitbuf.put(rawValueBytes);
             bitbuf.putByte(sde.getTerminationChar());
             break;
+        default:
+            throw new IllegalStateException("Unsupported size type "+sde.getSizeType());
         }
 
         int newBitPosition = bitbuf.getPosition();
@@ -246,12 +248,24 @@ public class DataEncodingEncoder {
         } else {
             throw new IllegalArgumentException("Cannot encode as binary data values of type " + rawValue.getType());
         }
-        int sizeInBytes = bde.getSizeInBits() / 8;
-        if (sizeInBytes > v.length) {
-            v = Arrays.copyOf(v, sizeInBytes);
-        } else if (sizeInBytes < v.length) {
-            sizeInBytes = v.length;
+        BitBuffer bitbuf = pcontext.bitbuf;
+        switch (bde.getType()) {
+        case FIXED_SIZE:
+            int bdeSizeInBytes = bde.getSizeInBits() / 8;
+            int sizeInBytes = Math.min(bdeSizeInBytes, v.length);
+            bitbuf.put(v, 0, sizeInBytes);
+            if (bdeSizeInBytes > v.length) { // fill up with nulls to reach the required size
+                byte[] nulls = new byte[bdeSizeInBytes - sizeInBytes];
+                bitbuf.put(nulls);
+            }
+            break;
+        case LEADING_SIZE:
+            bitbuf.setByteOrder(ByteOrder.BIG_ENDIAN); // TBD
+            bitbuf.putBits(v.length, bde.getSizeInBitsOfSizeTag()); //bde.getSizeInBitsOfSizeTag() can be 0 but bitbuf won't mind
+            bitbuf.put(v);
+            break;
+        default:
+            throw new IllegalStateException("Unsupported size type "+bde.getType());
         }
-        pcontext.bitbuf.put(v, 0, sizeInBytes);
     }
 }
