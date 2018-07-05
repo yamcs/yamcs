@@ -1,0 +1,69 @@
+<div class="panel-content">
+  <table mat-table
+         [dataSource]="dataSource"
+         class="ya-data-table">
+
+    <ng-container cdkColumnDef="name">
+      <th mat-header-cell *cdkHeaderCellDef>Name</th>
+      <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
+        <a [routerLink]="['/mdb/parameters', row.name]"
+           [queryParams]="{instance: instance.name}">
+          {{ row.name }}
+        </a>
+      </td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="severity">
+      <th mat-header-cell *cdkHeaderCellDef style="width: 80px">Severity</th>
+      <td mat-cell *cdkCellDef="let row">
+        <app-alarm-level *ngIf="row.pval?.monitoringResult" [level]="row.pval?.monitoringResult"></app-alarm-level>
+        <span *ngIf="!row.pval?.monitoringResult">-</span>
+      </td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="rawValue">
+      <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Raw</th>
+      <td mat-cell *cdkCellDef="let row">{{ (row.pval?.rawValue | value) || '-' }}</td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="engValue">
+      <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Eng</th>
+      <td mat-cell *cdkCellDef="let row">{{ (row.pval?.engValue | value) || '-' }}</td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="receptionTimeUTC">
+      <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Reception time</th>
+      <td mat-cell *cdkCellDef="let row">{{ (row.pval?.acquisitionTimeUTC | datetime) || '-' }}</td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="generationTimeUTC">
+      <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation time</th>
+      <td mat-cell *cdkCellDef="let row">{{ (row.pval?.generationTimeUTC | datetime) || '-' }}</td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="acquisitionStatus">
+      <th mat-header-cell *cdkHeaderCellDef style="width: 150px">Acquisition status</th>
+      <td mat-cell *cdkCellDef="let row">{{ row.pval?.acquisitionStatus || '-' }}</td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="rangeCondition" style="width: 150px">
+      <th mat-header-cell *cdkHeaderCellDef>Range Condition</th>
+      <td mat-cell *cdkCellDef="let row">{{ row.pval?.rangeCondition || '-' }}</td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="actions">
+      <th mat-header-cell *cdkHeaderCellDef></th>
+      <td mat-cell *cdkCellDef="let row; let i = index">
+        <button mat-button (click)="moveDown(i)">
+          <mat-icon>keyboard_arrow_down</mat-icon>
+        </button>
+        <button mat-button (click)="moveUp(i)">
+          <mat-icon>keyboard_arrow_up</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>

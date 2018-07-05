@@ -5,6 +5,13 @@ import { DownloadDumpDialog } from './archive/DownloadDumpDialog';
 import { JumpToDialog } from './archive/JumpToDialog';
 import { TimelineTooltip } from './archive/TimelineTooltip';
 import { CreateDisplayDialog } from './displays/CreateDisplayDialog';
+import { ImageViewer } from './displays/ImageViewer';
+import { OpiDisplayViewer } from './displays/OpiDisplayViewer';
+import { ParameterTableViewer } from './displays/ParameterTableViewer';
+import { ScriptViewer } from './displays/ScriptViewer';
+import { TextViewer } from './displays/TextViewer';
+import { UssDisplayViewer } from './displays/UssDisplayViewer';
+import { ViewerHost } from './displays/ViewerHost';
 import { CreateEventDialog } from './events/CreateEventDialog';
 import { EventSeverity } from './events/EventSeverity';
 import { PageContentHost } from './ext/PageContentHost';
@@ -30,6 +37,20 @@ const pipes = [
   DisplayTypePipe,
 ];
 
+const directives = [
+  PageContentHost,
+  ViewerHost,
+];
+
+const viewers = [
+  ImageViewer,
+  OpiDisplayViewer,
+  ParameterTableViewer,
+  ScriptViewer,
+  TextViewer,
+  UssDisplayViewer,
+];
+
 @NgModule({
   imports: [
     SharedModule,
@@ -38,13 +59,15 @@ const pipes = [
   declarations: [
     routingComponents,
     dialogComponents,
+    directives,
     pipes,
+    viewers,
     AlarmDetail,
     DisplayNavigator,
     EventSeverity,
     LayoutComponent,
     MonitorPageTemplate,
-    PageContentHost,
+    ParameterTableViewer,
     TimelineTooltip,
   ],
   exports: [
@@ -53,6 +76,7 @@ const pipes = [
   ],
   entryComponents: [
     dialogComponents,
+    viewers,
     TimelineTooltip,
   ]
 })

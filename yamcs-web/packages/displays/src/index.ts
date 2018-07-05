@@ -6,6 +6,5 @@ export { Layout, LayoutListener, LayoutStateListener } from './Layout';
 export { LayoutState } from './LayoutState';
 export { OpenDisplayCommandOptions } from './OpenDisplayCommandOptions';
 export { OpiDisplay } from './opi/OpiDisplay';
-export { ParDisplay } from './par/ParDisplay';
 export { UssDisplay } from './uss/UssDisplay';
 

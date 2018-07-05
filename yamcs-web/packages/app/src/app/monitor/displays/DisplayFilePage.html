@@ -9,6 +9,7 @@
 
     &nbsp;&nbsp;&nbsp;
     <button mat-button
+            *ngIf="fullscreenSupported$ | async"
             color="primary"
             (click)="goFullscreen()">
       <mat-icon>fullscreen</mat-icon>
@@ -16,5 +17,7 @@
     </button>
   </app-monitor-toolbar>
 
-  <div #viewerContainer style="line-height: 0; text-align: center"></div>
+  <div #viewerContainer style="height: 100%;">
+    <ng-template app-viewer-host></ng-template>
+  </div>
 </app-monitor-page>
