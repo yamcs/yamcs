@@ -27,7 +27,7 @@ export class OpiDisplay implements Display {
   }
 
   parseAndDraw(id: string, grid = false) {
-    return this.displayCommunicator.retrieveXMLDisplayResource(id, 'FILE_SYSTEM').then(doc => {
+    return this.displayCommunicator.retrieveXMLDisplayResource(id).then(doc => {
       const displayEl = doc.getElementsByTagName('display')[0];
 
       this.title = utils.parseStringChild(displayEl, 'name', 'Untitled');

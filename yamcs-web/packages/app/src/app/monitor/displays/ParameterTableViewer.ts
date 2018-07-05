@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material';
 import { Instance, ParameterValue } from '@yamcs/client';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ParameterTable } from './ParameterTableModel';
 import { Viewer } from './Viewer';
@@ -14,6 +14,8 @@ import { Viewer } from './Viewer';
 })
 export class ParameterTableViewer implements Viewer, OnDestroy {
 
+  path: string;
+
   dataSource = new MatTableDataSource<Record>([]);
   instance: Instance;
 
@@ -23,7 +25,6 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     'generationTimeUTC',
     'rawValue',
     'engValue',
-    'rangeCondition',
     'acquisitionStatus',
     'actions',
   ];
@@ -31,8 +32,13 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   private latestValues = new Map<string, ParameterValue>();
   private dirty = false;
 
+  public paused$ = new BehaviorSubject<boolean>(false);
+
   private dataSynchronizer: number;
   private dataSubscription: Subscription;
+
+  public model: ParameterTable;
+  public modelListener: ModelListener;
 
   constructor(private yamcs: YamcsService, private changeDetector: ChangeDetectorRef) {
     this.dataSynchronizer = window.setInterval(() => {
@@ -49,21 +55,21 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   }
 
   public loadPath(path: string) {
+    this.path = path;
     this.instance = this.yamcs.getInstance();
-    this.yamcs.yamcsClient.getStaticText(`${this.instance.name}/displays${path}`).then(text => {
-      const parameterTable = JSON.parse(text) as ParameterTable;
-      console.log(parameterTable);
+    this.yamcs.getInstanceClient()!.getDisplay(path).then(text => {
+      this.model = JSON.parse(text);
 
-      const ids = parameterTable.parameters.map(name => ({ name }));
+      const ids = this.model.parameters.map(name => ({ name }));
       this.dataSource.data = ids;
       this.changeDetector.detectChanges();
 
-      this.connectDisplay(parameterTable);
+      this.connectDisplay();
     });
   }
 
-  private connectDisplay(parameterTable: ParameterTable) {
-    const ids = parameterTable.parameters.map(name => ({ name }));
+  private connectDisplay() {
+    const ids = this.model.parameters.map(name => ({ name }));
     if (ids.length) {
       this.yamcs.getInstanceClient()!.getParameterValueUpdates({
         id: ids,
@@ -75,10 +81,21 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
           for (const pval of pvals) {
             this.latestValues.set(pval.id.name, pval);
           }
-          this.dirty = true;
+          if (!this.paused$.value) {
+            this.dirty = true;
+          }
         });
       });
     }
+  }
+
+  public pause() {
+    this.paused$.next(true);
+  }
+
+  public unpause() {
+    this.paused$.next(false);
+    this.dirty = true; // Ensure data collected during pause interval is shown on next sync
   }
 
   public isFullscreenSupported() {
@@ -96,6 +113,9 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
       data[index - 1] = x;
     }
     this.dataSource.data = data;
+
+    this.model.parameters = data.map(rec => rec.name);
+    this.modelListener.onModelChange();
   }
 
   moveDown(index: number) {
@@ -109,6 +129,9 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
       data[index + 1] = x;
     }
     this.dataSource.data = data;
+
+    this.model.parameters = data.map(rec => rec.name);
+    this.modelListener.onModelChange();
   }
 
   ngOnDestroy() {
@@ -124,4 +147,9 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 interface Record {
   name: string;
   pval?: ParameterValue;
+}
+
+export interface ModelListener {
+
+  onModelChange(): void;
 }

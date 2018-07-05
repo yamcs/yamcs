@@ -1,7 +1,9 @@
 package org.yamcs.web.rest;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,6 +16,7 @@ import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
+import org.yamcs.web.NotFoundException;
 import org.yamcs.web.WebConfig;
 import org.yamcs.yarch.Bucket;
 import org.yamcs.yarch.BucketDatabase;
@@ -21,6 +24,9 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.ObjectProperties;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 /**
  * Provides information about available displays.
@@ -35,9 +41,16 @@ public class DisplayRestHandler extends RestHandler {
 
     private static final String DISPLAY_BUCKET = "displays";
 
-    @Route(path = "/api/displays:instance", method = "DELETE")
-    @Route(path = "/api/displays/:instance/:path*", method = "DELETE")
-    public void deleteDisplays(RestRequest req) throws HttpException {
+    /**
+     * Creates or updates a display resource. If the file is found on the file system, then it is overwritten. Otherwise
+     * it gets saved to the displays bucket.
+     * <p>
+     * This is a very simple temporary api which does not work with multipart but instead expects the display text in
+     * the request body.
+     */
+    @Route(path = "/api/displays/:instance", method = "POST")
+    @Route(path = "/api/displays/:instance/:path*", method = "POST")
+    public void uploadDisplay(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
         checkObjectPrivileges(req, ObjectPrivilegeType.ManageBucket, DISPLAY_BUCKET);
@@ -47,6 +60,87 @@ public class DisplayRestHandler extends RestHandler {
             prefix = req.getRouteParam("path");
         }
 
+        if (prefix.contains("..")) {
+            throw new BadRequestException("Illegal path name");
+        }
+
+        ByteBuf buf = req.bodyAsBuf();
+        byte[] raw = new byte[buf.readableBytes()];
+        req.bodyAsBuf().readBytes(raw);
+
+        // Save to file system
+        boolean saved = false;
+        File displayDir = locateDisplayRoot(instance);
+        if (displayDir != null) {
+            File updatable = new File(displayDir, prefix);
+            if (updatable.exists() && !updatable.isHidden() && updatable.isFile()) {
+                try (FileOutputStream fileOut = new FileOutputStream(updatable)) {
+                    fileOut.write(raw);
+                } catch (IOException e) {
+                    throw new InternalServerErrorException(e);
+                }
+                saved = true;
+            }
+        }
+
+        // Or - save to bucket
+        if (!saved) {
+            Bucket bucket = getOrCreateDisplayBucket(req);
+            try {
+                bucket.putObject(prefix, "application/octet-stream", Collections.emptyMap(), raw);
+            } catch (IOException e) {
+                throw new InternalServerErrorException(e);
+            }
+        }
+
+        completeOK(req);
+    }
+
+    @Route(path = "/api/displays/:instance/:path*", method = "GET")
+    public void getDisplay(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+
+        String prefix = req.getRouteParam("path");
+        if (prefix.contains("..")) {
+            throw new BadRequestException("Illegal path name");
+        }
+
+        File displayDir = locateDisplayRoot(instance);
+        if (displayDir != null) {
+            File displayFile = new File(displayDir, prefix);
+            if (displayFile.exists() && !displayFile.isHidden() && displayFile.isFile()) {
+                try {
+                    byte[] raw = Files.readAllBytes(displayFile.toPath());
+                    String contentType = "application/octet-stream";
+                    completeOK(req, contentType, Unpooled.wrappedBuffer(raw));
+                    return;
+                } catch (IOException e) {
+                    throw new InternalServerErrorException(e);
+                }
+            }
+        }
+
+        Bucket bucket = getOrCreateDisplayBucket(req);
+        try {
+            ObjectProperties props = bucket.findObject(prefix);
+            if (props == null) {
+                throw new NotFoundException(req);
+            }
+            byte[] raw = bucket.getObject(prefix);
+            String contentType = props.hasContentType() ? props.getContentType() : "application/octet-stream";
+            completeOK(req, contentType, Unpooled.wrappedBuffer(raw));
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+    }
+
+    @Route(path = "/api/displays/:instance/:path*", method = "DELETE")
+    public void deleteDisplays(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+
+        checkObjectPrivileges(req, ObjectPrivilegeType.ManageBucket, DISPLAY_BUCKET);
+
+        String prefix = req.getRouteParam("path");
         if (prefix.contains("..")) {
             throw new BadRequestException("Illegal path name");
         }

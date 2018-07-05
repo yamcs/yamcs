@@ -1,0 +1,25 @@
+<ng-container *ngIf="initialized$ | async">
+  <button mat-button
+          color="primary"
+          [disabled]="!(dirty$ | async)"
+          (click)="save()">
+    <mat-icon>save</mat-icon>
+    SAVE
+  </button>
+
+  <button mat-icon-button
+          *ngIf="!(paused$ | async)"
+          color="primary"
+          (click)="pause()"
+          matTooltip="Pause value updates">
+    <mat-icon>pause</mat-icon>
+  </button>
+
+  <button mat-icon-button
+          *ngIf="paused$ | async"
+          color="primary"
+          (click)="unpause()"
+          matTooltip="Unpause value updates">
+    <mat-icon>play_arrow</mat-icon>
+  </button>
+</ng-container>

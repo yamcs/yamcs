@@ -1,4 +1,4 @@
-import { DisplaySource, NamedObjectId } from '@yamcs/client';
+import { NamedObjectId } from '@yamcs/client';
 
 export interface DisplayCommunicator {
 
@@ -10,7 +10,7 @@ export interface DisplayCommunicator {
 
   retrieveXML(path: string): Promise<XMLDocument>;
 
-  retrieveDisplayResource(path: string, source: DisplaySource): Promise<string>;
+  retrieveDisplayResource(path: string): Promise<string>;
 
-  retrieveXMLDisplayResource(path: string, source: DisplaySource): Promise<XMLDocument>;
+  retrieveXMLDisplayResource(path: string): Promise<XMLDocument>;
 }

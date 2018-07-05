@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 import { AlarmsWrapper, AlgorithmsWrapper, BucketsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, ObjectsWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
 import { Algorithm, Command, Container, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, SpaceSystem } from './types/mdb';
-import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DisplayFolder, DisplaySource, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
+import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DisplayFolder, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
 import { Bucket, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, CreateBucketRequest, EditCommandQueueEntryOptions, EditCommandQueueOptions, Link, LinkSubscriptionResponse, ListObjectsOptions, ObjectInfo, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
@@ -519,12 +519,30 @@ export class InstanceClient {
     });
   }
 
+  /**
+   * @deprecated temporary api
+   */
   async getDisplayFolder(path?: string) {
     const url = `${this.yamcs.apiUrl}/displays/${this.instance}${path || ''}`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as DisplayFolder;
   }
 
+  /**
+   * @deprecated temporary api
+   */
+  async saveDisplay(path: string, obj: {}) {
+    const url = `${this.yamcs.apiUrl}/displays/${this.instance}${path}`;
+    return await this.yamcs.doFetch(url, {
+      method: 'POST',
+      headers: {'content-type': 'application/json'},
+      body: JSON.stringify(obj),
+    });
+  }
+
+  /**
+   * @deprecated temporary api
+   */
   async deleteDisplay(path?: string) {
     const url = `${this.yamcs.apiUrl}/displays/${this.instance}${path || ''}`;
     return await this.yamcs.doFetch(url, {
@@ -534,18 +552,13 @@ export class InstanceClient {
 
   /**
    * Returns a string representation of the display definition file
+   *
+   * @deprecated temporary api
    */
-  async getDisplay(path: string, source: DisplaySource = 'BUCKET') {
-    if (source === 'BUCKET') {
-      const response = await this.getObject('displays', path.substring(1));
-      return await response.text();
-    } else if (source === 'FILE_SYSTEM') {
-      const url = `${this.yamcs.staticUrl}/${this.instance}/displays${path}`;
-      const response = await this.yamcs.doFetch(url);
-      return await response.text();
-    } else {
-      throw new Error('Unexpected display source ' + source);
-    }
+  async getDisplay(path: string) {
+    const url = `${this.yamcs.apiUrl}/displays/${this.instance}${path}`;
+    const response = await this.yamcs.doFetch(url);
+    return response.text();
   }
 
   closeConnection() {

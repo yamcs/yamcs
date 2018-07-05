@@ -8,9 +8,11 @@ import { CreateDisplayDialog } from './displays/CreateDisplayDialog';
 import { ImageViewer } from './displays/ImageViewer';
 import { OpiDisplayViewer } from './displays/OpiDisplayViewer';
 import { ParameterTableViewer } from './displays/ParameterTableViewer';
+import { ParameterTableViewerControls } from './displays/ParameterTableViewerControls';
 import { ScriptViewer } from './displays/ScriptViewer';
 import { TextViewer } from './displays/TextViewer';
 import { UssDisplayViewer } from './displays/UssDisplayViewer';
+import { ViewerControlsHost } from './displays/ViewerControlsHost';
 import { ViewerHost } from './displays/ViewerHost';
 import { CreateEventDialog } from './events/CreateEventDialog';
 import { EventSeverity } from './events/EventSeverity';
@@ -39,6 +41,7 @@ const pipes = [
 
 const directives = [
   PageContentHost,
+  ViewerControlsHost,
   ViewerHost,
 ];
 
@@ -46,6 +49,7 @@ const viewers = [
   ImageViewer,
   OpiDisplayViewer,
   ParameterTableViewer,
+  ParameterTableViewerControls,
   ScriptViewer,
   TextViewer,
   UssDisplayViewer,
@@ -67,7 +71,6 @@ const viewers = [
     EventSeverity,
     LayoutComponent,
     MonitorPageTemplate,
-    ParameterTableViewer,
     TimelineTooltip,
   ],
   exports: [
