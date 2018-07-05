@@ -77,10 +77,10 @@ public class DataEncodingEncoder {
             v = rawValue.getBooleanValue() ? 1 : 0;
             break;
         case DOUBLE:
-            v = (long) rawValue.getDoubleValue();
+            v = Math.round(rawValue.getDoubleValue());
             break;
         case FLOAT:
-            v = (long) rawValue.getFloatValue();
+            v = Math.round(rawValue.getFloatValue());
             break;
         default:
             throw new IllegalArgumentException("Cannot encode values of types " + rawValue.getType() + " to string");
