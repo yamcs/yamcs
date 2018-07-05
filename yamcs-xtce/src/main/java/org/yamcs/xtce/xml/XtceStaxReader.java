@@ -2225,11 +2225,6 @@ public class XtceStaxReader {
         }
     }
 
-    private Member readXtceDimension(SpaceSystem spaceSystem) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     private SequenceEntry readParameterRefEntry(SpaceSystem spaceSystem) throws XMLStreamException {
         log.trace(XTCE_PARAMETER_REF_ENTRY);
         checkStartElementPreconditions();

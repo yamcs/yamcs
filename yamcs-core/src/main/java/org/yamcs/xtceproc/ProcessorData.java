@@ -12,7 +12,6 @@ import org.yamcs.api.QuietEventProducer;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.ContextCalibrator;

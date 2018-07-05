@@ -2,8 +2,6 @@ package org.yamcs.xtce;
 
 import java.io.Serializable;
 
-import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
-
 /**
  * An abstract type used by sequence containers.
  * An entry contains a location in the container. The location may be either fixed or dynamic,
