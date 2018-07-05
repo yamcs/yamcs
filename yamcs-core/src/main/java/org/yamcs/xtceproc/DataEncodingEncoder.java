@@ -1,7 +1,6 @@
 package org.yamcs.xtceproc;
 
 import java.nio.ByteOrder;
-import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
