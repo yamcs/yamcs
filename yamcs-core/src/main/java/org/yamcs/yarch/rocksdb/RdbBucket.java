@@ -76,8 +76,11 @@ public class RdbBucket implements Bucket {
     }
 
     @Override
-    public synchronized void putObject(String objectName, String contentType, Map<String, String> metadata,
-            byte[] objectData) throws IOException {
+    public synchronized void putObject(String objectName, String contentType, 
+            Map<String, String> metadata, byte[] objectData) throws IOException {
+        if(objectName.isEmpty()) {
+            throw new IllegalArgumentException("object name cannot be empty");
+        }
         log.debug("Uploading object {} to bucket {}; contentType: {}", objectName, bucketProps.getName(), contentType);
         ObjectProperties.Builder props = ObjectProperties.newBuilder();
         if (metadata != null) {
