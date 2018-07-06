@@ -35,4 +35,8 @@ export class ImageViewer implements Viewer {
   public isFullscreenSupported() {
     return false;
   }
+
+  public hasPendingChanges() {
+    return false;
+  }
 }

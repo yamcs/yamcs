@@ -96,44 +96,6 @@ public class DisplayRestHandler extends RestHandler {
         completeOK(req);
     }
 
-    @Route(path = "/api/displays/:instance/:path*", method = "GET")
-    public void getDisplay(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-
-        String prefix = req.getRouteParam("path");
-        if (prefix.contains("..")) {
-            throw new BadRequestException("Illegal path name");
-        }
-
-        File displayDir = locateDisplayRoot(instance);
-        if (displayDir != null) {
-            File displayFile = new File(displayDir, prefix);
-            if (displayFile.exists() && !displayFile.isHidden() && displayFile.isFile()) {
-                try {
-                    byte[] raw = Files.readAllBytes(displayFile.toPath());
-                    String contentType = "application/octet-stream";
-                    completeOK(req, contentType, Unpooled.wrappedBuffer(raw));
-                    return;
-                } catch (IOException e) {
-                    throw new InternalServerErrorException(e);
-                }
-            }
-        }
-
-        Bucket bucket = getOrCreateDisplayBucket(req);
-        try {
-            ObjectProperties props = bucket.findObject(prefix);
-            if (props == null) {
-                throw new NotFoundException(req);
-            }
-            byte[] raw = bucket.getObject(prefix);
-            String contentType = props.hasContentType() ? props.getContentType() : "application/octet-stream";
-            completeOK(req, contentType, Unpooled.wrappedBuffer(raw));
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
-    }
-
     @Route(path = "/api/displays/:instance/:path*", method = "DELETE")
     public void deleteDisplays(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -182,8 +144,46 @@ public class DisplayRestHandler extends RestHandler {
         folder.delete();
     }
 
-    @Route(path = "/api/displays/:instance", method = "GET")
-    @Route(path = "/api/displays/:instance/:path*", method = "GET")
+    @Route(path = "/api/displays/files/:instance/:path*", method = "GET")
+    public void getDisplay(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+
+        String prefix = req.getRouteParam("path");
+        if (prefix.contains("..")) {
+            throw new BadRequestException("Illegal path name");
+        }
+
+        File displayDir = locateDisplayRoot(instance);
+        if (displayDir != null) {
+            File displayFile = new File(displayDir, prefix);
+            if (displayFile.exists() && !displayFile.isHidden() && displayFile.isFile()) {
+                try {
+                    byte[] raw = Files.readAllBytes(displayFile.toPath());
+                    String contentType = "application/octet-stream";
+                    completeOK(req, contentType, Unpooled.wrappedBuffer(raw));
+                    return;
+                } catch (IOException e) {
+                    throw new InternalServerErrorException(e);
+                }
+            }
+        }
+
+        Bucket bucket = getOrCreateDisplayBucket(req);
+        try {
+            ObjectProperties props = bucket.findObject(prefix);
+            if (props == null) {
+                throw new NotFoundException(req);
+            }
+            byte[] raw = bucket.getObject(prefix);
+            String contentType = props.hasContentType() ? props.getContentType() : "application/octet-stream";
+            completeOK(req, contentType, Unpooled.wrappedBuffer(raw));
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+    }
+
+    @Route(path = "/api/displays/folders/:instance", method = "GET")
+    @Route(path = "/api/displays/folders/:instance/:path*", method = "GET")
     public void listDisplays(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         DisplayFolder.Builder responseb = DisplayFolder.newBuilder();

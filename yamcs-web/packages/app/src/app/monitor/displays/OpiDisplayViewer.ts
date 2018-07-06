@@ -64,6 +64,10 @@ export class OpiDisplayViewer implements DisplayHolder, Viewer {
     return true;
   }
 
+  public hasPendingChanges() {
+    return false;
+  }
+
   getBaseId() { // DisplayHolder
     return this.path;
   }

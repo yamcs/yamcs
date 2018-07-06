@@ -191,6 +191,12 @@ a.ya-link.ya-header-link {
   letter-spacing: normal;
 }
 
+.ya-autocomplete .mat-option {
+  height: auto;
+  line-height: 16px;
+  font-size: 12px;
+}
+
 .vmiddle {
   display: inline-flex;
   vertical-align: middle;

@@ -1,25 +1,42 @@
 <ng-container *ngIf="initialized$ | async">
   <button mat-button
           color="primary"
-          [disabled]="!(dirty$ | async)"
+          [disabled]="!(viewer.hasUnsavedChanges$ | async)"
           (click)="save()">
     <mat-icon>save</mat-icon>
     SAVE
   </button>
 
-  <button mat-icon-button
-          *ngIf="!(paused$ | async)"
+  <button mat-button
+          *ngIf="!(viewer.paused$ | async)"
           color="primary"
-          (click)="pause()"
+          (click)="viewer.pause()"
           matTooltip="Pause value updates">
     <mat-icon>pause</mat-icon>
+    PAUSE
   </button>
 
-  <button mat-icon-button
-          *ngIf="paused$ | async"
+  <button mat-button
+          *ngIf="viewer.paused$ | async"
           color="primary"
-          (click)="unpause()"
+          (click)="viewer.unpause()"
           matTooltip="Unpause value updates">
     <mat-icon>play_arrow</mat-icon>
+    UNPAUSE
+  </button>
+
+  <button mat-button
+          color="primary"
+          (click)="addParameter()">
+    <mat-icon>playlist_add</mat-icon>
+    ADD
+  </button>
+
+  <button mat-button
+          color="primary"
+          (click)="viewer.delete()"
+          [disabled]="viewer.selection.isEmpty()">
+    <mat-icon>delete</mat-icon>
+    DELETE
   </button>
 </ng-container>

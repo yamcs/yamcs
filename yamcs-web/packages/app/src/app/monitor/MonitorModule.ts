@@ -1,10 +1,12 @@
 import { NgModule } from '@angular/core';
+import { MdbModule } from '../mdb/MdbModule';
 import { SharedModule } from '../shared/SharedModule';
 import { AlarmDetail } from './alarms/AlarmDetail';
 import { DownloadDumpDialog } from './archive/DownloadDumpDialog';
 import { JumpToDialog } from './archive/JumpToDialog';
 import { TimelineTooltip } from './archive/TimelineTooltip';
 import { CreateDisplayDialog } from './displays/CreateDisplayDialog';
+import { DisplayFilePageDirtyDialog } from './displays/DisplayFilePageDirtyDialog';
 import { ImageViewer } from './displays/ImageViewer';
 import { OpiDisplayViewer } from './displays/OpiDisplayViewer';
 import { ParameterTableViewer } from './displays/ParameterTableViewer';
@@ -29,6 +31,7 @@ import { StartReplayDialog } from './template/StartReplayDialog';
 const dialogComponents = [
   CreateDisplayDialog,
   CreateEventDialog,
+  DisplayFilePageDirtyDialog,
   DownloadDumpDialog,
   JumpToDialog,
   SaveLayoutDialog,
@@ -58,6 +61,7 @@ const viewers = [
 @NgModule({
   imports: [
     SharedModule,
+    MdbModule,
     MonitorRoutingModule,
   ],
   declarations: [

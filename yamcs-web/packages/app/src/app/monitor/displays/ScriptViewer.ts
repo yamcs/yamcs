@@ -40,7 +40,7 @@ export class ScriptViewer implements Viewer, OnDestroy {
     this.yamcs.yamcsClient.getStaticText(`${instance}/displays${path}`).then(text => {
       this.scriptContainer.nativeElement.innerHTML = text;
       this.editor = ace.edit(this.scriptContainer.nativeElement);
-      this.editor.setReadOnly(false);
+      this.editor.setReadOnly(true);
       this.editor.getSession().setMode('ace/mode/javascript');
       this.changeDetector.detectChanges();
     });
@@ -52,6 +52,10 @@ export class ScriptViewer implements Viewer, OnDestroy {
   }
 
   public isFullscreenSupported() {
+    return false;
+  }
+
+  public hasPendingChanges() {
     return false;
   }
 

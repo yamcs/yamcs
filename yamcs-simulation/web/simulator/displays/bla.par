@@ -1,4 +1,0 @@
-{ 
-  "columns": ["rawValue", "engValue"],
-  "parameters": ["/YSS/SIMULATOR/Alpha", "/YSS/SIMULATOR/Beta", "/YSS/SIMULATOR/BatteryVoltage2"]
-}

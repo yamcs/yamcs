@@ -4,6 +4,19 @@
          class="ya-data-table"
          [class.paused]="paused$ | async">
 
+    <ng-container cdkColumnDef="select">
+      <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
+        <input type="checkbox" (change)="$event ? masterToggle() : null"
+                      [checked]="selection.hasValue() && isAllSelected()">
+      </th>
+      <td mat-cell *cdkCellDef="let row">
+        <input type="checkbox"
+                (click)="$event.stopPropagation()"
+                (change)="$event ? selection.toggle(row) : null"
+                [checked]="selection.isSelected(row)">
+      </td>
+    </ng-container>
+
     <ng-container cdkColumnDef="name">
       <th mat-header-cell *cdkHeaderCellDef>Name</th>
       <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
@@ -67,6 +80,9 @@
     </ng-container>
 
     <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+    <tr mat-row
+        *cdkRowDef="let row; columns: displayedColumns;"
+        [class.selected]="selection.isSelected(row)"
+        (click)="toggleOne(row)"></tr>
   </table>
 </div>

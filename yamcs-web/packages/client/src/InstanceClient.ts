@@ -523,7 +523,7 @@ export class InstanceClient {
    * @deprecated temporary api
    */
   async getDisplayFolder(path?: string) {
-    const url = `${this.yamcs.apiUrl}/displays/${this.instance}${path || ''}`;
+    const url = `${this.yamcs.apiUrl}/displays/folders/${this.instance}${path || ''}`;
     const response = await this.yamcs.doFetch(url);
     return await response.json() as DisplayFolder;
   }
@@ -556,7 +556,7 @@ export class InstanceClient {
    * @deprecated temporary api
    */
   async getDisplay(path: string) {
-    const url = `${this.yamcs.apiUrl}/displays/${this.instance}${path}`;
+    const url = `${this.yamcs.apiUrl}/displays/files/${this.instance}${path}`;
     const response = await this.yamcs.doFetch(url);
     return response.text();
   }

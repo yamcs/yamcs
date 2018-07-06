@@ -7,7 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 import * as screenfull from 'screenfull';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
-import { LayoutComponent } from '../layouts/LayoutComponent';
+import { LayoutComponent } from './LayoutComponent';
 
 @Component({
   templateUrl: './LayoutPage.html',

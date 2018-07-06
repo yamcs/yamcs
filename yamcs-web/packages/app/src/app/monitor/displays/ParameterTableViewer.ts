@@ -1,3 +1,4 @@
+import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material';
 import { Instance, ParameterValue } from '@yamcs/client';
@@ -17,9 +18,12 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   path: string;
 
   dataSource = new MatTableDataSource<Record>([]);
+  selection = new SelectionModel<Record>(true, []);
+
   instance: Instance;
 
   displayedColumns = [
+    'select',
     'severity',
     'name',
     'generationTimeUTC',
@@ -33,16 +37,17 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   private dirty = false;
 
   public paused$ = new BehaviorSubject<boolean>(false);
+  public hasUnsavedChanges$ = new BehaviorSubject<boolean>(false);
 
   private dataSynchronizer: number;
   private dataSubscription: Subscription;
+  private dataSubscriptionId: number;
 
   public model: ParameterTable;
-  public modelListener: ModelListener;
 
   constructor(private yamcs: YamcsService, private changeDetector: ChangeDetectorRef) {
     this.dataSynchronizer = window.setInterval(() => {
-      if (this.dirty) {
+      if (this.dirty && !this.paused$.value) {
         const data = this.dataSource.data;
         for (const rec of data) {
           rec.pval = this.latestValues.get(rec.name);
@@ -60,33 +65,67 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     this.yamcs.getInstanceClient()!.getDisplay(path).then(text => {
       this.model = JSON.parse(text);
 
-      const ids = this.model.parameters.map(name => ({ name }));
-      this.dataSource.data = ids;
+      const recs = this.model.parameters.map(name => ({ name }));
+      this.dataSource.data = recs;
       this.changeDetector.detectChanges();
 
-      this.connectDisplay();
+      this.createOrModifySubscription();
     });
   }
 
-  private connectDisplay() {
+  hasPendingChanges() {
+    return this.hasUnsavedChanges$.value;
+  }
+
+  private createOrModifySubscription() {
     const ids = this.model.parameters.map(name => ({ name }));
     if (ids.length) {
       this.yamcs.getInstanceClient()!.getParameterValueUpdates({
+        subscriptionId: this.dataSubscriptionId || -1,
         id: ids,
         abortOnInvalid: false,
         sendFromCache: true,
         updateOnExpiration: true,
       }).then(res => {
+        this.dataSubscriptionId = res.subscriptionId;
         this.dataSubscription = res.parameterValues$.subscribe(pvals => {
           for (const pval of pvals) {
             this.latestValues.set(pval.id.name, pval);
           }
-          if (!this.paused$.value) {
-            this.dirty = true;
-          }
+          this.dirty = true;
         });
       });
     }
+  }
+
+  public addParameter(name: string) {
+    this.dataSource.data.push({ name });
+    this.model.parameters = this.dataSource.data.map(rec => rec.name);
+    this.hasUnsavedChanges$.next(true);
+
+    this.changeDetector.detectChanges();
+    this.createOrModifySubscription();
+  }
+
+  public getParameterNames(): string[] {
+    return this.dataSource.data.map(rec => rec.name);
+  }
+
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.dataSource.data.length;
+    return numSelected === numRows && numRows > 0;
+  }
+
+  masterToggle() {
+    this.isAllSelected() ?
+        this.selection.clear() :
+        this.dataSource.data.forEach(row => this.selection.select(row));
+  }
+
+  toggleOne(row: Record) {
+    this.selection.clear();
+    this.selection.toggle(row);
   }
 
   public pause() {
@@ -95,7 +134,16 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   public unpause() {
     this.paused$.next(false);
-    this.dirty = true; // Ensure data collected during pause interval is shown on next sync
+  }
+
+  public delete() {
+    if (!this.selection.isEmpty()) {
+      this.dataSource.data = this.dataSource.data.filter(rec => !this.selection.isSelected(rec));
+
+      this.model.parameters = this.dataSource.data.map(rec => rec.name);
+      this.hasUnsavedChanges$.next(true);
+    }
+    this.selection.clear();
   }
 
   public isFullscreenSupported() {
@@ -115,7 +163,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     this.dataSource.data = data;
 
     this.model.parameters = data.map(rec => rec.name);
-    this.modelListener.onModelChange();
+    this.hasUnsavedChanges$.next(true);
   }
 
   moveDown(index: number) {
@@ -131,7 +179,12 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     this.dataSource.data = data;
 
     this.model.parameters = data.map(rec => rec.name);
-    this.modelListener.onModelChange();
+    this.hasUnsavedChanges$.next(true);
+  }
+
+  save() {
+    this.hasUnsavedChanges$.next(false);
+    return this.yamcs.getInstanceClient()!.saveDisplay(this.path, this.model);
   }
 
   ngOnDestroy() {
@@ -147,9 +200,4 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 interface Record {
   name: string;
   pval?: ParameterValue;
-}
-
-export interface ModelListener {
-
-  onModelChange(): void;
 }

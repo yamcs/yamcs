@@ -38,6 +38,8 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   @ViewChild(ViewerHost)
   private viewerHost: ViewerHost;
 
+  private viewer: Viewer;
+
   path: string;
   filename: string;
   folderLink: string;
@@ -47,7 +49,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   fullscreenListener: () => void;
 
   constructor(
-    private yamcs: YamcsService,
+    yamcs: YamcsService,
     private route: ActivatedRoute,
     private componentFactoryResolver: ComponentFactoryResolver,
     title: Title,
@@ -77,25 +79,24 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    let viewer: Viewer;
     if (this.filename.toLowerCase().endsWith('.uss')) {
-      viewer = this.createViewer(UssDisplayViewer);
+      this.viewer = this.createViewer(UssDisplayViewer);
     } else if (this.filename.toLowerCase().endsWith('.opi')) {
-      viewer = this.createViewer(OpiDisplayViewer);
+      this.viewer = this.createViewer(OpiDisplayViewer);
     } else if (this.filename.toLowerCase().endsWith('.par')) {
-      viewer = this.createViewer(ParameterTableViewer);
+      this.viewer = this.createViewer(ParameterTableViewer);
       const controls = this.createViewerControls(ParameterTableViewerControls);
-      controls.init(viewer as ParameterTableViewer);
+      controls.init(this.viewer as ParameterTableViewer);
     } else if (this.isImage()) {
-      viewer = this.createViewer(ImageViewer);
+      this.viewer = this.createViewer(ImageViewer);
     } else if (this.filename.toLocaleLowerCase().endsWith('.js')) {
-      viewer = this.createViewer(ScriptViewer);
+      this.viewer = this.createViewer(ScriptViewer);
     } else {
-      viewer = this.createViewer(TextViewer);
+      this.viewer = this.createViewer(TextViewer);
     }
 
-    viewer.loadPath(this.path);
-    this.fullscreenSupported$.next(viewer.isFullscreenSupported());
+    this.viewer.loadPath(this.path);
+    this.fullscreenSupported$.next(this.viewer.isFullscreenSupported());
   }
 
   private createViewer<T extends Viewer>(viewer: Type<T>): T {
@@ -125,6 +126,10 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     } else {
       alert('Your browser does not appear to support going full screen');
     }
+  }
+
+  hasPendingChanges() {
+    return this.viewer.hasPendingChanges();
   }
 
   ngOnDestroy() {

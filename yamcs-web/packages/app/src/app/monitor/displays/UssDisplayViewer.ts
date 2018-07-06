@@ -64,6 +64,10 @@ export class UssDisplayViewer implements DisplayHolder, Viewer {
     return true;
   }
 
+  public hasPendingChanges() {
+    return false;
+  }
+
   getBaseId() { // DisplayHolder
     return this.path;
   }

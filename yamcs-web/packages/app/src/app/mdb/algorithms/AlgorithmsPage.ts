@@ -1,9 +1,8 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-
-import { Algorithm, Instance } from '@yamcs/client';
-
-import { YamcsService } from '../../core/services/YamcsService';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { Algorithm, Instance } from '@yamcs/client';
+import { YamcsService } from '../../core/services/YamcsService';
+
 
 @Component({
   templateUrl: './AlgorithmsPage.html',

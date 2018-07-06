@@ -1,18 +1,17 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { CommandHistoryEntry, Instance } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
+import { CommandHistoryEntry, Instance } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
 
 
-
 @Component({
-  templateUrl: './CommandsPage.html',
-  styleUrls: ['./CommandsPage.css'],
+  templateUrl: './CommandingPage.html',
+  styleUrls: ['./CommandingPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommandsPage implements OnInit {
+export class CommandingPage implements OnInit {
 
   instance: Instance;
 

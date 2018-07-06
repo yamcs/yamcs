@@ -32,4 +32,8 @@ export class TextViewer implements Viewer {
   public isFullscreenSupported() {
     return false;
   }
+
+  public hasPendingChanges() {
+    return false;
+  }
 }
