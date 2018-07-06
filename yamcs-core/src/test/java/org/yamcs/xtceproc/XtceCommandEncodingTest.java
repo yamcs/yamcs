@@ -326,7 +326,6 @@ public class XtceCommandEncodingTest {
     @Test
     public void testCcsdsTc() throws Exception {
         MetaCommand mc = xtcedb.getMetaCommand("/REFMDB/SUBSYS1/CCSDS_TC");
-        System.out.println("mc: "+mc.getArgumentAssignmentList());
         assertNotNull(mc);
 
         List<ArgumentAssignment> aaList = Arrays.asList(new ArgumentAssignment("uint8_arg", "1"),

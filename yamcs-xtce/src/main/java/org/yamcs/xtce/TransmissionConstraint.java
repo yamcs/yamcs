@@ -2,12 +2,19 @@ package org.yamcs.xtce;
 
 import java.io.Serializable;
 
+/**
+ * A CommandTransmission constraint is used to check that the command can be run in the current operating mode and may
+ * block the transmission of the command if the constraint condition is true.
+ * 
+ * @author nm
+ *
+ */
 public class TransmissionConstraint implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     /**
      * XTCE: A specialised form of MatchCriteria for transmission constraint
-     * that may be suspendable on timeout. 
+     * that may be suspendable on timeout.
      */
     final private MatchCriteria matchCriteria;
 

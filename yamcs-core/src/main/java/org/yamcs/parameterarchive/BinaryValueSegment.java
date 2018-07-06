@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.ValueUtility;
 
