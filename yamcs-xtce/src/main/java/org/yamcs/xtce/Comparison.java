@@ -62,6 +62,13 @@ public class Comparison implements MatchCriteria {
         this.comparisonOperator = op;
         checkParaRef(paraRef);
     }
+    public Comparison(ParameterInstanceRef paraRef, double doubleValue, OperatorType op) {
+        this.instanceRef = paraRef;
+        this.value = doubleValue;
+        this.stringValue = Double.toString(doubleValue);
+        this.comparisonOperator = op;
+        checkParaRef(paraRef);
+    }
 
     private void checkParaRef(ParameterInstanceRef paraRef) {
         if(paraRef.getInstance()!=0) {
