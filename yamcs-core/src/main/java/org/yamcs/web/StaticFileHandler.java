@@ -7,7 +7,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -16,11 +15,10 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import javax.activation.MimetypesFileTypeMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.utils.Mimetypes;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -43,25 +41,23 @@ import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 public class StaticFileHandler extends RouteHandler {
-    static MimetypesFileTypeMap mimeTypesMap;
+    static Mimetypes mimetypes;
     public static final int HTTP_CACHE_SECONDS = 60;
     private static WebConfig webConfig;
 
     private static final Logger log = LoggerFactory.getLogger(StaticFileHandler.class.getName());
 
     public static void init() throws ConfigurationException {
-        if (mimeTypesMap != null) {
+        if (mimetypes != null) {
             return;
         }
 
-        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("mime.types")) {
-            if (is == null) {
-                throw new ConfigurationException("Cannot find the mime.types file in the classpath");
-            }
-            mimeTypesMap = new MimetypesFileTypeMap(is);
-            webConfig = WebConfig.getInstance();
+        webConfig = WebConfig.getInstance();
+
+        try {
+            mimetypes = Mimetypes.getInstance();
         } catch (IOException e) {
-            log.error("Error when closing the stream", e);
+            throw new ConfigurationException("Failed to load MIME types", e);
         }
     }
 
@@ -133,8 +129,9 @@ public class StaticFileHandler extends RouteHandler {
             // chunked HTTP is required for compression to work because we don't know the size of the compressed file.
             HttpUtil.setTransferEncodingChunked(response, true);
             ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_COMPRESSOR, new HttpContentCompressor());
-            //Note that the CunkedWriteHandler here will just read the file chunk by chunk.
-            //The real HTTP chunk encoding is performed by the HttpServerCodec/HttpContentEncoder which sits first in the pipeline 
+            // Note that the CunkedWriteHandler here will just read the file chunk by chunk.
+            // The real HTTP chunk encoding is performed by the HttpServerCodec/HttpContentEncoder which sits first in
+            // the pipeline
             ctx.pipeline().addLast(HttpRequestHandler.HANDLER_NAME_CHUNKED_WRITER, new ChunkedWriteHandler());
             // propagate the request to the new handlers in the pipeline that need to configure themselves
             ctx.fireChannelRead(req);
@@ -190,7 +187,7 @@ public class StaticFileHandler extends RouteHandler {
      *            file to extract content type
      */
     protected void setContentTypeHeader(HttpResponse response, File file) {
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, mimeTypesMap.getContentType(file.getPath()));
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, mimetypes.getMimetype(file));
     }
 
     /**
