@@ -15,7 +15,6 @@ import org.yamcs.security.User;
 import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.HttpRequestInfo;
 import org.yamcs.web.HttpServer;
-import org.yamcs.web.WebConfig;
 
 import com.google.protobuf.Message;
 
@@ -23,6 +22,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
@@ -60,19 +60,22 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     private Map<String, AbstractWebSocketResource> resourcesByName = new HashMap<>();
 
     // after how many consecutive dropped writes will the connection be closed
+    private int connectionCloseNumDroppedMsg;
 
-    int connectionCloseNumDroppedMsg;
+    private WriteBufferWaterMark writeBufferWaterMark;
 
-    public WebSocketFrameHandler(HttpRequestInfo originalRequestInfo) {
+    public WebSocketFrameHandler(HttpRequestInfo originalRequestInfo, int connectionCloseNumDroppedMsg,
+            WriteBufferWaterMark writeBufferWaterMark) {
         this.originalRequestInfo = originalRequestInfo;
-        connectionCloseNumDroppedMsg = WebConfig.getInstance().getWebSocketConnectionCloseNumDroppedMsg();
+        this.connectionCloseNumDroppedMsg = connectionCloseNumDroppedMsg;
+        this.writeBufferWaterMark = writeBufferWaterMark;
     }
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         this.ctx = ctx;
         channel = ctx.channel();
-        channel.config().setWriteBufferWaterMark(WebConfig.getInstance().getWebSocketWriteBufferWaterMark());
+        channel.config().setWriteBufferWaterMark(writeBufferWaterMark);
         // Try to use an application name as provided by the client. For browsers (since overriding
         // websocket headers is not supported) this will be the browser's standard user-agent string
         String applicationName;

@@ -37,7 +37,6 @@ mkdir -p %{buildroot}/etc/init.d
 mkdir -p %{buildroot}/%{prefix}/lib/ext
 mkdir -p %{buildroot}/%{prefix}/lib/yamcs-web
 mkdir -p %{buildroot}/%{prefix}/lib/xtce
-mkdir -p %{buildroot}/%{prefix}/web/
 
 cp -a yamcs-server/lib %{buildroot}/%{prefix}/
 cp -an yamcs-client/lib %{buildroot}/%{prefix}/
@@ -82,7 +81,6 @@ fi
 %config %{prefix}/mdb
 %config %{prefix}/etc
 %{prefix}/lib
-%{prefix}/web
 %exclude %{prefix}/lib/ext
 %exclude %{prefix}/lib/xtce
 

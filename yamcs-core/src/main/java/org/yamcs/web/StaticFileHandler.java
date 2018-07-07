@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -41,18 +42,21 @@ import io.netty.handler.stream.ChunkedFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 public class StaticFileHandler extends RouteHandler {
-    static Mimetypes mimetypes;
+
+    private static Mimetypes mimetypes;
     public static final int HTTP_CACHE_SECONDS = 60;
-    private static WebConfig webConfig;
+
+    private static List<String> webRoots;
+    private static boolean zeroCopyEnabled;
 
     private static final Logger log = LoggerFactory.getLogger(StaticFileHandler.class.getName());
 
-    public static void init() throws ConfigurationException {
+    public static void init(List<String> webRoots, boolean zeroCopyEnabled) throws ConfigurationException {
         if (mimetypes != null) {
             return;
         }
-
-        webConfig = WebConfig.getInstance();
+        StaticFileHandler.webRoots = webRoots;
+        StaticFileHandler.zeroCopyEnabled = zeroCopyEnabled;
 
         try {
             mimetypes = Mimetypes.getInstance();
@@ -62,7 +66,7 @@ public class StaticFileHandler extends RouteHandler {
     }
 
     protected File locateFile(String path) {
-        for (String webRoot : webConfig.getWebRoots()) { // Stop on first match
+        for (String webRoot : webRoots) { // Stop on first match
             File file = new File(webRoot + File.separator + path);
             if (!file.isHidden() && file.exists()) {
                 return file;
@@ -82,7 +86,7 @@ public class StaticFileHandler extends RouteHandler {
         File file = locateFile(path);
 
         if (file == null) {
-            log.warn("File {} does not exist or is hidden. Searched under {}", path, webConfig.getWebRoots());
+            log.warn("File {} does not exist or is hidden. Searched under {}", path, webRoots);
             HttpRequestHandler.sendPlainTextError(ctx, req, NOT_FOUND);
             return;
         }
@@ -111,7 +115,7 @@ public class StaticFileHandler extends RouteHandler {
             }
         }
 
-        boolean zeroCopy = webConfig.isZeroCopyEnabled() && ctx.pipeline().get(SslHandler.class) == null;
+        boolean zeroCopy = zeroCopyEnabled && ctx.pipeline().get(SslHandler.class) == null;
 
         long fileLength = file.length();
 

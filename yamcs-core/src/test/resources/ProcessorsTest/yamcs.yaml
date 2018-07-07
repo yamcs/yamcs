@@ -1,5 +1,7 @@
 services:
  - class: org.yamcs.web.HttpServer
+   args:
+     port: 28090
 
 instances:
  - yproctest0
@@ -7,5 +9,3 @@ instances:
 
 incomingDir: /tmp/yamcs-incoming
 dataDir: /tmp/yamcs-data
-webConfig:
-  port: 28090

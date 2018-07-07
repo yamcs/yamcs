@@ -4,11 +4,14 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
 import org.yamcs.web.WebConfig.GpbExtension;
 import org.yamcs.web.rest.Router;
@@ -53,12 +56,17 @@ public class HttpServer extends AbstractService implements YamcsService {
     private ExtensionRegistry gpbExtensionRegistry = ExtensionRegistry.newInstance();
 
     public HttpServer() {
-        this(WebConfig.getInstance());
+        this(Collections.emptyMap());
     }
 
-    public HttpServer(WebConfig config) {
-        this.config = config;
+    public HttpServer(Map<String, Object> args) {
+        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+        if (yconf.containsKey("webConfig")) {
+            log.warn("Deprecation: Define webConfig properties as args on the HttpServer");
+            args = yconf.getMap("webConfig");
+        }
 
+        config = new WebConfig(args);
         for (GpbExtension extension : config.getGpbExtensions()) {
             try {
                 Class<?> extensionClazz = Class.forName(extension.clazz);
@@ -96,7 +104,7 @@ public class HttpServer extends AbstractService implements YamcsService {
     }
 
     public void startServer() throws InterruptedException {
-        StaticFileHandler.init();
+        StaticFileHandler.init(config.getWebRoots(), config.isZeroCopyEnabled());
         int port = config.getPort();
         bossGroup = new NioEventLoopGroup(1);
 
@@ -110,7 +118,7 @@ public class HttpServer extends AbstractService implements YamcsService {
                 .channel(NioServerSocketChannel.class)
                 .handler(new LoggingHandler(HttpServer.class, LogLevel.DEBUG))
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .childHandler(new HttpServerChannelInitializer(apiRouter));
+                .childHandler(new HttpServerChannelInitializer(apiRouter, config));
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(port)).sync();
@@ -124,10 +132,6 @@ public class HttpServer extends AbstractService implements YamcsService {
 
     public Future<?> stopServer() {
         return bossGroup.shutdownGracefully();
-    }
-
-    public WebConfig getConfig() {
-        return config;
     }
 
     public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {

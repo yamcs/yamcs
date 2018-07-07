@@ -243,7 +243,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);
         originalRequestInfo.setUser(ctx.channel().attr(CTX_USER).get());
-        ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo));
+        ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo,
+                webConfig.getWebSocketConnectionCloseNumDroppedMsg(), webConfig.getWebSocketWriteBufferWaterMark()));
 
         // Effectively trigger websocket-handler (will attempt handshake)
         ctx.fireChannelRead(req);

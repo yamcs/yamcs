@@ -18,8 +18,6 @@ import io.netty.handler.codec.http.cors.CorsConfigBuilder;
  */
 public class WebConfig {
 
-    private static WebConfig INSTANCE = new WebConfig();
-
     private int port;
     private List<String> webRoots = new ArrayList<>(2);
     private boolean zeroCopyEnabled = true;
@@ -39,7 +37,7 @@ public class WebConfig {
     // Number of dropped messages after which to close the connection
     private int webSocketConnectionCloseNumDroppedMsg = 5;
 
-    private WebConfig() {
+    public WebConfig(Map<String, Object> args) {
         YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
         CorsConfigBuilder corsb = null;
         if (yconf.containsKey("webConfig")) {
@@ -56,6 +54,7 @@ public class WebConfig {
                     webRoots.add(YConfiguration.getString(webConfig, "webRoot"));
                 }
             }
+
             if (webConfig.containsKey("cors")) {
                 Map<String, Object> ycors = YConfiguration.getMap(webConfig, "cors");
                 if (YConfiguration.isList(ycors, "allowOrigin")) {
@@ -107,11 +106,6 @@ public class WebConfig {
             webSocketWriteBufferWaterMark = new WriteBufferWaterMark(32 * 1024, 64 * 1024); // these are also default
                                                                                             // netty values
         }
-
-    }
-
-    public static WebConfig getInstance() {
-        return INSTANCE;
     }
 
     public int getPort() {
