@@ -101,8 +101,8 @@ import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtce.util.NameReference;
-import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.util.NameReference.Type;
+import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
@@ -133,8 +133,6 @@ public class V6Loader extends V6LoaderBase {
 
     final ConditionParser conditionParser = new ConditionParser(ctx);
 
-  
-
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
     final static String FORMAT_VERSION = "6.3";
     // Explicitly support these versions (i.e. load without warning)
@@ -145,7 +143,6 @@ public class V6Loader extends V6LoaderBase {
     protected SpaceSystem rootSpaceSystem;
 
     boolean enableAliasReferences = false;
-    boolean enableXtceNameRestrictions = true;
 
     public V6Loader(Map<String, Object> config, Workbook workbook) {
         this(config);
@@ -265,7 +262,7 @@ public class V6Loader extends V6LoaderBase {
                     String.format("Format version (%s) not supported by loader version (%s)", version, FORMAT_VERSION));
         }
         fileFormatVersion = version;
-        if(!hasColumn(cells, 1)) {
+        if (!hasColumn(cells, 1)) {
             throw new SpreadsheetLoadException(ctx, "No value provided for the system name");
         }
         String name = cells[1].getContents();
@@ -413,7 +410,6 @@ public class V6Loader extends V6LoaderBase {
             throw new SpreadsheetLoadException(ctx, "Ssheet does not contain required column '" + colName + "'");
         }
     }
-
 
     protected void loadParametersSheet(SpaceSystem spaceSystem, String sheetName, DataSource dataSource) {
         Sheet sheet = switchToSheet(sheetName, false);
@@ -1746,7 +1742,8 @@ public class V6Loader extends V6LoaderBase {
         if (pos.relative) {
             ae = new ArgumentEntry(pos.pos, ReferenceLocationType.previousEntry, arg);
         } else {
-            ae = new ArgumentEntry(pos.pos + ((extraOffset != -1) ? extraOffset : 0), ReferenceLocationType.containerStart, arg);
+            ae = new ArgumentEntry(pos.pos + ((extraOffset != -1) ? extraOffset : 0),
+                    ReferenceLocationType.containerStart, arg);
         }
 
         container.addEntry(ae);
@@ -2315,5 +2312,5 @@ public class V6Loader extends V6LoaderBase {
             return 1;
         }
     }
-  
+
 }
