@@ -98,11 +98,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
     public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
-    WebConfig webConfig;
+    WebSocketConfig wsConfig;
 
-    public HttpRequestHandler(Router apiRouter, WebConfig webConfig) {
+    public HttpRequestHandler(Router apiRouter, WebSocketConfig wsConfig) {
         this.apiRouter = apiRouter;
-        this.webConfig = webConfig;
+        this.wsConfig = wsConfig;
     }
 
     public static HttpAuthorizationChecker getAuthorizationChecker() {
@@ -238,13 +238,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         String webSocketPath = req.uri();
         String subprotocols = "json, protobuf";
         ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, false,
-                webConfig.getWebSocketMaxFrameLength()));
+                wsConfig.getMaxFrameLength()));
 
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);
         originalRequestInfo.setUser(ctx.channel().attr(CTX_USER).get());
         ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo,
-                webConfig.getWebSocketConnectionCloseNumDroppedMsg(), webConfig.getWebSocketWriteBufferWaterMark()));
+                wsConfig.getConnectionCloseNumDroppedMsg(), wsConfig.getWriteBufferWaterMark()));
 
         // Effectively trigger websocket-handler (will attempt handshake)
         ctx.fireChannelRead(req);
