@@ -8,7 +8,7 @@ import { Viewer } from './Viewer';
 @Component({
   selector: 'app-uss-display-viewer',
   template: `
-    <div class="wrapper">
+    <div #wrapper class="wrapper">
       <div #displayContainer style="line-height: 0"></div>
     </div>
   `,
@@ -24,10 +24,15 @@ import { Viewer } from './Viewer';
 })
 export class UssDisplayViewer implements DisplayHolder, Viewer {
 
+  @ViewChild('wrapper')
+  private wrapper: ElementRef;
+
   @ViewChild('displayContainer')
   private displayContainer: ElementRef;
 
   private objectName: string;
+
+  private zoom = 1;
 
   constructor(
     private yamcs: YamcsService,
@@ -66,6 +71,20 @@ export class UssDisplayViewer implements DisplayHolder, Viewer {
 
   public hasPendingChanges() {
     return false;
+  }
+
+  public zoomIn() {
+    this.zoom += this.zoom * 0.3;
+    this.wrapper.nativeElement.style.setProperty('zoom', String(this.zoom));
+    this.wrapper.nativeElement.style.setProperty('-moz-transform', `scale(${this.zoom})`);
+    this.wrapper.nativeElement.style.setProperty('-moz-transform-origin', '0px 0px');
+  }
+
+  public zoomOut() {
+    this.zoom -= this.zoom * 0.3;
+    this.wrapper.nativeElement.style.setProperty('zoom', String(this.zoom));
+    this.wrapper.nativeElement.style.setProperty('-moz-transform', `scale(${this.zoom})`);
+    this.wrapper.nativeElement.style.setProperty('-moz-transform-origin', '0px 0px');
   }
 
   getBaseId() { // DisplayHolder

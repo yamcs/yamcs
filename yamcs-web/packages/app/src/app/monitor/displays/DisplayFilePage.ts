@@ -16,6 +16,7 @@ import { ParameterTableViewerControls } from './ParameterTableViewerControls';
 import { ScriptViewer } from './ScriptViewer';
 import { TextViewer } from './TextViewer';
 import { UssDisplayViewer } from './UssDisplayViewer';
+import { UssDisplayViewerControls } from './UssDisplayViewerControls';
 import { Viewer } from './Viewer';
 import { ViewerControlsHost } from './ViewerControlsHost';
 import { ViewerHost } from './ViewerHost';
@@ -80,6 +81,8 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     if (this.filename.toLowerCase().endsWith('.uss')) {
       this.viewer = this.createViewer(UssDisplayViewer);
+      const controls = this.createViewerControls(UssDisplayViewerControls);
+      controls.init(this.viewer as UssDisplayViewer);
     } else if (this.filename.toLowerCase().endsWith('.opi')) {
       this.viewer = this.createViewer(OpiDisplayViewer);
     } else if (this.filename.toLowerCase().endsWith('.par')) {

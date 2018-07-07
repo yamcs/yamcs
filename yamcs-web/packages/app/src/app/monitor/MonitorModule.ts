@@ -14,6 +14,7 @@ import { ParameterTableViewerControls } from './displays/ParameterTableViewerCon
 import { ScriptViewer } from './displays/ScriptViewer';
 import { TextViewer } from './displays/TextViewer';
 import { UssDisplayViewer } from './displays/UssDisplayViewer';
+import { UssDisplayViewerControls } from './displays/UssDisplayViewerControls';
 import { ViewerControlsHost } from './displays/ViewerControlsHost';
 import { ViewerHost } from './displays/ViewerHost';
 import { CreateEventDialog } from './events/CreateEventDialog';
@@ -56,6 +57,7 @@ const viewers = [
   ScriptViewer,
   TextViewer,
   UssDisplayViewer,
+  UssDisplayViewerControls,
 ];
 
 @NgModule({
