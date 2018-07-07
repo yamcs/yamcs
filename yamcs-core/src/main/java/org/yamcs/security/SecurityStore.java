@@ -33,7 +33,19 @@ public class SecurityStore {
         YConfiguration yconf = YConfiguration.getConfiguration("security");
 
         enabled = yconf.getBoolean("enabled");
-        if (!enabled) {
+        if (enabled) {
+            if (yconf.containsKey("authModules")) {
+                for (Map<String, Object> moduleConf : yconf.<Map<String, Object>> getList("authModules")) {
+                    log.info("Loading AuthModule " + YConfiguration.getString(moduleConf, "class"));
+                    try {
+                        AuthModule authModule = YObjectLoader.loadObject(moduleConf);
+                        authModules.add(authModule);
+                    } catch (IOException e) {
+                        throw new ConfigurationException("Failed to load AuthModule", e);
+                    }
+                }
+            }
+        } else {
             log.warn("Security disabled");
             if (yconf.containsKey("unauthenticatedUser")) {
                 Map<String, Object> userProps = yconf.getMap("unauthenticatedUser");
@@ -49,17 +61,6 @@ public class SecurityStore {
             } else {
                 unauthenticatedUser = new User("admin");
                 unauthenticatedUser.setSuperuser(true);
-            }
-        }
-
-        if (yconf.containsKey("authModules")) {
-            for (Map<String, Object> moduleConf : yconf.<Map<String, Object>> getList("authModules")) {
-                try {
-                    AuthModule authModule = YObjectLoader.loadObject(moduleConf);
-                    authModules.add(authModule);
-                } catch (IOException e) {
-                    throw new ConfigurationException("Failed to load AuthModule", e);
-                }
             }
         }
 
