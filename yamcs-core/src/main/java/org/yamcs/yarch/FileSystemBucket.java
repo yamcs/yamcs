@@ -1,6 +1,7 @@
 package org.yamcs.yarch;
 
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,8 +9,10 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
@@ -37,7 +40,8 @@ public class FileSystemBucket implements Bucket {
     public List<ObjectProperties> listObjects(String prefix, Predicate<ObjectPropertiesOrBuilder> p)
             throws IOException {
         List<ObjectProperties> objects = new ArrayList<>();
-        Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+        Set<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
+        Files.walkFileTree(root, opts, Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
 
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -69,7 +73,8 @@ public class FileSystemBucket implements Bucket {
         // Verify limits
         AtomicLong size = new AtomicLong(fileExists ? -Files.size(path) : 0);
         AtomicInteger count = new AtomicInteger(fileExists ? -1 : 0);
-        Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+        Set<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
+        Files.walkFileTree(root, opts, Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 size.addAndGet(attrs.size());
