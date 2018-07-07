@@ -41,9 +41,8 @@ export class CreateDisplayDialog {
     this.filenameForm.get('name')!.setValue(`NewFile.${type}`);
     this.page = 2;
 
-    // Ensure input is rendered before focus
+    // Ensure input is rendered before select
     this.changeDetector.detectChanges();
-    // this.filenameInput.nativeElement.focus();
     this.filenameInput.nativeElement.select();
   }
 
@@ -65,8 +64,8 @@ export class CreateDisplayDialog {
       parameters: [],
     };
     const b = new Blob([JSON.stringify(display, undefined, 2)]);
-    this.yamcs.getInstanceClient()!.uploadObject('displays', fullPath, b).then(event => {
-      this.dialogRef.close(event);
+    this.yamcs.getInstanceClient()!.uploadObject('displays', fullPath, b).then(() => {
+      this.dialogRef.close(fullPath);
     });
   }
 }

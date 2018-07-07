@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { DisplayFolder, DisplaySource, Instance } from '@yamcs/client';
+import { Instance, ListObjectsOptions, ListObjectsResponse } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -18,7 +18,6 @@ export class DisplayFolderPage implements OnDestroy {
 
   instance: Instance;
 
-  currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
 
   displayedColumns = ['select', 'name', 'type', 'visibility'];
@@ -31,7 +30,7 @@ export class DisplayFolderPage implements OnDestroy {
     private dialog: MatDialog,
     private yamcs: YamcsService,
     title: Title,
-    router: Router,
+    private router: Router,
     private route: ActivatedRoute,
   ) {
     title.setTitle('Displays - Yamcs');
@@ -40,36 +39,39 @@ export class DisplayFolderPage implements OnDestroy {
     this.routerSubscription = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)
     ).subscribe(() => {
-      let path = '';
-      for (const segment of this.route.snapshot.url) {
-        path += '/' + segment.path;
-      }
-      yamcs.getInstanceClient()!.getDisplayFolder(path).then(dir => {
-        this.updateBrowsePath();
-        this.changedir(dir);
-      });
+      this.loadCurrentFolder();
     });
   }
 
-  private changedir(dir: DisplayFolder) {
+  private loadCurrentFolder() {
+    const options: ListObjectsOptions = {
+      delimiter: '/',
+    };
+    const routeSegments = this.route.snapshot.url;
+    if (routeSegments.length) {
+      options.prefix = routeSegments.map(s => s.path).join('/') + '/';
+    }
+    this.yamcs.getInstanceClient()!.listObjects('displays', options).then(dir => {
+      this.updateBrowsePath();
+      this.changedir(dir);
+    });
+  }
+
+  private changedir(dir: ListObjectsResponse) {
     this.selection.clear();
-    this.currentFolder$.next(dir);
     const items: BrowseItem[] = [];
-    for (const folder of dir.folder || []) {
+    for (const prefix of dir.prefix || []) {
       items.push({
         folder: true,
-        name: folder.name,
-        path: folder.path,
-        route: '/monitor/displays/browse' + folder.path,
+        name: prefix,
+        path: prefix,
       });
     }
-    for (const file of dir.file || []) {
+    for (const object of dir.object || []) {
       items.push({
         folder: false,
-        name: file.name,
-        path: file.path,
-        route: '/monitor/displays/files' + file.path,
-        source: file.source,
+        name: object.name,
+        path: object.name,
       });
     }
     this.dataSource.data = items;
@@ -104,24 +106,40 @@ export class DisplayFolderPage implements OnDestroy {
       }
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log(result);
+      if (result) {
+        this.router.navigateByUrl(`/monitor/displays/files/${result}?instance=${this.instance.name}`);
+      }
     });
   }
 
   deleteSelectedDisplays() {
-    if (confirm('Are you sure you want to delete the selected items?')) {
-      const promises = [];
-      for (const item of this.selection.selected) {
-        promises.push(this.yamcs.getInstanceClient()!.deleteDisplay(item.path));
+    const deletableObjects: string[] = [];
+    const findObjectPromises = [];
+    for (const item of this.selection.selected) {
+      if (item.folder) {
+        findObjectPromises.push(this.yamcs.getInstanceClient()!.listObjects('displays', {
+          prefix: item.path,
+        }).then(response => {
+          const objects = response.object || [];
+          deletableObjects.push(...objects.map(o => o.name));
+        }));
+      } else {
+        deletableObjects.push(item.path);
       }
-      Promise.all(promises).then(() => {
-        const currentFolder = this.currentFolder$.value!;
-        this.yamcs.getInstanceClient()!.getDisplayFolder(currentFolder.path).then(dir => {
-          this.updateBrowsePath();
-          this.changedir(dir);
-        });
-      });
     }
+
+    Promise.all(findObjectPromises).then(() => {
+      if (confirm(`You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`)) {
+        const deletePromises = [];
+        for (const object of deletableObjects) {
+          deletePromises.push(this.yamcs.getInstanceClient()!.deleteObject('displays', object));
+        }
+
+        Promise.all(deletePromises).then(() => {
+          this.loadCurrentFolder();
+        });
+      }
+    });
   }
 
   private updateBrowsePath() {
@@ -149,8 +167,6 @@ class BrowseItem {
   folder: boolean;
   name: string;
   path: string;
-  route: string;
-  source?: DisplaySource;
 }
 
 interface BreadCrumbItem {

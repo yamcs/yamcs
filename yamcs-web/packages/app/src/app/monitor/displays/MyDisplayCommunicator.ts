@@ -4,8 +4,7 @@ import { DisplayCommunicator } from '@yamcs/displays';
 import { YamcsService } from '../../core/services/YamcsService';
 
 /**
- * Resolves resources by fetching them from the server as
- * a static file.
+ * Resolves resources by fetching them via the Yamcs API.
  */
 export class MyDisplayCommunicator implements DisplayCommunicator {
 
@@ -21,24 +20,17 @@ export class MyDisplayCommunicator implements DisplayCommunicator {
     });
   }
 
-  resolvePath(path: string) {
-    return `${this.yamcs.yamcsClient.staticUrl}/${path}`;
+  getObjectURL(bucketName: string, objectName: string) {
+    return this.yamcs.getInstanceClient()!.getObjectURL(bucketName, objectName);
   }
 
-  retrieveText(path: string) {
-    return this.yamcs.yamcsClient.getStaticText(path);
+  async getObject(bucketName: string, objectName: string) {
+    return await this.yamcs.getInstanceClient()!.getObject(bucketName, objectName);
   }
 
-  retrieveXML(path: string) {
-    return this.yamcs.yamcsClient.getStaticXML(path);
-  }
-
-  async retrieveDisplayResource(path: string) {
-    return this.yamcs.getInstanceClient()!.getDisplay(path);
-  }
-
-  async retrieveXMLDisplayResource(path: string) {
-    const text = await this.retrieveDisplayResource(path);
+  async getXMLObject(bucketName: string, objectName: string) {
+    const response = await this.getObject(bucketName, objectName);
+    const text = await response.text();
     const xmlParser = new DOMParser();
     return xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
   }

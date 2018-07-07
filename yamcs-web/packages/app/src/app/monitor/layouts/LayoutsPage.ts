@@ -26,8 +26,8 @@ export class LayoutsPage {
     const username = authService.getUser()!.getUsername();
     yamcs.getInstanceClient()!.listObjects(`user.${username}`, {
       prefix: 'layouts',
-    }).then(objects => {
-      this.dataSource.data = objects;
+    }).then(response => {
+      this.dataSource.data = response.object || [];
     });
   }
 

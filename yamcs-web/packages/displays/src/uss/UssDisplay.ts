@@ -71,8 +71,8 @@ export class UssDisplay implements Display {
     }
 
     return Promise.all([
-      this.displayCommunicator.retrieveXMLDisplayResource(id),
-      this.displayCommunicator.retrieveXML('mcs_dqistyle.xml'),
+      this.displayCommunicator.getXMLObject('displays', id),
+      this.displayCommunicator.getXMLObject('uss', 'mcs_dqistyle.xml'),
     ]).then(results => {
       this.styleSet = new StyleSet(results[1]);
       const displayEl = results[0].getElementsByTagName('Display')[0];

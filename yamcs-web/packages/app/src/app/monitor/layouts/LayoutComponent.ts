@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { DisplayFolder } from '@yamcs/client';
+import { ListObjectsResponse } from '@yamcs/client';
 import { Coordinates, DisplayCommunicator, DisplayFrame, Layout, LayoutListener, LayoutState, LayoutStateListener } from '@yamcs/displays';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -30,7 +30,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   private displayContainerRef: ElementRef;
 
   showNavigator$: BehaviorSubject<boolean>;
-  currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
+  currentFolder$ = new BehaviorSubject<ListObjectsResponse | null>(null);
 
   private displayCommunicator: DisplayCommunicator;
   private layout: Layout;
@@ -41,7 +41,9 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
 
   ngOnInit() {
     this.showNavigator$ = new BehaviorSubject<boolean>(this.startWithOpenedNavigator);
-    this.yamcs.getInstanceClient()!.getDisplayFolder().then(folder => {
+    this.yamcs.getInstanceClient()!.listObjects('displays', {
+      delimiter: '/',
+    }).then(folder => {
       this.currentFolder$.next(folder);
     });
   }
@@ -78,7 +80,10 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   }
 
   pathChange(path: string) {
-    this.yamcs.getInstanceClient()!.getDisplayFolder(path).then(folder => {
+    this.yamcs.getInstanceClient()!.listObjects('displays', {
+      prefix: path,
+      delimiter: '/',
+    }).then(folder => {
       this.currentFolder$.next(folder);
     });
   }

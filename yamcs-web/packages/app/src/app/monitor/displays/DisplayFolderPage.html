@@ -57,16 +57,16 @@
         <th mat-header-cell *cdkHeaderCellDef style="width: 300px">Name</th>
         <td mat-cell *cdkCellDef="let item">
           <ng-container *ngIf="item.folder">
-            <a [routerLink]="item.route"
+            <a [routerLink]="'/monitor/displays/browse/' + item.path"
                [queryParams]="{instance: instance.name}">
                <mat-icon class="icon12">folder</mat-icon>
-               {{ item.name }}/</a>
+               {{ item.name | filename }}</a>
           </ng-container>
           <ng-container *ngIf="!item.folder">
-            <a [routerLink]="item.route"
-               [queryParams]="{instance: instance.name, source: item.source}">
+            <a [routerLink]="'/monitor/displays/files/' + item.path"
+               [queryParams]="{instance: instance.name}">
                 <mat-icon class="icon12">description</mat-icon>
-                {{ item.name }}</a>
+                {{ item.name | filename }}</a>
           </ng-container>
         </td>
       </ng-container>

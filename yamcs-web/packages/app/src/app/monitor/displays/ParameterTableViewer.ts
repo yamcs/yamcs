@@ -15,7 +15,7 @@ import { Viewer } from './Viewer';
 })
 export class ParameterTableViewer implements Viewer, OnDestroy {
 
-  path: string;
+  objectName: string;
 
   dataSource = new MatTableDataSource<Record>([]);
   selection = new SelectionModel<Record>(true, []);
@@ -59,17 +59,19 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     }, 1000 /* update rate */);
   }
 
-  public loadPath(path: string) {
-    this.path = path;
+  public init(objectName: string) {
+    this.objectName = objectName;
     this.instance = this.yamcs.getInstance();
-    this.yamcs.getInstanceClient()!.getDisplay(path).then(text => {
-      this.model = JSON.parse(text);
+    this.yamcs.getInstanceClient()!.getObject('displays', objectName).then(response => {
+      response.text().then(text => {
+        this.model = JSON.parse(text);
 
-      const recs = this.model.parameters.map(name => ({ name }));
-      this.dataSource.data = recs;
-      this.changeDetector.detectChanges();
+        const recs = this.model.parameters.map(name => ({ name }));
+        this.dataSource.data = recs;
+        this.changeDetector.detectChanges();
 
-      this.createOrModifySubscription();
+        this.createOrModifySubscription();
+      });
     });
   }
 
@@ -183,8 +185,10 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   }
 
   save() {
-    this.hasUnsavedChanges$.next(false);
-    return this.yamcs.getInstanceClient()!.saveDisplay(this.path, this.model);
+    const b = new Blob([JSON.stringify(this.model, undefined, 2)]);
+    return this.yamcs.getInstanceClient()!.uploadObject('displays', this.objectName, b).then(() => {
+      this.hasUnsavedChanges$.next(false);
+    });
   }
 
   ngOnDestroy() {

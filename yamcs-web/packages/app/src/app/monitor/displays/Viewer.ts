@@ -1,6 +1,6 @@
 export interface Viewer {
 
-  loadPath(path: string): void;
+  init(objectName: string): void;
 
   isFullscreenSupported(): boolean;
 

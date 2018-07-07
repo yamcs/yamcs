@@ -17,6 +17,7 @@ import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
 import { DateTimePipe } from './pipes/DateTimePipe';
+import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
@@ -107,6 +108,7 @@ const sharedComponents = [
 
 const pipes = [
   DateTimePipe,
+  FilenamePipe,
   FormatBytesPipe,
   OperatorPipe,
   UnitsPipe,

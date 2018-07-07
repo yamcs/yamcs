@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
-import { DisplayFile, DisplayFolder } from '@yamcs/client';
+import { ObjectInfo } from '@yamcs/client';
+import { DisplayFolder } from './DisplayFolder';
 
 @Component({
   selector: 'app-display-navigator',
@@ -16,7 +17,7 @@ export class DisplayNavigator implements OnChanges {
   pathChange = new EventEmitter<string>();
 
   @Output()
-  select = new EventEmitter<DisplayFile>();
+  select = new EventEmitter<ObjectInfo>();
 
   @Output()
   close = new EventEmitter<void>();
@@ -27,18 +28,18 @@ export class DisplayNavigator implements OnChanges {
     }
   }
 
-  selectFolder(folder: DisplayFolder) {
-    this.pathChange.emit(folder.path);
+  selectFolder(prefix: string) {
+    this.pathChange.emit(prefix);
   }
 
   selectParent() {
-    const currentPath = this.folder.path;
+    const currentPath = this.folder.location;
     const nameLen = this.folder.name.length + 1;
     const parentPath = currentPath.substring(0, currentPath.length - nameLen);
     this.pathChange.emit(parentPath);
   }
 
-  selectFile(file: DisplayFile) {
+  selectFile(file: ObjectInfo) {
     this.select.next(file);
   }
 }

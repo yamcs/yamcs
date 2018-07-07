@@ -27,7 +27,7 @@ export class UssDisplayViewer implements DisplayHolder, Viewer {
   @ViewChild('displayContainer')
   private displayContainer: ElementRef;
 
-  private path: string;
+  private objectName: string;
 
   constructor(
     private yamcs: YamcsService,
@@ -37,13 +37,13 @@ export class UssDisplayViewer implements DisplayHolder, Viewer {
   /**
    * Don't call before ngAfterViewInit()
    */
-  public loadPath(path: string) {
-    this.path = path;
+  public init(objectName: string) {
+    this.objectName = objectName;
 
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.router);
     const display = new UssDisplay(this, container, displayCommunicator);
-    display.parseAndDraw(this.path).then(() => {
+    display.parseAndDraw(this.objectName).then(() => {
       const ids = display!.getParameterIds();
       if (ids.length) {
         this.yamcs.getInstanceClient()!.getParameterValueUpdates({
@@ -69,7 +69,7 @@ export class UssDisplayViewer implements DisplayHolder, Viewer {
   }
 
   getBaseId() { // DisplayHolder
-    return this.path;
+    return this.objectName;
   }
 
   openDisplay(options: OpenDisplayCommandOptions) { // DisplayHolder

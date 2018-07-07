@@ -58,13 +58,17 @@ public class BucketRestHandler extends RestHandler {
         checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
 
         BucketDatabase bdb = getBucketDb(req);
-        List<BucketProperties> l = bdb.listBuckets();
-        ListBucketsResponse.Builder lbr = ListBucketsResponse.newBuilder();
-        for (BucketProperties bp : l) {
-            lbr.addBucket(BucketInfo.newBuilder().setName(bp.getName()).setSize(bp.getSize())
-                    .setNumObjects(bp.getNumObjects()).build());
+        try {
+            List<BucketProperties> l = bdb.listBuckets();
+            ListBucketsResponse.Builder lbr = ListBucketsResponse.newBuilder();
+            for (BucketProperties bp : l) {
+                lbr.addBucket(BucketInfo.newBuilder().setName(bp.getName()).setSize(bp.getSize())
+                        .setNumObjects(bp.getNumObjects()).build());
+            }
+            completeOK(req, lbr.build());
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Failed to resolve buckets", e);
         }
-        completeOK(req, lbr.build());
     }
 
     @Route(path = "/api/buckets/:instance", method = { "POST" })
@@ -74,11 +78,10 @@ public class BucketRestHandler extends RestHandler {
         CreateBucketRequest crb = req.bodyAsMessage(CreateBucketRequest.newBuilder()).build();
         verifyBucketName(crb.getName());
         BucketDatabase bdb = getBucketDb(req);
-        if (bdb.getBucket(crb.getName()) != null) {
-            throw new BadRequestException("A bucket with the name '" + crb.getName() + "' already exist");
-        }
-
         try {
+            if (bdb.getBucket(crb.getName()) != null) {
+                throw new BadRequestException("A bucket with the name '" + crb.getName() + "' already exist");
+            }
             bdb.createBucket(crb.getName());
         } catch (IOException e) {
             log.error("Error when creating bucket", e);
@@ -300,30 +303,37 @@ public class BucketRestHandler extends RestHandler {
             }
             return bdb;
         } catch (YarchException e) {
-            log.error("Error getting bucket database", e);
-            throw new InternalServerErrorException("Bucket database not available");
+            throw new InternalServerErrorException("Bucket database not available", e);
         }
     }
 
     static Bucket verifyAndGetBucket(RestRequest req) throws HttpException {
         BucketDatabase bdb = getBucketDb(req);
         String bucketName = req.getRouteParam("bucketName");
-
-        Bucket bucket = bdb.getBucket(bucketName);
-        if (bucket == null) {
-            if (bucketName.equals(getUserBucketName(req.getUser()))) {
-                try {
-                    bucket = bdb.createBucket(bucketName);
-                } catch (IOException e) {
-                    log.error("Error creating user bucket", e);
-                    throw new InternalServerErrorException("Error creating user bucket");
+        try {
+            Bucket bucket = bdb.getBucket(bucketName);
+            if (bucket == null) {
+                if (bucketName.equals(getUserBucketName(req.getUser()))) {
+                    try {
+                        bucket = bdb.createBucket(bucketName);
+                    } catch (IOException e) {
+                        throw new InternalServerErrorException("Error creating user bucket", e);
+                    }
+                } else if (bucketName.equals("displays")) {
+                    try {
+                        bucket = bdb.createBucket(bucketName);
+                    } catch (IOException e) {
+                        throw new InternalServerErrorException("Error creating displays bucket", e);
+                    }
+                } else {
+                    throw new NotFoundException(req);
                 }
-            } else {
-                throw new NotFoundException(req);
             }
-        }
 
-        return bucket;
+            return bucket;
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Error while resolving bucket", e);
+        }
     }
 
     static private void verifyBucketName(String bucketName) throws BadRequestException {

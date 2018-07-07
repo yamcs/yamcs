@@ -4,13 +4,9 @@ export interface DisplayCommunicator {
 
   triggerParameterAction(id: NamedObjectId): void;
 
-  resolvePath(path: string): string;
+  getObjectURL(bucketName: string, objectName: string): string;
 
-  retrieveText(path: string): Promise<string>;
+  getObject(bucketName: string, objectName: string): Promise<Response>;
 
-  retrieveXML(path: string): Promise<XMLDocument>;
-
-  retrieveDisplayResource(path: string): Promise<string>;
-
-  retrieveXMLDisplayResource(path: string): Promise<XMLDocument>;
+  getXMLObject(bucketName: string, objectName: string): Promise<XMLDocument>;
 }

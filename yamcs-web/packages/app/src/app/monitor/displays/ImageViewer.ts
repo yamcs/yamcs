@@ -27,9 +27,8 @@ export class ImageViewer implements Viewer {
   constructor(private yamcs: YamcsService) {
   }
 
-  public loadPath(path: string) {
-    const instance = this.yamcs.getInstance().name;
-    this.url = `${this.yamcs.yamcsClient.staticUrl}/${instance}/displays${path}`;
+  public init(objectName: string) {
+    this.url = this.yamcs.getInstanceClient()!.getObjectURL('displays', objectName);
   }
 
   public isFullscreenSupported() {

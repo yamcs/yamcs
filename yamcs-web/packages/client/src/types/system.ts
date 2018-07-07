@@ -255,6 +255,11 @@ export interface Bucket {
   numObjects: number;
 }
 
+export interface ListObjectsResponse {
+  prefix: string[];
+  object: ObjectInfo[];
+}
+
 export interface ObjectInfo {
   name: string;
   created: string;
@@ -268,4 +273,5 @@ export interface CreateBucketRequest {
 
 export interface ListObjectsOptions {
   prefix?: string;
+  delimiter?: string;
 }

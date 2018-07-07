@@ -35,20 +35,21 @@ export class ScriptViewer implements Viewer, OnDestroy {
     private changeDetector: ChangeDetectorRef,
   ) {}
 
-  public loadPath(path: string) {
-    const instance = this.yamcs.getInstance().name;
-    this.yamcs.yamcsClient.getStaticText(`${instance}/displays${path}`).then(text => {
-      this.scriptContainer.nativeElement.innerHTML = text;
-      this.editor = ace.edit(this.scriptContainer.nativeElement);
-      this.editor.setReadOnly(true);
-      this.editor.getSession().setMode('ace/mode/javascript');
-      this.changeDetector.detectChanges();
+  public init(objectName: string) {
+    this.yamcs.getInstanceClient()!.getObject('displays', objectName).then(response => {
+      response.text().then(text => {
+        this.scriptContainer.nativeElement.innerHTML = text;
+        this.editor = ace.edit(this.scriptContainer.nativeElement);
+        this.editor.setReadOnly(true);
+        this.editor.getSession().setMode('ace/mode/javascript');
+        this.changeDetector.detectChanges();
+      });
     });
 
-  this.applyTheme(this.preferenceStore.isDarkMode());
-  this.darkModeSubscription = this.preferenceStore.darkMode$.subscribe(darkMode => {
-    this.applyTheme(darkMode);
-  });
+    this.applyTheme(this.preferenceStore.isDarkMode());
+    this.darkModeSubscription = this.preferenceStore.darkMode$.subscribe(darkMode => {
+      this.applyTheme(darkMode);
+    });
   }
 
   public isFullscreenSupported() {

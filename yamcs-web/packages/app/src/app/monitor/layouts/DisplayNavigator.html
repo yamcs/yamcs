@@ -5,13 +5,13 @@
     <td class="icon" width="1"><mat-icon class="icon12">folder</mat-icon></td>
     <td>..</td>
   </tr>
-  <tr *ngFor="let subfolder of folder.folder"
+  <tr *ngFor="let subfolder of folder.prefixes"
       class="no-select"
       (click)="selectFolder(subfolder)">
     <td class="icon" width="1"><mat-icon class="icon12">folder</mat-icon></td>
-    <td style="white-space: nowrap">{{ subfolder.name }}/</td>
+    <td style="white-space: nowrap">{{ subfolder }}/</td>
   </tr>
-  <tr *ngFor="let file of folder.file"
+  <tr *ngFor="let file of folder.objects"
       class="no-select"
       (click)="selectFile(file)">
     <td class="icon" width="1"><mat-icon class="icon12">bookmark_border</mat-icon></td>

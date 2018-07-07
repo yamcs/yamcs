@@ -265,24 +265,6 @@ message BulkGetIndexRequest {
   repeated string packetname = 4;
 }
 
-message DisplayFolder {
-  optional string name = 1;
-  optional string path = 2;
-  repeated DisplayFolder folder = 3;
-  repeated DisplayFile file = 4;
-}
-
-message DisplayFile {
-  enum DisplaySource {
-    BUCKET = 0;
-    FILE_SYSTEM = 1;
-  }
-  optional string name = 1;
-  optional string path = 2;
-  optional string url = 3;
-  optional DisplaySource source = 4;
-}
-
 message CreateBucketRequest {
   optional string name = 1;
 }

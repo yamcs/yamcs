@@ -40,7 +40,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
   private viewer: Viewer;
 
-  path: string;
+  objectName: string;
   filename: string;
   folderLink: string;
 
@@ -59,15 +59,14 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     screenfull.on('change', this.fullscreenListener);
 
     const url = this.route.snapshot.url;
-    let path = '';
+    this.objectName = '';
     for (let i = 0; i < url.length; i++) {
       if (i === url.length - 1) {
         this.filename = url[i].path;
-        this.folderLink = '/monitor/displays/browse' + path;
+        this.folderLink = '/monitor/displays/browse/' + this.objectName;
       }
-      path += '/' + url[i].path;
+      this.objectName += (i > 0) ? '/' + url[i].path : url[i].path;
     }
-    this.path = path;
 
     title.setTitle(this.filename + ' - Yamcs');
 
@@ -95,7 +94,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
       this.viewer = this.createViewer(TextViewer);
     }
 
-    this.viewer.loadPath(this.path);
+    this.viewer.init(this.objectName);
     this.fullscreenSupported$.next(this.viewer.isFullscreenSupported());
   }
 

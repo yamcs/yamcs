@@ -21,11 +21,12 @@ export class TextViewer implements Viewer {
   constructor(private yamcs: YamcsService, private changeDetector: ChangeDetectorRef) {
   }
 
-  public loadPath(path: string) {
-    const instance = this.yamcs.getInstance().name;
-    this.yamcs.yamcsClient.getStaticText(`${instance}/displays${path}`).then(text => {
-      this.text = text;
-      this.changeDetector.detectChanges();
+  public init(objectName: string) {
+    this.yamcs.getInstanceClient()!.getObject('displays', objectName).then(response => {
+      response.text().then(text => {
+        this.text = text;
+        this.changeDetector.detectChanges();
+      });
     });
   }
 

@@ -24,21 +24,6 @@ export interface Value {
   booleanValue?: boolean;
 }
 
-export interface DisplayFolder {
-  name: string;
-  path: string;
-  folder?: DisplayFolder[];
-  file?: DisplayFile[];
-}
-
-export type DisplaySource = 'BUCKET' | 'FILE_SYSTEM';
-
-export interface DisplayFile {
-  name: string;
-  path: string;
-  source: DisplaySource;
-}
-
 export type EventSeverity =
   'INFO' | 'WARNING' | 'ERROR' |
   'WATCH' | 'DISTRESS' | 'CRITICAL' | 'SEVERE'
