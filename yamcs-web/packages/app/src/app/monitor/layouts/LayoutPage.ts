@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angul
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
-import { LayoutState } from '@yamcs/displays';
 import { BehaviorSubject } from 'rxjs';
 import * as screenfull from 'screenfull';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { LayoutComponent } from './LayoutComponent';
+import { LayoutState } from './LayoutState';
 
 @Component({
   templateUrl: './LayoutPage.html',

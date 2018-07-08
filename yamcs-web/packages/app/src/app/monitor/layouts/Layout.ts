@@ -1,4 +1,4 @@
-import { DisplayCommunicator } from './DisplayCommunicator';
+import { DisplayCommunicator } from '@yamcs/displays';
 import { Coordinates, DisplayFrame } from './DisplayFrame';
 import { FrameState, LayoutState } from './LayoutState';
 

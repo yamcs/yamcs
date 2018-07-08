@@ -2,9 +2,9 @@ import { Component, Inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Router } from '@angular/router';
-import { LayoutState } from '@yamcs/displays';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { LayoutState } from './LayoutState';
 
 @Component({
   selector: 'app-create-layout-dialog',

@@ -1,11 +1,14 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { ListObjectsOptions } from '@yamcs/client';
-import { Coordinates, DisplayCommunicator, DisplayFrame, Layout, LayoutListener, LayoutState, LayoutStateListener } from '@yamcs/displays';
+import { DisplayCommunicator } from '@yamcs/displays';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
 import { DisplayFolder } from './DisplayFolder';
+import { Coordinates, DisplayFrame } from './DisplayFrame';
+import { Layout, LayoutListener, LayoutStateListener } from './Layout';
+import { LayoutState } from './LayoutState';
 
 @Component({
   selector: 'app-layout-component',

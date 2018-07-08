@@ -1,13 +1,13 @@
-import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
+import resolve from 'rollup-plugin-node-resolve';
+import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
-import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 
 export default {
   input: 'src/index.ts',
   output: [
-    { file: 'dist/yamcs-client.umd.js', name: 'yamcs-client', format: 'umd', sourcemap: true },
+    { file: 'dist/yamcs-client.umd.js', name: 'yamcsClient', format: 'umd', sourcemap: true },
     { file: 'dist/yamcs-client.es5.js', format: 'es', sourcemap: true },
   ],
   watch: {

@@ -1,10 +1,6 @@
 import { NamedObjectId, ParameterValue } from '@yamcs/client';
-import { Display } from './Display';
-import { DisplayHolder } from './DisplayHolder';
+import { Display, DisplayHolder, OpenDisplayCommandOptions, OpiDisplay, UssDisplay } from '@yamcs/displays';
 import { Layout } from './Layout';
-import { OpenDisplayCommandOptions } from './OpenDisplayCommandOptions';
-import { OpiDisplay } from './opi/OpiDisplay';
-import { UssDisplay } from './uss/UssDisplay';
 
 export interface Coordinates {
   x: number;
