@@ -53,7 +53,6 @@ export class DisplayFolderPage implements OnDestroy {
     if (routeSegments.length) {
       options.prefix = routeSegments.map(s => s.path).join('/') + '/';
     }
-    console.log('cc', options);
     this.yamcs.getInstanceClient()!.listObjects('displays', options).then(dir => {
       this.updateBrowsePath();
       this.changedir(dir);

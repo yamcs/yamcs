@@ -1,5 +1,6 @@
 <div class="panel-content">
   <table mat-table
+         *ngIf="dataSource.data.length; else empty"
          [dataSource]="dataSource"
          class="ya-data-table"
          [class.paused]="paused$ | async">
@@ -70,10 +71,10 @@
     <ng-container cdkColumnDef="actions">
       <th mat-header-cell *cdkHeaderCellDef></th>
       <td mat-cell *cdkCellDef="let row; let i = index">
-        <button mat-button (click)="moveDown(i)">
+        <button mat-button (click)="moveDown(i); $event.stopPropagation()">
           <mat-icon>keyboard_arrow_down</mat-icon>
         </button>
-        <button mat-button (click)="moveUp(i)">
+        <button mat-button (click)="moveUp(i); $event.stopPropagation()">
           <mat-icon>keyboard_arrow_up</mat-icon>
         </button>
       </td>
@@ -85,4 +86,16 @@
         [class.selected]="selection.isSelected(row)"
         (click)="toggleOne(row)"></tr>
   </table>
+
+  <ng-template #empty>
+    <app-empty-message>
+      <div style="text-align: left">
+        <p>
+          This file is empty.
+          <br>Start by
+          <a class="ya-link" style="cursor: pointer" (click)="showAddParameterDialog()">adding a parameter</a>.
+        </p>
+      </div>
+    </app-empty-message>
+  </ng-template>
 </div>

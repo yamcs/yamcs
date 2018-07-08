@@ -1,9 +1,10 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { MatTableDataSource } from '@angular/material';
+import { MatDialog, MatTableDataSource } from '@angular/material';
 import { Instance, ParameterValue } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
+import { SelectParameterDialog } from '../../mdb/parameters/SelectParameterDialog';
 import { ParameterTable } from './ParameterTableModel';
 import { Viewer } from './Viewer';
 
@@ -45,7 +46,11 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   public model: ParameterTable;
 
-  constructor(private yamcs: YamcsService, private changeDetector: ChangeDetectorRef) {
+  constructor(
+    private yamcs: YamcsService,
+    private changeDetector: ChangeDetectorRef,
+    private dialog: MatDialog,
+  ) {
     this.dataSynchronizer = window.setInterval(() => {
       if (this.dirty && !this.paused$.value) {
         const data = this.dataSource.data;
@@ -105,7 +110,10 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     this.model.parameters = this.dataSource.data.map(rec => rec.name);
     this.hasUnsavedChanges$.next(true);
 
+    // The 'data' property uses a setter that triggers a refresh...
+    this.dataSource.data = this.dataSource.data;
     this.changeDetector.detectChanges();
+
     this.createOrModifySubscription();
   }
 
@@ -146,6 +154,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
       this.hasUnsavedChanges$.next(true);
     }
     this.selection.clear();
+    this.changeDetector.detectChanges();
   }
 
   public isFullscreenSupported() {
@@ -188,6 +197,21 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     const b = new Blob([JSON.stringify(this.model, undefined, 2)]);
     return this.yamcs.getInstanceClient()!.uploadObject('displays', this.objectName, b).then(() => {
       this.hasUnsavedChanges$.next(false);
+    });
+  }
+
+  showAddParameterDialog() {
+    const dialogRef = this.dialog.open(SelectParameterDialog, {
+      width: '500px',
+      data: {
+        okLabel: 'Add',
+        exclude: this.getParameterNames(),
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.addParameter(result);
+      }
     });
   }
 
