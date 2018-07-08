@@ -92,10 +92,12 @@ export class UssDisplayViewer implements DisplayHolder, Viewer {
   }
 
   openDisplay(options: OpenDisplayCommandOptions) { // DisplayHolder
-    // TODO (called via e.g. NavigationButton)
+    const instance = this.yamcs.getInstance().name;
+    this.router.navigateByUrl(`/monitor/displays/files/${options.target}?instance=${instance}`);
   }
 
   closeDisplay() { // DisplayHolder
-    // NOP
+    const instance = this.yamcs.getInstance().name;
+    this.router.navigateByUrl(`monitor/displays/browse?instance=${instance}`);
   }
 }

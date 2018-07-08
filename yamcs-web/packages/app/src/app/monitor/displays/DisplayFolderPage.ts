@@ -25,7 +25,7 @@ export class DisplayFolderPage implements OnDestroy {
   dataSource = new MatTableDataSource<BrowseItem>([]);
   selection = new SelectionModel<BrowseItem>(true, []);
 
-  routerSubscription: Subscription;
+  private routerSubscription: Subscription;
 
   constructor(
     private dialog: MatDialog,

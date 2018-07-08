@@ -1,12 +1,13 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ComponentFactoryResolver, ElementRef, OnDestroy, Type, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
 import * as ace from 'brace';
 import 'brace/mode/javascript';
 import 'brace/theme/eclipse';
 import 'brace/theme/twilight';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import * as screenfull from 'screenfull';
 import { YamcsService } from '../../core/services/YamcsService';
 import { ImageViewer } from './ImageViewer';
@@ -49,16 +50,35 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   fullscreen$ = new BehaviorSubject<boolean>(false);
   fullscreenListener: () => void;
 
+  private routerSubscription: Subscription;
+
   constructor(
     yamcs: YamcsService,
     private route: ActivatedRoute,
+    router: Router,
     private componentFactoryResolver: ComponentFactoryResolver,
-    title: Title,
+    private title: Title,
   ) {
     this.instance = yamcs.getInstance();
     this.fullscreenListener = () => this.fullscreen$.next(screenfull.isFullscreen);
     screenfull.on('change', this.fullscreenListener);
 
+    let first = true;
+    this.routerSubscription = router.events.pipe(
+      filter(evt => evt instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.loadFile(!first);
+      first = false;
+    });
+
+    // Preload ACE editor (not done in ViewerHost, because ACE does not seem to work well
+    // when inialized from an entryComponent)
+    if (!!ace) { // Just some code that hopefully does not get treeshaked
+      return;
+    }
+  }
+
+  private loadFile(reloadViewer = false) {
     const url = this.route.snapshot.url;
     this.objectName = '';
     for (let i = 0; i < url.length; i++) {
@@ -69,12 +89,10 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
       this.objectName += (i > 0) ? '/' + url[i].path : url[i].path;
     }
 
-    title.setTitle(this.filename + ' - Yamcs');
+    this.title.setTitle(this.filename + ' - Yamcs');
 
-    // Preload ACE editor (not done in ViewerHost, because ACE does not seem to work well
-    // when inialized from an entryComponent)
-    if (!!ace) { // Just some code that hopefully does not get treeshaked
-      return;
+    if (reloadViewer) {
+      this.ngAfterViewInit();
     }
   }
 
@@ -136,5 +154,8 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     screenfull.off('change', this.fullscreenListener);
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
   }
 }
