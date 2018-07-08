@@ -51,7 +51,7 @@ public class BucketRestHandler extends RestHandler {
     static final int MAX_METADATA_SIZE = 16 * 1024;
 
     static final Pattern BUCKET_NAME_REGEXP = Pattern.compile("\\w+");
-    static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[\\w\\-\\./]+");
+    static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[ \\w\\s\\-\\./]+");
 
     @Route(path = "/api/buckets/:instance", method = "GET")
     public void listBuckets(RestRequest req) throws HttpException {
