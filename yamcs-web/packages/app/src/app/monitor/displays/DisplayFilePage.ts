@@ -63,12 +63,11 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     this.fullscreenListener = () => this.fullscreen$.next(screenfull.isFullscreen);
     screenfull.on('change', this.fullscreenListener);
 
-    let first = true;
+    this.loadFile();
     this.routerSubscription = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)
     ).subscribe(() => {
-      this.loadFile(!first);
-      first = false;
+      this.loadFile(false);
     });
 
     // Preload ACE editor (not done in ViewerHost, because ACE does not seem to work well

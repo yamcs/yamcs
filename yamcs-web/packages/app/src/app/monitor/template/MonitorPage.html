@@ -1,4 +1,4 @@
-<mat-sidenav-container class="mat-typography">
+<mat-sidenav-container class="mat-typography" *ngIf="instance$ | async as instance">
   <mat-sidenav mode="side" opened="true">
     <mat-toolbar class="module-title">
       <mat-toolbar-row>
