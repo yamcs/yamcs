@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ListObjectsOptions } from '@yamcs/client';
 import { DisplayCommunicator } from '@yamcs/displays';
@@ -6,8 +6,10 @@ import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
 import { DisplayFolder } from './DisplayFolder';
-import { Coordinates, DisplayFrame } from './DisplayFrame';
+import { Coordinates, Frame } from './Frame';
+import { FrameHost } from './FrameHost';
 import { FrameState, LayoutState } from './LayoutState';
+
 
 @Component({
   selector: 'app-layout',
@@ -32,13 +34,13 @@ export class Layout implements OnInit, OnDestroy {
   @ViewChild('scrollPane')
   private scrollPaneRef: ElementRef;
 
+  @ViewChild(FrameHost)
+  private frameHost: FrameHost;
+
   showNavigator$: BehaviorSubject<boolean>;
   currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
 
-  // Sorted by depth (back -> front)
-  frames: DisplayFrame[] = [];
-
-  framesById = new Map<string, DisplayFrame>();
+  private componentsById = new Map<string, ComponentRef<Frame>>();
 
   private synchronizer: number;
 
@@ -49,7 +51,11 @@ export class Layout implements OnInit, OnDestroy {
 
   readonly displayCommunicator: DisplayCommunicator;
 
-  constructor(private yamcs: YamcsService, router: Router) {
+  constructor(
+    private yamcs: YamcsService,
+    private componentFactoryResolver: ComponentFactoryResolver,
+    router: Router,
+  ) {
     this.displayCommunicator = new MyDisplayCommunicator(yamcs, router);
   }
 
@@ -66,9 +72,9 @@ export class Layout implements OnInit, OnDestroy {
     });
 
     this.synchronizer = window.setInterval(() => {
-      for (const frame of this.frames) {
-        frame.syncDisplay();
-      }
+      this.componentsById.forEach(component => {
+        component.instance.syncDisplay();
+      });
     }, this.updateRate);
 
     if (this.layoutState) {
@@ -86,9 +92,8 @@ export class Layout implements OnInit, OnDestroy {
   }
 
   openDisplay(id: string, coordinates?: Coordinates): Promise<void> {
-    const existingFrame = this.getDisplayFrame(id);
-    if (existingFrame) {
-      this.bringToFront(existingFrame);
+    if (this.componentsById.has(id)) {
+      this.bringToFront(id);
     } else {
       return this.createDisplayFrame(id, coordinates);
     }
@@ -116,13 +121,17 @@ export class Layout implements OnInit, OnDestroy {
   }
 
   createDisplayFrame(id: string, coordinates: Coordinates = { x: 20, y: 20 }) {
-    if (this.framesById.has(id)) {
+    if (this.componentsById.has(id)) {
       throw new Error(`Layout already contains a frame with id ${id}`);
     }
-    const targetEl = this.scrollPaneRef.nativeElement;
-    const frame = new DisplayFrame(id, targetEl, this, coordinates);
-    this.frames.push(frame);
-    this.framesById.set(id, frame);
+
+    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(Frame);
+    const viewContainerRef = this.frameHost.viewContainerRef;
+    const componentRef = viewContainerRef.createComponent(componentFactory);
+    this.componentsById.set(id, componentRef);
+
+    const frame = componentRef.instance;
+    frame.init(id, this, coordinates);
     return frame.loadAsync().then(() => {
       const ids = frame.getParameterIds();
       if (ids.length) {
@@ -147,8 +156,8 @@ export class Layout implements OnInit, OnDestroy {
    */
   cascadeFrames() {
     let pos = 20;
-    for (const frame of this.frames) {
-      frame.setPosition(pos, pos);
+    for (const component of this.getOrderedComponents()) {
+      component.instance.setPosition(pos, pos);
       pos += 20;
     }
     this.fireStateChange();
@@ -159,13 +168,16 @@ export class Layout implements OnInit, OnDestroy {
    * Frames are scaled as needed.
    */
   tileFrames() {
+    const components = this.getOrderedComponents();
+
     // Determine grid size
-    const sqrt = Math.floor(Math.sqrt(this.frames.length));
+    const len = components.length;
+    const sqrt = Math.floor(Math.sqrt(len));
     let rows = sqrt;
     let cols = sqrt;
-    if (rows * cols < this.frames.length) {
+    if (rows * cols < len) {
       cols++;
-      if (rows * cols < this.frames.length) {
+      if (rows * cols < len) {
         rows++;
       }
     }
@@ -178,8 +190,9 @@ export class Layout implements OnInit, OnDestroy {
     let x = gutter;
     let y = gutter;
     for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols && ((i * cols) + j < this.frames.length); j++) {
-        const frame = this.frames[(i * cols) + j];
+      for (let j = 0; j < cols && ((i * cols) + j < len); j++) {
+        const componentRef = components[(i * cols) + j];
+        const frame = componentRef.instance;
         frame.setPosition(x, y);
         frame.setDimension(w, h - frame.titleBarHeight);
         x += w + gutter;
@@ -190,12 +203,11 @@ export class Layout implements OnInit, OnDestroy {
     this.fireStateChange();
   }
 
-  hasDisplayFrame(id: string) {
-    return this.framesById.has(id);
-  }
-
   getDisplayFrame(id: string) {
-    return this.framesById.get(id);
+    const component = this.componentsById.get(id);
+    if (component) {
+      return component.instance;
+    }
   }
 
   fireStateChange() {
@@ -203,46 +215,71 @@ export class Layout implements OnInit, OnDestroy {
     this.stateChange.emit(state);
   }
 
-  clear() {
-    const framesCopy = [...this.frames];
-    for (const frame of framesCopy) {
-      this.closeDisplayFrame(frame);
-    }
-  }
-
   /**
    * Returns a JSON structure describing the current layout contents
    */
   getLayoutState(): LayoutState {
     const frameStates: FrameState[] = [];
-    for (const frame of this.frames) { // Keep front-to-back order
+    for (const componentRef of this.getOrderedComponents()) {
+      const frame = componentRef.instance;
       frameStates.push({ id: frame.getBaseId(), ...frame.getCoordinates() });
     }
     return { frames: frameStates };
   }
 
-  closeDisplayFrame(frame: DisplayFrame) {
-    // TODO unsubscribe
-    const idx = this.frames.indexOf(frame);
-    this.frames.splice(idx, 1);
-    this.framesById.forEach((other, id) => {
-      if (frame === other) {
-        this.framesById.delete(id);
+  private getOrderedComponents() {
+    // Order is defined by the viewContainer (back-to-front)
+    const components: ComponentRef<Frame>[] = [];
+    const viewContainerRef = this.frameHost.viewContainerRef;
+    for (let i = 0; i < viewContainerRef.length; i++) {
+      const viewRef = viewContainerRef.get(i)!;
+      const componentRef = this.findComponentForViewRef(viewRef)!;
+      components.push(componentRef);
+    }
+    return components;
+  }
+
+  private findComponentForViewRef(viewRef: ViewRef) {
+    const viewContainerRef = this.frameHost.viewContainerRef;
+    for (const component of Array.from(this.componentsById.values())) {
+      // These viewRefs cannot be directly compared (different instanstiations)
+      // So use their index in the viewContainer instead.
+      const idx1 = viewContainerRef.indexOf(component.hostView);
+      const idx2 = viewContainerRef.indexOf(viewRef);
+      if (idx1 === idx2) {
+        return component;
       }
-    });
-    const targetEl = this.scrollPaneRef.nativeElement;
-    const frameEl = targetEl.children[idx];
-    targetEl.removeChild(frameEl);
+    }
+  }
+
+  clear() {
+    this.componentsById.clear();
+    const viewContainerRef = this.frameHost.viewContainerRef;
+    viewContainerRef.clear();
     this.fireStateChange();
   }
 
-  bringToFront(frame: DisplayFrame) {
-    const idx = this.frames.indexOf(frame);
-    const targetEl = this.scrollPaneRef.nativeElement;
-    if (0 <= idx && idx < this.frames.length - 1) {
-      this.frames.push(this.frames.splice(idx, 1)[0]);
-      const frameEl = targetEl.children[idx];
-      targetEl.appendChild(frameEl);
+  closeDisplayFrame(id: string) {
+    // TODO unsubscribe
+
+    const component = this.componentsById.get(id);
+    if (component) {
+      const viewContainerRef = this.frameHost.viewContainerRef;
+      const idx = viewContainerRef.indexOf(component.hostView);
+      viewContainerRef.remove(idx);
+      this.componentsById.delete(id);
+    }
+
+    this.fireStateChange();
+  }
+
+  bringToFront(id: string) {
+    const component = this.componentsById.get(id);
+    if (component) {
+      const viewContainerRef = this.frameHost.viewContainerRef;
+      const idx = viewContainerRef.indexOf(component.hostView);
+      viewContainerRef.detach(idx);
+      viewContainerRef.insert(component.hostView);
       this.fireStateChange();
     }
   }

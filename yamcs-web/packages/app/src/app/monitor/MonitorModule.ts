@@ -23,6 +23,8 @@ import { EventSeverity } from './events/EventSeverity';
 import { PageContentHost } from './ext/PageContentHost';
 import { CreateLayoutDialog } from './layouts/CreateLayoutDialog';
 import { DisplayNavigator } from './layouts/DisplayNavigator';
+import { Frame } from './layouts/Frame';
+import { FrameHost } from './layouts/FrameHost';
 import { Layout } from './layouts/Layout';
 import { RenameLayoutDialog } from './layouts/RenameLayoutDialog';
 import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
@@ -48,6 +50,7 @@ const pipes = [
 ];
 
 const directives = [
+  FrameHost,
   PageContentHost,
   ViewerControlsHost,
   ViewerHost,
@@ -78,6 +81,7 @@ const viewers = [
     viewers,
     AlarmDetail,
     DisplayNavigator,
+    Frame,
     EventSeverity,
     Layout,
     MonitorPageTemplate,
@@ -90,6 +94,7 @@ const viewers = [
   entryComponents: [
     dialogComponents,
     viewers,
+    Frame,
     TimelineTooltip,
   ]
 })
