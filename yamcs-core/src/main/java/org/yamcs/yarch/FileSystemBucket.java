@@ -105,7 +105,9 @@ public class FileSystemBucket implements Bucket {
                     "Maximum number of objects in the bucket " + newCount + " exceeded");
         }
 
-        Files.createDirectories(path.getParent());
+        if (!Files.exists(path.getParent())) { // Check to avoid error when the parent is a symlink
+            Files.createDirectories(path.getParent());
+        }
         Files.write(path, objectData);
     }
 
