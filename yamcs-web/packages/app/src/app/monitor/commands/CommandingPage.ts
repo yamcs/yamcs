@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { BehaviorSubject } from 'rxjs';
 import { CommandHistoryEntry, Instance } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CommandHistoryDataSource } from './CommandHistoryDataSource';
 
@@ -29,7 +29,7 @@ export class CommandingPage implements OnInit {
   dataSource: CommandHistoryDataSource;
 
   constructor(private yamcs: YamcsService, title: Title) {
-    title.setTitle('Commands - Yamcs');
+    title.setTitle('Commanding - Yamcs');
     this.instance = yamcs.getInstance();
   }
 

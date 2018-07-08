@@ -41,7 +41,7 @@ const routes: Routes = [
         component: ArchivePage,
       },
       {
-        path: 'commands',
+        path: 'commanding',
         component: CommandingPage,
       },
       {
