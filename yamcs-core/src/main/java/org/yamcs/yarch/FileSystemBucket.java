@@ -25,6 +25,7 @@ public class FileSystemBucket implements Bucket {
 
     private Path root;
     private Mimetypes mimetypes;
+    private boolean includeHidden = false;
 
     public FileSystemBucket(Path root) throws IOException {
         this.root = root;
@@ -46,13 +47,23 @@ public class FileSystemBucket implements Bucket {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 String objectName = root.relativize(file).toString();
-                if (prefix == null || objectName.startsWith(prefix)) {
-                    ObjectProperties props = toObjectProperties(objectName, file, attrs);
-                    if (p.test(props)) {
-                        objects.add(props);
+                if ((prefix == null || objectName.startsWith(prefix))) {
+                    if (includeHidden || !Files.isHidden(file)) {
+                        ObjectProperties props = toObjectProperties(objectName, file, attrs);
+                        if (p.test(props)) {
+                            objects.add(props);
+                        }
                     }
                 }
                 return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                if (includeHidden || !Files.isHidden(dir)) {
+                    return FileVisitResult.CONTINUE;
+                }
+                return FileVisitResult.SKIP_SUBTREE;
             }
         });
 
@@ -94,6 +105,7 @@ public class FileSystemBucket implements Bucket {
                     "Maximum number of objects in the bucket " + newCount + " exceeded");
         }
 
+        Files.createDirectories(path.getParent());
         Files.write(path, objectData);
     }
 

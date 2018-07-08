@@ -67,7 +67,7 @@ public class FileSystemBucketDatabase implements BucketDatabase {
         List<BucketProperties> props = new ArrayList<>();
         for (Path file : files) {
             BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
-            if (attrs.isDirectory()) {
+            if (attrs.isDirectory() && !Files.isHidden(file)) {
                 BucketProperties.Builder b = BucketProperties.newBuilder();
                 b.setName(file.getFileName().toString());
                 b.setCreated(attrs.creationTime().toMillis());
