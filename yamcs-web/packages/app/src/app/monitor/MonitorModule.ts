@@ -23,7 +23,7 @@ import { EventSeverity } from './events/EventSeverity';
 import { PageContentHost } from './ext/PageContentHost';
 import { CreateLayoutDialog } from './layouts/CreateLayoutDialog';
 import { DisplayNavigator } from './layouts/DisplayNavigator';
-import { LayoutComponent } from './layouts/LayoutComponent';
+import { Layout } from './layouts/Layout';
 import { RenameLayoutDialog } from './layouts/RenameLayoutDialog';
 import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
 import { DisplayTypePipe } from './pipes/DisplayTypePipe';
@@ -79,7 +79,7 @@ const viewers = [
     AlarmDetail,
     DisplayNavigator,
     EventSeverity,
-    LayoutComponent,
+    Layout,
     MonitorPageTemplate,
     TimelineTooltip,
   ],

@@ -1,66 +1,142 @@
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+import { ListObjectsOptions } from '@yamcs/client';
 import { DisplayCommunicator } from '@yamcs/displays';
+import { BehaviorSubject } from 'rxjs';
+import { YamcsService } from '../../core/services/YamcsService';
+import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
+import { DisplayFolder } from './DisplayFolder';
 import { Coordinates, DisplayFrame } from './DisplayFrame';
 import { FrameState, LayoutState } from './LayoutState';
 
-export interface LayoutListener {
+@Component({
+  selector: 'app-layout',
+  templateUrl: './Layout.html',
+  styleUrls: ['./Layout.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class Layout implements OnInit, OnDestroy {
 
-  onDisplayFrameOpen(frame: DisplayFrame): void;
+  @ViewChild('wrapper')
+  public wrapperRef: ElementRef;
 
-  onDisplayFrameClose(frame: DisplayFrame): void;
-}
+  @Input()
+  startWithOpenedNavigator = true;
 
-export interface LayoutStateListener {
+  @Input()
+  layoutState: LayoutState = { frames: [] };
 
-  onStateChange(state: LayoutState): void;
-}
+  @Output()
+  stateChange = new EventEmitter<LayoutState>();
 
-export class Layout {
+  @ViewChild('scrollPane')
+  private scrollPaneRef: ElementRef;
 
-  scrollPane: HTMLDivElement;
+  showNavigator$: BehaviorSubject<boolean>;
+  currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
 
   // Sorted by depth (back -> front)
   frames: DisplayFrame[] = [];
 
   framesById = new Map<string, DisplayFrame>();
 
-  synchronizer: number;
-
-  layoutListeners = new Set<LayoutListener>();
-  layoutStateListeners = new Set<LayoutStateListener>();
+  private synchronizer: number;
 
   /**
    * Limit client-side update to this amount of milliseconds.
    */
   private updateRate = 500;
 
-  constructor(
-    private targetEl: HTMLDivElement,
-    readonly displayCommunicator: DisplayCommunicator,
-  ) {
-    this.scrollPane = document.createElement('div');
-    this.scrollPane.style.setProperty('position', 'absolute');
-    this.scrollPane.style.setProperty('width', '100%');
-    this.scrollPane.style.setProperty('height', '100%');
-    this.scrollPane.style.setProperty('overflow', 'scroll');
-    this.targetEl.appendChild(this.scrollPane);
+  readonly displayCommunicator: DisplayCommunicator;
+
+  constructor(private yamcs: YamcsService, router: Router) {
+    this.displayCommunicator = new MyDisplayCommunicator(yamcs, router);
+  }
+
+  ngOnInit() {
+    this.showNavigator$ = new BehaviorSubject<boolean>(this.startWithOpenedNavigator);
+    this.yamcs.getInstanceClient()!.listObjects('displays', {
+      delimiter: '/',
+    }).then(response => {
+      this.currentFolder$.next({
+        location: '',
+        prefixes: response.prefix || [],
+        objects: response.object || [],
+      });
+    });
 
     this.synchronizer = window.setInterval(() => {
       for (const frame of this.frames) {
         frame.syncDisplay();
       }
     }, this.updateRate);
-    // TODO? window.clearInterval(this.synchronizer);
+
+    if (this.layoutState) {
+      const openPromises = [];
+      for (const frameState of this.layoutState.frames) {
+        openPromises.push(this.openDisplay(frameState.id, {
+          x: frameState.x,
+          y: frameState.y,
+          width: frameState.width,
+          height: frameState.height,
+        }));
+      }
+      return Promise.all(openPromises);
+    }
+  }
+
+  openDisplay(id: string, coordinates?: Coordinates): Promise<void> {
+    const existingFrame = this.getDisplayFrame(id);
+    if (existingFrame) {
+      this.bringToFront(existingFrame);
+    } else {
+      return this.createDisplayFrame(id, coordinates);
+    }
+    return Promise.resolve();
+  }
+
+  prefixChange(path: string) {
+    const options: ListObjectsOptions = {
+      delimiter: '/',
+    };
+    if (path) {
+      options.prefix = path;
+    }
+    this.yamcs.getInstanceClient()!.listObjects('displays', options).then(response => {
+      this.currentFolder$.next({
+        location: path,
+        prefixes: response.prefix || [],
+        objects: response.object || [],
+      });
+    });
+  }
+
+  toggleNavigator() {
+    this.showNavigator$.next(!this.showNavigator$.getValue());
   }
 
   createDisplayFrame(id: string, coordinates: Coordinates = { x: 20, y: 20 }) {
     if (this.framesById.has(id)) {
       throw new Error(`Layout already contains a frame with id ${id}`);
     }
-    const frame = new DisplayFrame(id, this.scrollPane, this, coordinates);
+    const targetEl = this.scrollPaneRef.nativeElement;
+    const frame = new DisplayFrame(id, targetEl, this, coordinates);
     this.frames.push(frame);
     this.framesById.set(id, frame);
     return frame.loadAsync().then(() => {
-      this.layoutListeners.forEach(l => l.onDisplayFrameOpen(frame));
+      const ids = frame.getParameterIds();
+      if (ids.length) {
+        this.yamcs.getInstanceClient()!.getParameterValueUpdates({
+          id: ids,
+          abortOnInvalid: false,
+          sendFromCache: true,
+          updateOnExpiration: true,
+        }).then(res => {
+          res.parameterValues$.subscribe(pvals => {
+            frame.processParameterValues(pvals);
+          });
+        });
+      }
       this.fireStateChange();
     });
   }
@@ -96,8 +172,9 @@ export class Layout {
 
     const gutter = 20;
     // clientWidth excludes size of scrollbars
-    const w = (this.scrollPane.clientWidth - gutter - (cols * gutter)) / cols;
-    const h = (this.scrollPane.clientHeight - gutter - (rows * gutter)) / rows;
+    const targetEl = this.scrollPaneRef.nativeElement;
+    const w = (targetEl.clientWidth - gutter - (cols * gutter)) / cols;
+    const h = (targetEl.clientHeight - gutter - (rows * gutter)) / rows;
     let x = gutter;
     let y = gutter;
     for (let i = 0; i < rows; i++) {
@@ -123,7 +200,7 @@ export class Layout {
 
   fireStateChange() {
     const state = this.getLayoutState();
-    this.layoutStateListeners.forEach(l => l.onStateChange(state));
+    this.stateChange.emit(state);
   }
 
   clear() {
@@ -145,7 +222,7 @@ export class Layout {
   }
 
   closeDisplayFrame(frame: DisplayFrame) {
-    this.layoutListeners.forEach(l => l.onDisplayFrameClose(frame));
+    // TODO unsubscribe
     const idx = this.frames.indexOf(frame);
     this.frames.splice(idx, 1);
     this.framesById.forEach((other, id) => {
@@ -153,18 +230,24 @@ export class Layout {
         this.framesById.delete(id);
       }
     });
-    const frameEl = this.scrollPane.children[idx];
-    this.scrollPane.removeChild(frameEl);
+    const targetEl = this.scrollPaneRef.nativeElement;
+    const frameEl = targetEl.children[idx];
+    targetEl.removeChild(frameEl);
     this.fireStateChange();
   }
 
   bringToFront(frame: DisplayFrame) {
     const idx = this.frames.indexOf(frame);
+    const targetEl = this.scrollPaneRef.nativeElement;
     if (0 <= idx && idx < this.frames.length - 1) {
       this.frames.push(this.frames.splice(idx, 1)[0]);
-      const frameEl = this.scrollPane.children[idx];
-      this.scrollPane.appendChild(frameEl);
+      const frameEl = targetEl.children[idx];
+      targetEl.appendChild(frameEl);
       this.fireStateChange();
     }
+  }
+
+  ngOnDestroy() {
+    window.clearInterval(this.synchronizer);
   }
 }

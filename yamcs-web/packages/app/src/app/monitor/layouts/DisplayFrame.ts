@@ -74,7 +74,7 @@ export class DisplayFrame implements DisplayHolder {
     this.container.appendChild(this.frameActions);
 
     this.closeButton = document.createElement('span');
-    this.closeButton.textContent = '⨉';
+    this.closeButton.textContent = 'x';
     this.frameActions.appendChild(this.closeButton);
 
     this.frameContent = document.createElement('div');
