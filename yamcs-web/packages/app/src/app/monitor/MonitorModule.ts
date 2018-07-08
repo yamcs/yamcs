@@ -11,6 +11,7 @@ import { ImageViewer } from './displays/ImageViewer';
 import { OpiDisplayViewer } from './displays/OpiDisplayViewer';
 import { ParameterTableViewer } from './displays/ParameterTableViewer';
 import { ParameterTableViewerControls } from './displays/ParameterTableViewerControls';
+import { RenameDisplayDialog } from './displays/RenameDisplayDialog';
 import { ScriptViewer } from './displays/ScriptViewer';
 import { TextViewer } from './displays/TextViewer';
 import { UssDisplayViewer } from './displays/UssDisplayViewer';
@@ -20,9 +21,10 @@ import { ViewerHost } from './displays/ViewerHost';
 import { CreateEventDialog } from './events/CreateEventDialog';
 import { EventSeverity } from './events/EventSeverity';
 import { PageContentHost } from './ext/PageContentHost';
+import { CreateLayoutDialog } from './layouts/CreateLayoutDialog';
 import { DisplayNavigator } from './layouts/DisplayNavigator';
 import { LayoutComponent } from './layouts/LayoutComponent';
-import { SaveLayoutDialog } from './layouts/SaveLayoutDialog';
+import { RenameLayoutDialog } from './layouts/RenameLayoutDialog';
 import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
 import { DisplayTypePipe } from './pipes/DisplayTypePipe';
 import { MonitorPageTemplate } from './template/MonitorPageTemplate';
@@ -32,10 +34,12 @@ import { StartReplayDialog } from './template/StartReplayDialog';
 const dialogComponents = [
   CreateDisplayDialog,
   CreateEventDialog,
+  CreateLayoutDialog,
   DisplayFilePageDirtyDialog,
   DownloadDumpDialog,
   JumpToDialog,
-  SaveLayoutDialog,
+  RenameDisplayDialog,
+  RenameLayoutDialog,
   StartReplayDialog,
 ];
 

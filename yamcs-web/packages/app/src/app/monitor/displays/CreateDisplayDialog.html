@@ -4,7 +4,7 @@
   <form *ngIf="page === 1" [formGroup]="typeForm" class="ya-form">
     <label>
       Type
-      <select formControlName="type" placeholder="Type">
+      <select formControlName="type">
         <option value="par">Parameter Table</option>
       </select>
     </label>
@@ -13,14 +13,14 @@
   <form *ngIf="page === 2" [formGroup]="filenameForm" class="ya-form">
     <label [class.invalid]="filenameForm.get('name')?.invalid">
       Name
-      <input #filename type="text" formControlName="name" placeholder="Name">
+      <input #filename type="text" formControlName="name">
       <span class="error-message"
             *ngIf="filenameForm.get('name')?.invalid">File name must end with <code>.par</code></span>
     </label>
     <br>
     <label>
       Path
-      <input type="text" formControlName="path" placeholder="Path">
+      <input type="text" formControlName="path">
     </label>
   </form>
   <p>&nbsp;</p>

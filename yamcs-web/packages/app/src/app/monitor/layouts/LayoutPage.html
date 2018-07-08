@@ -13,20 +13,12 @@
       SAVE
     </button>
 
-    <button mat-button
-            color="primary"
-            (click)="renameLayout()"
-            disabled>
-      <mat-icon>edit</mat-icon>
-      RENAME
-    </button>
-
-    <button mat-button
+    <!--button mat-button
             color="primary"
             (click)="removeLayout()">
       <mat-icon>delete_forever</mat-icon>
       DELETE
-    </button>
+    </button-->
 
     <mat-menu #arrangeMenu="matMenu" overlapTrigger="false">
       <button mat-menu-item (click)="layoutComponent.tileFrames()">Tile Displays</button>
@@ -43,7 +35,7 @@
   </app-monitor-toolbar>
 
   <app-layout-component #layoutComponent
-                        [startWithOpenedNavigator]="false"
+                        [startWithOpenedNavigator]="true"
                         [layoutState]="layout"
                         (stateChange)="onStateChange($event)">
   </app-layout-component>

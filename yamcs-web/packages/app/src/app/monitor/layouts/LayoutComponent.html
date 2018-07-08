@@ -2,8 +2,8 @@
   <mat-sidenav-container>
     <mat-sidenav mode="side" [opened]="showNavigator$ | async">
       <app-display-navigator [folder]="currentFolder$ | async"
-                             (pathChange)="pathChange($event)"
-                             (select)="openDisplay($event.path)">
+                             (prefixChange)="prefixChange($event)"
+                             (select)="openDisplay($event.name)">
       </app-display-navigator>
     </mat-sidenav>
 

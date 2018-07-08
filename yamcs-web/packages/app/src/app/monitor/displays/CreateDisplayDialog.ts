@@ -63,7 +63,9 @@ export class CreateDisplayDialog {
     const display = {
       parameters: [],
     };
-    const b = new Blob([JSON.stringify(display, undefined, 2)]);
+    const b = new Blob([JSON.stringify(display, undefined, 2)], {
+      type: 'application/json'
+    });
     this.yamcs.getInstanceClient()!.uploadObject('displays', fullPath, b).then(() => {
       this.dialogRef.close(fullPath);
     });

@@ -8,6 +8,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CreateDisplayDialog } from './CreateDisplayDialog';
+import { RenameDisplayDialog } from './RenameDisplayDialog';
 
 @Component({
   templateUrl: './DisplayFolderPage.html',
@@ -20,7 +21,7 @@ export class DisplayFolderPage implements OnDestroy {
 
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
 
-  displayedColumns = ['select', 'name', 'type', 'visibility'];
+  displayedColumns = ['select', 'name', 'type', 'modified', 'actions'];
   dataSource = new MatTableDataSource<BrowseItem>([]);
   selection = new SelectionModel<BrowseItem>(true, []);
 
@@ -64,14 +65,13 @@ export class DisplayFolderPage implements OnDestroy {
       items.push({
         folder: true,
         name: prefix,
-        path: prefix,
       });
     }
     for (const object of dir.object || []) {
       items.push({
         folder: false,
         name: object.name,
-        path: object.name,
+        modified: object.created,
       });
     }
     this.dataSource.data = items;
@@ -118,13 +118,13 @@ export class DisplayFolderPage implements OnDestroy {
     for (const item of this.selection.selected) {
       if (item.folder) {
         findObjectPromises.push(this.yamcs.getInstanceClient()!.listObjects('displays', {
-          prefix: item.path,
+          prefix: item.name,
         }).then(response => {
           const objects = response.object || [];
           deletableObjects.push(...objects.map(o => o.name));
         }));
       } else {
-        deletableObjects.push(item.path);
+        deletableObjects.push(item.name);
       }
     }
 
@@ -138,6 +138,20 @@ export class DisplayFolderPage implements OnDestroy {
         Promise.all(deletePromises).then(() => {
           this.loadCurrentFolder();
         });
+      }
+    });
+  }
+
+  renameFile(item: BrowseItem) {
+    const dialogRef = this.dialog.open(RenameDisplayDialog, {
+      data: {
+        name: item.name,
+      },
+      width: '400px',
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadCurrentFolder();
       }
     });
   }
@@ -166,7 +180,7 @@ export class DisplayFolderPage implements OnDestroy {
 class BrowseItem {
   folder: boolean;
   name: string;
-  path: string;
+  modified?: string;
 }
 
 interface BreadCrumbItem {

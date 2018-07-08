@@ -55,16 +55,12 @@ export class LayoutPage implements OnDestroy {
     const username = this.authService.getUser()!.getUsername();
     const state = this.layoutComponent.getLayoutState();
     const objectName = `layouts/${this.layoutName}`;
-    const objectValue = new Blob([JSON.stringify(state)], {
+    const objectValue = new Blob([JSON.stringify(state, undefined, 2)], {
       type: 'application/json',
     });
     this.yamcs.getInstanceClient()!.uploadObject(`user.${username}`, objectName, objectValue).then(() => {
       this.dirty$.next(false);
     });
-  }
-
-  renameLayout() {
-    // TODO
   }
 
   removeLayout() {

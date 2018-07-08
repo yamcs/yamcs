@@ -26,8 +26,13 @@ export class NavigationButton extends AbstractWidget {
       case 'OpenDisplayCommand':
         const relto = this.display.holder.getBaseId();
         const base = relto.substring(0, relto.lastIndexOf('/'));
+        let target = `${base}/${utils.parseStringChild(pressCmd, 'DisplayBasename')}.uss`;
+        if (target.startsWith('/')) {
+          target = target.substring(1);
+        }
+
         this.openDisplayCommandOptions = {
-          target: `${base}/${utils.parseStringChild(pressCmd, 'DisplayBasename')}.uss`,
+          target,
           openInNewWindow: utils.parseBooleanChild(pressCmd, 'OpenInNewWindow'),
         };
         if (utils.hasChild(pressCmd, 'Coordinates')) {

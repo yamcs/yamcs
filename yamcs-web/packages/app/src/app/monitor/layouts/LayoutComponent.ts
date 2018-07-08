@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { ListObjectsResponse } from '@yamcs/client';
+import { ListObjectsOptions } from '@yamcs/client';
 import { Coordinates, DisplayCommunicator, DisplayFrame, Layout, LayoutListener, LayoutState, LayoutStateListener } from '@yamcs/displays';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
+import { DisplayFolder } from './DisplayFolder';
 
 @Component({
   selector: 'app-layout-component',
@@ -30,7 +31,7 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
   private displayContainerRef: ElementRef;
 
   showNavigator$: BehaviorSubject<boolean>;
-  currentFolder$ = new BehaviorSubject<ListObjectsResponse | null>(null);
+  currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
 
   private displayCommunicator: DisplayCommunicator;
   private layout: Layout;
@@ -43,8 +44,12 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
     this.showNavigator$ = new BehaviorSubject<boolean>(this.startWithOpenedNavigator);
     this.yamcs.getInstanceClient()!.listObjects('displays', {
       delimiter: '/',
-    }).then(folder => {
-      this.currentFolder$.next(folder);
+    }).then(response => {
+      this.currentFolder$.next({
+        location: '',
+        prefixes: response.prefix || [],
+        objects: response.object || [],
+      });
     });
   }
 
@@ -79,12 +84,19 @@ export class LayoutComponent implements OnInit, OnChanges, LayoutListener, Layou
     return Promise.resolve();
   }
 
-  pathChange(path: string) {
-    this.yamcs.getInstanceClient()!.listObjects('displays', {
-      prefix: path,
+  prefixChange(path: string) {
+    const options: ListObjectsOptions = {
       delimiter: '/',
-    }).then(folder => {
-      this.currentFolder$.next(folder);
+    };
+    if (path) {
+      options.prefix = path;
+    }
+    this.yamcs.getInstanceClient()!.listObjects('displays', options).then(response => {
+      this.currentFolder$.next({
+        location: path,
+        prefixes: response.prefix || [],
+        objects: response.object || [],
+      });
     });
   }
 

@@ -14,7 +14,7 @@ export class DisplayNavigator implements OnChanges {
   folder: DisplayFolder;
 
   @Output()
-  pathChange = new EventEmitter<string>();
+  prefixChange = new EventEmitter<string>();
 
   @Output()
   select = new EventEmitter<ObjectInfo>();
@@ -28,18 +28,18 @@ export class DisplayNavigator implements OnChanges {
     }
   }
 
-  selectFolder(prefix: string) {
-    this.pathChange.emit(prefix);
-  }
-
   selectParent() {
-    const currentPath = this.folder.location;
-    const nameLen = this.folder.name.length + 1;
-    const parentPath = currentPath.substring(0, currentPath.length - nameLen);
-    this.pathChange.emit(parentPath);
+    const prefix = this.folder.location;
+    const idx = prefix.substring(0, prefix.length - 1).lastIndexOf('/');
+    const parentPrefix = prefix.substring(0, idx + 1);
+    this.prefixChange.emit(parentPrefix);
   }
 
-  selectFile(file: ObjectInfo) {
-    this.select.next(file);
+  selectPrefix(prefix: string) {
+    this.prefixChange.emit(prefix);
+  }
+
+  selectObject(object: ObjectInfo) {
+    this.select.next(object);
   }
 }
