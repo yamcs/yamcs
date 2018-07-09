@@ -231,7 +231,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   }
 }
 
-interface Record {
+export interface Record {
   name: string;
   pval?: ParameterValue;
 }

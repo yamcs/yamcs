@@ -145,7 +145,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
   private isImage() {
     const lc = this.filename.toLowerCase();
-    return lc.endsWith('.png') || lc.endsWith('.gif' || lc.endsWith('.jpg') || lc.endsWith('jpeg') || lc.endsWith('bmp'));
+    return lc.endsWith('.png') || lc.endsWith('.gif') || lc.endsWith('.jpg') || lc.endsWith('jpeg') || lc.endsWith('bmp');
   }
 
   goFullscreen() {

@@ -178,13 +178,13 @@ export class DisplayFolderPage implements OnDestroy {
   }
 }
 
-class BrowseItem {
+export class BrowseItem {
   folder: boolean;
   name: string;
   modified?: string;
 }
 
-interface BreadCrumbItem {
+export interface BreadCrumbItem {
   name: string;
   route: string;
 }
