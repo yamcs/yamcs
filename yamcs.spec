@@ -8,7 +8,7 @@ Summary: 	Mission Control System
 Vendor:		Space Applications Services
 Packager:	Space Applications Services
 License: 	AGPL (server) + LGPL (API)
-URL: 		https://www.spaceapplications.com
+URL: 		https://www.yamcs.org
 Source: 	%{name}-%{version}.tar.gz
 BuildRoot: 	%{_tmppath}/%{name}-%{version}-buildroot
 Prefix: 	/opt/yamcs
