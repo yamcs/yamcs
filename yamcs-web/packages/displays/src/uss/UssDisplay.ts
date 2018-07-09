@@ -1,7 +1,7 @@
 import { NamedObjectId, ParameterValue } from '@yamcs/client';
 import { Display } from '../Display';
 import { DisplayCommunicator } from '../DisplayCommunicator';
-import { DisplayHolder } from '../DisplayHolder';
+import { NavigationHandler } from '../NavigationHandler';
 import { Defs, Pattern, Rect, Svg, Tag } from '../tags';
 import { Color } from './Color';
 import { ParameterSample } from './ParameterSample';
@@ -36,7 +36,7 @@ export class UssDisplay implements Display {
   styleSet: StyleSet;
 
   constructor(
-    readonly holder: DisplayHolder,
+    readonly navigationHandler: NavigationHandler,
     private targetEl: HTMLDivElement,
     readonly displayCommunicator: DisplayCommunicator,
   ) {

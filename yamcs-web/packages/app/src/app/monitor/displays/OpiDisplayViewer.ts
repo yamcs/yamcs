@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { DisplayHolder, OpenDisplayCommandOptions, OpiDisplay } from '@yamcs/displays';
+import { NavigationHandler, OpenDisplayCommandOptions, OpiDisplay } from '@yamcs/displays';
 import { Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from './MyDisplayCommunicator';
@@ -23,7 +23,7 @@ import { Viewer } from './Viewer';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OpiDisplayViewer implements DisplayHolder, Viewer, OnDestroy {
+export class OpiDisplayViewer implements NavigationHandler, Viewer, OnDestroy {
 
   @ViewChild('displayContainer')
   private displayContainer: ElementRef;

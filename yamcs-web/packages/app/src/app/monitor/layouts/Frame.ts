@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ComponentFactoryResolver, ElementRef, Type, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Display, DisplayCommunicator, DisplayHolder, OpenDisplayCommandOptions } from '@yamcs/displays';
+import { Display, DisplayCommunicator, NavigationHandler, OpenDisplayCommandOptions } from '@yamcs/displays';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
 import { OpiDisplayViewer } from '../displays/OpiDisplayViewer';
@@ -27,7 +27,7 @@ type DisplayType = 'OPI' | 'PAR' | 'USS';
   templateUrl: './Frame.html',
   styleUrls: ['./Frame.css'],
 })
-export class Frame implements DisplayHolder {
+export class Frame implements NavigationHandler {
 
   @ViewChild('container')
   private containerRef: ElementRef;
@@ -77,7 +77,7 @@ export class Frame implements DisplayHolder {
     let initPromise;
     if (displayType === 'USS') {
       const viewer = this.createViewer(UssDisplayViewer);
-      initPromise = viewer.init(id).then(() => {
+      initPromise = viewer.init(id, this).then(() => {
         this.display = viewer.display;
         container.style.backgroundColor = viewer.display.getBackgroundColor();
         this.preferredWidth = viewer.display.width;

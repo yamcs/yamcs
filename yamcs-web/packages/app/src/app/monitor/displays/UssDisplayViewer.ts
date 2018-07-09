@@ -1,10 +1,34 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Display, DisplayHolder, OpenDisplayCommandOptions, UssDisplay } from '@yamcs/displays';
+import { Display, NavigationHandler, OpenDisplayCommandOptions, UssDisplay } from '@yamcs/displays';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from './MyDisplayCommunicator';
 import { Viewer } from './Viewer';
+
+/**
+ * Simple nav handler that relocates the browser to the standalone display pages.
+ */
+export class DefaultNavigationHandler implements NavigationHandler {
+
+  constructor(
+    private objectName: string,
+    private instance: string,
+    private router: Router,
+  ) {}
+
+  getBaseId() {
+    return this.objectName;
+  }
+
+  openDisplay(options: OpenDisplayCommandOptions) {
+    this.router.navigateByUrl(`/monitor/displays/files/${options.target}?instance=${this.instance}`);
+  }
+
+  closeDisplay() {
+    this.router.navigateByUrl(`monitor/displays/browse?instance=${this.instance}`);
+  }
+}
 
 @Component({
   selector: 'app-uss-display-viewer',
@@ -23,7 +47,7 @@ import { Viewer } from './Viewer';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UssDisplayViewer implements DisplayHolder, Viewer, OnDestroy {
+export class UssDisplayViewer implements Viewer, OnDestroy {
 
   @ViewChild('wrapper')
   private wrapper: ElementRef;
@@ -41,20 +65,29 @@ export class UssDisplayViewer implements DisplayHolder, Viewer, OnDestroy {
 
   private parameterSubscription: Subscription;
 
+  private navigationHandler: NavigationHandler;
+
   constructor(
     private yamcs: YamcsService,
     private router: Router,
-  ) { }
+  ) {}
 
   /**
    * Don't call before ngAfterViewInit()
    */
-  public init(objectName: string) {
+  public init(objectName: string, navigationHandler?: NavigationHandler) {
     this.objectName = objectName;
+
+    if (navigationHandler) {
+      this.navigationHandler = navigationHandler;
+    } else {
+      const instance = this.yamcs.getInstance().name;
+      this.navigationHandler = new DefaultNavigationHandler(objectName, instance, this.router);
+    }
 
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.router);
-    this.display = new UssDisplay(this, container, displayCommunicator);
+    this.display = new UssDisplay(this.navigationHandler, container, displayCommunicator);
     return this.display.parseAndDraw(this.objectName).then(() => {
       const ids = this.display.getParameterIds();
       if (ids.length) {
@@ -96,20 +129,6 @@ export class UssDisplayViewer implements DisplayHolder, Viewer, OnDestroy {
     this.wrapper.nativeElement.style.setProperty('zoom', String(this.zoom));
     this.wrapper.nativeElement.style.setProperty('-moz-transform', `scale(${this.zoom})`);
     this.wrapper.nativeElement.style.setProperty('-moz-transform-origin', '0px 0px');
-  }
-
-  getBaseId() { // DisplayHolder
-    return this.objectName;
-  }
-
-  openDisplay(options: OpenDisplayCommandOptions) { // DisplayHolder
-    const instance = this.yamcs.getInstance().name;
-    this.router.navigateByUrl(`/monitor/displays/files/${options.target}?instance=${instance}`);
-  }
-
-  closeDisplay() { // DisplayHolder
-    const instance = this.yamcs.getInstance().name;
-    this.router.navigateByUrl(`monitor/displays/browse?instance=${instance}`);
   }
 
   ngOnDestroy() {

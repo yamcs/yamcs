@@ -69,7 +69,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     this.routerSubscription = router.events.pipe(
       filter(evt => evt instanceof NavigationEnd)
     ).subscribe(() => {
-      this.loadFile(false);
+      this.loadFile(true);
     });
 
     // Preload ACE editor (not done in ViewerHost, because ACE does not seem to work well
