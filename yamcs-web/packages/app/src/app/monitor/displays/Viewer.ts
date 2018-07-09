@@ -1,6 +1,6 @@
 export interface Viewer {
 
-  init(objectName: string): void;
+  init(objectName: string): Promise<any>;
 
   isFullscreenSupported(): boolean;
 

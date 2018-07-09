@@ -1,6 +1,13 @@
-import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
-import { NamedObjectId, ParameterValue } from '@yamcs/client';
-import { Display, DisplayHolder, OpenDisplayCommandOptions, OpiDisplay, UssDisplay } from '@yamcs/displays';
+import { ChangeDetectorRef, Component, ComponentFactoryResolver, ElementRef, Type, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+import { Display, DisplayCommunicator, DisplayHolder, OpenDisplayCommandOptions } from '@yamcs/displays';
+import { YamcsService } from '../../core/services/YamcsService';
+import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
+import { OpiDisplayViewer } from '../displays/OpiDisplayViewer';
+import { ParameterTableViewer } from '../displays/ParameterTableViewer';
+import { UssDisplayViewer } from '../displays/UssDisplayViewer';
+import { Viewer } from '../displays/Viewer';
+import { ViewerHost } from '../displays/ViewerHost';
 import { Layout } from './Layout';
 
 export interface Coordinates {
@@ -9,6 +16,8 @@ export interface Coordinates {
   width?: number;
   height?: number;
 }
+
+type DisplayType = 'OPI' | 'PAR' | 'USS';
 
 /**
  * A frame shows a display inside a layout
@@ -32,16 +41,30 @@ export class Frame implements DisplayHolder {
   @ViewChild('frameContent')
   private frameContentRef: ElementRef;
 
-  private id: string;
+  @ViewChild(ViewerHost)
+  private viewerHost: ViewerHost;
+
+  id: string;
   private layout: Layout;
   private coordinates: Coordinates;
 
   display: Display;
 
+  private preferredWidth = 800;
+  private preferredHeight = 400;
+  private zoomToFit = false;
+
   readonly titleBarHeight = 20;
 
-  constructor(private changeDetector: ChangeDetectorRef) {
+  readonly displayCommunicator: DisplayCommunicator;
 
+  constructor(
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private changeDetector: ChangeDetectorRef,
+    yamcs: YamcsService,
+    router: Router,
+  ) {
+    this.displayCommunicator = new MyDisplayCommunicator(yamcs, router);
   }
 
   public init(id: string, layout: Layout, coordinates: Coordinates) {
@@ -49,47 +72,75 @@ export class Frame implements DisplayHolder {
     this.layout = layout;
     this.coordinates = coordinates;
 
-    const targetEl = this.frameContentRef.nativeElement;
-    if (id.toLowerCase().endsWith('uss')) {
-      this.display = new UssDisplay(this, targetEl, this.layout.displayCommunicator);
-    } else if (id.toLowerCase().endsWith('opi')) {
-      this.display = new OpiDisplay(this, targetEl, this.layout.displayCommunicator);
+    const container = this.containerRef.nativeElement as HTMLDivElement;
+    const displayType = this.getDisplayType();
+    let initPromise;
+    if (displayType === 'USS') {
+      const viewer = this.createViewer(UssDisplayViewer);
+      initPromise = viewer.init(id).then(() => {
+        this.display = viewer.display;
+        container.style.backgroundColor = viewer.display.getBackgroundColor();
+        this.preferredWidth = viewer.display.width;
+        this.preferredHeight = viewer.display.height;
+        this.zoomToFit = true;
+      });
+    } else if (displayType === 'OPI') {
+      const viewer = this.createViewer(OpiDisplayViewer);
+      initPromise = viewer.init(id).then(() => {
+        this.display = viewer.display;
+        container.style.backgroundColor = viewer.display.getBackgroundColor();
+        this.preferredWidth = viewer.display.width;
+        this.preferredHeight = viewer.display.height;
+        this.zoomToFit = true;
+      });
+    } else if (displayType === 'PAR') {
+      container.style.backgroundColor = 'white';
+      const viewer = this.createViewer(ParameterTableViewer);
+      initPromise = viewer.init(id);
+      this.zoomToFit = false;
     } else {
       alert('No viewer for file ' + id);
+      return Promise.resolve();
     }
-  }
 
-  async loadAsync() {
-    return this.display.parseAndDraw(this.id).then(() => {
-      const container = this.containerRef.nativeElement as HTMLDivElement;
-      container.style.backgroundColor = this.display.getBackgroundColor();
-      this.setDimension(this.display.width, this.display.height);
-
+    return initPromise.then(() => {
+      this.setDimension(this.preferredWidth, this.preferredHeight);
       this.setPosition(this.coordinates.x, this.coordinates.y);
       if (this.coordinates.width !== undefined && this.coordinates.height !== undefined) {
         this.setDimension(this.coordinates.width, this.coordinates.height);
       }
       container.style.visibility = 'visible';
-
       this.changeDetector.detectChanges();
     });
   }
 
+  private getDisplayType(): DisplayType | undefined {
+    if (this.id.toLowerCase().endsWith('.uss')) {
+      return 'USS';
+    } else if (this.id.toLowerCase().endsWith('.opi')) {
+      return 'OPI';
+    } else if (this.id.toLowerCase().endsWith('.par')) {
+      return 'PAR';
+    }
+  }
+
   setDimension(width: number, height: number) {
-    const xRatio = width / this.display.width;
-    const yRatio = height / this.display.height;
+    const xRatio = width / this.preferredWidth;
+    const yRatio = height / this.preferredHeight;
     const zoom = Math.min(xRatio, yRatio);
 
     const container = this.containerRef.nativeElement as HTMLDivElement;
     container.style.width = `${width}px`;
     container.style.height = `${height + this.titleBarHeight}px`;
 
-    const frameContent = this.frameContentRef.nativeElement as HTMLDivElement;
-    frameContent.style.zoom = String(zoom);
+    if (this.zoomToFit) {
+      const frameContent = this.frameContentRef.nativeElement as HTMLDivElement;
+      frameContent.style.zoom = String(zoom);
 
-    // Zoom does not work in FF
-    frameContent.style.setProperty('-moz-transform', `scale(${zoom})`);
-    frameContent.style.setProperty('-moz-transform-origin', '0px 0px');
+      // Zoom does not work in FF
+      frameContent.style.setProperty('-moz-transform', `scale(${zoom})`);
+      frameContent.style.setProperty('-moz-transform-origin', '0px 0px');
+    }
   }
 
   setPosition(x: number, y: number) {
@@ -108,36 +159,31 @@ export class Frame implements DisplayHolder {
     };
   }
 
-  getParameterIds(): NamedObjectId[] {
-    return this.display.getParameterIds();
-  }
-
   syncDisplay() {
+    if (!this.display) {
+      return;
+    }
     const state = this.display.getDataSourceState();
     const titlebar = this.titlebarRef.nativeElement as HTMLDivElement;
     const frameActions = this.frameActionsRef.nativeElement as HTMLDivElement;
     if (state.red) {
-      titlebar.style.setProperty('background-color', 'red');
-      titlebar.style.setProperty('color', 'white');
-      frameActions.style.setProperty('color', 'white');
+      titlebar.style.backgroundColor = 'red';
+      titlebar.style.color = 'white';
+      frameActions.style.color = 'white';
     } else if (state.yellow) {
-      titlebar.style.setProperty('background-color', 'yellow');
-      titlebar.style.setProperty('color', 'black');
-      frameActions.style.setProperty('color', 'black');
+      titlebar.style.backgroundColor = 'yellow';
+      titlebar.style.color = 'black';
+      frameActions.style.color = 'black';
     } else if (state.green) {
-      titlebar.style.setProperty('background-color', 'green');
-      titlebar.style.setProperty('color', 'white');
-      frameActions.style.setProperty('color', 'white');
+      titlebar.style.backgroundColor = 'green';
+      titlebar.style.color = 'white';
+      frameActions.style.color = 'white';
     } else {
-      titlebar.style.setProperty('background-color', '#e9e9e9');
-      titlebar.style.setProperty('color', 'black');
-      frameActions.style.setProperty('color', 'grey');
+      titlebar.style.backgroundColor = '#e9e9e9';
+      titlebar.style.color = 'black';
+      frameActions.style.color = 'grey';
     }
     this.display.digest();
-  }
-
-  processParameterValues(pvals: ParameterValue[]) {
-    this.display.processParameterValues(pvals);
   }
 
   /**
@@ -257,5 +303,13 @@ export class Frame implements DisplayHolder {
 
   closeDisplay() {
     this.layout.closeDisplayFrame(this.id);
+  }
+
+  private createViewer<T extends Viewer>(viewer: Type<T>): T {
+    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(viewer);
+    const viewContainerRef = this.viewerHost.viewContainerRef;
+    viewContainerRef.clear();
+    const componentRef = viewContainerRef.createComponent(componentFactory);
+    return componentRef.instance;
   }
 }

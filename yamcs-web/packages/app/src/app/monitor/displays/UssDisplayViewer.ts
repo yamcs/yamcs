@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { DisplayHolder, OpenDisplayCommandOptions, UssDisplay } from '@yamcs/displays';
+import { Display, DisplayHolder, OpenDisplayCommandOptions, UssDisplay } from '@yamcs/displays';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from './MyDisplayCommunicator';
 import { Viewer } from './Viewer';
@@ -8,12 +9,12 @@ import { Viewer } from './Viewer';
 @Component({
   selector: 'app-uss-display-viewer',
   template: `
-    <div #wrapper class="wrapper">
+    <div #wrapper class="wrapper" [class.center]="center$ | async">
       <div #displayContainer style="line-height: 0"></div>
     </div>
   `,
   styles: [`
-    .wrapper {
+    .wrapper.center {
       position: absolute;
       top: 50%;
       left: 50%;
@@ -22,7 +23,7 @@ import { Viewer } from './Viewer';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UssDisplayViewer implements DisplayHolder, Viewer {
+export class UssDisplayViewer implements DisplayHolder, Viewer, OnDestroy {
 
   @ViewChild('wrapper')
   private wrapper: ElementRef;
@@ -32,7 +33,13 @@ export class UssDisplayViewer implements DisplayHolder, Viewer {
 
   private objectName: string;
 
+  center$ = new BehaviorSubject<boolean>(false);
+
   private zoom = 1;
+
+  display: Display;
+
+  private parameterSubscription: Subscription;
 
   constructor(
     private yamcs: YamcsService,
@@ -47,9 +54,9 @@ export class UssDisplayViewer implements DisplayHolder, Viewer {
 
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.router);
-    const display = new UssDisplay(this, container, displayCommunicator);
-    display.parseAndDraw(this.objectName).then(() => {
-      const ids = display!.getParameterIds();
+    this.display = new UssDisplay(this, container, displayCommunicator);
+    return this.display.parseAndDraw(this.objectName).then(() => {
+      const ids = this.display.getParameterIds();
       if (ids.length) {
         this.yamcs.getInstanceClient()!.getParameterValueUpdates({
           id: ids,
@@ -57,12 +64,16 @@ export class UssDisplayViewer implements DisplayHolder, Viewer {
           sendFromCache: true,
           updateOnExpiration: true,
         }).then(res => {
-          res.parameterValues$.subscribe(pvals => {
-            display!.processParameterValues(pvals);
+          this.parameterSubscription = res.parameterValues$.subscribe(pvals => {
+            this.display.processParameterValues(pvals);
           });
         });
       }
     });
+  }
+
+  public setCenterContent(center: true) {
+    this.center$.next(center);
   }
 
   public isFullscreenSupported() {
@@ -99,5 +110,11 @@ export class UssDisplayViewer implements DisplayHolder, Viewer {
   closeDisplay() { // DisplayHolder
     const instance = this.yamcs.getInstance().name;
     this.router.navigateByUrl(`monitor/displays/browse?instance=${instance}`);
+  }
+
+  ngOnDestroy() {
+    if (this.parameterSubscription) {
+      this.parameterSubscription.unsubscribe();
+    }
   }
 }

@@ -52,6 +52,8 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
   private routerSubscription: Subscription;
 
+  private displayRefresher: number;
+
   constructor(
     yamcs: YamcsService,
     private route: ActivatedRoute,
@@ -97,15 +99,22 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     if (this.filename.toLowerCase().endsWith('.uss')) {
-      this.viewer = this.createViewer(UssDisplayViewer);
+      const ussDisplayViewer = this.createViewer(UssDisplayViewer);
       const controls = this.createViewerControls(UssDisplayViewerControls);
-      controls.init(this.viewer as UssDisplayViewer);
+      controls.init(ussDisplayViewer);
+      ussDisplayViewer.setCenterContent(true);
+      this.viewer = ussDisplayViewer;
+      this.displayRefresher = window.setInterval(() => {
+        ussDisplayViewer.display.digest();
+      }, 500 /* update rate */);
     } else if (this.filename.toLowerCase().endsWith('.opi')) {
       this.viewer = this.createViewer(OpiDisplayViewer);
     } else if (this.filename.toLowerCase().endsWith('.par')) {
-      this.viewer = this.createViewer(ParameterTableViewer);
+      const parameterTableViewer = this.createViewer(ParameterTableViewer);
       const controls = this.createViewerControls(ParameterTableViewerControls);
-      controls.init(this.viewer as ParameterTableViewer);
+      controls.init(parameterTableViewer as ParameterTableViewer);
+      parameterTableViewer.setEnableActions();
+      this.viewer = parameterTableViewer;
     } else if (this.isImage()) {
       this.viewer = this.createViewer(ImageViewer);
     } else if (this.filename.toLocaleLowerCase().endsWith('.js')) {
@@ -153,6 +162,7 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     screenfull.off('change', this.fullscreenListener);
+    window.clearInterval(this.displayRefresher);
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }

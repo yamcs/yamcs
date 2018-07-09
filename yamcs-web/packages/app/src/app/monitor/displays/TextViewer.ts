@@ -28,6 +28,7 @@ export class TextViewer implements Viewer {
         this.changeDetector.detectChanges();
       });
     });
+    return Promise.resolve();
   }
 
   public isFullscreenSupported() {

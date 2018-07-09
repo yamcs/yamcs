@@ -29,6 +29,7 @@ export class ImageViewer implements Viewer {
 
   public init(objectName: string) {
     this.url = this.yamcs.getInstanceClient()!.getObjectURL('displays', objectName);
+    return Promise.resolve();
   }
 
   public isFullscreenSupported() {

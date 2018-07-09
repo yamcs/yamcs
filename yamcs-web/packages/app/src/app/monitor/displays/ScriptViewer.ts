@@ -50,6 +50,8 @@ export class ScriptViewer implements Viewer, OnDestroy {
     this.darkModeSubscription = this.preferenceStore.darkMode$.subscribe(darkMode => {
       this.applyTheme(darkMode);
     });
+
+    return Promise.resolve();
   }
 
   public isFullscreenSupported() {

@@ -1,10 +1,7 @@
 import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewRef } from '@angular/core';
-import { Router } from '@angular/router';
 import { ListObjectsOptions } from '@yamcs/client';
-import { DisplayCommunicator } from '@yamcs/displays';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
 import { DisplayFolder } from './DisplayFolder';
 import { Coordinates, Frame } from './Frame';
 import { FrameHost } from './FrameHost';
@@ -49,15 +46,10 @@ export class Layout implements OnInit, OnDestroy {
    */
   private updateRate = 500;
 
-  readonly displayCommunicator: DisplayCommunicator;
-
   constructor(
     private yamcs: YamcsService,
     private componentFactoryResolver: ComponentFactoryResolver,
-    router: Router,
-  ) {
-    this.displayCommunicator = new MyDisplayCommunicator(yamcs, router);
-  }
+  ) {}
 
   ngOnInit() {
     this.showNavigator$ = new BehaviorSubject<boolean>(this.startWithOpenedNavigator);
@@ -131,21 +123,7 @@ export class Layout implements OnInit, OnDestroy {
     this.componentsById.set(id, componentRef);
 
     const frame = componentRef.instance;
-    frame.init(id, this, coordinates);
-    return frame.loadAsync().then(() => {
-      const ids = frame.getParameterIds();
-      if (ids.length) {
-        this.yamcs.getInstanceClient()!.getParameterValueUpdates({
-          id: ids,
-          abortOnInvalid: false,
-          sendFromCache: true,
-          updateOnExpiration: true,
-        }).then(res => {
-          res.parameterValues$.subscribe(pvals => {
-            frame.processParameterValues(pvals);
-          });
-        });
-      }
+    return frame.init(id, this, coordinates).then(() => {
       this.fireStateChange();
     });
   }

@@ -24,14 +24,12 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   instance: Instance;
 
   displayedColumns = [
-    'select',
     'severity',
     'name',
     'generationTimeUTC',
     'rawValue',
     'engValue',
     'acquisitionStatus',
-    'actions',
   ];
 
   private latestValues = new Map<string, ParameterValue>();
@@ -39,6 +37,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   public paused$ = new BehaviorSubject<boolean>(false);
   public hasUnsavedChanges$ = new BehaviorSubject<boolean>(false);
+  showActions$ = new BehaviorSubject<boolean>(false);
 
   private dataSynchronizer: number;
   private dataSubscription: Subscription;
@@ -61,7 +60,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
         this.dirty = false;
         this.changeDetector.detectChanges();
       }
-    }, 1000 /* update rate */);
+    }, 500 /* update rate */);
   }
 
   public init(objectName: string) {
@@ -78,6 +77,13 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
         this.createOrModifySubscription();
       });
     });
+    return Promise.resolve();
+  }
+
+  public setEnableActions() {
+    this.displayedColumns.splice(0, 0, 'select');
+    this.displayedColumns.push('actions');
+    this.showActions$.next(true);
   }
 
   hasPendingChanges() {

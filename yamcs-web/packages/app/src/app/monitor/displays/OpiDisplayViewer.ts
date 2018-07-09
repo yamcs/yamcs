@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { DisplayHolder, OpenDisplayCommandOptions, OpiDisplay } from '@yamcs/displays';
+import { Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from './MyDisplayCommunicator';
 import { Viewer } from './Viewer';
@@ -22,12 +23,16 @@ import { Viewer } from './Viewer';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OpiDisplayViewer implements DisplayHolder, Viewer {
+export class OpiDisplayViewer implements DisplayHolder, Viewer, OnDestroy {
 
   @ViewChild('displayContainer')
   private displayContainer: ElementRef;
 
   private objectName: string;
+
+  display: OpiDisplay;
+
+  private parameterSubscription: Subscription;
 
   constructor(
     private yamcs: YamcsService,
@@ -42,9 +47,9 @@ export class OpiDisplayViewer implements DisplayHolder, Viewer {
 
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.router);
-    const display = new OpiDisplay(this, container, displayCommunicator);
-    display.parseAndDraw(objectName).then(() => {
-      const ids = display!.getParameterIds();
+    this.display = new OpiDisplay(this, container, displayCommunicator);
+    return this.display.parseAndDraw(objectName).then(() => {
+      const ids = this.display.getParameterIds();
       if (ids.length) {
         this.yamcs.getInstanceClient()!.getParameterValueUpdates({
           id: ids,
@@ -52,8 +57,8 @@ export class OpiDisplayViewer implements DisplayHolder, Viewer {
           sendFromCache: true,
           updateOnExpiration: true,
         }).then(res => {
-          res.parameterValues$.subscribe(pvals => {
-            display!.processParameterValues(pvals);
+          this.parameterSubscription = res.parameterValues$.subscribe(pvals => {
+            this.display.processParameterValues(pvals);
           });
         });
       }
@@ -78,5 +83,11 @@ export class OpiDisplayViewer implements DisplayHolder, Viewer {
 
   closeDisplay() { // DisplayHolder
     // NOP
+  }
+
+  ngOnDestroy() {
+    if (this.parameterSubscription) {
+      this.parameterSubscription.unsubscribe();
+    }
   }
 }
