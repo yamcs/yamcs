@@ -54,7 +54,9 @@ export class LayoutsPage {
   }
 
   toggleOne(row: ObjectInfo) {
-    this.selection.clear();
+    if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
+      this.selection.clear();
+    }
     this.selection.toggle(row);
   }
 

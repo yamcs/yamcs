@@ -58,13 +58,15 @@
         <td mat-cell *cdkCellDef="let item">
           <ng-container *ngIf="item.folder">
             <a [routerLink]="'/monitor/displays/browse/' + item.name"
-               [queryParams]="{instance: instance.name}">
+               [queryParams]="{instance: instance.name}"
+               (click)="$event.stopPropagation()">
                <mat-icon class="icon12">folder</mat-icon>
                {{ item.name | filename }}</a>
           </ng-container>
           <ng-container *ngIf="!item.folder">
             <a [routerLink]="'/monitor/displays/files/' + item.name"
-               [queryParams]="{instance: instance.name}">
+               [queryParams]="{instance: instance.name}"
+               (click)="$event.stopPropagation()">
                 <mat-icon class="icon12">description</mat-icon>
                 {{ item.name | filename }}</a>
           </ng-container>

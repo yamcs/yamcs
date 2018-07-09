@@ -140,7 +140,9 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   }
 
   toggleOne(row: Record) {
-    this.selection.clear();
+    if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
+      this.selection.clear();
+    }
     this.selection.toggle(row);
   }
 

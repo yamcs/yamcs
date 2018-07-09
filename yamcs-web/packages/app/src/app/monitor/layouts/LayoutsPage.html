@@ -40,7 +40,8 @@
         <th mat-header-cell *cdkHeaderCellDef style="width: 300px">Name</th>
         <td mat-cell *cdkCellDef="let layout">
           <a [routerLink]="layout.name | slice:8"
-             [queryParams]="{instance: instance.name}">{{ layout.name | slice:8 }}</a>
+             [queryParams]="{instance: instance.name}"
+             (click)="$event.stopPropagation()">{{ layout.name | slice:8 }}</a>
         </td>
       </ng-container>
 
@@ -74,7 +75,10 @@
       </ng-container>
 
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row
+          *cdkRowDef="let row; columns: displayedColumns;"
+          [class.selected]="selection.isSelected(row)"
+          (click)="toggleOne(row)"></tr>
     </table>
 
     <ng-template #empty>

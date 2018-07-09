@@ -91,7 +91,9 @@ export class DisplayFolderPage implements OnDestroy {
   }
 
   toggleOne(row: BrowseItem) {
-    this.selection.clear();
+    if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
+      this.selection.clear();
+    }
     this.selection.toggle(row);
   }
 
