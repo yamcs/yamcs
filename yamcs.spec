@@ -39,13 +39,13 @@ mkdir -p %{buildroot}/%{prefix}/lib/yamcs-web
 mkdir -p %{buildroot}/%{prefix}/lib/xtce
 
 cp -a yamcs-server/lib %{buildroot}/%{prefix}/
-cp -an yamcs-client/lib %{buildroot}/%{prefix}/
+cp -an yamcs-client/lib %{buildroot}/%{prefix}/ || :
 
 cp -a yamcs-core/etc %{buildroot}/%{prefix}/
-cp -an yamcs-client/etc %{buildroot}/%{prefix}/
+cp -an yamcs-client/etc %{buildroot}/%{prefix}/ || :
 
 cp -a yamcs-server/bin %{buildroot}/%{prefix}/
-cp -an yamcs-client/bin %{buildroot}/%{prefix}/
+cp -an yamcs-client/bin %{buildroot}/%{prefix}/ || :
 
 rm yamcs-client/target/yamcs-*-sources.jar
 cp yamcs-client/target/yamcs*.jar %{buildroot}/%{prefix}/lib
