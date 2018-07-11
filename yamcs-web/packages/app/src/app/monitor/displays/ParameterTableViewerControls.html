@@ -40,4 +40,15 @@
     <mat-icon>delete</mat-icon>
     DELETE
   </button>
+
+  <mat-menu #moreMenu="matMenu" overlapTrigger="false">
+    <button mat-menu-item
+            [disabled]="!viewer.dataSource.data.length"
+            (click)="exportArchiveData()">
+      Export archive data...
+    </button>
+  </mat-menu>
+  <button mat-button [matMenuTriggerFor]="moreMenu">
+    <mat-icon>more_vert</mat-icon>
+  </button>
 </ng-container>

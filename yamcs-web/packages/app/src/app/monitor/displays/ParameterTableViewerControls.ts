@@ -3,6 +3,7 @@ import { MatDialog, MatSnackBar } from '@angular/material';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { SelectParameterDialog } from '../../mdb/parameters/SelectParameterDialog';
+import { ExportArchiveDataDialog } from './ExportArchiveDataDialog';
 import { ParameterTableViewer } from './ParameterTableViewer';
 
 @Component({
@@ -54,6 +55,19 @@ export class ParameterTableViewerControls {
       });
     }).catch(err => {
       this.snackbar.open('Failed to save changes: ' + err);
+    });
+  }
+
+  exportArchiveData() {
+    let parameterIds = this.viewer.selection.selected.map(rec => rec.name);
+    if (!parameterIds.length) {
+      parameterIds = this.viewer.dataSource.data.map(rec => rec.name);
+    }
+    this.dialog.open(ExportArchiveDataDialog, {
+      width: '400px',
+      data: {
+        parameterIds,
+      }
     });
   }
 }

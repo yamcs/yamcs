@@ -7,6 +7,7 @@ import { JumpToDialog } from './archive/JumpToDialog';
 import { TimelineTooltip } from './archive/TimelineTooltip';
 import { CreateDisplayDialog } from './displays/CreateDisplayDialog';
 import { DisplayFilePageDirtyDialog } from './displays/DisplayFilePageDirtyDialog';
+import { ExportArchiveDataDialog } from './displays/ExportArchiveDataDialog';
 import { ImageViewer } from './displays/ImageViewer';
 import { OpiDisplayViewer } from './displays/OpiDisplayViewer';
 import { ParameterTableViewer } from './displays/ParameterTableViewer';
@@ -39,6 +40,7 @@ const dialogComponents = [
   CreateLayoutDialog,
   DisplayFilePageDirtyDialog,
   DownloadDumpDialog,
+  ExportArchiveDataDialog,
   JumpToDialog,
   RenameDisplayDialog,
   RenameLayoutDialog,
