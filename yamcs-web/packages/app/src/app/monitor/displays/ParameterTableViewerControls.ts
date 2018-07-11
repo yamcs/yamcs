@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { MatDialog, MatSnackBar } from '@angular/material';
 import { BehaviorSubject } from 'rxjs';
+import { AuthService } from '../../core/services/AuthService';
 import { SelectParameterDialog } from '../../mdb/parameters/SelectParameterDialog';
 import { ParameterTableViewer } from './ParameterTableViewer';
 
@@ -14,8 +15,11 @@ export class ParameterTableViewerControls {
 
   viewer: ParameterTableViewer;
 
-  constructor(private dialog: MatDialog, private snackbar: MatSnackBar) {
-  }
+  constructor(
+    private dialog: MatDialog,
+    private snackbar: MatSnackBar,
+    private authService: AuthService,
+  ) {}
 
   public init(viewer: ParameterTableViewer) {
     this.viewer = viewer;
@@ -35,6 +39,12 @@ export class ParameterTableViewerControls {
         this.viewer.addParameter(result);
       }
     });
+  }
+
+  mayManageDisplays() {
+    const user = this.authService.getUser()!;
+    return user.hasObjectPrivilege('ManageBucket', 'displays')
+      || user.hasSystemPrivilege('ManageAnyBucket');
   }
 
   save() {
