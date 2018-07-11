@@ -16,12 +16,12 @@
 
   <mat-divider></mat-divider>
 
-  <dl class="dl-horizontal" *ngIf="user.isSuperuser() || user.systemPrivilege">
+  <dl class="dl-horizontal" *ngIf="user.isSuperuser() || user.getSystemPrivileges().length">
     <dt>System Privileges</dt>
     <dd>
       <ng-container *ngIf="user.isSuperuser()">All privileges implied</ng-container>
       <table *ngIf="!user.isSuperuser()" yaDataTable>
-      <tr *ngFor="let privilege of user.systemPrivilege">
+      <tr *ngFor="let privilege of user.getSystemPrivileges()">
           <td>{{ privilege }}</td>
         </tr>
       </table>
@@ -34,8 +34,8 @@
     <dt>Object Privileges</dt>
     <dd>
       <ng-container *ngIf="user.isSuperuser()">All privileges implied</ng-container>
-      <table *ngIf="!user.isSuperuser() && user.objectPrivilege" yaDataTable>
-        <tr *ngFor="let p of user.objectPrivilege">
+      <table *ngIf="!user.isSuperuser() && user.getObjectPrivileges().length" yaDataTable>
+        <tr *ngFor="let p of user.getObjectPrivileges()">
           <th class="lcolumn">{{ p.type }}</th>
           <td>
             <ng-container *ngIf="p.object; else dash">

@@ -29,6 +29,7 @@ public class SecurityStore {
     private User systemUser;
     private User unauthenticatedUser;
 
+    @SuppressWarnings("unchecked")
     private SecurityStore() {
         YConfiguration yconf = YConfiguration.getConfiguration("security");
 
@@ -56,8 +57,21 @@ public class SecurityStore {
 
                 unauthenticatedUser = new User(username);
                 unauthenticatedUser.setSuperuser(YConfiguration.getBoolean(userProps, "superuser", false));
-
-                // TODO allow configuring privileges? Probably shouldn't come from an AuthModule because enabled=false
+                if (userProps.containsKey("privileges")) {
+                    Map<String, Object> privileges = YConfiguration.getMap(userProps, "privileges");
+                    privileges.forEach((typeString, objects) -> {
+                        if (typeString.equals("System")) {
+                            for (String name : (List<String>) objects) {
+                                unauthenticatedUser.addSystemPrivilege(new SystemPrivilege(name));
+                            }
+                        } else {
+                            ObjectPrivilegeType type = new ObjectPrivilegeType(typeString);
+                            for (String object : (List<String>) objects) {
+                                unauthenticatedUser.addObjectPrivilege(new ObjectPrivilege(type, object));
+                            }
+                        }
+                    });
+                }
             } else {
                 unauthenticatedUser = new User("admin");
                 unauthenticatedUser.setSuperuser(true);
