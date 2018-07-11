@@ -14,10 +14,12 @@ import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ObjectInfo;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
+import org.yamcs.web.ForbiddenException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
@@ -108,7 +110,7 @@ public class BucketRestHandler extends RestHandler {
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "POST" }, maxBodySize = MAX_BODY_SIZE)
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "POST" }, maxBodySize = MAX_BODY_SIZE)
     public void uploadObject(RestRequest req) throws HttpException {
-        checkBucketPrivilege(req);
+        checkManageBucketPrivilege(req);
         String contentType = req.getHeader(HttpHeaderNames.CONTENT_TYPE);
 
         if (contentType.startsWith("multipart/form-data")) {
@@ -196,7 +198,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "GET" })
     public void listObjects(RestRequest req) throws HttpException {
-        checkBucketPrivilege(req);
+        checkReadBucketPrivilege(req);
         Bucket b = verifyAndGetBucket(req);
         try {
             String delimiter = req.getQueryParameter("delimiter");
@@ -242,7 +244,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "GET" })
     public void getObject(RestRequest req) throws HttpException {
-        checkBucketPrivilege(req);
+        checkReadBucketPrivilege(req);
 
         String objName = req.getRouteParam(OBJECT_NAME_PARAM);
         Bucket b = verifyAndGetBucket(req);
@@ -262,7 +264,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "DELETE" })
     public void deleteObject(RestRequest req) throws HttpException {
-        checkBucketPrivilege(req);
+        checkManageBucketPrivilege(req);
 
         String objName = req.getRouteParam(OBJECT_NAME_PARAM);
         Bucket b = verifyAndGetBucket(req);
@@ -279,14 +281,31 @@ public class BucketRestHandler extends RestHandler {
         }
     }
 
-    private void checkBucketPrivilege(RestRequest req) throws HttpException {
+    private void checkReadBucketPrivilege(RestRequest req) throws HttpException {
         String bucketName = req.getRouteParam(BUCKET_NAME_PARAM);
         if (bucketName.equals(getUserBucketName(req.getUser()))) {
             return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
                     // anyway)
         }
 
-        checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
+        if (!req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ReadBucket, bucketName)
+                && !req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
+                && !req.getUser().hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)) {
+            throw new ForbiddenException("Insufficient privileges to read bucket '" + bucketName + "'");
+        }
+    }
+
+    private void checkManageBucketPrivilege(RestRequest req) throws HttpException {
+        String bucketName = req.getRouteParam(BUCKET_NAME_PARAM);
+        if (bucketName.equals(getUserBucketName(req.getUser()))) {
+            return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
+                    // anyway)
+        }
+
+        if (!req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
+                && !req.getUser().hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)) {
+            throw new ForbiddenException("Insufficient privileges to manage bucket '" + bucketName + "'");
+        }
     }
 
     private static String getUserBucketName(User user) {
