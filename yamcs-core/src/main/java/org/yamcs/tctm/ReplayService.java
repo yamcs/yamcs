@@ -101,6 +101,9 @@ implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHi
         this.yamcsInstance = instance;
         this.originalReplayRequest = spec;
         xtceDb = XtceDbFactory.getInstance(instance);
+        if((args!=null) && args.containsKey("excludeParameterGroups")) {
+            excludeParameterGroups = YConfiguration.getList(args, "excludeParameterGroups");
+        }
     }
     
     public ReplayService(String instance, ReplayRequest spec) throws ConfigurationException {
@@ -108,7 +111,12 @@ implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHi
     }
     
     public ReplayService(String instance, Map<String, Object> args, String config) throws ConfigurationException {
-        this.yamcsInstance = instance;
+        this(instance, args, configToReplayRequest(config));
+    }
+    
+    
+    
+    private static ReplayRequest configToReplayRequest(String config) {
         ReplayRequest.Builder rrb = ReplayRequest.newBuilder(); 
         try {
             JsonIOUtil.mergeFrom(config.getBytes(), rrb, org.yamcs.protobuf.SchemaYamcs.ReplayRequest.MERGE, false);
@@ -121,12 +129,9 @@ implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHi
         if(!rrb.hasEndAction()) {
             rrb.setEndAction(EndAction.STOP);
         }
-        this.originalReplayRequest = rrb.build();
-        xtceDb = XtceDbFactory.getInstance(instance);
-        if((args!=null) && args.containsKey("excludeParameterGroups")) {
-            excludeParameterGroups = YConfiguration.getList(args, "excludeParameterGroups");
-        }
+       return rrb.build();
     }
+
     public ReplayService(String instance, String config) throws ConfigurationException {
         this(instance, null, config);
     }
