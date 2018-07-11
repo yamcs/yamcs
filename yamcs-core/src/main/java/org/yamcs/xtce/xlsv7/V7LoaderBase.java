@@ -32,15 +32,15 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     }
 
     // columns in the containers sheet
-    static final int IDX_CONT_NAME = 0;
-    static final int IDX_CONT_PARENT = 1;
-    static final int IDX_CONT_CONDITION = 2;
-    static final int IDX_CONT_FLAGS = 3;
-    static final int IDX_CONT_PARA_NAME = 4;
-    static final int IDX_CONT_RELPOS = 5;
-    static final int IDX_CONT_SIZEINBITS = 6;
-    static final int IDX_CONT_EXPECTED_INTERVAL = 7;
-    static final int IDX_CONT_DESCRIPTION = 8;
+    static final String CN_CONT_NAME = "container name";
+    static final String CN_CONT_PARENT = "parent";
+    static final String CN_CONT_CONDITION = "condition";
+    static final String CN_CONT_FLAGS = "flags";
+    static final String CN_CONT_ENTRY = "entry";
+    static final String CN_CONT_RELPOS = "position";
+    static final String CN_CONT_SIZEINBITS = "size in bits";
+    static final String CN_CONT_EXPECTED_INTERVAL = "expected interval";
+    static final String CN_CONT_DESCRIPTION = "description";
 
     // columns in the algorithms sheet
     static final String CN_ALGO_NAME = "algorithm name";

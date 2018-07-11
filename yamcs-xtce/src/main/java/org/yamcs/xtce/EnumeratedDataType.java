@@ -91,7 +91,10 @@ public class EnumeratedDataType extends BaseDataType {
         enumerationList.add(valEnum);
         enumeration.put(value, valEnum);
     }
-
+    public void addEnumerationValue(ValueEnumeration ve) {
+        enumerationList.add(ve);
+        enumeration.put(ve.value, ve);
+    }
     /**
      * Add range to enumeration list
      */

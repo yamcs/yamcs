@@ -76,6 +76,7 @@ public class YarchDatabaseInstance {
             tablespaceName = instanceName;
         }
         loadTables();
+        YarchDatabase.getDefaultStorageEngine().getBucketDatabase(this);
     }
 
     /**

@@ -72,6 +72,7 @@ import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.FloatValidRange;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.History;
+import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
@@ -160,6 +161,10 @@ public class V7Loader extends V7LoaderBase {
     // Explicitly support these versions (i.e. load without warning)
     final static String[] FORMAT_VERSIONS_SUPPORTED = new String[] { FORMAT_VERSION, "7.0" };
     String fileFormatVersion;
+
+    final static Pattern REPEAT_PATTERN = Pattern.compile("(.*)[*](.*)");
+    final static Pattern REF_PATTERN = Pattern.compile("ref\\(\\s*([^,]+),\\s*(.+)?\\s*\\)");
+    final static Pattern ARRAY_PATTERN = Pattern.compile("(\\w+)(\\[[\\w\\d]+\\])+");
 
     protected SpaceSystem rootSpaceSystem;
 
@@ -1049,17 +1054,17 @@ public class V7Loader extends V7LoaderBase {
             // at this point, cells contains the data (name, path, ...) of either
             // a) a sub-container (inherits from another packet)
             // b) an aggregate container (which will be used as if it were a measurement, by other (sub)containers)
-            String name = cells[IDX_CONT_NAME].getContents();
+            String containerName = getContent(cells, CN_CONT_NAME);
             String parent = null;
             String condition = null;
-            if (cells.length > IDX_CONT_PARENT) {
-                parent = cells[IDX_CONT_PARENT].getContents();
-                if (cells.length <= IDX_CONT_CONDITION) {
+            if (hasColumn(cells, CN_CONT_PARENT)) {
+                parent = getContent(cells, CN_CONT_PARENT);
+                if (!hasColumn(cells, CN_CONT_CONDITION)) {
                     throw new SpreadsheetLoadException(ctx,
                             "Parent specified but without inheritance condition on container");
                 }
-                condition = cells[IDX_CONT_CONDITION].getContents();
-                parents.put(name, parent);
+                condition = getContent(cells, CN_CONT_CONDITION);
+                parents.put(containerName, parent);
             }
 
             if ("".equals(parent)) {
@@ -1079,34 +1084,34 @@ public class V7Loader extends V7LoaderBase {
             }
 
             int containerSizeInBits = -1;
-            if (hasColumn(cells, IDX_CONT_SIZEINBITS)) {
-                containerSizeInBits = Integer.decode(cells[IDX_CONT_SIZEINBITS].getContents());
+            if (hasColumn(cells, CN_CONT_SIZEINBITS)) {
+                containerSizeInBits = Integer.decode(getContent(cells, CN_CONT_SIZEINBITS));
             }
 
             RateInStream rate = null;
-            if (hasColumn(cells, IDX_CONT_EXPECTED_INTERVAL)) {
-                int expint = Integer.decode(cells[IDX_CONT_EXPECTED_INTERVAL].getContents());
+            if (hasColumn(cells, CN_CONT_EXPECTED_INTERVAL)) {
+                int expint = Integer.decode(getContent(cells, CN_CONT_EXPECTED_INTERVAL));
                 rate = new RateInStream(-1, expint);
             }
 
             String description = "";
-            if (hasColumn(cells, IDX_CONT_DESCRIPTION)) {
-                description = cells[IDX_CONT_DESCRIPTION].getContents();
+            if (hasColumn(cells, CN_CONT_DESCRIPTION)) {
+                description = getContent(cells, CN_CONT_DESCRIPTION);
             }
 
             // create a new SequenceContainer that will hold the parameters (i.e. SequenceEntries) for the
             // ORDINARY/SUB/AGGREGATE packets, and register that new SequenceContainer in the containers hashmap
-            SequenceContainer container = new SequenceContainer(name);
+            SequenceContainer container = new SequenceContainer(containerName);
             container.setSizeInBits(containerSizeInBits);
-            containers.put(name, container);
+            containers.put(containerName, container);
             container.setRateInStream(rate);
             if (!description.isEmpty()) {
                 container.setShortDescription(description);
                 container.setLongDescription(description);
             }
 
-            if (hasColumn(cells, IDX_CONT_FLAGS)) {
-                String flags = cells[IDX_CONT_FLAGS].getContents();
+            if (hasColumn(cells, CN_CONT_FLAGS)) {
+                String flags = getContent(cells, CN_CONT_FLAGS);
                 if (flags.contains("a")) {
                     container.useAsArchivePartition(true);
                 }
@@ -1127,7 +1132,7 @@ public class V7Loader extends V7LoaderBase {
                 // get the next row, containing a measurement/container reference
                 cells = jumpToRow(sheet, i);
                 // determine whether we have not reached the end of the packet definition.
-                if (!hasColumn(cells, IDX_CONT_PARA_NAME)) {
+                if (!hasColumn(cells, CN_CONT_ENTRY)) {
                     break;
                 }
                 absoluteoffset = addEntry(container, absoluteoffset, counter, cells);
@@ -1138,7 +1143,7 @@ public class V7Loader extends V7LoaderBase {
             // at this point, we have added all the parameters and containers to the current packets. What
             // remains to be done is link it with its base
             if (parent != null) {
-                parents.put(name, parent);
+                parents.put(containerName, parent);
                 // the condition is parsed and used to create the container.restrictionCriteria
                 // 1) get the parent, from the same sheet
                 SequenceContainer sc = containers.get(parent);
@@ -1174,10 +1179,10 @@ public class V7Loader extends V7LoaderBase {
     }
 
     private int addEntry(SequenceContainer container, int absoluteoffset, int counter, Cell[] cells) {
-        String paraname = cells[IDX_CONT_PARA_NAME].getContents();
+        String paraname = getContent(cells, CN_CONT_ENTRY);
         int relpos = 0;
-        if (hasColumn(cells, IDX_CONT_RELPOS)) {
-            relpos = Integer.decode(cells[IDX_CONT_RELPOS].getContents());
+        if (hasColumn(cells, CN_CONT_RELPOS)) {
+            relpos = Integer.decode(getContent(cells, CN_CONT_RELPOS));
         }
 
         int pos;
@@ -1198,16 +1203,27 @@ public class V7Loader extends V7LoaderBase {
         String repeat = null;
         // we check whether the measurement (or container) has a '*' inside it, meaning that it is a
         // repeat measurement/container
-        Matcher m = Pattern.compile("(.*)[*](.*)").matcher(paraname);
-        if (m.matches()) {
-            repeat = m.group(1);
-            paraname = m.group(2);
+        Matcher repeatMatcher = REPEAT_PATTERN.matcher(paraname);
+        if (repeatMatcher.matches()) {
+            repeat = repeatMatcher.group(1);
+            paraname = repeatMatcher.group(2);
         }
-        m = Pattern.compile("(\\w+)(\\[[\\w\\d]+\\])+").matcher(paraname);
         SequenceEntry se;
         int size;
-        if (m.matches()) {
-            se = makeArrayEntry(m.group(1), m.group(2));
+
+        Matcher arrayMatcher = ARRAY_PATTERN.matcher(paraname);
+        Matcher refMatcher = REF_PATTERN.matcher(paraname);
+        if (arrayMatcher.matches()) {
+            se = makeArrayEntry(arrayMatcher.group(1), arrayMatcher.group(2));
+            size = -1;
+        } else if (refMatcher.matches()) {
+            String refParamName = refMatcher.group(1);
+            String aliasNameSpace = (refMatcher.groupCount() > 1) ? refMatcher.group(2) : null;
+            Parameter refParam = parameters.get(refParamName);
+            if(refParam == null) {
+                throw new SpreadsheetLoadException(ctx, "Entry '"+paraname+"' makes reference to unkonw parameter '"+refParamName+"'");
+            }
+            se = new IndirectParameterRefEntry(pos, location, new ParameterInstanceRef(refParam), aliasNameSpace);
             size = -1;
         } else if (parameters.containsKey(paraname)) {
             Parameter param = parameters.get(paraname);
@@ -1219,6 +1235,7 @@ public class V7Loader extends V7LoaderBase {
             se = new ContainerEntry(pos, location, sc);
             size = sc.getSizeInBits();
         } else {
+
             throw new SpreadsheetLoadException(ctx, "The measurement/container '" + paraname
                     + "' was not found in the parameters or containers map");
         }
@@ -1234,7 +1251,7 @@ public class V7Loader extends V7LoaderBase {
             // must be relative
             absoluteoffset = -1;
         }
-        
+
         return absoluteoffset;
     }
 

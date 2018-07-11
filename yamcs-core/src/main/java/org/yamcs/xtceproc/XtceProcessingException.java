@@ -5,12 +5,12 @@ package org.yamcs.xtceproc;
  * @author nm
  *
  */
-public class XtceProcException extends RuntimeException {
-    public XtceProcException(String message) {
+public class XtceProcessingException extends RuntimeException {
+    public XtceProcessingException(String message) {
         super(message);
     }
 
-    public XtceProcException(String message, Throwable cause) {
+    public XtceProcessingException(String message, Throwable cause) {
         super(message, cause);
     }
 }

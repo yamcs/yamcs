@@ -17,12 +17,15 @@ import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.XtceDb;
 
 public class SequenceEntryProcessor {
     static Logger log = LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
@@ -34,19 +37,17 @@ public class SequenceEntryProcessor {
     }
 
     public void extract(SequenceEntry se) {
-        try {
-            if (se instanceof ContainerEntry) {
-                extractContainerEntry((ContainerEntry) se);
-            } else if (se instanceof ParameterEntry) {
-                extractParameterEntry((ParameterEntry) se);
-            } else if (se instanceof ArrayParameterEntry) {
-                extractArrayParameterEntry((ArrayParameterEntry) se);
-            } else {
-                throw new UnsupportedOperationException("processing type " + se.getClass() + " not implemented");
-            }
-        } catch (XtceProcException e) {
-            log.warn("Exception when extracting\n {} :\n", se, e);
-            throw e;
+        if (se instanceof ParameterEntry) {
+            extractParameterEntry((ParameterEntry) se);
+        } else if (se instanceof ContainerEntry) {
+            extractContainerEntry((ContainerEntry) se);
+        } else if (se instanceof ArrayParameterEntry) {
+            extractArrayParameterEntry((ArrayParameterEntry) se);
+        } else if (se instanceof IndirectParameterRefEntry) {
+            extractIndirectParameterRefEntry((IndirectParameterRefEntry) se);
+        } else {
+            throw new UnsupportedOperationException(
+                    "processing entry of class " + se.getClass() + " not implemented");
         }
     }
 
@@ -71,11 +72,11 @@ public class SequenceEntryProcessor {
             buf.setPosition(buf.getPosition() + ce.getRefContainer().getSizeInBits());
     }
 
-    private void extractParameterEntry(ParameterEntry pe) {
-        Parameter param = pe.getParameter();
+    private ParameterValue extractParameter(Parameter param) {
         ParameterType ptype = param.getParameterType();
         if (ptype == null) {
-            throw new XtceProcException("Encountered entry for parameter '" + param.getName() + " without a type");
+            throw new XtceProcessingException(
+                    "Encountered entry for parameter '" + param.getName() + " without a type");
         }
         ParameterValue pv = new ParameterValue(param);
         int offset = pcontext.buffer.getPosition();
@@ -94,8 +95,12 @@ public class SequenceEntryProcessor {
         pv.setAcquisitionTime(pcontext.result.acquisitionTime);
         pv.setGenerationTime(pcontext.result.generationTime);
         pv.setExpireMillis(pcontext.result.expireMillis);
-        pv.setSequenceEntry(pe);
+        return pv;
+    }
 
+    private void extractParameterEntry(ParameterEntry pe) {
+        ParameterValue pv = extractParameter(pe.getParameter());
+        pv.setSequenceEntry(pe);
         pcontext.result.params.add(pv);
     }
 
@@ -107,7 +112,7 @@ public class SequenceEntryProcessor {
             IntegerValue iv = size.get(i);
             Long l = valueproc.getValue(iv);
             if (l == null) {
-                throw new ContainerProcessingException("Cannot compute value of " + iv
+                throw new XtceProcessingException("Cannot compute value of " + iv
                         + " necessary to determine the size of the array " + pe.getParameter());
             }
             int ds = l.intValue();
@@ -118,7 +123,7 @@ public class SequenceEntryProcessor {
         }
         int ts = ArrayValue.flatSize(isize);
         if (ts > MAX_ARRAY_SIZE) {
-            throw new ContainerProcessingException("Resulted size of the array " + pe.getParameter()
+            throw new XtceProcessingException("Resulted size of the array " + pe.getParameter()
                     + " exceeds the max allowed: " + ts + " > " + MAX_ARRAY_SIZE);
         }
         ArrayParameterType aptype = (ArrayParameterType) pe.getParameter().getParameterType();
@@ -148,6 +153,32 @@ public class SequenceEntryProcessor {
         pcontext.result.params.add(pv);
     }
 
+    private void extractIndirectParameterRefEntry(IndirectParameterRefEntry se) {
+        ParameterInstanceRef pir = se.getParameterRef();
+        Value v = pcontext.getValue(pir);
+        if (v == null) {
+            throw new XtceProcessingException("Cannot determine the value of " + pir
+                    + " necessary to extract the indirect parameter ref entry");
+        }
+        XtceDb db = pcontext.getXtceDb();
+        String nameSpace = se.getAliasNameSpace();
+        String name = v.toString();
+        log.trace("Looking up parameter with name/alias {} in namespace {}", name, nameSpace);
+
+        Parameter p = nameSpace == null ? db.getParameter(name) : db.getParameter(nameSpace, name);
+        if (p == null) {
+            if (nameSpace == null) {
+                throw new XtceProcessingException("Cannot find a parameter with FQN" + name);
+            } else {
+                throw new XtceProcessingException(
+                        "Cannot find a parameter with name '" + name + "' in nameSpace '" + nameSpace + "'");
+            }
+        }
+        ParameterValue pv = extractParameter(p);
+        pv.setSequenceEntry(se);
+        pcontext.result.params.add(pv);
+    }
+
     private Value extract(ParameterType ptype) {
         if (ptype instanceof BaseDataType) {
             return extractBaseDataType((BaseDataType) ptype);
@@ -167,10 +198,10 @@ public class SequenceEntryProcessor {
         for (Member m : ptype.getMemberList()) {
             ParameterType mptype = (ParameterType) m.getType();
             if (mptype == null) {
-                throw new XtceProcException("Encountered entry for aggregate parameter member'"
+                throw new XtceProcessingException("Encountered entry for aggregate parameter member'"
                         + ptype.getName() + "/" + m.getName() + " without a type");
             }
-             
+
             Value v = extract(mptype);
             result.setValue(m.getName(), v);
         }
@@ -180,7 +211,7 @@ public class SequenceEntryProcessor {
     private Value extractBaseDataType(BaseDataType ptype) {
         DataEncoding encoding = ptype.getEncoding();
         if (encoding == null) {
-            throw new XtceProcException(
+            throw new XtceProcessingException(
                     "Encountered parameter entry with a parameter type '" + ptype.getName()
                             + " without an encoding");
         }

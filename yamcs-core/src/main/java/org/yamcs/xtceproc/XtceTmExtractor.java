@@ -115,6 +115,8 @@ public class XtceTmExtractor {
                 ContainerProcessingContext cpc = new ContainerProcessingContext(pdata, buf, result, subscription, options);
                 cpc.sequenceContainerProcessor.extract(startContainer);
             }
+        } catch (XtceProcessingException e) {
+            pdata.eventProducer.sendWarning(e.getMessage());
         } catch (Exception e) {
             log.error("got exception in tmextractor ", e);
         }

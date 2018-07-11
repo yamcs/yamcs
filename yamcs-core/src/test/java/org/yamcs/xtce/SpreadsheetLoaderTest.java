@@ -139,4 +139,14 @@ public class SpreadsheetLoaderTest {
         IntegerDataEncoding enc = (IntegerDataEncoding) itype.getEncoding();
         assertEquals(8, enc.sizeInBits);
     }
+    
+    @Test
+    public void testIndirectRefEntry() throws Exception {
+        SequenceContainer se = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT9");
+        List<SequenceEntry> l = se.getEntryList();
+        assertEquals(2, l.size());
+        IndirectParameterRefEntry ipre = (IndirectParameterRefEntry) l.get(1);
+        assertEquals("OB_ID", ipre.getAliasNameSpace());
+        assertEquals(db.getParameter("/REFMDB/SUBSYS1/pkt9_pid"), ipre.getParameterRef().getParameter());
+    }
 }
