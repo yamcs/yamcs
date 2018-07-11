@@ -1,6 +1,12 @@
 Version 4.6.0
-- introduced aggregate and array data types
+- introduced aggregate and array data types (not yet fully working with the
+parameter archive)
+- introduced a V7 spreadsheet loader that makes a distinction between
+parameters/arguments and their data types 
 - added support for MIL-STD-1750A floating point encoding (32 and 48 bits)
+- added a ECSS/PUS packet preprocessor 
+- added a CCSDS Unsegmented Time Code decoder
+
 
 Version 4.5.0 released 26-Jun-2018
 - added a simple object storage API (buckets)
