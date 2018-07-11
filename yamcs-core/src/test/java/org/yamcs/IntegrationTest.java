@@ -254,13 +254,13 @@ public class IntegrationTest extends AbstractIntegrationTest {
         checkPvals(bulkPvals.getValueList(), packetGenerator);
     }
 
-    
     @Test
     public void testRestArrayAggregateParameterGet() throws Exception {
         packetGenerator.generate_PKT8();
-        
+
         ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/array_para1");
-        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true).addAllId(subscrList.getIdList())
+        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true)
+                .addAllId(subscrList.getIdList())
                 .build();
 
         String response = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget",
@@ -271,7 +271,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         ParameterValue pv = pvals.getValue(0);
         Value v = pv.getEngValue();
         assertEquals(Value.Type.ARRAY, v.getType());
-        
+
         Value v1 = v.getArrayValue(10);
         assertEquals(Value.Type.AGGREGATE, v1.getType());
         AggregateValue av = v1.getAggregateValue();
@@ -644,32 +644,42 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testServicesStopStart() throws Exception {
-        String service = "org.yamcs.archive.CommandHistoryRecorder";
+        String serviceClass = "org.yamcs.archive.CommandHistoryRecorder";
 
         String resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
         ListServiceInfoResponse r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
         assertEquals(9, r.getServiceList().size());
 
-        ServiceInfo servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst()
+        ServiceInfo servInfo = r.getServiceList().stream()
+                .filter(si -> serviceClass.equals(si.getClassName()))
+                .findFirst()
                 .orElse(null);
         assertEquals(ServiceState.RUNNING, servInfo.getState());
 
-        resp = restClient.doRequest("/services/IntegrationTest/" + service + "?state=STOPPED", HttpMethod.PATCH, "")
+        resp = restClient
+                .doRequest("/services/IntegrationTest/" + serviceClass + "?state=STOPPED", HttpMethod.PATCH, "")
                 .get();
         assertEquals("", resp);
 
         resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
         r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst().orElse(null);
+        servInfo = r.getServiceList().stream()
+                .filter(si -> serviceClass.equals(si.getClassName()))
+                .findFirst()
+                .orElse(null);
         assertEquals(ServiceState.TERMINATED, servInfo.getState());
 
-        resp = restClient.doRequest("/services/IntegrationTest/" + service + "?state=running", HttpMethod.PATCH, "")
+        resp = restClient
+                .doRequest("/services/IntegrationTest/" + serviceClass + "?state=running", HttpMethod.PATCH, "")
                 .get();
         assertEquals("", resp);
 
         resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
         r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst().orElse(null);
+        servInfo = r.getServiceList().stream()
+                .filter(si -> serviceClass.equals(si.getClassName()))
+                .findFirst()
+                .orElse(null);
         assertEquals(ServiceState.RUNNING, servInfo.getState());
     }
 

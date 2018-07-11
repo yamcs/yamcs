@@ -28,17 +28,17 @@ export class ServicesPage implements AfterViewInit {
     this.dataSource.sort = this.sort;
   }
 
-  startService(name: string) {
+  startService(name: string, className: string) {
     if (confirm(`Are you sure you want to start ${name} ?`)) {
-      this.yamcs.getInstanceClient()!.startService(name).then(() => {
+      this.yamcs.getInstanceClient()!.startService(className).then(() => {
         this.refreshDataSource();
       });
     }
   }
 
-  stopService(name: string) {
+  stopService(name: string, className: string) {
     if (confirm(`Are you sure you want to stop ${name} ?`)) {
-      this.yamcs.getInstanceClient()!.stopService(name).then(() => {
+      this.yamcs.getInstanceClient()!.stopService(className).then(() => {
         this.refreshDataSource();
       });
     }
