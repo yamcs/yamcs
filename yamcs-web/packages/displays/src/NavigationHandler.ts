@@ -1,9 +1,9 @@
 import { OpenDisplayCommandOptions } from './OpenDisplayCommandOptions';
 
 /**
- * Holder for a display. For example: a frame in a layout is a display holder.
+ * Defines what should happen when navigation occurs from within a display. Usually via a navigation button.
  */
-export interface DisplayHolder {
+export interface NavigationHandler {
 
   /**
    * Returns the base id for relative links

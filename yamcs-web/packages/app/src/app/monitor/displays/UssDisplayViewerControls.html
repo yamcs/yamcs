@@ -1,0 +1,15 @@
+<ng-container *ngIf="initialized$ | async">
+  <button mat-button
+          color="primary"
+          (click)="viewer.zoomIn()">
+    <mat-icon>zoom_in</mat-icon>
+    ZOOM IN
+  </button>
+
+  <button mat-button
+          color="primary"
+          (click)="viewer.zoomOut()">
+    <mat-icon>zoom_out</mat-icon>
+    ZOOM OUT
+  </button>
+</ng-container>

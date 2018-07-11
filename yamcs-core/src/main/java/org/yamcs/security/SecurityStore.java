@@ -29,11 +29,24 @@ public class SecurityStore {
     private User systemUser;
     private User unauthenticatedUser;
 
+    @SuppressWarnings("unchecked")
     private SecurityStore() {
         YConfiguration yconf = YConfiguration.getConfiguration("security");
 
         enabled = yconf.getBoolean("enabled");
-        if (!enabled) {
+        if (enabled) {
+            if (yconf.containsKey("authModules")) {
+                for (Map<String, Object> moduleConf : yconf.<Map<String, Object>> getList("authModules")) {
+                    log.info("Loading AuthModule " + YConfiguration.getString(moduleConf, "class"));
+                    try {
+                        AuthModule authModule = YObjectLoader.loadObject(moduleConf);
+                        authModules.add(authModule);
+                    } catch (IOException e) {
+                        throw new ConfigurationException("Failed to load AuthModule", e);
+                    }
+                }
+            }
+        } else {
             log.warn("Security disabled");
             if (yconf.containsKey("unauthenticatedUser")) {
                 Map<String, Object> userProps = yconf.getMap("unauthenticatedUser");
@@ -44,22 +57,24 @@ public class SecurityStore {
 
                 unauthenticatedUser = new User(username);
                 unauthenticatedUser.setSuperuser(YConfiguration.getBoolean(userProps, "superuser", false));
-
-                // TODO allow configuring privileges? Probably shouldn't come from an AuthModule because enabled=false
+                if (userProps.containsKey("privileges")) {
+                    Map<String, Object> privileges = YConfiguration.getMap(userProps, "privileges");
+                    privileges.forEach((typeString, objects) -> {
+                        if (typeString.equals("System")) {
+                            for (String name : (List<String>) objects) {
+                                unauthenticatedUser.addSystemPrivilege(new SystemPrivilege(name));
+                            }
+                        } else {
+                            ObjectPrivilegeType type = new ObjectPrivilegeType(typeString);
+                            for (String object : (List<String>) objects) {
+                                unauthenticatedUser.addObjectPrivilege(new ObjectPrivilege(type, object));
+                            }
+                        }
+                    });
+                }
             } else {
                 unauthenticatedUser = new User("admin");
                 unauthenticatedUser.setSuperuser(true);
-            }
-        }
-
-        if (yconf.containsKey("authModules")) {
-            for (Map<String, Object> moduleConf : yconf.<Map<String, Object>> getList("authModules")) {
-                try {
-                    AuthModule authModule = YObjectLoader.loadObject(moduleConf);
-                    authModules.add(authModule);
-                } catch (IOException e) {
-                    throw new ConfigurationException("Failed to load AuthModule", e);
-                }
             }
         }
 

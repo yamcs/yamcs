@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" class="checkerboard">
+  <pattern id="pattern"
+           x="0" y="0" width="24" height="24"
+           patternUnits="userSpaceOnUse" >
+    <rect fill="rgba(204, 204, 204, 0.4)" x="0" width="12" height="12" y="0"/>
+    <rect fill="rgba(204, 204, 204, 0.4)" x="12" width="12" height="12" y="12"/>
+  </pattern>
+  <rect fill="url(#pattern)" x="0" y="0" width="100%" height="100%"/>
+</svg>
+<div class="wrapper">
+  <img *ngIf="url" [src]="url">
+</div>

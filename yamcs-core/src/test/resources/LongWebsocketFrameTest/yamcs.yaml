@@ -3,9 +3,3 @@ instances:
 
 incomingDir: /tmp/yamcs-incoming
 dataDir: /tmp/yamcs-LongWebsocketFrameTest-data
-
-webConfig: 
-  webRoot: "/tmp/yamcs-web"
-  port: 9191
-  webSocket:
-    maxFrameLength: 1048576

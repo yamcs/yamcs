@@ -102,7 +102,6 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     public Router() {
         registerRouteHandler(null, new ClientRestHandler());
-        registerRouteHandler(null, new DisplayRestHandler());
         registerRouteHandler(null, new InstanceRestHandler());
         registerRouteHandler(null, new LinkRestHandler());
         registerRouteHandler(null, new UserRestHandler());
@@ -119,6 +118,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new ArchiveStreamRestHandler());
         registerRouteHandler(null, new ArchiveTableRestHandler());
         registerRouteHandler(null, new ArchiveTagRestHandler());
+        registerRouteHandler(null, new BucketRestHandler());
         registerRouteHandler(null, new RocksDbMaintenanceRestHandler());
 
         registerRouteHandler(null, new ProcessorRestHandler());
@@ -134,7 +134,6 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new MDBAlgorithmRestHandler());
 
         registerRouteHandler(null, new OverviewRouteHandler());
-        registerRouteHandler(null, new BucketRestHandler());
     }
 
     // Using method handles for better invoke performance

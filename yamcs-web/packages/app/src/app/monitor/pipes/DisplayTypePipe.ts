@@ -17,7 +17,7 @@ export class DisplayTypePipe implements PipeTransform {
     } else if (lc.endsWith('.js')) {
       return 'Script File';
     } else if (lc.indexOf('.') !== -1) {
-      const extension = lc.substr(lc.lastIndexOf('.'));
+      const extension = lc.substr(lc.lastIndexOf('.') + 1);
       return extension.toUpperCase() + ' File';
     } else {
       return null;

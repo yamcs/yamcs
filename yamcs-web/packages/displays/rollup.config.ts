@@ -1,13 +1,13 @@
-import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
+import resolve from 'rollup-plugin-node-resolve';
+import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
-import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 
 export default {
   input: 'src/index.ts',
   output: [
-    { file: 'dist/displays.umd.js', name: 'opi-renderer', format: 'umd', sourcemap: true },
+    { file: 'dist/displays.umd.js', name: 'displays', format: 'umd', sourcemap: true },
     { file: 'dist/displays.es5.js', format: 'es', sourcemap: true },
   ],
   watch: {

@@ -104,12 +104,12 @@ message ObjectPrivilegeInfo {
 
 message UserInfo {
   optional string login = 1;
+  repeated ClientInfo clientInfo = 2;
   repeated string systemPrivilege = 11;
   repeated ObjectPrivilegeInfo objectPrivilege = 12;
   optional bool superuser = 13;
-  repeated ClientInfo clientInfo = 14;
   
-  repeated string systemPrivileges = 2 [deprecated=true]; // Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
+  repeated string systemPrivileges = 8 [deprecated=true]; // Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
 }
 
 message TmStatistics {

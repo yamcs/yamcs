@@ -168,7 +168,7 @@ public class XtceToGpbAssembler {
             }
             for (SequenceEntry entry : c.getEntryList()) {
                 if (detail == DetailLevel.SUMMARY) {
-                    cb.addEntry(toSequenceEntryInfo(entry, DetailLevel.LINK));
+                    cb.addEntry(toSequenceEntryInfo(entry, DetailLevel.SUMMARY));
                 } else if (detail == DetailLevel.FULL) {
                     cb.addEntry(toSequenceEntryInfo(entry, DetailLevel.FULL));
                 }
@@ -195,14 +195,14 @@ public class XtceToGpbAssembler {
 
         if (e instanceof ContainerEntry) {
             ContainerEntry ce = (ContainerEntry) e;
-            if (detail == DetailLevel.LINK || detail == DetailLevel.SUMMARY) {
+            if (detail == DetailLevel.SUMMARY) {
                 b.setContainer(toContainerInfo(ce.getRefContainer(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
                 b.setContainer(toContainerInfo(ce.getRefContainer(), DetailLevel.FULL));
             }
         } else if (e instanceof ParameterEntry) {
             ParameterEntry pe = (ParameterEntry) e;
-            if (detail == DetailLevel.LINK || detail == DetailLevel.SUMMARY) {
+            if (detail == DetailLevel.SUMMARY) {
                 b.setParameter(toParameterInfo(pe.getParameter(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
                 b.setParameter(toParameterInfo(pe.getParameter(), DetailLevel.FULL));

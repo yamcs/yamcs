@@ -1,7 +1,7 @@
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { MatDialogRef, MatSelectionList, MatSelectionListChange } from '@angular/material';
-import { Component, ViewChild, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Instance } from '@yamcs/client';
 import { Router } from '@angular/router';
+import { Instance } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -50,7 +50,7 @@ export class SelectInstanceDialog implements AfterViewInit {
     const newInstance = selectedOption.value;
     this.dialogRef.close();
     if (instance.name !== newInstance) {
-      this.router.navigateByUrl(`/monitor/displays?instance=${newInstance}`);
+      this.router.navigateByUrl(`/monitor/displays/browse?instance=${newInstance}`);
     }
   }
 }

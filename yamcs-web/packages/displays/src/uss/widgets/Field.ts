@@ -1,12 +1,12 @@
-import * as utils from '../utils';
-
-import { sprintf } from './sprintf';
-import { AbstractWidget } from './AbstractWidget';
-import { G, Rect, Text, Tag } from '../../tags';
+import { G, Rect, Text } from '../../tags';
 import { Color } from '../Color';
 import { DataSourceBinding } from '../DataSourceBinding';
-import { DEFAULT_STYLE } from '../StyleSet';
 import { DataSourceSample } from '../DataSourceSample';
+import { DEFAULT_STYLE } from '../StyleSet';
+import * as utils from '../utils';
+import { AbstractWidget } from './AbstractWidget';
+import { sprintf } from './sprintf';
+
 
 const indicatorChars = 2;
 
@@ -226,10 +226,12 @@ export class Field extends AbstractWidget {
     this.fieldTextEl = this.svg.getElementById(this.id);
 
     this.fieldEl.addEventListener('click', () => {
-      this.display.displayCommunicator.triggerParameterAction({
-        namespace: 'MDB:OPS Name',
-        name: this.opsName,
-      });
+      if (this.opsName) {
+        this.display.displayCommunicator.triggerParameterAction({
+          namespace: 'MDB:OPS Name',
+          name: this.opsName,
+        });
+      }
     });
   }
 

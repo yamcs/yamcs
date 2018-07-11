@@ -8,7 +8,7 @@ Summary: 	Mission Control System
 Vendor:		Space Applications Services
 Packager:	Space Applications Services
 License: 	AGPL (server) + LGPL (API)
-URL: 		https://www.spaceapplications.com
+URL: 		https://www.yamcs.org
 Source: 	%{name}-%{version}.tar.gz
 BuildRoot: 	%{_tmppath}/%{name}-%{version}-buildroot
 Prefix: 	/opt/yamcs
@@ -37,19 +37,21 @@ mkdir -p %{buildroot}/etc/init.d
 mkdir -p %{buildroot}/%{prefix}/lib/ext
 mkdir -p %{buildroot}/%{prefix}/lib/yamcs-web
 mkdir -p %{buildroot}/%{prefix}/lib/xtce
-mkdir -p %{buildroot}/%{prefix}/web/
 
 cp -a yamcs-server/lib %{buildroot}/%{prefix}/
-cp -an yamcs-client/lib %{buildroot}/%{prefix}/
+cp -an yamcs-client/lib %{buildroot}/%{prefix}/ || :
 
 cp -a yamcs-core/etc %{buildroot}/%{prefix}/
-cp -an yamcs-client/etc %{buildroot}/%{prefix}/
+cp -an yamcs-client/etc %{buildroot}/%{prefix}/ || :
 
 cp -a yamcs-server/bin %{buildroot}/%{prefix}/
-cp -an yamcs-client/bin %{buildroot}/%{prefix}/
+cp -an yamcs-client/bin %{buildroot}/%{prefix}/ || :
 
-rm yamcs-core/target/yamcs-*-sources.jar
-cp yamcs-core/target/yamcs*.jar %{buildroot}/%{prefix}/lib
+rm yamcs-client/target/yamcs-*-sources.jar
+cp yamcs-client/target/yamcs*.jar %{buildroot}/%{prefix}/lib
+
+#rm yamcs-server/target/yamcs-*-sources.jar
+cp yamcs-server/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 
 cp yamcs-artemis/lib/*.jar %{buildroot}/%{prefix}/lib
 cp yamcs-artemis/target/yamcs-artemis*.jar %{buildroot}/%{prefix}/lib
@@ -82,7 +84,6 @@ fi
 %config %{prefix}/mdb
 %config %{prefix}/etc
 %{prefix}/lib
-%{prefix}/web
 %exclude %{prefix}/lib/ext
 %exclude %{prefix}/lib/xtce
 

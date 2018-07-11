@@ -1,9 +1,7 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-
-import { Container, Instance } from '@yamcs/client';
-
-import { YamcsService } from '../../core/services/YamcsService';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { Container, Instance } from '@yamcs/client';
+import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
   templateUrl: './ContainersPage.html',

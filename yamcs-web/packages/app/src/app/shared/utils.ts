@@ -1,6 +1,18 @@
 import { Value } from '@yamcs/client';
 
 /**
+ * Deep clones an object.
+ * https://github.com/whatwg/html/issues/793
+ */
+export function structuredClone(obj: {}) {
+  return new Promise(resolve => {
+    const {port1, port2} = new MessageChannel();
+    port2.onmessage = ev => resolve(ev.data);
+    port1.postMessage(obj);
+  });
+}
+
+/**
  * Substracts an ISO 8601 duration string from the given date.
  * Fractions are not currently supported.
  */

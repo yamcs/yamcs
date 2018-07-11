@@ -1,9 +1,9 @@
-import * as utils from '../utils';
-
-import { AbstractWidget } from './AbstractWidget';
+import { DisplayCommunicator } from '../../DisplayCommunicator';
 import { Image } from '../../tags';
 import { DataSourceBinding } from '../DataSourceBinding';
-import { DisplayCommunicator } from '../../DisplayCommunicator';
+import * as utils from '../utils';
+import { AbstractWidget } from './AbstractWidget';
+
 
 export class Symbol extends AbstractWidget {
 
@@ -40,7 +40,7 @@ export class Symbol extends AbstractWidget {
     const lib = new SymbolLibrary();
     this.libraries[libraryName] = lib;
 
-    return this.displayCommunicator.retrieveXML(`symlib/${libraryName}.xml`).then(doc => {
+    return this.displayCommunicator.getXMLObject('uss', `symlib/${libraryName}.xml`).then(doc => {
       lib.parse(doc);
     });
   }
@@ -57,7 +57,7 @@ export class Symbol extends AbstractWidget {
           console.warn(`Cannot find symbol ${this.symbolName} in library ${this.libraryName}`);
         } else {
           this.symbol = symbol;
-          const href = this.displayCommunicator.resolvePath(`symlib/images/${symbol.defaultImage}`);
+          const href = this.displayCommunicator.getObjectURL('uss', `symlib/images/${symbol.defaultImage}`);
           this.symbolEl.setAttribute('href', href);
         }
       });
@@ -78,7 +78,7 @@ export class Symbol extends AbstractWidget {
     if (this.valueBinding && this.valueBinding.sample) {
       const value = this.valueBinding.value;
       const file = this.symbol.states[value] || this.symbol.defaultImage;
-      this.symbolEl.setAttribute('href', this.displayCommunicator.resolvePath(`symlib/images/${file}`));
+      this.symbolEl.setAttribute('href', this.displayCommunicator.getObjectURL('uss', `symlib/images/${file}`));
     }
   }
 }
