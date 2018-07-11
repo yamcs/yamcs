@@ -1,5 +1,6 @@
 <ng-container *ngIf="initialized$ | async">
   <button mat-button
+          *ngIf="mayManageDisplays()"
           color="primary"
           [disabled]="!(viewer.hasUnsavedChanges$ | async)"
           (click)="save()">
