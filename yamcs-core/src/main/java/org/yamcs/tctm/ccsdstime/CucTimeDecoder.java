@@ -16,7 +16,7 @@ public class CucTimeDecoder implements CcsdsTimeDecoder {
     /**
      * Constructor for decoder.
      * 
-     * @param impicitPField
+     * @param implicitPField
      *            -1 means is part of the packet, other values means it is pre-defined (implicit)
      */
     public CucTimeDecoder(int implicitPField) {
