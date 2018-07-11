@@ -4,17 +4,18 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { LayoutState } from './LayoutState';
 
 @Component({
-  selector: 'app-save-layout-dialog',
-  templateUrl: './SaveLayoutDialog.html',
+  selector: 'app-create-layout-dialog',
+  templateUrl: './CreateLayoutDialog.html',
 })
-export class SaveLayoutDialog {
+export class CreateLayoutDialog {
 
   name = new FormControl();
 
   constructor(
-    private dialogRef: MatDialogRef<SaveLayoutDialog>,
+    private dialogRef: MatDialogRef<CreateLayoutDialog>,
     private yamcs: YamcsService,
     private router: Router,
     private authService: AuthService,
@@ -24,7 +25,11 @@ export class SaveLayoutDialog {
   save() {
     const instance = this.yamcs.getInstance();
     const objectName = `layouts/${this.name.value}`;
-    const objectValue = new Blob([JSON.stringify(this.data.state)], {
+
+    const newLayout: LayoutState = {
+      frames: [],
+    };
+    const objectValue = new Blob([JSON.stringify(newLayout, undefined, 2)], {
       type: 'application/json',
     });
     const username = this.authService.getUser()!.getUsername();

@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Instance } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs';
 import { AppConfig, APP_CONFIG, SidebarItem } from '../../core/config/AppConfig';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
@@ -11,7 +13,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 })
 export class MonitorPage {
 
-  instance: Instance;
+  instance$ = new BehaviorSubject<Instance | null>(null);
 
   extraItems: SidebarItem[];
 
@@ -19,11 +21,14 @@ export class MonitorPage {
     yamcs: YamcsService,
     @Inject(APP_CONFIG) appConfig: AppConfig,
     private authService: AuthService,
+    route: ActivatedRoute,
   ) {
-    this.instance = yamcs.getInstance();
-
     const monitorConfig = appConfig.monitor || {};
     this.extraItems = monitorConfig.extraItems || [];
+
+    route.queryParams.subscribe(() => {
+      this.instance$.next(yamcs.getInstance());
+    });
   }
 
   showEventsItem() {

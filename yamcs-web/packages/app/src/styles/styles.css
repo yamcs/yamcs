@@ -92,6 +92,10 @@ body {
   width: 16px !important;
 }
 
+.ya-data-table .selected {
+  background-color: #f0f4fd !important;
+}
+
 .ya-data-table .mat-button, .ya-data-table .mat-stroked-button {
   line-height: 16px;
   min-width: 0;
@@ -132,6 +136,65 @@ a.ya-link.ya-header-link {
   width: 14px !important;
   margin-right: 3px;
   font-weight: 600;
+}
+
+.ya-form label {
+  margin: -3px 0 20px 0;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: .02em;
+  line-height: 12px;
+  color: black;
+  text-transform: inherit;
+  cursor: default;
+}
+
+.ya-form label.invalid {
+  color: crimson;
+}
+
+.ya-form label,
+.ya-form label input[type="text"],
+.ya-form label textarea,
+.ya-form label select {
+  margin: 5px 0 0;
+  display: block;
+  width: 100%;
+}
+
+.ya-form input[type="text"] {
+  background: white;
+  border: 1px solid #d3d3d3;
+  border-radius: 1px;
+  font-size: 12px;
+  font-weight: 400;
+  height: 24px;
+  padding: 0 7px 1px;
+}
+
+/*.ya-form input[type="radio"] {
+  vertical-align: baseline;
+}*/
+
+.ya-form .error-message {
+  color: crimson;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: normal;
+}
+
+.ya-form .hint {
+  color: grey;
+  line-height: 16px;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.ya-autocomplete .mat-option {
+  height: auto;
+  line-height: 16px;
+  font-size: 12px;
 }
 
 .vmiddle {
@@ -187,4 +250,13 @@ a.ya-link.ya-header-link {
 
 .alert, .ERROR td, .DISTRESS td, .CRITICAL td, .SEVERE td {
   color: red !important;
+}
+
+/*
+ * Fix for scrollbar being invisible on Safari.
+ * https://github.com/ajaxorg/ace/issues/2872
+ */
+.ace_scrollbar-inner {
+  background-color: white;
+  opacity: 0.01;
 }

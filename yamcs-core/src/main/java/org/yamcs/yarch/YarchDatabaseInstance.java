@@ -15,10 +15,12 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.TagDb;
 import org.yamcs.management.ManagementService;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.ExecutionContext;
 import org.yamcs.yarch.streamsql.ParseException;
@@ -49,6 +51,7 @@ public class YarchDatabaseInstance {
     static Logger log = LoggerFactory.getLogger(YarchDatabaseInstance.class.getName());
     static YConfiguration config;
     String tablespaceName;
+    BucketDatabase bucketDatabase;
 
     static {
         config = YConfiguration.getConfiguration("yamcs");
@@ -72,10 +75,29 @@ public class YarchDatabaseInstance {
             } else {
                 tablespaceName = instanceName;
             }
+
+            if (instConf.containsKey("bucketDatabase")) {
+                Map<String, Object> m = instConf.getMap("bucketDatabase");
+                String clazz = YConfiguration.getString(m, "class");
+                Object args = m.get("args");
+                try {
+                    if (args == null) {
+                        bucketDatabase = YObjectLoader.loadObject(clazz, instanceName);
+                    } else {
+                        bucketDatabase = YObjectLoader.loadObject(clazz, instanceName, args);
+                    }
+                } catch (IOException e) {
+                    throw new ConfigurationException("Failed to load bucket database: " + e.getMessage(), e);
+                }
+            }
         } else {
             tablespaceName = instanceName;
         }
         loadTables();
+
+        if (bucketDatabase == null) {
+            bucketDatabase = YarchDatabase.getDefaultStorageEngine().getBucketDatabase(this);
+        }
     }
 
     /**
@@ -371,7 +393,6 @@ public class YarchDatabaseInstance {
     }
 
     public BucketDatabase getBucketDatabase() throws YarchException {
-        return YarchDatabase.getDefaultStorageEngine().getBucketDatabase(this);
-        
+        return bucketDatabase;
     }
 }

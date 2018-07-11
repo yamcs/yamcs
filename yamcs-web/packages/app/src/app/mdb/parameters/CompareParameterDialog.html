@@ -1,19 +1,22 @@
-<mat-dialog-content>
-  <mat-form-field style="width: 100%">
-    <input matInput
-           [formControl]="parameter"
-           placeholder="Search parameter for comparison"
-           [matAutocomplete]="auto">
-  </mat-form-field>
-  <mat-autocomplete #auto>
-    <mat-option *ngFor="let option of filteredOptions | async" [value]="option.qualifiedName">
-      {{ option.qualifiedName }}
-    </mat-option>
-  </mat-autocomplete>
-  <label class="mat-typography">Color</label><br>
-  <app-color-palette #palette></app-color-palette>
+<mat-dialog-content class="mat-typography ya-form">
+  <label>
+    Search parameter for comparison
+    <input type="text"
+          [formControl]="parameter"
+          [matAutocomplete]="auto">
+    <mat-autocomplete class="ya-autocomplete" #auto>
+      <mat-option *ngFor="let option of filteredOptions | async" [value]="option.qualifiedName">
+        {{ option.qualifiedName }}
+      </mat-option>
+    </mat-autocomplete>
+  </label>
+
   <br>
-  <label class="mat-typography">Thickness</label><br>
+  <label class="mat-typography">Color</label>
+  <app-color-palette #palette></app-color-palette>
+
+  <br>
+  <label class="mat-typography">Thickness</label>
   <app-thickness #thickness [color]="palette.selectedColor"></app-thickness>
   <br>
 </mat-dialog-content>

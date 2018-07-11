@@ -2,8 +2,8 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { BucketsWrapper, InstancesWrapper, ObjectsWrapper, ServicesWrapper } from './types/internal';
-import { AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, GeneralInfo, Instance, ListObjectsOptions, ObjectInfo, Service, TokenResponse, UserInfo } from './types/system';
+import { BucketsWrapper, InstancesWrapper, ServicesWrapper } from './types/internal';
+import { AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, GeneralInfo, Instance, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
 
 export default class YamcsClient implements HttpHandler {
 
@@ -189,16 +189,18 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
-  async listObjects(bucket: string, options: ListObjectsOptions = {}): Promise<ObjectInfo[]> {
+  async listObjects(bucket: string, options: ListObjectsOptions = {}): Promise<ListObjectsResponse> {
     const url = `${this.apiUrl}/buckets/_global/${bucket}` + this.queryString(options);
     const response = await this.doFetch(url);
-    const wrapper = await response.json() as ObjectsWrapper;
-    return wrapper.object || [];
+    return await response.json() as ListObjectsResponse;
   }
 
   async getObject(bucket: string, name: string) {
-    const url = `${this.apiUrl}/buckets/_global/${bucket}/${name}`;
-    return await this.doFetch(url);
+    return await this.doFetch(this.getObjectURL(bucket, name));
+  }
+
+  getObjectURL(bucket: string, name: string) {
+    return `${this.apiUrl}/buckets/_global/${bucket}/${name}`;
   }
 
   async uploadObject(bucket: string, name: string, value: Blob) {

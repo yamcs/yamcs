@@ -17,13 +17,17 @@ public interface Bucket {
      */
     String getName();
 
+    default List<ObjectProperties> listObjects() throws IOException {
+        return listObjects(null, x -> true);
+    }
+
     default List<ObjectProperties> listObjects(String prefix) throws IOException {
         return listObjects(prefix, x -> true);
-    };
+    }
 
     default List<ObjectProperties> listObjects(Predicate<ObjectPropertiesOrBuilder> p) throws IOException {
         return listObjects(null, p);
-    };
+    }
 
     /**
      * retrieve objects whose name start with prefix and that match the condition Note that searching by prefix is

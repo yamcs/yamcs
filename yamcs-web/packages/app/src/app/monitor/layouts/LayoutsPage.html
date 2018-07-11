@@ -1,6 +1,20 @@
 <app-monitor-page>
   <app-monitor-toolbar>
     Layouts
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            (click)="createLayout()">
+      <mat-icon>add_box</mat-icon>
+      CREATE LAYOUT
+    </button>
+    <button mat-button
+            color="primary"
+            (click)="deleteSelectedLayouts()"
+            [disabled]="!selection.hasValue()">
+      <mat-icon>delete</mat-icon>
+      DELETE
+    </button>
   </app-monitor-toolbar>
 
   <div class="panel-content">
@@ -23,22 +37,48 @@
       </ng-container>
 
       <ng-container cdkColumnDef="name">
-        <th mat-header-cell *cdkHeaderCellDef width="300">Name</th>
+        <th mat-header-cell *cdkHeaderCellDef style="width: 300px">Name</th>
         <td mat-cell *cdkCellDef="let layout">
           <a [routerLink]="layout.name | slice:8"
-             [queryParams]="{instance: instance.name}">{{ layout.name | slice:8 }}</a>
+             [queryParams]="{instance: instance.name}"
+             (click)="$event.stopPropagation()">{{ layout.name | slice:8 }}</a>
         </td>
       </ng-container>
 
       <ng-container cdkColumnDef="visibility">
-        <th mat-header-cell *cdkHeaderCellDef>Visibility</th>
+        <th mat-header-cell *cdkHeaderCellDef style="width: 200px;">Visibility</th>
         <td mat-cell *cdkCellDef="let layout">
           Private
         </td>
       </ng-container>
 
+      <ng-container cdkColumnDef="modified">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Date modified</th>
+        <td mat-cell *cdkCellDef="let layout">
+          {{ layout.created | datetime }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let layout">
+          <mat-menu #fileMenu="matMenu" overlapTrigger="false" class="ya-menu">
+            <button mat-menu-item
+                    (click)="renameLayout(layout)">
+              Rename
+            </button>
+          </mat-menu>
+          <button mat-button [matMenuTriggerFor]="fileMenu" (click)="$event.stopPropagation()">
+            <mat-icon>more_horiz</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row
+          *cdkRowDef="let row; columns: displayedColumns;"
+          [class.selected]="selection.isSelected(row)"
+          (click)="toggleOne(row)"></tr>
     </table>
 
     <ng-template #empty>

@@ -16,7 +16,7 @@
     <ng-container cdkColumnDef="name">
       <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Instance</th>
       <td mat-cell *cdkCellDef="let row">
-        <a routerLink="/monitor"
+        <a routerLink="/monitor/displays/browse"
             [queryParams]="{instance: row.name}">
           {{ row.name }}
         </a>

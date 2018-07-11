@@ -19,22 +19,24 @@
           </p>
         </mat-list-item>
 
-        <br>
         <mat-list-item *ngIf="info.plugin">
           <h3 matLine>Plugins</h3>
-          <table matLine yaDataTable>
-            <tr>
-              <th>Name</th>
-              <th>Version</th>
-              <th>Vendor</th>
-            </tr>
-            <tr *ngFor="let plugin of info.plugin">
-              <td>{{ plugin.name }}</td>
-              <td>{{ plugin.version || '-' }}</td>
-              <td>{{ plugin.vendor || '-' }}</td>
-            </tr>
-          </table>
         </mat-list-item>
+
+        <table yaDataTable style="margin-left: 16px;">
+          <tr>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Vendor</th>
+          </tr>
+          <tr *ngFor="let plugin of info.plugin">
+            <td>{{ plugin.name }}</td>
+            <td>{{ plugin.version || '-' }}</td>
+            <td>{{ plugin.vendor || '-' }}</td>
+          </tr>
+        </table>
+
+        <br>
       </mat-list>
     </mat-card>
 

@@ -5,7 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatAutocompleteModule, MatBadgeModule, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatDatepickerModule, MatDialogModule, MatExpansionModule, MatGridListModule, MatIconModule, MatInputModule, MatListModule, MatMenuModule, MatNativeDateModule, MatPaginatorModule, MatProgressBarModule, MatProgressSpinnerModule, MatRadioModule, MatSelectModule, MatSidenavModule, MatSlideToggleModule, MatSliderModule, MatSnackBarModule, MatSortModule, MatTableModule, MatTabsModule, MatToolbarModule, MatTooltipModule } from '@angular/material';
+import { MatAutocompleteModule, MatBadgeModule, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatDatepickerModule, MatDialogModule, MatExpansionModule, MatGridListModule, MatIconModule, MatInputModule, MatListModule, MatMenuModule, MatNativeDateModule, MatPaginatorModule, MatProgressBarModule, MatProgressSpinnerModule, MatRadioModule, MatSelectModule, MatSidenavModule, MatSliderModule, MatSlideToggleModule, MatSnackBarModule, MatSortModule, MatTableModule, MatTabsModule, MatToolbarModule, MatTooltipModule } from '@angular/material';
 import { RouterModule } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
@@ -17,6 +17,7 @@ import { UnselectInstanceGuard } from '../core/guards/UnselectInstanceGuard';
 import { HelpDialog } from './dialogs/HelpDialog';
 import { SelectInstanceDialog } from './dialogs/SelectInstanceDialog';
 import { DateTimePipe } from './pipes/DateTimePipe';
+import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
@@ -107,6 +108,7 @@ const sharedComponents = [
 
 const pipes = [
   DateTimePipe,
+  FilenamePipe,
   FormatBytesPipe,
   OperatorPipe,
   UnitsPipe,

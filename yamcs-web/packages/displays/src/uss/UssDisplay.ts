@@ -1,7 +1,7 @@
 import { NamedObjectId, ParameterValue } from '@yamcs/client';
 import { Display } from '../Display';
 import { DisplayCommunicator } from '../DisplayCommunicator';
-import { DisplayHolder } from '../DisplayHolder';
+import { NavigationHandler } from '../NavigationHandler';
 import { Defs, Pattern, Rect, Svg, Tag } from '../tags';
 import { Color } from './Color';
 import { ParameterSample } from './ParameterSample';
@@ -36,7 +36,7 @@ export class UssDisplay implements Display {
   styleSet: StyleSet;
 
   constructor(
-    readonly holder: DisplayHolder,
+    readonly navigationHandler: NavigationHandler,
     private targetEl: HTMLDivElement,
     readonly displayCommunicator: DisplayCommunicator,
   ) {
@@ -71,8 +71,8 @@ export class UssDisplay implements Display {
     }
 
     return Promise.all([
-      this.displayCommunicator.retrieveXMLDisplayResource(id),
-      this.displayCommunicator.retrieveXML('mcs_dqistyle.xml'),
+      this.displayCommunicator.getXMLObject('displays', id),
+      this.displayCommunicator.getXMLObject('uss', 'mcs_dqistyle.xml'),
     ]).then(results => {
       this.styleSet = new StyleSet(results[1]);
       const displayEl = results[0].getElementsByTagName('Display')[0];

@@ -40,7 +40,6 @@ YAMCS_HOME=`cd "$PRG_DIR"; pwd`
 mkdir -p $TARGET/etc
 mkdir -p $TARGET/bin
 mkdir -p $TARGET/mdb
-mkdir -p $TARGET/web
 
 rm -rf $TARGET/lib
 mkdir -p $TARGET/lib/ext
@@ -69,9 +68,6 @@ if [ $YSS_CONFIGURATION -eq "1" ]; then
     cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
     ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
     ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
-
-    rm -rf $TARGET/web
-    ln -fs $YAMCS_HOME/yamcs-simulation/web $TARGET/web
 
     mkdir -p $YAMCS_DATA/simulator/profiles
     if [ $? -ne 0 ]; then
