@@ -1,0 +1,54 @@
+<table mat-table
+        *ngIf="dataSource.data.length"
+        [dataSource]="dataSource"
+        class="ya-data-table"
+        [class.paused]="paused">
+
+  <ng-container cdkColumnDef="generationTimeUTC">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation time</th>
+    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">{{ (row.generationTimeUTC | datetime) || '-' }}</td>
+  </ng-container>
+
+  <ng-container *ngFor="let parameter of model.parameters; let i = index" [cdkColumnDef]="parameter">
+    <th mat-header-cell *cdkHeaderCellDef>
+      <a [routerLink]="['/mdb/parameters', parameter]"
+          [queryParams]="{instance: instance.name}">
+        {{ parameter }}
+      </a>
+      <mat-menu #colMenu="matMenu" overlapTrigger="false" class="ya-menu">
+        <button mat-menu-item (click)="moveLeft.emit(i)">Move left</button>
+        <button mat-menu-item (click)="moveRight.emit(i)">Move right</button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="removeColumn.emit(parameter)">Remove column</button>
+      </mat-menu>
+      <button *ngIf="showActions" mat-button [matMenuTriggerFor]="colMenu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+    </th>
+    <td mat-cell *cdkCellDef="let row">
+      <ng-container *ngIf="row.pvals[parameter] as pval">
+        <app-expirable *ngIf="pval" [pval]="pval">
+          {{ (pval.engValue | value) || '-' }}
+          <span *ngIf="pval.rangeCondition === 'LOW'">&#8595;</span>
+          <span *ngIf="pval.rangeCondition === 'HIGH'">&#8593;</span>
+        </app-expirable>
+      </ng-container>
+      <span *ngIf="!row.pvals[parameter]">-</span>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+
+<ng-container *ngIf="showActions">
+  <p>&nbsp;</p>
+  Buffer size:
+  <select [formControl]="bufferSizeControl">
+    <option value="10">10</option>
+    <option value="25">25</option>
+    <option value="50">50</option>
+    <option value="75">75</option>
+    <option value="100">100</option>
+  </select>
+</ng-container>

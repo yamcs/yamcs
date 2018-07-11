@@ -38,7 +38,7 @@ export class SelectParameterDialog implements OnInit {
     @Inject(MAT_DIALOG_DATA) readonly data: SelectParameterOptions,
   ) {
     this.label = data.label || 'Search parameter';
-    this.okLabel = data.okLabel || 'Select';
+    this.okLabel = data.okLabel || 'SELECT';
     this.limit = data.limit || 10;
   }
 

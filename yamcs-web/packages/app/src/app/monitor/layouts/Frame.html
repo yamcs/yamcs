@@ -7,10 +7,12 @@
   <div #frameActions class="frame-actions">
     <span (click)="closeFrame()">x</span>
   </div>
-  <div #frameContent
-       (click)="onFrameContentClick($event)"
-       style="line-height: 0">
-    <ng-template app-viewer-host></ng-template>
+  <div class="frame-content-wrapper">
+    <div #frameContent
+        (click)="onFrameContentClick($event)"
+        style="line-height: 0">
+      <ng-template app-viewer-host></ng-template>
+    </div>
   </div>
   <div class="resize-handle"
        (mousedown)="onResizeHandleMouseDown($event)"></div>

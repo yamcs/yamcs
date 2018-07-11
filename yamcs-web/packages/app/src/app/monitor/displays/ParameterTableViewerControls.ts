@@ -31,8 +31,8 @@ export class ParameterTableViewerControls {
     const dialogRef = this.dialog.open(SelectParameterDialog, {
       width: '500px',
       data: {
-        okLabel: 'Add',
-        exclude: this.viewer.getParameterNames(),
+        okLabel: 'ADD',
+        exclude: this.viewer.getModel().parameters,
       }
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -59,9 +59,9 @@ export class ParameterTableViewerControls {
   }
 
   exportArchiveData() {
-    let parameterIds = this.viewer.selection.selected.map(rec => rec.name);
+    let parameterIds = this.viewer.selection.selected;
     if (!parameterIds.length) {
-      parameterIds = this.viewer.dataSource.data.map(rec => rec.name);
+      parameterIds = this.viewer.getModel().parameters;
     }
     this.dialog.open(ExportArchiveDataDialog, {
       width: '400px',

@@ -9,11 +9,13 @@ import { CreateDisplayDialog } from './displays/CreateDisplayDialog';
 import { DisplayFilePageDirtyDialog } from './displays/DisplayFilePageDirtyDialog';
 import { ExportArchiveDataDialog } from './displays/ExportArchiveDataDialog';
 import { ImageViewer } from './displays/ImageViewer';
+import { MultipleParameterTable } from './displays/MultipleParameterTable';
 import { OpiDisplayViewer } from './displays/OpiDisplayViewer';
 import { ParameterTableViewer } from './displays/ParameterTableViewer';
 import { ParameterTableViewerControls } from './displays/ParameterTableViewerControls';
 import { RenameDisplayDialog } from './displays/RenameDisplayDialog';
 import { ScriptViewer } from './displays/ScriptViewer';
+import { ScrollingParameterTable } from './displays/ScrollingParameterTable';
 import { TextViewer } from './displays/TextViewer';
 import { UssDisplayViewer } from './displays/UssDisplayViewer';
 import { UssDisplayViewerControls } from './displays/UssDisplayViewerControls';
@@ -87,6 +89,8 @@ const viewers = [
     EventSeverity,
     Layout,
     MonitorPageTemplate,
+    MultipleParameterTable,
+    ScrollingParameterTable,
     TimelineTooltip,
   ],
   exports: [
