@@ -4,12 +4,14 @@
 
     &nbsp;&nbsp;&nbsp;
     <button mat-button
+            *ngIf="mayManageDisplays()"
             color="primary"
             (click)="createDisplay()">
       <mat-icon>add_box</mat-icon>
       CREATE DISPLAY
     </button>
     <button mat-button
+            *ngIf="mayManageDisplays()"
             color="primary"
             (click)="deleteSelectedDisplays()"
             [disabled]="!selection.hasValue()">
@@ -42,11 +44,14 @@
 
       <ng-container cdkColumnDef="select">
         <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
-          <input type="checkbox" (change)="$event ? masterToggle() : null"
-                        [checked]="selection.hasValue() && isAllSelected()">
+          <input type="checkbox"
+                 *ngIf="mayManageDisplays()"
+                 (change)="$event ? masterToggle() : null"
+                 [checked]="selection.hasValue() && isAllSelected()">
         </th>
         <td mat-cell *cdkCellDef="let row">
           <input type="checkbox"
+                 *ngIf="mayManageDisplays()"
                  (click)="$event.stopPropagation()"
                  (change)="$event ? selection.toggle(row) : null"
                  [checked]="selection.isSelected(row)">
@@ -107,7 +112,10 @@
                 Rename
               </button>
             </mat-menu>
-            <button mat-button [matMenuTriggerFor]="fileMenu" (click)="$event.stopPropagation()">
+            <button mat-button
+                    *ngIf="mayManageDisplays()"
+                    [matMenuTriggerFor]="fileMenu"
+                    (click)="$event.stopPropagation()">
               <mat-icon>more_horiz</mat-icon>
             </button>
           </ng-container>

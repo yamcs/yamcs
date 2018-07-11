@@ -28,6 +28,12 @@ export class SystemPage {
   }
 
   showStreamsItem() {
-    return this.user.isSuperuser() || this.user.getSystemPrivileges().length > 0;
+    const objectPrivileges = this.user.getObjectPrivileges();
+    for (const priv of objectPrivileges) {
+      if (priv.type === 'Stream') {
+        return true;
+      }
+    }
+    return this.user.isSuperuser();
   }
 }

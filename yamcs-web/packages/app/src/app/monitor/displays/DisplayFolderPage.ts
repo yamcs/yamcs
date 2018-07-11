@@ -6,6 +6,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Instance, ListObjectsOptions, ListObjectsResponse } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CreateDisplayDialog } from './CreateDisplayDialog';
 import { RenameDisplayDialog } from './RenameDisplayDialog';
@@ -33,6 +34,7 @@ export class DisplayFolderPage implements OnDestroy {
     title: Title,
     private router: Router,
     private route: ActivatedRoute,
+    private authService: AuthService,
   ) {
     title.setTitle('Displays - Yamcs');
     this.instance = yamcs.getInstance();
@@ -157,6 +159,12 @@ export class DisplayFolderPage implements OnDestroy {
         this.loadCurrentFolder();
       }
     });
+  }
+
+  mayManageDisplays() {
+    const user = this.authService.getUser()!;
+    return user.hasObjectPrivilege('ManageBucket', 'displays')
+      || user.hasSystemPrivilege('ManageAnyBucket');
   }
 
   private updateBrowsePath() {
