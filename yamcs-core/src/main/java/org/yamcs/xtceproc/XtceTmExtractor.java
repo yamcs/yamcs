@@ -1,5 +1,6 @@
 package org.yamcs.xtceproc;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
@@ -23,7 +25,7 @@ import org.yamcs.xtceproc.ContainerProcessingContext.ContainerProcessingResult;
 public class XtceTmExtractor {
     private static final Logger log = LoggerFactory.getLogger(XtceTmExtractor.class);
     protected final Subscription subscription;
-    private ProcessingStatistics stats=new ProcessingStatistics();
+    private ProcessingStatistics stats = new ProcessingStatistics();
 
     private ContainerProcessingResult result;
 
@@ -34,6 +36,7 @@ public class XtceTmExtractor {
 
     /**
      * Creates a TmExtractor extracting data according to the XtceDb
+     * 
      * @param xtcedb
      */
     public XtceTmExtractor(XtceDb xtcedb) {
@@ -54,15 +57,21 @@ public class XtceTmExtractor {
     }
 
     /**
-     * Adds a parameter to the current subscription list:
-     *  finds all the SequenceContainers in which this parameter may appear and adds them to the list.
-     *  also for each sequence container adds the parameter needed to instantiate the sequence container.
-     * @param param parameter to be added to the current subscription list
+     * Adds a parameter to the current subscription list.
+     * <ul>
+     * <li>finds all the SequenceContainers in which this parameter may appear and adds them to the list.</li>
+     * <li>for each sequence container adds the parameter needed to instantiate the sequence container.</li>
+     * <li>if there is any {@link IndirectParameterRefEntry} having its alias namespace as one of the aliases of
+     * <code>param</code>, adds it also to the subcription</li>
+     * </ul>
+     * 
+     * @param param
+     *            parameter to be added to the current subscription list
      */
     public void startProviding(Parameter param) {
-        synchronized(subscription) {
+        synchronized (subscription) {
             ParameterType ptype = param.getParameterType();
-            if(ptype!=null) {
+            if (ptype != null) {
                 Set<Parameter> dependencies = ptype.getDependentParameters();
                 dependencies.forEach(p -> subscription.addParameter(p));
             }
@@ -108,11 +117,13 @@ public class XtceTmExtractor {
     /**
      * Extract one packet, starting at the specified container.
      */
-    public void processPacket(BitBuffer buf, long generationTime, long acquisitionTime, SequenceContainer startContainer) {
+    public void processPacket(BitBuffer buf, long generationTime, long acquisitionTime,
+            SequenceContainer startContainer) {
         result = new ContainerProcessingResult(acquisitionTime, generationTime, stats);
         try {
-            synchronized(subscription) {
-                ContainerProcessingContext cpc = new ContainerProcessingContext(pdata, buf, result, subscription, options);
+            synchronized (subscription) {
+                ContainerProcessingContext cpc = new ContainerProcessingContext(pdata, buf, result, subscription,
+                        options);
                 cpc.sequenceContainerProcessor.extract(startContainer);
             }
         } catch (XtceProcessingException e) {
@@ -126,19 +137,18 @@ public class XtceTmExtractor {
         stats.reset();
     }
 
-    public ProcessingStatistics getStatistics(){
+    public ProcessingStatistics getStatistics() {
         return stats;
     }
 
     public void startProviding(SequenceContainer sequenceContainer) {
-        synchronized(subscription) {
+        synchronized (subscription) {
             subscription.addSequenceContainer(sequenceContainer);
         }
     }
 
     public void stopProviding(SequenceContainer sequenceContainer) {
     }
-
 
     public ParameterValueList getParameterResult() {
         return result.params;
@@ -156,6 +166,7 @@ public class XtceTmExtractor {
     public String toString() {
         return subscription.toString();
     }
+
     public void setOptions(ContainerProcessingOptions opts) {
         this.options = opts;
     }

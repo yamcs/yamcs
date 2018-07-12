@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DynamicIntegerValue;
+import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.SequenceContainer;
@@ -121,11 +122,20 @@ public class Subscription {
      */
     public void addParameter(Parameter parameter) {
         List<ParameterEntry> tpips = xtcedb.getParameterEntries(parameter);
-        if (tpips == null) {
-            return;
+        if (tpips != null) {
+            for (ParameterEntry pe : tpips) {
+                addSequenceEntry(pe);
+            }
         }
-        for (ParameterEntry pe : tpips) {
-            addSequenceEntry(pe);
+        
+        for (String ns : parameter.getAliasSet().getNamespaces()) {
+            Collection<IndirectParameterRefEntry> c = xtcedb.getIndirectParameterRefEntries(ns);
+            if (c != null) {
+                for(IndirectParameterRefEntry ipre: c) {
+                    addParameter(ipre.getParameterRef().getParameter());
+                    addSequenceEntry(ipre);
+                }
+            }
         }
     }
 

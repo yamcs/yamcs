@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
@@ -41,7 +40,6 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
-import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
@@ -779,7 +777,6 @@ public class XtceTmExtractorTest {
     }
 
     @Test
-    @Ignore
     public void testPKT9_IndirectParaPartialExtraction() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
 

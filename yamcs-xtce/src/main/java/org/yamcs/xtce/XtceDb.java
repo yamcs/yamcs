@@ -65,6 +65,7 @@ public class XtceDb implements Serializable {
     private NamedDescriptionIndex<SequenceContainer> sequenceContainerAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<Algorithm> algorithmAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<MetaCommand> commandAliases = new NamedDescriptionIndex<>();
+    private Map<String, List<IndirectParameterRefEntry>> indirectParameterRefEntries = new HashMap<>();
 
     private Set<String> namespaces = new HashSet<>();
 
@@ -180,6 +181,14 @@ public class XtceDb implements Serializable {
         return namespaces;
     }
 
+    /**
+     * Returns a meta command by fully qualified name.
+     * 
+     * @param qualifiedName
+     *            - fully qualified name of the command to be returned.
+     * @return the meta command having the given qualified name. If no such command exists, <code>null</code> is
+     *         returned.
+     */
     public MetaCommand getMetaCommand(String qualifiedName) {
         rwLock.readLock().lock();
         try {
@@ -194,7 +203,8 @@ public class XtceDb implements Serializable {
      * 
      * @param namespace
      * @param name
-     * @return
+     * @return the meta command having the given name in the given namespace. If no such meta command exists,
+     *         <code>null</code> is returned.
      */
     public MetaCommand getMetaCommand(String namespace, String name) {
         rwLock.readLock().lock();
@@ -273,14 +283,16 @@ public class XtceDb implements Serializable {
 
     /**
      *
-     * @return list of ParameterEntry corresponding to a given parameter.
+     * @return list of ParameterEntry corresponding to a given parameter
+     *         or <code>null</code> if no such entry exists.
      */
     public List<ParameterEntry> getParameterEntries(Parameter p) {
         return parameter2ParameterEntryMap.get(p);
     }
 
     /**
-     * @return list of ContainerEntry corresponding to a given sequence container.
+     * @return list of ContainerEntry corresponding to a given sequence container
+     *         or <code>null</code> if no such entry exists.
      */
     public List<ContainerEntry> getContainerEntries(SequenceContainer sc) {
         return sequenceContainer2ContainerEntryMap.get(sc);
@@ -324,21 +336,19 @@ public class XtceDb implements Serializable {
                 if (se instanceof ParameterEntry) {
                     ParameterEntry pe = (ParameterEntry) se;
                     Parameter param = pe.getParameter();
-                    ArrayList<ParameterEntry> al = parameter2ParameterEntryMap.get(param);
-                    if (al == null) {
-                        al = new ArrayList<>();
-                        parameter2ParameterEntryMap.put(param, al);
-                    }
+                    ArrayList<ParameterEntry> al = parameter2ParameterEntryMap.computeIfAbsent(param,
+                            k -> new ArrayList<>());
                     al.add(pe);
                 } else if (se instanceof ContainerEntry) {
                     ContainerEntry ce = (ContainerEntry) se;
                     ArrayList<ContainerEntry> al = sequenceContainer2ContainerEntryMap
-                            .get(ce.getRefContainer());
-                    if (al == null) {
-                        al = new ArrayList<>();
-                        sequenceContainer2ContainerEntryMap.put(ce.getRefContainer(), al);
-                    }
+                            .computeIfAbsent(ce.getRefContainer(), k -> new ArrayList<>());
                     al.add(ce);
+                } else if (se instanceof IndirectParameterRefEntry) {
+                    IndirectParameterRefEntry ipe = (IndirectParameterRefEntry) se;
+                    List<IndirectParameterRefEntry> l = indirectParameterRefEntries
+                            .computeIfAbsent(ipe.getAliasNameSpace(), k -> new ArrayList<>());
+                    l.add(ipe);
                 }
             }
             if (sc.baseContainer != null) {
@@ -547,13 +557,13 @@ public class XtceDb implements Serializable {
     }
 
     /**
-     * Adds a new spacesystem to the XTCE db.
+     * Adds a new {@link SpaceSystem} to the XTCE database.
      *
      * It throws an IllegalArgumentException in the following circumstances:
      * <ul>
      * <li>if a SpaceSystem with this name already exists
-     * <li>if system.getParent() does not return null
-     * <li>if the parent SpaceSystem does not exist
+     * <li>if {@link SpaceSystem#getParent() system.getParent()} does not return null
+     * <li>if the parent SpaceSystem (identified based on the {@link SpaceSystem#getSubsystemName()}) does not exist
      * <li>if the space system is not empty
      * </ul>
      *
@@ -563,6 +573,7 @@ public class XtceDb implements Serializable {
      * will not be available when this object is created by the XtceDbFactory.
      * 
      * @param system
+     *            - the space system to be added.
      *
      */
     public void addSpaceSystem(SpaceSystem system) {
@@ -609,20 +620,26 @@ public class XtceDb implements Serializable {
         return result;
     }
 
-    private static void createSpaceSystem(XtceDb xtceDb, String ssname) {
-        String[] a = ssname.split("/");
-        String qn = "";
-        for (String name : a) {
-            if (name.isEmpty()) {
-                continue;
-            }
-            qn = qn + "/" + name;
-            if (xtceDb.getSpaceSystem(qn) == null) {
-                SpaceSystem ss = new SpaceSystem(name);
-                ss.setQualifiedName(qn);
-                xtceDb.addSpaceSystem(ss);
-            }
-        }
+    /**
+     * Returns a collection of all the {@link SpaceSystem} objects in the XTCE database.
+     * 
+     * @return the collection of space systems.
+     */
+    public Collection<SpaceSystem> getSpaceSystems() {
+        return spaceSystems.values();
+    }
+
+    /**
+     * Retrieve the list of {@link IndirectParameterRefEntry} for a given alias namespace.
+     * 
+     * @param namespace
+     *            - the namespace for which the indirect parameter reference entries should be retrieved. Can be null to
+     *            return the entries without a namespace.
+     * @return the list of indirect parameter reference entries whose alias namespace is equal to the given namespace.
+     *         If no such entry exists, <code>null</code> is returned.
+     */
+    public Collection<IndirectParameterRefEntry> getIndirectParameterRefEntries(String namespace) {
+        return indirectParameterRefEntries.get(namespace);
     }
 
     private void print(SpaceSystem ss, PrintStream out) {
@@ -697,7 +714,7 @@ public class XtceDb implements Serializable {
         }
     }
 
-    private void removeNonOrphaned(SpaceSystem ss, Set<Parameter> orphanedParameters) {
+    private static void removeNonOrphaned(SpaceSystem ss, Set<Parameter> orphanedParameters) {
         for (Algorithm a : ss.getAlgorithms()) {
             for (InputParameter p : a.getInputSet()) {
                 orphanedParameters.remove(p.getParameterInstance().getParameter());
@@ -709,9 +726,5 @@ public class XtceDb implements Serializable {
         for (SpaceSystem ss1 : ss.getSubSystems()) {
             removeNonOrphaned(ss1, orphanedParameters);
         }
-    }
-
-    public Collection<SpaceSystem> getSpaceSystems() {
-        return spaceSystems.values();
     }
 }
