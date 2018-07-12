@@ -1,7 +1,7 @@
 import { NamedObjectId, ParameterValue } from '@yamcs/client';
 import { Display } from '../Display';
 import { DisplayCommunicator } from '../DisplayCommunicator';
-import { DisplayHolder } from '../DisplayHolder';
+import { NavigationHandler } from '../NavigationHandler';
 import { Defs, Pattern, Rect, Svg, Tag } from '../tags';
 import { Color } from './Color';
 import * as utils from './utils';
@@ -17,7 +17,7 @@ export class OpiDisplay implements Display {
   container: HTMLDivElement;
 
   constructor(
-    readonly holder: DisplayHolder,
+    readonly navigationHandler: NavigationHandler,
     private targetEl: HTMLDivElement,
     readonly displayCommunicator: DisplayCommunicator,
   ) {
@@ -27,7 +27,7 @@ export class OpiDisplay implements Display {
   }
 
   parseAndDraw(id: string, grid = false) {
-    return this.displayCommunicator.retrieveXMLDisplayResource(id).then(doc => {
+    return this.displayCommunicator.getXMLObject('displays', id).then(doc => {
       const displayEl = doc.getElementsByTagName('display')[0];
 
       this.title = utils.parseStringChild(displayEl, 'name', 'Untitled');

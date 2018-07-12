@@ -54,10 +54,11 @@ public class AggregateMemberNames {
     }
 
     /**
-     * returns the unique object corresponding to the list of names
+     * Factory method that returns the unique object corresponding to the list of names.
      * 
-     * @param memberList
-     * @return
+     * @param names
+     *            - ordered list of names for which an object will be created if not already existing and returned
+     * @return - the unique object corresponding to the list of names
      */
     public static AggregateMemberNames get(String[] names) {
         AggregateMemberNames amn = new AggregateMemberNames(names);
@@ -74,7 +75,6 @@ public class AggregateMemberNames {
         return amn;
     }
 
-   
     @Override
     public int hashCode() {
         return Arrays.hashCode(names);

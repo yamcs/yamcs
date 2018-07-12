@@ -5,8 +5,9 @@ import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { AlarmsPage } from './alarms/AlarmsPage';
 import { ArchivePage } from './archive/ArchivePage';
-import { CommandsPage } from './commands/CommandsPage';
+import { CommandingPage } from './commands/CommandingPage';
 import { DisplayFilePage } from './displays/DisplayFilePage';
+import { DisplayFilePageDirtyGuard } from './displays/DisplayFilePageDirtyGuard';
 import { DisplayFolderPage } from './displays/DisplayFolderPage';
 import { DisplayPage } from './displays/DisplayPage';
 import { DisplaysPage } from './displays/DisplaysPage';
@@ -40,8 +41,8 @@ const routes: Routes = [
         component: ArchivePage,
       },
       {
-        path: 'commands',
-        component: CommandsPage,
+        path: 'commanding',
+        component: CommandingPage,
       },
       {
         path: 'displays',
@@ -65,6 +66,7 @@ const routes: Routes = [
           {
             path: '**',
             component: DisplayFilePage,
+            canDeactivate: [DisplayFilePageDirtyGuard],
           }
         ]
       },
@@ -93,13 +95,16 @@ const routes: Routes = [
 @NgModule({
   imports: [ RouterModule.forChild(routes) ],
   exports: [ RouterModule ],
+  providers: [
+    DisplayFilePageDirtyGuard,
+  ]
 })
 export class MonitorRoutingModule { }
 
 export const routingComponents = [
   AlarmsPage,
   ArchivePage,
-  CommandsPage,
+  CommandingPage,
   DisplaysPage,
   DisplayFilePage,
   DisplayFolderPage,

@@ -14,7 +14,6 @@ services:
       name: "realtime"
       type: "realtime" 
   - class: org.yamcs.archive.CommandHistoryRecorder
-  - class: org.yamcs.alarms.AlarmReporter
   - class: org.yamcs.parameterarchive.ParameterArchive
     args:
       realtimeFiller: 

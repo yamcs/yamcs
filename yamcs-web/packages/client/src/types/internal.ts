@@ -1,6 +1,6 @@
 import { Algorithm, Command, Container, Parameter, SpaceSystem } from './mdb';
 import { Alarm, CommandHistoryEntry, Event, IndexGroup, Range, Sample } from './monitoring';
-import { Bucket, ClientInfo, CommandQueue, Instance, Link, ObjectInfo, Processor, Record, Service, Stream, Table } from './system';
+import { Bucket, ClientInfo, CommandQueue, Instance, Link, Processor, Record, Service, Stream, Table } from './system';
 
 
 
@@ -114,8 +114,4 @@ export interface PacketNameWrapper {
 
 export interface BucketsWrapper {
   bucket: Bucket[];
-}
-
-export interface ObjectsWrapper {
-  object: ObjectInfo[];
 }

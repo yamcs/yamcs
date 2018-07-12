@@ -1,7 +1,11 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.*;
-import static org.yamcs.parameterarchive.TestUtils.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.yamcs.parameterarchive.TestUtils.checkEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,13 +24,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.rocksdb.RocksDBException;
-import org.yamcs.parameter.ParameterStatus;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YamcsServer;
-import org.yamcs.protobuf.Pvalue;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
+import org.yamcs.protobuf.Pvalue;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.FileUtils;

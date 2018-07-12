@@ -241,6 +241,7 @@ export interface GetParametersOptions {
   recurse?: boolean;
   type?: string;
   q?: string;
+  pos?: number;
   limit?: number;
 }
 

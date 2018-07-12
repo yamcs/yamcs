@@ -265,19 +265,6 @@ message BulkGetIndexRequest {
   repeated string packetname = 4;
 }
 
-message DisplayFolder {
-  optional string name = 1;
-  optional string path = 2;
-  repeated DisplayFolder folder = 3;
-  repeated DisplayFile file = 4;
-}
-
-message DisplayFile {
-  optional string name = 1;
-  optional string path = 2;
-  optional string url = 3;
-}
-
 message CreateBucketRequest {
   optional string name = 1;
 }
@@ -300,7 +287,6 @@ message ListBucketsResponse {
 
 
 message ListObjectsResponse {
-   repeated string prefix = 1;
-   repeated ObjectInfo object = 2;
+  repeated string prefix = 1;
+  repeated ObjectInfo object = 2;
 }
-

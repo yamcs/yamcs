@@ -2,8 +2,8 @@ import { Alarm, NamedObjectId, Parameter, ParameterValue, Sample } from '@yamcs/
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { convertValueToNumber } from '../utils';
-import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
 import { CustomBarsValue, DyAnnotation, DySample } from './dygraphs';
+import { DyValueRange, PlotBuffer, PlotData } from './PlotBuffer';
 
 /**
  * Stores sample data for use in a ParameterPlot directly

@@ -7,7 +7,10 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties;
 
 public interface BucketDatabase {
     Bucket createBucket(String bucketName) throws IOException;
-    Bucket getBucket(String bucketName);
-    List<BucketProperties> listBuckets();
+
+    Bucket getBucket(String bucketName) throws IOException;
+
+    List<BucketProperties> listBuckets() throws IOException;
+
     void deleteBucket(String bucketName) throws IOException;
 }

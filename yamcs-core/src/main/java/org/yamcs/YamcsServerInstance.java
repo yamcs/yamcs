@@ -84,7 +84,7 @@ public class YamcsServerInstance extends AbstractService {
                     timeService = YObjectLoader.loadObject(servclass, instanceName, args);
                 }
             } catch (IOException e) {
-                throw new ConfigurationException("Failed to load time service :" + e.getMessage(), e);
+                throw new ConfigurationException("Failed to load time service:" + e.getMessage(), e);
             }
         } else {
             timeService = new RealtimeTimeService();

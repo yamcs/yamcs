@@ -1,4 +1,4 @@
-<mat-sidenav-container class="mat-typography">
+<mat-sidenav-container class="mat-typography" *ngIf="instance$ | async as instance">
   <mat-sidenav mode="side" opened="true">
     <mat-toolbar class="module-title">
       <mat-toolbar-row>
@@ -29,9 +29,9 @@
         Alarms
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-item routerLink="commands"
+      <app-sidebar-nav-item routerLink="commanding"
                             [queryParams]="{instance: instance.name}">
-        Commands
+        Commanding
       </app-sidebar-nav-item>
 
       <app-sidebar-nav-item routerLink="archive"

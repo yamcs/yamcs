@@ -1,10 +1,10 @@
-import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild } from '@angular/core';
-
-import { Service } from '@yamcs/client';
-
-import { YamcsService } from '../../core/services/YamcsService';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
 import { MatSort, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
+import { Service } from '@yamcs/client';
+import { YamcsService } from '../../core/services/YamcsService';
+
+
 
 @Component({
   templateUrl: './ServicesPage.html',
@@ -28,17 +28,17 @@ export class ServicesPage implements AfterViewInit {
     this.dataSource.sort = this.sort;
   }
 
-  startService(name: string) {
-    if (confirm(`Are you sure you want to start service ${name} ?`)) {
-      this.yamcs.getInstanceClient()!.startService(name).then(() => {
+  startService(name: string, className: string) {
+    if (confirm(`Are you sure you want to start ${name} ?`)) {
+      this.yamcs.getInstanceClient()!.startService(className).then(() => {
         this.refreshDataSource();
       });
     }
   }
 
-  stopService(name: string) {
-    if (confirm(`Are you sure you want to stop service ${name} ?`)) {
-      this.yamcs.getInstanceClient()!.stopService(name).then(() => {
+  stopService(name: string, className: string) {
+    if (confirm(`Are you sure you want to stop ${name} ?`)) {
+      this.yamcs.getInstanceClient()!.stopService(className).then(() => {
         this.refreshDataSource();
       });
     }

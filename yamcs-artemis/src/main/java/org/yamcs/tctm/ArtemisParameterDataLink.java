@@ -1,5 +1,6 @@
 package org.yamcs.tctm;
 
+import java.util.Map;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
@@ -10,6 +11,7 @@ import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -24,29 +26,32 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ArtemisParameterDataLink extends  AbstractService implements ParameterDataLink, MessageHandler {
+public class ArtemisParameterDataLink extends AbstractService implements ParameterDataLink, MessageHandler {
     protected volatile long totalPpCount = 0;
-    protected volatile boolean disabled=false;
+    protected volatile boolean disabled = false;
 
-    protected Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    protected Logger log = LoggerFactory.getLogger(this.getClass().getName());
     private ParameterSink ppListener;
     final XtceDb ppdb;
-    final String artemisAddress; 
+    final String artemisAddress;
     ClientSession artemisSession;
     ServerLocator locator;
-    
-    public ArtemisParameterDataLink(String instance, String name, String artemisAddress) throws ConfigurationException  {
+
+    public ArtemisParameterDataLink(String instance, String name, String artemisAddress) throws ConfigurationException {
         ppdb = XtceDbFactory.getInstance(instance);
         this.artemisAddress = artemisAddress;
         locator = AbstractArtemisTranslatorService.getServerLocator(instance);
     }
 
+    public ArtemisParameterDataLink(String instance, String name, Map<String, Object> args)
+            throws ConfigurationException {
+        this(instance, name, YConfiguration.getString(args, "address"));
+    }
 
     @Override
     public void setParameterSink(ParameterSink ppListener) {
-        this.ppListener=ppListener;
+        this.ppListener = ppListener;
     }
-
 
     @Override
     public Status getLinkStatus() {
@@ -59,12 +64,12 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
 
     @Override
     public void disable() {
-        disabled=true;
+        disabled = true;
     }
 
     @Override
     public void enable() {
-        disabled=false;
+        disabled = false;
     }
 
     @Override
@@ -74,7 +79,7 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
 
     @Override
     public String getDetailedStatus() {
-        if(disabled) {
+        if (disabled) {
             return "DISABLED";
         } else {
             return "OK";
@@ -86,21 +91,20 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
         return totalPpCount;
     }
 
-
     @Override
-    public void onMessage(ClientMessage msg) {      
+    public void onMessage(ClientMessage msg) {
         try {
             msg.acknowledge();
-            if(disabled) {
+            if (disabled) {
                 return;
             }
-            ParameterData pd = (ParameterData)Protocol.decode(msg, ParameterData.newBuilder());
+            ParameterData pd = (ParameterData) Protocol.decode(msg, ParameterData.newBuilder());
             long genTime;
-            if(pd.hasGenerationTime()) {
+            if (pd.hasGenerationTime()) {
                 genTime = pd.getGenerationTime();
             } else {
                 Long l = msg.getLongProperty(ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GENTIME);
-                if(l!=null) {
+                if (l != null) {
                     genTime = l;
                 } else {
                     log.warn("Cannot find generation time either in the body or in the header of the message");
@@ -108,19 +112,19 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
                 }
             }
             String ppGroup;
-            if(pd.hasGroup()) {
+            if (pd.hasGroup()) {
                 ppGroup = pd.getGroup();
             } else {
                 ppGroup = msg.getStringProperty(ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP);
-                if(ppGroup == null) {
+                if (ppGroup == null) {
                     log.warn("Cannot find PP group either in the body or in the header of the message");
                     return;
                 }
             }
             totalPpCount += pd.getParameterCount();
             ppListener.updateParams(genTime, ppGroup, pd.getSeqNum(), pd.getParameterList());
-        } catch(Exception e){
-            log.warn( "{} for message: {}", e.getMessage(), msg);
+        } catch (Exception e) {
+            log.warn("{} for message: {}", e.getMessage(), msg);
         }
     }
 
@@ -128,13 +132,15 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
     protected void doStart() {
         try {
             artemisSession = locator.createSessionFactory().createSession();
-            String queue = artemisAddress+"-ArtemisPpProvider";
+            String queue = artemisAddress + "-ArtemisPpProvider";
             log.debug("Starting artemis parameter data link connected to {}.{}", artemisAddress, queue);
             artemisSession.createTemporaryQueue(artemisAddress, queue);
-            ClientConsumer client = artemisSession.createConsumer(queue, AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME+"<>"+AbstractArtemisTranslatorService.UNIQUEID);
+            ClientConsumer client = artemisSession.createConsumer(queue,
+                    AbstractArtemisTranslatorService.UNIQUEID_HDR_NAME + "<>"
+                            + AbstractArtemisTranslatorService.UNIQUEID);
             client.setMessageHandler(this);
             artemisSession.start();
-            notifyStarted();            
+            notifyStarted();
         } catch (Exception e) {
             log.error("Failed connect to artemis");
             notifyFailed(e);
@@ -152,4 +158,3 @@ public class ArtemisParameterDataLink extends  AbstractService implements Parame
         }
     }
 }
-

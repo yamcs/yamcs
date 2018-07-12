@@ -18,7 +18,7 @@ public class ArrayDataType extends NameDescription implements DataType {
     public ArrayDataType(String name) {
         super(name);
     }
-    
+
     public ArrayDataType(ArrayDataType t) {
         super(t);
         this.type = t.type;
@@ -36,9 +36,8 @@ public class ArrayDataType extends NameDescription implements DataType {
 
     /**
      * returns the type of the elements of the array
-     * 
-     * @param type
-     * @return
+     *
+     * @return - the type of the elements of the array
      */
     public DataType getElementType() {
         return type;
@@ -60,7 +59,7 @@ public class ArrayDataType extends NameDescription implements DataType {
     public String getTypeAsString() {
         StringBuilder sb = new StringBuilder();
         sb.append(type.getName());
-        for(int i = 0; i<numberOfDimensions; i++) {
+        for (int i = 0; i < numberOfDimensions; i++) {
             sb.append("[]");
         }
         return sb.toString();
@@ -68,6 +67,6 @@ public class ArrayDataType extends NameDescription implements DataType {
 
     @Override
     public void setInitialValue(String initialValue) {
-        
+
     }
 }

@@ -69,14 +69,31 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
 
+        List<NamedObjectId> ids = new ArrayList<>();
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        String namespace = null;
+
         // First try from body
-        BulkDownloadParameterValueRequest request = req.bodyAsMessage(BulkDownloadParameterValueRequest.newBuilder())
-                .build();
-        if (request.hasStart()) {
-            rr.setStart(RestRequest.parseTime(request.getStart()));
-        }
-        if (request.hasStop()) {
-            rr.setStop(RestRequest.parseTime(request.getStop()));
+        if (req.hasBody()) {
+            BulkDownloadParameterValueRequest request = req
+                    .bodyAsMessage(BulkDownloadParameterValueRequest.newBuilder()).build();
+            if (request.hasStart()) {
+                rr.setStart(RestRequest.parseTime(request.getStart()));
+            }
+            if (request.hasStop()) {
+                rr.setStop(RestRequest.parseTime(request.getStop()));
+            }
+            for (NamedObjectId id : request.getIdList()) {
+                Parameter p = mdb.getParameter(id);
+                if (p == null) {
+                    throw new BadRequestException("Invalid parameter name specified " + id);
+                }
+                checkObjectPrivileges(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+                ids.add(id);
+            }
+            if (request.hasNamespace()) {
+                namespace = request.getNamespace();
+            }
         }
 
         // Next, try query param (potentially overriding previous)
@@ -87,26 +104,37 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         if (ir.hasStop()) {
             rr.setStop(req.getQueryParameterAsDate("stop"));
         }
-
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-        List<NamedObjectId> ids = new ArrayList<>();
-        for (NamedObjectId id : request.getIdList()) {
-            Parameter p = mdb.getParameter(id);
-            if (p == null) {
-                throw new BadRequestException("Invalid parameter name specified " + id);
-            }
-            checkObjectPrivileges(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
-            ids.add(id);
+        if (req.hasQueryParameter("namespace")) {
+            namespace = req.getQueryParameter("namespace");
         }
+        if (req.hasQueryParameter("parameters")) {
+            for (String para : req.getQueryParameterList("parameters")) {
+                for (String name : para.split(",")) {
+                    NamedObjectId id;
+                    if (namespace == null) {
+                        id = NamedObjectId.newBuilder().setName(name).build();
+                    } else {
+                        id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+                    }
+                    Parameter p = mdb.getParameter(id);
+                    if (p == null) {
+                        throw new BadRequestException("Invalid parameter name specified " + id);
+                    }
+                    checkObjectPrivileges(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+                    ids.add(id);
+                }
+            }
+        }
+
         if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
                 if (!hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                     continue;
                 }
-                if (request.hasNamespace()) {
-                    String alias = p.getAlias(request.getNamespace());
+                if (namespace != null) {
+                    String alias = p.getAlias(namespace);
                     if (alias != null) {
-                        ids.add(NamedObjectId.newBuilder().setNamespace(request.getNamespace()).setName(alias).build());
+                        ids.add(NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build());
                     }
                 } else {
                     ids.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());

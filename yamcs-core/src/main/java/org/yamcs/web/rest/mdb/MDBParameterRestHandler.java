@@ -139,11 +139,13 @@ public class MDBParameterRestHandler extends RestHandler {
             return p1.getQualifiedName().compareTo(p2.getQualifiedName());
         });
 
-        if (req.hasQueryParameter("limit")) {
-            int limit = req.getQueryParameterAsInt("limit");
-            if (limit < matchedParameters.size()) {
-                matchedParameters = matchedParameters.subList(0, limit);
-            }
+        int pos = req.getQueryParameterAsInt("pos", 0);
+        int limit = req.getQueryParameterAsInt("limit", 100);
+        if (pos > 0) {
+            matchedParameters = matchedParameters.subList(pos, matchedParameters.size());
+        }
+        if (limit < matchedParameters.size()) {
+            matchedParameters = matchedParameters.subList(0, limit);
         }
 
         ListParameterInfoResponse.Builder responseb = ListParameterInfoResponse.newBuilder();

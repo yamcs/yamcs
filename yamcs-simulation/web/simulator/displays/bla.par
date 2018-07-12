@@ -1,4 +1,0 @@
-{ 
-  "columns": ["Eng Value", "Raw Value"],
-  "parameters": ["/YSS/SIMULATOR/Alpha", "/YSS/SIMULATOR/Beta"]
-}

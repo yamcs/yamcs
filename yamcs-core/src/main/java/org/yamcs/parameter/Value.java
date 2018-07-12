@@ -48,10 +48,10 @@ public abstract class Value {
     /**
      * This function is used to retrieve values from hierarchical aggregates.
      * 
-     * It is equivalent with a chain of {@link #getMemberValue(String)} calls:
+     * It is equivalent with a chain of {@link #getMemberValue(Value, PathElement[]))} calls:
      * 
      * <pre>
-     *   getMemberValue(path[0]).getMemberValue(path[1])...getMemberValue(path[n])
+     *   getMemberValue(getMemberValue(getMemberValue(value, path[0]),path[1])...,path[n])
      * </pre>
      * 
      * It returns null if the path does not lead to a valid aggregate member.

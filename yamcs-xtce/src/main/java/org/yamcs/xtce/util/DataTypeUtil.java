@@ -10,8 +10,11 @@ public class DataTypeUtil {
     /**
      * traverses the type hierarchy to retrieve the type referenced by path
      * 
-     * @param memberPath
-     * @return
+     * @param type
+     *            - the type for which the hierarchy is traversed
+     * @param path
+     *            - the elements used to traverse the hierarchy
+     * @return - the found sub-member of the type or null if no member has been found.
      */
     public static DataType getMemberType(DataType type, PathElement[] path) {
         DataType ptype = type;
@@ -26,7 +29,7 @@ public class DataTypeUtil {
                     return null;
                 }
                 Member m = ((AggregateDataType) type).getMember(name);
-                if(m==null) {
+                if (m == null) {
                     return null;
                 }
                 ptype = m.getType();
@@ -35,12 +38,12 @@ public class DataTypeUtil {
             }
 
             if (type instanceof ArrayDataType) {
-                if(pe.getIndex()!=null) {
+                if (pe.getIndex() != null) {
                     ptype = ((ArrayDataType) type).getElementType();
                 } else {
                     return null;
                 }
-            }          
+            }
         }
         return ptype;
     }

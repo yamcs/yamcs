@@ -13,6 +13,7 @@ public class ObjectPrivilegeType {
     public static final ObjectPrivilegeType CommandHistory = new ObjectPrivilegeType("CommandHistory");
     public static final ObjectPrivilegeType Stream = new ObjectPrivilegeType("Stream");
     public static final ObjectPrivilegeType Command = new ObjectPrivilegeType("Command");
+    public static final ObjectPrivilegeType ReadBucket = new ObjectPrivilegeType("ReadBucket");
     public static final ObjectPrivilegeType ReadPacket = new ObjectPrivilegeType("ReadPacket");
     public static final ObjectPrivilegeType ReadParameter = new ObjectPrivilegeType("ReadParameter");
     public static final ObjectPrivilegeType WriteParameter = new ObjectPrivilegeType("WriteParameter");

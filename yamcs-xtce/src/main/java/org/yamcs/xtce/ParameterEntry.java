@@ -23,10 +23,8 @@ public class ParameterEntry extends SequenceEntry {
     }
 
     /**
-     * Constructor for an unresolved ParameterEntry. The Parameter will come later via setParameter
+     * Constructor for an unresolved ParameterEntry. The Parameter will come later via {@link #setParameter(Parameter)}
      * 
-     * @param position
-     * @param container
      * @param locationInContainerInBits
      * @param location
      */

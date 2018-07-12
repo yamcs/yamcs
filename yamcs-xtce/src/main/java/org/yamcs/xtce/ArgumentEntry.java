@@ -16,9 +16,8 @@ public class ArgumentEntry extends SequenceEntry {
     }
 
     /**
-     * Constructor for an unresolved ParameterEntry. The Parameter will come later via setParameter
+     * Constructor for an unresolved ArgumentEntry. The Argument will come later via {@link #setArgument(Argument)}
      * 
-     * @param position
      * @param container
      * @param locationInContainerInBits
      * @param location

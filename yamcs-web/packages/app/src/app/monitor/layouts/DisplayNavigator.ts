@@ -1,5 +1,6 @@
-import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnChanges } from '@angular/core';
-import { DisplayFile, DisplayFolder } from '@yamcs/client';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { ObjectInfo } from '@yamcs/client';
+import { DisplayFolder } from './DisplayFolder';
 
 @Component({
   selector: 'app-display-navigator',
@@ -10,55 +11,35 @@ import { DisplayFile, DisplayFolder } from '@yamcs/client';
 export class DisplayNavigator implements OnChanges {
 
   @Input()
-  displayInfo: DisplayFolder;
+  folder: DisplayFolder;
 
   @Output()
-  select = new EventEmitter<DisplayFile>();
+  prefixChange = new EventEmitter<string>();
+
+  @Output()
+  select = new EventEmitter<ObjectInfo>();
 
   @Output()
   close = new EventEmitter<void>();
 
-  currentFolder: DisplayFolder;
-
   ngOnChanges() {
-    if (!this.displayInfo) {
+    if (!this.folder) {
       return;
     }
-
-    this.currentFolder = this.displayInfo;
-  }
-
-  selectFolder(folder: DisplayFolder) {
-    this.currentFolder = folder;
   }
 
   selectParent() {
-    const currentPath = this.currentFolder.path;
-    const nameLen = this.currentFolder.name.length + 1;
-    const parentPath = currentPath.substring(0, currentPath.length - nameLen);
-    const match = this.findDisplayFolder(parentPath, this.displayInfo);
-    if (match) {
-      this.currentFolder = match;
-    }
+    const prefix = this.folder.location;
+    const idx = prefix.substring(0, prefix.length - 1).lastIndexOf('/');
+    const parentPrefix = prefix.substring(0, idx + 1);
+    this.prefixChange.emit(parentPrefix);
   }
 
-  selectFile(file: DisplayFile) {
-    this.select.next(file);
+  selectPrefix(prefix: string) {
+    this.prefixChange.emit(prefix);
   }
 
-  findDisplayFolder(path: string, start: DisplayFolder): DisplayFolder | undefined {
-    if (path === '/') {
-      return this.displayInfo;
-    }
-    for (const folder of start.folder || []) {
-      if (folder.path === path) {
-        return folder;
-      } else {
-        const childFolder = this.findDisplayFolder(path, folder);
-        if (childFolder) {
-          return childFolder;
-        }
-      }
-    }
+  selectObject(object: ObjectInfo) {
+    this.select.next(object);
   }
 }
