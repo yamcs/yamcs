@@ -325,17 +325,25 @@ public class TableDefinition {
     }
 
     /**
-     * adds a column to the value part and serializes the table definition to
+     * adds all missing columns to the value part and serialises the table definition to
      * disk
-     * 
-     * @param cd
      */
-    private synchronized void addValueColumn(ColumnDefinition cd) {
+    private synchronized void addMissingValueColumns(TupleDefinition tdef) {
         serializedValueDef = valueDef.copy();
-        serializedValueDef.addColumn(cd);
+        for (int i = 0; i < tdef.size(); i++) {
+            ColumnDefinition cd = tdef.getColumn(i);
+            if (keyDef.hasColumn(cd.getName())) {
+                continue;
+            }
+            int cidx = valueDef.getColumnIndex(cd.getName());
+            if (cidx == -1) { 
+                serializedValueDef.addColumn(cd);
+                valueSerializers.add(ColumnSerializerFactory.getColumnSerializer(this, cd));
+            }
+        }
+            
         ydb.serializeTableDefinition(this);
         valueDef = serializedValueDef;
-        valueSerializers.add(ColumnSerializerFactory.getColumnSerializer(this, cd));
         computeTupleDef();
     }
 
@@ -471,8 +479,8 @@ public class TableDefinition {
                 }
                 int cidx = valueDef.getColumnIndex(tupleCd.getName());
                 if (cidx == -1) { // call again this function after adding the
-                                  // column to the table
-                    addValueColumn(tupleCd);
+                                  // missing columns to the table
+                    addMissingValueColumns(tdef);
                     return serializeValue(t);
                 }
                 ColumnDefinition tableCd = valueDef.getColumn(cidx);
