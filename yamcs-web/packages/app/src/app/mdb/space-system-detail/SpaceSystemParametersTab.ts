@@ -1,10 +1,10 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-
-import { Instance, Parameter } from '@yamcs/client';
-
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-
+import { Instance, Parameter } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
+
+
+
 
 @Component({
   templateUrl: './SpaceSystemParametersTab.html',
@@ -21,7 +21,8 @@ export class SpaceSystemParametersTab {
     const parent = route.snapshot.parent!;
     this.qualifiedName = parent.paramMap.get('qualifiedName')!;
     this.parameters$ = yamcs.getInstanceClient()!.getParameters({
-      namespace: this.qualifiedName
+      namespace: this.qualifiedName,
+      limit: 2500, // FIXME use proper pagination
     });
     this.instance = yamcs.getInstance();
   }
