@@ -1,8 +1,8 @@
 Monitoring:
   ReadParameter: [".*"]
-  WriteParameter: []
   ReadPacket: [".*"]
-  Command: []
+  ReadBucket:
+    - displays
   System:
     - ControlProcessor
     - GetMissionDatabase
@@ -12,6 +12,8 @@ Operator:
   ReadParameter: [".*"]
   WriteParameter: []
   ReadPacket: [".*"]
+  ManageBucket:
+    - displays
   Command: [".*"]
   InsertCommandQueue: ["ops"]
   System:
@@ -22,11 +24,3 @@ Operator:
     - GetMissionDatabase
     - ControlArchiving
 
-Admin:
-  ReadParameter: [".*"]
-  WriteParameter: [".*"]
-  ReadPacket: [".*"]
-  Command: [".*"]
-  System: [".*"]
-  Stream: [".*"]
-  CommandHistory: [".*"]
