@@ -4,5 +4,7 @@ export interface Viewer {
 
   isFullscreenSupported(): boolean;
 
+  isScaleSupported(): boolean;
+
   hasPendingChanges(): boolean;
 }

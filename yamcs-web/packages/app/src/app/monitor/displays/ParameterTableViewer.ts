@@ -141,6 +141,10 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     return false;
   }
 
+  public isScaleSupported() {
+    return false;
+  }
+
   removeParameter(name: string) {
     const model = this.model$.value!;
     model.parameters = model.parameters.filter(p => p !== name);

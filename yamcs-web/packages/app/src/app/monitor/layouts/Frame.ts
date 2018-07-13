@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, ComponentFactoryResolver, ElementRef, Type, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Display, DisplayCommunicator, NavigationHandler, OpenDisplayCommandOptions } from '@yamcs/displays';
+import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
 import { OpiDisplayViewer } from '../displays/OpiDisplayViewer';
@@ -52,7 +53,7 @@ export class Frame implements NavigationHandler {
 
   private preferredWidth = 800;
   private preferredHeight = 400;
-  private zoomToFit = false;
+  zoomToFit$ = new BehaviorSubject<boolean>(false);
 
   readonly titleBarHeight = 20;
 
@@ -82,7 +83,7 @@ export class Frame implements NavigationHandler {
         container.style.backgroundColor = viewer.display.getBackgroundColor();
         this.preferredWidth = viewer.display.width;
         this.preferredHeight = viewer.display.height;
-        this.zoomToFit = true;
+        this.zoomToFit$.next(true);
       });
     } else if (displayType === 'OPI') {
       const viewer = this.createViewer(OpiDisplayViewer);
@@ -91,13 +92,12 @@ export class Frame implements NavigationHandler {
         container.style.backgroundColor = viewer.display.getBackgroundColor();
         this.preferredWidth = viewer.display.width;
         this.preferredHeight = viewer.display.height;
-        this.zoomToFit = true;
+        this.zoomToFit$.next(true);
       });
     } else if (displayType === 'PAR') {
       container.style.backgroundColor = 'white';
       const viewer = this.createViewer(ParameterTableViewer);
       initPromise = viewer.init(id);
-      this.zoomToFit = false;
     } else {
       alert('No viewer for file ' + id);
       return Promise.resolve();
@@ -133,13 +133,10 @@ export class Frame implements NavigationHandler {
     container.style.width = `${width}px`;
     container.style.height = `${height + this.titleBarHeight}px`;
 
-    if (this.zoomToFit) {
+    if (this.zoomToFit$.value) {
       const frameContent = this.frameContentRef.nativeElement as HTMLDivElement;
-      frameContent.style.zoom = String(zoom);
-
-      // Zoom does not work in FF
-      frameContent.style.setProperty('-moz-transform', `scale(${zoom})`);
-      frameContent.style.setProperty('-moz-transform-origin', '0px 0px');
+      frameContent.style.setProperty('transform', `scale(${zoom})`);
+      frameContent.style.setProperty('transform-origin', '50% 50%');
     }
   }
 

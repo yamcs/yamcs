@@ -58,6 +58,10 @@ export class ScriptViewer implements Viewer, OnDestroy {
     return false;
   }
 
+  public isScaleSupported() {
+    return false;
+  }
+
   public hasPendingChanges() {
     return false;
   }

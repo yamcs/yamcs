@@ -24,7 +24,6 @@ import { ViewerHost } from './ViewerHost';
 
 @Component({
   templateUrl: './DisplayFilePage.html',
-  styleUrls: ['./DisplayFilePage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DisplayFilePage implements AfterViewInit, OnDestroy {
@@ -102,7 +101,6 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
       const ussDisplayViewer = this.createViewer(UssDisplayViewer);
       const controls = this.createViewerControls(UssDisplayViewerControls);
       controls.init(ussDisplayViewer);
-      ussDisplayViewer.setCenterContent(true);
       this.viewer = ussDisplayViewer;
       this.displayRefresher = window.setInterval(() => {
         ussDisplayViewer.display.digest();

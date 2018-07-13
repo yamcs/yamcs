@@ -35,6 +35,10 @@ export class TextViewer implements Viewer {
     return false;
   }
 
+  public isScaleSupported() {
+    return false;
+  }
+
   public hasPendingChanges() {
     return false;
   }

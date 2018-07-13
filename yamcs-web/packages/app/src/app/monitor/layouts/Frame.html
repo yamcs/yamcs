@@ -7,7 +7,7 @@
   <div #frameActions class="frame-actions">
     <span (click)="closeFrame()">x</span>
   </div>
-  <div class="frame-content-wrapper">
+  <div class="frame-content-wrapper" [class.scrollable]="!(zoomToFit$ | async)">
     <div #frameContent
         (click)="onFrameContentClick($event)"
         style="line-height: 0">
