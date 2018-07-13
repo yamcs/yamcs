@@ -191,7 +191,7 @@ export class Frame implements NavigationHandler {
   onFrameContentClick($event: Event) {
     const target = $event.target as Element;
     if (target.getAttribute('data-control') !== 'true') {
-      this.layout.bringToFront(this.id);
+      this.layout.bringToFront(this.id, true);
     }
   }
 
@@ -229,7 +229,7 @@ export class Frame implements NavigationHandler {
     };
 
     $event.preventDefault();
-    this.layout.bringToFront(this.id);
+    this.layout.bringToFront(this.id, true);
     const container = this.containerRef.nativeElement as HTMLDivElement;
     startX = parseInt(container.style.left!, 10);
     startY = parseInt(container.style.top!, 10);
@@ -271,7 +271,7 @@ export class Frame implements NavigationHandler {
     };
 
     $event.preventDefault();
-    this.layout.bringToFront(this.id);
+    this.layout.bringToFront(this.id, true);
     const container = this.containerRef.nativeElement as HTMLDivElement;
     startWidth = parseInt(container.style.width!, 10);
     startHeight = parseInt(container.style.height!, 10) - this.titleBarHeight;
@@ -289,12 +289,12 @@ export class Frame implements NavigationHandler {
   openDisplay(options: OpenDisplayCommandOptions) {
     const alreadyOpenFrame = this.layout.getDisplayFrame(options.target);
     if (alreadyOpenFrame) {
-      this.layout.bringToFront(alreadyOpenFrame.id);
+      this.layout.bringToFront(alreadyOpenFrame.id, true);
     } else {
       if (!options.openInNewWindow) {
         this.layout.closeDisplayFrame(this.id);
       }
-      this.layout.createDisplayFrame(options.target, options.coordinates);
+      this.layout.createDisplayFrame(options.target, true, options.coordinates);
     }
   }
 
