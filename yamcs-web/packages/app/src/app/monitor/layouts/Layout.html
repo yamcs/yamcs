@@ -3,7 +3,7 @@
     <mat-sidenav mode="side" [opened]="showNavigator$ | async">
       <app-display-navigator [folder]="currentFolder$ | async"
                              (prefixChange)="prefixChange($event)"
-                             (select)="openDisplay($event.name)">
+                             (select)="openDisplay($event.name, true)">
       </app-display-navigator>
     </mat-sidenav>
 

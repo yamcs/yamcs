@@ -8,9 +8,9 @@ import { ModifyParameterDialog } from '../../mdb/parameters/ModifyParameterDialo
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
+import { analyzeStaticValueRanges, DyLegendData } from './dygraphs';
 import GridPlugin from './GridPlugin';
 import { ParameterSeries } from './ParameterSeries';
-import { DyLegendData, analyzeStaticValueRanges } from './dygraphs';
 
 @Component({
   selector: 'app-parameter-plot',
