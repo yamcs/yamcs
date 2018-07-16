@@ -301,6 +301,7 @@ public class XtceStaxReader {
      */
     public SpaceSystem readXmlDocument(String fileName) throws XMLStreamException, IOException {
         this.fileName = fileName;
+        log.info("Parsing XTCE file {}", fileName);
         xmlEventReader = initEventReader(fileName);
         xmlEvent = null;
         SpaceSystem spaceSystem = null;
@@ -339,7 +340,8 @@ public class XtceStaxReader {
                     throw new IllegalStateException("XML file parsing error");
                 }
             }
-            log.info("XTCE file parsing finished successfully");
+            log.info("XTCE file parsing finished, loaded: {} parameters, {} tm containers, {} commands", 
+                    spaceSystem.getParameterCount(true), spaceSystem.getSequenceContainerCount(true), spaceSystem.getMetaCommandCount(true));
         } catch (IllegalArgumentException e) {
             e.getCause().printStackTrace();
             throw new XMLStreamException(e.getMessage(), xmlEvent.getLocation());
