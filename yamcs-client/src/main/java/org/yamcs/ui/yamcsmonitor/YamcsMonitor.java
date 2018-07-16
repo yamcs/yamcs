@@ -133,14 +133,9 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
 
     private JMenuItem instanceMenuItem;
     private String selectedInstance;
-    boolean authenticationEnabled = false;
 
     public YamcsMonitor() throws ConfigurationException, IOException {
         theApp = this;
-        YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
-        if (config.containsKey("authenticationEnabled")) {
-            authenticationEnabled = config.getBoolean("authenticationEnabled");
-        }
 
         yconnector = new YamcsConnector("YamcsMonitor");
         yconnector.addConnectionListener(this);
@@ -763,7 +758,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
     public void actionPerformed(ActionEvent ae) {
         String cmd = ae.getActionCommand();
         if (cmd.equals("connect")) {
-            YamcsConnectDialogResult ycdr = YamcsConnectDialog.showDialog(frame, false, authenticationEnabled);
+            YamcsConnectDialogResult ycdr = YamcsConnectDialog.showDialog(frame, false);
             if (ycdr.isOk()) {
                 logTextArea.removeAll();
                 connect(ycdr.getConnectionProperties());

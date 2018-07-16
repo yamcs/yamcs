@@ -48,15 +48,11 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
     private JComboBox<String> instanceCombo;
     boolean getInstance = false;
 
-    // if set to true it will show the username/password login
-    boolean authEnabled;
-
     static YamcsConnectDialog dialog;
 
-    YamcsConnectDialog(JFrame parent, boolean getInstance, boolean enableAuth) {
+    YamcsConnectDialog(JFrame parent, boolean getInstance) {
         super(parent, "Connect to Yamcs", true);
         this.getInstance = getInstance;
-        this.authEnabled = enableAuth;
         installActions();
         connectionProperties = new YamcsConnectionProperties();
         try {
@@ -109,43 +105,40 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
          */
         ceast.gridy++;
         cwest.gridy++;
-        if (authEnabled) {
-            lab = new JLabel("Username: ");
-            lab.setHorizontalAlignment(SwingConstants.RIGHT);
-            inputPanel.add(lab, ceast);
-            usernameTextField = new JTextField();
-            if (connectionProperties.getUsername() != null) {
-                usernameTextField.setText(connectionProperties.getUsername());
-            }
-            usernameTextField.setPreferredSize(new Dimension(160, usernameTextField.getPreferredSize().height));
-            inputPanel.add(usernameTextField, cwest);
-
-            ceast.gridy++;
-            cwest.gridy++;
-            lab = new JLabel("Password: ");
-            lab.setHorizontalAlignment(SwingConstants.RIGHT);
-            inputPanel.add(lab, ceast);
-            passwordTextField = new JPasswordField();
-            passwordTextField.setPreferredSize(new Dimension(160, passwordTextField.getPreferredSize().height));
-            inputPanel.add(passwordTextField, cwest);
+        lab = new JLabel("Username: ");
+        lab.setHorizontalAlignment(SwingConstants.RIGHT);
+        inputPanel.add(lab, ceast);
+        usernameTextField = new JTextField();
+        if (connectionProperties.getUsername() != null) {
+            usernameTextField.setText(connectionProperties.getUsername());
         }
+        usernameTextField.setPreferredSize(new Dimension(160, usernameTextField.getPreferredSize().height));
+        inputPanel.add(usernameTextField, cwest);
 
-        if (getInstance) {
-            ceast.gridy++;
-            cwest.gridy++;
-            lab = new JLabel("Instance: ");
-            lab.setHorizontalAlignment(SwingConstants.RIGHT);
-            inputPanel.add(lab, ceast);
-            instanceCombo = new JComboBox<>(new String[] { connectionProperties.getInstance() });
-            instanceCombo.setPreferredSize(hostTextField.getPreferredSize());
-            instanceCombo.setEditable(true);
-            inputPanel.add(instanceCombo, cwest);
-            button = new JButton("Update");
-            button.setToolTipText("Fetch available instances from chosen Yamcs server");
-            button.setActionCommand("getInstances");
-            button.addActionListener(this);
-            inputPanel.add(button, ceast);
-        }
+        ceast.gridy++;
+        cwest.gridy++;
+        lab = new JLabel("Password: ");
+        lab.setHorizontalAlignment(SwingConstants.RIGHT);
+        inputPanel.add(lab, ceast);
+        passwordTextField = new JPasswordField();
+        passwordTextField.setPreferredSize(new Dimension(160, passwordTextField.getPreferredSize().height));
+        inputPanel.add(passwordTextField, cwest);
+
+        ceast.gridy++;
+        cwest.gridy++;
+        lab = new JLabel("Instance: ");
+        lab.setHorizontalAlignment(SwingConstants.RIGHT);
+        inputPanel.add(lab, ceast);
+        instanceCombo = new JComboBox<>(new String[] { connectionProperties.getInstance() });
+        instanceCombo.setPreferredSize(hostTextField.getPreferredSize());
+        instanceCombo.setEditable(true);
+        inputPanel.add(instanceCombo, cwest);
+        button = new JButton("Update");
+        button.setToolTipText("Fetch available instances from chosen Yamcs server");
+        button.setActionCommand("getInstances");
+        button.addActionListener(this);
+        inputPanel.add(button, ceast);
+
         // button panel
 
         buttonPanel = new JPanel();
@@ -198,13 +191,14 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
                 result.isOk = true;
                 connectionProperties.setHost(hostTextField.getText());
                 connectionProperties.setPort(Integer.parseInt(portTextField.getText()));
-                if (authEnabled) {
+
+                if (!usernameTextField.getText().isEmpty()) {
                     connectionProperties.setCredentials(usernameTextField.getText(), passwordTextField.getPassword());
-                    passwordTextField.setText("");
                 } else {
-                    // If not authenticating, don't use last credentials
                     connectionProperties.setCredentials(null, null);
                 }
+                passwordTextField.setText("");
+
                 if (instanceCombo != null) {
                     connectionProperties.setInstance((String) instanceCombo.getSelectedItem());
                 }
@@ -220,14 +214,12 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
             try {
                 String host = hostTextField.getText();
                 int port = Integer.parseInt(portTextField.getText());
-                String username = null;
-                char[] password = null;
-                if (authEnabled) {
-                    username = usernameTextField.getText();
-                    password = passwordTextField.getPassword();
-                }
                 YamcsConnectionProperties tmp = new YamcsConnectionProperties(host, port);
-                tmp.setCredentials(username, password);
+                if (!usernameTextField.getText().isEmpty()) {
+                    String username = usernameTextField.getText();
+                    char[] password = passwordTextField.getPassword();
+                    tmp.setCredentials(username, password);
+                }
                 RestClient restClient = new RestClient(tmp);
                 List<YamcsInstance> yinstances = restClient.blockingGetYamcsInstances();
                 instanceCombo.removeAllItems();
@@ -245,9 +237,9 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
         }
     }
 
-    public final static YamcsConnectDialogResult showDialog(JFrame parent, boolean getInstance, boolean enableAuth) {
+    public final static YamcsConnectDialogResult showDialog(JFrame parent, boolean getInstance) {
         if (dialog == null) {
-            dialog = new YamcsConnectDialog(parent, getInstance, enableAuth);
+            dialog = new YamcsConnectDialog(parent, getInstance);
         }
         dialog.setVisible(true);
 
@@ -255,7 +247,7 @@ public class YamcsConnectDialog extends JDialog implements ActionListener {
     }
 
     public static void main(String[] args) {
-        YamcsConnectDialog.showDialog(null, true, true);
+        YamcsConnectDialog.showDialog(null, true);
     }
 
     public static class YamcsConnectDialogResult {
