@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -99,8 +100,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     public static final AttributeKey<RouteMatch> CTX_ROUTE_MATCH = AttributeKey.valueOf("routeMatch");
     private static final FullHttpResponse CONTINUE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
             HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
+    private final ExecutorService offThreadExecutor;
 
-    public Router() {
+    public Router(ExecutorService executor) {
+        this.offThreadExecutor = executor;
         registerRouteHandler(null, new ClientRestHandler());
         registerRouteHandler(null, new InstanceRestHandler());
         registerRouteHandler(null, new LinkRestHandler());
@@ -155,7 +158,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                         for (String m : ann.method()) {
                             HttpMethod httpMethod = HttpMethod.valueOf(m);
                             routeConfigs.add(new RouteConfig(routeHandler, ann.path(), ann.priority(), ann.dataLoad(),
-                                    ann.maxBodySize(), httpMethod, handle));
+                                    ann.offThread(), ann.maxBodySize(), httpMethod, handle));
                         }
                     }
                 }
@@ -252,7 +255,15 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         RestRequest restReq = new RestRequest(ctx, req, qsDecoder, user);
         restReq.setRouteMatch(match);
         log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.method(), req.uri());
-        dispatch(restReq, match);
+        if (match.routeConfig.offThread) {
+            restReq.getRequestContent().retain();
+            offThreadExecutor.execute(() -> {
+                dispatch(restReq, match);
+                restReq.getRequestContent().release();
+            });
+        } else {
+            dispatch(restReq, match);
+        }
     }
 
     public RouteMatch matchURI(HttpMethod method, String uri) throws MethodNotAllowedException {
@@ -295,11 +306,15 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     protected void dispatch(RestRequest req, RouteMatch match) {
-        ScheduledFuture<?> x = timer.schedule(() -> {
-            log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(),
-                    req.getHttpRequest().uri());
-        }, 2, TimeUnit.SECONDS);
-
+        boolean offThread = match.routeConfig.offThread;
+        ScheduledFuture<?> twoSecWarn = null;
+        if (!offThread) {
+            twoSecWarn = timer.schedule(() -> {
+                log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(),
+                        req.getHttpRequest().uri());
+            }, 2, TimeUnit.SECONDS);
+        }
+        
         // the handlers will send themselves the response unless they throw an exception, case which is handled in the
         // catch below.
         try {
@@ -318,16 +333,19 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             req.getCompletableFuture().completeExceptionally(t);
             handleException(req, t);
         }
-        x.cancel(true);
-
+        if(twoSecWarn!=null) {
+            twoSecWarn.cancel(true);
+        }
+        
         CompletableFuture<Void> cf = req.getCompletableFuture();
         if (logSlowRequests) {
+            int numSec = offThread?120:20;
             timer.schedule(() -> {
                 if (!cf.isDone()) {
                     log.warn("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(),
                             req.getHttpRequest().uri());
                 }
-            }, 20, TimeUnit.SECONDS);
+            }, numSec, TimeUnit.SECONDS);
         }
     }
 
@@ -388,9 +406,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         final MethodHandle handle;
         final boolean dataLoad;
         final int maxBodySize;
+        final boolean offThread;
 
         RouteConfig(RouteHandler routeHandler, String originalPath, boolean priority, boolean dataLoad,
-                int maxBodySize, HttpMethod httpMethod, MethodHandle handle) {
+                boolean offThread, int maxBodySize, HttpMethod httpMethod, MethodHandle handle) {
             this.routeHandler = routeHandler;
             this.originalPath = originalPath;
             this.priority = priority;
@@ -398,6 +417,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             this.handle = handle;
             this.dataLoad = dataLoad;
             this.maxBodySize = maxBodySize;
+            this.offThread = offThread;
         }
 
         @Override

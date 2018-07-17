@@ -51,6 +51,15 @@ public @interface Route {
      * HttpObjectAgregator.
      */
     boolean dataLoad() default false;
+    
+    /**
+     * Set true if the execution of the route is expected to take a long time (more than 0.5 seconds).
+     * It will be executed on another thread.
+     * 
+     * Leave false if the execution uses its own off thread mechanism (most of the routes should do that).
+     * @return
+     */
+    boolean offThread() default false;
 
     int maxBodySize() default Router.MAX_BODY_SIZE;
 }

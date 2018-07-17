@@ -268,7 +268,7 @@ public class RestRequest {
         return channelHandlerContext;
     }
 
-    public HttpRequest getHttpRequest() {
+    public FullHttpRequest getHttpRequest() {
         return httpRequest;
     }
 
@@ -475,5 +475,13 @@ public class RestRequest {
             }
             return buf.toString();
         }
+    }
+    
+    /**
+     * returns the body of the http request
+     * 
+     */
+    public ByteBuf getRequestContent() {
+        return httpRequest.content();
     }
 }

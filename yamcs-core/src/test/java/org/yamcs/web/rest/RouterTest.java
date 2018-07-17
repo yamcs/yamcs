@@ -13,6 +13,7 @@ import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.regex.MatchResult;
 
 import org.junit.Before;
@@ -30,7 +31,7 @@ public class RouterTest {
     
     @Before
     public void before() {
-        router = new Router();
+        router = new Router(Executors.newSingleThreadExecutor());
         
         router.registerRouteHandler(null, new RouteHandler() {
             
@@ -194,6 +195,10 @@ public class RouterTest {
     
     private static final class MockRestRouter extends Router {
         
+        public MockRestRouter() {
+            super(Executors.newSingleThreadScheduledExecutor());
+        }
+
         RestRequest observedRestRequest;
         
         @Override

@@ -9,6 +9,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +23,7 @@ import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketResourceProvider;
 
 import com.google.common.util.concurrent.AbstractService;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.GeneratedMessage.GeneratedExtension;
@@ -54,12 +59,13 @@ public class HttpServer extends AbstractService implements YamcsService {
     private static final Logger log = LoggerFactory.getLogger(HttpServer.class);
 
     private EventLoopGroup bossGroup;
-    private Router apiRouter = new Router();
+    private Router apiRouter;
     private List<WebSocketResourceProvider> webSocketResourceProviders = new CopyOnWriteArrayList<>();
 
     private int port;
     private boolean zeroCopyEnabled;
     private List<String> webRoots = new ArrayList<>(2);
+    ThreadPoolExecutor executor;
 
     // Cross-origin Resource Sharing (CORS) enables use of the REST API in non-official client web applications
     private CorsConfig corsConfig;
@@ -91,6 +97,13 @@ public class HttpServer extends AbstractService implements YamcsService {
                 webRoots.add(YConfiguration.getString(args, "webRoot"));
             }
         }
+    
+        // this is used to execute the routes marked as offThread
+        ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
+        executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>(), tf);
+        apiRouter = new Router(executor);
+
 
         if (args.containsKey("gpbExtensions")) {
             List<Map<String, Object>> extensionsConf = YConfiguration.getList(args, "gpbExtensions");
@@ -186,6 +199,7 @@ public class HttpServer extends AbstractService implements YamcsService {
         EventLoopGroup workerGroup = new NioEventLoopGroup(0,
                 new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
 
+        
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
