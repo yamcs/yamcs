@@ -1,5 +1,7 @@
-Version 4.6.1
+Version 4.6.1 released 18-July-2018
 - added support for XTCE IndirectParameterRefEntry
+- added EXTERNAL data sources to better support writable parameters not
+managed by yamcs
 
 
 Version 4.6.0 released 11-July-2018
