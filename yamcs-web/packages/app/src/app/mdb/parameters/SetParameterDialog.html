@@ -44,6 +44,15 @@
         </label>
       </ng-container>
 
+      <ng-container *ngSwitchCase="'enumeration'">
+        <label>
+          Value
+          <select formControlName="value">
+            <option *ngFor="let enumValue of parameter?.type?.enumValue" [value]="enumValue.label">{{ enumValue.label }}</option>
+          </select>
+        </label>
+      </ng-container>
+
     </ng-container>
   </form>
   <p>&nbsp;</p>

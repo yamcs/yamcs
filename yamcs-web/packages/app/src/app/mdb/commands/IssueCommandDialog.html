@@ -8,7 +8,7 @@
         <label *ngSwitchCase="'enumeration'">
           {{ argument.name }}
           <select [formControlName]="argument.name">
-            <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.value">{{ enumValue.label }}</option>
+            <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">{{ enumValue.label }}</option>
           </select>
         </label>
 
