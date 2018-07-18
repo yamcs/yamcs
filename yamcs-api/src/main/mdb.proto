@@ -13,6 +13,9 @@ enum DataSourceType {
   SYSTEM = 4;
   COMMAND = 5;
   COMMAND_HISTORY = 6;
+  EXTERNAL1 = 7;
+  EXTERNAL2 = 8;
+  EXTERNAL3 = 9;
 }
 
 enum AlarmLevelType {

@@ -19,6 +19,7 @@ import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.LoggingUtils;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.AlarmChecker;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -58,7 +59,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     private boolean cacheAll = false;
 
     AlarmServer alarmServer;
-    SoftwareParameterManager spm;
+    Map<DataSource, SoftwareParameterManagerIf> spm = new HashMap<>();
     ParameterCache parameterCache;
     ParameterCacheConfig cacheConfig;
     LastValueCache lastValueCache;
@@ -95,9 +96,6 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             log.debug("Adding parameter provider: {}", parameterProvider.getClass());
             parameterProvider.setParameterListener(this);
             parameterProviders.put(parameterProvider.getClass(), parameterProvider);
-            if (parameterProvider instanceof SoftwareParameterManager) {
-                spm = (SoftwareParameterManager) parameterProvider;
-            }
         }
     }
 
@@ -520,10 +518,10 @@ public class ParameterRequestManager extends AbstractService implements Paramete
 
     /**
      * 
-     * @return the SoftwareParameterManager or null if not configured
+     * @return the SoftwareParameterManager associated to the DataSource or null if not configured
      */
-    public SoftwareParameterManager getSoftwareParameterManager() {
-        return spm;
+    public SoftwareParameterManagerIf getSoftwareParameterManager(DataSource ds) {
+        return spm.get(ds);
     }
 
     @SuppressWarnings("unchecked")
@@ -625,5 +623,19 @@ public class ParameterRequestManager extends AbstractService implements Paramete
 
     public LastValueCache getLastValueCache() {
         return lastValueCache;
+    }
+
+    /**
+     * Register a {@link SoftwareParameterManagerIf} for the given {@link DataSource}.
+     * Throws an {@link IllegalStateException} if there is already registered a parameter manager for this data source.
+     * 
+     * @param ds
+     * @param swParameterManager
+     */
+    public void addSoftwareParameterManager(DataSource ds, SoftwareParameterManagerIf swParameterManager) {
+        if(spm.containsKey(ds)) {
+            throw new IllegalStateException("There is already a soft parameter manager for "+ds);
+        }
+        spm.put(ds, swParameterManager);
     }
 }

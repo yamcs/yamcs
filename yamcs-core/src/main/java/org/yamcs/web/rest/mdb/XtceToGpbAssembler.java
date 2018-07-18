@@ -465,31 +465,7 @@ public class XtceToGpbAssembler {
             }
             DataSource xtceDs = p.getDataSource();
             if (xtceDs != null) {
-                switch (xtceDs) {
-                case TELEMETERED:
-                    b.setDataSource(DataSourceType.TELEMETERED);
-                    break;
-                case LOCAL:
-                    b.setDataSource(DataSourceType.LOCAL);
-                    break;
-                case COMMAND:
-                    b.setDataSource(DataSourceType.COMMAND);
-                    break;
-                case COMMAND_HISTORY:
-                    b.setDataSource(DataSourceType.COMMAND_HISTORY);
-                    break;
-                case CONSTANT:
-                    b.setDataSource(DataSourceType.CONSTANT);
-                    break;
-                case DERIVED:
-                    b.setDataSource(DataSourceType.DERIVED);
-                    break;
-                case SYSTEM:
-                    b.setDataSource(DataSourceType.SYSTEM);
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected data source " + xtceDs);
-                }
+                b.setDataSource(DataSourceType.valueOf(xtceDs.name()));
             }
             if (p.getParameterType() != null) {
                 b.setType(toParameterTypeInfo(p.getParameterType(), detail));

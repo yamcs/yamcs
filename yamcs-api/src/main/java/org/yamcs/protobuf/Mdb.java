@@ -47,6 +47,18 @@ public final class Mdb {
      * <code>COMMAND_HISTORY = 6;</code>
      */
     COMMAND_HISTORY(6),
+    /**
+     * <code>EXTERNAL1 = 7;</code>
+     */
+    EXTERNAL1(7),
+    /**
+     * <code>EXTERNAL2 = 8;</code>
+     */
+    EXTERNAL2(8),
+    /**
+     * <code>EXTERNAL3 = 9;</code>
+     */
+    EXTERNAL3(9),
     ;
 
     /**
@@ -77,6 +89,18 @@ public final class Mdb {
      * <code>COMMAND_HISTORY = 6;</code>
      */
     public static final int COMMAND_HISTORY_VALUE = 6;
+    /**
+     * <code>EXTERNAL1 = 7;</code>
+     */
+    public static final int EXTERNAL1_VALUE = 7;
+    /**
+     * <code>EXTERNAL2 = 8;</code>
+     */
+    public static final int EXTERNAL2_VALUE = 8;
+    /**
+     * <code>EXTERNAL3 = 9;</code>
+     */
+    public static final int EXTERNAL3_VALUE = 9;
 
 
     public final int getNumber() {
@@ -100,6 +124,9 @@ public final class Mdb {
         case 4: return SYSTEM;
         case 5: return COMMAND;
         case 6: return COMMAND_HISTORY;
+        case 7: return EXTERNAL1;
+        case 8: return EXTERNAL2;
+        case 9: return EXTERNAL3;
         default: return null;
       }
     }
@@ -37506,12 +37533,14 @@ public final class Mdb {
       "Info\022-\n\021onParameterUpdate\030\013 \003(\0132\022.mdb.Pa" +
       "rameterInfo\022\026\n\016onPeriodicRate\030\014 \003(\003\"-\n\005S" +
       "cope\022\n\n\006GLOBAL\020\000\022\030\n\024COMMAND_VERIFICATION" +
-      "\020\001*u\n\016DataSourceType\022\017\n\013TELEMETERED\020\000\022\013\n" +
-      "\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006S" +
-      "YSTEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020" +
-      "\006*\\\n\016AlarmLevelType\022\n\n\006NORMAL\020\000\022\t\n\005WATCH" +
-      "\020\001\022\013\n\007WARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITICA",
-      "L\020\004\022\n\n\006SEVERE\020\005B\024\n\022org.yamcs.protobuf"
+      "\020\001*\242\001\n\016DataSourceType\022\017\n\013TELEMETERED\020\000\022\013" +
+      "\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006" +
+      "SYSTEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY" +
+      "\020\006\022\r\n\tEXTERNAL1\020\007\022\r\n\tEXTERNAL2\020\010\022\r\n\tEXTE" +
+      "RNAL3\020\t*\\\n\016AlarmLevelType\022\n\n\006NORMAL\020\000\022\t\n",
+      "\005WATCH\020\001\022\013\n\007WARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010C" +
+      "RITICAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022org.yamcs.proto" +
+      "buf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

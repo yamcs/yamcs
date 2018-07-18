@@ -2,7 +2,9 @@ package org.yamcs.web.rest.processor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +19,7 @@ import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
-import org.yamcs.parameter.SoftwareParameterManager;
+import org.yamcs.parameter.SoftwareParameterManagerIf;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.BulkGetParameterValueRequest;
@@ -36,6 +38,7 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -95,11 +98,11 @@ public class ProcessorParameterRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/parameters/:name*", method = { "PUT", "POST" })
     public void setSingleParameterValue(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
-
         XtceDb mdb = XtceDbFactory.getInstance(processor.getInstance());
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
 
+        SoftwareParameterManagerIf mgr = verifySoftwareParameterManager(processor, p.getDataSource());
+      
         Value v = ValueUtility.fromGpb(req.bodyAsMessage(org.yamcs.protobuf.Yamcs.Value.newBuilder()).build());
         try {
             mgr.updateParameter(p, v);
@@ -112,35 +115,35 @@ public class ProcessorParameterRestHandler extends RestHandler {
     @Route(path = "/api/processors/:instance/:processor/parameters/mset", method = { "POST", "PUT" }, priority = true)
     public void setParameterValues(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
-        SoftwareParameterManager mgr = verifySoftwareParameterManager(processor);
 
         BulkSetParameterValueRequest request = req.bodyAsMessage(BulkSetParameterValueRequest.newBuilder()).build();
 
         // check permission
         ParameterRequestManager prm = processor.getParameterRequestManager();
+        Map<DataSource, List<org.yamcs.parameter.ParameterValue>> pvmap = new HashMap<>();
         for (SetParameterValueRequest r : request.getRequestList()) {
             try {
-                String parameterName = prm.getParameter(r.getId()).getQualifiedName();
-                checkObjectPrivileges(req, ObjectPrivilegeType.WriteParameter, parameterName);
+                Parameter p = prm.getParameter(r.getId());
+                checkObjectPrivileges(req, ObjectPrivilegeType.WriteParameter, p.getQualifiedName());
+                org.yamcs.parameter.ParameterValue pv = new org.yamcs.parameter.ParameterValue(p);
+                pv.setEngineeringValue(ValueUtility.fromGpb(r.getValue()));
+                List<org.yamcs.parameter.ParameterValue> l = pvmap.computeIfAbsent(p.getDataSource(), k -> new ArrayList<>());
+                l.add(pv);
             } catch (InvalidIdentification e) {
                 throw new BadRequestException("InvalidIdentification: " + e.getMessage());
             }
         }
+        for(Map.Entry<DataSource, List<org.yamcs.parameter.ParameterValue>> me: pvmap.entrySet()) {
+            List<org.yamcs.parameter.ParameterValue> l = me.getValue();
+            DataSource ds = me.getKey();
+            SoftwareParameterManagerIf mgr = verifySoftwareParameterManager(processor, ds);
 
-        // Yamcs uses ParameterValue, so map to that structure
-        List<ParameterValue> pvals = new ArrayList<>();
-        for (SetParameterValueRequest r : request.getRequestList()) {
-            ParameterValue.Builder pvalb = ParameterValue.newBuilder();
-            pvalb.setId(r.getId());
-            pvalb.setEngValue(r.getValue());
-            pvals.add(pvalb.build());
+            try {
+                mgr.updateParameters(l);
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException(e.getMessage());
+            }
         }
-        try {
-            mgr.updateParameters(pvals);
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException(e.getMessage());
-        }
-
         completeOK(req);
     }
 
@@ -274,8 +277,8 @@ public class ProcessorParameterRestHandler extends RestHandler {
         }
     }
 
-    private SoftwareParameterManager verifySoftwareParameterManager(Processor processor) throws BadRequestException {
-        SoftwareParameterManager mgr = processor.getParameterRequestManager().getSoftwareParameterManager();
+    private SoftwareParameterManagerIf verifySoftwareParameterManager(Processor processor, DataSource ds) throws BadRequestException {
+        SoftwareParameterManagerIf mgr = processor.getParameterRequestManager().getSoftwareParameterManager(ds);
         if (mgr == null) {
             throw new BadRequestException("SoftwareParameterManager not activated for this processor");
         } else {

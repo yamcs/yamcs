@@ -1914,7 +1914,7 @@ public class XtceStaxReader {
                 p.setDataSource(DataSource.valueOf(v.toUpperCase()));
             } catch (IllegalArgumentException e) {
                 throw new XMLStreamException(
-                        "invalid dataSource '" + v + "'. Valid values: " + Arrays.toString(DataSource.values()));
+                        "invalid dataSource '" + v + "'. Valid values: " + DataSource.values());
             }
 
         }
