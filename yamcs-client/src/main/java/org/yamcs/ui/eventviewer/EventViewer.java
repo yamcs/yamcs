@@ -132,8 +132,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     /** Mapping of filtering rules into menu */
     private HashMap<JCheckBoxMenuItem, Integer> viewMenuFilterChkBoxes;
 
-    boolean authenticationEnabled = false;
-
     /**
      * Read properties from configuration file
      */
@@ -172,10 +170,6 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
 
     public EventViewer(YamcsConnector yc, final EventReceiver eventReceiver) throws ConfigurationException {
         super();
-        YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
-        if (config.containsKey("authenticationEnabled")) {
-            authenticationEnabled = config.getBoolean("authenticationEnabled");
-        }
 
         this.yconnector = yc;
         this.eventReceiver = eventReceiver;
@@ -542,7 +536,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
     public void actionPerformed(ActionEvent e) {
         String cmd = e.getActionCommand();
         if (cmd.equals("connect")) {
-            YamcsConnectDialogResult r = YamcsConnectDialog.showDialog(this, true, authenticationEnabled);
+            YamcsConnectDialogResult r = YamcsConnectDialog.showDialog(this, true);
             if (r.isOk()) {
                 yconnector.connect(r.getConnectionProperties());
             }

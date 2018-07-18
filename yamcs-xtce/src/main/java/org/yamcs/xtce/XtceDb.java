@@ -28,7 +28,7 @@ import org.yamcs.xtce.xml.XtceAliasSet;
  * @author mache
  */
 public class XtceDb implements Serializable {
-    private static final long serialVersionUID = 55L;
+    private static final long serialVersionUID = 56L;
 
     SpaceSystem rootSystem;
 
@@ -283,16 +283,15 @@ public class XtceDb implements Serializable {
 
     /**
      *
-     * @return list of ParameterEntry corresponding to a given parameter
-     *         or <code>null</code> if no such entry exists.
+     * @return list of ParameterEntry corresponding to a given parameter or <code>null</code> if no such entry exists.
      */
     public List<ParameterEntry> getParameterEntries(Parameter p) {
         return parameter2ParameterEntryMap.get(p);
     }
 
     /**
-     * @return list of ContainerEntry corresponding to a given sequence container
-     *         or <code>null</code> if no such entry exists.
+     * @return list of ContainerEntry corresponding to a given sequence container or <code>null</code> if no such entry
+     *         exists.
      */
     public List<ContainerEntry> getContainerEntries(SequenceContainer sc) {
         return sequenceContainer2ContainerEntryMap.get(sc);

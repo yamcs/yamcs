@@ -140,7 +140,6 @@ public class PacketViewer extends JFrame implements ActionListener,
     // used for decoding full packets
     XtceTmProcessor tmProcessor;
 
-    boolean authenticationEnabled = false;
     String streamName;
     private String defaultNamespace;
     PacketPreprocessor packetPreprocessor;
@@ -151,9 +150,6 @@ public class PacketViewer extends JFrame implements ActionListener,
         uiPrefs = Preferences.userNodeForPackage(PacketViewer.class);
 
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
-        if (config.containsKey("authenticationEnabled")) {
-            authenticationEnabled = config.getBoolean("authenticationEnabled");
-        }
         if (config.containsKey("defaultNamespace")) {
             defaultNamespace = config.getString("defaultNamespace");
         }
@@ -460,7 +456,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             }
         } else if (cmd.equals("connect-yamcs")) {
             if (connectDialog == null) {
-                connectDialog = new ConnectDialog(this, authenticationEnabled, true, true, true);
+                connectDialog = new ConnectDialog(this, true, true, true);
             }
             int ret = connectDialog.showDialog();
             if (ret == ConnectDialog.APPROVE_OPTION) {
@@ -640,7 +636,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                                 i++;
                             }
                             if ((r = reader.read(buf.array())) != 16) {
-                              //  throw new ShortReadException(16, r, offset);
+                                // throw new ShortReadException(16, r, offset);
                                 break;
                             }
                         }
@@ -653,7 +649,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                         System.arraycopy(buf.array(), 0, bufn, 0, 16);
                         r = reader.read(bufn, 16, len - 16);
                         if (r != len - 16) {
-                            //throw new ShortReadException(len - 16, r, offset);
+                            // throw new ShortReadException(len - 16, r, offset);
                             break;
                         }
 
@@ -703,7 +699,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
             @Override
             protected void done() {
-                System.out.println("lastFile : "+lastFile);
+                System.out.println("lastFile : " + lastFile);
                 if (progress != null) {
                     if (progress.isCanceled()) {
                         clearWindow();

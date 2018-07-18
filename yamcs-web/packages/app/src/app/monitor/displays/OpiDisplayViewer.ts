@@ -69,6 +69,10 @@ export class OpiDisplayViewer implements NavigationHandler, Viewer, OnDestroy {
     return true;
   }
 
+  public isScaleSupported() {
+    return true;
+  }
+
   public hasPendingChanges() {
     return false;
   }

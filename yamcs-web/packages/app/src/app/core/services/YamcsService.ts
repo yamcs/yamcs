@@ -59,6 +59,8 @@ export class YamcsService {
         }).catch(err => {
           reject(err);
         });
+      }).catch(err => {
+        reject(err);
       });
     });
   }

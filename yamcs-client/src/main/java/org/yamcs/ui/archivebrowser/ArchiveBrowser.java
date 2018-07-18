@@ -121,6 +121,9 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
     }
 
     protected JMenu getToolsMenu() throws ConfigurationException, IOException {
+        if (!YConfiguration.isDefined("yamcs-ui")) {
+            return null;
+        }
         YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
         if (!config.containsKey("archiveBrowserTools")) {
             return null;
@@ -294,17 +297,9 @@ public class ArchiveBrowser extends JFrame implements ArchiveIndexListener, Conn
         final YamcsConnector yconnector = new YamcsConnector("ArchiveBrowser");
         final ArchiveIndexReceiver ir = new YamcsArchiveIndexReceiver(yconnector);
         final ArchiveBrowser archiveBrowser = new ArchiveBrowser(yconnector, ir, false);
-        YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
 
-        boolean aetmp = false;
-
-        if (config.containsKey("authenticationEnabled")) {
-            aetmp = config.getBoolean("authenticationEnabled");
-        }
-
-        final boolean enableAuth = aetmp;
         archiveBrowser.connectMenuItem.addActionListener(e -> {
-            YamcsConnectDialogResult r = YamcsConnectDialog.showDialog(archiveBrowser, false, enableAuth);
+            YamcsConnectDialogResult r = YamcsConnectDialog.showDialog(archiveBrowser, false);
             if (r.isOk()) {
                 yconnector.connect(r.getConnectionProperties());
             }

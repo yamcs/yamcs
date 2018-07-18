@@ -10,7 +10,7 @@
       </ng-container>
     </ng-container>
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <button *ngIf="parameter.dataSource === 'LOCAL' && maySetParameter()"
+    <button *ngIf="isWritable() && maySetParameter()"
             mat-button
             color="primary"
             (click)="setParameter()">

@@ -31,6 +31,9 @@ export interface Parameter extends NameDescription {
   | 'COMMAND_HISTORY'
   | 'CONSTANT'
   | 'DERIVED'
+  | 'EXTERNAL1'
+  | 'EXTERNAL2'
+  | 'EXTERNAL3'
   | 'LOCAL'
   | 'SYSTEM'
   | 'TELEMETERED';

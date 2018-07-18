@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Display, NavigationHandler, OpenDisplayCommandOptions, UssDisplay } from '@yamcs/displays';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from './MyDisplayCommunicator';
 import { Viewer } from './Viewer';
@@ -26,38 +26,44 @@ export class DefaultNavigationHandler implements NavigationHandler {
   }
 
   closeDisplay() {
-    this.router.navigateByUrl(`monitor/displays/browse?instance=${this.instance}`);
+    this.router.navigateByUrl(`/monitor/displays/browse?instance=${this.instance}`);
   }
 }
 
 @Component({
   selector: 'app-uss-display-viewer',
   template: `
-    <div #wrapper class="wrapper" [class.center]="center$ | async">
-      <div #displayContainer style="line-height: 0"></div>
+    <div id="outer">
+      <div id="middle">
+        <div id="inner" #displayContainer></div>
+      </div>
     </div>
   `,
   styles: [`
-    .wrapper.center {
+    #outer {
+      display: table;
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%,-50%);
+      height: 100%;
+      width: 100%;
+    }
+    #middle {
+      display: table-cell;
+      vertical-align: middle;
+      text-align: center;
+    }
+    #inner {
+      display: inline-block;
+      line-height: 0;
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UssDisplayViewer implements Viewer, OnDestroy {
 
-  @ViewChild('wrapper')
-  private wrapper: ElementRef;
-
   @ViewChild('displayContainer')
   private displayContainer: ElementRef;
 
   private objectName: string;
-
-  center$ = new BehaviorSubject<boolean>(false);
 
   private zoom = 1;
 
@@ -105,11 +111,11 @@ export class UssDisplayViewer implements Viewer, OnDestroy {
     });
   }
 
-  public setCenterContent(center: true) {
-    this.center$.next(center);
+  public isFullscreenSupported() {
+    return true;
   }
 
-  public isFullscreenSupported() {
+  public isScaleSupported() {
     return true;
   }
 
@@ -119,16 +125,14 @@ export class UssDisplayViewer implements Viewer, OnDestroy {
 
   public zoomIn() {
     this.zoom += this.zoom * 0.3;
-    this.wrapper.nativeElement.style.setProperty('zoom', String(this.zoom));
-    this.wrapper.nativeElement.style.setProperty('-moz-transform', `scale(${this.zoom})`);
-    this.wrapper.nativeElement.style.setProperty('-moz-transform-origin', '0px 0px');
+    this.displayContainer.nativeElement.style.setProperty('transform', `scale(${this.zoom})`);
+    this.displayContainer.nativeElement.style.setProperty('transform-origin', '50% 50%');
   }
 
   public zoomOut() {
     this.zoom -= this.zoom * 0.3;
-    this.wrapper.nativeElement.style.setProperty('zoom', String(this.zoom));
-    this.wrapper.nativeElement.style.setProperty('-moz-transform', `scale(${this.zoom})`);
-    this.wrapper.nativeElement.style.setProperty('-moz-transform-origin', '0px 0px');
+    this.displayContainer.nativeElement.style.setProperty('transform', `scale(${this.zoom})`);
+    this.displayContainer.nativeElement.style.setProperty('transform-origin', '50% 50%');
   }
 
   ngOnDestroy() {

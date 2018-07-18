@@ -72,7 +72,7 @@ export class Layout implements OnInit, OnDestroy {
     if (this.layoutState) {
       const openPromises = [];
       for (const frameState of this.layoutState.frames) {
-        openPromises.push(this.openDisplay(frameState.id, {
+        openPromises.push(this.openDisplay(frameState.id, false, {
           x: frameState.x,
           y: frameState.y,
           width: frameState.width,
@@ -83,11 +83,11 @@ export class Layout implements OnInit, OnDestroy {
     }
   }
 
-  openDisplay(id: string, coordinates?: Coordinates): Promise<void> {
+  openDisplay(id: string, fireStateChange: boolean, coordinates?: Coordinates): Promise<void> {
     if (this.componentsById.has(id)) {
-      this.bringToFront(id);
+      this.bringToFront(id, fireStateChange);
     } else {
-      return this.createDisplayFrame(id, coordinates);
+      return this.createDisplayFrame(id, fireStateChange, coordinates);
     }
     return Promise.resolve();
   }
@@ -112,7 +112,7 @@ export class Layout implements OnInit, OnDestroy {
     this.showNavigator$.next(!this.showNavigator$.getValue());
   }
 
-  createDisplayFrame(id: string, coordinates: Coordinates = { x: 20, y: 20 }) {
+  createDisplayFrame(id: string, fireStateChange: boolean, coordinates: Coordinates = { x: 20, y: 20 }) {
     if (this.componentsById.has(id)) {
       throw new Error(`Layout already contains a frame with id ${id}`);
     }
@@ -124,7 +124,9 @@ export class Layout implements OnInit, OnDestroy {
 
     const frame = componentRef.instance;
     return frame.init(id, this, coordinates).then(() => {
-      this.fireStateChange();
+      if (fireStateChange) {
+        this.fireStateChange();
+      }
     });
   }
 
@@ -251,14 +253,16 @@ export class Layout implements OnInit, OnDestroy {
     this.fireStateChange();
   }
 
-  bringToFront(id: string) {
+  bringToFront(id: string, fireStateChange: boolean) {
     const component = this.componentsById.get(id);
     if (component) {
       const viewContainerRef = this.frameHost.viewContainerRef;
       const idx = viewContainerRef.indexOf(component.hostView);
       viewContainerRef.detach(idx);
       viewContainerRef.insert(component.hostView);
-      this.fireStateChange();
+      if (fireStateChange) {
+        this.fireStateChange();
+      }
     }
   }
 

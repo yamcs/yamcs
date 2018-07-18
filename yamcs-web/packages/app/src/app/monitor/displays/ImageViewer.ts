@@ -36,6 +36,10 @@ export class ImageViewer implements Viewer {
     return false;
   }
 
+  public isScaleSupported() {
+    return false;
+  }
+
   public hasPendingChanges() {
     return false;
   }

@@ -264,6 +264,14 @@ export interface DownloadParameterValuesOptions {
   order?: 'asc' | 'desc';
 }
 
+export interface BatchDownloadParameterValuesOptions {
+  parameters?: string | string[];
+  start?: string;
+  stop?: string;
+  format?: 'csv';
+  order?: 'asc' | 'desc';
+}
+
 export interface GetParameterSamplesOptions {
   start?: string;
   stop?: string;

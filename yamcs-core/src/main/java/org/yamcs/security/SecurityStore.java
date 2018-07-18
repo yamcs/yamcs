@@ -163,6 +163,7 @@ public class SecurityStore {
             try {
                 AuthorizationInfo authzInfo = authModule.getAuthorizationInfo(authInfo);
                 if (authzInfo != null) {
+                    user.setSuperuser(authzInfo.isSuperuser());
                     for (SystemPrivilege privilege : authzInfo.getSystemPrivileges()) {
                         user.addSystemPrivilege(privilege);
                     }

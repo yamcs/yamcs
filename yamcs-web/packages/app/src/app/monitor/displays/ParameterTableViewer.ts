@@ -1,10 +1,11 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { MatDialog, MatTableDataSource } from '@angular/material';
-import { Instance, ParameterValue } from '@yamcs/client';
+import { MatDialog } from '@angular/material';
+import { Instance } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SelectParameterDialog } from '../../mdb/parameters/SelectParameterDialog';
+import { ParameterTableBuffer } from './ParameterTableBuffer';
 import { ParameterTable } from './ParameterTableModel';
 import { Viewer } from './Viewer';
 
@@ -18,62 +19,33 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   objectName: string;
 
-  dataSource = new MatTableDataSource<Record>([]);
-  selection = new SelectionModel<Record>(true, []);
+  selection = new SelectionModel<string>(true, []);
 
   instance: Instance;
 
-  displayedColumns = [
-    'severity',
-    'name',
-    'generationTimeUTC',
-    'rawValue',
-    'engValue',
-    'acquisitionStatus',
-  ];
-
-  private latestValues = new Map<string, ParameterValue>();
-  private dirty = false;
+  public model$ = new BehaviorSubject<ParameterTable | null>(null);
+  buffer = new ParameterTableBuffer();
 
   public paused$ = new BehaviorSubject<boolean>(false);
   public hasUnsavedChanges$ = new BehaviorSubject<boolean>(false);
   showActions$ = new BehaviorSubject<boolean>(false);
 
-  private dataSynchronizer: number;
   private dataSubscription: Subscription;
   private dataSubscriptionId: number;
-
-  public model: ParameterTable;
 
   constructor(
     private yamcs: YamcsService,
     private changeDetector: ChangeDetectorRef,
     private dialog: MatDialog,
-  ) {
-    this.dataSynchronizer = window.setInterval(() => {
-      if (this.dirty && !this.paused$.value) {
-        const data = this.dataSource.data;
-        for (const rec of data) {
-          rec.pval = this.latestValues.get(rec.name);
-        }
-        this.dataSource.data = data;
-        this.dirty = false;
-        this.changeDetector.detectChanges();
-      }
-    }, 500 /* update rate */);
-  }
+  ) {}
 
   public init(objectName: string) {
     this.objectName = objectName;
     this.instance = this.yamcs.getInstance();
     this.yamcs.getInstanceClient()!.getObject('displays', objectName).then(response => {
       response.text().then(text => {
-        this.model = JSON.parse(text);
-
-        const recs = this.model.parameters.map(name => ({ name }));
-        this.dataSource.data = recs;
-        this.changeDetector.detectChanges();
-
+        const model: ParameterTable = JSON.parse(text);
+        this.model$.next(model);
         this.createOrModifySubscription();
       });
     });
@@ -81,8 +53,6 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   }
 
   public setEnableActions() {
-    this.displayedColumns.splice(0, 0, 'select');
-    this.displayedColumns.push('actions');
     this.showActions$.next(true);
   }
 
@@ -91,7 +61,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   }
 
   private createOrModifySubscription() {
-    const ids = this.model.parameters.map(name => ({ name }));
+    const ids = this.model$.value!.parameters.map(name => ({ name }));
     if (ids.length) {
       this.yamcs.getInstanceClient()!.getParameterValueUpdates({
         subscriptionId: this.dataSubscriptionId || -1,
@@ -102,48 +72,35 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
       }).then(res => {
         this.dataSubscriptionId = res.subscriptionId;
         this.dataSubscription = res.parameterValues$.subscribe(pvals => {
-          for (const pval of pvals) {
-            this.latestValues.set(pval.id.name, pval);
-          }
-          this.dirty = true;
+          this.buffer.push(pvals);
         });
       });
     }
   }
 
   public addParameter(name: string) {
-    this.dataSource.data.push({ name });
-    this.model.parameters = this.dataSource.data.map(rec => rec.name);
+    const model = this.model$.value!;
+    model.parameters.push(name);
+    this.emitModelUpdate(model);
     this.hasUnsavedChanges$.next(true);
-
-    // The 'data' property uses a setter that triggers a refresh...
-    this.dataSource.data = this.dataSource.data;
-    this.changeDetector.detectChanges();
 
     this.createOrModifySubscription();
   }
 
-  public getParameterNames(): string[] {
-    return this.dataSource.data.map(rec => rec.name);
+  /**
+   * Forces an update of the model by cloning the instance
+   */
+  private emitModelUpdate(model: ParameterTable) {
+    this.model$.next({
+      scroll: model.scroll,
+      bufferSize: model.bufferSize || 10,
+      columns: model.columns,
+      parameters: model.parameters,
+    });
   }
 
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected() ?
-        this.selection.clear() :
-        this.dataSource.data.forEach(row => this.selection.select(row));
-  }
-
-  toggleOne(row: Record) {
-    if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
-      this.selection.clear();
-    }
-    this.selection.toggle(row);
+  public getModel(): ParameterTable {
+    return this.model$.value!;
   }
 
   public pause() {
@@ -156,53 +113,86 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
 
   public delete() {
     if (!this.selection.isEmpty()) {
-      this.dataSource.data = this.dataSource.data.filter(rec => !this.selection.isSelected(rec));
-
-      this.model.parameters = this.dataSource.data.map(rec => rec.name);
+      const model = this.model$.value!;
+      model.parameters = model.parameters.filter(p => !this.selection.isSelected(p));
+      this.emitModelUpdate(model);
       this.hasUnsavedChanges$.next(true);
     }
     this.selection.clear();
-    this.changeDetector.detectChanges();
+  }
+
+  public enableScrollView() {
+    this.selection.clear();
+    const model = this.model$.value!;
+    model.scroll = true;
+    this.emitModelUpdate(model);
+    this.hasUnsavedChanges$.next(true);
+  }
+
+  public enableStandardView() {
+    this.selection.clear();
+    const model = this.model$.value!;
+    model.scroll = false;
+    this.emitModelUpdate(model);
+    this.hasUnsavedChanges$.next(true);
   }
 
   public isFullscreenSupported() {
     return false;
   }
 
-  moveUp(index: number) {
-    const data = this.dataSource.data;
-    const x = data[index];
-    if (index === 0) {
-      data[index] = data[data.length - 1];
-      data[data.length - 1] = x;
-    } else {
-      data[index] = data[index - 1];
-      data[index - 1] = x;
-    }
-    this.dataSource.data = data;
+  public isScaleSupported() {
+    return false;
+  }
 
-    this.model.parameters = data.map(rec => rec.name);
+  removeParameter(name: string) {
+    const model = this.model$.value!;
+    model.parameters = model.parameters.filter(p => p !== name);
+    this.emitModelUpdate(model);
+    this.hasUnsavedChanges$.next(true);
+  }
+
+  moveUp(index: number) {
+    const model = this.model$.value!;
+    const x = model.parameters[index];
+    if (index === 0) {
+      model.parameters[index] = model.parameters[model.parameters.length - 1];
+      model.parameters[model.parameters.length - 1] = x;
+    } else {
+      model.parameters[index] = model.parameters[index - 1];
+      model.parameters[index - 1] = x;
+    }
+
+    this.emitModelUpdate(model);
     this.hasUnsavedChanges$.next(true);
   }
 
   moveDown(index: number) {
-    const data = this.dataSource.data;
-    const x = data[index];
-    if (index === data.length - 1) {
-      data[index] = data[0];
-      data[0] = x;
+    const model = this.model$.value!;
+    const x = model.parameters[index];
+    if (index === model.parameters.length - 1) {
+      model.parameters[index] = model.parameters[0];
+      model.parameters[0] = x;
     } else {
-      data[index] = data[index + 1];
-      data[index + 1] = x;
+      model.parameters[index] = model.parameters[index + 1];
+      model.parameters[index + 1] = x;
     }
-    this.dataSource.data = data;
 
-    this.model.parameters = data.map(rec => rec.name);
+    this.emitModelUpdate(model);
+    this.hasUnsavedChanges$.next(true);
+  }
+
+  setBufferSize(size: number) {
+    this.buffer.setSize(size);
+    const model = this.model$.value!;
+    model.bufferSize = size;
+    this.emitModelUpdate(model);
     this.hasUnsavedChanges$.next(true);
   }
 
   save() {
-    const b = new Blob([JSON.stringify(this.model, undefined, 2)]);
+    const model = this.model$.value!;
+    const b = new Blob([JSON.stringify(model, undefined, 2)]);
     return this.yamcs.getInstanceClient()!.uploadObject('displays', this.objectName, b).then(() => {
       this.hasUnsavedChanges$.next(false);
     });
@@ -212,8 +202,8 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     const dialogRef = this.dialog.open(SelectParameterDialog, {
       width: '500px',
       data: {
-        okLabel: 'Add',
-        exclude: this.getParameterNames(),
+        okLabel: 'ADD',
+        exclude: this.getModel().parameters,
       }
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -227,13 +217,6 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     if (this.dataSubscription) {
       this.dataSubscription.unsubscribe();
     }
-    if (this.dataSynchronizer) {
-      window.clearInterval(this.dataSynchronizer);
-    }
   }
 }
 
-export interface Record {
-  name: string;
-  pval?: ParameterValue;
-}

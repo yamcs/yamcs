@@ -23,7 +23,7 @@
           <h3 matLine>Plugins</h3>
         </mat-list-item>
 
-        <table yaDataTable style="margin-left: 16px;">
+        <table *ngIf="info.plugin" yaDataTable style="margin-left: 16px;">
           <tr>
             <th>Name</th>
             <th>Version</th>

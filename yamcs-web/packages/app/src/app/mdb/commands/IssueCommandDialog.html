@@ -8,7 +8,7 @@
         <label *ngSwitchCase="'enumeration'">
           {{ argument.name }}
           <select [formControlName]="argument.name">
-            <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.value">{{ enumValue.label }}</option>
+            <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">{{ enumValue.label }}</option>
           </select>
         </label>
 
@@ -24,6 +24,6 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Cancel</button>
-  <button mat-raised-button (click)="issue()" color="primary" [disabled]="!form.valid">Issue</button>
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-raised-button (click)="issue()" color="primary" [disabled]="!form.valid">ISSUE</button>
 </mat-dialog-actions>

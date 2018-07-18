@@ -232,6 +232,10 @@ export interface CommandQueueSubscriptionResponse {
   commandQueue$: Observable<CommandQueue>;
 }
 
+export interface EditInstanceOptions {
+  state: 'stopped' | 'restarted';
+}
+
 export interface EditCommandQueueOptions {
   state: 'enabled' | 'disabled' | 'blocked';
 }

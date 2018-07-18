@@ -3,7 +3,7 @@ import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { BucketsWrapper, InstancesWrapper, ServicesWrapper } from './types/internal';
-import { AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, GeneralInfo, Instance, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
 
 export default class YamcsClient implements HttpHandler {
 
@@ -91,7 +91,7 @@ export default class YamcsClient implements HttpHandler {
       const tokenResponse = await response.json() as TokenResponse;
       return Promise.resolve(tokenResponse);
     } else {
-      return Promise.reject(new HttpError(response.status, response.statusText));
+      return Promise.reject(new HttpError(response));
     }
   }
 
@@ -125,6 +125,13 @@ export default class YamcsClient implements HttpHandler {
   async getInstance(name: string) {
     const response = await this.doFetch(`${this.apiUrl}/instances/${name}`);
     return await response.json() as Instance;
+  }
+
+  async editInstance(name: string, options: EditInstanceOptions) {
+    const url = `${this.apiUrl}/instances/${name}`;
+    return this.doFetch(url + this.queryString(options), {
+      method: 'PATCH',
+    });
   }
 
   async getServices(): Promise<Service[]> {
@@ -258,7 +265,7 @@ export default class YamcsClient implements HttpHandler {
     if (response.status >= 200 && response.status < 300) {
       return Promise.resolve(response);
     } else {
-      return Promise.reject(new HttpError(response.status, response.statusText));
+      return Promise.reject(new HttpError(response));
     }
   }
 

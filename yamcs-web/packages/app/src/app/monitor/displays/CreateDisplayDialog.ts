@@ -61,6 +61,7 @@ export class CreateDisplayDialog {
     const fullPath = path ? path + '/' + name : name;
 
     const display = {
+      scroll: false,
       parameters: [],
     };
     const b = new Blob([JSON.stringify(display, undefined, 2)], {

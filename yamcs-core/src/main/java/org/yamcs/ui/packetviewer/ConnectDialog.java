@@ -67,17 +67,14 @@ public class ConnectDialog extends JDialog implements ActionListener {
      * Return value if cancel is chosen.
      */
     public static final int CANCEL_OPTION = 1;
+
     /**
      * Return value if approve (yes, ok) is chosen.
      */
     public static final int APPROVE_OPTION = 0;
 
-    final boolean authenticationEnabled;
-
-    ConnectDialog(JFrame parent, boolean authenticationEnabled, boolean getInstance, boolean getStreamName,
-            boolean getDbConfig) {
+    ConnectDialog(JFrame parent, boolean getInstance, boolean getStreamName, boolean getDbConfig) {
         super(parent, "Connect to Yamcs", true);
-        this.authenticationEnabled = authenticationEnabled;
         this.getInstance = getInstance;
         this.getMdbConfig = getDbConfig;
         this.getStreamName = getStreamName;
@@ -130,25 +127,24 @@ public class ConnectDialog extends JDialog implements ActionListener {
         	sslCheckBox = new JCheckBox(); sslCheckBox.setSelected(values.ssl);
         	c.gridy=3;c.gridx=1;c.anchor=GridBagConstraints.WEST;inputPanel.add(sslCheckBox,c);
          */
-        if (authenticationEnabled) {
-            ceast.gridy++;
-            cwest.gridy++;
-            lab = new JLabel("Username: ");
-            lab.setHorizontalAlignment(SwingConstants.RIGHT);
-            inputPanel.add(lab, ceast);
-            usernameTextField = new JTextField(connectionProps.getUsername());
-            usernameTextField.setPreferredSize(new Dimension(160, usernameTextField.getPreferredSize().height));
-            inputPanel.add(usernameTextField, cwest);
 
-            ceast.gridy++;
-            cwest.gridy++;
-            lab = new JLabel("Password: ");
-            lab.setHorizontalAlignment(SwingConstants.RIGHT);
-            inputPanel.add(lab, ceast);
-            passwordTextField = new JPasswordField();
-            passwordTextField.setPreferredSize(new Dimension(160, passwordTextField.getPreferredSize().height));
-            inputPanel.add(passwordTextField, cwest);
-        }
+        ceast.gridy++;
+        cwest.gridy++;
+        lab = new JLabel("Username: ");
+        lab.setHorizontalAlignment(SwingConstants.RIGHT);
+        inputPanel.add(lab, ceast);
+        usernameTextField = new JTextField(connectionProps.getUsername());
+        usernameTextField.setPreferredSize(new Dimension(160, usernameTextField.getPreferredSize().height));
+        inputPanel.add(usernameTextField, cwest);
+
+        ceast.gridy++;
+        cwest.gridy++;
+        lab = new JLabel("Password: ");
+        lab.setHorizontalAlignment(SwingConstants.RIGHT);
+        inputPanel.add(lab, ceast);
+        passwordTextField = new JPasswordField();
+        passwordTextField.setPreferredSize(new Dimension(160, passwordTextField.getPreferredSize().height));
+        inputPanel.add(passwordTextField, cwest);
 
         if (getInstance) {
             lab = new JLabel("Instance: ");
@@ -326,8 +322,8 @@ public class ConnectDialog extends JDialog implements ActionListener {
             }
 
             // values.ssl= sslCheckBox.isSelected();
-            if (authenticationEnabled) {
-                passwordTextField.setText("");
+            passwordTextField.setText("");
+            if (!usernameTextField.getText().isEmpty()) {
                 connectionProps.setCredentials(usernameTextField.getText(), passwordTextField.getPassword());
             } else {
                 // If not authenticating, don't use last credentials
@@ -364,7 +360,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
                 String host = hostTextField.getText();
                 int port = Integer.parseInt(portTextField.getText());
                 YamcsConnectionProperties ycp = new YamcsConnectionProperties(host, port);
-                if (authenticationEnabled) {
+                if (!usernameTextField.getText().isEmpty()) {
                     ycp.setCredentials(usernameTextField.getText(), passwordTextField.getPassword());
                 }
 
@@ -422,7 +418,7 @@ public class ConnectDialog extends JDialog implements ActionListener {
     }
 
     public static void main(String[] args) {
-        ConnectDialog ycd = new ConnectDialog(null, false, true, true, true);
+        ConnectDialog ycd = new ConnectDialog(null, true, true, true);
         ycd.showDialog();
     }
 

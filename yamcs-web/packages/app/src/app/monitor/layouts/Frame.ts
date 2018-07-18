@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, ComponentFactoryResolver, ElementRef, Type, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Display, DisplayCommunicator, NavigationHandler, OpenDisplayCommandOptions } from '@yamcs/displays';
+import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { MyDisplayCommunicator } from '../displays/MyDisplayCommunicator';
 import { OpiDisplayViewer } from '../displays/OpiDisplayViewer';
@@ -52,7 +53,7 @@ export class Frame implements NavigationHandler {
 
   private preferredWidth = 800;
   private preferredHeight = 400;
-  private zoomToFit = false;
+  zoomToFit$ = new BehaviorSubject<boolean>(false);
 
   readonly titleBarHeight = 20;
 
@@ -82,7 +83,7 @@ export class Frame implements NavigationHandler {
         container.style.backgroundColor = viewer.display.getBackgroundColor();
         this.preferredWidth = viewer.display.width;
         this.preferredHeight = viewer.display.height;
-        this.zoomToFit = true;
+        this.zoomToFit$.next(true);
       });
     } else if (displayType === 'OPI') {
       const viewer = this.createViewer(OpiDisplayViewer);
@@ -91,13 +92,12 @@ export class Frame implements NavigationHandler {
         container.style.backgroundColor = viewer.display.getBackgroundColor();
         this.preferredWidth = viewer.display.width;
         this.preferredHeight = viewer.display.height;
-        this.zoomToFit = true;
+        this.zoomToFit$.next(true);
       });
     } else if (displayType === 'PAR') {
       container.style.backgroundColor = 'white';
       const viewer = this.createViewer(ParameterTableViewer);
       initPromise = viewer.init(id);
-      this.zoomToFit = false;
     } else {
       alert('No viewer for file ' + id);
       return Promise.resolve();
@@ -133,13 +133,10 @@ export class Frame implements NavigationHandler {
     container.style.width = `${width}px`;
     container.style.height = `${height + this.titleBarHeight}px`;
 
-    if (this.zoomToFit) {
+    if (this.zoomToFit$.value) {
       const frameContent = this.frameContentRef.nativeElement as HTMLDivElement;
-      frameContent.style.zoom = String(zoom);
-
-      // Zoom does not work in FF
-      frameContent.style.setProperty('-moz-transform', `scale(${zoom})`);
-      frameContent.style.setProperty('-moz-transform-origin', '0px 0px');
+      frameContent.style.setProperty('transform', `scale(${zoom})`);
+      frameContent.style.setProperty('transform-origin', '50% 50%');
     }
   }
 
@@ -194,7 +191,7 @@ export class Frame implements NavigationHandler {
   onFrameContentClick($event: Event) {
     const target = $event.target as Element;
     if (target.getAttribute('data-control') !== 'true') {
-      this.layout.bringToFront(this.id);
+      this.layout.bringToFront(this.id, true);
     }
   }
 
@@ -232,7 +229,7 @@ export class Frame implements NavigationHandler {
     };
 
     $event.preventDefault();
-    this.layout.bringToFront(this.id);
+    this.layout.bringToFront(this.id, true);
     const container = this.containerRef.nativeElement as HTMLDivElement;
     startX = parseInt(container.style.left!, 10);
     startY = parseInt(container.style.top!, 10);
@@ -274,7 +271,7 @@ export class Frame implements NavigationHandler {
     };
 
     $event.preventDefault();
-    this.layout.bringToFront(this.id);
+    this.layout.bringToFront(this.id, true);
     const container = this.containerRef.nativeElement as HTMLDivElement;
     startWidth = parseInt(container.style.width!, 10);
     startHeight = parseInt(container.style.height!, 10) - this.titleBarHeight;
@@ -292,12 +289,12 @@ export class Frame implements NavigationHandler {
   openDisplay(options: OpenDisplayCommandOptions) {
     const alreadyOpenFrame = this.layout.getDisplayFrame(options.target);
     if (alreadyOpenFrame) {
-      this.layout.bringToFront(alreadyOpenFrame.id);
+      this.layout.bringToFront(alreadyOpenFrame.id, true);
     } else {
       if (!options.openInNewWindow) {
         this.layout.closeDisplayFrame(this.id);
       }
-      this.layout.createDisplayFrame(options.target, options.coordinates);
+      this.layout.createDisplayFrame(options.target, true, options.coordinates);
     }
   }
 

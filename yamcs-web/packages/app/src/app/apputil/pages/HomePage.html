@@ -1,3 +1,7 @@
+<mat-toolbar>
+  <mat-toolbar-row>Instances</mat-toolbar-row>
+</mat-toolbar>
+
 <div class="panel-content">
   <div style="margin-bottom: 12px;">
     <input placeholder="Filter instances"
@@ -14,12 +18,39 @@
          matSortDisableClear>
 
     <ng-container cdkColumnDef="name">
-      <th mat-header-cell *cdkHeaderCellDef mat-sort-header>Instance</th>
+      <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 300px">Instance</th>
       <td mat-cell *cdkCellDef="let row">
         <a routerLink="/monitor/displays/browse"
             [queryParams]="{instance: row.name}">
           {{ row.name }}
         </a>
+      </td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="state">
+      <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 200px">State</th>
+      <td mat-cell *cdkCellDef="let row">
+        {{ row.state }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let instance">
+        <mat-menu #instanceMenu="matMenu" overlapTrigger="false" class="ya-menu">
+          <button mat-menu-item
+                  (click)="restartInstance(instance)">
+            Restart
+          </button>
+          <button mat-menu-item
+                  (click)="stopInstance(instance)">
+            Stop
+          </button>
+        </mat-menu>
+        <button mat-button [matMenuTriggerFor]="instanceMenu"
+                *ngIf="mayControlServices()">
+          <mat-icon>more_vert</mat-icon>
+        </button>
       </td>
     </ng-container>
 

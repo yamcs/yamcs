@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Parameter, Value } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -34,6 +34,11 @@ export class SetParameterDialog {
       case 'timestamp':
         this.form = formBuilder.group({
           value: [null, Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)]
+        });
+        break;
+      case 'enumeration':
+        this.form = formBuilder.group({
+          value: [null, Validators.required]
         });
         break;
       default:

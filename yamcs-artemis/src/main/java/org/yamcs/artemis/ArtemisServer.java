@@ -1,10 +1,13 @@
 package org.yamcs.artemis;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.apache.activemq.artemis.spi.core.security.ActiveMQSecurityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
 import org.yamcs.security.SecurityStore;
@@ -20,65 +23,74 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class ArtemisServer extends AbstractService implements YamcsService {
-    static Logger log = LoggerFactory.getLogger(ArtemisServer.class.getName());
 
-    static EmbeddedActiveMQ artemisServer;
+    private static Logger log = LoggerFactory.getLogger(ArtemisServer.class.getName());
 
-    public ArtemisServer() throws ConfigurationException {
-        // divert artemis logging
-        System.setProperty("org.jboss.logging.provider", "slf4j");
-        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Jdk14Logger");
+    private static EmbeddedActiveMQ broker;
+
+    private String configFile; // Must be on classpath (note that etc folder is usually added to Yamcs classpath)
+    private ActiveMQSecurityManager securityManager;
+
+    public ArtemisServer() throws IOException {
+        this(Collections.emptyMap());
     }
 
-    public static EmbeddedActiveMQ setupArtemis() throws Exception {
-        if (artemisServer != null) {
-            throw new ConfigurationException("This service cannot be instantiated more than once");
-        }
-        // load optional configuration file name for ActiveMQ Artemis,
-        // otherwise default will be artemis.xml
-        String artemisConfigFile = "artemis.xml";
-        YConfiguration c = YConfiguration.getConfiguration("yamcs");
-        if (c.containsKey("artemisConfigFile")) {
-            artemisConfigFile = c.getString("artemisConfigFile");
+    public ArtemisServer(Map<String, Object> args) throws IOException {
+        // Divert artemis logging
+        System.setProperty("org.jboss.logging.provider", "slf4j");
+        System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.Jdk14Logger");
+
+        configFile = YConfiguration.getString(args, "configFile", "artemis.xml");
+
+        YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
+        if (yconf.containsKey("artemisConfigFile")) {
+            log.warn("Deprecation: migrate 'artemisConfigFile' setting to arg 'configFile' of ArtemisServer");
+            configFile = yconf.getString("artemisConfigFile");
         }
 
-        EmbeddedActiveMQ artemisServer = new EmbeddedActiveMQ();
-        SecurityStore security = SecurityStore.getInstance();
-        if (security.isEnabled()) {
-            YConfiguration conf = YConfiguration.getConfiguration("security");
-            if (conf.containsKey("artemisAuthModule")) {
-                ActiveMQSecurityManager secmgr = YObjectLoader.loadObject(conf.getMap("artemisAuthModule"));
-                artemisServer.setSecurityManager(secmgr);
-            } else {
-                throw new ConfigurationException(
-                        "Security is enabled but there is no artemisAuthModule configured in security.yaml");
-            }
+        if (args.containsKey("securityManager")) {
+            securityManager = YObjectLoader.loadObject(YConfiguration.getMap(args, "securityManager"));
         }
-        if (artemisConfigFile != null) {
-            artemisServer.setConfigResourcePath(artemisConfigFile);
-        }
-        artemisServer.start();
-
-        return artemisServer;
     }
 
     @Override
     protected void doStart() {
         try {
-            artemisServer = ArtemisServer.setupArtemis();
+            broker = startEmbeddedBroker();
             notifyStarted();
         } catch (Exception e) {
             notifyFailed(e);
         }
     }
 
+    public EmbeddedActiveMQ startEmbeddedBroker() throws Exception {
+        if (broker != null) {
+            throw new UnsupportedOperationException("This service cannot be instantiated more than once");
+        }
+
+        EmbeddedActiveMQ artemisServer = new EmbeddedActiveMQ();
+
+        if (securityManager != null) {
+            artemisServer.setSecurityManager(securityManager);
+        } else if (SecurityStore.getInstance().isEnabled()) {
+            log.warn("Artemis security is unconfigured. All connections are given full permissions");
+        } else {
+            log.debug("Artemis security is unconfigured. All connections are given full permissions");
+        }
+
+        artemisServer.setConfigResourcePath(configFile);
+        artemisServer.start();
+
+        return artemisServer;
+    }
+
     @Override
     protected void doStop() {
         try {
-            artemisServer.stop();
+            broker.stop();
             notifyStopped();
         } catch (Exception e) {
-            log.error("Failed to close the yamcs session", e);
+            log.error("Failed to close Yamcs broker session", e);
         }
     }
 }

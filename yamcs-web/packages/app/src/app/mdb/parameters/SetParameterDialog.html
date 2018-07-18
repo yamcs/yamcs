@@ -44,12 +44,21 @@
         </label>
       </ng-container>
 
+      <ng-container *ngSwitchCase="'enumeration'">
+        <label>
+          Value
+          <select formControlName="value">
+            <option *ngFor="let enumValue of parameter?.type?.enumValue" [value]="enumValue.label">{{ enumValue.label }}</option>
+          </select>
+        </label>
+      </ng-container>
+
     </ng-container>
   </form>
   <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Cancel</button>
-  <button mat-raised-button (click)="save()" color="primary" [disabled]="!form.valid">Save</button>
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-raised-button (click)="save()" color="primary" [disabled]="!form.valid">SAVE</button>
 </mat-dialog-actions>

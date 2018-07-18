@@ -1,0 +1,87 @@
+<table mat-table
+        *ngIf="dataSource.data.length"
+        [dataSource]="dataSource"
+        class="ya-data-table"
+        [class.paused]="paused">
+
+  <ng-container cdkColumnDef="select">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
+      <input type="checkbox" (change)="$event ? masterToggle() : null"
+                    [checked]="selection.hasValue() && isAllSelected()">
+    </th>
+    <td mat-cell *cdkCellDef="let row">
+      <input type="checkbox"
+              (click)="$event.stopPropagation()"
+              (change)="$event ? selection.toggle(row.name) : null"
+              [checked]="selection.isSelected(row.name)">
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="name">
+    <th mat-header-cell *cdkHeaderCellDef>Name</th>
+    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">
+      <a [routerLink]="['/mdb/parameters', row.name]"
+          [queryParams]="{instance: instance.name}">
+        {{ row.name }}
+      </a>
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="severity">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 80px">Severity</th>
+    <td mat-cell *cdkCellDef="let row">
+      <app-alarm-level *ngIf="row.pval?.monitoringResult" [level]="row.pval?.monitoringResult"></app-alarm-level>
+      <span *ngIf="!row.pval?.monitoringResult">-</span>
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="rawValue">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Raw</th>
+    <td mat-cell *cdkCellDef="let row">{{ (row.pval?.rawValue | value) || '-' }}</td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="engValue">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Eng</th>
+    <td mat-cell *cdkCellDef="let row">
+      <app-expirable *ngIf="row.pval" [pval]="row.pval">
+        {{ (row.pval?.engValue | value) || '-' }}
+        <span *ngIf="row.pval?.rangeCondition === 'LOW'">&#8595;</span>
+        <span *ngIf="row.pval?.rangeCondition === 'HIGH'">&#8593;</span>
+      </app-expirable>
+      <span *ngIf="!row.pval">-</span>
+    </td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="receptionTimeUTC">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Reception time</th>
+    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">{{ (row.pval?.acquisitionTimeUTC | datetime) || '-' }}</td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="generationTimeUTC">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Generation time</th>
+    <td mat-cell *cdkCellDef="let row" style="white-space: nowrap">{{ (row.pval?.generationTimeUTC | datetime) || '-' }}</td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="acquisitionStatus">
+    <th mat-header-cell *cdkHeaderCellDef style="width: 150px">Acquisition status</th>
+    <td mat-cell *cdkCellDef="let row">{{ row.pval?.acquisitionStatus || '-' }}</td>
+  </ng-container>
+
+  <ng-container cdkColumnDef="actions">
+    <th mat-header-cell *cdkHeaderCellDef></th>
+    <td mat-cell *cdkCellDef="let row; let i = index">
+      <button mat-button (click)="moveDown.emit(i); $event.stopPropagation()">
+        <mat-icon>keyboard_arrow_down</mat-icon>
+      </button>
+      <button mat-button (click)="moveUp.emit(i); $event.stopPropagation()">
+        <mat-icon>keyboard_arrow_up</mat-icon>
+      </button>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row
+      *cdkRowDef="let row; columns: displayedColumns;"
+      [class.selected]="selection.isSelected(row.name)"
+      (click)="toggleOne(row.name)"></tr>
+</table>

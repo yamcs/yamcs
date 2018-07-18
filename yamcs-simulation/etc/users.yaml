@@ -10,10 +10,3 @@ operator:
   password: password
   roles: [ Operator ]
 
-spell:
-  password: spell
-  roles: [ SPELL ]
-
-supervisor:
-  password: password
-  roles: [ Supervisor ]
