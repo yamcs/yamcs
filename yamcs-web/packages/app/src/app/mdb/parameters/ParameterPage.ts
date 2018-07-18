@@ -86,6 +86,17 @@ export class ParameterPage implements OnDestroy {
     }
   }
 
+  isWritable() {
+    const parameter = this.parameter$.value;
+    if (parameter) {
+      return parameter.dataSource === 'LOCAL'
+        || parameter.dataSource === 'EXTERNAL1'
+        || parameter.dataSource === 'EXTERNAL2'
+        || parameter.dataSource === 'EXTERNAL3';
+    }
+    return false;
+  }
+
   maySetParameter() {
     const parameter = this.parameter$.value;
     if (parameter) {
