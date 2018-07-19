@@ -22,7 +22,7 @@ public class ArgumentEntry extends SequenceEntry {
      * @param locationInContainerInBits
      * @param location
      */
-    public ArgumentEntry(CommandContainer container, int locationInContainerInBits, ReferenceLocationType location) {
+    public ArgumentEntry(int locationInContainerInBits, ReferenceLocationType location) {
         super(locationInContainerInBits, location);
     }
 
