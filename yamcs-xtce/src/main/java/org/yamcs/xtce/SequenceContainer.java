@@ -65,8 +65,9 @@ public class SequenceContainer extends Container {
      * @param k
      * @param parameterEntry
      */
-    public void insertEntry(int idx, ParameterEntry parameterEntry) {
-        entryList.add(idx, parameterEntry);
+    public void insertEntry(int idx, SequenceEntry entry) {
+        entryList.add(idx, entry);
+        entry.setContainer(this);
         for (int i = idx; i < entryList.size(); i++) {
             entryList.get(i).setIndex(i);
         }
@@ -76,7 +77,9 @@ public class SequenceContainer extends Container {
     public void setEntryList(List<SequenceEntry> entryList) {
         this.entryList = entryList;
         for (int i = 0; i < entryList.size(); i++) {
-            entryList.get(i).setIndex(i);
+            SequenceEntry entry = entryList.get(i);
+            entry.setIndex(i);
+            entry.setContainer(this);
         }
     }
 
