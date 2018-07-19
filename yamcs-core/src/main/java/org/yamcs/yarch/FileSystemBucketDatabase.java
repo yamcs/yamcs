@@ -63,21 +63,23 @@ public class FileSystemBucketDatabase implements BucketDatabase {
 
     @Override
     public List<BucketProperties> listBuckets() throws IOException {
-        List<Path> files = Files.list(root).collect(Collectors.toList());
-        List<BucketProperties> props = new ArrayList<>();
-        for (Path file : files) {
-            BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
-            if (attrs.isDirectory() && !Files.isHidden(file)) {
-                BucketProperties.Builder b = BucketProperties.newBuilder();
-                b.setName(file.getFileName().toString());
-                b.setCreated(attrs.creationTime().toMillis());
-                b.setMaxNumObjects(MAX_NUM_OBJECTS_PER_BUCKET);
-                b.setMaxSize(MAX_BUCKET_SIZE);
-                b.setSize(calculateSize(file));
-                props.add(b.build());
+        try (java.util.stream.Stream<Path> stream = Files.list(root)) {
+            List<Path> files = stream.collect(Collectors.toList());
+            List<BucketProperties> props = new ArrayList<>();
+            for (Path file : files) {
+                BasicFileAttributes attrs = Files.readAttributes(file, BasicFileAttributes.class);
+                if (attrs.isDirectory() && !Files.isHidden(file)) {
+                    BucketProperties.Builder b = BucketProperties.newBuilder();
+                    b.setName(file.getFileName().toString());
+                    b.setCreated(attrs.creationTime().toMillis());
+                    b.setMaxNumObjects(MAX_NUM_OBJECTS_PER_BUCKET);
+                    b.setMaxSize(MAX_BUCKET_SIZE);
+                    b.setSize(calculateSize(file));
+                    props.add(b.build());
+                }
             }
+            return props;
         }
-        return props;
     }
 
     @Override
