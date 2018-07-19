@@ -4147,6 +4147,760 @@ public final class Rest {
 
   }
 
+  public interface ListParameterTypeInfoResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:parameters.ListParameterTypeInfoResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo> 
+        getTypeList();
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ParameterTypeInfo getType(int index);
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    int getTypeCount();
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> 
+        getTypeOrBuilderList();
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder getTypeOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code parameters.ListParameterTypeInfoResponse}
+   */
+  public  static final class ListParameterTypeInfoResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:parameters.ListParameterTypeInfoResponse)
+      ListParameterTypeInfoResponseOrBuilder {
+    // Use ListParameterTypeInfoResponse.newBuilder() to construct.
+    private ListParameterTypeInfoResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ListParameterTypeInfoResponse() {
+      type_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ListParameterTypeInfoResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                type_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ParameterTypeInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              type_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.ParameterTypeInfo.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          type_ = java.util.Collections.unmodifiableList(type_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_ListParameterTypeInfoResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_parameters_ListParameterTypeInfoResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse.class, org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse.Builder.class);
+    }
+
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo> type_;
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo> getTypeList() {
+      return type_;
+    }
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> 
+        getTypeOrBuilderList() {
+      return type_;
+    }
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    public int getTypeCount() {
+      return type_.size();
+    }
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ParameterTypeInfo getType(int index) {
+      return type_.get(index);
+    }
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder getTypeOrBuilder(
+        int index) {
+      return type_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getTypeCount(); i++) {
+        if (!getType(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < type_.size(); i++) {
+        output.writeMessage(1, type_.get(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < type_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, type_.get(i));
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse other = (org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse) obj;
+
+      boolean result = true;
+      result = result && getTypeList()
+          .equals(other.getTypeList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getTypeCount() > 0) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + getTypeList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code parameters.ListParameterTypeInfoResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:parameters.ListParameterTypeInfoResponse)
+        org.yamcs.protobuf.Rest.ListParameterTypeInfoResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_ListParameterTypeInfoResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_ListParameterTypeInfoResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse.class, org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getTypeFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (typeBuilder_ == null) {
+          type_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          typeBuilder_.clear();
+        }
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_parameters_ListParameterTypeInfoResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse build() {
+        org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse buildPartial() {
+        org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse result = new org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse(this);
+        int from_bitField0_ = bitField0_;
+        if (typeBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            type_ = java.util.Collections.unmodifiableList(type_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.type_ = type_;
+        } else {
+          result.type_ = typeBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse) {
+          return mergeFrom((org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse other) {
+        if (other == org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse.getDefaultInstance()) return this;
+        if (typeBuilder_ == null) {
+          if (!other.type_.isEmpty()) {
+            if (type_.isEmpty()) {
+              type_ = other.type_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureTypeIsMutable();
+              type_.addAll(other.type_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.type_.isEmpty()) {
+            if (typeBuilder_.isEmpty()) {
+              typeBuilder_.dispose();
+              typeBuilder_ = null;
+              type_ = other.type_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              typeBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getTypeFieldBuilder() : null;
+            } else {
+              typeBuilder_.addAllMessages(other.type_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getTypeCount(); i++) {
+          if (!getType(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo> type_ =
+        java.util.Collections.emptyList();
+      private void ensureTypeIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          type_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ParameterTypeInfo>(type_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ParameterTypeInfo, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder, org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> typeBuilder_;
+
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo> getTypeList() {
+        if (typeBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(type_);
+        } else {
+          return typeBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public int getTypeCount() {
+        if (typeBuilder_ == null) {
+          return type_.size();
+        } else {
+          return typeBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterTypeInfo getType(int index) {
+        if (typeBuilder_ == null) {
+          return type_.get(index);
+        } else {
+          return typeBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder setType(
+          int index, org.yamcs.protobuf.Mdb.ParameterTypeInfo value) {
+        if (typeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTypeIsMutable();
+          type_.set(index, value);
+          onChanged();
+        } else {
+          typeBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder setType(
+          int index, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder builderForValue) {
+        if (typeBuilder_ == null) {
+          ensureTypeIsMutable();
+          type_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          typeBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder addType(org.yamcs.protobuf.Mdb.ParameterTypeInfo value) {
+        if (typeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTypeIsMutable();
+          type_.add(value);
+          onChanged();
+        } else {
+          typeBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder addType(
+          int index, org.yamcs.protobuf.Mdb.ParameterTypeInfo value) {
+        if (typeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTypeIsMutable();
+          type_.add(index, value);
+          onChanged();
+        } else {
+          typeBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder addType(
+          org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder builderForValue) {
+        if (typeBuilder_ == null) {
+          ensureTypeIsMutable();
+          type_.add(builderForValue.build());
+          onChanged();
+        } else {
+          typeBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder addType(
+          int index, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder builderForValue) {
+        if (typeBuilder_ == null) {
+          ensureTypeIsMutable();
+          type_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          typeBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder addAllType(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ParameterTypeInfo> values) {
+        if (typeBuilder_ == null) {
+          ensureTypeIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, type_);
+          onChanged();
+        } else {
+          typeBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder clearType() {
+        if (typeBuilder_ == null) {
+          type_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          typeBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder removeType(int index) {
+        if (typeBuilder_ == null) {
+          ensureTypeIsMutable();
+          type_.remove(index);
+          onChanged();
+        } else {
+          typeBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder getTypeBuilder(
+          int index) {
+        return getTypeFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder getTypeOrBuilder(
+          int index) {
+        if (typeBuilder_ == null) {
+          return type_.get(index);  } else {
+          return typeBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> 
+           getTypeOrBuilderList() {
+        if (typeBuilder_ != null) {
+          return typeBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(type_);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder addTypeBuilder() {
+        return getTypeFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ParameterTypeInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder addTypeBuilder(
+          int index) {
+        return getTypeFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ParameterTypeInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder> 
+           getTypeBuilderList() {
+        return getTypeFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ParameterTypeInfo, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder, org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> 
+          getTypeFieldBuilder() {
+        if (typeBuilder_ == null) {
+          typeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.ParameterTypeInfo, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder, org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder>(
+                  type_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          type_ = null;
+        }
+        return typeBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:parameters.ListParameterTypeInfoResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:parameters.ListParameterTypeInfoResponse)
+    private static final org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse();
+    }
+
+    public static org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ListParameterTypeInfoResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ListParameterTypeInfoResponse>() {
+      public ListParameterTypeInfoResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ListParameterTypeInfoResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ListParameterTypeInfoResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ListParameterTypeInfoResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface BulkGetParameterInfoRequestOrBuilder extends
       // @@protoc_insertion_point(interface_extends:parameters.BulkGetParameterInfoRequest)
       com.google.protobuf.MessageOrBuilder {
@@ -43559,9 +44313,10 @@ public final class Rest {
                 mutable_bitField0_ |= 0x00000008;
               }
               com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-              metadata = input.readMessage(
+              metadata__ = input.readMessage(
                   MetadataDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              metadata_.getMutableMap().put(metadata.getKey(), metadata.getValue());
+              metadata_.getMutableMap().put(
+                  metadata__.getKey(), metadata__.getValue());
               break;
             }
           }
@@ -43816,15 +44571,12 @@ public final class Rest {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeUInt64(3, size_);
       }
-      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
-           : internalGetMetadata().getMap().entrySet()) {
-        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-        metadata = MetadataDefaultEntryHolder.defaultEntry.newBuilderForType()
-            .setKey(entry.getKey())
-            .setValue(entry.getValue())
-            .build();
-        output.writeMessage(4, metadata);
-      }
+      com.google.protobuf.GeneratedMessageV3
+        .serializeStringMapTo(
+          output,
+          internalGetMetadata(),
+          MetadataDefaultEntryHolder.defaultEntry,
+          4);
       unknownFields.writeTo(output);
     }
 
@@ -43846,12 +44598,12 @@ public final class Rest {
       for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
            : internalGetMetadata().getMap().entrySet()) {
         com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-        metadata = MetadataDefaultEntryHolder.defaultEntry.newBuilderForType()
+        metadata__ = MetadataDefaultEntryHolder.defaultEntry.newBuilderForType()
             .setKey(entry.getKey())
             .setValue(entry.getValue())
             .build();
         size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(4, metadata);
+            .computeMessageSize(4, metadata__);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -46271,6 +47023,11 @@ public final class Rest {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_parameters_ListParameterInfoResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_parameters_ListParameterTypeInfoResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_parameters_ListParameterTypeInfoResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_parameters_BulkGetParameterInfoRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -46547,108 +47304,110 @@ public final class Rest {
       "luginInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013description\030\002" +
       " \001(\t\022\017\n\007version\030\003 \001(\t\022\016\n\006vendor\030\004 \001(\t\"B\n" +
       "\031ListParameterInfoResponse\022%\n\tparameter\030" +
-      "\001 \003(\0132\022.mdb.ParameterInfo\"?\n\033BulkGetPara" +
-      "meterInfoRequest\022 \n\002id\030\001 \003(\0132\024.yamcs.Nam" +
-      "edObjectId\"\330\001\n\034BulkGetParameterInfoRespo" +
-      "nse\022S\n\010response\030\001 \003(\0132A.parameters.BulkG" +
-      "etParameterInfoResponse.GetParameterInfo" +
-      "Response\032c\n\030GetParameterInfoResponse\022 \n\002" +
-      "id\030\001 \001(\0132\024.yamcs.NamedObjectId\022%\n\tparame",
-      "ter\030\002 \001(\0132\022.mdb.ParameterInfo\"d\n\034BulkGet" +
-      "ParameterValueRequest\022 \n\002id\030\001 \003(\0132\024.yamc" +
-      "s.NamedObjectId\022\021\n\tfromCache\030\002 \001(\010\022\017\n\007ti" +
-      "meout\030\003 \001(\004\"F\n\035BulkGetParameterValueResp" +
-      "onse\022%\n\005value\030\001 \003(\0132\026.pvalue.ParameterVa" +
-      "lue\"\315\001\n\034BulkSetParameterValueRequest\022R\n\007" +
-      "request\030\001 \003(\0132A.parameters.BulkSetParame" +
-      "terValueRequest.SetParameterValueRequest" +
-      "\032Y\n\030SetParameterValueRequest\022 \n\002id\030\001 \001(\013" +
-      "2\024.yamcs.NamedObjectId\022\033\n\005value\030\002 \001(\0132\014.",
-      "yamcs.Value\"u\n!BulkDownloadParameterValu" +
-      "eRequest\022\r\n\005start\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022 \n" +
-      "\002id\030\003 \003(\0132\024.yamcs.NamedObjectId\022\021\n\tnames" +
-      "pace\030\004 \001(\t\"T\n\033ListSpaceSystemInfoRespons" +
-      "e\0225\n\013spaceSystem\030\001 \003(\0132 .yamcsManagement" +
-      ".SpaceSystemInfo\"B\n\031ListContainerInfoRes" +
-      "ponse\022%\n\tcontainer\030\001 \003(\0132\022.mdb.Container" +
-      "Info\"<\n\027ListCommandInfoResponse\022!\n\007comma" +
-      "nd\030\001 \003(\0132\020.mdb.CommandInfo\"B\n\031ListAlgori" +
-      "thmInfoResponse\022%\n\talgorithm\030\001 \003(\0132\022.mdb",
-      ".AlgorithmInfo\"?\n\024ListLinkInfoResponse\022\'" +
-      "\n\004link\030\001 \003(\0132\031.yamcsManagement.LinkInfo\"" +
-      "F\n\024ListCommandsResponse\022.\n\005entry\030\001 \003(\0132\037" +
-      ".commanding.CommandHistoryEntry\" \n\017EditL" +
-      "inkRequest\022\r\n\005state\030\001 \001(\t\"(\n\027EditCommand" +
-      "QueueRequest\022\r\n\005state\030\001 \001(\t\"B\n\023ListClien" +
-      "tsResponse\022+\n\006client\030\001 \003(\0132\033.yamcsManage" +
-      "ment.ClientInfo\"8\n\021EditClientRequest\022\020\n\010" +
-      "instance\030\001 \001(\t\022\021\n\tprocessor\030\002 \001(\t\"K\n\026Lis" +
-      "tProcessorsResponse\0221\n\tprocessor\030\001 \003(\0132\036",
-      ".yamcsManagement.ProcessorInfo\"H\n\031ListCo" +
-      "mmandQueuesResponse\022+\n\005queue\030\001 \003(\0132\034.com" +
-      "manding.CommandQueueInfo\"G\n\027ListCommandQ" +
-      "ueueEntries\022,\n\005entry\030\001 \003(\0132\035.commanding." +
-      "CommandQueueEntry\"-\n\034EditCommandQueueEnt" +
-      "ryRequest\022\r\n\005state\030\001 \001(\t\"\311\001\n\023IssueComman" +
-      "dRequest\022>\n\nassignment\030\001 \003(\0132*.parameter" +
-      "s.IssueCommandRequest.Assignment\022\016\n\006orig" +
-      "in\030\002 \001(\t\022\026\n\016sequenceNumber\030\003 \001(\005\022\016\n\006dryR" +
-      "un\030\004 \001(\010\022\017\n\007comment\030\005 \001(\t\032)\n\nAssignment\022",
-      "\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"}\n\024IssueCom" +
-      "mandResponse\0228\n\021commandQueueEntry\030\001 \001(\0132" +
-      "\035.commanding.CommandQueueEntry\022\016\n\006source" +
-      "\030\002 \001(\t\022\013\n\003hex\030\003 \001(\t\022\016\n\006binary\030\004 \001(\014\"\263\001\n\033" +
-      "UpdateCommandHistoryRequest\022$\n\005cmdId\030\001 \002" +
-      "(\0132\025.commanding.CommandId\022F\n\014historyEntr" +
-      "y\030\002 \003(\01320.parameters.UpdateCommandHistor" +
-      "yRequest.KeyValue\032&\n\010KeyValue\022\013\n\003key\030\001 \002" +
-      "(\t\022\r\n\005value\030\002 \002(\t\"S\n\022CreateEventRequest\022" +
-      "\014\n\004type\030\001 \001(\t\022\017\n\007message\030\002 \001(\t\022\020\n\010severi",
-      "ty\030\003 \001(\t\022\014\n\004time\030\004 \001(\t\"\214\002\n\026CreateProcess" +
-      "orRequest\022\014\n\004name\030\001 \001(\t\022\021\n\005start\030\002 \001(\tB\002" +
-      "\030\001\022\020\n\004stop\030\003 \001(\tB\002\030\001\022\020\n\004loop\030\004 \001(\010B\002\030\001\022\021" +
-      "\n\005speed\030\005 \001(\tB\002\030\001\022\020\n\010clientId\030\006 \003(\005\022\024\n\010p" +
-      "araname\030\007 \003(\tB\002\030\001\022\023\n\007ppgroup\030\010 \003(\tB\002\030\001\022\026" +
-      "\n\npacketname\030\t \003(\tB\002\030\001\022\023\n\007cmdhist\030\n \001(\010B" +
-      "\002\030\001\022\022\n\npersistent\030\013 \001(\010\022\014\n\004type\030\014 \001(\t\022\016\n" +
-      "\006config\030\r \001(\t\"B\n\024EditProcessorRequest\022\r\n" +
-      "\005state\030\001 \001(\t\022\014\n\004seek\030\002 \001(\t\022\r\n\005speed\030\003 \001(" +
-      "\t\"(\n\026StreamSubscribeRequest\022\016\n\006stream\030\001 ",
-      "\001(\t\"e\n\030SetSimulationTimeRequest\022\r\n\005time0" +
-      "\030\001 \001(\003\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElapsedTi" +
-      "me\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"I\n\025ListInstan" +
-      "cesResponse\0220\n\010instance\030\001 \003(\0132\036.yamcsMan" +
-      "agement.YamcsInstance\"2\n\020ListTagsRespons" +
-      "e\022\036\n\003tag\030\001 \003(\0132\021.yamcs.ArchiveTag\"a\n\020Cre" +
-      "ateTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001" +
-      "(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n" +
-      "\005color\030\005 \001(\t\"_\n\016EditTagRequest\022\014\n\004name\030\001" +
-      " \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013des",
-      "cription\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"6\n\022ListAla" +
-      "rmsResponse\022 \n\005alarm\030\001 \003(\0132\021.alarms.Alar" +
-      "mData\"2\n\020EditAlarmRequest\022\r\n\005state\030\001 \001(\t" +
-      "\022\017\n\007comment\030\002 \001(\t\"7\n\022ListTablesResponse\022" +
-      "!\n\005table\030\001 \003(\0132\022.archive.TableInfo\":\n\023Li" +
-      "stStreamsResponse\022#\n\006stream\030\001 \003(\0132\023.arch" +
-      "ive.StreamInfo\"1\n\022ListEventsResponse\022\033\n\005" +
-      "event\030\001 \003(\0132\014.yamcs.Event\":\n\023ListPackets" +
-      "Response\022#\n\006packet\030\001 \003(\0132\023.yamcs.TmPacke" +
-      "tData\"H\n\027ListServiceInfoResponse\022-\n\007serv",
-      "ice\030\001 \003(\0132\034.yamcsManagement.ServiceInfo\"" +
-      "#\n\022EditServiceRequest\022\r\n\005state\030\001 \001(\t\"V\n\023" +
-      "BulkGetIndexRequest\022\r\n\005start\030\001 \001(\t\022\014\n\004st" +
-      "op\030\002 \001(\t\022\016\n\006filter\030\003 \003(\t\022\022\n\npacketname\030\004" +
-      " \003(\t\"#\n\023CreateBucketRequest\022\014\n\004name\030\001 \001(" +
-      "\t\"<\n\nBucketInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004size\030\002 " +
-      "\001(\004\022\022\n\nnumObjects\030\003 \001(\r\"\242\001\n\nObjectInfo\022\014" +
-      "\n\004name\030\001 \001(\t\022\017\n\007created\030\002 \001(\t\022\014\n\004size\030\003 " +
-      "\001(\004\0226\n\010metadata\030\004 \003(\0132$.parameters.Objec" +
-      "tInfo.MetadataEntry\032/\n\rMetadataEntry\022\013\n\003",
-      "key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"=\n\023ListBuck" +
-      "etsResponse\022&\n\006bucket\030\001 \003(\0132\026.parameters" +
-      ".BucketInfo\"M\n\023ListObjectsResponse\022\016\n\006pr" +
-      "efix\030\001 \003(\t\022&\n\006object\030\002 \003(\0132\026.parameters." +
-      "ObjectInfoB\024\n\022org.yamcs.protobuf"
+      "\001 \003(\0132\022.mdb.ParameterInfo\"E\n\035ListParamet" +
+      "erTypeInfoResponse\022$\n\004type\030\001 \003(\0132\026.mdb.P" +
+      "arameterTypeInfo\"?\n\033BulkGetParameterInfo" +
+      "Request\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObjectI" +
+      "d\"\330\001\n\034BulkGetParameterInfoResponse\022S\n\010re" +
+      "sponse\030\001 \003(\0132A.parameters.BulkGetParamet" +
+      "erInfoResponse.GetParameterInfoResponse\032",
+      "c\n\030GetParameterInfoResponse\022 \n\002id\030\001 \001(\0132" +
+      "\024.yamcs.NamedObjectId\022%\n\tparameter\030\002 \001(\013" +
+      "2\022.mdb.ParameterInfo\"d\n\034BulkGetParameter" +
+      "ValueRequest\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedOb" +
+      "jectId\022\021\n\tfromCache\030\002 \001(\010\022\017\n\007timeout\030\003 \001" +
+      "(\004\"F\n\035BulkGetParameterValueResponse\022%\n\005v" +
+      "alue\030\001 \003(\0132\026.pvalue.ParameterValue\"\315\001\n\034B" +
+      "ulkSetParameterValueRequest\022R\n\007request\030\001" +
+      " \003(\0132A.parameters.BulkSetParameterValueR" +
+      "equest.SetParameterValueRequest\032Y\n\030SetPa",
+      "rameterValueRequest\022 \n\002id\030\001 \001(\0132\024.yamcs." +
+      "NamedObjectId\022\033\n\005value\030\002 \001(\0132\014.yamcs.Val" +
+      "ue\"u\n!BulkDownloadParameterValueRequest\022" +
+      "\r\n\005start\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022 \n\002id\030\003 \003(\013" +
+      "2\024.yamcs.NamedObjectId\022\021\n\tnamespace\030\004 \001(" +
+      "\t\"T\n\033ListSpaceSystemInfoResponse\0225\n\013spac" +
+      "eSystem\030\001 \003(\0132 .yamcsManagement.SpaceSys" +
+      "temInfo\"B\n\031ListContainerInfoResponse\022%\n\t" +
+      "container\030\001 \003(\0132\022.mdb.ContainerInfo\"<\n\027L" +
+      "istCommandInfoResponse\022!\n\007command\030\001 \003(\0132",
+      "\020.mdb.CommandInfo\"B\n\031ListAlgorithmInfoRe" +
+      "sponse\022%\n\talgorithm\030\001 \003(\0132\022.mdb.Algorith" +
+      "mInfo\"?\n\024ListLinkInfoResponse\022\'\n\004link\030\001 " +
+      "\003(\0132\031.yamcsManagement.LinkInfo\"F\n\024ListCo" +
+      "mmandsResponse\022.\n\005entry\030\001 \003(\0132\037.commandi" +
+      "ng.CommandHistoryEntry\" \n\017EditLinkReques" +
+      "t\022\r\n\005state\030\001 \001(\t\"(\n\027EditCommandQueueRequ" +
+      "est\022\r\n\005state\030\001 \001(\t\"B\n\023ListClientsRespons" +
+      "e\022+\n\006client\030\001 \003(\0132\033.yamcsManagement.Clie" +
+      "ntInfo\"8\n\021EditClientRequest\022\020\n\010instance\030",
+      "\001 \001(\t\022\021\n\tprocessor\030\002 \001(\t\"K\n\026ListProcesso" +
+      "rsResponse\0221\n\tprocessor\030\001 \003(\0132\036.yamcsMan" +
+      "agement.ProcessorInfo\"H\n\031ListCommandQueu" +
+      "esResponse\022+\n\005queue\030\001 \003(\0132\034.commanding.C" +
+      "ommandQueueInfo\"G\n\027ListCommandQueueEntri" +
+      "es\022,\n\005entry\030\001 \003(\0132\035.commanding.CommandQu" +
+      "eueEntry\"-\n\034EditCommandQueueEntryRequest" +
+      "\022\r\n\005state\030\001 \001(\t\"\311\001\n\023IssueCommandRequest\022" +
+      ">\n\nassignment\030\001 \003(\0132*.parameters.IssueCo" +
+      "mmandRequest.Assignment\022\016\n\006origin\030\002 \001(\t\022",
+      "\026\n\016sequenceNumber\030\003 \001(\005\022\016\n\006dryRun\030\004 \001(\010\022" +
+      "\017\n\007comment\030\005 \001(\t\032)\n\nAssignment\022\014\n\004name\030\001" +
+      " \001(\t\022\r\n\005value\030\002 \001(\t\"}\n\024IssueCommandRespo" +
+      "nse\0228\n\021commandQueueEntry\030\001 \001(\0132\035.command" +
+      "ing.CommandQueueEntry\022\016\n\006source\030\002 \001(\t\022\013\n" +
+      "\003hex\030\003 \001(\t\022\016\n\006binary\030\004 \001(\014\"\263\001\n\033UpdateCom" +
+      "mandHistoryRequest\022$\n\005cmdId\030\001 \002(\0132\025.comm" +
+      "anding.CommandId\022F\n\014historyEntry\030\002 \003(\01320" +
+      ".parameters.UpdateCommandHistoryRequest." +
+      "KeyValue\032&\n\010KeyValue\022\013\n\003key\030\001 \002(\t\022\r\n\005val",
+      "ue\030\002 \002(\t\"S\n\022CreateEventRequest\022\014\n\004type\030\001" +
+      " \001(\t\022\017\n\007message\030\002 \001(\t\022\020\n\010severity\030\003 \001(\t\022" +
+      "\014\n\004time\030\004 \001(\t\"\214\002\n\026CreateProcessorRequest" +
+      "\022\014\n\004name\030\001 \001(\t\022\021\n\005start\030\002 \001(\tB\002\030\001\022\020\n\004sto" +
+      "p\030\003 \001(\tB\002\030\001\022\020\n\004loop\030\004 \001(\010B\002\030\001\022\021\n\005speed\030\005" +
+      " \001(\tB\002\030\001\022\020\n\010clientId\030\006 \003(\005\022\024\n\010paraname\030\007" +
+      " \003(\tB\002\030\001\022\023\n\007ppgroup\030\010 \003(\tB\002\030\001\022\026\n\npacketn" +
+      "ame\030\t \003(\tB\002\030\001\022\023\n\007cmdhist\030\n \001(\010B\002\030\001\022\022\n\npe" +
+      "rsistent\030\013 \001(\010\022\014\n\004type\030\014 \001(\t\022\016\n\006config\030\r" +
+      " \001(\t\"B\n\024EditProcessorRequest\022\r\n\005state\030\001 ",
+      "\001(\t\022\014\n\004seek\030\002 \001(\t\022\r\n\005speed\030\003 \001(\t\"(\n\026Stre" +
+      "amSubscribeRequest\022\016\n\006stream\030\001 \001(\t\"e\n\030Se" +
+      "tSimulationTimeRequest\022\r\n\005time0\030\001 \001(\003\022\020\n" +
+      "\010time0UTC\030\002 \001(\t\022\026\n\016simElapsedTime\030\003 \001(\003\022" +
+      "\020\n\010simSpeed\030\004 \001(\001\"I\n\025ListInstancesRespon" +
+      "se\0220\n\010instance\030\001 \003(\0132\036.yamcsManagement.Y" +
+      "amcsInstance\"2\n\020ListTagsResponse\022\036\n\003tag\030" +
+      "\001 \003(\0132\021.yamcs.ArchiveTag\"a\n\020CreateTagReq" +
+      "uest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004sto" +
+      "p\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005 ",
+      "\001(\t\"_\n\016EditTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005s" +
+      "tart\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030" +
+      "\004 \001(\t\022\r\n\005color\030\005 \001(\t\"6\n\022ListAlarmsRespon" +
+      "se\022 \n\005alarm\030\001 \003(\0132\021.alarms.AlarmData\"2\n\020" +
+      "EditAlarmRequest\022\r\n\005state\030\001 \001(\t\022\017\n\007comme" +
+      "nt\030\002 \001(\t\"7\n\022ListTablesResponse\022!\n\005table\030" +
+      "\001 \003(\0132\022.archive.TableInfo\":\n\023ListStreams" +
+      "Response\022#\n\006stream\030\001 \003(\0132\023.archive.Strea" +
+      "mInfo\"1\n\022ListEventsResponse\022\033\n\005event\030\001 \003" +
+      "(\0132\014.yamcs.Event\":\n\023ListPacketsResponse\022",
+      "#\n\006packet\030\001 \003(\0132\023.yamcs.TmPacketData\"H\n\027" +
+      "ListServiceInfoResponse\022-\n\007service\030\001 \003(\013" +
+      "2\034.yamcsManagement.ServiceInfo\"#\n\022EditSe" +
+      "rviceRequest\022\r\n\005state\030\001 \001(\t\"V\n\023BulkGetIn" +
+      "dexRequest\022\r\n\005start\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022" +
+      "\016\n\006filter\030\003 \003(\t\022\022\n\npacketname\030\004 \003(\t\"#\n\023C" +
+      "reateBucketRequest\022\014\n\004name\030\001 \001(\t\"<\n\nBuck" +
+      "etInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004size\030\002 \001(\004\022\022\n\nnu" +
+      "mObjects\030\003 \001(\r\"\242\001\n\nObjectInfo\022\014\n\004name\030\001 " +
+      "\001(\t\022\017\n\007created\030\002 \001(\t\022\014\n\004size\030\003 \001(\004\0226\n\010me",
+      "tadata\030\004 \003(\0132$.parameters.ObjectInfo.Met" +
+      "adataEntry\032/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t" +
+      "\022\r\n\005value\030\002 \001(\t:\0028\001\"=\n\023ListBucketsRespon" +
+      "se\022&\n\006bucket\030\001 \003(\0132\026.parameters.BucketIn" +
+      "fo\"M\n\023ListObjectsResponse\022\016\n\006prefix\030\001 \003(" +
+      "\t\022&\n\006object\030\002 \003(\0132\026.parameters.ObjectInf" +
+      "oB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -46693,14 +47452,20 @@ public final class Rest {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListParameterInfoResponse_descriptor,
         new java.lang.String[] { "Parameter", });
-    internal_static_parameters_BulkGetParameterInfoRequest_descriptor =
+    internal_static_parameters_ListParameterTypeInfoResponse_descriptor =
       getDescriptor().getMessageTypes().get(2);
+    internal_static_parameters_ListParameterTypeInfoResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_parameters_ListParameterTypeInfoResponse_descriptor,
+        new java.lang.String[] { "Type", });
+    internal_static_parameters_BulkGetParameterInfoRequest_descriptor =
+      getDescriptor().getMessageTypes().get(3);
     internal_static_parameters_BulkGetParameterInfoRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_BulkGetParameterInfoRequest_descriptor,
         new java.lang.String[] { "Id", });
     internal_static_parameters_BulkGetParameterInfoResponse_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_parameters_BulkGetParameterInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_BulkGetParameterInfoResponse_descriptor,
@@ -46712,19 +47477,19 @@ public final class Rest {
         internal_static_parameters_BulkGetParameterInfoResponse_GetParameterInfoResponse_descriptor,
         new java.lang.String[] { "Id", "Parameter", });
     internal_static_parameters_BulkGetParameterValueRequest_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_parameters_BulkGetParameterValueRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_BulkGetParameterValueRequest_descriptor,
         new java.lang.String[] { "Id", "FromCache", "Timeout", });
     internal_static_parameters_BulkGetParameterValueResponse_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_parameters_BulkGetParameterValueResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_BulkGetParameterValueResponse_descriptor,
         new java.lang.String[] { "Value", });
     internal_static_parameters_BulkSetParameterValueRequest_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(7);
     internal_static_parameters_BulkSetParameterValueRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_BulkSetParameterValueRequest_descriptor,
@@ -46736,97 +47501,97 @@ public final class Rest {
         internal_static_parameters_BulkSetParameterValueRequest_SetParameterValueRequest_descriptor,
         new java.lang.String[] { "Id", "Value", });
     internal_static_parameters_BulkDownloadParameterValueRequest_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(8);
     internal_static_parameters_BulkDownloadParameterValueRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_BulkDownloadParameterValueRequest_descriptor,
         new java.lang.String[] { "Start", "Stop", "Id", "Namespace", });
     internal_static_parameters_ListSpaceSystemInfoResponse_descriptor =
-      getDescriptor().getMessageTypes().get(8);
+      getDescriptor().getMessageTypes().get(9);
     internal_static_parameters_ListSpaceSystemInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListSpaceSystemInfoResponse_descriptor,
         new java.lang.String[] { "SpaceSystem", });
     internal_static_parameters_ListContainerInfoResponse_descriptor =
-      getDescriptor().getMessageTypes().get(9);
+      getDescriptor().getMessageTypes().get(10);
     internal_static_parameters_ListContainerInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListContainerInfoResponse_descriptor,
         new java.lang.String[] { "Container", });
     internal_static_parameters_ListCommandInfoResponse_descriptor =
-      getDescriptor().getMessageTypes().get(10);
+      getDescriptor().getMessageTypes().get(11);
     internal_static_parameters_ListCommandInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListCommandInfoResponse_descriptor,
         new java.lang.String[] { "Command", });
     internal_static_parameters_ListAlgorithmInfoResponse_descriptor =
-      getDescriptor().getMessageTypes().get(11);
+      getDescriptor().getMessageTypes().get(12);
     internal_static_parameters_ListAlgorithmInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListAlgorithmInfoResponse_descriptor,
         new java.lang.String[] { "Algorithm", });
     internal_static_parameters_ListLinkInfoResponse_descriptor =
-      getDescriptor().getMessageTypes().get(12);
+      getDescriptor().getMessageTypes().get(13);
     internal_static_parameters_ListLinkInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListLinkInfoResponse_descriptor,
         new java.lang.String[] { "Link", });
     internal_static_parameters_ListCommandsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(13);
+      getDescriptor().getMessageTypes().get(14);
     internal_static_parameters_ListCommandsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListCommandsResponse_descriptor,
         new java.lang.String[] { "Entry", });
     internal_static_parameters_EditLinkRequest_descriptor =
-      getDescriptor().getMessageTypes().get(14);
+      getDescriptor().getMessageTypes().get(15);
     internal_static_parameters_EditLinkRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_EditLinkRequest_descriptor,
         new java.lang.String[] { "State", });
     internal_static_parameters_EditCommandQueueRequest_descriptor =
-      getDescriptor().getMessageTypes().get(15);
+      getDescriptor().getMessageTypes().get(16);
     internal_static_parameters_EditCommandQueueRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_EditCommandQueueRequest_descriptor,
         new java.lang.String[] { "State", });
     internal_static_parameters_ListClientsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(16);
+      getDescriptor().getMessageTypes().get(17);
     internal_static_parameters_ListClientsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListClientsResponse_descriptor,
         new java.lang.String[] { "Client", });
     internal_static_parameters_EditClientRequest_descriptor =
-      getDescriptor().getMessageTypes().get(17);
+      getDescriptor().getMessageTypes().get(18);
     internal_static_parameters_EditClientRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_EditClientRequest_descriptor,
         new java.lang.String[] { "Instance", "Processor", });
     internal_static_parameters_ListProcessorsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(18);
+      getDescriptor().getMessageTypes().get(19);
     internal_static_parameters_ListProcessorsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListProcessorsResponse_descriptor,
         new java.lang.String[] { "Processor", });
     internal_static_parameters_ListCommandQueuesResponse_descriptor =
-      getDescriptor().getMessageTypes().get(19);
+      getDescriptor().getMessageTypes().get(20);
     internal_static_parameters_ListCommandQueuesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListCommandQueuesResponse_descriptor,
         new java.lang.String[] { "Queue", });
     internal_static_parameters_ListCommandQueueEntries_descriptor =
-      getDescriptor().getMessageTypes().get(20);
+      getDescriptor().getMessageTypes().get(21);
     internal_static_parameters_ListCommandQueueEntries_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListCommandQueueEntries_descriptor,
         new java.lang.String[] { "Entry", });
     internal_static_parameters_EditCommandQueueEntryRequest_descriptor =
-      getDescriptor().getMessageTypes().get(21);
+      getDescriptor().getMessageTypes().get(22);
     internal_static_parameters_EditCommandQueueEntryRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_EditCommandQueueEntryRequest_descriptor,
         new java.lang.String[] { "State", });
     internal_static_parameters_IssueCommandRequest_descriptor =
-      getDescriptor().getMessageTypes().get(22);
+      getDescriptor().getMessageTypes().get(23);
     internal_static_parameters_IssueCommandRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_IssueCommandRequest_descriptor,
@@ -46838,13 +47603,13 @@ public final class Rest {
         internal_static_parameters_IssueCommandRequest_Assignment_descriptor,
         new java.lang.String[] { "Name", "Value", });
     internal_static_parameters_IssueCommandResponse_descriptor =
-      getDescriptor().getMessageTypes().get(23);
+      getDescriptor().getMessageTypes().get(24);
     internal_static_parameters_IssueCommandResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_IssueCommandResponse_descriptor,
         new java.lang.String[] { "CommandQueueEntry", "Source", "Hex", "Binary", });
     internal_static_parameters_UpdateCommandHistoryRequest_descriptor =
-      getDescriptor().getMessageTypes().get(24);
+      getDescriptor().getMessageTypes().get(25);
     internal_static_parameters_UpdateCommandHistoryRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_UpdateCommandHistoryRequest_descriptor,
@@ -46856,127 +47621,127 @@ public final class Rest {
         internal_static_parameters_UpdateCommandHistoryRequest_KeyValue_descriptor,
         new java.lang.String[] { "Key", "Value", });
     internal_static_parameters_CreateEventRequest_descriptor =
-      getDescriptor().getMessageTypes().get(25);
+      getDescriptor().getMessageTypes().get(26);
     internal_static_parameters_CreateEventRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_CreateEventRequest_descriptor,
         new java.lang.String[] { "Type", "Message", "Severity", "Time", });
     internal_static_parameters_CreateProcessorRequest_descriptor =
-      getDescriptor().getMessageTypes().get(26);
+      getDescriptor().getMessageTypes().get(27);
     internal_static_parameters_CreateProcessorRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_CreateProcessorRequest_descriptor,
         new java.lang.String[] { "Name", "Start", "Stop", "Loop", "Speed", "ClientId", "Paraname", "Ppgroup", "Packetname", "Cmdhist", "Persistent", "Type", "Config", });
     internal_static_parameters_EditProcessorRequest_descriptor =
-      getDescriptor().getMessageTypes().get(27);
+      getDescriptor().getMessageTypes().get(28);
     internal_static_parameters_EditProcessorRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_EditProcessorRequest_descriptor,
         new java.lang.String[] { "State", "Seek", "Speed", });
     internal_static_parameters_StreamSubscribeRequest_descriptor =
-      getDescriptor().getMessageTypes().get(28);
+      getDescriptor().getMessageTypes().get(29);
     internal_static_parameters_StreamSubscribeRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_StreamSubscribeRequest_descriptor,
         new java.lang.String[] { "Stream", });
     internal_static_parameters_SetSimulationTimeRequest_descriptor =
-      getDescriptor().getMessageTypes().get(29);
+      getDescriptor().getMessageTypes().get(30);
     internal_static_parameters_SetSimulationTimeRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_SetSimulationTimeRequest_descriptor,
         new java.lang.String[] { "Time0", "Time0UTC", "SimElapsedTime", "SimSpeed", });
     internal_static_parameters_ListInstancesResponse_descriptor =
-      getDescriptor().getMessageTypes().get(30);
+      getDescriptor().getMessageTypes().get(31);
     internal_static_parameters_ListInstancesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListInstancesResponse_descriptor,
         new java.lang.String[] { "Instance", });
     internal_static_parameters_ListTagsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(31);
+      getDescriptor().getMessageTypes().get(32);
     internal_static_parameters_ListTagsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListTagsResponse_descriptor,
         new java.lang.String[] { "Tag", });
     internal_static_parameters_CreateTagRequest_descriptor =
-      getDescriptor().getMessageTypes().get(32);
+      getDescriptor().getMessageTypes().get(33);
     internal_static_parameters_CreateTagRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_CreateTagRequest_descriptor,
         new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
     internal_static_parameters_EditTagRequest_descriptor =
-      getDescriptor().getMessageTypes().get(33);
+      getDescriptor().getMessageTypes().get(34);
     internal_static_parameters_EditTagRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_EditTagRequest_descriptor,
         new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
     internal_static_parameters_ListAlarmsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(34);
+      getDescriptor().getMessageTypes().get(35);
     internal_static_parameters_ListAlarmsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListAlarmsResponse_descriptor,
         new java.lang.String[] { "Alarm", });
     internal_static_parameters_EditAlarmRequest_descriptor =
-      getDescriptor().getMessageTypes().get(35);
+      getDescriptor().getMessageTypes().get(36);
     internal_static_parameters_EditAlarmRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_EditAlarmRequest_descriptor,
         new java.lang.String[] { "State", "Comment", });
     internal_static_parameters_ListTablesResponse_descriptor =
-      getDescriptor().getMessageTypes().get(36);
+      getDescriptor().getMessageTypes().get(37);
     internal_static_parameters_ListTablesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListTablesResponse_descriptor,
         new java.lang.String[] { "Table", });
     internal_static_parameters_ListStreamsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(37);
+      getDescriptor().getMessageTypes().get(38);
     internal_static_parameters_ListStreamsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListStreamsResponse_descriptor,
         new java.lang.String[] { "Stream", });
     internal_static_parameters_ListEventsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(38);
+      getDescriptor().getMessageTypes().get(39);
     internal_static_parameters_ListEventsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListEventsResponse_descriptor,
         new java.lang.String[] { "Event", });
     internal_static_parameters_ListPacketsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(39);
+      getDescriptor().getMessageTypes().get(40);
     internal_static_parameters_ListPacketsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListPacketsResponse_descriptor,
         new java.lang.String[] { "Packet", });
     internal_static_parameters_ListServiceInfoResponse_descriptor =
-      getDescriptor().getMessageTypes().get(40);
+      getDescriptor().getMessageTypes().get(41);
     internal_static_parameters_ListServiceInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListServiceInfoResponse_descriptor,
         new java.lang.String[] { "Service", });
     internal_static_parameters_EditServiceRequest_descriptor =
-      getDescriptor().getMessageTypes().get(41);
+      getDescriptor().getMessageTypes().get(42);
     internal_static_parameters_EditServiceRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_EditServiceRequest_descriptor,
         new java.lang.String[] { "State", });
     internal_static_parameters_BulkGetIndexRequest_descriptor =
-      getDescriptor().getMessageTypes().get(42);
+      getDescriptor().getMessageTypes().get(43);
     internal_static_parameters_BulkGetIndexRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_BulkGetIndexRequest_descriptor,
         new java.lang.String[] { "Start", "Stop", "Filter", "Packetname", });
     internal_static_parameters_CreateBucketRequest_descriptor =
-      getDescriptor().getMessageTypes().get(43);
+      getDescriptor().getMessageTypes().get(44);
     internal_static_parameters_CreateBucketRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_CreateBucketRequest_descriptor,
         new java.lang.String[] { "Name", });
     internal_static_parameters_BucketInfo_descriptor =
-      getDescriptor().getMessageTypes().get(44);
+      getDescriptor().getMessageTypes().get(45);
     internal_static_parameters_BucketInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_BucketInfo_descriptor,
         new java.lang.String[] { "Name", "Size", "NumObjects", });
     internal_static_parameters_ObjectInfo_descriptor =
-      getDescriptor().getMessageTypes().get(45);
+      getDescriptor().getMessageTypes().get(46);
     internal_static_parameters_ObjectInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ObjectInfo_descriptor,
@@ -46988,13 +47753,13 @@ public final class Rest {
         internal_static_parameters_ObjectInfo_MetadataEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
     internal_static_parameters_ListBucketsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(46);
+      getDescriptor().getMessageTypes().get(47);
     internal_static_parameters_ListBucketsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListBucketsResponse_descriptor,
         new java.lang.String[] { "Bucket", });
     internal_static_parameters_ListObjectsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(47);
+      getDescriptor().getMessageTypes().get(48);
     internal_static_parameters_ListObjectsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_ListObjectsResponse_descriptor,

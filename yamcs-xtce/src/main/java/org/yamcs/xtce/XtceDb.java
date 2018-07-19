@@ -28,7 +28,7 @@ import org.yamcs.xtce.xml.XtceAliasSet;
  * @author nm
  */
 public class XtceDb implements Serializable {
-    private static final long serialVersionUID = 56L;
+    private static final long serialVersionUID = 57L;
 
     final SpaceSystem rootSystem;
 
@@ -52,6 +52,7 @@ public class XtceDb implements Serializable {
     private HashMap<String, SpaceSystem> spaceSystems = new HashMap<>();
     private Map<String, SequenceContainer> sequenceContainers = new LinkedHashMap<>();
     private Map<String, Parameter> parameters = new LinkedHashMap<>();
+    private Map<String, ParameterType> parameterTypes = new LinkedHashMap<>();
     private HashMap<String, Algorithm> algorithms = new HashMap<>();
     private HashMap<String, MetaCommand> commands = new HashMap<>();
 
@@ -61,6 +62,7 @@ public class XtceDb implements Serializable {
     // different namespaces
     private NamedDescriptionIndex<SpaceSystem> spaceSystemAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<Parameter> parameterAliases = new NamedDescriptionIndex<>();
+    private NamedDescriptionIndex<NameDescription> parameterTypeAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<SequenceContainer> sequenceContainerAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<Algorithm> algorithmAliases = new NamedDescriptionIndex<>();
     private NamedDescriptionIndex<MetaCommand> commandAliases = new NamedDescriptionIndex<>();
@@ -145,6 +147,22 @@ public class XtceDb implements Serializable {
         }
     }
 
+    public ParameterType getParameterType(String qualifiedName) {
+        return parameterTypes.get(qualifiedName);
+    }
+
+    public ParameterType getParameterType(String namespace, String name) {
+        return (ParameterType) parameterTypeAliases.get(namespace, name);
+    }
+
+    public ParameterType getParameterType(NamedObjectId id) {
+        if (id.hasNamespace()) {
+            return (ParameterType) parameterTypeAliases.get(id.getNamespace(), id.getName());
+        } else {
+            return (ParameterType) parameterTypeAliases.get(id.getName());
+        }
+    }
+
     public SequenceContainer getRootSequenceContainer() {
         return rootSequenceContainer;
     }
@@ -180,6 +198,10 @@ public class XtceDb implements Serializable {
         } finally {
             rwLock.readLock().unlock();
         }
+    }
+
+    public Collection<ParameterType> getParameterTypes() {
+        return parameterTypes.values();
     }
 
     public boolean containsNamespace(String namespace) {
@@ -331,6 +353,7 @@ public class XtceDb implements Serializable {
     public void buildIndexMaps() {
         buildSpaceSystemsMap(rootSystem);
         buildParameterMap(rootSystem);
+        buildParameterTypeMap(rootSystem);
         buildSequenceContainerMap(rootSystem);
         buildAlgorithmMap(rootSystem);
         buildMetaCommandMap(rootSystem);
@@ -395,6 +418,14 @@ public class XtceDb implements Serializable {
             }
         }
 
+        for (ParameterType t : parameterTypes.values()) {
+            parameterTypeAliases.add((NameDescription) t);
+            XtceAliasSet aliases = ((NameDescription) t).getAliasSet();
+            if (aliases != null) {
+                aliases.getNamespaces().forEach(ns -> namespaces.add(ns));
+            }
+        }
+
         for (Algorithm a : algorithms.values()) {
             algorithmAliases.add(a);
             XtceAliasSet aliases = a.getAliasSet();
@@ -425,6 +456,16 @@ public class XtceDb implements Serializable {
         }
         for (SpaceSystem ss1 : ss.getSubSystems()) {
             buildParameterMap(ss1);
+        }
+    }
+
+    private void buildParameterTypeMap(SpaceSystem ss) {
+        for (ParameterType t : ss.getParameterTypes()) {
+            String qualifiedName = ((NameDescription) t).getQualifiedName();
+            parameterTypes.put(qualifiedName, t);
+        }
+        for (SpaceSystem ss1 : ss.getSubSystems()) {
+            buildParameterTypeMap(ss1);
         }
     }
 
