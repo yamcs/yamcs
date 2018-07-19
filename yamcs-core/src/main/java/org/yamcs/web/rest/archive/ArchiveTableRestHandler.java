@@ -107,19 +107,23 @@ public class ArchiveTableRestHandler extends RestHandler {
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
 
+        List<Object> args = new ArrayList<>();
         SqlBuilder sqlb = new SqlBuilder(table.getName());
         if (cols != null) {
             if (cols.isEmpty()) {
                 throw new BadRequestException("No columns were specified");
             } else {
-                cols.forEach(col -> sqlb.select(col));
+                cols.forEach(col -> {
+                    sqlb.select("?");
+                    args.add(col);
+                });
             }
         }
         sqlb.descend(req.asksDescending(true));
 
         String sql = sqlb.toString();
         TableData.Builder responseb = TableData.newBuilder();
-        RestStreams.stream(instance, sql, new RestStreamSubscriber(pos, limit) {
+        RestStreams.stream(instance, sql, args, new RestStreamSubscriber(pos, limit) {
 
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
