@@ -29,6 +29,7 @@ import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.web.GpbExtensionRegistry;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
@@ -46,6 +47,7 @@ import org.yamcs.yarch.TupleDefinition;
 
 import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.ExtensionRegistry.ExtensionInfo;
 import com.google.protobuf.MessageLite;
 
 /**
@@ -295,20 +297,47 @@ public final class ArchiveHelper {
         return b.build();
     }
 
-    final static String[] EVENT_CSV_HEADER = new String[] { "Source", "Generation Time", "Reception Time", "Event Type",
-            "Event Text" };
-
-    final static String[] tupleToCSVEvent(Tuple tuple) {
-        Event event = tupleToEvent(tuple);
-        return new String[] { event.getSource(), event.getGenerationTimeUTC(), event.getReceptionTimeUTC(),
-                event.getType(), event.getMessage() };
+    final static String[] getEventCSVHeader(GpbExtensionRegistry extensionRegistry) {
+        List<ExtensionInfo> extensionFields = extensionRegistry.getExtensions(Event.getDescriptor());
+        String[] rec = new String[5 + extensionFields.size()];
+        int i = 0;
+        rec[i++] = "Source";
+        rec[i++] = "Generation Time";
+        rec[i++] = "Reception Time";
+        rec[i++] = "Event Type";
+        rec[i++] = "Event Text";
+        for (ExtensionInfo extension : extensionFields) {
+            rec[i++] = "" + extension.descriptor.getName();
+        }
+        return rec;
     }
 
-    final static Event tupleToEvent(Tuple tuple) {
-        Event.Builder event = Event.newBuilder((Event) tuple.getColumn("body"));
-        event.setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()));
-        event.setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()));
-        return event.build();
+    final static String[] tupleToCSVEvent(Tuple tuple, GpbExtensionRegistry extensionRegistry) {
+        Event event = tupleToEvent(tuple, extensionRegistry);
+
+        List<ExtensionInfo> extensionFields = extensionRegistry.getExtensions(Event.getDescriptor());
+
+        String[] rec = new String[5 + extensionFields.size()];
+        int i = 0;
+        rec[i++] = event.getSource();
+        rec[i++] = event.getGenerationTimeUTC();
+        rec[i++] = event.getReceptionTimeUTC();
+        rec[i++] = event.getType();
+        rec[i++] = event.getMessage();
+        for (ExtensionInfo extension : extensionFields) {
+            rec[i++] = "" + event.getField(extension.descriptor);
+        }
+        return rec;
+    }
+
+    final static Event tupleToEvent(Tuple tuple, GpbExtensionRegistry extensionRegistry) {
+        Event incoming = (Event) tuple.getColumn("body");
+        Event event = extensionRegistry.getExtendedEvent(incoming);
+
+        Event.Builder eventb = Event.newBuilder(event);
+        eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
+        eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
+        return eventb.build();
     }
 
     final static AlarmData tupleToAlarmData(Tuple tuple) {

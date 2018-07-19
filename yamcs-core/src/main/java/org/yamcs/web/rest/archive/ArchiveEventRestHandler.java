@@ -29,6 +29,7 @@ import org.yamcs.protobuf.Yamcs.Event.EventSeverity;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
+import org.yamcs.web.GpbExtensionRegistry;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpServer;
 import org.yamcs.web.InternalServerErrorException;
@@ -47,8 +48,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.csvreader.CsvWriter;
 import com.google.common.collect.BiMap;
-import com.google.protobuf.ExtensionRegistry;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -59,7 +58,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
     private ConcurrentMap<String, EventProducer> eventProducerMap = new ConcurrentHashMap<>();
     private AtomicInteger eventSequenceNumber = new AtomicInteger();
-    private ExtensionRegistry gpbExtensionRegistry;
+    private GpbExtensionRegistry gpbExtensionRegistry;
 
     @Route(path = "/api/archive/:instance/events", method = "GET")
     public void listEvents(RestRequest req) throws HttpException {
@@ -120,7 +119,7 @@ public class ArchiveEventRestHandler extends RestHandler {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new ByteBufOutputStream(buf)));
             CsvWriter w = new CsvWriter(bw, '\t');
             try {
-                w.writeRecord(ArchiveHelper.EVENT_CSV_HEADER);
+                w.writeRecord(ArchiveHelper.getEventCSVHeader(getExtensionRegistry()));
             } catch (IOException e) {
                 throw new InternalServerErrorException(e);
             }
@@ -129,7 +128,7 @@ public class ArchiveEventRestHandler extends RestHandler {
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
                     try {
-                        w.writeRecord(ArchiveHelper.tupleToCSVEvent(tuple));
+                        w.writeRecord(ArchiveHelper.tupleToCSVEvent(tuple, getExtensionRegistry()));
                     } catch (IOException e) {
                         // TODO maybe support passing up as rest exception using custom listeners
                         log.error("Could not write csv record ", e);
@@ -149,17 +148,13 @@ public class ArchiveEventRestHandler extends RestHandler {
 
                 @Override
                 public void processTuple(Stream stream, Tuple tuple) {
-                    try {
-                        Event incoming = (Event) tuple.getColumn("body");
-                        Event event = Event.parseFrom(incoming.toByteArray(), getExtensionRegistry());
+                    Event incoming = (Event) tuple.getColumn("body");
+                    Event event = getExtensionRegistry().getExtendedEvent(incoming);
 
-                        Event.Builder eventb = Event.newBuilder(event);
-                        eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
-                        eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
-                        responseb.addEvent(eventb.build());
-                    } catch (InvalidProtocolBufferException e) {
-                        log.error("Invalid GPB message", e);
-                    }
+                    Event.Builder eventb = Event.newBuilder(event);
+                    eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
+                    eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
+                    responseb.addEvent(eventb.build());
                 }
 
                 @Override
@@ -297,7 +292,7 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
     }
 
-    private ExtensionRegistry getExtensionRegistry() {
+    private GpbExtensionRegistry getExtensionRegistry() {
         if (gpbExtensionRegistry == null) {
             HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
             gpbExtensionRegistry = httpServer.getGpbExtensionRegistry();
