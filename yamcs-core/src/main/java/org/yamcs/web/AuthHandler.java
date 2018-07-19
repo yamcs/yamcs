@@ -22,6 +22,7 @@ import org.yamcs.protobuf.Web.TokenResponse;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.AuthorizationException;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SpnegoAuthModule;
@@ -160,11 +161,12 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
-            if (e.getCause() instanceof AuthenticationException) {
-                log.debug(e.getCause().getMessage());
+            Throwable cause = e.getCause();
+            if (cause instanceof AuthenticationException || cause instanceof AuthorizationException) {
+                log.info("Denying access to '" + username + "': " + cause.getMessage());
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
             } else {
-                log.error("Unexpected error while attempting user login", e);
+                log.error("Unexpected error while attempting user login", cause);
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
         }
@@ -184,11 +186,12 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
-            if (e.getCause() instanceof AuthenticationException) {
-                log.debug(e.getCause().getMessage());
+            Throwable cause = e.getCause();
+            if (cause instanceof AuthenticationException || cause instanceof AuthorizationException) {
+                log.info("Denying access: " + cause.getMessage());
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
             } else {
-                log.error("Unexpected error while attempting user login", e);
+                log.error("Unexpected error while attempting user login", cause);
                 HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
         }
@@ -206,6 +209,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         Hmac hmac = new Hmac(CryptoUtils.calculateHmac(refreshToken, YamcsServer.getSecretKey()));
         User user = refreshTokenHmacs.get(hmac);
         if (user == null) {
+            log.info("Invalid refresh token");
             HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
         } else {
             // Rotate out this token (enforces single use)

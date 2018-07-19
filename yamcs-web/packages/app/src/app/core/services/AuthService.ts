@@ -149,6 +149,8 @@ export class AuthService {
   public login(username: string, password: string) {
     return this.yamcsService.yamcsClient.fetchAccessTokenWithPassword(username, password).then(loginInfo => {
       this.updateLoginCookies(loginInfo);
+      this.accessToken = loginInfo.access_token;
+      this.refreshToken = loginInfo.refresh_token;
       this.yamcsService.yamcsClient.setAccessToken(loginInfo.access_token);
       this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
@@ -158,6 +160,8 @@ export class AuthService {
   private loginWithAuthorizationCode(authorizationCode: string) {
     return this.yamcsService.yamcsClient.fetchAccessTokenWithAuthorizationCode(authorizationCode).then(loginInfo => {
       this.updateLoginCookies(loginInfo);
+      this.accessToken = loginInfo.access_token;
+      this.refreshToken = loginInfo.refresh_token;
       this.yamcsService.yamcsClient.setAccessToken(loginInfo.access_token);
       this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);
@@ -181,6 +185,8 @@ export class AuthService {
     // and so it is added to the header of a websocket request.
     return this.yamcsService.yamcsClient.fetchAccessTokenWithRefreshToken(refreshToken).then(loginInfo => {
       this.updateLoginCookies(loginInfo);
+      this.accessToken = loginInfo.access_token;
+      this.refreshToken = loginInfo.refresh_token;
       this.yamcsService.yamcsClient.setAccessToken(loginInfo.access_token);
       this.user$.next(new User(loginInfo.user));
       return this.extractClaims(loginInfo.access_token);

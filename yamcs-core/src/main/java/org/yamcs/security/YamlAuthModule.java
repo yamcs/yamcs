@@ -99,7 +99,7 @@ public class YamlAuthModule implements AuthModule {
         Map<String, Object> userDef = userDefs.get(principal);
         if (userDef == null) {
             if (required) {
-                throw new AuthorizationException("Cannot find required user in users.yaml");
+                throw new AuthorizationException("Cannot find user '" + principal + "' in users.yaml");
             }
         } else {
             if (YConfiguration.getBoolean(userDef, "superuser", false)) {
