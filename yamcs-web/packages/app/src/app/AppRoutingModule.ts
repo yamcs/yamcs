@@ -5,6 +5,7 @@ import { HomePage } from './apputil/pages/HomePage';
 import { LoginPage } from './apputil/pages/LoginPage';
 import { NotFoundPage } from './apputil/pages/NotFoundPage';
 import { ProfilePage } from './apputil/pages/ProfilePage';
+import { ServerUnavailablePage } from './apputil/pages/ServerUnavailablePage';
 import { AuthGuard } from './core/guards/AuthGuard';
 import { UnselectInstanceGuard } from './core/guards/UnselectInstanceGuard';
 
@@ -46,6 +47,11 @@ const routes: Routes = [
       {
         path: 'login',
         component: LoginPage,
+        canActivate: [UnselectInstanceGuard],
+      },
+      {
+        path: 'down',
+        component: ServerUnavailablePage,
         canActivate: [UnselectInstanceGuard],
       },
       {
