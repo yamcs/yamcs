@@ -2,6 +2,7 @@ package org.yamcs.xtce;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,8 +55,7 @@ public class SequenceContainer extends Container {
      */
     public void addEntry(SequenceEntry entry) {
         entryList.add(entry);
-        // set the entries position in the list
-        entry.setIndex(getEntryList().size() - 1);
+        entry.setIndex(entryList.size() - 1);
         entry.setContainer(this);
     }
 
@@ -67,11 +67,11 @@ public class SequenceContainer extends Container {
      */
     public void insertEntry(int idx, SequenceEntry entry) {
         entryList.add(idx, entry);
-        entry.setContainer(this);
         for (int i = idx; i < entryList.size(); i++) {
-            entryList.get(i).setIndex(i);
+            SequenceEntry se = entryList.get(i);
+            se.setIndex(i);
+            se.setContainer(this);
         }
-
     }
 
     public void setEntryList(List<SequenceEntry> entryList) {
@@ -83,8 +83,11 @@ public class SequenceContainer extends Container {
         }
     }
 
+    /**
+     * Returns the list of the entries in the sequence container. The list is unmodifiable.
+     */
     public List<SequenceEntry> getEntryList() {
-        return entryList;
+        return Collections.unmodifiableList(entryList);
     }
 
     @Override
