@@ -203,7 +203,7 @@ public class YarchDatabaseInstance {
             }
         }
 
-        log.debug("loaded table definition {}  from {}", tblName, fn);
+        log.debug("loaded table definition {} from {}", tblName, fn);
         return tblDef;
     }
 
