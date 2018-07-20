@@ -57,9 +57,9 @@ public class BulkRestDataSender extends SimpleChannelInboundHandler<FullHttpResp
            
             ChannelFuture writeFuture = ctx.writeAndFlush(new DefaultHttpContent(buf));
             if (!ch.isWritable()) {
-                boolean writeCompleted = writeFuture.await(10, TimeUnit.SECONDS);
+                boolean writeCompleted = writeFuture.await(600, TimeUnit.SECONDS);
                 if (!writeCompleted) {
-                    throw new YamcsApiException("Channel did not become writable in 10 seconds");
+                    throw new YamcsApiException("Channel did not become writable in 60 seconds");
                 }
             }
         } catch (Exception e) {
