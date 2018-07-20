@@ -125,8 +125,12 @@ public class ParameterReplayHandler implements ReplayHandler {
             }
             Parameter p = xtceDb.getParameter(pv.getParameterQualifiedNamed());
             if (p == null) {
-                log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedNamed());
-                continue;
+                if(XtceDb.isSystemParameter(pv.getParameterQualifiedNamed())) {
+                    p = xtceDb.createSystemParameter(pv.getParameterQualifiedNamed());
+                } else {
+                    log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedNamed());
+                    continue;
+                }
             }
             pv.setParameter(p);
             pvlist.add(pv);

@@ -25,20 +25,19 @@ import org.yamcs.xtce.xml.XtceAliasSet;
  *
  * It contains a SpaceSystem as defined in the Xtce schema and has lots of hashes to help find things quickly
  *
- * @author mache
+ * @author nm
  */
 public class XtceDb implements Serializable {
     private static final long serialVersionUID = 56L;
 
-    SpaceSystem rootSystem;
+    final SpaceSystem rootSystem;
+
+    // this is the /yamcs SpaceSystem where all the system parameters reside
+    final SpaceSystem yamcsSystem;
 
     // rwLock is used to guard the read/write of parameters and spaceSystems which are the only ones that can change
     // dynamically as of now
     ReadWriteLock rwLock = new ReentrantReadWriteLock();
-
-    public XtceDb(SpaceSystem spaceSystem) {
-        this.rootSystem = spaceSystem;
-    }
 
     /**
      * Namespaces system parameters
@@ -88,6 +87,16 @@ public class XtceDb implements Serializable {
      * maps the SequenceContainer to a list of containers inheriting this one
      */
     private HashMap<SequenceContainer, ArrayList<SequenceContainer>> sequenceContainer2InheritingContainerMap;
+
+    public XtceDb(SpaceSystem spaceSystem) {
+        this.rootSystem = spaceSystem;
+        SpaceSystem ss = spaceSystem.getSubsystem(YAMCS_SPACESYSTEM_NAME);
+        if (ss == null) {
+            ss = new SpaceSystem(YAMCS_SPACESYSTEM_NAME);
+            spaceSystem.addSpaceSystem(ss);
+        }
+        this.yamcsSystem = ss;
+    }
 
     public SequenceContainer getSequenceContainer(String qualifiedName) {
         return sequenceContainers.get(qualifiedName);
@@ -511,6 +520,36 @@ public class XtceDb implements Serializable {
         }
     }
 
+    /**
+     * Creates and returns a system parameter with the given qualified name.
+     * If the parameter already exists it is returned.
+     * 
+     * 
+     * @param parameterQualifiedNamed
+     *            - the name of the parmaeter to be created. It must start with {@link #YAMCS_SPACESYSTEM_NAME}
+     * @return the parameter created or already existing.
+     * @throws IllegalArgumentException
+     *             if the <code>parameterQualifiedNamed</code> does not start with {@link #YAMCS_SPACESYSTEM_NAME}
+     */
+    public SystemParameter createSystemParameter(String parameterQualifiedNamed) {
+        rwLock.writeLock().lock();
+        try {
+            if (!parameterQualifiedNamed.startsWith(YAMCS_SPACESYSTEM_NAME)) {
+                throw new IllegalArgumentException(
+                        "The parameter qualified name must start with " + YAMCS_SPACESYSTEM_NAME);
+            }
+            
+            SystemParameter p = (SystemParameter) parameters.get(parameterQualifiedNamed);
+            if (p == null) {
+                p = SystemParameter.getForFullyQualifiedName(parameterQualifiedNamed);
+                addParameter(p, true);
+            }
+            return p;
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+    }
+
     private void createAllSpaceSystems(String ssname) {
         String[] a = ssname.split("/");
         String qn = "";
@@ -609,6 +648,16 @@ public class XtceDb implements Serializable {
         }
     }
 
+    /**
+     * Checks if the named object refers to a system parameter:
+     * <ul>
+     * <li>either the namespace starts with {@link XtceDb#YAMCS_SPACESYSTEM_NAME}</li>
+     * <li>or there is no namespace and the fully qualified name starts with {@link XtceDb#YAMCS_SPACESYSTEM_NAME}</li>
+     * </ul>
+     * 
+     * @param id
+     * @return
+     */
     public static boolean isSystemParameter(NamedObjectId id) {
         boolean result;
         if (!id.hasNamespace()) {
@@ -617,6 +666,17 @@ public class XtceDb implements Serializable {
             result = id.getNamespace().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME);
         }
         return result;
+    }
+
+    /**
+     * Checks if a fully qualified name is the name of a system parameter.
+     * That is if <code>fqn</code> starts with {@link XtceDb#YAMCS_SPACESYSTEM_NAME}
+     * 
+     * @param fqn
+     * @return
+     */
+    public static boolean isSystemParameter(String fqn) {
+        return fqn.startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME);
     }
 
     /**
@@ -726,4 +786,5 @@ public class XtceDb implements Serializable {
             removeNonOrphaned(ss1, orphanedParameters);
         }
     }
+
 }
