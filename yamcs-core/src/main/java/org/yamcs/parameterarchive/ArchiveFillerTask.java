@@ -115,7 +115,7 @@ class ArchiveFillerTask implements ParameterConsumer {
     }
 
     void flush() {
-        log.info("Starting a consolidation process, number of intervals: {}", pgSegments.size());
+        log.debug("Starting a consolidation process, number of intervals: {}", pgSegments.size());
         for(Map.Entry<Long, Map<Integer, PGSegment>> entry: pgSegments.entrySet()) {
             consolidateAndWriteToArchive(entry.getKey(), entry.getValue().values());
         }
