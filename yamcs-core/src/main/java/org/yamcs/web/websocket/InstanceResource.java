@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
@@ -78,7 +77,7 @@ public class InstanceResource extends AbstractWebSocketResource implements Manag
     @Override
     public void instanceStateChanged(YamcsServerInstance ysi) {
         if (subscribed) {
-            YamcsInstance instanceInfo = YamcsServer.getYamcsInstance(ysi.getName());
+            YamcsInstance instanceInfo = ysi.getInstanceInfo();
             try {
                 wsHandler.sendData(ProtoDataType.INSTANCE, instanceInfo);
             } catch (IOException e) {

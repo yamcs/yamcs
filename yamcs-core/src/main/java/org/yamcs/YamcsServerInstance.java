@@ -12,11 +12,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
+import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.DatabaseLoadException;
+import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
@@ -282,5 +286,35 @@ public class YamcsServerInstance {
      */
     public String getName() {
         return instanceName;
+    }
+
+    public YamcsInstance getInstanceInfo() {
+        YamcsInstance.Builder aib = YamcsInstance.newBuilder().setName(instanceName);
+        InstanceState state = getState();
+        aib.setState(state);
+        if (state == InstanceState.FAILED) {
+            aib.setFailureCause(failureCause().toString());
+        }
+        try {
+            MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
+            YConfiguration c = YConfiguration.getConfiguration("yamcs." + instanceName);
+            if (!c.isList("mdb")) {
+                String configName = c.getString("mdb");
+                mdb.setConfigName(configName);
+            }
+            XtceDb xtcedb = getXtceDb();
+            if (xtcedb != null) { // if the instance is in a failed state, it could be that it doesn't have a XtceDB
+                                  // (the failure might be due to the load of the XtceDb)
+                mdb.setName(xtcedb.getRootSpaceSystem().getName());
+                Header h = xtcedb.getRootSpaceSystem().getHeader();
+                if ((h != null) && (h.getVersion() != null)) {
+                    mdb.setVersion(h.getVersion());
+                }
+            }
+            aib.setMissionDatabase(mdb.build());
+        } catch (ConfigurationException | DatabaseLoadException e) {
+            log.warn("Got error when finding the mission database for instance {}", instanceName, e);
+        }
+        return aib.build();
     }
 }
