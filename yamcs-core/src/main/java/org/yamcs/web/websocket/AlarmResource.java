@@ -21,7 +21,7 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
     public static final String RESOURCE_NAME = "alarms";
     private volatile boolean subscribed = false;
 
-    public AlarmResource(WebSocketClient client) {
+    public AlarmResource(ConnectedWebSocketClient client) {
         super(client);
     }
 

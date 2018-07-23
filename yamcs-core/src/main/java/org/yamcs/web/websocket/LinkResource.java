@@ -25,7 +25,7 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     // Instance requested by the user. This should not update when the processor changes.
     private String instance;
 
-    public LinkResource(WebSocketClient client) {
+    public LinkResource(ConnectedWebSocketClient client) {
         super(client);
     }
 

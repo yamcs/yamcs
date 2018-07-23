@@ -5,12 +5,12 @@ import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConnectedClient;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Rest.ListClientsResponse;
 import org.yamcs.protobuf.Rest.ListInstancesResponse;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.security.SystemPrivilege;
@@ -47,11 +47,11 @@ public class InstanceRestHandler extends RestHandler {
     @Route(path = "/api/instances/:instance/clients", method = "GET")
     public void listClientsForInstance(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
+        Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
-        for (ClientInfo client : clients) {
-            if (instance.equals(client.getInstance())) {
-                responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
+        for (ConnectedClient client : clients) {
+            if (client.getProcessor() != null && instance.equals(client.getProcessor().getInstance())) {
+                responseb.addClient(YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED));
             }
         }
         completeOK(req, responseb.build());

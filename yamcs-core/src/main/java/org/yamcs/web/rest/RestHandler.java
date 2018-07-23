@@ -9,6 +9,7 @@ import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.alarms.AlarmServer;
@@ -16,7 +17,6 @@ import org.yamcs.api.MediaType;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
@@ -189,12 +189,12 @@ public abstract class RestHandler extends RouteHandler {
         return linkInfo;
     }
 
-    protected static ClientInfo verifyClient(RestRequest req, int clientId) throws NotFoundException {
-        ClientInfo ci = ManagementService.getInstance().getClientInfo(clientId);
-        if (ci == null) {
+    protected static ConnectedClient verifyClient(RestRequest req, int clientId) throws NotFoundException {
+        ConnectedClient client = ManagementService.getInstance().getClient(clientId);
+        if (client == null) {
             throw new NotFoundException(req, "No such client");
         } else {
-            return ci;
+            return client;
         }
     }
 

@@ -6,8 +6,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
-import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
@@ -22,30 +22,20 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.User;
 
 /**
- * Runs on the server side and oversees the life cycle of a client web socket connection to a Processor. Combines
- * multiple types of subscriptions to keep them bundled as one client session.
+ * Runs on the server side and oversees the life cycle of a client web socket connection. Combines multiple types of
+ * subscriptions to keep them bundled as one client session.
  */
-public class WebSocketClient implements ProcessorClient, ManagementListener {
+public class ConnectedWebSocketClient extends ConnectedClient implements ManagementListener {
 
-    private static final Logger log = LoggerFactory.getLogger(WebSocketClient.class);
-    private final int clientId;
-    private final String applicationName;
-    private final User user;
-
-    private Processor processor;
+    private static final Logger log = LoggerFactory.getLogger(ConnectedWebSocketClient.class);
 
     private List<AbstractWebSocketResource> resources = new CopyOnWriteArrayList<>();
     private WebSocketFrameHandler wsHandler;
 
-    public WebSocketClient(String yamcsInstance, WebSocketFrameHandler wsHandler, String applicationName,
-            User user) {
-        this.applicationName = applicationName;
-        this.user = user;
+    public ConnectedWebSocketClient(User user, String applicationName, String yamcsInstance,
+            WebSocketFrameHandler wsHandler) {
+        super(user, applicationName, yamcsInstance);
         this.wsHandler = wsHandler;
-        processor = Processor.getFirstProcessor(yamcsInstance);
-        ManagementService mgrSrv = ManagementService.getInstance();
-        clientId = mgrSrv.registerClient(yamcsInstance, processor.getName(), this);
-        mgrSrv.addManagementListener(this);
 
         // Built-in resources, we could consider moving this to services so that
         // they register their endpoint themselves.
@@ -64,35 +54,19 @@ public class WebSocketClient implements ProcessorClient, ManagementListener {
     }
 
     @Override
-    public void switchProcessor(Processor newProcessor) throws ProcessorException {
-        log.info("Switching processor from {}/{} to {}/{}", processor.getInstance(), processor.getName(),
-                newProcessor.getInstance(), newProcessor.getName());
-        Processor oldProcessor = processor;
-        processor = newProcessor;
+    public void selectProcessor(Processor newProcessor) throws ProcessorException {
+        log.info("Switching {} to processor {}/{}", getId(), newProcessor.getInstance(), newProcessor.getName());
+        Processor oldProcessor = getProcessor();
+        super.selectProcessor(newProcessor);
         for (AbstractWebSocketResource resource : resources) {
             resource.switchProcessor(oldProcessor, newProcessor);
         }
         sendConnectionInfo();
-        // Note: We're not updating log and clientId in case of instance change. Maybe that's something we should do
-        // though
-    }
-
-    @Override
-    public Processor getProcessor() {
-        return processor;
     }
 
     public void registerResource(String route, AbstractWebSocketResource resource) {
         wsHandler.addResource(route, resource);
         resources.add(resource);
-    }
-
-    public int getClientId() {
-        return clientId;
-    }
-
-    public User getUser() {
-        return user;
     }
 
     public WebSocketFrameHandler getWebSocketFrameHandler() {
@@ -103,23 +77,13 @@ public class WebSocketClient implements ProcessorClient, ManagementListener {
     public void processorQuit() {
     }
 
-    @Override
-    public String getUsername() {
-        return user.getUsername();
-    }
-
-    @Override
-    public String getApplicationName() {
-        return applicationName;
-    }
-
     /**
      * Called when the socket is closed.
      */
     public void quit() {
-        ManagementService mgrSrv = ManagementService.getInstance();
-        mgrSrv.unregisterClient(clientId);
-        mgrSrv.removeManagementListener(this);
+        ManagementService managementService = ManagementService.getInstance();
+        managementService.unregisterClient(getId());
+        managementService.removeManagementListener(this);
         resources.forEach(r -> r.quit());
     }
 
@@ -127,7 +91,8 @@ public class WebSocketClient implements ProcessorClient, ManagementListener {
     public void instanceStateChanged(YamcsServerInstance ysi) {
         String instanceName = ysi.getName();
         // if the client is not connected to this instance we ignore the message
-        if (!processor.getInstance().equals(instanceName)) {
+        Processor processor = getProcessor();
+        if (processor == null || processor.getInstance().equals(instanceName)) {
             return;
         }
 
@@ -140,7 +105,7 @@ public class WebSocketClient implements ProcessorClient, ManagementListener {
                 log.error("No processor for newly created instance {} ", instanceName);
             } else {
                 try {
-                    ManagementService.getInstance().connectToProcessor(processor, clientId);
+                    ManagementService.getInstance().connectToProcessor(processor, getId());
                 } catch (YamcsException e) {
                     log.error("Error when switching client to new instance {} processor {} ", instanceName,
                             processor.getName(), e);
@@ -151,12 +116,13 @@ public class WebSocketClient implements ProcessorClient, ManagementListener {
     }
 
     void sendConnectionInfo() {
+        Processor processor = getProcessor();
         String instanceName = processor.getInstance();
         YamcsServerInstance ysi = YamcsServer.getInstance(instanceName);
         YamcsInstance yi = YamcsInstance.newBuilder().setName(instanceName)
                 .setState(ysi.getState()).build();
         ConnectionInfo.Builder conninf = ConnectionInfo.newBuilder()
-                .setClientId(clientId)
+                .setClientId(getId())
                 .setInstance(yi)
                 .setProcessor(ManagementGpbHelper.toProcessorInfo(processor));
         try {

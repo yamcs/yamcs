@@ -52,7 +52,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
 
     ParameterWithIdRequestHelper pidrm;
 
-    public ParameterResource(WebSocketClient client) {
+    public ParameterResource(ConnectedWebSocketClient client) {
         super(client);
         pidrm = new ParameterWithIdRequestHelper(processor.getParameterRequestManager(), this);
     }

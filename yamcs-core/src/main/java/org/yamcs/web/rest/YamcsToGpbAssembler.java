@@ -1,8 +1,11 @@
 package org.yamcs.web.rest;
 
+import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.time.TimeService;
@@ -43,5 +46,22 @@ public class YamcsToGpbAssembler {
         TimeService timeService = YamcsServer.getTimeService(yamcsInstance.getName());
         instanceb.setMissionTime(TimeEncoding.toString(timeService.getMissionTime()));
         return instanceb.build();
+    }
+
+    public static ClientInfo toClientInfo(ConnectedClient client, ClientState state) {
+        ClientInfo.Builder clientb = ClientInfo.newBuilder()
+                .setApplicationName(client.getApplicationName())
+                .setUsername(client.getUser().getUsername())
+                .setLoginTime(client.getLoginTime())
+                .setLoginTimeUTC(TimeEncoding.toString(client.getLoginTime()))
+                .setId(client.getId())
+                .setState(state);
+
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            clientb.setInstance(processor.getInstance());
+            clientb.setProcessorName(processor.getName());
+        }
+        return clientb.build();
     }
 }

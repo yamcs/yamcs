@@ -2,6 +2,7 @@ package org.yamcs.management;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,9 +20,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.ConnectedClient;
 import org.yamcs.InstanceStateListener;
 import org.yamcs.Processor;
-import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ProcessorListener;
@@ -31,13 +32,11 @@ import org.yamcs.YamcsServerInstance;
 import org.yamcs.commanding.CommandQueue;
 import org.yamcs.commanding.CommandQueueListener;
 import org.yamcs.commanding.CommandQueueManager;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.tctm.Link;
-import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtceproc.ProcessingStatistics;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
@@ -57,7 +56,7 @@ public class ManagementService implements ProcessorListener {
     static Logger log = LoggerFactory.getLogger(ManagementService.class.getName());
     static ManagementService managementService = new ManagementService();
 
-    Map<Integer, ClientWithInfo> clients = Collections.synchronizedMap(new HashMap<Integer, ClientWithInfo>());
+    Map<Integer, ConnectedClient> clients = Collections.synchronizedMap(new HashMap<Integer, ConnectedClient>());
     private AtomicInteger clientIdGenerator = new AtomicInteger();
 
     List<LinkWithInfo> links = new CopyOnWriteArrayList<>();
@@ -147,62 +146,51 @@ public class ManagementService implements ProcessorListener {
         return qmanagers;
     }
 
-    public int registerClient(String instance, String procName, ProcessorClient client) {
+    public void registerClient(ConnectedClient client) {
         int id = clientIdGenerator.incrementAndGet();
+        client.setClientId(id);
         try {
-            Processor c = Processor.getInstance(instance, procName);
-            if (c == null) {
-                throw new YamcsException("Unexisting processor (" + instance + ", " + procName + ") specified");
-            }
-            long now = TimeEncoding.getWallclockTime();
-            ClientInfo clientInfo = ManagementGpbHelper.toClientInfo(instance, procName, id, now, client);
-            clients.put(id, new ClientWithInfo(client, clientInfo));
-            managementListeners.forEach(l -> l.clientRegistered(clientInfo));
+            clients.put(id, client);
+            managementListeners.forEach(l -> l.clientRegistered(client));
         } catch (Exception e) {
             log.warn("Got exception when registering a client", e);
         }
-        return id;
     }
 
     public void unregisterClient(int id) {
-        ClientWithInfo cwi = clients.remove(id);
-        if (cwi == null) {
+        ConnectedClient client = clients.remove(id);
+        if (client == null) {
             return;
         }
-        ProcessorClient client = cwi.client;
         Processor processor = client.getProcessor();
         if (processor != null) {
             processor.disconnect(client);
         }
-        ClientInfo ci = cwi.clientInfo;
         try {
-            managementListeners.forEach(l -> l.clientUnregistered(ci));
+            managementListeners.forEach(l -> l.clientUnregistered(client));
         } catch (Exception e) {
             log.warn("Got exception when unregistering a client", e);
         }
     }
 
-    private void switchProcessor(ClientWithInfo cwi, Processor newProc) throws ProcessorException {
-        ProcessorClient client = cwi.client;
-        Processor oldProc = client.getProcessor();
-        oldProc.disconnect(client);
-        client.switchProcessor(newProc);
-        newProc.connect(client);
-        ClientInfo oldCi = cwi.clientInfo;
-        cwi.clientInfo = ManagementGpbHelper.toClientInfo(newProc.getInstance(), newProc.getName(), oldCi.getId(),
-                oldCi.getLoginTime(), client);
+    private void switchProcessor(ConnectedClient client, Processor newProcessor) throws ProcessorException {
+        Processor oldProcessor = client.getProcessor();
+        if (oldProcessor != null) {
+            oldProcessor.disconnect(client);
+        }
+        client.selectProcessor(newProcessor);
+        newProcessor.connect(client);
         try {
-            managementListeners.forEach(l -> l.clientInfoChanged(cwi.clientInfo));
+            managementListeners.forEach(l -> l.clientInfoChanged(client));
         } catch (Exception e) {
             log.warn("Got exception when switching processor", e);
         }
-
     }
 
     public void createProcessor(ProcessorManagementRequest pmr, String username) throws YamcsException {
         log.info("Creating new processor instance: {}, name: {}, type: {}, config: {}, persistent: {}",
                 pmr.getInstance(), pmr.getName(), pmr.getType(), pmr.getConfig(), pmr.getPersistent());
-        Processor yproc;
+        Processor processor;
         try {
             int n = 0;
 
@@ -212,23 +200,24 @@ public class ManagementService implements ProcessorListener {
             } else if (pmr.hasConfig()) {
                 spec = pmr.getConfig();
             }
-            yproc = ProcessorFactory.create(pmr.getInstance(), pmr.getName(), pmr.getType(), username, spec);
-            yproc.setPersistent(pmr.getPersistent());
+            processor = ProcessorFactory.create(pmr.getInstance(), pmr.getName(), pmr.getType(), username, spec);
+            processor.setPersistent(pmr.getPersistent());
             for (int i = 0; i < pmr.getClientIdCount(); i++) {
-                ClientWithInfo cwi = clients.get(pmr.getClientId(i));
-                if (cwi != null) {
-                    switchProcessor(cwi, yproc);
+                ConnectedClient client = clients.get(pmr.getClientId(i));
+                if (client != null) {
+                    switchProcessor(client, processor);
                     n++;
                 } else {
                     log.warn("createProcessor called with invalid client id: {}; ignored.", pmr.getClientId(i));
                 }
             }
             if (n > 0 || pmr.getPersistent()) {
-                log.info("Starting new processor '{}' with {} clients", yproc.getName(), yproc.getConnectedClients());
-                yproc.startAsync();
-                yproc.awaitRunning();
+                log.info("Starting new processor '{}' with {} clients", processor.getName(),
+                        processor.getConnectedClients());
+                processor.startAsync();
+                processor.awaitRunning();
             } else {
-                yproc.quit();
+                processor.quit();
                 throw new YamcsException("createProcessor invoked with a list full of invalid client ids");
             }
         } catch (ProcessorException | ConfigurationException e) {
@@ -244,11 +233,11 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void connectToProcessor(Processor processor, int clientId) throws YamcsException, ProcessorException {
-        ClientWithInfo cwi = clients.get(clientId);
-        if (cwi == null) {
+        ConnectedClient client = clients.get(clientId);
+        if (client == null) {
             throw new YamcsException("Invalid client id " + clientId);
         }
-        switchProcessor(cwi, processor);
+        switchProcessor(client, processor);
     }
 
     public void connectToProcessor(ProcessorManagementRequest cr) throws YamcsException {
@@ -262,8 +251,8 @@ public class ManagementService implements ProcessorListener {
         try {
             for (int i = 0; i < cr.getClientIdCount(); i++) {
                 int id = cr.getClientId(i);
-                ClientWithInfo cwi = clients.get(id);
-                switchProcessor(cwi, processor);
+                ConnectedClient client = clients.get(id);
+                switchProcessor(client, processor);
             }
         } catch (ProcessorException e) {
             throw new YamcsException(e.toString());
@@ -396,29 +385,22 @@ public class ManagementService implements ProcessorListener {
         }
     }
 
-    public Set<ClientInfo> getClientInfo() {
+    public Set<ConnectedClient> getClients() {
+        synchronized (clients) {
+            return new HashSet<>(clients.values());
+        }
+    }
+
+    public Set<ConnectedClient> getClients(String username) {
         synchronized (clients) {
             return clients.values().stream()
-                    .map(cwi -> cwi.clientInfo)
+                    .filter(client -> client.getUser().getUsername().equals(username))
                     .collect(Collectors.toSet());
         }
     }
 
-    public Set<ClientInfo> getClientInfo(String username) {
-        synchronized (clients) {
-            return clients.values().stream()
-                    .map(cwi -> cwi.clientInfo)
-                    .filter(ci -> ci.getUsername().equals(username))
-                    .collect(Collectors.toSet());
-        }
-    }
-
-    public ClientInfo getClientInfo(int clientId) {
-        ClientWithInfo cwi = clients.get(clientId);
-        if (cwi == null) {
-            return null;
-        }
-        return cwi.clientInfo;
+    public ConnectedClient getClient(int clientId) {
+        return clients.get(clientId);
     }
 
     private void updateStatistics() {
@@ -581,15 +563,5 @@ public class ManagementService implements ProcessorListener {
             }
         }
 
-    }
-
-    static class ClientWithInfo {
-        final ProcessorClient client;
-        ClientInfo clientInfo;
-
-        public ClientWithInfo(ProcessorClient client, ClientInfo clientInfo) {
-            this.client = client;
-            this.clientInfo = clientInfo;
-        }
     }
 }

@@ -25,7 +25,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
 
     private int subscriptionId = -1;
 
-    public CommandHistoryResource(WebSocketClient client) {
+    public CommandHistoryResource(ConnectedWebSocketClient client) {
         super(client);
     }
 

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
@@ -15,6 +16,7 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
+import org.yamcs.web.rest.YamcsToGpbAssembler;
 
 /**
  * Provides access to any Processor/Client info over web socket
@@ -34,9 +36,9 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     private boolean emitProcessorInfo;
     private boolean emitProcessorStatistics;
 
-    public ManagementResource(WebSocketClient client) {
+    public ManagementResource(ConnectedWebSocketClient client) {
         super(client);
-        clientId = client.getClientId();
+        clientId = client.getId();
     }
 
     @Override
@@ -76,15 +78,16 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     // return client info of this client
     private WebSocketReply processGetClientInfoRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         int requestId = ctx.getRequestId();
-        ClientInfo cinfo = ManagementService.getInstance().getClientInfo(clientId);
-        cinfo = ClientInfo.newBuilder(cinfo).setState(ClientState.CONNECTED).setCurrentClient(true).build();
+        ConnectedClient client = ManagementService.getInstance().getClient(clientId);
+        ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+        clientInfo = ClientInfo.newBuilder(clientInfo).setCurrentClient(true).build();
         try {
             WebSocketReply reply = new WebSocketReply(requestId);
-            reply.attachData("ClientInfo", cinfo);
+            reply.attachData("ClientInfo", clientInfo);
             wsHandler.sendReply(reply);
 
             // TODO Should probably remove this line, now that we sent this already in the response.
-            wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
+            wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         } catch (IOException e) {
             log.error("Exception when sending data", e);
             return null;
@@ -124,11 +127,12 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
 
             // Send current set of clients
             if (emitClientInfo) {
-                Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
-                for (ClientInfo client : clients) {
-                    ClientInfo cinfo = ClientInfo.newBuilder(client)
-                            .setState(ClientState.CONNECTED).setCurrentClient(client.getId() == clientId).build();
-                    wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
+                Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
+                for (ConnectedClient client : clients) {
+                    ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+                    clientInfo = ClientInfo.newBuilder(clientInfo).setCurrentClient(clientInfo.getId() == clientId)
+                            .build();
+                    wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
                 }
             }
         } catch (IOException e) {
@@ -189,12 +193,12 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     }
 
     @Override
-    public void clientRegistered(ClientInfo ci) {
+    public void clientRegistered(ConnectedClient client) {
         if (emitClientInfo) {
-            ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED)
-                    .setCurrentClient(ci.getId() == clientId).build();
+            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+            clientInfo = ClientInfo.newBuilder(clientInfo).setCurrentClient(client.getId() == clientId).build();
             try {
-                wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
+                wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
             } catch (IOException e) {
                 log.error("Exception when sending data", e);
             }
@@ -202,12 +206,12 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     }
 
     @Override
-    public void clientInfoChanged(ClientInfo ci) {
+    public void clientInfoChanged(ConnectedClient client) {
         if (emitClientInfo) {
-            ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED)
-                    .setCurrentClient(ci.getId() == clientId).build();
+            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+            clientInfo = ClientInfo.newBuilder(clientInfo).setCurrentClient(client.getId() == clientId).build();
             try {
-                wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
+                wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
             } catch (IOException e) {
                 log.error("Exception when sending data", e);
             }
@@ -215,16 +219,16 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     }
 
     @Override
-    public void clientUnregistered(ClientInfo ci) {
-        if (ci.getId() == clientId) {
+    public void clientUnregistered(ConnectedClient client) {
+        if (client.getId() == clientId) {
             return;
         }
 
         if (emitClientInfo) {
-            ClientInfo cinfo = ClientInfo.newBuilder(ci).setState(ClientState.DISCONNECTED).setCurrentClient(false)
-                    .build();
+            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.DISCONNECTED);
+            clientInfo = ClientInfo.newBuilder(clientInfo).setCurrentClient(false).build();
             try {
-                wsHandler.sendData(ProtoDataType.CLIENT_INFO, cinfo);
+                wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
             } catch (IOException e) {
                 log.error("Exception when sending data", e);
             }

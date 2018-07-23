@@ -29,7 +29,7 @@ public class PacketResource extends AbstractWebSocketResource {
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
-    public PacketResource(WebSocketClient client) {
+    public PacketResource(ConnectedWebSocketClient client) {
         super(client);
     }
 

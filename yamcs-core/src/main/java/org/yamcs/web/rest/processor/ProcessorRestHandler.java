@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ServiceWithConfig;
@@ -25,7 +26,6 @@ import org.yamcs.protobuf.Rest.ListProcessorsResponse;
 import org.yamcs.protobuf.Yamcs.ProcessorTypeInfo;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
@@ -39,6 +39,7 @@ import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.ServiceHelper;
+import org.yamcs.web.rest.YamcsToGpbAssembler;
 
 public class ProcessorRestHandler extends RestHandler {
 
@@ -176,12 +177,11 @@ public class ProcessorRestHandler extends RestHandler {
     public void listClientsForProcessor(RestRequest req) throws HttpException {
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
 
-        Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
+        Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
-        for (ClientInfo client : clients) {
-            if (processor.getInstance().equals(client.getInstance())
-                    && processor.getName().equals(client.getProcessorName())) {
-                responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
+        for (ConnectedClient client : clients) {
+            if (client.getProcessor() == processor) {
+                responseb.addClient(YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED));
             }
         }
         completeOK(req, responseb.build());
@@ -264,13 +264,13 @@ public class ProcessorRestHandler extends RestHandler {
         ManagementService mgrsrv = ManagementService.getInstance();
         for (Iterator<Integer> it = clientIds.iterator(); it.hasNext();) {
             int id = it.next();
-            ClientInfo ci = mgrsrv.getClientInfo(id);
-            if (ci == null) {
+            ConnectedClient client = mgrsrv.getClient(id);
+            if (client == null) {
                 log.warn("Invalid client id {} specified, ignoring", id);
                 it.remove();
             } else {
-                if (!username.equals(ci.getUsername())) {
-                    log.warn("User {} is not allowed to connect {} to new processor", username, ci.getUsername());
+                if (!username.equals(client.getUser().getUsername())) {
+                    log.warn("User {} is not allowed to connect {} to new processor", username, client.getUser());
                     throw new ForbiddenException("Not allowed to connect clients other than your own");
                 }
             }

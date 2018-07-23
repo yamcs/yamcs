@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsException;
 import org.yamcs.management.ManagementService;
@@ -26,24 +27,25 @@ public class ClientRestHandler extends RestHandler {
 
     @Route(path = "/api/clients", method = "GET")
     public void listClients(RestRequest req) throws HttpException {
-        Set<ClientInfo> clients = ManagementService.getInstance().getClientInfo();
+        Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
         ListClientsResponse.Builder responseb = ListClientsResponse.newBuilder();
-        for (ClientInfo client : clients) {
-            responseb.addClient(ClientInfo.newBuilder(client).setState(ClientState.CONNECTED));
+        for (ConnectedClient client : clients) {
+            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+            responseb.addClient(clientInfo);
         }
         completeOK(req, responseb.build());
     }
 
     @Route(path = "/api/clients/:id", method = "GET")
     public void getClient(RestRequest req) throws HttpException {
-        ClientInfo ci = verifyClient(req, req.getIntegerRouteParam("id"));
-        ClientInfo.Builder responseb = ClientInfo.newBuilder(ci).setState(ClientState.CONNECTED);
-        completeOK(req, responseb.build());
+        ConnectedClient client = verifyClient(req, req.getIntegerRouteParam("id"));
+        ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+        completeOK(req, clientInfo);
     }
 
     @Route(path = "/api/clients/:id", method = { "PATCH", "PUT", "POST" })
     public void patchClient(RestRequest restReq) throws HttpException {
-        ClientInfo ci = verifyClient(restReq, restReq.getIntegerRouteParam("id"));
+        ConnectedClient client = verifyClient(restReq, restReq.getIntegerRouteParam("id"));
 
         EditClientRequest request = restReq.bodyAsMessage(EditClientRequest.newBuilder()).build();
 
@@ -51,7 +53,7 @@ public class ClientRestHandler extends RestHandler {
             String newInstance;
             Processor newProcessor;
             if (request.hasProcessor()) {
-                newInstance = (request.hasInstance()) ? request.getInstance() : ci.getInstance();
+                newInstance = (request.hasInstance()) ? request.getInstance() : client.getProcessor().getInstance();
                 newProcessor = Processor.getInstance(newInstance, request.getProcessor());
             } else { // Switch to default processor of the instance
                 newInstance = request.getInstance();
@@ -62,14 +64,14 @@ public class ClientRestHandler extends RestHandler {
                 throw new BadRequestException(String.format("Cannot switch user to non-existing processor %s/%s",
                         newInstance, request.getProcessor()));
             }
-            verifyPermission(newProcessor, ci.getId(), restReq);
+            verifyPermission(newProcessor, client.getId(), restReq);
 
             ManagementService mservice = ManagementService.getInstance();
             ProcessorManagementRequest.Builder procReq = ProcessorManagementRequest.newBuilder();
             procReq.setInstance(newInstance);
             procReq.setName(newProcessor.getName());
             procReq.setOperation(Operation.CONNECT_TO_PROCESSOR);
-            procReq.addClientId(ci.getId());
+            procReq.addClientId(client.getId());
             try {
                 mservice.connectToProcessor(procReq.build());
             } catch (YamcsException e) {
@@ -96,12 +98,12 @@ public class ClientRestHandler extends RestHandler {
         }
 
         // and finally they can only connect their own clients
-        ClientInfo ci = ManagementService.getInstance().getClientInfo(clientId);
-        if (ci == null) {
+        ConnectedClient client = ManagementService.getInstance().getClient(clientId);
+        if (client == null) {
             throw new BadRequestException("Invalid client id " + clientId);
         }
-        if (!ci.getUsername().equals(username)) {
-            log.warn("User {} is not allowed to connect {} to new processor", username, ci.getUsername());
+        if (!client.getUser().getUsername().equals(username)) {
+            log.warn("User {} is not allowed to connect {} to new processor", username, client.getUser());
             throw new ForbiddenException("Not allowed to connect other client than your own");
         }
     }

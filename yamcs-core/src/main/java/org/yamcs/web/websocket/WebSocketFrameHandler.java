@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.ws.WSConstants;
+import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpRequestHandler;
@@ -43,7 +44,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     // these two are valid after the socket has been upgraded and they are practical final
     private Channel channel;
-    private WebSocketClient processorClient;
+    private ConnectedWebSocketClient wsClient;
 
     private WebSocketDecoder decoder;
     private WebSocketEncoder encoder;
@@ -85,12 +86,16 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
         String yamcsInstance = originalRequestInfo.getYamcsInstance();
         User user = originalRequestInfo.getUser();
-        processorClient = new WebSocketClient(yamcsInstance, this, applicationName, user);
+        wsClient = new ConnectedWebSocketClient(user, applicationName, yamcsInstance, this);
+        ManagementService managementService = ManagementService.getInstance();
+        managementService.registerClient(wsClient);
+        managementService.addManagementListener(wsClient);
+
         HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
         if (httpServer != null) { // Can happen in junit when not using yamcs.yaml
             for (WebSocketResourceProvider provider : httpServer.getWebSocketResourceProviders()) {
-                AbstractWebSocketResource resource = provider.createForClient(processorClient);
-                processorClient.registerResource(provider.getRoute(), resource);
+                AbstractWebSocketResource resource = provider.createForClient(wsClient);
+                wsClient.registerResource(provider.getRoute(), resource);
             }
         }
     }
@@ -117,7 +122,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             ctx.pipeline().remove(HttpRequestHandler.class);
 
             // Send data with server-assigned connection state (clientId, instance, processor)
-            processorClient.sendConnectionInfo();
+            wsClient.sendConnectionInfo();
         } else {
             super.userEventTriggered(ctx, evt);
         }
@@ -173,9 +178,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        if (processorClient != null) {
+        if (wsClient != null) {
             log.info("Channel {} closed", ctx.channel().remoteAddress());
-            processorClient.quit();
+            wsClient.quit();
         }
     }
 
@@ -226,12 +231,12 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
         if (!channel.isWritable()) {
             log.warn("Dropping {} message for client [id={}, username={}] because channel is not or no longer writable",
-                    dataType, processorClient.getClientId(), processorClient.getUsername());
+                    dataType, wsClient.getId(), wsClient.getUser());
             droppedWrites++;
 
             if (droppedWrites >= connectionCloseNumDroppedMsg) {
                 log.warn("Too many ({}) dropped messages for client [id={}, username={}]. Forcing disconnect",
-                        droppedWrites, processorClient.getClientId(), processorClient.getUsername());
+                        droppedWrites, wsClient.getId(), wsClient.getUser());
                 ctx.close();
             }
             return;
@@ -244,5 +249,4 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     public Channel getChannel() {
         return channel;
     }
-
 }

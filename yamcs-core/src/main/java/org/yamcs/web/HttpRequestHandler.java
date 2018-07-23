@@ -196,11 +196,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             return;
         case WebSocketFrameHandler.WEBSOCKET_PATH:
             verifyAuthentication(ctx, req);
-            if (path.length == 2) { // An instance should be specified
-                sendPlainTextError(ctx, req, FORBIDDEN);
-                return;
-            }
-            if (YamcsServer.hasInstance(path[2])) {
+            if (path.length == 2) { // No instance specified
+                prepareChannelForWebSocketUpgrade(ctx, req, null);
+            } else if (YamcsServer.hasInstance(path[2])) {
                 prepareChannelForWebSocketUpgrade(ctx, req, path[2]);
             } else {
                 sendPlainTextError(ctx, req, NOT_FOUND);

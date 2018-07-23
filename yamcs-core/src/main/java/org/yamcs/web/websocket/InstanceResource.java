@@ -22,7 +22,7 @@ public class InstanceResource extends AbstractWebSocketResource implements Manag
 
     private volatile boolean subscribed;
 
-    public InstanceResource(WebSocketClient client) {
+    public InstanceResource(ConnectedWebSocketClient client) {
         super(client);
     }
 

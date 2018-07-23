@@ -250,7 +250,7 @@ public class WebSocketClient {
 
     public void disconnect() {
         enableReconnection.set(false);
-        log.info("WebSocket Client sending close");
+        log.info("WebSocket client sending close");
         nettyChannel.writeAndFlush(new CloseWebSocketFrame());
 
         // WebSocketClientHandler will close the channel when the server

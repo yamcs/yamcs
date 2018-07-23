@@ -12,10 +12,10 @@ import io.netty.channel.Channel;
  */
 public abstract class AbstractWebSocketResource {
     protected Processor processor;
-    protected WebSocketClient client;
+    protected ConnectedWebSocketClient client;
     protected WebSocketFrameHandler wsHandler;
 
-    public AbstractWebSocketResource(WebSocketClient client) {
+    public AbstractWebSocketResource(ConnectedWebSocketClient client) {
         this.client = client;
         this.processor = client.getProcessor();
         wsHandler = client.getWebSocketFrameHandler();

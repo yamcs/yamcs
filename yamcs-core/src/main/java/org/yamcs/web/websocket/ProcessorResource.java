@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.management.ManagementGpbHelper;
@@ -12,7 +13,6 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Web.ProcessorSubscriptionRequest;
 import org.yamcs.protobuf.Web.ProcessorSubscriptionResponse;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 
@@ -34,7 +34,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
     private boolean allProcessors;
     private boolean allInstances;
 
-    public ProcessorResource(WebSocketClient client) {
+    public ProcessorResource(ConnectedWebSocketClient client) {
         super(client);
     }
 
@@ -159,15 +159,15 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
     }
 
     @Override
-    public void clientRegistered(ClientInfo ci) {
+    public void clientRegistered(ConnectedClient client) {
     }
 
     @Override
-    public void clientInfoChanged(ClientInfo ci) {
+    public void clientInfoChanged(ConnectedClient client) {
     }
 
     @Override
-    public void clientUnregistered(ClientInfo ci) {
+    public void clientUnregistered(ConnectedClient client) {
     }
 
     @Override
