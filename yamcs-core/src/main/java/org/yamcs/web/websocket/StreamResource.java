@@ -35,7 +35,7 @@ public class StreamResource extends AbstractWebSocketResource {
 
     private List<Subscription> subscriptions = new ArrayList<>();
 
-    public StreamResource(WebSocketProcessorClient client) {
+    public StreamResource(WebSocketClient client) {
         super(client);
     }
 

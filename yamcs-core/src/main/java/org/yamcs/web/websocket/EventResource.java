@@ -28,7 +28,7 @@ public class EventResource extends AbstractWebSocketResource {
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
-    public EventResource(WebSocketProcessorClient client) {
+    public EventResource(WebSocketClient client) {
         super(client);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
         stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);

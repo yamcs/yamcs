@@ -25,7 +25,7 @@ public class TimeResource extends AbstractWebSocketResource {
 
     private ScheduledFuture<?> future = null;
 
-    public TimeResource(WebSocketProcessorClient client) {
+    public TimeResource(WebSocketClient client) {
         super(client);
     }
 

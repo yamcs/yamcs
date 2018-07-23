@@ -34,7 +34,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
     private boolean allProcessors;
     private boolean allInstances;
 
-    public ProcessorResource(WebSocketProcessorClient client) {
+    public ProcessorResource(WebSocketClient client) {
         super(client);
     }
 

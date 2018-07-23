@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
@@ -19,15 +20,14 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.User;
-import org.yamcs.utils.LoggingUtils;
 
 /**
  * Runs on the server side and oversees the life cycle of a client web socket connection to a Processor. Combines
  * multiple types of subscriptions to keep them bundled as one client session.
  */
-public class WebSocketProcessorClient implements ProcessorClient, ManagementListener {
+public class WebSocketClient implements ProcessorClient, ManagementListener {
 
-    private final Logger log;
+    private static final Logger log = LoggerFactory.getLogger(WebSocketClient.class);
     private final int clientId;
     private final String applicationName;
     private final User user;
@@ -37,12 +37,11 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
     private List<AbstractWebSocketResource> resources = new CopyOnWriteArrayList<>();
     private WebSocketFrameHandler wsHandler;
 
-    public WebSocketProcessorClient(String yamcsInstance, WebSocketFrameHandler wsHandler, String applicationName,
+    public WebSocketClient(String yamcsInstance, WebSocketFrameHandler wsHandler, String applicationName,
             User user) {
         this.applicationName = applicationName;
         this.user = user;
         this.wsHandler = wsHandler;
-        log = LoggingUtils.getLogger(WebSocketProcessorClient.class, yamcsInstance);
         processor = Processor.getFirstProcessor(yamcsInstance);
         ManagementService mgrSrv = ManagementService.getInstance();
         clientId = mgrSrv.registerClient(yamcsInstance, processor.getName(), this);

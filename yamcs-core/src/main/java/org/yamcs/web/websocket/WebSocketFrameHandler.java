@@ -45,7 +45,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     // these two are valid after the socket has been upgraded and they are practical final
     private Channel channel;
-    private WebSocketProcessorClient processorClient;
+    private WebSocketClient processorClient;
 
     private WebSocketDecoder decoder;
     private WebSocketEncoder encoder;
@@ -87,7 +87,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
         String yamcsInstance = originalRequestInfo.getYamcsInstance();
         User user = originalRequestInfo.getUser();
-        processorClient = new WebSocketProcessorClient(yamcsInstance, this, applicationName, user);
+        processorClient = new WebSocketClient(yamcsInstance, this, applicationName, user);
         HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
         if (httpServer != null) { // Can happen in junit when not using yamcs.yaml
             for (WebSocketResourceProvider provider : httpServer.getWebSocketResourceProviders()) {

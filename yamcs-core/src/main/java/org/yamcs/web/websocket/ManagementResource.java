@@ -34,7 +34,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     private boolean emitProcessorInfo;
     private boolean emitProcessorStatistics;
 
-    public ManagementResource(WebSocketProcessorClient client) {
+    public ManagementResource(WebSocketClient client) {
         super(client);
         clientId = client.getClientId();
     }

@@ -32,7 +32,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
 
     private volatile boolean subscribed = false;
 
-    public CommandQueueResource(WebSocketProcessorClient client) {
+    public CommandQueueResource(WebSocketClient client) {
         super(client);
     }
 
