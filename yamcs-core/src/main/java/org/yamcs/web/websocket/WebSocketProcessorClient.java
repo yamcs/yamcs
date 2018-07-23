@@ -16,7 +16,6 @@ import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.security.User;
 import org.yamcs.utils.LoggingUtils;
@@ -157,9 +156,8 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
     void sendConnectionInfo() {
         String instanceName = processor.getInstance();
         YamcsServerInstance ysi = YamcsServer.getInstance(instanceName);
-        Service.State instanceState = ysi.state();
         YamcsInstance yi = YamcsInstance.newBuilder().setName(instanceName)
-                .setState(ServiceState.valueOf(instanceState.name())).build();
+                .setState(ysi.getState()).build();
         ConnectionInfo.Builder conninf = ConnectionInfo.newBuilder()
                 .setClientId(clientId)
                 .setInstance(yi)

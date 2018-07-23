@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
-import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.spi.Plugin;
@@ -291,8 +291,8 @@ public class YamcsServer {
     }
 
     /**
-     * Creates a new yamcs instance without starting it. If the instance already exist and not in the state FAILED or
-     * TERMINATED a ConfigurationException is thrown
+     * Creates a new yamcs instance. If the instance already exist and not in the state FAILED or OFFLINE a
+     * ConfigurationException is thrown
      * 
      * @param name
      *            the name of the new instance
@@ -303,9 +303,9 @@ public class YamcsServer {
     public static YamcsServerInstance createYamcsInstance(String name) throws IOException {
         YamcsServerInstance ysi = instances.get(name);
         if (ysi != null) {
-            if ((ysi.state() != State.FAILED) && (ysi.state() != State.TERMINATED)) {
+            if ((ysi.getState() != InstanceState.FAILED) && (ysi.getState() != InstanceState.OFFLINE)) {
                 throw new IllegalArgumentException(String.format(
-                        "There already exists an instance named '%s' and is not in FAILED or TERMINATED state", name));
+                        "There already exists an instance named '%s' and it is not in FAILED or OFFLINE state", name));
             } else {
                 staticlog.info("Re-loading instance '{}'", name);
                 YarchDatabase.removeInstance(name);
@@ -339,10 +339,11 @@ public class YamcsServer {
         }
         YamcsInstance.Builder aib = YamcsInstance.newBuilder().setName(name);
         YamcsServerInstance ysi = getInstance(name);
-        Service.State state = ysi.state();
-        aib.setState(ServiceState.valueOf(state.name()));
-        if (state == State.FAILED) {
+        InstanceState state = ysi.getState();
+        aib.setState(state);
+        if (state == InstanceState.FAILED) {
             aib.setFailureCause(ysi.failureCause().toString());
+            ysi.failureCause().printStackTrace();
         }
         try {
             MissionDatabase.Builder mdb = MissionDatabase.newBuilder();

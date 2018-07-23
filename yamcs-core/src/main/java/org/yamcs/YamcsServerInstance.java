@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
@@ -64,6 +65,26 @@ public class YamcsServerInstance extends AbstractService {
             // trick to get it to the FAILED state
             startAsync();
             throw e;
+        }
+    }
+
+    public InstanceState getState() {
+        State guavaState = state();
+        switch (guavaState) {
+        case NEW:
+            return InstanceState.OFFLINE;
+        case STARTING:
+            return InstanceState.STARTING;
+        case RUNNING:
+            return InstanceState.RUNNING;
+        case STOPPING:
+            return InstanceState.STOPPING;
+        case TERMINATED:
+            return InstanceState.OFFLINE;
+        case FAILED:
+            return InstanceState.FAILED;
+        default:
+            throw new IllegalStateException("Unexpected state: " + guavaState);
         }
     }
 

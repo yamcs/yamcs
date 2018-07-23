@@ -954,13 +954,13 @@ public final class YamcsManagement {
         int index);
 
     /**
-     * <code>optional .yamcsManagement.ServiceState state = 8;</code>
+     * <code>optional .yamcsManagement.YamcsInstance.InstanceState state = 11;</code>
      */
     boolean hasState();
     /**
-     * <code>optional .yamcsManagement.ServiceState state = 8;</code>
+     * <code>optional .yamcsManagement.YamcsInstance.InstanceState state = 11;</code>
      */
-    org.yamcs.protobuf.YamcsManagement.ServiceState getState();
+    org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState getState();
 
     /**
      * <pre>
@@ -1080,17 +1080,6 @@ public final class YamcsManagement {
                   input.readMessage(org.yamcs.protobuf.YamcsManagement.ProcessorInfo.PARSER, extensionRegistry));
               break;
             }
-            case 64: {
-              int rawValue = input.readEnum();
-              org.yamcs.protobuf.YamcsManagement.ServiceState value = org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(rawValue);
-              if (value == null) {
-                unknownFields.mergeVarintField(8, rawValue);
-              } else {
-                bitField0_ |= 0x00000004;
-                state_ = rawValue;
-              }
-              break;
-            }
             case 74: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
@@ -1101,6 +1090,17 @@ public final class YamcsManagement {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000010;
               missionTime_ = bs;
+              break;
+            }
+            case 88: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState value = org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(11, rawValue);
+              } else {
+                bitField0_ |= 0x00000004;
+                state_ = rawValue;
+              }
               break;
             }
           }
@@ -1128,6 +1128,141 @@ public final class YamcsManagement {
       return org.yamcs.protobuf.YamcsManagement.internal_static_yamcsManagement_YamcsInstance_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               org.yamcs.protobuf.YamcsManagement.YamcsInstance.class, org.yamcs.protobuf.YamcsManagement.YamcsInstance.Builder.class);
+    }
+
+    /**
+     * Protobuf enum {@code yamcsManagement.YamcsInstance.InstanceState}
+     */
+    public enum InstanceState
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>OFFLINE = 0;</code>
+       */
+      OFFLINE(0),
+      /**
+       * <code>INITIALIZING = 1;</code>
+       */
+      INITIALIZING(1),
+      /**
+       * <code>INITIALIZED = 2;</code>
+       */
+      INITIALIZED(2),
+      /**
+       * <code>STARTING = 3;</code>
+       */
+      STARTING(3),
+      /**
+       * <code>RUNNING = 4;</code>
+       */
+      RUNNING(4),
+      /**
+       * <code>STOPPING = 5;</code>
+       */
+      STOPPING(5),
+      /**
+       * <code>FAILED = 6;</code>
+       */
+      FAILED(6),
+      ;
+
+      /**
+       * <code>OFFLINE = 0;</code>
+       */
+      public static final int OFFLINE_VALUE = 0;
+      /**
+       * <code>INITIALIZING = 1;</code>
+       */
+      public static final int INITIALIZING_VALUE = 1;
+      /**
+       * <code>INITIALIZED = 2;</code>
+       */
+      public static final int INITIALIZED_VALUE = 2;
+      /**
+       * <code>STARTING = 3;</code>
+       */
+      public static final int STARTING_VALUE = 3;
+      /**
+       * <code>RUNNING = 4;</code>
+       */
+      public static final int RUNNING_VALUE = 4;
+      /**
+       * <code>STOPPING = 5;</code>
+       */
+      public static final int STOPPING_VALUE = 5;
+      /**
+       * <code>FAILED = 6;</code>
+       */
+      public static final int FAILED_VALUE = 6;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static InstanceState valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static InstanceState forNumber(int value) {
+        switch (value) {
+          case 0: return OFFLINE;
+          case 1: return INITIALIZING;
+          case 2: return INITIALIZED;
+          case 3: return STARTING;
+          case 4: return RUNNING;
+          case 5: return STOPPING;
+          case 6: return FAILED;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<InstanceState>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          InstanceState> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<InstanceState>() {
+              public InstanceState findValueByNumber(int number) {
+                return InstanceState.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.YamcsManagement.YamcsInstance.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final InstanceState[] VALUES = values();
+
+      public static InstanceState valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private InstanceState(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:yamcsManagement.YamcsInstance.InstanceState)
     }
 
     private int bitField0_;
@@ -1229,20 +1364,20 @@ public final class YamcsManagement {
       return processor_.get(index);
     }
 
-    public static final int STATE_FIELD_NUMBER = 8;
+    public static final int STATE_FIELD_NUMBER = 11;
     private int state_;
     /**
-     * <code>optional .yamcsManagement.ServiceState state = 8;</code>
+     * <code>optional .yamcsManagement.YamcsInstance.InstanceState state = 11;</code>
      */
     public boolean hasState() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>optional .yamcsManagement.ServiceState state = 8;</code>
+     * <code>optional .yamcsManagement.YamcsInstance.InstanceState state = 11;</code>
      */
-    public org.yamcs.protobuf.YamcsManagement.ServiceState getState() {
-      org.yamcs.protobuf.YamcsManagement.ServiceState result = org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(state_);
-      return result == null ? org.yamcs.protobuf.YamcsManagement.ServiceState.NEW : result;
+    public org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState getState() {
+      org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState result = org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState.valueOf(state_);
+      return result == null ? org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState.OFFLINE : result;
     }
 
     public static final int FAILURECAUSE_FIELD_NUMBER = 9;
@@ -1375,14 +1510,14 @@ public final class YamcsManagement {
       for (int i = 0; i < processor_.size(); i++) {
         output.writeMessage(4, processor_.get(i));
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        output.writeEnum(8, state_);
-      }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 9, failureCause_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 10, missionTime_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeEnum(11, state_);
       }
       unknownFields.writeTo(output);
     }
@@ -1403,15 +1538,15 @@ public final class YamcsManagement {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, processor_.get(i));
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(8, state_);
-      }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, failureCause_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, missionTime_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(11, state_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2249,22 +2384,22 @@ public final class YamcsManagement {
 
       private int state_ = 0;
       /**
-       * <code>optional .yamcsManagement.ServiceState state = 8;</code>
+       * <code>optional .yamcsManagement.YamcsInstance.InstanceState state = 11;</code>
        */
       public boolean hasState() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>optional .yamcsManagement.ServiceState state = 8;</code>
+       * <code>optional .yamcsManagement.YamcsInstance.InstanceState state = 11;</code>
        */
-      public org.yamcs.protobuf.YamcsManagement.ServiceState getState() {
-        org.yamcs.protobuf.YamcsManagement.ServiceState result = org.yamcs.protobuf.YamcsManagement.ServiceState.valueOf(state_);
-        return result == null ? org.yamcs.protobuf.YamcsManagement.ServiceState.NEW : result;
+      public org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState getState() {
+        org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState result = org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState.valueOf(state_);
+        return result == null ? org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState.OFFLINE : result;
       }
       /**
-       * <code>optional .yamcsManagement.ServiceState state = 8;</code>
+       * <code>optional .yamcsManagement.YamcsInstance.InstanceState state = 11;</code>
        */
-      public Builder setState(org.yamcs.protobuf.YamcsManagement.ServiceState value) {
+      public Builder setState(org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -2274,7 +2409,7 @@ public final class YamcsManagement {
         return this;
       }
       /**
-       * <code>optional .yamcsManagement.ServiceState state = 8;</code>
+       * <code>optional .yamcsManagement.YamcsInstance.InstanceState state = 11;</code>
        */
       public Builder clearState() {
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -24654,87 +24789,90 @@ public final class YamcsManagement {
       "\n\025yamcsManagement.proto\022\017yamcsManagement" +
       "\032\013yamcs.proto\"B\n\016YamcsInstances\0220\n\010insta" +
       "nce\030\001 \003(\0132\036.yamcsManagement.YamcsInstanc" +
-      "e\"\344\001\n\rYamcsInstance\022\014\n\004name\030\001 \002(\t\0229\n\017mis" +
+      "e\"\351\002\n\rYamcsInstance\022\014\n\004name\030\001 \002(\t\0229\n\017mis" +
       "sionDatabase\030\003 \001(\0132 .yamcsManagement.Mis" +
       "sionDatabase\0221\n\tprocessor\030\004 \003(\0132\036.yamcsM" +
-      "anagement.ProcessorInfo\022,\n\005state\030\010 \001(\0162\035" +
-      ".yamcsManagement.ServiceState\022\024\n\014failure" +
-      "Cause\030\t \001(\t\022\023\n\013missionTime\030\n \001(\t\"M\n\013Hist" +
-      "oryInfo\022\017\n\007version\030\001 \001(\t\022\014\n\004date\030\002 \001(\t\022\017",
-      "\n\007message\030\003 \001(\t\022\016\n\006author\030\004 \001(\t\"\266\002\n\017Spac" +
-      "eSystemInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedNa" +
-      "me\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n\017lo" +
-      "ngDescription\030\004 \001(\t\022\017\n\007version\030\005 \001(\t\022\026\n\016" +
-      "parameterCount\030\006 \001(\005\022\026\n\016containerCount\030\007" +
-      " \001(\005\022\024\n\014commandCount\030\010 \001(\005\022\026\n\016algorithmC" +
-      "ount\030\t \001(\005\022-\n\007history\030\016 \003(\0132\034.yamcsManag" +
-      "ement.HistoryInfo\022-\n\003sub\030\017 \003(\0132 .yamcsMa" +
-      "nagement.SpaceSystemInfo\"{\n\017MissionDatab" +
-      "ase\022\022\n\nconfigName\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\017\n",
-      "\007version\030\003 \001(\t\0225\n\013spaceSystem\030\004 \003(\0132 .ya" +
-      "mcsManagement.SpaceSystemInfo\"@\n\026Mission" +
-      "DatabaseRequest\022\024\n\014dbConfigName\030\001 \001(\t\022\020\n" +
-      "\010instance\030\002 \001(\t\"\370\002\n\rProcessorInfo\022\020\n\010ins" +
-      "tance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022" +
-      "\014\n\004spec\030\004 \001(\t\022\017\n\007creator\030\005 \001(\t\022\021\n\thasAla" +
-      "rms\030\006 \001(\010\022\025\n\rhasCommanding\030\007 \001(\010\022,\n\005stat" +
-      "e\030\010 \001(\0162\035.yamcsManagement.ServiceState\022+" +
-      "\n\rreplayRequest\030\t \001(\0132\024.yamcs.ReplayRequ" +
-      "est\0224\n\013replayState\030\n \001(\0162\037.yamcs.ReplayS",
-      "tatus.ReplayState\022-\n\007service\030\020 \003(\0132\034.yam" +
-      "csManagement.ServiceInfo\022\022\n\npersistent\030\021" +
-      " \001(\010\022\014\n\004time\030\022 \001(\t\022\016\n\006replay\030\023 \001(\010\"\224\002\n\nC" +
-      "lientInfo\022\020\n\010instance\030\001 \002(\t\022\n\n\002id\030\002 \002(\005\022" +
-      "\020\n\010username\030\003 \001(\t\022\027\n\017applicationName\030\004 \001" +
-      "(\t\022\025\n\rprocessorName\030\005 \001(\t\0226\n\005state\030\006 \001(\016" +
-      "2\'.yamcsManagement.ClientInfo.ClientStat" +
-      "e\022\025\n\rcurrentClient\030\007 \001(\010\022\021\n\tloginTime\030\010 " +
-      "\001(\003\022\024\n\014loginTimeUTC\030\t \001(\t\".\n\013ClientState" +
-      "\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020\001\"3\n\023Obj",
-      "ectPrivilegeInfo\022\014\n\004type\030\001 \001(\t\022\016\n\006object" +
-      "\030\002 \003(\t\"\323\001\n\010UserInfo\022\r\n\005login\030\001 \001(\t\022/\n\ncl" +
-      "ientInfo\030\002 \003(\0132\033.yamcsManagement.ClientI" +
-      "nfo\022\027\n\017systemPrivilege\030\013 \003(\t\022=\n\017objectPr" +
-      "ivilege\030\014 \003(\0132$.yamcsManagement.ObjectPr" +
-      "ivilegeInfo\022\021\n\tsuperuser\030\r \001(\010\022\034\n\020system" +
-      "Privileges\030\010 \003(\tB\002\030\001\"\277\001\n\014TmStatistics\022\022\n" +
-      "\npacketName\030\001 \002(\t\022\027\n\017receivedPackets\030\002 \001" +
-      "(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n\017lastReceived" +
-      "UTC\030\010 \001(\t\022\026\n\016lastPacketTime\030\004 \001(\003\022\031\n\021las",
-      "tPacketTimeUTC\030\007 \001(\t\022 \n\030subscribedParame" +
-      "terCount\030\006 \001(\005\"\223\001\n\nStatistics\022\020\n\010instanc" +
-      "e\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007tmsta" +
-      "ts\030\003 \003(\0132\035.yamcsManagement.TmStatistics\022" +
-      "\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016lastUpdatedUTC\030\005" +
-      " \001(\t\"\274\002\n\032ProcessorManagementRequest\022H\n\to" +
-      "peration\030\001 \001(\01625.yamcsManagement.Process" +
-      "orManagementRequest.Operation\022\020\n\010instanc" +
-      "e\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type\030\004 \001(\t\022\016\n\006c" +
-      "onfig\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\031\n\npersist",
-      "ent\030\007 \001(\010:\005false\022,\n\nreplaySpec\030\010 \001(\0132\024.y" +
-      "amcs.ReplayRequestB\002\030\001\";\n\tOperation\022\024\n\020C" +
-      "REATE_PROCESSOR\020\000\022\030\n\024CONNECT_TO_PROCESSO" +
-      "R\020\001\"\355\001\n\020ProcessorRequest\022>\n\toperation\030\001 " +
-      "\001(\0162+.yamcsManagement.ProcessorRequest.O" +
-      "peration\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t" +
-      "\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013replaySpeed\030\005 \001(\0132" +
-      "\022.yamcs.ReplaySpeed\">\n\tOperation\022\t\n\005PAUS" +
-      "E\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020\n\014CHANGE_SPEE" +
-      "D\020\005\"\243\001\n\010LinkInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004na",
-      "me\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006" +
-      "stream\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status" +
-      "\030\007 \001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016detailedSta" +
-      "tus\030\t \001(\t\"\236\001\n\tLinkEvent\022-\n\004type\030\001 \001(\0162\037." +
-      "yamcsManagement.LinkEvent.Type\022+\n\010linkIn" +
-      "fo\030\002 \001(\0132\031.yamcsManagement.LinkInfo\"5\n\004T" +
-      "ype\022\016\n\nREGISTERED\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n" +
-      "\007UPDATED\020\003\"\201\001\n\013ServiceInfo\022\020\n\010instance\030\001" +
-      " \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005state\030\003 \001(\0162\035.yamc" +
-      "sManagement.ServiceState\022\021\n\tclassName\030\004 ",
-      "\001(\t\022\021\n\tprocessor\030\005 \001(\t*\\\n\014ServiceState\022\007" +
-      "\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010ST" +
-      "OPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022" +
-      "org.yamcs.protobuf"
+      "anagement.ProcessorInfo\022;\n\005state\030\013 \001(\0162," +
+      ".yamcsManagement.YamcsInstance.InstanceS" +
+      "tate\022\024\n\014failureCause\030\t \001(\t\022\023\n\013missionTim" +
+      "e\030\n \001(\t\"t\n\rInstanceState\022\013\n\007OFFLINE\020\000\022\020\n",
+      "\014INITIALIZING\020\001\022\017\n\013INITIALIZED\020\002\022\014\n\010STAR" +
+      "TING\020\003\022\013\n\007RUNNING\020\004\022\014\n\010STOPPING\020\005\022\n\n\006FAI" +
+      "LED\020\006\"M\n\013HistoryInfo\022\017\n\007version\030\001 \001(\t\022\014\n" +
+      "\004date\030\002 \001(\t\022\017\n\007message\030\003 \001(\t\022\016\n\006author\030\004" +
+      " \001(\t\"\266\002\n\017SpaceSystemInfo\022\014\n\004name\030\001 \001(\t\022\025" +
+      "\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescriptio" +
+      "n\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022\017\n\007vers" +
+      "ion\030\005 \001(\t\022\026\n\016parameterCount\030\006 \001(\005\022\026\n\016con" +
+      "tainerCount\030\007 \001(\005\022\024\n\014commandCount\030\010 \001(\005\022" +
+      "\026\n\016algorithmCount\030\t \001(\005\022-\n\007history\030\016 \003(\013",
+      "2\034.yamcsManagement.HistoryInfo\022-\n\003sub\030\017 " +
+      "\003(\0132 .yamcsManagement.SpaceSystemInfo\"{\n" +
+      "\017MissionDatabase\022\022\n\nconfigName\030\001 \001(\t\022\014\n\004" +
+      "name\030\002 \001(\t\022\017\n\007version\030\003 \001(\t\0225\n\013spaceSyst" +
+      "em\030\004 \003(\0132 .yamcsManagement.SpaceSystemIn" +
+      "fo\"@\n\026MissionDatabaseRequest\022\024\n\014dbConfig" +
+      "Name\030\001 \001(\t\022\020\n\010instance\030\002 \001(\t\"\370\002\n\rProcess" +
+      "orInfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\014" +
+      "\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\017\n\007creator\030\005 " +
+      "\001(\t\022\021\n\thasAlarms\030\006 \001(\010\022\025\n\rhasCommanding\030",
+      "\007 \001(\010\022,\n\005state\030\010 \001(\0162\035.yamcsManagement.S" +
+      "erviceState\022+\n\rreplayRequest\030\t \001(\0132\024.yam" +
+      "cs.ReplayRequest\0224\n\013replayState\030\n \001(\0162\037." +
+      "yamcs.ReplayStatus.ReplayState\022-\n\007servic" +
+      "e\030\020 \003(\0132\034.yamcsManagement.ServiceInfo\022\022\n" +
+      "\npersistent\030\021 \001(\010\022\014\n\004time\030\022 \001(\t\022\016\n\006repla" +
+      "y\030\023 \001(\010\"\224\002\n\nClientInfo\022\020\n\010instance\030\001 \002(\t" +
+      "\022\n\n\002id\030\002 \002(\005\022\020\n\010username\030\003 \001(\t\022\027\n\017applic" +
+      "ationName\030\004 \001(\t\022\025\n\rprocessorName\030\005 \001(\t\0226" +
+      "\n\005state\030\006 \001(\0162\'.yamcsManagement.ClientIn",
+      "fo.ClientState\022\025\n\rcurrentClient\030\007 \001(\010\022\021\n" +
+      "\tloginTime\030\010 \001(\003\022\024\n\014loginTimeUTC\030\t \001(\t\"." +
+      "\n\013ClientState\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNE" +
+      "CTED\020\001\"3\n\023ObjectPrivilegeInfo\022\014\n\004type\030\001 " +
+      "\001(\t\022\016\n\006object\030\002 \003(\t\"\323\001\n\010UserInfo\022\r\n\005logi" +
+      "n\030\001 \001(\t\022/\n\nclientInfo\030\002 \003(\0132\033.yamcsManag" +
+      "ement.ClientInfo\022\027\n\017systemPrivilege\030\013 \003(" +
+      "\t\022=\n\017objectPrivilege\030\014 \003(\0132$.yamcsManage" +
+      "ment.ObjectPrivilegeInfo\022\021\n\tsuperuser\030\r " +
+      "\001(\010\022\034\n\020systemPrivileges\030\010 \003(\tB\002\030\001\"\277\001\n\014Tm",
+      "Statistics\022\022\n\npacketName\030\001 \002(\t\022\027\n\017receiv" +
+      "edPackets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n" +
+      "\017lastReceivedUTC\030\010 \001(\t\022\026\n\016lastPacketTime" +
+      "\030\004 \001(\003\022\031\n\021lastPacketTimeUTC\030\007 \001(\t\022 \n\030sub" +
+      "scribedParameterCount\030\006 \001(\005\"\223\001\n\nStatisti" +
+      "cs\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProcessorName\030\002" +
+      " \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.yamcsManagement." +
+      "TmStatistics\022\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016las" +
+      "tUpdatedUTC\030\005 \001(\t\"\274\002\n\032ProcessorManagemen" +
+      "tRequest\022H\n\toperation\030\001 \001(\01625.yamcsManag",
+      "ement.ProcessorManagementRequest.Operati" +
+      "on\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004ty" +
+      "pe\030\004 \001(\t\022\016\n\006config\030\005 \001(\t\022\020\n\010clientId\030\006 \003" +
+      "(\005\022\031\n\npersistent\030\007 \001(\010:\005false\022,\n\nreplayS" +
+      "pec\030\010 \001(\0132\024.yamcs.ReplayRequestB\002\030\001\";\n\tO" +
+      "peration\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNEC" +
+      "T_TO_PROCESSOR\020\001\"\355\001\n\020ProcessorRequest\022>\n" +
+      "\toperation\030\001 \001(\0162+.yamcsManagement.Proce" +
+      "ssorRequest.Operation\022\020\n\010instance\030\002 \001(\t\022" +
+      "\014\n\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013repla",
+      "ySpeed\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\tOper" +
+      "ation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020" +
+      "\n\014CHANGE_SPEED\020\005\"\243\001\n\010LinkInfo\022\020\n\010instanc" +
+      "e\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004s" +
+      "pec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disabled\030\006 " +
+      "\001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026" +
+      "\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent\022-\n\004" +
+      "type\030\001 \001(\0162\037.yamcsManagement.LinkEvent.T" +
+      "ype\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsManagement." +
+      "LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014UNRE",
+      "GISTERED\020\002\022\013\n\007UPDATED\020\003\"\201\001\n\013ServiceInfo\022" +
+      "\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005state" +
+      "\030\003 \001(\0162\035.yamcsManagement.ServiceState\022\021\n" +
+      "\tclassName\030\004 \001(\t\022\021\n\tprocessor\030\005 \001(\t*\\\n\014S" +
+      "erviceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RU" +
+      "NNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n" +
+      "\006FAILED\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
