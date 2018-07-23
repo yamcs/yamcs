@@ -212,6 +212,10 @@ public final class Yamcs {
      */
     CONNECTION_INFO(19),
     /**
+     * <code>INSTANCE = 20;</code>
+     */
+    INSTANCE(20),
+    /**
      * <code>EXTENSION_DATA = 100;</code>
      */
     EXTENSION_DATA(100),
@@ -302,6 +306,10 @@ public final class Yamcs {
      */
     public static final int CONNECTION_INFO_VALUE = 19;
     /**
+     * <code>INSTANCE = 20;</code>
+     */
+    public static final int INSTANCE_VALUE = 20;
+    /**
      * <code>EXTENSION_DATA = 100;</code>
      */
     public static final int EXTENSION_DATA_VALUE = 100;
@@ -340,6 +348,7 @@ public final class Yamcs {
         case 17: return COMMAND_QUEUE_INFO;
         case 18: return COMMAND_QUEUE_EVENT;
         case 19: return CONNECTION_INFO;
+        case 20: return INSTANCE;
         case 100: return EXTENSION_DATA;
         default: return null;
       }
@@ -29602,7 +29611,7 @@ public final class Yamcs {
       "\003\022\014\n\010DISTRESS\020\005\022\014\n\010CRITICAL\020\006\022\n\n\006SEVERE\020" +
       "\007*\005\010d\020\221N\"!\n\021ProcessorTypeInfo\022\014\n\004type\030\001 " +
       "\003(\t*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004",
-      "STOP\020\003*\357\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020" +
+      "STOP\020\003*\375\002\n\rProtoDataType\022\014\n\010DT_ERROR\020\001\022\020" +
       "\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022" +
       "\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE" +
       "_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022" +
@@ -29610,8 +29619,9 @@ public final class Yamcs {
       "ROCESSING_STATISTICS\020\014\022\017\n\013STREAM_DATA\020\r\022" +
       "\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK_E" +
       "VENT\020\020\022\026\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023COMMAN" +
-      "D_QUEUE_EVENT\020\022\022\023\n\017CONNECTION_INFO\020\023\022\022\n\016" +
-      "EXTENSION_DATA\020dB\024\n\022org.yamcs.protobuf"
+      "D_QUEUE_EVENT\020\022\022\023\n\017CONNECTION_INFO\020\023\022\014\n\010" +
+      "INSTANCE\020\024\022\022\n\016EXTENSION_DATA\020dB\024\n\022org.ya",
+      "mcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -21,7 +23,10 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.Service.Listener;
+import com.google.common.util.concurrent.Service.State;
 
 /**
  * Represents a Yamcs instance together with the instance specific services
@@ -29,7 +34,7 @@ import com.google.common.util.concurrent.Service;
  * @author nm
  *
  */
-public class YamcsServerInstance extends AbstractService {
+public class YamcsServerInstance {
     private String instanceName;
     Logger log;
     TimeService timeService;
@@ -37,17 +42,88 @@ public class YamcsServerInstance extends AbstractService {
     // instance specific services
     List<ServiceWithConfig> serviceList;
     private XtceDb xtceDb;
+    private InstanceState state = InstanceState.OFFLINE;
 
-    // guava doesn't allow to fail inside the init so we save the exception and we fail in the start
+    private Set<InstanceStateListener> stateListeners = new CopyOnWriteArraySet<>();
+
     private Exception initFailed;
+
+    private AbstractService guavaService;
 
     YamcsServerInstance(String instance) {
         this.instanceName = instance;
         log = LoggingUtils.getLogger(YamcsServer.class, instance);
         loadTimeService();
+
+        guavaService = new AbstractService() {
+
+            @Override
+            protected void doStart() {
+                // Note that instance should already be init-ed before attempting guava start.
+                YamcsServer.startServices(serviceList);
+                notifyStarted();
+            }
+
+            @Override
+            protected void doStop() {
+                for (int i = serviceList.size() - 1; i >= 0; i--) {
+                    ServiceWithConfig swc = serviceList.get(i);
+                    Service s = swc.service;
+                    s.stopAsync();
+                    try {
+                        s.awaitTerminated(YamcsServer.SERVICE_STOP_GRACE_TIME, TimeUnit.SECONDS);
+                    } catch (TimeoutException e) {
+                        log.error("Service {} did not stop in {} seconds", s.getClass().getName(),
+                                YamcsServer.SERVICE_STOP_GRACE_TIME);
+                    } catch (IllegalStateException e) {
+                        log.error("Service {} was in a bad state: {}", s.getClass().getName(), e.getMessage());
+                    }
+                }
+                YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
+                ydb.close();
+                YarchDatabase.removeInstance(instanceName);
+                notifyStopped();
+            }
+        };
+        guavaService.addListener(new Listener() {
+
+            @Override
+            public void starting() {
+                state = InstanceState.STARTING;
+                stateListeners.forEach(InstanceStateListener::starting);
+            }
+
+            @Override
+            public void running() {
+                state = InstanceState.RUNNING;
+                stateListeners.forEach(InstanceStateListener::running);
+            }
+
+            @Override
+            public void stopping(State from) {
+                state = InstanceState.STOPPING;
+                System.out.println("stopping " + stateListeners.size());
+                stateListeners.forEach(l -> l.stopping());
+            }
+
+            @Override
+            public void terminated(State from) {
+                state = InstanceState.OFFLINE;
+                stateListeners.forEach(InstanceStateListener::offline);
+            }
+
+            @Override
+            public void failed(State from, Throwable failure) {
+                state = InstanceState.FAILED;
+                stateListeners.forEach(l -> l.failed(failure));
+            }
+        }, MoreExecutors.directExecutor());
     }
 
     void init() throws IOException {
+        initFailed = null;
+        state = InstanceState.INITIALIZING;
+        stateListeners.forEach(InstanceStateListener::initializing);
         YConfiguration conf = YConfiguration.getConfiguration("yamcs." + instanceName);
         if (conf.containsKey("crashHandler")) {
             crashHandler = YamcsServer.loadCrashHandler(conf);
@@ -60,36 +136,71 @@ public class YamcsServerInstance extends AbstractService {
             StreamInitializer.createStreams(instanceName);
             List<Object> services = conf.getList("services");
             serviceList = YamcsServer.createServices(instanceName, services);
+            state = InstanceState.INITIALIZED;
+            stateListeners.forEach(InstanceStateListener::initialized);
         } catch (Exception e) {
+            state = InstanceState.FAILED;
             initFailed = e;
-            // trick to get it to the FAILED state
-            startAsync();
+            stateListeners.forEach(l -> l.failed(initFailed));
             throw e;
         }
     }
 
     public InstanceState getState() {
-        State guavaState = state();
-        switch (guavaState) {
-        case NEW:
-            return InstanceState.OFFLINE;
-        case STARTING:
-            return InstanceState.STARTING;
-        case RUNNING:
-            return InstanceState.RUNNING;
-        case STOPPING:
-            return InstanceState.STOPPING;
-        case TERMINATED:
-            return InstanceState.OFFLINE;
-        case FAILED:
-            return InstanceState.FAILED;
-        default:
-            throw new IllegalStateException("Unexpected state: " + guavaState);
-        }
+        return state;
+    }
+
+    public void addStateListener(InstanceStateListener listener) {
+        stateListeners.add(listener);
+    }
+
+    public void removeStateListener(InstanceStateListener listener) {
+        stateListeners.remove(listener);
     }
 
     public XtceDb getXtceDb() {
         return xtceDb;
+    }
+
+    public Throwable failureCause() {
+        if (initFailed != null) {
+            return initFailed;
+        }
+        return guavaService.failureCause();
+    }
+
+    /**
+     * Starts this instance, and waits until it is running
+     * 
+     * @throws IllegalStateException
+     *             if the instance fails to start
+     */
+    public void start() throws IllegalStateException {
+        guavaService.startAsync();
+        guavaService.awaitRunning();
+    }
+
+    public void startAsync() {
+        guavaService.startAsync();
+    }
+
+    /**
+     * Stops this instance, and waits until it terminates
+     * 
+     * @throws IllegalStateException
+     *             if the instance fails to do a clean stop
+     */
+    public void stop() throws IllegalStateException {
+        guavaService.stopAsync();
+        guavaService.awaitTerminated();
+    }
+
+    public void stopAsync() {
+        guavaService.stopAsync();
+    }
+
+    public void awaitTerminated() {
+        guavaService.awaitTerminated();
     }
 
     private void loadTimeService() throws ConfigurationException {
@@ -163,37 +274,6 @@ public class YamcsServerInstance extends AbstractService {
 
     CrashHandler getCrashHandler() {
         return crashHandler;
-    }
-
-    @Override
-    protected void doStart() {
-        if (initFailed != null) {
-            notifyFailed(initFailed);
-        } else {
-            YamcsServer.startServices(serviceList);
-            notifyStarted();
-        }
-    }
-
-    @Override
-    protected void doStop() {
-        for (int i = serviceList.size() - 1; i >= 0; i--) {
-            ServiceWithConfig swc = serviceList.get(i);
-            Service s = swc.service;
-            s.stopAsync();
-            try {
-                s.awaitTerminated(YamcsServer.SERVICE_STOP_GRACE_TIME, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                log.error("Service {} did not stop in {} seconds", s.getClass().getName(),
-                        YamcsServer.SERVICE_STOP_GRACE_TIME);
-            } catch (IllegalStateException e) {
-                log.error("Service {} was in a bad state: {}", s.getClass().getName(), e.getMessage());
-            }
-        }
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instanceName);
-        ydb.close();
-        YarchDatabase.removeInstance(instanceName);
-        notifyStopped();
     }
 
     /**

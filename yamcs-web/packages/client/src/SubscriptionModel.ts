@@ -7,6 +7,7 @@ export class SubscriptionModel {
 
   alarms = false;
   events = false;
+  instance = false;
   time = false;
   links = false;
   management = false;

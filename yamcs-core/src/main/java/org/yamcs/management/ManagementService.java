@@ -1,6 +1,5 @@
 package org.yamcs.management;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -21,6 +19,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.InstanceStateListener;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorClient;
 import org.yamcs.ProcessorException;
@@ -40,14 +39,10 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.tctm.Link;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtceproc.ProcessingStatistics;
-import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.Service.Listener;
-import com.google.common.util.concurrent.Service.State;
 
 /**
  * Responsible for providing to interested listeners info related to creation/removal/update of:
@@ -86,6 +81,8 @@ public class ManagementService implements ProcessorListener {
     static public ManagementService getInstance() {
         return managementService;
     }
+
+    private InstanceStateListener instanceListener;
 
     private ManagementService() {
         Processor.addProcessorListener(this);
@@ -476,26 +473,43 @@ public class ManagementService implements ProcessorListener {
     }
 
     public void registerYamcsInstance(YamcsServerInstance ys) {
-        ys.addListener(new Listener() {
+        instanceListener = new InstanceStateListener() {
+            @Override
+            public void initializing() {
+                managementListeners.forEach(l -> l.instanceStateChanged(ys));
+            }
+
+            @Override
+            public void initialized() {
+                managementListeners.forEach(l -> l.instanceStateChanged(ys));
+            }
+
+            @Override
+            public void starting() {
+                managementListeners.forEach(l -> l.instanceStateChanged(ys));
+            }
+
             @Override
             public void running() {
-                notifyInstanceStateChanged(ys);
+                managementListeners.forEach(l -> l.instanceStateChanged(ys));
             }
 
             @Override
-            public void terminated(State from) {
-                notifyInstanceStateChanged(ys);
+            public void stopping() {
+                managementListeners.forEach(l -> l.instanceStateChanged(ys));
             }
 
             @Override
-            public void failed(State from, Throwable failure) {
-                notifyInstanceStateChanged(ys);
+            public void offline() {
+                managementListeners.forEach(l -> l.instanceStateChanged(ys));
             }
-        }, MoreExecutors.directExecutor());
-    }
 
-    private void notifyInstanceStateChanged(YamcsServerInstance ysi) {
-        managementListeners.forEach(l -> l.instanceStateChanged(ysi));
+            @Override
+            public void failed(Throwable failure) {
+                managementListeners.forEach(l -> l.instanceStateChanged(ys));
+            }
+        };
+        ys.addStateListener(instanceListener);
     }
 
     /**
@@ -524,10 +538,7 @@ public class ManagementService implements ProcessorListener {
         if (ys == null) {
             throw new IllegalArgumentException("No instance named '" + instanceName + "'");
         }
-        return CompletableFuture.runAsync(() -> {
-            ys.stopAsync();
-            ys.awaitTerminated();
-        });
+        return CompletableFuture.runAsync(() -> ys.stop());
     }
 
     public void registerTable(String instance, TableDefinition tblDef) {

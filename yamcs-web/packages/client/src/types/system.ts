@@ -39,9 +39,17 @@ export type ServiceState = 'NEW'
   | 'TERMINATED'
   | 'FAILED';
 
+export type InstanceState = 'OFFLINE'
+  | 'INITIALIZING'
+  | 'INITIALIZED'
+  | 'STARTING'
+  | 'RUNNING'
+  | 'STOPPING'
+  | 'FAILED';
+
 export interface Instance {
   name: string;
-  state: ServiceState;
+  state: InstanceState;
   processor: Processor[];
 }
 
@@ -54,6 +62,10 @@ export interface ConnectionInfo {
 export interface ConnectionInfoSubscriptionResponse {
   connectionInfo: ConnectionInfo;
   connectionInfo$: Observable<ConnectionInfo>;
+}
+
+export interface InstanceSubscriptionResponse {
+  instance$: Observable<Instance>;
 }
 
 export interface ClientInfo {

@@ -17,11 +17,9 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.User;
 import org.yamcs.utils.LoggingUtils;
-
-import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.Service.State;
 
 /**
  * Runs on the server side and oversees the life cycle of a client web socket connection to a Processor. Combines
@@ -56,6 +54,7 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
         registerResource(CommandHistoryResource.RESOURCE_NAME, new CommandHistoryResource(this));
         registerResource(CommandQueueResource.RESOURCE_NAME, new CommandQueueResource(this));
         registerResource(EventResource.RESOURCE_NAME, new EventResource(this));
+        registerResource(InstanceResource.RESOURCE_NAME, new InstanceResource(this));
         registerResource(LinkResource.RESOURCE_NAME, new LinkResource(this));
         registerResource(ManagementResource.RESOURCE_NAME, new ManagementResource(this));
         registerResource(PacketResource.RESOURCE_NAME, new PacketResource(this));
@@ -132,9 +131,8 @@ public class WebSocketProcessorClient implements ProcessorClient, ManagementList
         if (!processor.getInstance().equals(instanceName)) {
             return;
         }
-        Service.State state = ysi.state();
 
-        if (state == State.RUNNING) {
+        if (ysi.getState() == InstanceState.RUNNING) {
             // this means that the instance has just re-started, need to move over to the new processor
             // currently we take the first processor (probably realtime).
             // maybe we should try to switch to one of the same name like the previous one

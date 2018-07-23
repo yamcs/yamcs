@@ -4,7 +4,7 @@ import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { SubscriptionModel } from './SubscriptionModel';
 import { WebSocketServerMessage } from './types/internal';
 import { Alarm, AlarmSubscriptionResponse, Event, EventSubscriptionResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, TimeInfo, TimeSubscriptionResponse } from './types/monitoring';
-import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse } from './types/system';
+import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEvent, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfo, ConnectionInfoSubscriptionResponse, Instance, InstanceSubscriptionResponse, LinkEvent, LinkSubscriptionResponse, Processor, ProcessorSubscriptionRequest, ProcessorSubscriptionResponse, Statistics, StatisticsSubscriptionResponse } from './types/system';
 
 const PROTOCOL_VERSION = 1;
 const MESSAGE_TYPE_REQUEST = 1;
@@ -251,6 +251,33 @@ export class WebSocketClient {
     });
   }
 
+  async getInstanceUpdates() {
+    this.subscriptionModel.instance = true;
+    const requestId = this.emit({ instance: 'subscribe' });
+
+    return new Promise<InstanceSubscriptionResponse>((resolve, reject) => {
+      this.webSocketConnection$.pipe(
+        first((msg: WebSocketServerMessage) => {
+          return msg[2] === requestId && msg[1] !== MESSAGE_TYPE_DATA
+        }),
+      ).subscribe((msg: WebSocketServerMessage) => {
+        if (msg[1] === MESSAGE_TYPE_REPLY) {
+          const response = {} as InstanceSubscriptionResponse;
+          response.instance$ = this.webSocketConnection$.pipe(
+            filter((msg: WebSocketServerMessage) => msg[1] === MESSAGE_TYPE_DATA),
+            filter((msg: WebSocketServerMessage) => msg[3].dt === 'INSTANCE'),
+            map(msg => msg[3].data as Instance),
+          );
+          resolve(response);
+        } else if (msg[1] === MESSAGE_TYPE_EXCEPTION) {
+          reject(msg[3].et);
+        } else {
+          reject('Unexpected response code');
+        }
+      });
+    });
+  }
+
   async getProcessorUpdates(options?: ProcessorSubscriptionRequest) {
     this.subscriptionModel.processor = true;
     const requestId = this.emit({ processor: 'subscribe', data: options });
@@ -429,6 +456,9 @@ export class WebSocketClient {
     }
     if (this.subscriptionModel.events) {
       this.emit({ events: 'subscribe' });
+    }
+    if (this.subscriptionModel.instance) {
+      this.emit({ instance: 'subscribe' });
     }
     if (this.subscriptionModel.links) {
       this.emit({ links: 'subscribe' });

@@ -261,10 +261,9 @@ public class YamcsServer {
     public static YamcsServerInstance restartYamcsInstance(String instanceName) {
         YamcsServerInstance ysi = instances.get(instanceName);
 
-        if (ysi.isRunning()) {
-            ysi.stopAsync();
+        if (ysi.getState() == InstanceState.RUNNING) {
             try {
-                ysi.awaitTerminated();
+                ysi.stop();
             } catch (IllegalStateException e) {
                 staticlog.error("Instance did not terminate normally", e);
             }
@@ -274,14 +273,14 @@ public class YamcsServer {
         staticlog.info("Re-loading instance '{}'", instanceName);
 
         ysi = new YamcsServerInstance(instanceName);
+        instances.put(instanceName, ysi);
+        ManagementService.getInstance().registerYamcsInstance(ysi);
         try {
             ysi.init();
             ysi.startAsync();
         } catch (IOException e) {
             staticlog.error("Failed to init/start instance '{}'", instanceName, e);
         }
-        instances.put(instanceName, ysi);
-        ManagementService.getInstance().registerYamcsInstance(ysi);
 
         return ysi;
     }
@@ -343,7 +342,6 @@ public class YamcsServer {
         aib.setState(state);
         if (state == InstanceState.FAILED) {
             aib.setFailureCause(ysi.failureCause().toString());
-            ysi.failureCause().printStackTrace();
         }
         try {
             MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
