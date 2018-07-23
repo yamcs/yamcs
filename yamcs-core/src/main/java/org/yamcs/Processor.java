@@ -523,7 +523,7 @@ public class Processor extends AbstractService {
                 processors.add(processor);
             }
         }
-        return instances.values();
+        return processors;
     }
 
     /**
