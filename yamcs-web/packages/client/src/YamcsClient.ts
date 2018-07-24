@@ -1,9 +1,11 @@
+import { Observable } from 'rxjs';
 import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { BucketsWrapper, InstancesWrapper, ServicesWrapper } from './types/internal';
-import { AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
+import { WebSocketClient } from './WebSocketClient';
 
 export default class YamcsClient implements HttpHandler {
 
@@ -16,8 +18,16 @@ export default class YamcsClient implements HttpHandler {
 
   private interceptor: HttpInterceptor;
 
+  public connected$: Observable<boolean>;
+  private webSocketClient: WebSocketClient;
+
   createInstanceClient(instance: string) {
     return new InstanceClient(instance, this);
+  }
+
+  async getInstanceUpdates(): Promise<InstanceSubscriptionResponse> {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getInstanceUpdates();
   }
 
   /**
@@ -274,6 +284,19 @@ export default class YamcsClient implements HttpHandler {
     // For older browsers, the end application should include an
     // appropriate polyfill.
     return fetch(url, init);
+  }
+
+  private prepareWebSocketClient() {
+    if (!this.webSocketClient) {
+      this.webSocketClient = new WebSocketClient();
+      this.connected$ = this.webSocketClient.connected$;
+    }
+  }
+
+  closeConnection() {
+    if (this.webSocketClient) {
+      this.webSocketClient.close();
+    }
   }
 
   private queryString(options: {[key: string]: any}) {

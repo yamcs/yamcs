@@ -35,17 +35,20 @@ export class WebSocketClient {
   // Toggle to distinguish original open from a reconnection.
   private subscribeOnOpen = false;
 
-  constructor(instance: string) {
+  constructor(instance?: string) {
     const currentLocation = window.location;
-    let wsUrl = 'ws://';
+    let url = 'ws://';
     if (currentLocation.protocol === 'https') {
-      wsUrl = 'wss://';
+      url = 'wss://';
     }
-    wsUrl += `${currentLocation.host}/_websocket/${instance}`;
+    url += `${currentLocation.host}/_websocket`;
+    if (instance) {
+      url += `/${instance}`;
+    }
 
     this.subscriptionModel = new SubscriptionModel();
     this.webSocket = webSocket({
-      url: wsUrl,
+      url,
       protocol: 'json',
       closeObserver: {
         next: () => {

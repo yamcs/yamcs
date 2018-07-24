@@ -101,7 +101,6 @@ export interface TimeSubscriptionResponse {
 
 export interface ManagementSubscriptionRequest {
   clientInfo?: boolean;
-  processorInfo?: boolean;
   processorStatistics?: boolean;
 }
 

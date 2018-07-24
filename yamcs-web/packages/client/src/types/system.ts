@@ -69,13 +69,12 @@ export interface InstanceSubscriptionResponse {
 }
 
 export interface ClientInfo {
-  instance: string;
   id: number;
+  instance: string;
   username: string;
   applicationName: string;
   processorName: string;
   state: 'CONNECTED' | 'DISCONNECTED';
-  currentClient: boolean;
   loginTimeUTC: string;
 }
 
