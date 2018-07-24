@@ -32,9 +32,6 @@ public class XtceDb implements Serializable {
 
     final SpaceSystem rootSystem;
 
-    // this is the /yamcs SpaceSystem where all the system parameters reside
-    final SpaceSystem yamcsSystem;
-
     // rwLock is used to guard the read/write of parameters and spaceSystems which are the only ones that can change
     // dynamically as of now
     ReadWriteLock rwLock = new ReentrantReadWriteLock();
@@ -90,12 +87,6 @@ public class XtceDb implements Serializable {
 
     public XtceDb(SpaceSystem spaceSystem) {
         this.rootSystem = spaceSystem;
-        SpaceSystem ss = spaceSystem.getSubsystem(YAMCS_SPACESYSTEM_NAME);
-        if (ss == null) {
-            ss = new SpaceSystem(YAMCS_SPACESYSTEM_NAME);
-            spaceSystem.addSpaceSystem(ss);
-        }
-        this.yamcsSystem = ss;
     }
 
     public SequenceContainer getSequenceContainer(String qualifiedName) {
