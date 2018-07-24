@@ -8,14 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.security.User;
 import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.HttpRequestInfo;
-import org.yamcs.web.HttpServer;
 
 import com.google.protobuf.Message;
 
@@ -96,14 +94,6 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         ManagementService managementService = ManagementService.getInstance();
         managementService.registerClient(wsClient);
         managementService.addManagementListener(wsClient);
-
-        HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
-        if (httpServer != null) { // Can happen in junit when not using yamcs.yaml
-            for (WebSocketResourceProvider provider : httpServer.getWebSocketResourceProviders()) {
-                WebSocketResource resource = provider.createForClient(wsClient);
-                wsClient.registerResource(provider.getRoute(), resource);
-            }
-        }
     }
 
     @Override

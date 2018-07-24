@@ -1,6 +1,7 @@
 package org.yamcs.web.websocket;
 
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
@@ -53,6 +54,11 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         registerResource(ProcessorResource.RESOURCE_NAME, new ProcessorResource(this));
         registerResource(StreamResource.RESOURCE_NAME, new StreamResource(this));
         registerResource(TimeResource.RESOURCE_NAME, new TimeResource(this));
+
+        for (WebSocketResourceProvider provider : ServiceLoader.load(WebSocketResourceProvider.class)) {
+            WebSocketResource resource = provider.createForClient(this);
+            registerResource(provider.getRoute(), resource);
+        }
     }
 
     @Override
@@ -72,7 +78,7 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         sendConnectionInfo();
     }
 
-    public void registerResource(String route, WebSocketResource resource) {
+    private void registerResource(String route, WebSocketResource resource) {
         wsHandler.addResource(route, resource);
         resources.add(resource);
     }
