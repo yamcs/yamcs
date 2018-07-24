@@ -165,36 +165,9 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
     }
 
-    @Deprecated // To be removed once all official clients use postEvents2 logic
     @Route(path = "/api/archive/:instance/events", method = "POST")
+    @Route(path = "/api/archive/:instance/events2", method = "POST") // TODO remove if no longer used by clients
     public void postEvent(RestRequest req) throws HttpException {
-        log.warn("Deprecated use of legacy API. "
-                + "Use new API at /api/archive/:instance/events2 instead of /api/archive/:instance/events");
-
-        checkSystemPrivilege(req, SystemPrivilege.WriteEvents);
-
-        // get event from request
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        Event event = req.bodyAsMessage(Event.newBuilder()).build();
-
-        // get event producer for this instance
-        EventProducer eventProducer = eventProducerMap.computeIfAbsent(instance, x -> {
-            return EventProducerFactory.getEventProducer(x);
-        });
-
-        // update event reception time
-        event = event.toBuilder().setReceptionTime(YamcsServer.getTimeService(instance).getMissionTime()).build();
-
-        // send event
-        log.debug("Adding event from REST API: {}", event);
-        eventProducer.sendEvent(event);
-        completeOK(req);
-    }
-
-    // TODO rename the path to /api/archive/:instance/events once all official clients are migrated to this new API.
-    @Route(path = "/api/archive/:instance/events2", method = "POST")
-    public void postEvent2(RestRequest req) throws HttpException {
-
         checkSystemPrivilege(req, SystemPrivilege.WriteEvents);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));

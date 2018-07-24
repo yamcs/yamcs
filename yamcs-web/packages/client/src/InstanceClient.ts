@@ -55,7 +55,7 @@ export class InstanceClient {
 
   async createEvent(options: CreateEventRequest) {
     const body = JSON.stringify(options);
-    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/archive/${this.instance}/events2`, {
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/archive/${this.instance}/events`, {
       body,
       method: 'POST',
     });
