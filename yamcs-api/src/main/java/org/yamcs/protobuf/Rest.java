@@ -27622,72 +27622,6 @@ public final class Rest {
         getNameBytes();
 
     /**
-     * <pre>
-     *fields 2-10 only work for creating replay processors and are deprecated
-     * instead use the config below with the type = Archive (as defined in the processor.yaml)
-     * </pre>
-     *
-     * <code>optional string start = 2 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated boolean hasStart();
-    /**
-     * <pre>
-     *fields 2-10 only work for creating replay processors and are deprecated
-     * instead use the config below with the type = Archive (as defined in the processor.yaml)
-     * </pre>
-     *
-     * <code>optional string start = 2 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.lang.String getStart();
-    /**
-     * <pre>
-     *fields 2-10 only work for creating replay processors and are deprecated
-     * instead use the config below with the type = Archive (as defined in the processor.yaml)
-     * </pre>
-     *
-     * <code>optional string start = 2 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated com.google.protobuf.ByteString
-        getStartBytes();
-
-    /**
-     * <code>optional string stop = 3 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated boolean hasStop();
-    /**
-     * <code>optional string stop = 3 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.lang.String getStop();
-    /**
-     * <code>optional string stop = 3 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated com.google.protobuf.ByteString
-        getStopBytes();
-
-    /**
-     * <code>optional bool loop = 4 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated boolean hasLoop();
-    /**
-     * <code>optional bool loop = 4 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated boolean getLoop();
-
-    /**
-     * <code>optional string speed = 5 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated boolean hasSpeed();
-    /**
-     * <code>optional string speed = 5 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.lang.String getSpeed();
-    /**
-     * <code>optional string speed = 5 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated com.google.protobuf.ByteString
-        getSpeedBytes();
-
-    /**
      * <code>repeated int32 clientId = 6;</code>
      */
     java.util.List<java.lang.Integer> getClientIdList();
@@ -27699,72 +27633,6 @@ public final class Rest {
      * <code>repeated int32 clientId = 6;</code>
      */
     int getClientId(int index);
-
-    /**
-     * <code>repeated string paraname = 7 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.util.List<java.lang.String>
-        getParanameList();
-    /**
-     * <code>repeated string paraname = 7 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated int getParanameCount();
-    /**
-     * <code>repeated string paraname = 7 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.lang.String getParaname(int index);
-    /**
-     * <code>repeated string paraname = 7 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated com.google.protobuf.ByteString
-        getParanameBytes(int index);
-
-    /**
-     * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.util.List<java.lang.String>
-        getPpgroupList();
-    /**
-     * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated int getPpgroupCount();
-    /**
-     * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.lang.String getPpgroup(int index);
-    /**
-     * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated com.google.protobuf.ByteString
-        getPpgroupBytes(int index);
-
-    /**
-     * <code>repeated string packetname = 9 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.util.List<java.lang.String>
-        getPacketnameList();
-    /**
-     * <code>repeated string packetname = 9 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated int getPacketnameCount();
-    /**
-     * <code>repeated string packetname = 9 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.lang.String getPacketname(int index);
-    /**
-     * <code>repeated string packetname = 9 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated com.google.protobuf.ByteString
-        getPacketnameBytes(int index);
-
-    /**
-     * <code>optional bool cmdhist = 10 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated boolean hasCmdhist();
-    /**
-     * <code>optional bool cmdhist = 10 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated boolean getCmdhist();
 
     /**
      * <code>optional bool persistent = 11;</code>
@@ -27816,15 +27684,7 @@ public final class Rest {
     }
     private CreateProcessorRequest() {
       name_ = "";
-      start_ = "";
-      stop_ = "";
-      loop_ = false;
-      speed_ = "";
       clientId_ = java.util.Collections.emptyList();
-      paraname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      ppgroup_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      packetname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      cmdhist_ = false;
       persistent_ = false;
       type_ = "";
       config_ = "";
@@ -27864,33 +27724,10 @@ public final class Rest {
               name_ = bs;
               break;
             }
-            case 18: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000002;
-              start_ = bs;
-              break;
-            }
-            case 26: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000004;
-              stop_ = bs;
-              break;
-            }
-            case 32: {
-              bitField0_ |= 0x00000008;
-              loop_ = input.readBool();
-              break;
-            }
-            case 42: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000010;
-              speed_ = bs;
-              break;
-            }
             case 48: {
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
                 clientId_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000020;
+                mutable_bitField0_ |= 0x00000002;
               }
               clientId_.add(input.readInt32());
               break;
@@ -27898,9 +27735,9 @@ public final class Rest {
             case 50: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
                 clientId_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000020;
+                mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
                 clientId_.add(input.readInt32());
@@ -27908,52 +27745,20 @@ public final class Rest {
               input.popLimit(limit);
               break;
             }
-            case 58: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
-                paraname_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000040;
-              }
-              paraname_.add(bs);
-              break;
-            }
-            case 66: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
-                ppgroup_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000080;
-              }
-              ppgroup_.add(bs);
-              break;
-            }
-            case 74: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
-                packetname_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000100;
-              }
-              packetname_.add(bs);
-              break;
-            }
-            case 80: {
-              bitField0_ |= 0x00000020;
-              cmdhist_ = input.readBool();
-              break;
-            }
             case 88: {
-              bitField0_ |= 0x00000040;
+              bitField0_ |= 0x00000002;
               persistent_ = input.readBool();
               break;
             }
             case 98: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000080;
+              bitField0_ |= 0x00000004;
               type_ = bs;
               break;
             }
             case 106: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000100;
+              bitField0_ |= 0x00000008;
               config_ = bs;
               break;
             }
@@ -27965,17 +27770,8 @@ public final class Rest {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           clientId_ = java.util.Collections.unmodifiableList(clientId_);
-        }
-        if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
-          paraname_ = paraname_.getUnmodifiableView();
-        }
-        if (((mutable_bitField0_ & 0x00000080) == 0x00000080)) {
-          ppgroup_ = ppgroup_.getUnmodifiableView();
-        }
-        if (((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
-          packetname_ = packetname_.getUnmodifiableView();
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -28036,162 +27832,6 @@ public final class Rest {
       }
     }
 
-    public static final int START_FIELD_NUMBER = 2;
-    private volatile java.lang.Object start_;
-    /**
-     * <pre>
-     *fields 2-10 only work for creating replay processors and are deprecated
-     * instead use the config below with the type = Archive (as defined in the processor.yaml)
-     * </pre>
-     *
-     * <code>optional string start = 2 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public boolean hasStart() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <pre>
-     *fields 2-10 only work for creating replay processors and are deprecated
-     * instead use the config below with the type = Archive (as defined in the processor.yaml)
-     * </pre>
-     *
-     * <code>optional string start = 2 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.lang.String getStart() {
-      java.lang.Object ref = start_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          start_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <pre>
-     *fields 2-10 only work for creating replay processors and are deprecated
-     * instead use the config below with the type = Archive (as defined in the processor.yaml)
-     * </pre>
-     *
-     * <code>optional string start = 2 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getStartBytes() {
-      java.lang.Object ref = start_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        start_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int STOP_FIELD_NUMBER = 3;
-    private volatile java.lang.Object stop_;
-    /**
-     * <code>optional string stop = 3 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public boolean hasStop() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
-    }
-    /**
-     * <code>optional string stop = 3 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.lang.String getStop() {
-      java.lang.Object ref = stop_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          stop_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string stop = 3 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getStopBytes() {
-      java.lang.Object ref = stop_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        stop_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int LOOP_FIELD_NUMBER = 4;
-    private boolean loop_;
-    /**
-     * <code>optional bool loop = 4 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public boolean hasLoop() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>optional bool loop = 4 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public boolean getLoop() {
-      return loop_;
-    }
-
-    public static final int SPEED_FIELD_NUMBER = 5;
-    private volatile java.lang.Object speed_;
-    /**
-     * <code>optional string speed = 5 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public boolean hasSpeed() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
-    }
-    /**
-     * <code>optional string speed = 5 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.lang.String getSpeed() {
-      java.lang.Object ref = speed_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          speed_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string speed = 5 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getSpeedBytes() {
-      java.lang.Object ref = speed_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        speed_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
     public static final int CLIENTID_FIELD_NUMBER = 6;
     private java.util.List<java.lang.Integer> clientId_;
     /**
@@ -28214,115 +27854,13 @@ public final class Rest {
       return clientId_.get(index);
     }
 
-    public static final int PARANAME_FIELD_NUMBER = 7;
-    private com.google.protobuf.LazyStringList paraname_;
-    /**
-     * <code>repeated string paraname = 7 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ProtocolStringList
-        getParanameList() {
-      return paraname_;
-    }
-    /**
-     * <code>repeated string paraname = 7 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public int getParanameCount() {
-      return paraname_.size();
-    }
-    /**
-     * <code>repeated string paraname = 7 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.lang.String getParaname(int index) {
-      return paraname_.get(index);
-    }
-    /**
-     * <code>repeated string paraname = 7 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getParanameBytes(int index) {
-      return paraname_.getByteString(index);
-    }
-
-    public static final int PPGROUP_FIELD_NUMBER = 8;
-    private com.google.protobuf.LazyStringList ppgroup_;
-    /**
-     * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ProtocolStringList
-        getPpgroupList() {
-      return ppgroup_;
-    }
-    /**
-     * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public int getPpgroupCount() {
-      return ppgroup_.size();
-    }
-    /**
-     * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.lang.String getPpgroup(int index) {
-      return ppgroup_.get(index);
-    }
-    /**
-     * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getPpgroupBytes(int index) {
-      return ppgroup_.getByteString(index);
-    }
-
-    public static final int PACKETNAME_FIELD_NUMBER = 9;
-    private com.google.protobuf.LazyStringList packetname_;
-    /**
-     * <code>repeated string packetname = 9 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ProtocolStringList
-        getPacketnameList() {
-      return packetname_;
-    }
-    /**
-     * <code>repeated string packetname = 9 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public int getPacketnameCount() {
-      return packetname_.size();
-    }
-    /**
-     * <code>repeated string packetname = 9 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.lang.String getPacketname(int index) {
-      return packetname_.get(index);
-    }
-    /**
-     * <code>repeated string packetname = 9 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getPacketnameBytes(int index) {
-      return packetname_.getByteString(index);
-    }
-
-    public static final int CMDHIST_FIELD_NUMBER = 10;
-    private boolean cmdhist_;
-    /**
-     * <code>optional bool cmdhist = 10 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public boolean hasCmdhist() {
-      return ((bitField0_ & 0x00000020) == 0x00000020);
-    }
-    /**
-     * <code>optional bool cmdhist = 10 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public boolean getCmdhist() {
-      return cmdhist_;
-    }
-
     public static final int PERSISTENT_FIELD_NUMBER = 11;
     private boolean persistent_;
     /**
      * <code>optional bool persistent = 11;</code>
      */
     public boolean hasPersistent() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
      * <code>optional bool persistent = 11;</code>
@@ -28337,7 +27875,7 @@ public final class Rest {
      * <code>optional string type = 12;</code>
      */
     public boolean hasType() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
      * <code>optional string type = 12;</code>
@@ -28379,7 +27917,7 @@ public final class Rest {
      * <code>optional string config = 13;</code>
      */
     public boolean hasConfig() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
      * <code>optional string config = 13;</code>
@@ -28430,40 +27968,16 @@ public final class Rest {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, start_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, stop_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBool(4, loop_);
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, speed_);
-      }
       for (int i = 0; i < clientId_.size(); i++) {
         output.writeInt32(6, clientId_.get(i));
       }
-      for (int i = 0; i < paraname_.size(); i++) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 7, paraname_.getRaw(i));
-      }
-      for (int i = 0; i < ppgroup_.size(); i++) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, ppgroup_.getRaw(i));
-      }
-      for (int i = 0; i < packetname_.size(); i++) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 9, packetname_.getRaw(i));
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        output.writeBool(10, cmdhist_);
-      }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBool(11, persistent_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 12, type_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 13, config_);
       }
       unknownFields.writeTo(output);
@@ -28477,19 +27991,6 @@ public final class Rest {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, start_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, stop_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(4, loop_);
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, speed_);
-      }
       {
         int dataSize = 0;
         for (int i = 0; i < clientId_.size(); i++) {
@@ -28499,42 +28000,14 @@ public final class Rest {
         size += dataSize;
         size += 1 * getClientIdList().size();
       }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < paraname_.size(); i++) {
-          dataSize += computeStringSizeNoTag(paraname_.getRaw(i));
-        }
-        size += dataSize;
-        size += 1 * getParanameList().size();
-      }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < ppgroup_.size(); i++) {
-          dataSize += computeStringSizeNoTag(ppgroup_.getRaw(i));
-        }
-        size += dataSize;
-        size += 1 * getPpgroupList().size();
-      }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < packetname_.size(); i++) {
-          dataSize += computeStringSizeNoTag(packetname_.getRaw(i));
-        }
-        size += dataSize;
-        size += 1 * getPacketnameList().size();
-      }
-      if (((bitField0_ & 0x00000020) == 0x00000020)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(10, cmdhist_);
-      }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(11, persistent_);
       }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, type_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(13, config_);
       }
       size += unknownFields.getSerializedSize();
@@ -28559,39 +28032,8 @@ public final class Rest {
         result = result && getName()
             .equals(other.getName());
       }
-      result = result && (hasStart() == other.hasStart());
-      if (hasStart()) {
-        result = result && getStart()
-            .equals(other.getStart());
-      }
-      result = result && (hasStop() == other.hasStop());
-      if (hasStop()) {
-        result = result && getStop()
-            .equals(other.getStop());
-      }
-      result = result && (hasLoop() == other.hasLoop());
-      if (hasLoop()) {
-        result = result && (getLoop()
-            == other.getLoop());
-      }
-      result = result && (hasSpeed() == other.hasSpeed());
-      if (hasSpeed()) {
-        result = result && getSpeed()
-            .equals(other.getSpeed());
-      }
       result = result && getClientIdList()
           .equals(other.getClientIdList());
-      result = result && getParanameList()
-          .equals(other.getParanameList());
-      result = result && getPpgroupList()
-          .equals(other.getPpgroupList());
-      result = result && getPacketnameList()
-          .equals(other.getPacketnameList());
-      result = result && (hasCmdhist() == other.hasCmdhist());
-      if (hasCmdhist()) {
-        result = result && (getCmdhist()
-            == other.getCmdhist());
-      }
       result = result && (hasPersistent() == other.hasPersistent());
       if (hasPersistent()) {
         result = result && (getPersistent()
@@ -28622,43 +28064,9 @@ public final class Rest {
         hash = (37 * hash) + NAME_FIELD_NUMBER;
         hash = (53 * hash) + getName().hashCode();
       }
-      if (hasStart()) {
-        hash = (37 * hash) + START_FIELD_NUMBER;
-        hash = (53 * hash) + getStart().hashCode();
-      }
-      if (hasStop()) {
-        hash = (37 * hash) + STOP_FIELD_NUMBER;
-        hash = (53 * hash) + getStop().hashCode();
-      }
-      if (hasLoop()) {
-        hash = (37 * hash) + LOOP_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-            getLoop());
-      }
-      if (hasSpeed()) {
-        hash = (37 * hash) + SPEED_FIELD_NUMBER;
-        hash = (53 * hash) + getSpeed().hashCode();
-      }
       if (getClientIdCount() > 0) {
         hash = (37 * hash) + CLIENTID_FIELD_NUMBER;
         hash = (53 * hash) + getClientIdList().hashCode();
-      }
-      if (getParanameCount() > 0) {
-        hash = (37 * hash) + PARANAME_FIELD_NUMBER;
-        hash = (53 * hash) + getParanameList().hashCode();
-      }
-      if (getPpgroupCount() > 0) {
-        hash = (37 * hash) + PPGROUP_FIELD_NUMBER;
-        hash = (53 * hash) + getPpgroupList().hashCode();
-      }
-      if (getPacketnameCount() > 0) {
-        hash = (37 * hash) + PACKETNAME_FIELD_NUMBER;
-        hash = (53 * hash) + getPacketnameList().hashCode();
-      }
-      if (hasCmdhist()) {
-        hash = (37 * hash) + CMDHIST_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-            getCmdhist());
       }
       if (hasPersistent()) {
         hash = (37 * hash) + PERSISTENT_FIELD_NUMBER;
@@ -28793,30 +28201,14 @@ public final class Rest {
         super.clear();
         name_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        start_ = "";
-        bitField0_ = (bitField0_ & ~0x00000002);
-        stop_ = "";
-        bitField0_ = (bitField0_ & ~0x00000004);
-        loop_ = false;
-        bitField0_ = (bitField0_ & ~0x00000008);
-        speed_ = "";
-        bitField0_ = (bitField0_ & ~0x00000010);
         clientId_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000020);
-        paraname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000040);
-        ppgroup_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000080);
-        packetname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000100);
-        cmdhist_ = false;
-        bitField0_ = (bitField0_ & ~0x00000200);
+        bitField0_ = (bitField0_ & ~0x00000002);
         persistent_ = false;
-        bitField0_ = (bitField0_ & ~0x00000400);
+        bitField0_ = (bitField0_ & ~0x00000004);
         type_ = "";
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00000008);
         config_ = "";
-        bitField0_ = (bitField0_ & ~0x00001000);
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -28845,56 +28237,21 @@ public final class Rest {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
-        result.start_ = start_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
-        }
-        result.stop_ = stop_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.loop_ = loop_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000010;
-        }
-        result.speed_ = speed_;
-        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
           clientId_ = java.util.Collections.unmodifiableList(clientId_);
-          bitField0_ = (bitField0_ & ~0x00000020);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.clientId_ = clientId_;
-        if (((bitField0_ & 0x00000040) == 0x00000040)) {
-          paraname_ = paraname_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000040);
-        }
-        result.paraname_ = paraname_;
-        if (((bitField0_ & 0x00000080) == 0x00000080)) {
-          ppgroup_ = ppgroup_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000080);
-        }
-        result.ppgroup_ = ppgroup_;
-        if (((bitField0_ & 0x00000100) == 0x00000100)) {
-          packetname_ = packetname_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000100);
-        }
-        result.packetname_ = packetname_;
-        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
-          to_bitField0_ |= 0x00000020;
-        }
-        result.cmdhist_ = cmdhist_;
-        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
-          to_bitField0_ |= 0x00000040;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000002;
         }
         result.persistent_ = persistent_;
-        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
-          to_bitField0_ |= 0x00000080;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000004;
         }
         result.type_ = type_;
-        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
-          to_bitField0_ |= 0x00000100;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000008;
         }
         result.config_ = config_;
         result.bitField0_ = to_bitField0_;
@@ -28944,77 +28301,26 @@ public final class Rest {
           name_ = other.name_;
           onChanged();
         }
-        if (other.hasStart()) {
-          bitField0_ |= 0x00000002;
-          start_ = other.start_;
-          onChanged();
-        }
-        if (other.hasStop()) {
-          bitField0_ |= 0x00000004;
-          stop_ = other.stop_;
-          onChanged();
-        }
-        if (other.hasLoop()) {
-          setLoop(other.getLoop());
-        }
-        if (other.hasSpeed()) {
-          bitField0_ |= 0x00000010;
-          speed_ = other.speed_;
-          onChanged();
-        }
         if (!other.clientId_.isEmpty()) {
           if (clientId_.isEmpty()) {
             clientId_ = other.clientId_;
-            bitField0_ = (bitField0_ & ~0x00000020);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureClientIdIsMutable();
             clientId_.addAll(other.clientId_);
           }
           onChanged();
         }
-        if (!other.paraname_.isEmpty()) {
-          if (paraname_.isEmpty()) {
-            paraname_ = other.paraname_;
-            bitField0_ = (bitField0_ & ~0x00000040);
-          } else {
-            ensureParanameIsMutable();
-            paraname_.addAll(other.paraname_);
-          }
-          onChanged();
-        }
-        if (!other.ppgroup_.isEmpty()) {
-          if (ppgroup_.isEmpty()) {
-            ppgroup_ = other.ppgroup_;
-            bitField0_ = (bitField0_ & ~0x00000080);
-          } else {
-            ensurePpgroupIsMutable();
-            ppgroup_.addAll(other.ppgroup_);
-          }
-          onChanged();
-        }
-        if (!other.packetname_.isEmpty()) {
-          if (packetname_.isEmpty()) {
-            packetname_ = other.packetname_;
-            bitField0_ = (bitField0_ & ~0x00000100);
-          } else {
-            ensurePacketnameIsMutable();
-            packetname_.addAll(other.packetname_);
-          }
-          onChanged();
-        }
-        if (other.hasCmdhist()) {
-          setCmdhist(other.getCmdhist());
-        }
         if (other.hasPersistent()) {
           setPersistent(other.getPersistent());
         }
         if (other.hasType()) {
-          bitField0_ |= 0x00000800;
+          bitField0_ |= 0x00000008;
           type_ = other.type_;
           onChanged();
         }
         if (other.hasConfig()) {
-          bitField0_ |= 0x00001000;
+          bitField0_ |= 0x00000010;
           config_ = other.config_;
           onChanged();
         }
@@ -29122,301 +28428,11 @@ public final class Rest {
         return this;
       }
 
-      private java.lang.Object start_ = "";
-      /**
-       * <pre>
-       *fields 2-10 only work for creating replay processors and are deprecated
-       * instead use the config below with the type = Archive (as defined in the processor.yaml)
-       * </pre>
-       *
-       * <code>optional string start = 2 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public boolean hasStart() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <pre>
-       *fields 2-10 only work for creating replay processors and are deprecated
-       * instead use the config below with the type = Archive (as defined in the processor.yaml)
-       * </pre>
-       *
-       * <code>optional string start = 2 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.lang.String getStart() {
-        java.lang.Object ref = start_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            start_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <pre>
-       *fields 2-10 only work for creating replay processors and are deprecated
-       * instead use the config below with the type = Archive (as defined in the processor.yaml)
-       * </pre>
-       *
-       * <code>optional string start = 2 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ByteString
-          getStartBytes() {
-        java.lang.Object ref = start_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          start_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <pre>
-       *fields 2-10 only work for creating replay processors and are deprecated
-       * instead use the config below with the type = Archive (as defined in the processor.yaml)
-       * </pre>
-       *
-       * <code>optional string start = 2 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setStart(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
-        start_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       *fields 2-10 only work for creating replay processors and are deprecated
-       * instead use the config below with the type = Archive (as defined in the processor.yaml)
-       * </pre>
-       *
-       * <code>optional string start = 2 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearStart() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        start_ = getDefaultInstance().getStart();
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       *fields 2-10 only work for creating replay processors and are deprecated
-       * instead use the config below with the type = Archive (as defined in the processor.yaml)
-       * </pre>
-       *
-       * <code>optional string start = 2 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setStartBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000002;
-        start_ = value;
-        onChanged();
-        return this;
-      }
-
-      private java.lang.Object stop_ = "";
-      /**
-       * <code>optional string stop = 3 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public boolean hasStop() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
-      }
-      /**
-       * <code>optional string stop = 3 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.lang.String getStop() {
-        java.lang.Object ref = stop_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            stop_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string stop = 3 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ByteString
-          getStopBytes() {
-        java.lang.Object ref = stop_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          stop_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string stop = 3 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setStop(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000004;
-        stop_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string stop = 3 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearStop() {
-        bitField0_ = (bitField0_ & ~0x00000004);
-        stop_ = getDefaultInstance().getStop();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string stop = 3 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setStopBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000004;
-        stop_ = value;
-        onChanged();
-        return this;
-      }
-
-      private boolean loop_ ;
-      /**
-       * <code>optional bool loop = 4 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public boolean hasLoop() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      /**
-       * <code>optional bool loop = 4 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public boolean getLoop() {
-        return loop_;
-      }
-      /**
-       * <code>optional bool loop = 4 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setLoop(boolean value) {
-        bitField0_ |= 0x00000008;
-        loop_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool loop = 4 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearLoop() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        loop_ = false;
-        onChanged();
-        return this;
-      }
-
-      private java.lang.Object speed_ = "";
-      /**
-       * <code>optional string speed = 5 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public boolean hasSpeed() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
-      }
-      /**
-       * <code>optional string speed = 5 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.lang.String getSpeed() {
-        java.lang.Object ref = speed_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            speed_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string speed = 5 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ByteString
-          getSpeedBytes() {
-        java.lang.Object ref = speed_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          speed_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string speed = 5 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setSpeed(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000010;
-        speed_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string speed = 5 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearSpeed() {
-        bitField0_ = (bitField0_ & ~0x00000010);
-        speed_ = getDefaultInstance().getSpeed();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string speed = 5 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setSpeedBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000010;
-        speed_ = value;
-        onChanged();
-        return this;
-      }
-
       private java.util.List<java.lang.Integer> clientId_ = java.util.Collections.emptyList();
       private void ensureClientIdIsMutable() {
-        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
           clientId_ = new java.util.ArrayList<java.lang.Integer>(clientId_);
-          bitField0_ |= 0x00000020;
+          bitField0_ |= 0x00000002;
          }
       }
       /**
@@ -29473,318 +28489,7 @@ public final class Rest {
        */
       public Builder clearClientId() {
         clientId_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000020);
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.LazyStringList paraname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      private void ensureParanameIsMutable() {
-        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
-          paraname_ = new com.google.protobuf.LazyStringArrayList(paraname_);
-          bitField0_ |= 0x00000040;
-         }
-      }
-      /**
-       * <code>repeated string paraname = 7 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ProtocolStringList
-          getParanameList() {
-        return paraname_.getUnmodifiableView();
-      }
-      /**
-       * <code>repeated string paraname = 7 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public int getParanameCount() {
-        return paraname_.size();
-      }
-      /**
-       * <code>repeated string paraname = 7 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.lang.String getParaname(int index) {
-        return paraname_.get(index);
-      }
-      /**
-       * <code>repeated string paraname = 7 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ByteString
-          getParanameBytes(int index) {
-        return paraname_.getByteString(index);
-      }
-      /**
-       * <code>repeated string paraname = 7 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setParaname(
-          int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureParanameIsMutable();
-        paraname_.set(index, value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string paraname = 7 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addParaname(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureParanameIsMutable();
-        paraname_.add(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string paraname = 7 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addAllParaname(
-          java.lang.Iterable<java.lang.String> values) {
-        ensureParanameIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, paraname_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string paraname = 7 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearParaname() {
-        paraname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000040);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string paraname = 7 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addParanameBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureParanameIsMutable();
-        paraname_.add(value);
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.LazyStringList ppgroup_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      private void ensurePpgroupIsMutable() {
-        if (!((bitField0_ & 0x00000080) == 0x00000080)) {
-          ppgroup_ = new com.google.protobuf.LazyStringArrayList(ppgroup_);
-          bitField0_ |= 0x00000080;
-         }
-      }
-      /**
-       * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ProtocolStringList
-          getPpgroupList() {
-        return ppgroup_.getUnmodifiableView();
-      }
-      /**
-       * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public int getPpgroupCount() {
-        return ppgroup_.size();
-      }
-      /**
-       * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.lang.String getPpgroup(int index) {
-        return ppgroup_.get(index);
-      }
-      /**
-       * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ByteString
-          getPpgroupBytes(int index) {
-        return ppgroup_.getByteString(index);
-      }
-      /**
-       * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setPpgroup(
-          int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensurePpgroupIsMutable();
-        ppgroup_.set(index, value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addPpgroup(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensurePpgroupIsMutable();
-        ppgroup_.add(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addAllPpgroup(
-          java.lang.Iterable<java.lang.String> values) {
-        ensurePpgroupIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, ppgroup_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearPpgroup() {
-        ppgroup_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000080);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string ppgroup = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addPpgroupBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensurePpgroupIsMutable();
-        ppgroup_.add(value);
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.LazyStringList packetname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      private void ensurePacketnameIsMutable() {
-        if (!((bitField0_ & 0x00000100) == 0x00000100)) {
-          packetname_ = new com.google.protobuf.LazyStringArrayList(packetname_);
-          bitField0_ |= 0x00000100;
-         }
-      }
-      /**
-       * <code>repeated string packetname = 9 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ProtocolStringList
-          getPacketnameList() {
-        return packetname_.getUnmodifiableView();
-      }
-      /**
-       * <code>repeated string packetname = 9 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public int getPacketnameCount() {
-        return packetname_.size();
-      }
-      /**
-       * <code>repeated string packetname = 9 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.lang.String getPacketname(int index) {
-        return packetname_.get(index);
-      }
-      /**
-       * <code>repeated string packetname = 9 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ByteString
-          getPacketnameBytes(int index) {
-        return packetname_.getByteString(index);
-      }
-      /**
-       * <code>repeated string packetname = 9 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setPacketname(
-          int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensurePacketnameIsMutable();
-        packetname_.set(index, value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string packetname = 9 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addPacketname(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensurePacketnameIsMutable();
-        packetname_.add(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string packetname = 9 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addAllPacketname(
-          java.lang.Iterable<java.lang.String> values) {
-        ensurePacketnameIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, packetname_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string packetname = 9 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearPacketname() {
-        packetname_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000100);
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>repeated string packetname = 9 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addPacketnameBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensurePacketnameIsMutable();
-        packetname_.add(value);
-        onChanged();
-        return this;
-      }
-
-      private boolean cmdhist_ ;
-      /**
-       * <code>optional bool cmdhist = 10 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public boolean hasCmdhist() {
-        return ((bitField0_ & 0x00000200) == 0x00000200);
-      }
-      /**
-       * <code>optional bool cmdhist = 10 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public boolean getCmdhist() {
-        return cmdhist_;
-      }
-      /**
-       * <code>optional bool cmdhist = 10 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setCmdhist(boolean value) {
-        bitField0_ |= 0x00000200;
-        cmdhist_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool cmdhist = 10 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearCmdhist() {
-        bitField0_ = (bitField0_ & ~0x00000200);
-        cmdhist_ = false;
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -29794,7 +28499,7 @@ public final class Rest {
        * <code>optional bool persistent = 11;</code>
        */
       public boolean hasPersistent() {
-        return ((bitField0_ & 0x00000400) == 0x00000400);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
        * <code>optional bool persistent = 11;</code>
@@ -29806,7 +28511,7 @@ public final class Rest {
        * <code>optional bool persistent = 11;</code>
        */
       public Builder setPersistent(boolean value) {
-        bitField0_ |= 0x00000400;
+        bitField0_ |= 0x00000004;
         persistent_ = value;
         onChanged();
         return this;
@@ -29815,7 +28520,7 @@ public final class Rest {
        * <code>optional bool persistent = 11;</code>
        */
       public Builder clearPersistent() {
-        bitField0_ = (bitField0_ & ~0x00000400);
+        bitField0_ = (bitField0_ & ~0x00000004);
         persistent_ = false;
         onChanged();
         return this;
@@ -29826,7 +28531,7 @@ public final class Rest {
        * <code>optional string type = 12;</code>
        */
       public boolean hasType() {
-        return ((bitField0_ & 0x00000800) == 0x00000800);
+        return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
        * <code>optional string type = 12;</code>
@@ -29869,7 +28574,7 @@ public final class Rest {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000800;
+  bitField0_ |= 0x00000008;
         type_ = value;
         onChanged();
         return this;
@@ -29878,7 +28583,7 @@ public final class Rest {
        * <code>optional string type = 12;</code>
        */
       public Builder clearType() {
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00000008);
         type_ = getDefaultInstance().getType();
         onChanged();
         return this;
@@ -29891,7 +28596,7 @@ public final class Rest {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000800;
+  bitField0_ |= 0x00000008;
         type_ = value;
         onChanged();
         return this;
@@ -29902,7 +28607,7 @@ public final class Rest {
        * <code>optional string config = 13;</code>
        */
       public boolean hasConfig() {
-        return ((bitField0_ & 0x00001000) == 0x00001000);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
        * <code>optional string config = 13;</code>
@@ -29945,7 +28650,7 @@ public final class Rest {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00001000;
+  bitField0_ |= 0x00000010;
         config_ = value;
         onChanged();
         return this;
@@ -29954,7 +28659,7 @@ public final class Rest {
        * <code>optional string config = 13;</code>
        */
       public Builder clearConfig() {
-        bitField0_ = (bitField0_ & ~0x00001000);
+        bitField0_ = (bitField0_ & ~0x00000010);
         config_ = getDefaultInstance().getConfig();
         onChanged();
         return this;
@@ -29967,7 +28672,7 @@ public final class Rest {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00001000;
+  bitField0_ |= 0x00000010;
         config_ = value;
         onChanged();
         return this;
@@ -47616,51 +46321,47 @@ public final class Rest {
       "ue\030\002 \002(\t\"{\n\022CreateEventRequest\022\014\n\004type\030\001" +
       " \001(\t\022\017\n\007message\030\002 \001(\t\022\020\n\010severity\030\003 \001(\t\022" +
       "\014\n\004time\030\004 \001(\t\022\016\n\006source\030\005 \001(\t\022\026\n\016sequenc" +
-      "eNumber\030\006 \001(\005\"\214\002\n\026CreateProcessorRequest" +
-      "\022\014\n\004name\030\001 \001(\t\022\021\n\005start\030\002 \001(\tB\002\030\001\022\020\n\004sto" +
-      "p\030\003 \001(\tB\002\030\001\022\020\n\004loop\030\004 \001(\010B\002\030\001\022\021\n\005speed\030\005" +
-      " \001(\tB\002\030\001\022\020\n\010clientId\030\006 \003(\005\022\024\n\010paraname\030\007" +
-      " \003(\tB\002\030\001\022\023\n\007ppgroup\030\010 \003(\tB\002\030\001\022\026\n\npacketn" +
-      "ame\030\t \003(\tB\002\030\001\022\023\n\007cmdhist\030\n \001(\010B\002\030\001\022\022\n\npe" +
-      "rsistent\030\013 \001(\010\022\014\n\004type\030\014 \001(\t\022\016\n\006config\030\r",
-      " \001(\t\"B\n\024EditProcessorRequest\022\r\n\005state\030\001 " +
-      "\001(\t\022\014\n\004seek\030\002 \001(\t\022\r\n\005speed\030\003 \001(\t\"(\n\026Stre" +
-      "amSubscribeRequest\022\016\n\006stream\030\001 \001(\t\"e\n\030Se" +
-      "tSimulationTimeRequest\022\r\n\005time0\030\001 \001(\003\022\020\n" +
-      "\010time0UTC\030\002 \001(\t\022\026\n\016simElapsedTime\030\003 \001(\003\022" +
-      "\020\n\010simSpeed\030\004 \001(\001\"I\n\025ListInstancesRespon" +
-      "se\0220\n\010instance\030\001 \003(\0132\036.yamcsManagement.Y" +
-      "amcsInstance\"2\n\020ListTagsResponse\022\036\n\003tag\030" +
-      "\001 \003(\0132\021.yamcs.ArchiveTag\"a\n\020CreateTagReq" +
-      "uest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004sto",
-      "p\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005 " +
-      "\001(\t\"_\n\016EditTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005s" +
-      "tart\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030" +
-      "\004 \001(\t\022\r\n\005color\030\005 \001(\t\"6\n\022ListAlarmsRespon" +
-      "se\022 \n\005alarm\030\001 \003(\0132\021.alarms.AlarmData\"2\n\020" +
-      "EditAlarmRequest\022\r\n\005state\030\001 \001(\t\022\017\n\007comme" +
-      "nt\030\002 \001(\t\"7\n\022ListTablesResponse\022!\n\005table\030" +
-      "\001 \003(\0132\022.archive.TableInfo\":\n\023ListStreams" +
-      "Response\022#\n\006stream\030\001 \003(\0132\023.archive.Strea" +
-      "mInfo\"1\n\022ListEventsResponse\022\033\n\005event\030\001 \003",
-      "(\0132\014.yamcs.Event\":\n\023ListPacketsResponse\022" +
-      "#\n\006packet\030\001 \003(\0132\023.yamcs.TmPacketData\"H\n\027" +
-      "ListServiceInfoResponse\022-\n\007service\030\001 \003(\013" +
-      "2\034.yamcsManagement.ServiceInfo\"#\n\022EditSe" +
-      "rviceRequest\022\r\n\005state\030\001 \001(\t\"V\n\023BulkGetIn" +
-      "dexRequest\022\r\n\005start\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022" +
-      "\016\n\006filter\030\003 \003(\t\022\022\n\npacketname\030\004 \003(\t\"#\n\023C" +
-      "reateBucketRequest\022\014\n\004name\030\001 \001(\t\"<\n\nBuck" +
-      "etInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004size\030\002 \001(\004\022\022\n\nnu" +
-      "mObjects\030\003 \001(\r\"\242\001\n\nObjectInfo\022\014\n\004name\030\001 ",
-      "\001(\t\022\017\n\007created\030\002 \001(\t\022\014\n\004size\030\003 \001(\004\0226\n\010me" +
-      "tadata\030\004 \003(\0132$.parameters.ObjectInfo.Met" +
-      "adataEntry\032/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t" +
-      "\022\r\n\005value\030\002 \001(\t:\0028\001\"=\n\023ListBucketsRespon" +
-      "se\022&\n\006bucket\030\001 \003(\0132\026.parameters.BucketIn" +
-      "fo\"M\n\023ListObjectsResponse\022\016\n\006prefix\030\001 \003(" +
-      "\t\022&\n\006object\030\002 \003(\0132\026.parameters.ObjectInf" +
-      "oB\024\n\022org.yamcs.protobuf"
+      "eNumber\030\006 \001(\005\"j\n\026CreateProcessorRequest\022" +
+      "\014\n\004name\030\001 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\022\n\npersi" +
+      "stent\030\013 \001(\010\022\014\n\004type\030\014 \001(\t\022\016\n\006config\030\r \001(" +
+      "\t\"B\n\024EditProcessorRequest\022\r\n\005state\030\001 \001(\t" +
+      "\022\014\n\004seek\030\002 \001(\t\022\r\n\005speed\030\003 \001(\t\"(\n\026StreamS" +
+      "ubscribeRequest\022\016\n\006stream\030\001 \001(\t\"e\n\030SetSi" +
+      "mulationTimeRequest\022\r\n\005time0\030\001 \001(\003\022\020\n\010ti",
+      "me0UTC\030\002 \001(\t\022\026\n\016simElapsedTime\030\003 \001(\003\022\020\n\010" +
+      "simSpeed\030\004 \001(\001\"I\n\025ListInstancesResponse\022" +
+      "0\n\010instance\030\001 \003(\0132\036.yamcsManagement.Yamc" +
+      "sInstance\"2\n\020ListTagsResponse\022\036\n\003tag\030\001 \003" +
+      "(\0132\021.yamcs.ArchiveTag\"a\n\020CreateTagReques" +
+      "t\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003" +
+      " \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005 \001(\t" +
+      "\"_\n\016EditTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005star" +
+      "t\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030\004 \001" +
+      "(\t\022\r\n\005color\030\005 \001(\t\"6\n\022ListAlarmsResponse\022",
+      " \n\005alarm\030\001 \003(\0132\021.alarms.AlarmData\"2\n\020Edi" +
+      "tAlarmRequest\022\r\n\005state\030\001 \001(\t\022\017\n\007comment\030" +
+      "\002 \001(\t\"7\n\022ListTablesResponse\022!\n\005table\030\001 \003" +
+      "(\0132\022.archive.TableInfo\":\n\023ListStreamsRes" +
+      "ponse\022#\n\006stream\030\001 \003(\0132\023.archive.StreamIn" +
+      "fo\"1\n\022ListEventsResponse\022\033\n\005event\030\001 \003(\0132" +
+      "\014.yamcs.Event\":\n\023ListPacketsResponse\022#\n\006" +
+      "packet\030\001 \003(\0132\023.yamcs.TmPacketData\"H\n\027Lis" +
+      "tServiceInfoResponse\022-\n\007service\030\001 \003(\0132\034." +
+      "yamcsManagement.ServiceInfo\"#\n\022EditServi",
+      "ceRequest\022\r\n\005state\030\001 \001(\t\"V\n\023BulkGetIndex" +
+      "Request\022\r\n\005start\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\016\n\006" +
+      "filter\030\003 \003(\t\022\022\n\npacketname\030\004 \003(\t\"#\n\023Crea" +
+      "teBucketRequest\022\014\n\004name\030\001 \001(\t\"<\n\nBucketI" +
+      "nfo\022\014\n\004name\030\001 \001(\t\022\014\n\004size\030\002 \001(\004\022\022\n\nnumOb" +
+      "jects\030\003 \001(\r\"\242\001\n\nObjectInfo\022\014\n\004name\030\001 \001(\t" +
+      "\022\017\n\007created\030\002 \001(\t\022\014\n\004size\030\003 \001(\004\0226\n\010metad" +
+      "ata\030\004 \003(\0132$.parameters.ObjectInfo.Metada" +
+      "taEntry\032/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t\022\r\n" +
+      "\005value\030\002 \001(\t:\0028\001\"=\n\023ListBucketsResponse\022",
+      "&\n\006bucket\030\001 \003(\0132\026.parameters.BucketInfo\"" +
+      "M\n\023ListObjectsResponse\022\016\n\006prefix\030\001 \003(\t\022&" +
+      "\n\006object\030\002 \003(\0132\026.parameters.ObjectInfoB\024" +
+      "\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -47884,7 +46585,7 @@ public final class Rest {
     internal_static_parameters_CreateProcessorRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_CreateProcessorRequest_descriptor,
-        new java.lang.String[] { "Name", "Start", "Stop", "Loop", "Speed", "ClientId", "Paraname", "Ppgroup", "Packetname", "Cmdhist", "Persistent", "Type", "Config", });
+        new java.lang.String[] { "Name", "ClientId", "Persistent", "Type", "Config", });
     internal_static_parameters_EditProcessorRequest_descriptor =
       getDescriptor().getMessageTypes().get(28);
     internal_static_parameters_EditProcessorRequest_fieldAccessorTable = new

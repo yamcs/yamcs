@@ -13232,41 +13232,6 @@ public final class YamcsManagement {
      * <code>optional bool superuser = 13;</code>
      */
     boolean getSuperuser();
-
-    /**
-     * <pre>
-     * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-     * </pre>
-     *
-     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.util.List<java.lang.String>
-        getSystemPrivilegesList();
-    /**
-     * <pre>
-     * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-     * </pre>
-     *
-     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated int getSystemPrivilegesCount();
-    /**
-     * <pre>
-     * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-     * </pre>
-     *
-     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.lang.String getSystemPrivileges(int index);
-    /**
-     * <pre>
-     * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-     * </pre>
-     *
-     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated com.google.protobuf.ByteString
-        getSystemPrivilegesBytes(int index);
   }
   /**
    * Protobuf type {@code yamcsManagement.UserInfo}
@@ -13285,7 +13250,6 @@ public final class YamcsManagement {
       systemPrivilege_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       objectPrivilege_ = java.util.Collections.emptyList();
       superuser_ = false;
-      systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
     }
 
     @java.lang.Override
@@ -13331,15 +13295,6 @@ public final class YamcsManagement {
                   input.readMessage(org.yamcs.protobuf.YamcsManagement.ClientInfo.PARSER, extensionRegistry));
               break;
             }
-            case 66: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-                systemPrivileges_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000020;
-              }
-              systemPrivileges_.add(bs);
-              break;
-            }
             case 90: {
               com.google.protobuf.ByteString bs = input.readBytes();
               if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
@@ -13373,9 +13328,6 @@ public final class YamcsManagement {
       } finally {
         if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           clientInfo_ = java.util.Collections.unmodifiableList(clientInfo_);
-        }
-        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-          systemPrivileges_ = systemPrivileges_.getUnmodifiableView();
         }
         if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
           systemPrivilege_ = systemPrivilege_.getUnmodifiableView();
@@ -13556,51 +13508,6 @@ public final class YamcsManagement {
       return superuser_;
     }
 
-    public static final int SYSTEMPRIVILEGES_FIELD_NUMBER = 8;
-    private com.google.protobuf.LazyStringList systemPrivileges_;
-    /**
-     * <pre>
-     * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-     * </pre>
-     *
-     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ProtocolStringList
-        getSystemPrivilegesList() {
-      return systemPrivileges_;
-    }
-    /**
-     * <pre>
-     * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-     * </pre>
-     *
-     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public int getSystemPrivilegesCount() {
-      return systemPrivileges_.size();
-    }
-    /**
-     * <pre>
-     * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-     * </pre>
-     *
-     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.lang.String getSystemPrivileges(int index) {
-      return systemPrivileges_.get(index);
-    }
-    /**
-     * <pre>
-     * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-     * </pre>
-     *
-     * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getSystemPrivilegesBytes(int index) {
-      return systemPrivileges_.getByteString(index);
-    }
-
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -13625,9 +13532,6 @@ public final class YamcsManagement {
       for (int i = 0; i < clientInfo_.size(); i++) {
         output.writeMessage(2, clientInfo_.get(i));
       }
-      for (int i = 0; i < systemPrivileges_.size(); i++) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 8, systemPrivileges_.getRaw(i));
-      }
       for (int i = 0; i < systemPrivilege_.size(); i++) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 11, systemPrivilege_.getRaw(i));
       }
@@ -13651,14 +13555,6 @@ public final class YamcsManagement {
       for (int i = 0; i < clientInfo_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, clientInfo_.get(i));
-      }
-      {
-        int dataSize = 0;
-        for (int i = 0; i < systemPrivileges_.size(); i++) {
-          dataSize += computeStringSizeNoTag(systemPrivileges_.getRaw(i));
-        }
-        size += dataSize;
-        size += 1 * getSystemPrivilegesList().size();
       }
       {
         int dataSize = 0;
@@ -13709,8 +13605,6 @@ public final class YamcsManagement {
         result = result && (getSuperuser()
             == other.getSuperuser());
       }
-      result = result && getSystemPrivilegesList()
-          .equals(other.getSystemPrivilegesList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -13742,10 +13636,6 @@ public final class YamcsManagement {
         hash = (37 * hash) + SUPERUSER_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getSuperuser());
-      }
-      if (getSystemPrivilegesCount() > 0) {
-        hash = (37 * hash) + SYSTEMPRIVILEGES_FIELD_NUMBER;
-        hash = (53 * hash) + getSystemPrivilegesList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -13885,8 +13775,6 @@ public final class YamcsManagement {
         }
         superuser_ = false;
         bitField0_ = (bitField0_ & ~0x00000010);
-        systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -13942,11 +13830,6 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000002;
         }
         result.superuser_ = superuser_;
-        if (((bitField0_ & 0x00000020) == 0x00000020)) {
-          systemPrivileges_ = systemPrivileges_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00000020);
-        }
-        result.systemPrivileges_ = systemPrivileges_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -14058,16 +13941,6 @@ public final class YamcsManagement {
         }
         if (other.hasSuperuser()) {
           setSuperuser(other.getSuperuser());
-        }
-        if (!other.systemPrivileges_.isEmpty()) {
-          if (systemPrivileges_.isEmpty()) {
-            systemPrivileges_ = other.systemPrivileges_;
-            bitField0_ = (bitField0_ & ~0x00000020);
-          } else {
-            ensureSystemPrivilegesIsMutable();
-            systemPrivileges_.addAll(other.systemPrivileges_);
-          }
-          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -14779,135 +14652,6 @@ public final class YamcsManagement {
       public Builder clearSuperuser() {
         bitField0_ = (bitField0_ & ~0x00000010);
         superuser_ = false;
-        onChanged();
-        return this;
-      }
-
-      private com.google.protobuf.LazyStringList systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-      private void ensureSystemPrivilegesIsMutable() {
-        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
-          systemPrivileges_ = new com.google.protobuf.LazyStringArrayList(systemPrivileges_);
-          bitField0_ |= 0x00000020;
-         }
-      }
-      /**
-       * <pre>
-       * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-       * </pre>
-       *
-       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ProtocolStringList
-          getSystemPrivilegesList() {
-        return systemPrivileges_.getUnmodifiableView();
-      }
-      /**
-       * <pre>
-       * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-       * </pre>
-       *
-       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public int getSystemPrivilegesCount() {
-        return systemPrivileges_.size();
-      }
-      /**
-       * <pre>
-       * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-       * </pre>
-       *
-       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.lang.String getSystemPrivileges(int index) {
-        return systemPrivileges_.get(index);
-      }
-      /**
-       * <pre>
-       * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-       * </pre>
-       *
-       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ByteString
-          getSystemPrivilegesBytes(int index) {
-        return systemPrivileges_.getByteString(index);
-      }
-      /**
-       * <pre>
-       * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-       * </pre>
-       *
-       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setSystemPrivileges(
-          int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureSystemPrivilegesIsMutable();
-        systemPrivileges_.set(index, value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-       * </pre>
-       *
-       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addSystemPrivileges(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureSystemPrivilegesIsMutable();
-        systemPrivileges_.add(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-       * </pre>
-       *
-       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addAllSystemPrivileges(
-          java.lang.Iterable<java.lang.String> values) {
-        ensureSystemPrivilegesIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, systemPrivileges_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-       * </pre>
-       *
-       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearSystemPrivileges() {
-        systemPrivileges_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00000020);
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * Temporarily kept for compatibility with Yamcs 3.4.x from Yamcs Studio
-       * </pre>
-       *
-       * <code>repeated string systemPrivileges = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addSystemPrivilegesBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  ensureSystemPrivilegesIsMutable();
-        systemPrivileges_.add(value);
         onChanged();
         return this;
       }
@@ -17784,31 +17528,6 @@ public final class YamcsManagement {
      * <code>optional bool persistent = 7 [default = false];</code>
      */
     boolean getPersistent();
-
-    /**
-     * <pre>
-     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-     * </pre>
-     *
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated boolean hasReplaySpec();
-    /**
-     * <pre>
-     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-     * </pre>
-     *
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec();
-    /**
-     * <pre>
-     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-     * </pre>
-     *
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder();
   }
   /**
    * Protobuf type {@code yamcsManagement.ProcessorManagementRequest}
@@ -17918,19 +17637,6 @@ public final class YamcsManagement {
             case 56: {
               bitField0_ |= 0x00000020;
               persistent_ = input.readBool();
-              break;
-            }
-            case 66: {
-              org.yamcs.protobuf.Yamcs.ReplayRequest.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000040) == 0x00000040)) {
-                subBuilder = replaySpec_.toBuilder();
-              }
-              replaySpec_ = input.readMessage(org.yamcs.protobuf.Yamcs.ReplayRequest.PARSER, extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(replaySpec_);
-                replaySpec_ = subBuilder.buildPartial();
-              }
-              bitField0_ |= 0x00000040;
               break;
             }
           }
@@ -18340,51 +18046,12 @@ public final class YamcsManagement {
       return persistent_;
     }
 
-    public static final int REPLAYSPEC_FIELD_NUMBER = 8;
-    private org.yamcs.protobuf.Yamcs.ReplayRequest replaySpec_;
-    /**
-     * <pre>
-     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-     * </pre>
-     *
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public boolean hasReplaySpec() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
-    }
-    /**
-     * <pre>
-     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-     * </pre>
-     *
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec() {
-      return replaySpec_ == null ? org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance() : replaySpec_;
-    }
-    /**
-     * <pre>
-     *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-     * </pre>
-     *
-     * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder() {
-      return replaySpec_ == null ? org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance() : replaySpec_;
-    }
-
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (hasReplaySpec()) {
-        if (!getReplaySpec().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -18411,9 +18078,6 @@ public final class YamcsManagement {
       }
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         output.writeBool(7, persistent_);
-      }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeMessage(8, getReplaySpec());
       }
       unknownFields.writeTo(output);
     }
@@ -18451,10 +18115,6 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000020) == 0x00000020)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(7, persistent_);
-      }
-      if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(8, getReplaySpec());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -18504,11 +18164,6 @@ public final class YamcsManagement {
         result = result && (getPersistent()
             == other.getPersistent());
       }
-      result = result && (hasReplaySpec() == other.hasReplaySpec());
-      if (hasReplaySpec()) {
-        result = result && getReplaySpec()
-            .equals(other.getReplaySpec());
-      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -18548,10 +18203,6 @@ public final class YamcsManagement {
         hash = (37 * hash) + PERSISTENT_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getPersistent());
-      }
-      if (hasReplaySpec()) {
-        hash = (37 * hash) + REPLAYSPEC_FIELD_NUMBER;
-        hash = (53 * hash) + getReplaySpec().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -18667,7 +18318,6 @@ public final class YamcsManagement {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
-          getReplaySpecFieldBuilder();
         }
       }
       public Builder clear() {
@@ -18686,12 +18336,6 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000020);
         persistent_ = false;
         bitField0_ = (bitField0_ & ~0x00000040);
-        if (replaySpecBuilder_ == null) {
-          replaySpec_ = null;
-        } else {
-          replaySpecBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
 
@@ -18745,14 +18389,6 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000020;
         }
         result.persistent_ = persistent_;
-        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
-          to_bitField0_ |= 0x00000040;
-        }
-        if (replaySpecBuilder_ == null) {
-          result.replaySpec_ = replaySpec_;
-        } else {
-          result.replaySpec_ = replaySpecBuilder_.build();
-        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -18831,20 +18467,12 @@ public final class YamcsManagement {
         if (other.hasPersistent()) {
           setPersistent(other.getPersistent());
         }
-        if (other.hasReplaySpec()) {
-          mergeReplaySpec(other.getReplaySpec());
-        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
       public final boolean isInitialized() {
-        if (hasReplaySpec()) {
-          if (!getReplaySpec().isInitialized()) {
-            return false;
-          }
-        }
         return true;
       }
 
@@ -19443,160 +19071,6 @@ public final class YamcsManagement {
         persistent_ = false;
         onChanged();
         return this;
-      }
-
-      private org.yamcs.protobuf.Yamcs.ReplayRequest replaySpec_ = null;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          org.yamcs.protobuf.Yamcs.ReplayRequest, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder, org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder> replaySpecBuilder_;
-      /**
-       * <pre>
-       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-       * </pre>
-       *
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public boolean hasReplaySpec() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
-      }
-      /**
-       * <pre>
-       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-       * </pre>
-       *
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ReplayRequest getReplaySpec() {
-        if (replaySpecBuilder_ == null) {
-          return replaySpec_ == null ? org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance() : replaySpec_;
-        } else {
-          return replaySpecBuilder_.getMessage();
-        }
-      }
-      /**
-       * <pre>
-       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-       * </pre>
-       *
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setReplaySpec(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
-        if (replaySpecBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          replaySpec_ = value;
-          onChanged();
-        } else {
-          replaySpecBuilder_.setMessage(value);
-        }
-        bitField0_ |= 0x00000080;
-        return this;
-      }
-      /**
-       * <pre>
-       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-       * </pre>
-       *
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setReplaySpec(
-          org.yamcs.protobuf.Yamcs.ReplayRequest.Builder builderForValue) {
-        if (replaySpecBuilder_ == null) {
-          replaySpec_ = builderForValue.build();
-          onChanged();
-        } else {
-          replaySpecBuilder_.setMessage(builderForValue.build());
-        }
-        bitField0_ |= 0x00000080;
-        return this;
-      }
-      /**
-       * <pre>
-       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-       * </pre>
-       *
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder mergeReplaySpec(org.yamcs.protobuf.Yamcs.ReplayRequest value) {
-        if (replaySpecBuilder_ == null) {
-          if (((bitField0_ & 0x00000080) == 0x00000080) &&
-              replaySpec_ != null &&
-              replaySpec_ != org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance()) {
-            replaySpec_ =
-              org.yamcs.protobuf.Yamcs.ReplayRequest.newBuilder(replaySpec_).mergeFrom(value).buildPartial();
-          } else {
-            replaySpec_ = value;
-          }
-          onChanged();
-        } else {
-          replaySpecBuilder_.mergeFrom(value);
-        }
-        bitField0_ |= 0x00000080;
-        return this;
-      }
-      /**
-       * <pre>
-       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-       * </pre>
-       *
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearReplaySpec() {
-        if (replaySpecBuilder_ == null) {
-          replaySpec_ = null;
-          onChanged();
-        } else {
-          replaySpecBuilder_.clear();
-        }
-        bitField0_ = (bitField0_ & ~0x00000080);
-        return this;
-      }
-      /**
-       * <pre>
-       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-       * </pre>
-       *
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ReplayRequest.Builder getReplaySpecBuilder() {
-        bitField0_ |= 0x00000080;
-        onChanged();
-        return getReplaySpecFieldBuilder().getBuilder();
-      }
-      /**
-       * <pre>
-       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-       * </pre>
-       *
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder getReplaySpecOrBuilder() {
-        if (replaySpecBuilder_ != null) {
-          return replaySpecBuilder_.getMessageOrBuilder();
-        } else {
-          return replaySpec_ == null ?
-              org.yamcs.protobuf.Yamcs.ReplayRequest.getDefaultInstance() : replaySpec_;
-        }
-      }
-      /**
-       * <pre>
-       *used to be alternative to config but config can be used with a json or yaml encoded ReplayRequest
-       * </pre>
-       *
-       * <code>optional .yamcs.ReplayRequest replaySpec = 8 [deprecated = true];</code>
-       */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          org.yamcs.protobuf.Yamcs.ReplayRequest, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder, org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder> 
-          getReplaySpecFieldBuilder() {
-        if (replaySpecBuilder_ == null) {
-          replaySpecBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              org.yamcs.protobuf.Yamcs.ReplayRequest, org.yamcs.protobuf.Yamcs.ReplayRequest.Builder, org.yamcs.protobuf.Yamcs.ReplayRequestOrBuilder>(
-                  getReplaySpec(),
-                  getParentForChildren(),
-                  isClean());
-          replaySpec_ = null;
-        }
-        return replaySpecBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -24830,49 +24304,47 @@ public final class YamcsManagement {
       "\tloginTime\030\010 \001(\003\022\024\n\014loginTimeUTC\030\t \001(\t\"." +
       "\n\013ClientState\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNE" +
       "CTED\020\001\"3\n\023ObjectPrivilegeInfo\022\014\n\004type\030\001 " +
-      "\001(\t\022\016\n\006object\030\002 \003(\t\"\323\001\n\010UserInfo\022\r\n\005logi" +
+      "\001(\t\022\016\n\006object\030\002 \003(\t\"\265\001\n\010UserInfo\022\r\n\005logi" +
       "n\030\001 \001(\t\022/\n\nclientInfo\030\002 \003(\0132\033.yamcsManag" +
       "ement.ClientInfo\022\027\n\017systemPrivilege\030\013 \003(" +
       "\t\022=\n\017objectPrivilege\030\014 \003(\0132$.yamcsManage" +
       "ment.ObjectPrivilegeInfo\022\021\n\tsuperuser\030\r " +
-      "\001(\010\022\034\n\020systemPrivileges\030\010 \003(\tB\002\030\001\"\277\001\n\014Tm",
-      "Statistics\022\022\n\npacketName\030\001 \002(\t\022\027\n\017receiv" +
-      "edPackets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n" +
-      "\017lastReceivedUTC\030\010 \001(\t\022\026\n\016lastPacketTime" +
-      "\030\004 \001(\003\022\031\n\021lastPacketTimeUTC\030\007 \001(\t\022 \n\030sub" +
-      "scribedParameterCount\030\006 \001(\005\"\223\001\n\nStatisti" +
-      "cs\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProcessorName\030\002" +
-      " \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.yamcsManagement." +
-      "TmStatistics\022\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016las" +
-      "tUpdatedUTC\030\005 \001(\t\"\274\002\n\032ProcessorManagemen" +
-      "tRequest\022H\n\toperation\030\001 \001(\01625.yamcsManag",
-      "ement.ProcessorManagementRequest.Operati" +
-      "on\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004ty" +
-      "pe\030\004 \001(\t\022\016\n\006config\030\005 \001(\t\022\020\n\010clientId\030\006 \003" +
-      "(\005\022\031\n\npersistent\030\007 \001(\010:\005false\022,\n\nreplayS" +
-      "pec\030\010 \001(\0132\024.yamcs.ReplayRequestB\002\030\001\";\n\tO" +
-      "peration\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CONNEC" +
-      "T_TO_PROCESSOR\020\001\"\355\001\n\020ProcessorRequest\022>\n" +
-      "\toperation\030\001 \001(\0162+.yamcsManagement.Proce" +
-      "ssorRequest.Operation\022\020\n\010instance\030\002 \001(\t\022" +
-      "\014\n\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013repla",
-      "ySpeed\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\tOper" +
-      "ation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020" +
-      "\n\014CHANGE_SPEED\020\005\"\243\001\n\010LinkInfo\022\020\n\010instanc" +
-      "e\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004s" +
-      "pec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disabled\030\006 " +
-      "\001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026" +
-      "\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent\022-\n\004" +
-      "type\030\001 \001(\0162\037.yamcsManagement.LinkEvent.T" +
-      "ype\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsManagement." +
-      "LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014UNRE",
-      "GISTERED\020\002\022\013\n\007UPDATED\020\003\"\201\001\n\013ServiceInfo\022" +
-      "\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005state" +
-      "\030\003 \001(\0162\035.yamcsManagement.ServiceState\022\021\n" +
-      "\tclassName\030\004 \001(\t\022\021\n\tprocessor\030\005 \001(\t*\\\n\014S" +
-      "erviceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RU" +
-      "NNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n" +
-      "\006FAILED\020\005B\024\n\022org.yamcs.protobuf"
+      "\001(\010\"\277\001\n\014TmStatistics\022\022\n\npacketName\030\001 \002(\t",
+      "\022\027\n\017receivedPackets\030\002 \001(\003\022\024\n\014lastReceive" +
+      "d\030\003 \001(\003\022\027\n\017lastReceivedUTC\030\010 \001(\t\022\026\n\016last" +
+      "PacketTime\030\004 \001(\003\022\031\n\021lastPacketTimeUTC\030\007 " +
+      "\001(\t\022 \n\030subscribedParameterCount\030\006 \001(\005\"\223\001" +
+      "\n\nStatistics\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProce" +
+      "ssorName\030\002 \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.yamcsM" +
+      "anagement.TmStatistics\022\023\n\013lastUpdated\030\004 " +
+      "\001(\003\022\026\n\016lastUpdatedUTC\030\005 \001(\t\"\216\002\n\032Processo" +
+      "rManagementRequest\022H\n\toperation\030\001 \001(\01625." +
+      "yamcsManagement.ProcessorManagementReque",
+      "st.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003" +
+      " \001(\t\022\014\n\004type\030\004 \001(\t\022\016\n\006config\030\005 \001(\t\022\020\n\010cl" +
+      "ientId\030\006 \003(\005\022\031\n\npersistent\030\007 \001(\010:\005false\"" +
+      ";\n\tOperation\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CO" +
+      "NNECT_TO_PROCESSOR\020\001\"\355\001\n\020ProcessorReques" +
+      "t\022>\n\toperation\030\001 \001(\0162+.yamcsManagement.P" +
+      "rocessorRequest.Operation\022\020\n\010instance\030\002 " +
+      "\001(\t\022\014\n\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013r" +
+      "eplaySpeed\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\t" +
+      "Operation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK",
+      "\020\004\022\020\n\014CHANGE_SPEED\020\005\"\243\001\n\010LinkInfo\022\020\n\010ins" +
+      "tance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022" +
+      "\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disable" +
+      "d\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCount\030\010 \001" +
+      "(\003\022\026\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent" +
+      "\022-\n\004type\030\001 \001(\0162\037.yamcsManagement.LinkEve" +
+      "nt.Type\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsManagem" +
+      "ent.LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014" +
+      "UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"\201\001\n\013ServiceI" +
+      "nfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005s",
+      "tate\030\003 \001(\0162\035.yamcsManagement.ServiceStat" +
+      "e\022\021\n\tclassName\030\004 \001(\t\022\021\n\tprocessor\030\005 \001(\t*" +
+      "\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013" +
+      "\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020" +
+      "\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -24946,7 +24418,7 @@ public final class YamcsManagement {
     internal_static_yamcsManagement_UserInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcsManagement_UserInfo_descriptor,
-        new java.lang.String[] { "Login", "ClientInfo", "SystemPrivilege", "ObjectPrivilege", "Superuser", "SystemPrivileges", });
+        new java.lang.String[] { "Login", "ClientInfo", "SystemPrivilege", "ObjectPrivilege", "Superuser", });
     internal_static_yamcsManagement_TmStatistics_descriptor =
       getDescriptor().getMessageTypes().get(10);
     internal_static_yamcsManagement_TmStatistics_fieldAccessorTable = new
@@ -24964,7 +24436,7 @@ public final class YamcsManagement {
     internal_static_yamcsManagement_ProcessorManagementRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcsManagement_ProcessorManagementRequest_descriptor,
-        new java.lang.String[] { "Operation", "Instance", "Name", "Type", "Config", "ClientId", "Persistent", "ReplaySpec", });
+        new java.lang.String[] { "Operation", "Instance", "Name", "Type", "Config", "ClientId", "Persistent", });
     internal_static_yamcsManagement_ProcessorRequest_descriptor =
       getDescriptor().getMessageTypes().get(13);
     internal_static_yamcsManagement_ProcessorRequest_fieldAccessorTable = new

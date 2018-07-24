@@ -46,18 +46,11 @@ message ParameterValue {
   optional string acquisitionTimeUTC = 11;
   optional string generationTimeUTC = 12;
 
-  
-  //starting with Yamcs 3.3.0,  expirationTime is replaced by expireMillis below. 
-  // It used to be computed from the acquisitionTime; to emulate the old behaviour, simply do expirationTime = acquisitionTime+expireMillis. 
-  // However it might make more sensible to use the generation instead of the acquisition time (this is one reason for the change)
-  optional int64 expirationTime = 23 [deprecated = true];
-  optional string expirationTimeUTC = 24 [deprecated = true];
-
   // context-dependent ranges
   repeated mdb.AlarmRange alarmRange = 25;
 
   //how long (in milliseconds) this parameter value is valid
-  //Note that from Yamcs 3.3 there is an option when subscribing to parameters to get updated when the parameter values expire 
+  //Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
   optional int64 expireMillis = 26;
 }
 

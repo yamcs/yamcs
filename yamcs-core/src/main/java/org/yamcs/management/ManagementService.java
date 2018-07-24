@@ -195,9 +195,7 @@ public class ManagementService implements ProcessorListener {
             int n = 0;
 
             Object spec = null;
-            if (pmr.hasReplaySpec()) {
-                spec = pmr.getReplaySpec();
-            } else if (pmr.hasConfig()) {
+            if (pmr.hasConfig()) {
                 spec = pmr.getConfig();
             }
             processor = ProcessorFactory.create(pmr.getInstance(), pmr.getName(), pmr.getType(), username, spec);
