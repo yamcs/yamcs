@@ -18,18 +18,20 @@ import org.yamcs.security.SystemPrivilege;
 /**
  * Provides realtime command queue subscription via web.
  */
-public class CommandQueueResource extends AbstractWebSocketResource implements CommandQueueListener {
+public class CommandQueueResource implements WebSocketResource, CommandQueueListener {
 
     public static final String RESOURCE_NAME = "cqueues";
 
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
 
+    private ConnectedWebSocketClient client;
+
     private Processor processor;
     private volatile boolean subscribed = false;
 
     public CommandQueueResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
         processor = client.getProcessor();
     }
 
@@ -51,7 +53,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
 
     private WebSocketReply subscribe(int requestId) throws WebSocketException {
         WebSocketReply reply = WebSocketReply.ack(requestId);
-        wsHandler.sendReply(reply);
+        client.sendReply(reply);
 
         subscribed = true;
         ManagementService mservice = ManagementService.getInstance();
@@ -110,20 +112,18 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     }
 
     /**
-     * right after subcription send the full queeue content (commands included). Afterwards the clinets get notified by
+     * right after subcription send the full queue content (commands included). Afterwards the clients get notified by
      * command added/command removed when the queue gets modified.
-     *
-     * @param q
      */
     private void sendInitialUpdateQueue(CommandQueue q) {
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, true);
-        wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
+        client.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
     }
 
     @Override
     public void updateQueue(CommandQueue q) {
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, false);
-        wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
+        client.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
     }
 
     @Override
@@ -132,7 +132,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
         evtb.setType(Type.COMMAND_ADDED);
         evtb.setData(data);
-        wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
+        client.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
     }
 
     @Override
@@ -141,7 +141,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
         evtb.setType(Type.COMMAND_REJECTED);
         evtb.setData(data);
-        wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
+        client.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
     }
 
     @Override
@@ -150,6 +150,6 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
         evtb.setType(Type.COMMAND_SENT);
         evtb.setData(data);
-        wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
+        client.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
     }
 }

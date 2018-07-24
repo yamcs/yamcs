@@ -11,16 +11,18 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 /**
  * Provides lifecycle updates on one or all instances.
  */
-public class InstanceResource extends AbstractWebSocketResource implements ManagementListener {
+public class InstanceResource implements WebSocketResource, ManagementListener {
 
     public static final String RESOURCE_NAME = "instance";
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
 
+    private ConnectedWebSocketClient client;
+
     private volatile boolean subscribed;
 
     public InstanceResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
     }
 
     @Override
@@ -43,7 +45,7 @@ public class InstanceResource extends AbstractWebSocketResource implements Manag
     private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
 
-        wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
+        client.sendReply(new WebSocketReply(ctx.getRequestId()));
         ManagementService.getInstance().addManagementListener(this);
         subscribed = true;
         return null;
@@ -51,7 +53,7 @@ public class InstanceResource extends AbstractWebSocketResource implements Manag
 
     private WebSocketReply processUnsubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         ManagementService.getInstance().removeManagementListener(this);
-        wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
+        client.sendReply(new WebSocketReply(ctx.getRequestId()));
         return null;
     }
 
@@ -75,7 +77,7 @@ public class InstanceResource extends AbstractWebSocketResource implements Manag
     public void instanceStateChanged(YamcsServerInstance ysi) {
         if (subscribed) {
             YamcsInstance instanceInfo = ysi.getInstanceInfo();
-            wsHandler.sendData(ProtoDataType.INSTANCE, instanceInfo);
+            client.sendData(ProtoDataType.INSTANCE, instanceInfo);
         }
     }
 }

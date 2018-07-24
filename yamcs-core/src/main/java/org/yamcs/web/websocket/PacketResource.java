@@ -16,7 +16,7 @@ import com.google.protobuf.ByteString;
 /**
  * Provides realtime event subscription via web.
  */
-public class PacketResource extends AbstractWebSocketResource {
+public class PacketResource implements WebSocketResource {
 
     public static final String RESOURCE_NAME = "packets";
 
@@ -26,10 +26,12 @@ public class PacketResource extends AbstractWebSocketResource {
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
+    private ConnectedWebSocketClient client;
+
     private String yamcsInstance;
 
     public PacketResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
         Processor processor = client.getProcessor();
         if (processor != null) {
             yamcsInstance = processor.getInstance();
@@ -114,7 +116,7 @@ public class PacketResource extends AbstractWebSocketResource {
                             .setReceptionTime(receptionTime)
                             .setSequenceNumber(seqNumber)
                             .build();
-                    wsHandler.sendData(ProtoDataType.TM_PACKET, tm);
+                    client.sendData(ProtoDataType.TM_PACKET, tm);
                 }
 
                 @Override

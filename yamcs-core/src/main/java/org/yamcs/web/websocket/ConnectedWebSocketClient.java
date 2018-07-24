@@ -21,6 +21,8 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 
+import com.google.protobuf.Message;
+
 /**
  * Runs on the server side and oversees the life cycle of a client web socket connection. Combines multiple types of
  * subscriptions to keep them bundled as one client session.
@@ -29,7 +31,7 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
 
     private static final Logger log = LoggerFactory.getLogger(ConnectedWebSocketClient.class);
 
-    private List<AbstractWebSocketResource> resources = new CopyOnWriteArrayList<>();
+    private List<WebSocketResource> resources = new CopyOnWriteArrayList<>();
     private WebSocketFrameHandler wsHandler;
 
     public ConnectedWebSocketClient(User user, String applicationName, Processor processor,
@@ -59,7 +61,7 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         Processor oldProcessor = getProcessor();
         super.setProcessor(newProcessor);
 
-        for (AbstractWebSocketResource resource : resources) {
+        for (WebSocketResource resource : resources) {
             if (oldProcessor != null) {
                 resource.unselectProcessor();
             }
@@ -70,13 +72,17 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         sendConnectionInfo();
     }
 
-    public void registerResource(String route, AbstractWebSocketResource resource) {
+    public void registerResource(String route, WebSocketResource resource) {
         wsHandler.addResource(route, resource);
         resources.add(resource);
     }
 
-    public WebSocketFrameHandler getWebSocketFrameHandler() {
-        return wsHandler;
+    public void sendReply(WebSocketReply reply) {
+        wsHandler.sendReply(reply);
+    }
+
+    public <T extends Message> void sendData(ProtoDataType dataType, T data) {
+        wsHandler.sendData(dataType, data);
     }
 
     @Override
@@ -87,7 +93,7 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         ManagementService managementService = ManagementService.getInstance();
         managementService.unregisterClient(getId());
         managementService.removeManagementListener(this);
-        resources.forEach(AbstractWebSocketResource::socketClosed);
+        resources.forEach(WebSocketResource::socketClosed);
     }
 
     @Override

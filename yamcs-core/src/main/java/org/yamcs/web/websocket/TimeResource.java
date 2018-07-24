@@ -12,12 +12,14 @@ import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.utils.TimeEncoding;
 
-public class TimeResource extends AbstractWebSocketResource {
+public class TimeResource implements WebSocketResource {
 
     public static final String RESOURCE_NAME = "time";
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
     private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
+
+    private ConnectedWebSocketClient client;
 
     private Processor processor;
 
@@ -26,7 +28,7 @@ public class TimeResource extends AbstractWebSocketResource {
     private ScheduledFuture<?> future = null;
 
     public TimeResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
         processor = client.getProcessor();
     }
 
@@ -56,7 +58,7 @@ public class TimeResource extends AbstractWebSocketResource {
                         .setCurrentTime(currentTime)
                         .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
                         .build();
-                wsHandler.sendData(ProtoDataType.TIME_INFO, ti);
+                client.sendData(ProtoDataType.TIME_INFO, ti);
             }, 1, 1, TimeUnit.SECONDS);
         }
 
@@ -73,7 +75,7 @@ public class TimeResource extends AbstractWebSocketResource {
                 .build();
         reply.attachData(TimeResource.class.getSimpleName(), response);
 
-        wsHandler.sendReply(reply);
+        client.sendReply(reply);
         return null;
     }
 

@@ -4,6 +4,6 @@ public interface WebSocketResourceProvider {
 
     public String getRoute();
 
-    public AbstractWebSocketResource createForClient(ConnectedWebSocketClient client);
+    public WebSocketResource createForClient(ConnectedWebSocketClient client);
 
 }

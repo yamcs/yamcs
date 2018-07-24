@@ -56,7 +56,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     private HttpRequestInfo originalRequestInfo;
 
     // Provides access to the various resources served through this websocket
-    private Map<String, AbstractWebSocketResource> resourcesByName = new HashMap<>();
+    private Map<String, WebSocketResource> resourcesByName = new HashMap<>();
 
     // after how many consecutive dropped writes will the connection be closed
     private int connectionCloseNumDroppedMsg;
@@ -100,7 +100,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
         if (httpServer != null) { // Can happen in junit when not using yamcs.yaml
             for (WebSocketResourceProvider provider : httpServer.getWebSocketResourceProviders()) {
-                AbstractWebSocketResource resource = provider.createForClient(wsClient);
+                WebSocketResource resource = provider.createForClient(wsClient);
                 wsClient.registerResource(provider.getRoute(), resource);
             }
         }
@@ -146,7 +146,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
                     }
                     WebSocketDecodeContext msg = decoder.decodeMessage(binary);
 
-                    AbstractWebSocketResource resource = resourcesByName.get(msg.getResource());
+                    WebSocketResource resource = resourcesByName.get(msg.getResource());
                     if (resource != null) {
                         WebSocketReply reply = resource.processRequest(msg, decoder);
                         if (reply != null) {
@@ -190,7 +190,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         }
     }
 
-    void addResource(String name, AbstractWebSocketResource resource) {
+    void addResource(String name, WebSocketResource resource) {
         if (resourcesByName.containsKey(name)) {
             throw new ConfigurationException("A resource named '" + name + "' is already being served");
         }

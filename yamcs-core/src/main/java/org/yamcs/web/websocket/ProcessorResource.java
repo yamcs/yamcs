@@ -15,11 +15,13 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
 /**
  * Provides lifecycle updates on one or all processors.
  */
-public class ProcessorResource extends AbstractWebSocketResource implements ManagementListener {
+public class ProcessorResource implements WebSocketResource, ManagementListener {
 
     public static final String RESOURCE_NAME = "processor";
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
+
+    private ConnectedWebSocketClient client;
 
     private volatile boolean subscribed;
     private boolean allProcessors;
@@ -28,7 +30,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
     private Processor processor;
 
     public ProcessorResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
         processor = client.getProcessor();
     }
 
@@ -64,7 +66,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
                 .setProcessor(pinfo)
                 .build();
         reply.attachData("ProcessorSubscriptionResponse", response);
-        wsHandler.sendReply(reply);
+        client.sendReply(reply);
 
         ManagementService.getInstance().addManagementListener(this);
         subscribed = true;
@@ -73,7 +75,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
 
     private WebSocketReply processUnsubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         ManagementService.getInstance().removeManagementListener(this);
-        wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
+        client.sendReply(new WebSocketReply(ctx.getRequestId()));
         return null;
     }
 
@@ -91,7 +93,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
             return;
         }
-        wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
+        client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
     }
 
     @Override
@@ -102,7 +104,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
             return;
         }
-        wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
+        client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
     }
 
     @Override
@@ -113,7 +115,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
             return;
         }
-        wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
+        client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
     }
 
     @Override
@@ -122,7 +124,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         if (subscribed) {
             if (!allInstances && !allProcessors) {
                 ProcessorInfo processorInfo = ManagementGpbHelper.toProcessorInfo(processor);
-                wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
+                client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
             }
         }
     }

@@ -18,18 +18,20 @@ import org.yamcs.web.rest.YamcsToGpbAssembler;
 /**
  * Provides access to any Processor/Client info over web socket
  */
-public class ManagementResource extends AbstractWebSocketResource implements ManagementListener {
+public class ManagementResource implements WebSocketResource, ManagementListener {
 
     public static final String RESOURCE_NAME = "management";
 
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
 
+    private ConnectedWebSocketClient client;
+
     private boolean emitClientInfo;
     private boolean emitProcessorStatistics;
 
     public ManagementResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
     }
 
     @Override
@@ -63,17 +65,17 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             emitProcessorStatistics = !req.hasProcessorStatistics() || req.getProcessorStatistics();
         }
 
-        wsHandler.sendReply(WebSocketReply.ack(ctx.getRequestId()));
+        client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
 
         // Send current set of clients
         if (emitClientInfo) {
             Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
-            for (ConnectedClient client : clients) {
-                ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+            for (ConnectedClient otherClient : clients) {
+                ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(otherClient, ClientState.CONNECTED);
                 clientInfo = ClientInfo.newBuilder(clientInfo)
                         .setCurrentClient(clientInfo.getId() == client.getId())
                         .build();
-                wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
+                client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
             }
         }
         ManagementService.getInstance().addManagementListener(this);
@@ -82,7 +84,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
 
     private WebSocketReply processUnsubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         ManagementService.getInstance().removeManagementListener(this);
-        wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
+        client.sendReply(new WebSocketReply(ctx.getRequestId()));
         return null;
     }
 
@@ -109,44 +111,44 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     }
 
     @Override
-    public void clientRegistered(ConnectedClient client) {
+    public void clientRegistered(ConnectedClient newClient) {
         if (emitClientInfo) {
-            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(newClient, ClientState.CONNECTED);
             clientInfo = ClientInfo.newBuilder(clientInfo)
                     .setCurrentClient(client.getId() == clientInfo.getId())
                     .build();
-            wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
+            client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }
 
     @Override
-    public void clientInfoChanged(ConnectedClient client) {
+    public void clientInfoChanged(ConnectedClient changedClient) {
         if (emitClientInfo) {
-            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(changedClient, ClientState.CONNECTED);
             clientInfo = ClientInfo.newBuilder(clientInfo)
                     .setCurrentClient(client.getId() == clientInfo.getId())
                     .build();
-            wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
+            client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }
 
     @Override
-    public void clientUnregistered(ConnectedClient client) {
-        if (this.client == client) {
+    public void clientUnregistered(ConnectedClient oldClient) {
+        if (this.client == oldClient) {
             return;
         }
 
         if (emitClientInfo) {
-            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.DISCONNECTED);
+            ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(oldClient, ClientState.DISCONNECTED);
             clientInfo = ClientInfo.newBuilder(clientInfo).setCurrentClient(false).build();
-            wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
+            client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }
 
     @Override
     public void statisticsUpdated(Processor processor, Statistics stats) {
         if (emitProcessorStatistics) {
-            wsHandler.sendData(ProtoDataType.PROCESSING_STATISTICS, stats);
+            client.sendData(ProtoDataType.PROCESSING_STATISTICS, stats);
         }
     }
 

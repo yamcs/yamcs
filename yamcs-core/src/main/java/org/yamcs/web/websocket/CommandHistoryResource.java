@@ -16,15 +16,17 @@ import org.yamcs.utils.ValueUtility;
 /**
  * Provides realtime command history subscription via web.
  */
-public class CommandHistoryResource extends AbstractWebSocketResource implements CommandHistoryConsumer {
+public class CommandHistoryResource implements WebSocketResource, CommandHistoryConsumer {
 
     public static final String RESOURCE_NAME = "cmdhistory";
+
+    private ConnectedWebSocketClient client;
 
     private CommandHistoryFilter subscription;
     private CommandHistoryRequestManager commandHistoryRequestManager;
 
     public CommandHistoryResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
         Processor processor = client.getProcessor();
         if (processor != null && processor.hasCommanding()) {
             commandHistoryRequestManager = processor.getCommandHistoryManager();
@@ -73,7 +75,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
     public void addedCommand(PreparedCommand pc) {
         CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId())
                 .addAllAttr(pc.getAttributes()).build();
-        wsHandler.sendData(ProtoDataType.CMD_HISTORY, entry);
+        client.sendData(ProtoDataType.CMD_HISTORY, entry);
     }
 
     @Override
@@ -81,7 +83,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
         CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key)
                 .setValue(ValueUtility.toGbp(value)).build();
         CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(cmdId).addAttr(cha).build();
-        wsHandler.sendData(ProtoDataType.CMD_HISTORY, entry);
+        client.sendData(ProtoDataType.CMD_HISTORY, entry);
     }
 
     @Override

@@ -12,18 +12,20 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 /**
  * Provides realtime data-link subscription via web.
  */
-public class LinkResource extends AbstractWebSocketResource implements LinkListener {
+public class LinkResource implements WebSocketResource, LinkListener {
 
     public static final String RESOURCE_NAME = "links";
 
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
 
+    private ConnectedWebSocketClient client;
+
     // Instance requested by the user. This should not update when the processor changes.
     private String instance;
 
     public LinkResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
     }
 
     @Override
@@ -50,7 +52,7 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     private WebSocketReply subscribe(int requestId) throws WebSocketException {
         ManagementService mservice = ManagementService.getInstance();
 
-        wsHandler.sendReply(WebSocketReply.ack(requestId));
+        client.sendReply(WebSocketReply.ack(requestId));
 
         for (LinkInfo linkInfo : mservice.getLinkInfo()) {
             if (instance == null || instance.equals(linkInfo.getInstance())) {
@@ -108,7 +110,7 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
             LinkEvent.Builder linkb = LinkEvent.newBuilder();
             linkb.setType(type);
             linkb.setLinkInfo(linkInfo);
-            wsHandler.sendData(ProtoDataType.LINK_EVENT, linkb.build());
+            client.sendData(ProtoDataType.LINK_EVENT, linkb.build());
         }
     }
 }

@@ -35,7 +35,7 @@ import org.yamcs.utils.StringConverter;
  * @author nm
  *
  */
-public class ParameterResource extends AbstractWebSocketResource implements ParameterWithIdConsumer {
+public class ParameterResource implements WebSocketResource, ParameterWithIdConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(ParameterResource.class);
     public static final String RESOURCE_NAME = "parameter";
@@ -45,13 +45,15 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     public static final String WSR_SUBSCRIBE_ALL = "subscribeAll";
     public static final String WSR_UNSUBSCRIBE_ALL = "unsubscribeAll";
 
+    private ConnectedWebSocketClient client;
+
     private int firstSubscriptionId = -1;
     private int allSubscriptionId = -1;
 
     private ParameterWithIdRequestHelper pidrm;
 
     public ParameterResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
         Processor processor = client.getProcessor();
         if (processor != null) {
             pidrm = new ParameterWithIdRequestHelper(processor.getParameterRequestManager(), this);
@@ -146,7 +148,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                     reply.attachData(ParameterSubscriptionResponse.class.getSimpleName(), psr);
                 }
             }
-            wsHandler.sendReply(reply);
+            client.sendReply(reply);
             if ((!req.hasSendFromCache() || req.getSendFromCache())) {
                 List<ParameterValueWithId> pvlist = pidrm.getValuesFromCache(idList, user);
                 if (!pvlist.isEmpty()) {
@@ -214,20 +216,17 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     }
 
     @Override
-    public void update(int subscrId, List<ParameterValueWithId> paramList) {
-        if (wsHandler == null) {
-            return;
-        }
+    public void update(int subscriptionId, List<ParameterValueWithId> paramList) {
         if (paramList == null || paramList.isEmpty()) {
             return;
         }
         ParameterData.Builder pd = ParameterData.newBuilder()
-                .setSubscriptionId(subscrId);
+                .setSubscriptionId(subscriptionId);
         for (ParameterValueWithId pvwi : paramList) {
             ParameterValue pv = pvwi.getParameterValue();
             pd.addParameter(pv.toGpb(pvwi.getId()));
         }
-        wsHandler.sendData(ProtoDataType.PARAMETER, pd.build());
+        client.sendData(ProtoDataType.PARAMETER, pd.build());
     }
 
     @Override
@@ -248,7 +247,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                             .setAcquisitionTime(now)
                             .setAcquisitionStatus(AcquisitionStatus.INVALID).build());
                 }
-                wsHandler.sendData(ProtoDataType.PARAMETER, pd.build());
+                client.sendData(ProtoDataType.PARAMETER, pd.build());
             }
         } catch (NoPermissionException e) {
             throw new ProcessorException("No permission", e);
@@ -257,6 +256,8 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
 
     @Override
     public void socketClosed() {
-        pidrm.quit();
+        if (pidrm != null) {
+            pidrm.quit();
+        }
     }
 }

@@ -15,18 +15,20 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 /**
  * Provides realtime event subscription via web.
  */
-public class EventResource extends AbstractWebSocketResource {
+public class EventResource implements WebSocketResource {
 
     public static final String RESOURCE_NAME = "events";
 
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
 
+    private ConnectedWebSocketClient client;
+
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
     public EventResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
         Processor processor = client.getProcessor();
         if (processor != null) {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
@@ -87,7 +89,7 @@ public class EventResource extends AbstractWebSocketResource {
                             .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
                             .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
                             .build();
-                    wsHandler.sendData(ProtoDataType.EVENT, event);
+                    client.sendData(ProtoDataType.EVENT, event);
                 }
 
                 @Override

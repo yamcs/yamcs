@@ -26,7 +26,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 /**
  * Capable of producing and consuming yarch Stream data (Tuples) over web socket
  */
-public class StreamResource extends AbstractWebSocketResource {
+public class StreamResource implements WebSocketResource {
 
     private static final Logger log = LoggerFactory.getLogger(StreamResource.class);
     public static final String RESOURCE_NAME = "stream";
@@ -34,12 +34,14 @@ public class StreamResource extends AbstractWebSocketResource {
     public static final String OP_subscribe = "subscribe";
     public static final String OP_publish = "publish";
 
+    private ConnectedWebSocketClient client;
+
     private List<Subscription> subscriptions = new ArrayList<>();
 
     private String yamcsInstance;
 
     public StreamResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
         Processor processor = client.getProcessor();
         if (processor != null) {
             yamcsInstance = processor.getInstance();
@@ -78,7 +80,7 @@ public class StreamResource extends AbstractWebSocketResource {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 StreamData data = ArchiveHelper.toStreamData(stream, tuple);
-                wsHandler.sendData(ProtoDataType.STREAM_DATA, data);
+                client.sendData(ProtoDataType.STREAM_DATA, data);
             }
 
             @Override

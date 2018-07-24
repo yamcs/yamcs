@@ -12,15 +12,18 @@ import org.yamcs.web.rest.processor.ProcessorHelper;
 /**
  * Provides realtime alarm subscription via web.
  */
-public class AlarmResource extends AbstractWebSocketResource implements AlarmListener {
+public class AlarmResource implements WebSocketResource, AlarmListener {
 
     public static final String RESOURCE_NAME = "alarms";
+
+    private ConnectedWebSocketClient client;
+
     private volatile boolean subscribed = false;
 
     private AlarmServer alarmServer;
 
     public AlarmResource(ConnectedWebSocketClient client) {
-        super(client);
+        this.client = client;
         Processor processor = client.getProcessor();
         if (processor != null && processor.hasAlarmServer()) {
             alarmServer = processor.getParameterRequestManager().getAlarmServer();
@@ -41,7 +44,7 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
     }
 
     private WebSocketReply subscribe(int requestId) throws WebSocketException {
-        wsHandler.sendReply(WebSocketReply.ack(requestId));
+        client.sendReply(WebSocketReply.ack(requestId));
         subscribed = true;
         applySubscription();
         return null;
@@ -116,6 +119,6 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
 
     private void sendAlarm(AlarmData.Type type, ActiveAlarm activeAlarm) {
         AlarmData alarmData = ProcessorHelper.toAlarmData(type, activeAlarm);
-        wsHandler.sendData(ProtoDataType.ALARM_DATA, alarmData);
+        client.sendData(ProtoDataType.ALARM_DATA, alarmData);
     }
 }
