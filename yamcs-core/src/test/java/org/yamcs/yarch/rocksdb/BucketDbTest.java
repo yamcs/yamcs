@@ -31,7 +31,7 @@ public class BucketDbTest {
     @Test
     public void test1() throws Exception {
         String dir = testDir+"/tablespace1";
-        Tablespace tablespace = new Tablespace("tablespace1", (byte)0);
+        Tablespace tablespace = new Tablespace("tablespace1");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
         
@@ -69,7 +69,7 @@ public class BucketDbTest {
         
         //closing and reopening
         tablespace.close();
-        tablespace = new Tablespace("tablespace1bis", (byte)0);
+        tablespace = new Tablespace("tablespace1bis");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
         bucketDb = new RdbBucketDatabase("test", tablespace);
@@ -107,7 +107,7 @@ public class BucketDbTest {
     @Test
     public void test2() throws Exception {
         String dir = testDir+"/tablespace2";
-        Tablespace tablespace = new Tablespace("tablespace2", (byte)0);
+        Tablespace tablespace = new Tablespace("tablespace2");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
         
@@ -127,7 +127,7 @@ public class BucketDbTest {
         tablespace.close();
         
         //closing and reopening
-        tablespace = new Tablespace("tablespace2bis", (byte)0);
+        tablespace = new Tablespace("tablespace2bis");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
         bucketDb = new RdbBucketDatabase("test", tablespace);
@@ -174,7 +174,7 @@ public class BucketDbTest {
     
     private RdbBucketDatabase createDb(int n) throws Exception {
         String dir = testDir+"/tablespace"+n;
-        Tablespace tablespace = new Tablespace("tablespace"+n, (byte)0);
+        Tablespace tablespace = new Tablespace("tablespace"+n);
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
         return new RdbBucketDatabase("test", tablespace);

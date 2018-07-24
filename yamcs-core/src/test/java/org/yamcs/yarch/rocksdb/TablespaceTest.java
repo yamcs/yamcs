@@ -28,7 +28,7 @@ public class TablespaceTest {
     @Test
     public void test1() throws Exception {
         String dir = testDir+"/tablespace1";
-        Tablespace tablespace = new Tablespace("tablespace1", (byte)0);
+        Tablespace tablespace = new Tablespace("tablespace1");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
         
@@ -47,11 +47,11 @@ public class TablespaceTest {
         tablespace.close();
         
         
-        Tablespace tablespace2 = new Tablespace("tablespace2", (byte)0);
+        Tablespace tablespace2 = new Tablespace("tablespace2");
         tablespace2.setCustomDataDir(dir);
         tablespace2.loadDb(false);
         verify1(tablespace2, tbl3p1, tbl3p2);
-        assertEquals(4, tablespace2.maxTbsIndex);
+        assertEquals(5, tablespace2.maxTbsIndex);
     }
     
     private void verify1(Tablespace tablespace,  byte[] tbl3p1,  byte[] tbl3p2) throws RocksDBException, IOException {
@@ -93,7 +93,7 @@ public class TablespaceTest {
     @Test
     public void test2() throws Exception {
         String dir = testDir+"/tablespace2";
-        Tablespace tablespace = new Tablespace("tablespace2", (byte)1);
+        Tablespace tablespace = new Tablespace("tablespace2");
         tablespace.setCustomDataDir(dir);
         tablespace.loadDb(false);
 
@@ -103,7 +103,7 @@ public class TablespaceTest {
         
         tablespace.close();
         
-        Tablespace tablespace2 = new Tablespace("tablespace2", (byte)1);
+        Tablespace tablespace2 = new Tablespace("tablespace2");
         tablespace2.setCustomDataDir(dir);
         tablespace2.loadDb(false);
     }

@@ -3,6 +3,7 @@ package org.yamcs.archive;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -72,12 +73,20 @@ public class IndexServer extends AbstractService implements YamcsService {
 
     @Override
     protected void doStart() {
+        for (StreamConfigEntry sce : getStreams()) {
+            subscribe(sce);
+        }
+        notifyStarted();
+    }
+    
+    private List<StreamConfigEntry> getStreams() {
+        List<StreamConfigEntry> r = new ArrayList<>();
         if (!readonly) {
             StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
             if (config == null) {
                 List<StreamConfigEntry> sceList = sc.getEntries(StandardStreamType.tm);
                 for (StreamConfigEntry sce : sceList) {
-                    subscribe(sce);
+                    r.add(sce);
                 }
             } else {
                 List<String> streamNames = YConfiguration.getList(config, "streams");
@@ -86,17 +95,19 @@ public class IndexServer extends AbstractService implements YamcsService {
                     if (sce == null) {
                         throw new ConfigurationException("No stream config found for '" + sn + "'");
                     }
-                    subscribe(sce);
+                    r.add(sce);
                 }
             }
         }
-
-        notifyStarted();
+        return r;
     }
 
     @Override
     protected void doStop() {
         try {
+            for (StreamConfigEntry sce : getStreams()) {
+                unsubscribe(sce);
+            }
             tmIndexer.close();
             tagDb.close();
             notifyStopped();
@@ -133,7 +144,16 @@ public class IndexServer extends AbstractService implements YamcsService {
         IndexRequestProcessor p = new IndexRequestProcessor(tmIndexer, req, listener);
         executor.submit(p);
     }
-
+    
+    private void unsubscribe(StreamConfigEntry sce) {
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        Stream tmStream = ydb.getStream(sce.getName());
+        if (tmStream == null) {
+            return;
+        }
+        tmStream.removeSubscriber(tmIndexer);
+    }
+    
     private void subscribe(StreamConfigEntry sce) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         Stream tmStream = ydb.getStream(sce.getName());

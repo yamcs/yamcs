@@ -16,7 +16,7 @@ public class ParameterGroupIdMapTest {
         File f = new File("/tmp/TestParameterGroupIdMap_test1");
         FileUtils.deleteRecursively(f.toPath());
         
-        Tablespace tablespace = new Tablespace("test1", (byte) 0);
+        Tablespace tablespace = new Tablespace("test1");
         tablespace.setCustomDataDir(f.getAbsolutePath());
         tablespace.loadDb(false);
         

@@ -74,7 +74,7 @@ public class ParameterArchiveV2 extends AbstractService implements YamcsService 
         this.yamcsInstance = instance;
         this.timeService = YamcsServer.getTimeService(instance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        tablespace = RdbStorageEngine.getInstance().getTablespace(ydb.getTablespaceName());
+        tablespace = RdbStorageEngine.getInstance().getTablespace(ydb);
         partitioningSchema = ydb.getDefaultPartitioningSchema();
 
         if (args != null) {

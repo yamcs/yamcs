@@ -1,12 +1,8 @@
 package org.yamcs.yarch.rocksdb;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.rocksdb.RocksDB;
@@ -28,7 +24,6 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.rocksdb.RdbHistogramIterator;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
-import org.yaml.snakeyaml.Yaml;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
@@ -65,12 +60,13 @@ public class RdbStorageEngine implements StorageEngine {
             }
             for (File f : dirFiles) {
                 String fn = f.getName();
-                if (fn.endsWith(".tbs")) {
+                if (fn.endsWith(".rdb")) {
                     try {
-                        Tablespace tablespace = deserializeTablespace(f);
+                        String name = fn.substring(0, fn.length()-4);
+                        Tablespace tablespace = new Tablespace(name);
                         tablespace.loadDb(readOnly);
                         tablespaces.put(tablespace.getName(), tablespace);
-                    } catch (IOException | RocksDBException e) {
+                    } catch (IOException e) {
                         log.warn("Got exception when reading the table definition from {}: ", f, e);
                         throw new YarchException("Got exception when reading the table definition from " + f + ": ", e);
                     }
@@ -153,7 +149,7 @@ public class RdbStorageEngine implements StorageEngine {
         RdbTagDb rdbTagDb = tagDbs.get(ydb.getName());
         if(rdbTagDb==null) {
             try {
-                rdbTagDb = new RdbTagDb(ydb.getName(), getTablespace(ydb.getTablespaceName()));
+                rdbTagDb = new RdbTagDb(ydb.getName(), getTablespace(ydb));
                 tagDbs.put(ydb.getName(), rdbTagDb);
             } catch (RocksDBException e) {
                 throw new YarchException("Cannot create tag db",e);
@@ -162,7 +158,12 @@ public class RdbStorageEngine implements StorageEngine {
         return rdbTagDb;
     }
 
-    private synchronized Tablespace getTablespace(YarchDatabaseInstance ydb) {
+    /**
+     * Create and/or get the tablespace for the yarch database instance.
+     * @param ydb
+     * @return
+     */
+    public synchronized Tablespace getTablespace(YarchDatabaseInstance ydb) {
         String tablespaceName = ydb.getTablespaceName();
         if (tablespaces.containsKey(tablespaceName)) {
             return tablespaces.get(tablespaceName);
@@ -189,45 +190,18 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     public synchronized Tablespace createTablespace(String tablespaceName) {
-        log.info("Creating tablespace {}", tablespaceName);
-        Tablespace t = new Tablespace(tablespaceName, (byte)0);
-
-        String fn = YarchDatabase.getDataDir() + "/" + tablespaceName + ".tbs";
-        try (FileOutputStream fos = new FileOutputStream(fn)) {
-            Yaml yaml = new Yaml(new TablespaceRepresenter());
-            Writer w = new BufferedWriter(new OutputStreamWriter(fos));
-            yaml.dump(t, w);
-            w.flush();
-            fos.getFD().sync();
-            w.close();
+        log.info("Creating or loading tablespace {}", tablespaceName);
+        Tablespace t = new Tablespace(tablespaceName);
+        try {
             t.loadDb(false);
-        } catch (IOException | RocksDBException e) {
-            log.error("Got exception when writing tablespapce definition to {} ", fn, e);
+        } catch (IOException e) {
+            log.error("Got exception when creating or loading tablespapce ", e);
             YamcsServer.getGlobalCrashHandler().handleCrash("RdbStorageEngine",
-                    "Cannot write tablespace definition to " + fn + " :" + e);
-            throw new RuntimeException(e);
+                    "Error creating or loading tablespace:" + e);
+            throw new UncheckedIOException(e);
         }
-
         tablespaces.put(tablespaceName, t);
         return t;
-    }
-
-    private Tablespace deserializeTablespace(File f) throws IOException {
-        String fn = f.getName();
-
-        try (FileInputStream fis = new FileInputStream(f)) {
-            String tablespaceName = fn.substring(0, fn.length() - 4);
-            Yaml yaml = new Yaml(new TablespaceConstructor(tablespaceName));
-            Object o = yaml.load(fis);
-            if (!(o instanceof Tablespace)) {
-                fis.close();
-                throw new IOException("Cannot load tablespace definition from " + f + ": object is "
-                        + o.getClass().getName() + "; should be " + Tablespace.class.getName());
-            }
-            Tablespace tablespace = (Tablespace) o;
-            fis.close();
-            return tablespace;
-        }
     }
 
     /**

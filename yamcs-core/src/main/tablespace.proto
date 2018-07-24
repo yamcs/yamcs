@@ -40,8 +40,12 @@ message TablespaceRecord {
      TAGDB = 7;
 
      //used to store bucket and user objects
-     // relevant information: instanceName, bucketName
+     // relevant information: instanceName, bucketProperties
      BUCKET = 8;
+
+    //used to store CCSDS TM index
+    //relevant information: instanceName
+    CCSDS_TM_INDEX = 9;
   }
   optional uint32 tbsIndex = 1;
   optional Type type = 2;
@@ -74,7 +78,7 @@ message TablespaceRecord {
   //partitioning schema used currently for parameter archive (for tables is stored in the .def file)
   optional string partitioningSchema = 10;
   
-  //bucketName
+  //bucketProperties
   optional BucketProperties bucketProperties = 11;
 }
 //associated to each bucket

@@ -112,7 +112,7 @@ public class XtceTmRecorder extends AbstractService implements YamcsService {
             for (StreamConfigEntry sce : sceList) {
                 createRecorder(sce);
             }
-        } else if (config != null && config.containsKey("streams")) {
+        } else if (config.containsKey("streams")) {
             List<String> streamNames = YConfiguration.getList(config, "streams");
             for (String sn : streamNames) {
                 StreamConfigEntry sce = sc.getEntry(StandardStreamType.tm, sn);

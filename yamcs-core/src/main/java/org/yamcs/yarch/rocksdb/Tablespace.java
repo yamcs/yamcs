@@ -24,7 +24,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import static org.yamcs.utils.ByteArrayUtils.decodeInt;
 import static org.yamcs.utils.ByteArrayUtils.encodeInt;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 
 /**
  * 
@@ -59,13 +58,6 @@ import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 public class Tablespace {
     static Logger log = LoggerFactory.getLogger(Tablespace.class.getName());
 
-    // used as the first bye of the tbsIndex
-    // it doesn't need to be unique but if it is, it will make it easier to move
-    // tables from one tablespace to another
-    // (basically a table can be moved if the tbsIndex doesn't overlap with
-    // another record from the table)
-    private final byte id;
-
     // unique name for this tablespace
     private final String name;
 
@@ -84,54 +76,53 @@ public class Tablespace {
 
     RDBFactory rdbFactory;
 
-    public Tablespace(String name, byte id) {
+    public Tablespace(String name) {
         this.name = name;
-        this.id = id;
-
     }
 
-    public void loadDb(boolean readonly) throws IOException, RocksDBException {
+    public void loadDb(boolean readonly) throws IOException {
         String dbDir = getDataDir();
         rdbFactory = RDBFactory.getInstance(dbDir);
         File f = new File(dbDir + "/CURRENT");
-        if (f.exists()) {
-            log.debug("Opening existing database {}", dbDir);
-            db = rdbFactory.getRdb(readonly);
-            cfMetadata = db.getColumnFamilyHandle(CF_METADATA);
-            if (cfMetadata == null) {
-                throw new IOException("Existing tablespace database '" + dbDir
-                        + "' does not contain a column family named '" + CF_METADATA);
-            }
+        try {
+            if (f.exists()) {
+                log.debug("Opening existing database {}", dbDir);
+                db = rdbFactory.getRdb(readonly);
+                cfMetadata = db.getColumnFamilyHandle(CF_METADATA);
+                if (cfMetadata == null) {
+                    throw new IOException("Existing tablespace database '" + dbDir
+                            + "' does not contain a column family named '" + CF_METADATA);
+                }
 
-            byte[] value = db.get(cfMetadata, METADATA_KEY_MAX_TBS_VERSION);
-            if (value == null) {
-                throw new DatabaseCorruptionException(
-                        "No (version, maxTbsIndex) record found in the metadata");
+                byte[] value = db.get(cfMetadata, METADATA_KEY_MAX_TBS_VERSION);
+                if (value == null) {
+                    throw new DatabaseCorruptionException(
+                            "No (version, maxTbsIndex) record found in the metadata");
+                }
+                if (value[0] != METADATA_VERSION) {
+                    throw new DatabaseCorruptionException(
+                            "Wrong metadata version " + value[0] + " expected " + METADATA_VERSION);
+                }
+                maxTbsIndex = Integer.toUnsignedLong(decodeInt(value, 1));
+                log.info("Opened tablespace database {}, num records:{}, num metadata records: {}, maxTbsIndex: {}",
+                        dbDir,
+                        db.getApproxNumRecords(), db.getApproxNumRecords(cfMetadata), maxTbsIndex);
+            } else {
+                if (readonly) {
+                    throw new IllegalStateException("Cannot create a new db when readonly is set to true");
+                }
+                log.info("Creating database at {}", dbDir);
+                db = rdbFactory.getRdb(readonly);
+                cfMetadata = db.createColumnFamily(CF_METADATA);
+                initMaxTbsIndex();
             }
-            if (value[0] != METADATA_VERSION) {
-                throw new DatabaseCorruptionException(
-                        "Wrong metadata version " + value[0] + " expected " + METADATA_VERSION);
-            }
-            maxTbsIndex = Integer.toUnsignedLong(decodeInt(value, 1));
-            log.info("Opened tablespace database {}, num records:{}, num metadata records: {}, maxTbsIndex: {}", dbDir,
-                    db.getApproxNumRecords(), db.getApproxNumRecords(cfMetadata), maxTbsIndex);
-        } else {
-            if (readonly) {
-                throw new IllegalStateException("Cannot create a new db when readonly is set to true");
-            }
-            log.info("Creating database at {}", dbDir);
-            db = rdbFactory.getRdb(readonly);
-            cfMetadata = db.createColumnFamily(CF_METADATA);
-            initMaxTbsIndex();
+        } catch (RocksDBException e) {
+            throw new IOException(e);
         }
     }
 
     public String getName() {
         return name;
-    }
-
-    public byte getId() {
-        return id;
     }
 
     /**
@@ -162,7 +153,7 @@ public class Tablespace {
         try (AscendingRangeIterator arit = new AscendingRangeIterator(db.newIterator(cfMetadata), rangeStart, false,
                 rangeStart, false)) {
             while (arit.isValid()) {
-            
+
                 TablespaceRecord.Builder tr;
                 try {
                     tr = TablespaceRecord.newBuilder().mergeFrom(arit.value());
@@ -228,12 +219,13 @@ public class Tablespace {
         writeBatch.put(cfMetadata, getMetadataKey(tr.getType(), tr.getTbsIndex()), tr.toByteArray());
         return tr;
     }
+
     public String getCustomDataDir() {
         return customDataDir;
     }
 
     private void initMaxTbsIndex() throws RocksDBException {
-        maxTbsIndex = (id << 24) - 1;
+        maxTbsIndex = 0;
         getNextTbsIndex();
     }
 
@@ -250,7 +242,7 @@ public class Tablespace {
      * (Creates) and returns a database in the given partition directory. If the directory is null, return then main
      * tablespace db
      * 
-     * @param partitionDir 
+     * @param partitionDir
      * @param readOnly
      * @throws IOException
      */
@@ -294,7 +286,8 @@ public class Tablespace {
     }
 
     /**
-     * Removes the tbsIndex from the metadata and all the associated data from the main db (data might still be present in the partitions)
+     * Removes the tbsIndex from the metadata and all the associated data from the main db (data might still be present
+     * in the partitions)
      * 
      * @param type
      * @param tbsIndex
@@ -307,14 +300,16 @@ public class Tablespace {
             byte[] beginKey = new byte[TBS_INDEX_SIZE];
             byte[] endKey = new byte[TBS_INDEX_SIZE];
             ByteArrayUtils.encodeInt(tbsIndex, beginKey, 0);
-            ByteArrayUtils.encodeInt(tbsIndex+1, endKey, 0);
+            ByteArrayUtils.encodeInt(tbsIndex + 1, endKey, 0);
             wb.deleteRange(beginKey, endKey);
             db.getDb().write(wo, wb);
         }
     }
 
     /**
-     * Removes the tbs indices with ALL the associated data from the main db (data might still be present in the partitions)
+     * Removes the tbs indices with ALL the associated data from the main db (data might still be present in the
+     * partitions)
+     * 
      * @param type
      * @param tbsIndexArray
      * @throws RocksDBException
@@ -328,7 +323,7 @@ public class Tablespace {
                 byte[] beginKey = new byte[TBS_INDEX_SIZE];
                 byte[] endKey = new byte[TBS_INDEX_SIZE];
                 ByteArrayUtils.encodeInt(tbsIndex, beginKey, 0);
-                ByteArrayUtils.encodeInt(tbsIndex+1, endKey, 0);
+                ByteArrayUtils.encodeInt(tbsIndex + 1, endKey, 0);
                 wb.deleteRange(beginKey, endKey);
             }
             db.getDb().write(wo, wb);
