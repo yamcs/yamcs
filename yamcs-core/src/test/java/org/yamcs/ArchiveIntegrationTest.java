@@ -31,9 +31,9 @@ import org.yamcs.protobuf.Table.Cell;
 import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Table.TableLoadResponse;
+import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.web.websocket.ParameterResource;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
@@ -82,11 +82,12 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
         // assertEquals("2015-01-01T10:59:59.000", p1_1_6.getGenerationTimeUTC());
 
-        ClientInfo cinfo = getClientInfo();
+        ConnectionInfo connectionInfo = wsClient.getConnectionInfo();
+        assertNotNull(connectionInfo);
 
         // create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
-                .addClientId(cinfo.getId())
+                .addClientId(connectionInfo.getClientId())
                 .setName("testReplay")
                 .setType("Archive")
                 .setConfig("{\"utcStart\": \"2015-01-01T10:01:00\", \"utcStop\": \"2015-01-01T10:05:00\"}")
@@ -94,8 +95,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(prequest)).get();
 
-        cinfo = getClientInfo();
-        assertEquals("testReplay", cinfo.getProcessorName());
+        connectionInfo = wsClient.getConnectionInfo();
+        assertEquals("testReplay", connectionInfo.getProcessor().getName());
 
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         assertNotNull(pdata);
@@ -139,12 +140,12 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
         // go back to realtime
         EditClientRequest pcrequest = EditClientRequest.newBuilder().setProcessor("realtime").build();
-        restClient.doRequest("/clients/" + cinfo.getId(), HttpMethod.PATCH, toJson(pcrequest)).get();
+        restClient.doRequest("/clients/" + connectionInfo.getClientId(), HttpMethod.PATCH, toJson(pcrequest)).get();
 
-        cinfo = getClientInfo();
-        assertEquals("realtime", cinfo.getProcessorName());
+        connectionInfo = wsClient.getConnectionInfo();
+        assertEquals("realtime", connectionInfo.getProcessor().getName());
     }
-    
+
     @Test
     public void testReplayWithPpExclusion() throws Exception {
         generatePkt13AndPps("2015-02-01T10:00:00", 300);
@@ -166,11 +167,11 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
         // assertEquals("2015-01-01T10:59:59.000", p1_1_6.getGenerationTimeUTC());
 
-        ClientInfo cinfo = getClientInfo();
+        ConnectionInfo cinfo = wsClient.getConnectionInfo();
 
         // create a parameter replay via REST
         CreateProcessorRequest prequest = CreateProcessorRequest.newBuilder()
-                .addClientId(cinfo.getId())
+                .addClientId(cinfo.getClientId())
                 .setName("testReplayWithPpExclusion")
                 .setType("ArchiveWithPpExclusion")
                 .setConfig("{\"utcStart\": \"2015-02-01T10:01:00\", \"utcStop\": \"2015-02-01T10:05:00\"}")

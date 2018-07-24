@@ -93,7 +93,6 @@ message ProcessorSubscriptionRequest {
 
 message ManagementSubscriptionRequest {
   optional bool clientInfo = 1;
-  optional bool processorInfo = 2;
   optional bool processorStatistics = 3;
 }
 

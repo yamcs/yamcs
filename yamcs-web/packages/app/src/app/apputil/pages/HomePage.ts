@@ -42,6 +42,13 @@ export class HomePage implements AfterViewInit {
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    this.yamcs.selectInstance('simulator')!.then(() => {
+      this.yamcs.getInstanceClient()!.getInstanceUpdates().then(response => {
+        response.instance$.subscribe(instance => {
+          console.log('instance ', instance);
+        });
+      });
+    });
   }
 
   private refreshInstances() {

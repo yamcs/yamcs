@@ -220,9 +220,6 @@ export class WebSocketClient {
     this.subscriptionModel.management = true;
     const requestId = this.emit({
       management: 'subscribe',
-      data: {
-        processorInfo: false // Use processor/subscribe instead
-      },
     });
 
     return new Promise<ClientSubscriptionResponse>((resolve, reject) => {
@@ -309,9 +306,6 @@ export class WebSocketClient {
     this.subscriptionModel.management = true;
     const requestId = this.emit({
       management: 'subscribe',
-      data: {
-        processorInfo: false // Use processor/subscribe instead
-      },
     });
 
     return new Promise<StatisticsSubscriptionResponse>((resolve, reject) => {
@@ -467,12 +461,7 @@ export class WebSocketClient {
       this.emit({ processor: 'subscribe' });
     }
     if (this.subscriptionModel.management) {
-      const requestId = this.emit({
-        management: 'subscribe',
-        data: {
-          processorInfo: false // Use processor/subscribe instead
-        },
-      });
+      this.emit({ management: 'subscribe' });
     }
     if (this.subscriptionModel.commandQueues) {
       this.emit({ cqueues: 'subscribe' });

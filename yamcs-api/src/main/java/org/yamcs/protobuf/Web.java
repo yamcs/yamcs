@@ -10403,15 +10403,6 @@ public final class Web {
     boolean getClientInfo();
 
     /**
-     * <code>optional bool processorInfo = 2;</code>
-     */
-    boolean hasProcessorInfo();
-    /**
-     * <code>optional bool processorInfo = 2;</code>
-     */
-    boolean getProcessorInfo();
-
-    /**
      * <code>optional bool processorStatistics = 3;</code>
      */
     boolean hasProcessorStatistics();
@@ -10433,7 +10424,6 @@ public final class Web {
     }
     private ManagementSubscriptionRequest() {
       clientInfo_ = false;
-      processorInfo_ = false;
       processorStatistics_ = false;
     }
 
@@ -10470,13 +10460,8 @@ public final class Web {
               clientInfo_ = input.readBool();
               break;
             }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              processorInfo_ = input.readBool();
-              break;
-            }
             case 24: {
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000002;
               processorStatistics_ = input.readBool();
               break;
             }
@@ -10520,28 +10505,13 @@ public final class Web {
       return clientInfo_;
     }
 
-    public static final int PROCESSORINFO_FIELD_NUMBER = 2;
-    private boolean processorInfo_;
-    /**
-     * <code>optional bool processorInfo = 2;</code>
-     */
-    public boolean hasProcessorInfo() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional bool processorInfo = 2;</code>
-     */
-    public boolean getProcessorInfo() {
-      return processorInfo_;
-    }
-
     public static final int PROCESSORSTATISTICS_FIELD_NUMBER = 3;
     private boolean processorStatistics_;
     /**
      * <code>optional bool processorStatistics = 3;</code>
      */
     public boolean hasProcessorStatistics() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
      * <code>optional bool processorStatistics = 3;</code>
@@ -10566,9 +10536,6 @@ public final class Web {
         output.writeBool(1, clientInfo_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBool(2, processorInfo_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBool(3, processorStatistics_);
       }
       unknownFields.writeTo(output);
@@ -10584,10 +10551,6 @@ public final class Web {
           .computeBoolSize(1, clientInfo_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(2, processorInfo_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(3, processorStatistics_);
       }
@@ -10613,11 +10576,6 @@ public final class Web {
         result = result && (getClientInfo()
             == other.getClientInfo());
       }
-      result = result && (hasProcessorInfo() == other.hasProcessorInfo());
-      if (hasProcessorInfo()) {
-        result = result && (getProcessorInfo()
-            == other.getProcessorInfo());
-      }
       result = result && (hasProcessorStatistics() == other.hasProcessorStatistics());
       if (hasProcessorStatistics()) {
         result = result && (getProcessorStatistics()
@@ -10638,11 +10596,6 @@ public final class Web {
         hash = (37 * hash) + CLIENTINFO_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getClientInfo());
-      }
-      if (hasProcessorInfo()) {
-        hash = (37 * hash) + PROCESSORINFO_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-            getProcessorInfo());
       }
       if (hasProcessorStatistics()) {
         hash = (37 * hash) + PROCESSORSTATISTICS_FIELD_NUMBER;
@@ -10769,10 +10722,8 @@ public final class Web {
         super.clear();
         clientInfo_ = false;
         bitField0_ = (bitField0_ & ~0x00000001);
-        processorInfo_ = false;
-        bitField0_ = (bitField0_ & ~0x00000002);
         processorStatistics_ = false;
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -10803,10 +10754,6 @@ public final class Web {
         result.clientInfo_ = clientInfo_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
-        }
-        result.processorInfo_ = processorInfo_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
         }
         result.processorStatistics_ = processorStatistics_;
         result.bitField0_ = to_bitField0_;
@@ -10853,9 +10800,6 @@ public final class Web {
         if (other == org.yamcs.protobuf.Web.ManagementSubscriptionRequest.getDefaultInstance()) return this;
         if (other.hasClientInfo()) {
           setClientInfo(other.getClientInfo());
-        }
-        if (other.hasProcessorInfo()) {
-          setProcessorInfo(other.getProcessorInfo());
         }
         if (other.hasProcessorStatistics()) {
           setProcessorStatistics(other.getProcessorStatistics());
@@ -10920,44 +10864,12 @@ public final class Web {
         return this;
       }
 
-      private boolean processorInfo_ ;
-      /**
-       * <code>optional bool processorInfo = 2;</code>
-       */
-      public boolean hasProcessorInfo() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional bool processorInfo = 2;</code>
-       */
-      public boolean getProcessorInfo() {
-        return processorInfo_;
-      }
-      /**
-       * <code>optional bool processorInfo = 2;</code>
-       */
-      public Builder setProcessorInfo(boolean value) {
-        bitField0_ |= 0x00000002;
-        processorInfo_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool processorInfo = 2;</code>
-       */
-      public Builder clearProcessorInfo() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        processorInfo_ = false;
-        onChanged();
-        return this;
-      }
-
       private boolean processorStatistics_ ;
       /**
        * <code>optional bool processorStatistics = 3;</code>
        */
       public boolean hasProcessorStatistics() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
        * <code>optional bool processorStatistics = 3;</code>
@@ -10969,7 +10881,7 @@ public final class Web {
        * <code>optional bool processorStatistics = 3;</code>
        */
       public Builder setProcessorStatistics(boolean value) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
         processorStatistics_ = value;
         onChanged();
         return this;
@@ -10978,7 +10890,7 @@ public final class Web {
        * <code>optional bool processorStatistics = 3;</code>
        */
       public Builder clearProcessorStatistics() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         processorStatistics_ = false;
         onChanged();
         return this;
@@ -18635,33 +18547,32 @@ public final class Web {
       "(\t\022\013\n\003msg\030\002 \001(\t*\005\010d\020\311\001\"+\n\027LinkSubscripti" +
       "onRequest\022\020\n\010instance\030\001 \001(\t\"K\n\034Processor" +
       "SubscriptionRequest\022\025\n\rallProcessors\030\001 \001" +
-      "(\010\022\024\n\014allInstances\030\002 \001(\010\"g\n\035ManagementSu" +
-      "bscriptionRequest\022\022\n\nclientInfo\030\001 \001(\010\022\025\n" +
-      "\rprocessorInfo\030\002 \001(\010\022\033\n\023processorStatist" +
-      "ics\030\003 \001(\010\"\314\001\n\034ParameterSubscriptionReque" +
-      "st\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObjectId\022\026\n\016",
-      "abortOnInvalid\030\002 \001(\010\022\032\n\022updateOnExpirati" +
-      "on\030\003 \001(\010\022\025\n\rsendFromCache\030\004 \001(\010\022\026\n\016subsc" +
-      "riptionId\030\005 \001(\005\022\'\n\004list\030\220N \003(\0132\024.yamcs.N" +
-      "amedObjectIdB\002\030\001\"^\n\035ParameterSubscriptio" +
-      "nResponse\022%\n\007invalid\030\002 \003(\0132\024.yamcs.Named" +
-      "ObjectId\022\026\n\016subscriptionId\030\003 \001(\005\"=\n\030Time" +
-      "SubscriptionResponse\022!\n\010timeInfo\030\001 \001(\0132\017" +
-      ".yamcs.TimeInfo\"R\n\035ProcessorSubscription" +
-      "Response\0221\n\tprocessor\030\001 \001(\0132\036.yamcsManag" +
-      "ement.ProcessorInfo\"\207\001\n\016ConnectionInfo\022\020",
-      "\n\010clientId\030\001 \001(\005\0220\n\010instance\030\002 \001(\0132\036.yam" +
-      "csManagement.YamcsInstance\0221\n\tprocessor\030" +
-      "\003 \001(\0132\036.yamcsManagement.ProcessorInfo\"\\\n" +
-      "\010AuthFlow\022 \n\004type\030\001 \001(\0162\022.web.AuthFlow.T" +
-      "ype\".\n\004Type\022\014\n\010PASSWORD\020\001\022\014\n\010REDIRECT\020\002\022" +
-      "\n\n\006SPNEGO\020\003\"F\n\010AuthInfo\022\035\n\025requireAuthen" +
-      "tication\030\001 \001(\010\022\033\n\004flow\030\002 \003(\0132\r.web.AuthF" +
-      "low\"\215\001\n\rTokenResponse\022\024\n\014access_token\030\001 " +
-      "\001(\t\022\022\n\ntoken_type\030\002 \001(\t\022\022\n\nexpires_in\030\003 " +
-      "\001(\005\022\025\n\rrefresh_token\030\004 \001(\t\022\'\n\004user\030\005 \001(\013",
-      "2\031.yamcsManagement.UserInfoB\024\n\022org.yamcs" +
-      ".protobuf"
+      "(\010\022\024\n\014allInstances\030\002 \001(\010\"P\n\035ManagementSu" +
+      "bscriptionRequest\022\022\n\nclientInfo\030\001 \001(\010\022\033\n" +
+      "\023processorStatistics\030\003 \001(\010\"\314\001\n\034Parameter" +
+      "SubscriptionRequest\022 \n\002id\030\001 \003(\0132\024.yamcs." +
+      "NamedObjectId\022\026\n\016abortOnInvalid\030\002 \001(\010\022\032\n",
+      "\022updateOnExpiration\030\003 \001(\010\022\025\n\rsendFromCac" +
+      "he\030\004 \001(\010\022\026\n\016subscriptionId\030\005 \001(\005\022\'\n\004list" +
+      "\030\220N \003(\0132\024.yamcs.NamedObjectIdB\002\030\001\"^\n\035Par" +
+      "ameterSubscriptionResponse\022%\n\007invalid\030\002 " +
+      "\003(\0132\024.yamcs.NamedObjectId\022\026\n\016subscriptio" +
+      "nId\030\003 \001(\005\"=\n\030TimeSubscriptionResponse\022!\n" +
+      "\010timeInfo\030\001 \001(\0132\017.yamcs.TimeInfo\"R\n\035Proc" +
+      "essorSubscriptionResponse\0221\n\tprocessor\030\001" +
+      " \001(\0132\036.yamcsManagement.ProcessorInfo\"\207\001\n" +
+      "\016ConnectionInfo\022\020\n\010clientId\030\001 \001(\005\0220\n\010ins",
+      "tance\030\002 \001(\0132\036.yamcsManagement.YamcsInsta" +
+      "nce\0221\n\tprocessor\030\003 \001(\0132\036.yamcsManagement" +
+      ".ProcessorInfo\"\\\n\010AuthFlow\022 \n\004type\030\001 \001(\016" +
+      "2\022.web.AuthFlow.Type\".\n\004Type\022\014\n\010PASSWORD" +
+      "\020\001\022\014\n\010REDIRECT\020\002\022\n\n\006SPNEGO\020\003\"F\n\010AuthInfo" +
+      "\022\035\n\025requireAuthentication\030\001 \001(\010\022\033\n\004flow\030" +
+      "\002 \003(\0132\r.web.AuthFlow\"\215\001\n\rTokenResponse\022\024" +
+      "\n\014access_token\030\001 \001(\t\022\022\n\ntoken_type\030\002 \001(\t" +
+      "\022\022\n\nexpires_in\030\003 \001(\005\022\025\n\rrefresh_token\030\004 " +
+      "\001(\t\022\'\n\004user\030\005 \001(\0132\031.yamcsManagement.User",
+      "InfoB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -18740,7 +18651,7 @@ public final class Web {
     internal_static_web_ManagementSubscriptionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ManagementSubscriptionRequest_descriptor,
-        new java.lang.String[] { "ClientInfo", "ProcessorInfo", "ProcessorStatistics", });
+        new java.lang.String[] { "ClientInfo", "ProcessorStatistics", });
     internal_static_web_ParameterSubscriptionRequest_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable = new

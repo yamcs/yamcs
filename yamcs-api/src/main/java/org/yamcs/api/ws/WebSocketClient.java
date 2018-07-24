@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 
@@ -56,6 +57,8 @@ public class WebSocketClient {
     private AtomicInteger idSequence = new AtomicInteger(1);
     YamcsConnectionProperties yprops;
     final boolean useProtobuf = true;
+
+    private ConnectionInfo connectionInfo;
 
     private boolean tcpKeepAlive = false;
 
@@ -288,5 +291,13 @@ public class WebSocketClient {
 
     public boolean isConnected() {
         return nettyChannel.isOpen();
+    }
+
+    public ConnectionInfo getConnectionInfo() {
+        return connectionInfo;
+    }
+
+    void setConnectionInfo(ConnectionInfo connectionInfo) {
+        this.connectionInfo = connectionInfo;
     }
 }
