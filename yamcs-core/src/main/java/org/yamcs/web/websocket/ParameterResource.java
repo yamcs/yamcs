@@ -1,7 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -66,14 +64,6 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
 
         ParameterSubscriptionRequest req;
         req = decoder.decodeMessageData(ctx, ParameterSubscriptionRequest.newBuilder()).build();
-        if (req.getIdCount() == 0) { // maybe using old method
-            if (req.getListCount() > 0) {
-                log.warn("Client using old parameter subscription method: {}",
-                        wsHandler.getChannel().remoteAddress());
-                req = ParameterSubscriptionRequest.newBuilder().addAllId(req.getListList()).setAbortOnInvalid(true)
-                        .build();
-            }
-        }
         int subscriptionId = getSubscriptionId(req);
 
         switch (ctx.getOperation()) {
@@ -174,9 +164,6 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         } catch (NoPermissionException e) {
             log.warn("no permission for parameters: {}", e.getMessage());
             throw new WebSocketException(requestId, "internal error: " + e.toString(), e);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
         }
     }
 
@@ -240,19 +227,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             ParameterValue pv = pvwi.getParameterValue();
             pd.addParameter(pv.toGpb(pvwi.getId()));
         }
-        sendParameterUpdate(pd.build());
-    }
-
-    private void sendParameterUpdate(ParameterData pd) {
-        try {
-            wsHandler.sendData(ProtoDataType.PARAMETER, pd);
-        } catch (ClosedChannelException e) {
-            log.warn("got channel closed when trying sending parameter updates, quitting");
-            socketClosed();
-        } catch (Exception e) {
-            log.warn("got error when sending parameter updates, quitting", e);
-            socketClosed();
-        }
+        wsHandler.sendData(ProtoDataType.PARAMETER, pd.build());
     }
 
     @Override
@@ -273,7 +248,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
                             .setAcquisitionTime(now)
                             .setAcquisitionStatus(AcquisitionStatus.INVALID).build());
                 }
-                sendParameterUpdate(pd.build());
+                wsHandler.sendData(ProtoDataType.PARAMETER, pd.build());
             }
         } catch (NoPermissionException e) {
             throw new ProcessorException("No permission", e);

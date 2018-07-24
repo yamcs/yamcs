@@ -1,6 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,11 +78,7 @@ public class StreamResource extends AbstractWebSocketResource {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 StreamData data = ArchiveHelper.toStreamData(stream, tuple);
-                try {
-                    wsHandler.sendData(ProtoDataType.STREAM_DATA, data);
-                } catch (IOException e) {
-                    log.debug("Could not send tuple data", e);
-                }
+                wsHandler.sendData(ProtoDataType.STREAM_DATA, data);
             }
 
             @Override

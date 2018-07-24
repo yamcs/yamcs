@@ -1,10 +1,7 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
@@ -23,7 +20,6 @@ import org.yamcs.web.rest.YamcsToGpbAssembler;
  */
 public class ManagementResource extends AbstractWebSocketResource implements ManagementListener {
 
-    private static final Logger log = LoggerFactory.getLogger(ManagementResource.class);
     public static final String RESOURCE_NAME = "management";
 
     public static final String OP_subscribe = "subscribe";
@@ -66,23 +62,19 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             emitClientInfo = !req.hasClientInfo() || req.getClientInfo();
             emitProcessorStatistics = !req.hasProcessorStatistics() || req.getProcessorStatistics();
         }
-        try {
-            wsHandler.sendReply(WebSocketReply.ack(ctx.getRequestId()));
 
-            // Send current set of clients
-            if (emitClientInfo) {
-                Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
-                for (ConnectedClient client : clients) {
-                    ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
-                    clientInfo = ClientInfo.newBuilder(clientInfo)
-                            .setCurrentClient(clientInfo.getId() == client.getId())
-                            .build();
-                    wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
-                }
+        wsHandler.sendReply(WebSocketReply.ack(ctx.getRequestId()));
+
+        // Send current set of clients
+        if (emitClientInfo) {
+            Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
+            for (ConnectedClient client : clients) {
+                ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED);
+                clientInfo = ClientInfo.newBuilder(clientInfo)
+                        .setCurrentClient(clientInfo.getId() == client.getId())
+                        .build();
+                wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
             }
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
         }
         ManagementService.getInstance().addManagementListener(this);
         return null;
@@ -90,12 +82,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
 
     private WebSocketReply processUnsubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         ManagementService.getInstance().removeManagementListener(this);
-        try {
-            wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
-        }
+        wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
         return null;
     }
 
@@ -128,11 +115,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             clientInfo = ClientInfo.newBuilder(clientInfo)
                     .setCurrentClient(client.getId() == clientInfo.getId())
                     .build();
-            try {
-                wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
-            } catch (IOException e) {
-                log.error("Exception when sending data", e);
-            }
+            wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }
 
@@ -143,11 +126,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             clientInfo = ClientInfo.newBuilder(clientInfo)
                     .setCurrentClient(client.getId() == clientInfo.getId())
                     .build();
-            try {
-                wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
-            } catch (IOException e) {
-                log.error("Exception when sending data", e);
-            }
+            wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }
 
@@ -160,22 +139,14 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
         if (emitClientInfo) {
             ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(client, ClientState.DISCONNECTED);
             clientInfo = ClientInfo.newBuilder(clientInfo).setCurrentClient(false).build();
-            try {
-                wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
-            } catch (IOException e) {
-                log.error("Exception when sending data", e);
-            }
+            wsHandler.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }
 
     @Override
     public void statisticsUpdated(Processor processor, Statistics stats) {
         if (emitProcessorStatistics) {
-            try {
-                wsHandler.sendData(ProtoDataType.PROCESSING_STATISTICS, stats);
-            } catch (IOException e) {
-                log.error("Exception when sending data", e);
-            }
+            wsHandler.sendData(ProtoDataType.PROCESSING_STATISTICS, stats);
         }
     }
 

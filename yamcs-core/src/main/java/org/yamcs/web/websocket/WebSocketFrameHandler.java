@@ -1,7 +1,6 @@
 package org.yamcs.web.websocket;
 
 import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -206,22 +205,35 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         return encoder;
     }
 
-    public void sendReply(WebSocketReply reply) throws IOException {
+    public void sendReply(WebSocketReply reply) {
         if (!channel.isOpen()) {
-            throw new IOException("Channel not open");
+            log.warn("Dropping reply message because channel is not open");
+            return;
         }
         if (!channel.isWritable()) {
             log.warn("Dropping reply message because channel is not writable");
             return;
         }
 
-        WebSocketFrame frame = getEncoder().encodeReply(reply);
-        channel.writeAndFlush(frame);
+        try {
+            WebSocketFrame frame = getEncoder().encodeReply(reply);
+            channel.writeAndFlush(frame);
+        } catch (IOException e) {
+            log.warn("Closing channel due to encoding exception", e);
+            ctx.close();
+        }
     }
 
-    private void sendException(WebSocketException e) throws IOException {
-        WebSocketFrame frame = getEncoder().encodeException(e);
-        channel.writeAndFlush(frame);
+    private void sendException(WebSocketException webSocketException) {
+        try {
+            WebSocketFrame frame = getEncoder().encodeException(webSocketException);
+            channel.writeAndFlush(frame);
+        } catch (IOException e) {
+            log.warn("Closing channel due to encoding exception: " + e.getMessage()
+                    + ". Attached stacktrace contains original exception which could not be sent to client",
+                    webSocketException);
+            ctx.close();
+        }
     }
 
     /**
@@ -230,10 +242,11 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
      * 
      * The websocket clients will know when the messages have been dropped from the sequence count.
      */
-    public <T extends Message> void sendData(ProtoDataType dataType, T data) throws IOException {
+    public <T extends Message> void sendData(ProtoDataType dataType, T data) {
         dataSeqCount++;
         if (!channel.isOpen()) {
-            throw new ClosedChannelException();
+            log.info("Skipping update of type {}. Channel is already closed", dataType);
+            return;
         }
 
         if (!channel.isWritable()) {
@@ -249,8 +262,13 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             return;
         }
         droppedWrites = 0;
-        WebSocketFrame frame = getEncoder().encodeData(dataSeqCount, dataType, data);
-        channel.writeAndFlush(frame);
+        try {
+            WebSocketFrame frame = getEncoder().encodeData(dataSeqCount, dataType, data);
+            channel.writeAndFlush(frame);
+        } catch (IOException e) {
+            log.warn(String.format("Closing channel due to encoding exception for data of type %s", dataType), e);
+            ctx.close();
+        }
     }
 
     public Channel getChannel() {

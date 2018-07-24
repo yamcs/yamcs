@@ -1,7 +1,5 @@
 package org.yamcs.web.websocket;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
@@ -20,7 +18,6 @@ import org.yamcs.utils.ValueUtility;
  */
 public class CommandHistoryResource extends AbstractWebSocketResource implements CommandHistoryConsumer {
 
-    private static final Logger log = LoggerFactory.getLogger(CommandHistoryResource.class);
     public static final String RESOURCE_NAME = "cmdhistory";
 
     private CommandHistoryFilter subscription;
@@ -29,7 +26,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
     public CommandHistoryResource(ConnectedWebSocketClient client) {
         super(client);
         Processor processor = client.getProcessor();
-        if (processor != null) {
+        if (processor != null && processor.hasCommanding()) {
             commandHistoryRequestManager = processor.getCommandHistoryManager();
         }
     }
@@ -76,7 +73,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
     public void addedCommand(PreparedCommand pc) {
         CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId())
                 .addAllAttr(pc.getAttributes()).build();
-        doSend(entry);
+        wsHandler.sendData(ProtoDataType.CMD_HISTORY, entry);
     }
 
     @Override
@@ -84,16 +81,7 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
         CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key)
                 .setValue(ValueUtility.toGbp(value)).build();
         CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(cmdId).addAttr(cha).build();
-        doSend(entry);
-    }
-
-    private void doSend(CommandHistoryEntry entry) {
-        try {
-            wsHandler.sendData(ProtoDataType.CMD_HISTORY, entry);
-        } catch (Exception e) {
-            log.warn("got error when sending command history updates, quitting", e);
-            socketClosed();
-        }
+        wsHandler.sendData(ProtoDataType.CMD_HISTORY, entry);
     }
 
     @Override

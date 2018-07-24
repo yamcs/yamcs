@@ -1,9 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.commanding.CommandQueue;
@@ -24,7 +20,6 @@ import org.yamcs.security.SystemPrivilege;
  */
 public class CommandQueueResource extends AbstractWebSocketResource implements CommandQueueListener {
 
-    private static final Logger log = LoggerFactory.getLogger(CommandQueueResource.class);
     public static final String RESOURCE_NAME = "cqueues";
 
     public static final String OP_subscribe = "subscribe";
@@ -55,24 +50,19 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     }
 
     private WebSocketReply subscribe(int requestId) throws WebSocketException {
-        try {
-            WebSocketReply reply = WebSocketReply.ack(requestId);
-            wsHandler.sendReply(reply);
+        WebSocketReply reply = WebSocketReply.ack(requestId);
+        wsHandler.sendReply(reply);
 
-            subscribed = true;
-            ManagementService mservice = ManagementService.getInstance();
-            CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
-            if (cqueueManager != null) {
-                cqueueManager.registerListener(this);
-                for (CommandQueue q : cqueueManager.getQueues()) {
-                    sendInitialUpdateQueue(q);
-                }
+        subscribed = true;
+        ManagementService mservice = ManagementService.getInstance();
+        CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
+        if (cqueueManager != null) {
+            cqueueManager.registerListener(this);
+            for (CommandQueue q : cqueueManager.getQueues()) {
+                sendInitialUpdateQueue(q);
             }
-            return null;
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
         }
+        return null;
     }
 
     private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
@@ -127,64 +117,39 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
      */
     private void sendInitialUpdateQueue(CommandQueue q) {
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, true);
-        try {
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
-        } catch (Exception e) {
-            log.warn("got error when sending command queue info, quitting", e);
-            socketClosed();
-        }
+        wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
     }
 
     @Override
     public void updateQueue(CommandQueue q) {
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, false);
-        try {
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
-        } catch (Exception e) {
-            log.warn("got error when sending command queue info, quitting", e);
-            socketClosed();
-        }
+        wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
     }
 
     @Override
     public void commandAdded(CommandQueue q, PreparedCommand pc) {
         CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
-        try {
-            CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
-            evtb.setType(Type.COMMAND_ADDED);
-            evtb.setData(data);
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
-        } catch (Exception e) {
-            log.warn("got error when sending command queue event, quitting", e);
-            socketClosed();
-        }
+        CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+        evtb.setType(Type.COMMAND_ADDED);
+        evtb.setData(data);
+        wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
     }
 
     @Override
     public void commandRejected(CommandQueue q, PreparedCommand pc) {
         CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
-        try {
-            CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
-            evtb.setType(Type.COMMAND_REJECTED);
-            evtb.setData(data);
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
-        } catch (Exception e) {
-            log.warn("got error when sending command queue event, quitting", e);
-            socketClosed();
-        }
+        CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+        evtb.setType(Type.COMMAND_REJECTED);
+        evtb.setData(data);
+        wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
     }
 
     @Override
     public void commandSent(CommandQueue q, PreparedCommand pc) {
         CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
-        try {
-            CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
-            evtb.setType(Type.COMMAND_SENT);
-            evtb.setData(data);
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
-        } catch (Exception e) {
-            log.warn("got error when sending command queue event, quitting", e);
-            socketClosed();
-        }
+        CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+        evtb.setType(Type.COMMAND_SENT);
+        evtb.setData(data);
+        wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
     }
 }

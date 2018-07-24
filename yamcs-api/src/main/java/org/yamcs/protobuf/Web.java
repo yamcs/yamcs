@@ -11057,60 +11057,6 @@ public final class Web {
      * <code>optional int32 subscriptionId = 5;</code>
      */
     int getSubscriptionId();
-
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
-        getListList();
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index);
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated int getListCount();
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getListOrBuilderList();
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
-        int index);
   }
   /**
    * <pre>
@@ -11133,7 +11079,6 @@ public final class Web {
       updateOnExpiration_ = false;
       sendFromCache_ = false;
       subscriptionId_ = 0;
-      list_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -11193,15 +11138,6 @@ public final class Web {
               subscriptionId_ = input.readInt32();
               break;
             }
-            case 80002: {
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-                list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
-                mutable_bitField0_ |= 0x00000020;
-              }
-              list_.add(
-                  input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
-              break;
-            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -11212,9 +11148,6 @@ public final class Web {
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           id_ = java.util.Collections.unmodifiableList(id_);
-        }
-        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-          list_ = java.util.Collections.unmodifiableList(list_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -11378,71 +11311,6 @@ public final class Web {
       return subscriptionId_;
     }
 
-    public static final int LIST_FIELD_NUMBER = 10000;
-    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_;
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
-      return list_;
-    }
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getListOrBuilderList() {
-      return list_;
-    }
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public int getListCount() {
-      return list_.size();
-    }
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
-      return list_.get(index);
-    }
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
-        int index) {
-      return list_.get(index);
-    }
-
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -11451,12 +11319,6 @@ public final class Web {
 
       for (int i = 0; i < getIdCount(); i++) {
         if (!getId(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
-      for (int i = 0; i < getListCount(); i++) {
-        if (!getList(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -11481,9 +11343,6 @@ public final class Web {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeInt32(5, subscriptionId_);
-      }
-      for (int i = 0; i < list_.size(); i++) {
-        output.writeMessage(10000, list_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -11512,10 +11371,6 @@ public final class Web {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(5, subscriptionId_);
-      }
-      for (int i = 0; i < list_.size(); i++) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(10000, list_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -11556,8 +11411,6 @@ public final class Web {
         result = result && (getSubscriptionId()
             == other.getSubscriptionId());
       }
-      result = result && getListList()
-          .equals(other.getListList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -11591,10 +11444,6 @@ public final class Web {
       if (hasSubscriptionId()) {
         hash = (37 * hash) + SUBSCRIPTIONID_FIELD_NUMBER;
         hash = (53 * hash) + getSubscriptionId();
-      }
-      if (getListCount() > 0) {
-        hash = (37 * hash) + LIST_FIELD_NUMBER;
-        hash = (53 * hash) + getListList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -11715,7 +11564,6 @@ public final class Web {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getIdFieldBuilder();
-          getListFieldBuilder();
         }
       }
       public Builder clear() {
@@ -11734,12 +11582,6 @@ public final class Web {
         bitField0_ = (bitField0_ & ~0x00000008);
         subscriptionId_ = 0;
         bitField0_ = (bitField0_ & ~0x00000010);
-        if (listBuilder_ == null) {
-          list_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000020);
-        } else {
-          listBuilder_.clear();
-        }
         return this;
       }
 
@@ -11789,15 +11631,6 @@ public final class Web {
           to_bitField0_ |= 0x00000008;
         }
         result.subscriptionId_ = subscriptionId_;
-        if (listBuilder_ == null) {
-          if (((bitField0_ & 0x00000020) == 0x00000020)) {
-            list_ = java.util.Collections.unmodifiableList(list_);
-            bitField0_ = (bitField0_ & ~0x00000020);
-          }
-          result.list_ = list_;
-        } else {
-          result.list_ = listBuilder_.build();
-        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -11878,32 +11711,6 @@ public final class Web {
         if (other.hasSubscriptionId()) {
           setSubscriptionId(other.getSubscriptionId());
         }
-        if (listBuilder_ == null) {
-          if (!other.list_.isEmpty()) {
-            if (list_.isEmpty()) {
-              list_ = other.list_;
-              bitField0_ = (bitField0_ & ~0x00000020);
-            } else {
-              ensureListIsMutable();
-              list_.addAll(other.list_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.list_.isEmpty()) {
-            if (listBuilder_.isEmpty()) {
-              listBuilder_.dispose();
-              listBuilder_ = null;
-              list_ = other.list_;
-              bitField0_ = (bitField0_ & ~0x00000020);
-              listBuilder_ = 
-                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getListFieldBuilder() : null;
-            } else {
-              listBuilder_.addAllMessages(other.list_);
-            }
-          }
-        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -11912,11 +11719,6 @@ public final class Web {
       public final boolean isInitialized() {
         for (int i = 0; i < getIdCount(); i++) {
           if (!getId(i).isInitialized()) {
-            return false;
-          }
-        }
-        for (int i = 0; i < getListCount(); i++) {
-          if (!getList(i).isInitialized()) {
             return false;
           }
         }
@@ -12408,354 +12210,6 @@ public final class Web {
         subscriptionId_ = 0;
         onChanged();
         return this;
-      }
-
-      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_ =
-        java.util.Collections.emptyList();
-      private void ensureListIsMutable() {
-        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
-          list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(list_);
-          bitField0_ |= 0x00000020;
-         }
-      }
-
-      private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> listBuilder_;
-
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
-        if (listBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(list_);
-        } else {
-          return listBuilder_.getMessageList();
-        }
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public int getListCount() {
-        if (listBuilder_ == null) {
-          return list_.size();
-        } else {
-          return listBuilder_.getCount();
-        }
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
-        if (listBuilder_ == null) {
-          return list_.get(index);
-        } else {
-          return listBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setList(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureListIsMutable();
-          list_.set(index, value);
-          onChanged();
-        } else {
-          listBuilder_.setMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setList(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          listBuilder_.setMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addList(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureListIsMutable();
-          list_.add(value);
-          onChanged();
-        } else {
-          listBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addList(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureListIsMutable();
-          list_.add(index, value);
-          onChanged();
-        } else {
-          listBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addList(
-          org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.add(builderForValue.build());
-          onChanged();
-        } else {
-          listBuilder_.addMessage(builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addList(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          listBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addAllList(
-          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, list_);
-          onChanged();
-        } else {
-          listBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearList() {
-        if (listBuilder_ == null) {
-          list_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000020);
-          onChanged();
-        } else {
-          listBuilder_.clear();
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder removeList(int index) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.remove(index);
-          onChanged();
-        } else {
-          listBuilder_.remove(index);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getListBuilder(
-          int index) {
-        return getListFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
-          int index) {
-        if (listBuilder_ == null) {
-          return list_.get(index);  } else {
-          return listBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-           getListOrBuilderList() {
-        if (listBuilder_ != null) {
-          return listBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(list_);
-        }
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder() {
-        return getListFieldBuilder().addBuilder(
-            org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder(
-          int index) {
-        return getListFieldBuilder().addBuilder(
-            index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
-           getListBuilderList() {
-        return getListFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-          getListFieldBuilder() {
-        if (listBuilder_ == null) {
-          listBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
-                  list_,
-                  ((bitField0_ & 0x00000020) == 0x00000020),
-                  getParentForChildren(),
-                  isClean());
-          list_ = null;
-        }
-        return listBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -18549,30 +18003,29 @@ public final class Web {
       "SubscriptionRequest\022\025\n\rallProcessors\030\001 \001" +
       "(\010\022\024\n\014allInstances\030\002 \001(\010\"P\n\035ManagementSu" +
       "bscriptionRequest\022\022\n\nclientInfo\030\001 \001(\010\022\033\n" +
-      "\023processorStatistics\030\003 \001(\010\"\314\001\n\034Parameter" +
+      "\023processorStatistics\030\003 \001(\010\"\243\001\n\034Parameter" +
       "SubscriptionRequest\022 \n\002id\030\001 \003(\0132\024.yamcs." +
       "NamedObjectId\022\026\n\016abortOnInvalid\030\002 \001(\010\022\032\n",
       "\022updateOnExpiration\030\003 \001(\010\022\025\n\rsendFromCac" +
-      "he\030\004 \001(\010\022\026\n\016subscriptionId\030\005 \001(\005\022\'\n\004list" +
-      "\030\220N \003(\0132\024.yamcs.NamedObjectIdB\002\030\001\"^\n\035Par" +
-      "ameterSubscriptionResponse\022%\n\007invalid\030\002 " +
-      "\003(\0132\024.yamcs.NamedObjectId\022\026\n\016subscriptio" +
-      "nId\030\003 \001(\005\"=\n\030TimeSubscriptionResponse\022!\n" +
-      "\010timeInfo\030\001 \001(\0132\017.yamcs.TimeInfo\"R\n\035Proc" +
-      "essorSubscriptionResponse\0221\n\tprocessor\030\001" +
-      " \001(\0132\036.yamcsManagement.ProcessorInfo\"\207\001\n" +
-      "\016ConnectionInfo\022\020\n\010clientId\030\001 \001(\005\0220\n\010ins",
-      "tance\030\002 \001(\0132\036.yamcsManagement.YamcsInsta" +
-      "nce\0221\n\tprocessor\030\003 \001(\0132\036.yamcsManagement" +
-      ".ProcessorInfo\"\\\n\010AuthFlow\022 \n\004type\030\001 \001(\016" +
-      "2\022.web.AuthFlow.Type\".\n\004Type\022\014\n\010PASSWORD" +
-      "\020\001\022\014\n\010REDIRECT\020\002\022\n\n\006SPNEGO\020\003\"F\n\010AuthInfo" +
-      "\022\035\n\025requireAuthentication\030\001 \001(\010\022\033\n\004flow\030" +
-      "\002 \003(\0132\r.web.AuthFlow\"\215\001\n\rTokenResponse\022\024" +
-      "\n\014access_token\030\001 \001(\t\022\022\n\ntoken_type\030\002 \001(\t" +
-      "\022\022\n\nexpires_in\030\003 \001(\005\022\025\n\rrefresh_token\030\004 " +
-      "\001(\t\022\'\n\004user\030\005 \001(\0132\031.yamcsManagement.User",
-      "InfoB\024\n\022org.yamcs.protobuf"
+      "he\030\004 \001(\010\022\026\n\016subscriptionId\030\005 \001(\005\"^\n\035Para" +
+      "meterSubscriptionResponse\022%\n\007invalid\030\002 \003" +
+      "(\0132\024.yamcs.NamedObjectId\022\026\n\016subscription" +
+      "Id\030\003 \001(\005\"=\n\030TimeSubscriptionResponse\022!\n\010" +
+      "timeInfo\030\001 \001(\0132\017.yamcs.TimeInfo\"R\n\035Proce" +
+      "ssorSubscriptionResponse\0221\n\tprocessor\030\001 " +
+      "\001(\0132\036.yamcsManagement.ProcessorInfo\"\207\001\n\016" +
+      "ConnectionInfo\022\020\n\010clientId\030\001 \001(\005\0220\n\010inst" +
+      "ance\030\002 \001(\0132\036.yamcsManagement.YamcsInstan",
+      "ce\0221\n\tprocessor\030\003 \001(\0132\036.yamcsManagement." +
+      "ProcessorInfo\"\\\n\010AuthFlow\022 \n\004type\030\001 \001(\0162" +
+      "\022.web.AuthFlow.Type\".\n\004Type\022\014\n\010PASSWORD\020" +
+      "\001\022\014\n\010REDIRECT\020\002\022\n\n\006SPNEGO\020\003\"F\n\010AuthInfo\022" +
+      "\035\n\025requireAuthentication\030\001 \001(\010\022\033\n\004flow\030\002" +
+      " \003(\0132\r.web.AuthFlow\"\215\001\n\rTokenResponse\022\024\n" +
+      "\014access_token\030\001 \001(\t\022\022\n\ntoken_type\030\002 \001(\t\022" +
+      "\022\n\nexpires_in\030\003 \001(\005\022\025\n\rrefresh_token\030\004 \001" +
+      "(\t\022\'\n\004user\030\005 \001(\0132\031.yamcsManagement.UserI" +
+      "nfoB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -18657,7 +18110,7 @@ public final class Web {
     internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ParameterSubscriptionRequest_descriptor,
-        new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "SubscriptionId", "List", });
+        new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "SubscriptionId", });
     internal_static_web_ParameterSubscriptionResponse_descriptor =
       getDescriptor().getMessageTypes().get(8);
     internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable = new

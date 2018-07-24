@@ -1,9 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.management.LinkListener;
@@ -18,7 +14,6 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
  */
 public class LinkResource extends AbstractWebSocketResource implements LinkListener {
 
-    private static final Logger log = LoggerFactory.getLogger(LinkResource.class);
     public static final String RESOURCE_NAME = "links";
 
     public static final String OP_subscribe = "subscribe";
@@ -55,20 +50,15 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     private WebSocketReply subscribe(int requestId) throws WebSocketException {
         ManagementService mservice = ManagementService.getInstance();
 
-        try {
-            wsHandler.sendReply(WebSocketReply.ack(requestId));
+        wsHandler.sendReply(WebSocketReply.ack(requestId));
 
-            for (LinkInfo linkInfo : mservice.getLinkInfo()) {
-                if (instance == null || instance.equals(linkInfo.getInstance())) {
-                    sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
-                }
+        for (LinkInfo linkInfo : mservice.getLinkInfo()) {
+            if (instance == null || instance.equals(linkInfo.getInstance())) {
+                sendLinkInfo(LinkEvent.Type.REGISTERED, linkInfo);
             }
-            mservice.addLinkListener(this);
-            return null;
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
         }
+        mservice.addLinkListener(this);
+        return null;
     }
 
     private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
@@ -115,15 +105,10 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
 
     private void sendLinkInfo(LinkEvent.Type type, LinkInfo linkInfo) {
         if (instance == null || instance.equals(linkInfo.getInstance())) {
-            try {
-                LinkEvent.Builder linkb = LinkEvent.newBuilder();
-                linkb.setType(type);
-                linkb.setLinkInfo(linkInfo);
-                wsHandler.sendData(ProtoDataType.LINK_EVENT, linkb.build());
-            } catch (Exception e) {
-                log.warn("got error when sending link event, quitting", e);
-                socketClosed();
-            }
+            LinkEvent.Builder linkb = LinkEvent.newBuilder();
+            linkb.setType(type);
+            linkb.setLinkInfo(linkInfo);
+            wsHandler.sendData(ProtoDataType.LINK_EVENT, linkb.build());
         }
     }
 }

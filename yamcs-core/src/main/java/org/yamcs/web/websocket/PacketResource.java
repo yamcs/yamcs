@@ -1,7 +1,5 @@
 package org.yamcs.web.websocket;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
@@ -20,7 +18,6 @@ import com.google.protobuf.ByteString;
  */
 public class PacketResource extends AbstractWebSocketResource {
 
-    private static final Logger log = LoggerFactory.getLogger(PacketResource.class);
     public static final String RESOURCE_NAME = "packets";
 
     public static final String OP_subscribe = "subscribe";
@@ -108,21 +105,16 @@ public class PacketResource extends AbstractWebSocketResource {
             streamSubscriber = new StreamSubscriber() {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
-                    try {
-                        byte[] pktData = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
-                        long genTime = (Long) tuple.getColumn(TmDataLinkInitialiser.GENTIME_COLUMN);
-                        long receptionTime = (Long) tuple.getColumn(TmDataLinkInitialiser.RECTIME_COLUMN);
-                        int seqNumber = (Integer) tuple.getColumn(TmDataLinkInitialiser.SEQNUM_COLUMN);
-                        TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
-                                .setGenerationTime(genTime)
-                                .setReceptionTime(receptionTime)
-                                .setSequenceNumber(seqNumber)
-                                .build();
-                        wsHandler.sendData(ProtoDataType.TM_PACKET, tm);
-                    } catch (Exception e) {
-                        log.warn("got error when sending event, quitting", e);
-                        socketClosed();
-                    }
+                    byte[] pktData = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
+                    long genTime = (Long) tuple.getColumn(TmDataLinkInitialiser.GENTIME_COLUMN);
+                    long receptionTime = (Long) tuple.getColumn(TmDataLinkInitialiser.RECTIME_COLUMN);
+                    int seqNumber = (Integer) tuple.getColumn(TmDataLinkInitialiser.SEQNUM_COLUMN);
+                    TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
+                            .setGenerationTime(genTime)
+                            .setReceptionTime(receptionTime)
+                            .setSequenceNumber(seqNumber)
+                            .build();
+                    wsHandler.sendData(ProtoDataType.TM_PACKET, tm);
                 }
 
                 @Override

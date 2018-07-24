@@ -1,9 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.alarms.ActiveAlarm;
@@ -17,15 +13,18 @@ import org.yamcs.web.rest.processor.ProcessorHelper;
  * Provides realtime alarm subscription via web.
  */
 public class AlarmResource extends AbstractWebSocketResource implements AlarmListener {
-    private static final Logger log = LoggerFactory.getLogger(AlarmResource.class);
+
     public static final String RESOURCE_NAME = "alarms";
     private volatile boolean subscribed = false;
 
-    private Processor processor;
+    private AlarmServer alarmServer;
 
     public AlarmResource(ConnectedWebSocketClient client) {
         super(client);
-        processor = client.getProcessor();
+        Processor processor = client.getProcessor();
+        if (processor != null && processor.hasAlarmServer()) {
+            alarmServer = processor.getParameterRequestManager().getAlarmServer();
+        }
     }
 
     @Override
@@ -42,20 +41,14 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
     }
 
     private WebSocketReply subscribe(int requestId) throws WebSocketException {
-        try {
-            wsHandler.sendReply(WebSocketReply.ack(requestId));
-            subscribed = true;
-            applySubscription();
-            return null;
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
-        }
+        wsHandler.sendReply(WebSocketReply.ack(requestId));
+        subscribed = true;
+        applySubscription();
+        return null;
     }
 
     private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
-        if (processor.hasAlarmServer()) {
-            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+        if (alarmServer != null) {
             alarmServer.unsubscribe(this);
         }
         subscribed = false;
@@ -64,32 +57,31 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
 
     @Override
     public void socketClosed() {
-        if (processor.hasAlarmServer()) {
-            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+        if (alarmServer != null) {
             alarmServer.unsubscribe(this);
         }
     }
 
     @Override
     public void unselectProcessor() {
-        if (processor.hasAlarmServer()) {
-            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+        if (alarmServer != null) {
             alarmServer.unsubscribe(this);
         }
-        processor = null;
+        alarmServer = null;
     }
 
     @Override
     public void selectProcessor(Processor processor) throws ProcessorException {
-        this.processor = processor;
+        if (processor.hasAlarmServer()) {
+            alarmServer = processor.getParameterRequestManager().getAlarmServer();
+        }
         if (subscribed) {
             applySubscription();
         }
     }
 
     private void applySubscription() {
-        if (processor.hasAlarmServer()) {
-            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+        if (alarmServer != null) {
             for (ActiveAlarm activeAlarm : alarmServer.getActiveAlarms().values()) {
                 sendAlarm(AlarmData.Type.ACTIVE, activeAlarm);
             }
@@ -124,12 +116,6 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
 
     private void sendAlarm(AlarmData.Type type, ActiveAlarm activeAlarm) {
         AlarmData alarmData = ProcessorHelper.toAlarmData(type, activeAlarm);
-
-        try {
-            wsHandler.sendData(ProtoDataType.ALARM_DATA, alarmData);
-        } catch (Exception e) {
-            log.warn("Got error when sending alarm, quitting", e);
-            socketClosed();
-        }
+        wsHandler.sendData(ProtoDataType.ALARM_DATA, alarmData);
     }
 }

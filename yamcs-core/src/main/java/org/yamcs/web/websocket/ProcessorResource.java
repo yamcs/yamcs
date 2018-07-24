@@ -1,9 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
@@ -18,14 +14,9 @@ import org.yamcs.protobuf.YamcsManagement.Statistics;
 
 /**
  * Provides lifecycle updates on one or all processors.
- * 
- * TODO this is currently undocumented while we migrate the api to official clients. It is however intended to
- * eventually deprecate and remove management/subscribe of processors. Clients should not use both in parallel because
- * they both emit PROCESSOR_INFO data.
  */
 public class ProcessorResource extends AbstractWebSocketResource implements ManagementListener {
 
-    private static final Logger log = LoggerFactory.getLogger(ProcessorResource.class);
     public static final String RESOURCE_NAME = "processor";
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
@@ -67,18 +58,14 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
             allProcessors = req.hasAllProcessors() && req.getAllProcessors();
             allInstances = req.hasAllInstances() && req.getAllInstances();
         }
-        try {
-            WebSocketReply reply = new WebSocketReply(ctx.getRequestId());
-            ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
-            ProcessorSubscriptionResponse response = ProcessorSubscriptionResponse.newBuilder()
-                    .setProcessor(pinfo)
-                    .build();
-            reply.attachData("ProcessorSubscriptionResponse", response);
-            wsHandler.sendReply(reply);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
-        }
+        WebSocketReply reply = new WebSocketReply(ctx.getRequestId());
+        ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
+        ProcessorSubscriptionResponse response = ProcessorSubscriptionResponse.newBuilder()
+                .setProcessor(pinfo)
+                .build();
+        reply.attachData("ProcessorSubscriptionResponse", response);
+        wsHandler.sendReply(reply);
+
         ManagementService.getInstance().addManagementListener(this);
         subscribed = true;
         return null;
@@ -86,12 +73,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
 
     private WebSocketReply processUnsubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         ManagementService.getInstance().removeManagementListener(this);
-        try {
-            wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
-        }
+        wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
         return null;
     }
 
@@ -109,11 +91,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
             return;
         }
-        try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-        }
+        wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
     }
 
     @Override
@@ -124,11 +102,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
             return;
         }
-        try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-        }
+        wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
     }
 
     @Override
@@ -139,11 +113,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
             return;
         }
-        try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-        }
+        wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
     }
 
     @Override
@@ -151,12 +121,8 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         this.processor = processor;
         if (subscribed) {
             if (!allInstances && !allProcessors) {
-                try {
-                    ProcessorInfo processorInfo = ManagementGpbHelper.toProcessorInfo(processor);
-                    wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-                } catch (IOException e) {
-                    log.error("Exception when sending data", e);
-                }
+                ProcessorInfo processorInfo = ManagementGpbHelper.toProcessorInfo(processor);
+                wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
             }
         }
     }

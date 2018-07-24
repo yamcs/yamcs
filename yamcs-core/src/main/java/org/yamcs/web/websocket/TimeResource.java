@@ -1,13 +1,10 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.protobuf.Web.TimeSubscriptionResponse;
@@ -17,7 +14,6 @@ import org.yamcs.utils.TimeEncoding;
 
 public class TimeResource extends AbstractWebSocketResource {
 
-    private static final Logger log = LoggerFactory.getLogger(TimeResource.class);
     public static final String RESOURCE_NAME = "time";
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
@@ -55,16 +51,12 @@ public class TimeResource extends AbstractWebSocketResource {
             throws WebSocketException {
         if (!subscribed.getAndSet(true)) {
             future = timer.scheduleAtFixedRate(() -> {
-                try {
-                    long currentTime = processor.getCurrentTime();
-                    TimeInfo ti = TimeInfo.newBuilder()
-                            .setCurrentTime(currentTime)
-                            .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
-                            .build();
-                    wsHandler.sendData(ProtoDataType.TIME_INFO, ti);
-                } catch (IOException e) {
-                    log.debug("Could not send time info data", e);
-                }
+                long currentTime = processor.getCurrentTime();
+                TimeInfo ti = TimeInfo.newBuilder()
+                        .setCurrentTime(currentTime)
+                        .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
+                        .build();
+                wsHandler.sendData(ProtoDataType.TIME_INFO, ti);
             }, 1, 1, TimeUnit.SECONDS);
         }
 
@@ -81,11 +73,7 @@ public class TimeResource extends AbstractWebSocketResource {
                 .build();
         reply.attachData(TimeResource.class.getSimpleName(), response);
 
-        try {
-            wsHandler.sendReply(reply);
-        } catch (IOException e) {
-            log.error("Exception while sending reply", e);
-        }
+        wsHandler.sendReply(reply);
         return null;
     }
 

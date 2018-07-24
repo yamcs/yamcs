@@ -1,9 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.YamcsServerInstance;
@@ -17,7 +13,6 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
  */
 public class InstanceResource extends AbstractWebSocketResource implements ManagementListener {
 
-    private static final Logger log = LoggerFactory.getLogger(InstanceResource.class);
     public static final String RESOURCE_NAME = "instance";
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
@@ -48,12 +43,7 @@ public class InstanceResource extends AbstractWebSocketResource implements Manag
     private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
 
-        try {
-            wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
-        }
+        wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
         ManagementService.getInstance().addManagementListener(this);
         subscribed = true;
         return null;
@@ -61,12 +51,7 @@ public class InstanceResource extends AbstractWebSocketResource implements Manag
 
     private WebSocketReply processUnsubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
         ManagementService.getInstance().removeManagementListener(this);
-        try {
-            wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
-        }
+        wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
         return null;
     }
 
@@ -90,11 +75,7 @@ public class InstanceResource extends AbstractWebSocketResource implements Manag
     public void instanceStateChanged(YamcsServerInstance ysi) {
         if (subscribed) {
             YamcsInstance instanceInfo = ysi.getInstanceInfo();
-            try {
-                wsHandler.sendData(ProtoDataType.INSTANCE, instanceInfo);
-            } catch (IOException e) {
-                log.error("Exception when sending data", e);
-            }
+            wsHandler.sendData(ProtoDataType.INSTANCE, instanceInfo);
         }
     }
 }

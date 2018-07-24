@@ -1,7 +1,5 @@
 package org.yamcs.web.websocket;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.archive.EventRecorder;
@@ -19,7 +17,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  */
 public class EventResource extends AbstractWebSocketResource {
 
-    private static final Logger log = LoggerFactory.getLogger(EventResource.class);
     public static final String RESOURCE_NAME = "events";
 
     public static final String OP_subscribe = "subscribe";
@@ -85,17 +82,12 @@ public class EventResource extends AbstractWebSocketResource {
             streamSubscriber = new StreamSubscriber() {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
-                    try {
-                        Event event = (Event) tuple.getColumn("body");
-                        event = Event.newBuilder(event)
-                                .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
-                                .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
-                                .build();
-                        wsHandler.sendData(ProtoDataType.EVENT, event);
-                    } catch (Exception e) {
-                        log.warn("got error when sending event, quitting", e);
-                        socketClosed();
-                    }
+                    Event event = (Event) tuple.getColumn("body");
+                    event = Event.newBuilder(event)
+                            .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
+                            .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
+                            .build();
+                    wsHandler.sendData(ProtoDataType.EVENT, event);
                 }
 
                 @Override

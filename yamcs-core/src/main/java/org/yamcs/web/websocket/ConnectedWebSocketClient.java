@@ -1,6 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -129,11 +128,8 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
                 .setClientId(getId())
                 .setInstance(yi)
                 .setProcessor(ManagementGpbHelper.toProcessorInfo(processor));
-        try {
-            wsHandler.sendData(ProtoDataType.CONNECTION_INFO, conninf.build());
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-        }
+
+        wsHandler.sendData(ProtoDataType.CONNECTION_INFO, conninf.build());
     }
 
     public void checkSystemPrivilege(int requestId, SystemPrivilege systemPrivilege) throws WebSocketException {
