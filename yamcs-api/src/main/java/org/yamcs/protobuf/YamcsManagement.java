@@ -10712,25 +10712,11 @@ public final class YamcsManagement {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>required string instance = 1;</code>
-     */
-    boolean hasInstance();
-    /**
-     * <code>required string instance = 1;</code>
-     */
-    java.lang.String getInstance();
-    /**
-     * <code>required string instance = 1;</code>
-     */
-    com.google.protobuf.ByteString
-        getInstanceBytes();
-
-    /**
-     * <code>required int32 id = 2;</code>
+     * <code>optional int32 id = 2;</code>
      */
     boolean hasId();
     /**
-     * <code>required int32 id = 2;</code>
+     * <code>optional int32 id = 2;</code>
      */
     int getId();
 
@@ -10763,6 +10749,20 @@ public final class YamcsManagement {
         getApplicationNameBytes();
 
     /**
+     * <code>optional string instance = 1;</code>
+     */
+    boolean hasInstance();
+    /**
+     * <code>optional string instance = 1;</code>
+     */
+    java.lang.String getInstance();
+    /**
+     * <code>optional string instance = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getInstanceBytes();
+
+    /**
      * <code>optional string processorName = 5;</code>
      */
     boolean hasProcessorName();
@@ -10784,23 +10784,6 @@ public final class YamcsManagement {
      * <code>optional .yamcsManagement.ClientInfo.ClientState state = 6;</code>
      */
     org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState getState();
-
-    /**
-     * <pre>
-     *Only used for clients that register themselves (websocket)
-     * </pre>
-     *
-     * <code>optional bool currentClient = 7;</code>
-     */
-    boolean hasCurrentClient();
-    /**
-     * <pre>
-     *Only used for clients that register themselves (websocket)
-     * </pre>
-     *
-     * <code>optional bool currentClient = 7;</code>
-     */
-    boolean getCurrentClient();
 
     /**
      * <code>optional int64 loginTime = 8;</code>
@@ -10837,13 +10820,12 @@ public final class YamcsManagement {
       super(builder);
     }
     private ClientInfo() {
-      instance_ = "";
       id_ = 0;
       username_ = "";
       applicationName_ = "";
+      instance_ = "";
       processorName_ = "";
       state_ = 0;
-      currentClient_ = false;
       loginTime_ = 0L;
       loginTimeUTC_ = "";
     }
@@ -10878,24 +10860,24 @@ public final class YamcsManagement {
             }
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000001;
+              bitField0_ |= 0x00000008;
               instance_ = bs;
               break;
             }
             case 16: {
-              bitField0_ |= 0x00000002;
+              bitField0_ |= 0x00000001;
               id_ = input.readInt32();
               break;
             }
             case 26: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000002;
               username_ = bs;
               break;
             }
             case 34: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000008;
+              bitField0_ |= 0x00000004;
               applicationName_ = bs;
               break;
             }
@@ -10916,19 +10898,14 @@ public final class YamcsManagement {
               }
               break;
             }
-            case 56: {
-              bitField0_ |= 0x00000040;
-              currentClient_ = input.readBool();
-              break;
-            }
             case 64: {
-              bitField0_ |= 0x00000080;
+              bitField0_ |= 0x00000040;
               loginTime_ = input.readInt64();
               break;
             }
             case 74: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000100;
+              bitField0_ |= 0x00000080;
               loginTimeUTC_ = bs;
               break;
             }
@@ -11047,58 +11024,16 @@ public final class YamcsManagement {
     }
 
     private int bitField0_;
-    public static final int INSTANCE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object instance_;
-    /**
-     * <code>required string instance = 1;</code>
-     */
-    public boolean hasInstance() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>required string instance = 1;</code>
-     */
-    public java.lang.String getInstance() {
-      java.lang.Object ref = instance_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          instance_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>required string instance = 1;</code>
-     */
-    public com.google.protobuf.ByteString
-        getInstanceBytes() {
-      java.lang.Object ref = instance_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        instance_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
     public static final int ID_FIELD_NUMBER = 2;
     private int id_;
     /**
-     * <code>required int32 id = 2;</code>
+     * <code>optional int32 id = 2;</code>
      */
     public boolean hasId() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required int32 id = 2;</code>
+     * <code>optional int32 id = 2;</code>
      */
     public int getId() {
       return id_;
@@ -11110,7 +11045,7 @@ public final class YamcsManagement {
      * <code>optional string username = 3;</code>
      */
     public boolean hasUsername() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
      * <code>optional string username = 3;</code>
@@ -11152,7 +11087,7 @@ public final class YamcsManagement {
      * <code>optional string applicationName = 4;</code>
      */
     public boolean hasApplicationName() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
      * <code>optional string applicationName = 4;</code>
@@ -11182,6 +11117,48 @@ public final class YamcsManagement {
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         applicationName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int INSTANCE_FIELD_NUMBER = 1;
+    private volatile java.lang.Object instance_;
+    /**
+     * <code>optional string instance = 1;</code>
+     */
+    public boolean hasInstance() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional string instance = 1;</code>
+     */
+    public java.lang.String getInstance() {
+      java.lang.Object ref = instance_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          instance_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string instance = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getInstanceBytes() {
+      java.lang.Object ref = instance_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        instance_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -11246,36 +11223,13 @@ public final class YamcsManagement {
       return result == null ? org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState.CONNECTED : result;
     }
 
-    public static final int CURRENTCLIENT_FIELD_NUMBER = 7;
-    private boolean currentClient_;
-    /**
-     * <pre>
-     *Only used for clients that register themselves (websocket)
-     * </pre>
-     *
-     * <code>optional bool currentClient = 7;</code>
-     */
-    public boolean hasCurrentClient() {
-      return ((bitField0_ & 0x00000040) == 0x00000040);
-    }
-    /**
-     * <pre>
-     *Only used for clients that register themselves (websocket)
-     * </pre>
-     *
-     * <code>optional bool currentClient = 7;</code>
-     */
-    public boolean getCurrentClient() {
-      return currentClient_;
-    }
-
     public static final int LOGINTIME_FIELD_NUMBER = 8;
     private long loginTime_;
     /**
      * <code>optional int64 loginTime = 8;</code>
      */
     public boolean hasLoginTime() {
-      return ((bitField0_ & 0x00000080) == 0x00000080);
+      return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
      * <code>optional int64 loginTime = 8;</code>
@@ -11290,7 +11244,7 @@ public final class YamcsManagement {
      * <code>optional string loginTimeUTC = 9;</code>
      */
     public boolean hasLoginTimeUTC() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     /**
      * <code>optional string loginTimeUTC = 9;</code>
@@ -11332,30 +11286,22 @@ public final class YamcsManagement {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasInstance()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasId()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
       memoizedIsInitialized = 1;
       return true;
     }
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, instance_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeInt32(2, id_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, username_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, applicationName_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
@@ -11365,12 +11311,9 @@ public final class YamcsManagement {
         output.writeEnum(6, state_);
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
-        output.writeBool(7, currentClient_);
-      }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeInt64(8, loginTime_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 9, loginTimeUTC_);
       }
       unknownFields.writeTo(output);
@@ -11381,17 +11324,17 @@ public final class YamcsManagement {
       if (size != -1) return size;
 
       size = 0;
-      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, instance_);
       }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(2, id_);
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, username_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, applicationName_);
       }
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
@@ -11403,13 +11346,9 @@ public final class YamcsManagement {
       }
       if (((bitField0_ & 0x00000040) == 0x00000040)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(7, currentClient_);
-      }
-      if (((bitField0_ & 0x00000080) == 0x00000080)) {
-        size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(8, loginTime_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, loginTimeUTC_);
       }
       size += unknownFields.getSerializedSize();
@@ -11429,11 +11368,6 @@ public final class YamcsManagement {
       org.yamcs.protobuf.YamcsManagement.ClientInfo other = (org.yamcs.protobuf.YamcsManagement.ClientInfo) obj;
 
       boolean result = true;
-      result = result && (hasInstance() == other.hasInstance());
-      if (hasInstance()) {
-        result = result && getInstance()
-            .equals(other.getInstance());
-      }
       result = result && (hasId() == other.hasId());
       if (hasId()) {
         result = result && (getId()
@@ -11449,6 +11383,11 @@ public final class YamcsManagement {
         result = result && getApplicationName()
             .equals(other.getApplicationName());
       }
+      result = result && (hasInstance() == other.hasInstance());
+      if (hasInstance()) {
+        result = result && getInstance()
+            .equals(other.getInstance());
+      }
       result = result && (hasProcessorName() == other.hasProcessorName());
       if (hasProcessorName()) {
         result = result && getProcessorName()
@@ -11457,11 +11396,6 @@ public final class YamcsManagement {
       result = result && (hasState() == other.hasState());
       if (hasState()) {
         result = result && state_ == other.state_;
-      }
-      result = result && (hasCurrentClient() == other.hasCurrentClient());
-      if (hasCurrentClient()) {
-        result = result && (getCurrentClient()
-            == other.getCurrentClient());
       }
       result = result && (hasLoginTime() == other.hasLoginTime());
       if (hasLoginTime()) {
@@ -11484,10 +11418,6 @@ public final class YamcsManagement {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasInstance()) {
-        hash = (37 * hash) + INSTANCE_FIELD_NUMBER;
-        hash = (53 * hash) + getInstance().hashCode();
-      }
       if (hasId()) {
         hash = (37 * hash) + ID_FIELD_NUMBER;
         hash = (53 * hash) + getId();
@@ -11500,6 +11430,10 @@ public final class YamcsManagement {
         hash = (37 * hash) + APPLICATIONNAME_FIELD_NUMBER;
         hash = (53 * hash) + getApplicationName().hashCode();
       }
+      if (hasInstance()) {
+        hash = (37 * hash) + INSTANCE_FIELD_NUMBER;
+        hash = (53 * hash) + getInstance().hashCode();
+      }
       if (hasProcessorName()) {
         hash = (37 * hash) + PROCESSORNAME_FIELD_NUMBER;
         hash = (53 * hash) + getProcessorName().hashCode();
@@ -11507,11 +11441,6 @@ public final class YamcsManagement {
       if (hasState()) {
         hash = (37 * hash) + STATE_FIELD_NUMBER;
         hash = (53 * hash) + state_;
-      }
-      if (hasCurrentClient()) {
-        hash = (37 * hash) + CURRENTCLIENT_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-            getCurrentClient());
       }
       if (hasLoginTime()) {
         hash = (37 * hash) + LOGINTIME_FIELD_NUMBER;
@@ -11640,24 +11569,22 @@ public final class YamcsManagement {
       }
       public Builder clear() {
         super.clear();
-        instance_ = "";
-        bitField0_ = (bitField0_ & ~0x00000001);
         id_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         username_ = "";
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         applicationName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        instance_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
         processorName_ = "";
         bitField0_ = (bitField0_ & ~0x00000010);
         state_ = 0;
         bitField0_ = (bitField0_ & ~0x00000020);
-        currentClient_ = false;
-        bitField0_ = (bitField0_ & ~0x00000040);
         loginTime_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000040);
         loginTimeUTC_ = "";
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
 
@@ -11685,19 +11612,19 @@ public final class YamcsManagement {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.instance_ = instance_;
+        result.id_ = id_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
-        result.id_ = id_;
+        result.username_ = username_;
         if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
           to_bitField0_ |= 0x00000004;
         }
-        result.username_ = username_;
+        result.applicationName_ = applicationName_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.applicationName_ = applicationName_;
+        result.instance_ = instance_;
         if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
           to_bitField0_ |= 0x00000010;
         }
@@ -11709,13 +11636,9 @@ public final class YamcsManagement {
         if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
           to_bitField0_ |= 0x00000040;
         }
-        result.currentClient_ = currentClient_;
+        result.loginTime_ = loginTime_;
         if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
           to_bitField0_ |= 0x00000080;
-        }
-        result.loginTime_ = loginTime_;
-        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
-          to_bitField0_ |= 0x00000100;
         }
         result.loginTimeUTC_ = loginTimeUTC_;
         result.bitField0_ = to_bitField0_;
@@ -11760,22 +11683,22 @@ public final class YamcsManagement {
 
       public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.ClientInfo other) {
         if (other == org.yamcs.protobuf.YamcsManagement.ClientInfo.getDefaultInstance()) return this;
-        if (other.hasInstance()) {
-          bitField0_ |= 0x00000001;
-          instance_ = other.instance_;
-          onChanged();
-        }
         if (other.hasId()) {
           setId(other.getId());
         }
         if (other.hasUsername()) {
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000002;
           username_ = other.username_;
           onChanged();
         }
         if (other.hasApplicationName()) {
-          bitField0_ |= 0x00000008;
+          bitField0_ |= 0x00000004;
           applicationName_ = other.applicationName_;
+          onChanged();
+        }
+        if (other.hasInstance()) {
+          bitField0_ |= 0x00000008;
+          instance_ = other.instance_;
           onChanged();
         }
         if (other.hasProcessorName()) {
@@ -11786,14 +11709,11 @@ public final class YamcsManagement {
         if (other.hasState()) {
           setState(other.getState());
         }
-        if (other.hasCurrentClient()) {
-          setCurrentClient(other.getCurrentClient());
-        }
         if (other.hasLoginTime()) {
           setLoginTime(other.getLoginTime());
         }
         if (other.hasLoginTimeUTC()) {
-          bitField0_ |= 0x00000100;
+          bitField0_ |= 0x00000080;
           loginTimeUTC_ = other.loginTimeUTC_;
           onChanged();
         }
@@ -11803,12 +11723,6 @@ public final class YamcsManagement {
       }
 
       public final boolean isInitialized() {
-        if (!hasInstance()) {
-          return false;
-        }
-        if (!hasId()) {
-          return false;
-        }
         return true;
       }
 
@@ -11831,109 +11745,33 @@ public final class YamcsManagement {
       }
       private int bitField0_;
 
-      private java.lang.Object instance_ = "";
+      private int id_ ;
       /**
-       * <code>required string instance = 1;</code>
+       * <code>optional int32 id = 2;</code>
        */
-      public boolean hasInstance() {
+      public boolean hasId() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required string instance = 1;</code>
-       */
-      public java.lang.String getInstance() {
-        java.lang.Object ref = instance_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            instance_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>required string instance = 1;</code>
-       */
-      public com.google.protobuf.ByteString
-          getInstanceBytes() {
-        java.lang.Object ref = instance_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          instance_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>required string instance = 1;</code>
-       */
-      public Builder setInstance(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        instance_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required string instance = 1;</code>
-       */
-      public Builder clearInstance() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        instance_ = getDefaultInstance().getInstance();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required string instance = 1;</code>
-       */
-      public Builder setInstanceBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        instance_ = value;
-        onChanged();
-        return this;
-      }
-
-      private int id_ ;
-      /**
-       * <code>required int32 id = 2;</code>
-       */
-      public boolean hasId() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>required int32 id = 2;</code>
+       * <code>optional int32 id = 2;</code>
        */
       public int getId() {
         return id_;
       }
       /**
-       * <code>required int32 id = 2;</code>
+       * <code>optional int32 id = 2;</code>
        */
       public Builder setId(int value) {
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         id_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required int32 id = 2;</code>
+       * <code>optional int32 id = 2;</code>
        */
       public Builder clearId() {
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         id_ = 0;
         onChanged();
         return this;
@@ -11944,7 +11782,7 @@ public final class YamcsManagement {
        * <code>optional string username = 3;</code>
        */
       public boolean hasUsername() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
        * <code>optional string username = 3;</code>
@@ -11987,7 +11825,7 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000002;
         username_ = value;
         onChanged();
         return this;
@@ -11996,7 +11834,7 @@ public final class YamcsManagement {
        * <code>optional string username = 3;</code>
        */
       public Builder clearUsername() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         username_ = getDefaultInstance().getUsername();
         onChanged();
         return this;
@@ -12009,7 +11847,7 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000004;
+  bitField0_ |= 0x00000002;
         username_ = value;
         onChanged();
         return this;
@@ -12020,7 +11858,7 @@ public final class YamcsManagement {
        * <code>optional string applicationName = 4;</code>
        */
       public boolean hasApplicationName() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
        * <code>optional string applicationName = 4;</code>
@@ -12063,7 +11901,7 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000004;
         applicationName_ = value;
         onChanged();
         return this;
@@ -12072,7 +11910,7 @@ public final class YamcsManagement {
        * <code>optional string applicationName = 4;</code>
        */
       public Builder clearApplicationName() {
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000004);
         applicationName_ = getDefaultInstance().getApplicationName();
         onChanged();
         return this;
@@ -12085,8 +11923,84 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000008;
+  bitField0_ |= 0x00000004;
         applicationName_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object instance_ = "";
+      /**
+       * <code>optional string instance = 1;</code>
+       */
+      public boolean hasInstance() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string instance = 1;</code>
+       */
+      public java.lang.String getInstance() {
+        java.lang.Object ref = instance_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            instance_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string instance = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getInstanceBytes() {
+        java.lang.Object ref = instance_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          instance_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string instance = 1;</code>
+       */
+      public Builder setInstance(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        instance_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string instance = 1;</code>
+       */
+      public Builder clearInstance() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        instance_ = getDefaultInstance().getInstance();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string instance = 1;</code>
+       */
+      public Builder setInstanceBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        instance_ = value;
         onChanged();
         return this;
       }
@@ -12203,60 +12117,12 @@ public final class YamcsManagement {
         return this;
       }
 
-      private boolean currentClient_ ;
-      /**
-       * <pre>
-       *Only used for clients that register themselves (websocket)
-       * </pre>
-       *
-       * <code>optional bool currentClient = 7;</code>
-       */
-      public boolean hasCurrentClient() {
-        return ((bitField0_ & 0x00000040) == 0x00000040);
-      }
-      /**
-       * <pre>
-       *Only used for clients that register themselves (websocket)
-       * </pre>
-       *
-       * <code>optional bool currentClient = 7;</code>
-       */
-      public boolean getCurrentClient() {
-        return currentClient_;
-      }
-      /**
-       * <pre>
-       *Only used for clients that register themselves (websocket)
-       * </pre>
-       *
-       * <code>optional bool currentClient = 7;</code>
-       */
-      public Builder setCurrentClient(boolean value) {
-        bitField0_ |= 0x00000040;
-        currentClient_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       *Only used for clients that register themselves (websocket)
-       * </pre>
-       *
-       * <code>optional bool currentClient = 7;</code>
-       */
-      public Builder clearCurrentClient() {
-        bitField0_ = (bitField0_ & ~0x00000040);
-        currentClient_ = false;
-        onChanged();
-        return this;
-      }
-
       private long loginTime_ ;
       /**
        * <code>optional int64 loginTime = 8;</code>
        */
       public boolean hasLoginTime() {
-        return ((bitField0_ & 0x00000080) == 0x00000080);
+        return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
        * <code>optional int64 loginTime = 8;</code>
@@ -12268,7 +12134,7 @@ public final class YamcsManagement {
        * <code>optional int64 loginTime = 8;</code>
        */
       public Builder setLoginTime(long value) {
-        bitField0_ |= 0x00000080;
+        bitField0_ |= 0x00000040;
         loginTime_ = value;
         onChanged();
         return this;
@@ -12277,7 +12143,7 @@ public final class YamcsManagement {
        * <code>optional int64 loginTime = 8;</code>
        */
       public Builder clearLoginTime() {
-        bitField0_ = (bitField0_ & ~0x00000080);
+        bitField0_ = (bitField0_ & ~0x00000040);
         loginTime_ = 0L;
         onChanged();
         return this;
@@ -12288,7 +12154,7 @@ public final class YamcsManagement {
        * <code>optional string loginTimeUTC = 9;</code>
        */
       public boolean hasLoginTimeUTC() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
        * <code>optional string loginTimeUTC = 9;</code>
@@ -12331,7 +12197,7 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000100;
+  bitField0_ |= 0x00000080;
         loginTimeUTC_ = value;
         onChanged();
         return this;
@@ -12340,7 +12206,7 @@ public final class YamcsManagement {
        * <code>optional string loginTimeUTC = 9;</code>
        */
       public Builder clearLoginTimeUTC() {
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000080);
         loginTimeUTC_ = getDefaultInstance().getLoginTimeUTC();
         onChanged();
         return this;
@@ -12353,7 +12219,7 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000100;
+  bitField0_ |= 0x00000080;
         loginTimeUTC_ = value;
         onChanged();
         return this;
@@ -13514,12 +13380,6 @@ public final class YamcsManagement {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      for (int i = 0; i < getClientInfoCount(); i++) {
-        if (!getClientInfo(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -13948,11 +13808,6 @@ public final class YamcsManagement {
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getClientInfoCount(); i++) {
-          if (!getClientInfo(i).isInitialized()) {
-            return false;
-          }
-        }
         return true;
       }
 
@@ -24296,55 +24151,55 @@ public final class YamcsManagement {
       "yamcs.ReplayStatus.ReplayState\022-\n\007servic" +
       "e\030\020 \003(\0132\034.yamcsManagement.ServiceInfo\022\022\n" +
       "\npersistent\030\021 \001(\010\022\014\n\004time\030\022 \001(\t\022\016\n\006repla" +
-      "y\030\023 \001(\010\"\224\002\n\nClientInfo\022\020\n\010instance\030\001 \002(\t" +
-      "\022\n\n\002id\030\002 \002(\005\022\020\n\010username\030\003 \001(\t\022\027\n\017applic" +
-      "ationName\030\004 \001(\t\022\025\n\rprocessorName\030\005 \001(\t\0226" +
+      "y\030\023 \001(\010\"\375\001\n\nClientInfo\022\n\n\002id\030\002 \001(\005\022\020\n\010us" +
+      "ername\030\003 \001(\t\022\027\n\017applicationName\030\004 \001(\t\022\020\n" +
+      "\010instance\030\001 \001(\t\022\025\n\rprocessorName\030\005 \001(\t\0226" +
       "\n\005state\030\006 \001(\0162\'.yamcsManagement.ClientIn",
-      "fo.ClientState\022\025\n\rcurrentClient\030\007 \001(\010\022\021\n" +
-      "\tloginTime\030\010 \001(\003\022\024\n\014loginTimeUTC\030\t \001(\t\"." +
-      "\n\013ClientState\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNE" +
-      "CTED\020\001\"3\n\023ObjectPrivilegeInfo\022\014\n\004type\030\001 " +
-      "\001(\t\022\016\n\006object\030\002 \003(\t\"\265\001\n\010UserInfo\022\r\n\005logi" +
-      "n\030\001 \001(\t\022/\n\nclientInfo\030\002 \003(\0132\033.yamcsManag" +
-      "ement.ClientInfo\022\027\n\017systemPrivilege\030\013 \003(" +
-      "\t\022=\n\017objectPrivilege\030\014 \003(\0132$.yamcsManage" +
-      "ment.ObjectPrivilegeInfo\022\021\n\tsuperuser\030\r " +
-      "\001(\010\"\277\001\n\014TmStatistics\022\022\n\npacketName\030\001 \002(\t",
-      "\022\027\n\017receivedPackets\030\002 \001(\003\022\024\n\014lastReceive" +
-      "d\030\003 \001(\003\022\027\n\017lastReceivedUTC\030\010 \001(\t\022\026\n\016last" +
-      "PacketTime\030\004 \001(\003\022\031\n\021lastPacketTimeUTC\030\007 " +
-      "\001(\t\022 \n\030subscribedParameterCount\030\006 \001(\005\"\223\001" +
-      "\n\nStatistics\022\020\n\010instance\030\001 \002(\t\022\026\n\016yProce" +
-      "ssorName\030\002 \002(\t\022.\n\007tmstats\030\003 \003(\0132\035.yamcsM" +
-      "anagement.TmStatistics\022\023\n\013lastUpdated\030\004 " +
-      "\001(\003\022\026\n\016lastUpdatedUTC\030\005 \001(\t\"\216\002\n\032Processo" +
-      "rManagementRequest\022H\n\toperation\030\001 \001(\01625." +
-      "yamcsManagement.ProcessorManagementReque",
-      "st.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003" +
-      " \001(\t\022\014\n\004type\030\004 \001(\t\022\016\n\006config\030\005 \001(\t\022\020\n\010cl" +
-      "ientId\030\006 \003(\005\022\031\n\npersistent\030\007 \001(\010:\005false\"" +
-      ";\n\tOperation\022\024\n\020CREATE_PROCESSOR\020\000\022\030\n\024CO" +
-      "NNECT_TO_PROCESSOR\020\001\"\355\001\n\020ProcessorReques" +
-      "t\022>\n\toperation\030\001 \001(\0162+.yamcsManagement.P" +
-      "rocessorRequest.Operation\022\020\n\010instance\030\002 " +
-      "\001(\t\022\014\n\004name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013r" +
-      "eplaySpeed\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\t" +
-      "Operation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK",
-      "\020\004\022\020\n\014CHANGE_SPEED\020\005\"\243\001\n\010LinkInfo\022\020\n\010ins" +
-      "tance\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003 \001(\t\022" +
-      "\014\n\004spec\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disable" +
-      "d\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCount\030\010 \001" +
-      "(\003\022\026\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent" +
-      "\022-\n\004type\030\001 \001(\0162\037.yamcsManagement.LinkEve" +
-      "nt.Type\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsManagem" +
-      "ent.LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014" +
-      "UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"\201\001\n\013ServiceI" +
-      "nfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005s",
-      "tate\030\003 \001(\0162\035.yamcsManagement.ServiceStat" +
-      "e\022\021\n\tclassName\030\004 \001(\t\022\021\n\tprocessor\030\005 \001(\t*" +
-      "\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013" +
-      "\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020" +
-      "\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.protobuf"
+      "fo.ClientState\022\021\n\tloginTime\030\010 \001(\003\022\024\n\014log" +
+      "inTimeUTC\030\t \001(\t\".\n\013ClientState\022\r\n\tCONNEC" +
+      "TED\020\000\022\020\n\014DISCONNECTED\020\001\"3\n\023ObjectPrivile" +
+      "geInfo\022\014\n\004type\030\001 \001(\t\022\016\n\006object\030\002 \003(\t\"\265\001\n" +
+      "\010UserInfo\022\r\n\005login\030\001 \001(\t\022/\n\nclientInfo\030\002" +
+      " \003(\0132\033.yamcsManagement.ClientInfo\022\027\n\017sys" +
+      "temPrivilege\030\013 \003(\t\022=\n\017objectPrivilege\030\014 " +
+      "\003(\0132$.yamcsManagement.ObjectPrivilegeInf" +
+      "o\022\021\n\tsuperuser\030\r \001(\010\"\277\001\n\014TmStatistics\022\022\n" +
+      "\npacketName\030\001 \002(\t\022\027\n\017receivedPackets\030\002 \001",
+      "(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n\017lastReceived" +
+      "UTC\030\010 \001(\t\022\026\n\016lastPacketTime\030\004 \001(\003\022\031\n\021las" +
+      "tPacketTimeUTC\030\007 \001(\t\022 \n\030subscribedParame" +
+      "terCount\030\006 \001(\005\"\223\001\n\nStatistics\022\020\n\010instanc" +
+      "e\030\001 \002(\t\022\026\n\016yProcessorName\030\002 \002(\t\022.\n\007tmsta" +
+      "ts\030\003 \003(\0132\035.yamcsManagement.TmStatistics\022" +
+      "\023\n\013lastUpdated\030\004 \001(\003\022\026\n\016lastUpdatedUTC\030\005" +
+      " \001(\t\"\216\002\n\032ProcessorManagementRequest\022H\n\to" +
+      "peration\030\001 \001(\01625.yamcsManagement.Process" +
+      "orManagementRequest.Operation\022\020\n\010instanc",
+      "e\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type\030\004 \001(\t\022\016\n\006c" +
+      "onfig\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\031\n\npersist" +
+      "ent\030\007 \001(\010:\005false\";\n\tOperation\022\024\n\020CREATE_" +
+      "PROCESSOR\020\000\022\030\n\024CONNECT_TO_PROCESSOR\020\001\"\355\001" +
+      "\n\020ProcessorRequest\022>\n\toperation\030\001 \001(\0162+." +
+      "yamcsManagement.ProcessorRequest.Operati" +
+      "on\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\020\n\010se" +
+      "ekTime\030\004 \001(\003\022\'\n\013replaySpeed\030\005 \001(\0132\022.yamc" +
+      "s.ReplaySpeed\">\n\tOperation\022\t\n\005PAUSE\020\002\022\n\n" +
+      "\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020\n\014CHANGE_SPEED\020\005\"\243\001",
+      "\n\010LinkInfo\022\020\n\010instance\030\001 \002(\t\022\014\n\004name\030\002 \002" +
+      "(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\016\n\006stream" +
+      "\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t" +
+      "\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016detailedStatus\030\t " +
+      "\001(\t\"\236\001\n\tLinkEvent\022-\n\004type\030\001 \001(\0162\037.yamcsM" +
+      "anagement.LinkEvent.Type\022+\n\010linkInfo\030\002 \001" +
+      "(\0132\031.yamcsManagement.LinkInfo\"5\n\004Type\022\016\n" +
+      "\nREGISTERED\020\001\022\020\n\014UNREGISTERED\020\002\022\013\n\007UPDAT" +
+      "ED\020\003\"\201\001\n\013ServiceInfo\022\020\n\010instance\030\001 \001(\t\022\014" +
+      "\n\004name\030\002 \001(\t\022,\n\005state\030\003 \001(\0162\035.yamcsManag",
+      "ement.ServiceState\022\021\n\tclassName\030\004 \001(\t\022\021\n" +
+      "\tprocessor\030\005 \001(\t*\\\n\014ServiceState\022\007\n\003NEW\020" +
+      "\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING" +
+      "\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022org.ya" +
+      "mcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -24406,7 +24261,7 @@ public final class YamcsManagement {
     internal_static_yamcsManagement_ClientInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcsManagement_ClientInfo_descriptor,
-        new java.lang.String[] { "Instance", "Id", "Username", "ApplicationName", "ProcessorName", "State", "CurrentClient", "LoginTime", "LoginTimeUTC", });
+        new java.lang.String[] { "Id", "Username", "ApplicationName", "Instance", "ProcessorName", "State", "LoginTime", "LoginTimeUTC", });
     internal_static_yamcsManagement_ObjectPrivilegeInfo_descriptor =
       getDescriptor().getMessageTypes().get(8);
     internal_static_yamcsManagement_ObjectPrivilegeInfo_fieldAccessorTable = new

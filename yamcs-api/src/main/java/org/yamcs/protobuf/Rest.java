@@ -17529,12 +17529,6 @@ public final class Rest {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      for (int i = 0; i < getClientCount(); i++) {
-        if (!getClient(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -17820,11 +17814,6 @@ public final class Rest {
       }
 
       public final boolean isInitialized() {
-        for (int i = 0; i < getClientCount(); i++) {
-          if (!getClient(i).isInitialized()) {
-            return false;
-          }
-        }
         return true;
       }
 

@@ -72,9 +72,6 @@ public class ManagementResource implements WebSocketResource, ManagementListener
             Set<ConnectedClient> clients = ManagementService.getInstance().getClients();
             for (ConnectedClient otherClient : clients) {
                 ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(otherClient, ClientState.CONNECTED);
-                clientInfo = ClientInfo.newBuilder(clientInfo)
-                        .setCurrentClient(clientInfo.getId() == client.getId())
-                        .build();
                 client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
             }
         }
@@ -114,9 +111,6 @@ public class ManagementResource implements WebSocketResource, ManagementListener
     public void clientRegistered(ConnectedClient newClient) {
         if (emitClientInfo) {
             ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(newClient, ClientState.CONNECTED);
-            clientInfo = ClientInfo.newBuilder(clientInfo)
-                    .setCurrentClient(client.getId() == clientInfo.getId())
-                    .build();
             client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }
@@ -125,9 +119,6 @@ public class ManagementResource implements WebSocketResource, ManagementListener
     public void clientInfoChanged(ConnectedClient changedClient) {
         if (emitClientInfo) {
             ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(changedClient, ClientState.CONNECTED);
-            clientInfo = ClientInfo.newBuilder(clientInfo)
-                    .setCurrentClient(client.getId() == clientInfo.getId())
-                    .build();
             client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }
@@ -140,7 +131,6 @@ public class ManagementResource implements WebSocketResource, ManagementListener
 
         if (emitClientInfo) {
             ClientInfo clientInfo = YamcsToGpbAssembler.toClientInfo(oldClient, ClientState.DISCONNECTED);
-            clientInfo = ClientInfo.newBuilder(clientInfo).setCurrentClient(false).build();
             client.sendData(ProtoDataType.CLIENT_INFO, clientInfo);
         }
     }

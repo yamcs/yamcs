@@ -95,13 +95,14 @@ message ClientInfo {
     CONNECTED = 0;
     DISCONNECTED = 1;
   }
-  required string instance = 1;
-  required int32 id = 2;
+  optional int32 id = 2;
   optional string username = 3;
   optional string applicationName = 4;
+
+  optional string instance = 1;  
   optional string processorName = 5;
+  
   optional ClientState state = 6;
-  optional bool currentClient = 7; //Only used for clients that register themselves (websocket)
   optional int64 loginTime = 8;
   optional string loginTimeUTC = 9;
 }

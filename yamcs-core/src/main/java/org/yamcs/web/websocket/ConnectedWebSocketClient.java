@@ -131,15 +131,18 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
     }
 
     void sendConnectionInfo() {
-        Processor processor = getProcessor();
-        String instanceName = processor.getInstance();
-        YamcsServerInstance ysi = YamcsServer.getInstance(instanceName);
-        YamcsInstance yi = YamcsInstance.newBuilder().setName(instanceName)
-                .setState(ysi.getState()).build();
         ConnectionInfo.Builder conninf = ConnectionInfo.newBuilder()
-                .setClientId(getId())
-                .setInstance(yi)
-                .setProcessor(ManagementGpbHelper.toProcessorInfo(processor));
+                .setClientId(getId());
+
+        Processor processor = getProcessor();
+        if (processor != null) {
+            String instanceName = processor.getInstance();
+            YamcsServerInstance ysi = YamcsServer.getInstance(instanceName);
+            YamcsInstance yi = YamcsInstance.newBuilder().setName(instanceName)
+                    .setState(ysi.getState()).build();
+            conninf.setInstance(yi);
+            conninf.setProcessor(ManagementGpbHelper.toProcessorInfo(processor));
+        }
 
         wsHandler.sendData(ProtoDataType.CONNECTION_INFO, conninf.build());
     }

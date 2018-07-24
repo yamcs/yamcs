@@ -27,12 +27,17 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
 
     private ConnectedWebSocketClient client;
 
-    private Processor processor;
     private volatile boolean subscribed = false;
+
+    private CommandQueueManager commandQueueManager;
 
     public CommandQueueResource(ConnectedWebSocketClient client) {
         this.client = client;
-        processor = client.getProcessor();
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            ManagementService mservice = ManagementService.getInstance();
+            commandQueueManager = mservice.getCommandQueueManager(processor);
+        }
     }
 
     @Override
@@ -56,11 +61,9 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
         client.sendReply(reply);
 
         subscribed = true;
-        ManagementService mservice = ManagementService.getInstance();
-        CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
-        if (cqueueManager != null) {
-            cqueueManager.registerListener(this);
-            for (CommandQueue q : cqueueManager.getQueues()) {
+        if (commandQueueManager != null) {
+            commandQueueManager.registerListener(this);
+            for (CommandQueue q : commandQueueManager.getQueues()) {
                 sendInitialUpdateQueue(q);
             }
         }
@@ -68,45 +71,29 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
     }
 
     private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
-        ManagementService mservice = ManagementService.getInstance();
-        CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
-        if (cqueueManager != null) {
-            cqueueManager.removeListener(this);
+        if (commandQueueManager != null) {
+            commandQueueManager.removeListener(this);
         }
         subscribed = false;
         return WebSocketReply.ack(requestId);
     }
 
     @Override
-    public void socketClosed() {
-        ManagementService mservice = ManagementService.getInstance();
-        CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
-        if (cqueueManager != null) {
-            cqueueManager.removeListener(this);
-        }
-    }
-
-    @Override
     public void unselectProcessor() {
-        ManagementService mservice = ManagementService.getInstance();
-        CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
-        if (cqueueManager != null) {
-            cqueueManager.removeListener(this);
+        if (commandQueueManager != null) {
+            commandQueueManager.removeListener(this);
         }
-        processor = null;
+        commandQueueManager = null;
     }
 
     @Override
     public void selectProcessor(Processor processor) throws ProcessorException {
-        this.processor = processor;
-        if (subscribed) {
-            ManagementService mservice = ManagementService.getInstance();
-            CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
-            if (cqueueManager != null) {
-                cqueueManager.registerListener(this);
-                for (CommandQueue q : cqueueManager.getQueues()) {
-                    sendInitialUpdateQueue(q);
-                }
+        ManagementService mservice = ManagementService.getInstance();
+        commandQueueManager = mservice.getCommandQueueManager(processor);
+        if (subscribed && commandQueueManager != null) {
+            commandQueueManager.registerListener(this);
+            for (CommandQueue q : commandQueueManager.getQueues()) {
+                sendInitialUpdateQueue(q);
             }
         }
     }
@@ -151,5 +138,12 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
         evtb.setType(Type.COMMAND_SENT);
         evtb.setData(data);
         client.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
+    }
+
+    @Override
+    public void socketClosed() {
+        if (commandQueueManager != null) {
+            commandQueueManager.removeListener(this);
+        }
     }
 }
