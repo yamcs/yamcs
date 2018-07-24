@@ -8,6 +8,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.ws.WSConstants;
 import org.yamcs.management.ManagementService;
@@ -86,7 +87,13 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
         String yamcsInstance = originalRequestInfo.getYamcsInstance();
         User user = originalRequestInfo.getUser();
-        wsClient = new ConnectedWebSocketClient(user, applicationName, yamcsInstance, this);
+        if (yamcsInstance != null) {
+            Processor firstProcessor = Processor.getFirstProcessor(yamcsInstance);
+            wsClient = new ConnectedWebSocketClient(user, applicationName, firstProcessor, this);
+        } else {
+            wsClient = new ConnectedWebSocketClient(user, applicationName, null, this);
+        }
+
         ManagementService managementService = ManagementService.getInstance();
         managementService.registerClient(wsClient);
         managementService.addManagementListener(wsClient);
@@ -180,7 +187,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (wsClient != null) {
             log.info("Channel {} closed", ctx.channel().remoteAddress());
-            wsClient.quit();
+            wsClient.socketClosed();
         }
     }
 

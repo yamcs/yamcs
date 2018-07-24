@@ -21,8 +21,11 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
     public static final String RESOURCE_NAME = "alarms";
     private volatile boolean subscribed = false;
 
+    private Processor processor;
+
     public AlarmResource(ConnectedWebSocketClient client) {
         super(client);
+        processor = client.getProcessor();
     }
 
     @Override
@@ -41,7 +44,8 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
     private WebSocketReply subscribe(int requestId) throws WebSocketException {
         try {
             wsHandler.sendReply(WebSocketReply.ack(requestId));
-            doSubscribe();
+            subscribed = true;
+            applySubscription();
             return null;
         } catch (IOException e) {
             log.error("Exception when sending data", e);
@@ -50,29 +54,40 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
     }
 
     private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
-        doUnsubscribe();
+        if (processor.hasAlarmServer()) {
+            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+            alarmServer.unsubscribe(this);
+        }
+        subscribed = false;
         return WebSocketReply.ack(requestId);
     }
 
     @Override
-    public void quit() {
-        doUnsubscribe();
-    }
-
-    @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        if (subscribed) {
-            doUnsubscribe();
-            super.switchProcessor(oldProcessor, newProcessor);
-            doSubscribe();
-        } else {
-            super.switchProcessor(oldProcessor, newProcessor);
-
+    public void socketClosed() {
+        if (processor.hasAlarmServer()) {
+            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+            alarmServer.unsubscribe(this);
         }
     }
 
-    private void doSubscribe() {
-        subscribed = true;
+    @Override
+    public void unselectProcessor() {
+        if (processor.hasAlarmServer()) {
+            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+            alarmServer.unsubscribe(this);
+        }
+        processor = null;
+    }
+
+    @Override
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        this.processor = processor;
+        if (subscribed) {
+            applySubscription();
+        }
+    }
+
+    private void applySubscription() {
         if (processor.hasAlarmServer()) {
             AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
             for (ActiveAlarm activeAlarm : alarmServer.getActiveAlarms().values()) {
@@ -80,14 +95,6 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
             }
             alarmServer.subscribe(this);
         }
-    }
-
-    private void doUnsubscribe() {
-        if (processor.hasAlarmServer()) {
-            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
-            alarmServer.unsubscribe(this);
-        }
-        subscribed = false;
     }
 
     @Override
@@ -122,7 +129,7 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
             wsHandler.sendData(ProtoDataType.ALARM_DATA, alarmData);
         } catch (Exception e) {
             log.warn("Got error when sending alarm, quitting", e);
-            quit();
+            socketClosed();
         }
     }
 }

@@ -30,17 +30,19 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     public static final String OP_subscribe = "subscribe";
     public static final String OP_unsubscribe = "unsubscribe";
 
+    private Processor processor;
     private volatile boolean subscribed = false;
 
     public CommandQueueResource(ConnectedWebSocketClient client) {
         super(client);
+        processor = client.getProcessor();
     }
 
     @Override
     public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
 
-        checkSystemPrivilege(ctx.getRequestId(), SystemPrivilege.ControlCommandQueue);
+        client.checkSystemPrivilege(ctx.getRequestId(), SystemPrivilege.ControlCommandQueue);
 
         switch (ctx.getOperation()) {
         case OP_subscribe:
@@ -56,7 +58,16 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
         try {
             WebSocketReply reply = WebSocketReply.ack(requestId);
             wsHandler.sendReply(reply);
-            doSubscribe();
+
+            subscribed = true;
+            ManagementService mservice = ManagementService.getInstance();
+            CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
+            if (cqueueManager != null) {
+                cqueueManager.registerListener(this);
+                for (CommandQueue q : cqueueManager.getQueues()) {
+                    sendInitialUpdateQueue(q);
+                }
+            }
             return null;
         } catch (IOException e) {
             log.error("Exception when sending data", e);
@@ -65,44 +76,46 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
     }
 
     private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
-        doUnsubscribe();
-        return WebSocketReply.ack(requestId);
-    }
-
-    @Override
-    public void quit() {
-        doUnsubscribe();
-    }
-
-    private void doSubscribe() {
-        subscribed = true;
-        ManagementService mservice = ManagementService.getInstance();
-        CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
-        if (cqueueManager != null) {
-            cqueueManager.registerListener(this);
-            for (CommandQueue q : cqueueManager.getQueues()) {
-                sendInitialUpdateQueue(q);
-            }
-        }
-    }
-
-    private void doUnsubscribe() {
         ManagementService mservice = ManagementService.getInstance();
         CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
         if (cqueueManager != null) {
             cqueueManager.removeListener(this);
         }
         subscribed = false;
+        return WebSocketReply.ack(requestId);
     }
 
     @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
+    public void socketClosed() {
+        ManagementService mservice = ManagementService.getInstance();
+        CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
+        if (cqueueManager != null) {
+            cqueueManager.removeListener(this);
+        }
+    }
+
+    @Override
+    public void unselectProcessor() {
+        ManagementService mservice = ManagementService.getInstance();
+        CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
+        if (cqueueManager != null) {
+            cqueueManager.removeListener(this);
+        }
+        processor = null;
+    }
+
+    @Override
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        this.processor = processor;
         if (subscribed) {
-            doUnsubscribe();
-            super.switchProcessor(oldProcessor, newProcessor);
-            doSubscribe();
-        } else {
-            super.switchProcessor(oldProcessor, newProcessor);
+            ManagementService mservice = ManagementService.getInstance();
+            CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
+            if (cqueueManager != null) {
+                cqueueManager.registerListener(this);
+                for (CommandQueue q : cqueueManager.getQueues()) {
+                    sendInitialUpdateQueue(q);
+                }
+            }
         }
     }
 
@@ -118,7 +131,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
             wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
         } catch (Exception e) {
             log.warn("got error when sending command queue info, quitting", e);
-            quit();
+            socketClosed();
         }
     }
 
@@ -129,7 +142,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
             wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
         } catch (Exception e) {
             log.warn("got error when sending command queue info, quitting", e);
-            quit();
+            socketClosed();
         }
     }
 
@@ -143,7 +156,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
             wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
         } catch (Exception e) {
             log.warn("got error when sending command queue event, quitting", e);
-            quit();
+            socketClosed();
         }
     }
 
@@ -157,7 +170,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
             wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
         } catch (Exception e) {
             log.warn("got error when sending command queue event, quitting", e);
-            quit();
+            socketClosed();
         }
     }
 
@@ -171,7 +184,7 @@ public class CommandQueueResource extends AbstractWebSocketResource implements C
             wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
         } catch (Exception e) {
             log.warn("got error when sending command queue event, quitting", e);
-            quit();
+            socketClosed();
         }
     }
 }

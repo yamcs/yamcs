@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.Processor;
+import org.yamcs.ProcessorException;
 import org.yamcs.protobuf.Web.TimeSubscriptionResponse;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
@@ -21,12 +23,15 @@ public class TimeResource extends AbstractWebSocketResource {
     public static final String OP_unsubscribe = "unsubscribe";
     private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
+    private Processor processor;
+
     private AtomicBoolean subscribed = new AtomicBoolean(false);
 
     private ScheduledFuture<?> future = null;
 
     public TimeResource(ConnectedWebSocketClient client) {
         super(client);
+        processor = client.getProcessor();
     }
 
     @Override
@@ -36,7 +41,10 @@ public class TimeResource extends AbstractWebSocketResource {
         case OP_subscribe:
             return processSubscribeRequest(ctx, decoder);
         case OP_unsubscribe:
-            doUnsubscribe();
+            if (future != null) {
+                future.cancel(false);
+            }
+            subscribed.set(false);
             return WebSocketReply.ack(ctx.getRequestId());
         default:
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
@@ -81,15 +89,20 @@ public class TimeResource extends AbstractWebSocketResource {
         return null;
     }
 
-    private void doUnsubscribe() {
-        if (future != null) {
-            future.cancel(false);
-        }
-        subscribed.set(false);
+    @Override
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        this.processor = processor;
     }
 
     @Override
-    public void quit() {
-        doUnsubscribe();
+    public void unselectProcessor() {
+        processor = null;
+    }
+
+    @Override
+    public void socketClosed() {
+        if (future != null) {
+            future.cancel(false);
+        }
     }
 }

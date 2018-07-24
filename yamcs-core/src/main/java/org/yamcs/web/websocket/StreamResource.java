@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.Processor;
+import org.yamcs.ProcessorException;
 import org.yamcs.protobuf.Archive.ColumnData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Rest.StreamSubscribeRequest;
@@ -35,8 +37,14 @@ public class StreamResource extends AbstractWebSocketResource {
 
     private List<Subscription> subscriptions = new ArrayList<>();
 
+    private String yamcsInstance;
+
     public StreamResource(ConnectedWebSocketClient client) {
         super(client);
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            yamcsInstance = processor.getInstance();
+        }
     }
 
     @Override
@@ -54,20 +62,16 @@ public class StreamResource extends AbstractWebSocketResource {
 
     private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
         // Optionally read body. If it's not provided, suppose the subscription concerns
         // the stream of the current processor (TODO currently doesn't work with JSON).
         Stream stream;
-        if (ctx.getData() != null) { // Check doesn't work with JSON, always returns JsonParser
-            StreamSubscribeRequest req = decoder.decodeMessageData(ctx, StreamSubscribeRequest.newBuilder()).build();
-            if (req.hasStream()) {
-                stream = ydb.getStream(req.getStream());
-            } else {
-                throw new WebSocketException(ctx.getRequestId(), "No stream was provided");
-            }
+        StreamSubscribeRequest req = decoder.decodeMessageData(ctx, StreamSubscribeRequest.newBuilder()).build();
+        if (req.hasStream()) {
+            stream = ydb.getStream(req.getStream());
         } else {
-            stream = ydb.getStream(processor.getName());
+            throw new WebSocketException(ctx.getRequestId(), "No stream was provided");
         }
 
         StreamSubscriber subscriber = new StreamSubscriber() {
@@ -115,30 +119,35 @@ public class StreamResource extends AbstractWebSocketResource {
         switch (columnType.val) {
         case SHORT:
         case INT:
-            if (value.getType() != Type.SINT32)
+            if (value.getType() != Type.SINT32) {
                 throw new WebSocketException(ctx.getRequestId(), String.format(
                         "Value type for column %s should be '%s'", name, Type.SINT32));
+            }
             return value.getSint32Value();
         case DOUBLE:
-            if (value.getType() != Type.DOUBLE)
+            if (value.getType() != Type.DOUBLE) {
                 throw new WebSocketException(ctx.getRequestId(), String.format(
                         "Value type for column %s should be '%s'", name, Type.DOUBLE));
+            }
             return value.getDoubleValue();
         case BINARY:
-            if (value.getType() != Type.BINARY)
+            if (value.getType() != Type.BINARY) {
                 throw new WebSocketException(ctx.getRequestId(), String.format(
                         "Value type for column %s should be '%s'", name, Type.BINARY));
-            return value.getBinaryValue().toByteArray();                 
+            }
+            return value.getBinaryValue().toByteArray();
         case TIMESTAMP:
-            if (value.getType() != Type.TIMESTAMP)
+            if (value.getType() != Type.TIMESTAMP) {
                 throw new WebSocketException(ctx.getRequestId(), String.format(
                         "Value type for column %s should be '%s'", name, Type.TIMESTAMP));
+            }
             return value.getTimestampValue();
         case ENUM:
         case STRING:
-            if (value.getType() != Type.STRING)
+            if (value.getType() != Type.STRING) {
                 throw new WebSocketException(ctx.getRequestId(), String.format(
                         "Value type for column %s should be '%s'", name, Type.STRING));
+            }
             return value.getStringValue();
         default:
             throw new IllegalArgumentException("Tuple column type " + columnType.val + " is currently not supported");
@@ -147,7 +156,7 @@ public class StreamResource extends AbstractWebSocketResource {
 
     private WebSocketReply processPublishRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
         StreamData req = decoder.decodeMessageData(ctx, StreamData.newBuilder()).build();
         Stream stream = ydb.getStream(req.getStream());
@@ -161,8 +170,9 @@ public class StreamResource extends AbstractWebSocketResource {
         // 'fixed' colums
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
             ColumnData providedField = findColumnValue(req, cdef.getName());
-            if (providedField == null)
+            if (providedField == null) {
                 continue;
+            }
             if (!providedField.hasValue()) {
                 throw new WebSocketException(ctx.getRequestId(), "No value was provided for column " + cdef.getName());
             }
@@ -196,7 +206,17 @@ public class StreamResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public void quit() {
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        yamcsInstance = processor.getInstance();
+    }
+
+    @Override
+    public void unselectProcessor() {
+        yamcsInstance = null;
+    }
+
+    @Override
+    public void socketClosed() {
         for (Subscription subscription : subscriptions) {
             subscription.stream.removeSubscriber(subscription.subscriber);
         }

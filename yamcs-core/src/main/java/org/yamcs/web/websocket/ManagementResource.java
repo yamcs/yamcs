@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorException;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
@@ -36,9 +37,12 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     private boolean emitProcessorInfo;
     private boolean emitProcessorStatistics;
 
+    private Processor processor;
+
     public ManagementResource(ConnectedWebSocketClient client) {
         super(client);
         clientId = client.getId();
+        processor = client.getProcessor();
     }
 
     @Override
@@ -66,7 +70,7 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
             reply.attachData("ProcessorInfo", pinfo);
             wsHandler.sendReply(reply);
 
-            // TODO Should probably remove this line, now that we sent this already in the response.
+            // TODO Should probably remove this line, now that we send this already in the response.
             wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, pinfo);
         } catch (IOException e) {
             log.warn("Exception when sending data", e);
@@ -155,7 +159,17 @@ public class ManagementResource extends AbstractWebSocketResource implements Man
     }
 
     @Override
-    public void quit() {
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        this.processor = processor;
+    }
+
+    @Override
+    public void unselectProcessor() {
+        processor = null;
+    }
+
+    @Override
+    public void socketClosed() {
         ManagementService.getInstance().removeManagementListener(this);
     }
 

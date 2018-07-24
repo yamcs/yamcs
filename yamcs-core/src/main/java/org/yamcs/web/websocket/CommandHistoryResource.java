@@ -23,10 +23,15 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
     private static final Logger log = LoggerFactory.getLogger(CommandHistoryResource.class);
     public static final String RESOURCE_NAME = "cmdhistory";
 
-    private int subscriptionId = -1;
+    private CommandHistoryFilter subscription;
+    private CommandHistoryRequestManager commandHistoryRequestManager;
 
     public CommandHistoryResource(ConnectedWebSocketClient client) {
         super(client);
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            commandHistoryRequestManager = processor.getCommandHistoryManager();
+        }
     }
 
     @Override
@@ -41,48 +46,28 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
     }
 
     private WebSocketReply subscribe(int requestId) {
-        CommandHistoryRequestManager chrm = processor.getCommandHistoryManager();
-        if (chrm != null) {
-            subscriptionId = chrm.subscribeCommandHistory(null, 0, this);
+        if (commandHistoryRequestManager != null) {
+            subscription = commandHistoryRequestManager.subscribeCommandHistory(null, 0, this);
         }
         return WebSocketReply.ack(requestId);
     }
 
-    /**
-     * called when the socket is closed
-     */
     @Override
-    public void quit() {
-        if (subscriptionId == -1) {
-            return;
+    public void unselectProcessor() {
+        if (subscription != null) {
+            if (commandHistoryRequestManager != null) {
+                commandHistoryRequestManager.unsubscribeCommandHistory(subscription.subscriptionId);
+            }
         }
-        CommandHistoryRequestManager chrm = processor.getCommandHistoryManager();
-        if (chrm != null) {
-            chrm.unsubscribeCommandHistory(subscriptionId);
-        }
+        commandHistoryRequestManager = null;
     }
 
     @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        if (subscriptionId == -1) {
-            super.switchProcessor(oldProcessor, newProcessor);
-            return;
-        }
-
-        CommandHistoryRequestManager chrm = processor.getCommandHistoryManager();
-        CommandHistoryFilter filter = null;
-        if (chrm != null) {
-            filter = chrm.unsubscribeCommandHistory(subscriptionId);
-        }
-
-        super.switchProcessor(oldProcessor, newProcessor);
-
+    public void selectProcessor(Processor processor) throws ProcessorException {
         if (processor.hasCommanding()) {
-            chrm = processor.getCommandHistoryManager();
-            if (filter != null) {
-                chrm.addSubscription(filter, this);
-            } else {
-                chrm.subscribeCommandHistory(null, 0, this);
+            commandHistoryRequestManager = processor.getCommandHistoryManager();
+            if (commandHistoryRequestManager != null && subscription != null) {
+                commandHistoryRequestManager.addSubscription(subscription, this);
             }
         }
     }
@@ -107,7 +92,14 @@ public class CommandHistoryResource extends AbstractWebSocketResource implements
             wsHandler.sendData(ProtoDataType.CMD_HISTORY, entry);
         } catch (Exception e) {
             log.warn("got error when sending command history updates, quitting", e);
-            quit();
+            socketClosed();
+        }
+    }
+
+    @Override
+    public void socketClosed() {
+        if (subscription != null && commandHistoryRequestManager != null) {
+            commandHistoryRequestManager.unsubscribeCommandHistory(subscription.subscriptionId);
         }
     }
 }

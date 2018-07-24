@@ -178,7 +178,7 @@ public class ManagementService implements ProcessorListener {
         if (oldProcessor != null) {
             oldProcessor.disconnect(client);
         }
-        client.selectProcessor(newProcessor);
+        client.setProcessor(newProcessor);
         newProcessor.connect(client);
         try {
             managementListeners.forEach(l -> l.clientInfoChanged(client));

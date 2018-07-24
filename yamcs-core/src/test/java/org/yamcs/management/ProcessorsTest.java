@@ -88,7 +88,7 @@ public class ProcessorsTest {
         assertNotNull(processor1);
 
         processor1.connect(client);
-        client.selectProcessor(processor1);
+        client.setProcessor(processor1);
 
         ManagementService.getInstance().registerClient(client);
 

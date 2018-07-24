@@ -29,8 +29,14 @@ public class PacketResource extends AbstractWebSocketResource {
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
+    private String yamcsInstance;
+
     public PacketResource(ConnectedWebSocketClient client) {
         super(client);
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            yamcsInstance = processor.getInstance();
+        }
     }
 
     @Override
@@ -51,11 +57,15 @@ public class PacketResource extends AbstractWebSocketResource {
                 throw new WebSocketException(ctx.getRequestId(), "Invalid request. Use 'subscribe <stream_name>'");
             }
             this.streamName = a[1];
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
-            stream = ydb.getStream(streamName);
-            if (stream == null) {
-                throw new WebSocketException(ctx.getRequestId(),
-                        "Invalid request. No stream named '" + streamName + "'");
+            if (yamcsInstance != null) {
+                YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+                stream = ydb.getStream(streamName);
+                if (stream == null) {
+                    throw new WebSocketException(ctx.getRequestId(),
+                            "Invalid request. No stream named '" + streamName + "'");
+                }
+            } else {
+                throw new WebSocketException(ctx.getRequestId(), "Invalid request. Instance unspecified");
             }
             return subscribe(ctx.getRequestId());
         }
@@ -70,10 +80,15 @@ public class PacketResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
+    public void unselectProcessor() {
         doUnsubscribe();
-        super.switchProcessor(oldProcessor, newProcessor);
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
+        yamcsInstance = null;
+    }
+
+    @Override
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        yamcsInstance = processor.getInstance();
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         stream = ydb.getStream(streamName);
         doSubscribe();
     }
@@ -84,7 +99,7 @@ public class PacketResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public void quit() {
+    public void socketClosed() {
         doUnsubscribe();
     }
 
@@ -106,7 +121,7 @@ public class PacketResource extends AbstractWebSocketResource {
                         wsHandler.sendData(ProtoDataType.TM_PACKET, tm);
                     } catch (Exception e) {
                         log.warn("got error when sending event, quitting", e);
-                        quit();
+                        socketClosed();
                     }
                 }
 

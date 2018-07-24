@@ -50,11 +50,14 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
     private int firstSubscriptionId = -1;
     private int allSubscriptionId = -1;
 
-    ParameterWithIdRequestHelper pidrm;
+    private ParameterWithIdRequestHelper pidrm;
 
     public ParameterResource(ConnectedWebSocketClient client) {
         super(client);
-        pidrm = new ParameterWithIdRequestHelper(processor.getParameterRequestManager(), this);
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            pidrm = new ParameterWithIdRequestHelper(processor.getParameterRequestManager(), this);
+        }
     }
 
     @Override
@@ -208,7 +211,7 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         if ((allSubscriptionId == -1) && (subscriptionId == -1)) {
             throw new WebSocketException(requestId, "Not subscribed");
         }
-        ParameterRequestManager prm = processor.getParameterRequestManager();
+        ParameterRequestManager prm = pidrm.getPrm();
         if (allSubscriptionId != -1) {
             prm.unsubscribeAll(subscriptionId);
         }
@@ -245,31 +248,26 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
             wsHandler.sendData(ProtoDataType.PARAMETER, pd);
         } catch (ClosedChannelException e) {
             log.warn("got channel closed when trying sending parameter updates, quitting");
-            quit();
+            socketClosed();
         } catch (Exception e) {
             log.warn("got error when sending parameter updates, quitting", e);
-            quit();
+            socketClosed();
         }
     }
 
-    /**
-     * called when the socket is closed. unsubscribe all parameters
-     */
     @Override
-    public void quit() {
-        ParameterRequestManager prm = processor.getParameterRequestManager();
-        pidrm.quit();
+    public void unselectProcessor() {
+        pidrm.unselectPrm();
     }
 
     @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
+    public void selectProcessor(Processor processor) throws ProcessorException {
         try {
-            List<NamedObjectId> invalid = pidrm.switchPrm(newProcessor.getParameterRequestManager(), client.getUser());
-            super.switchProcessor(oldProcessor, newProcessor);
+            List<NamedObjectId> invalid = pidrm.selectPrm(processor.getParameterRequestManager(), client.getUser());
             if (!invalid.isEmpty()) {
                 // send notification for invalid parameters
                 ParameterData.Builder pd = ParameterData.newBuilder();
-                long now = newProcessor.getCurrentTime();
+                long now = processor.getCurrentTime();
                 for (NamedObjectId id : invalid) {
                     pd.addParameter(org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setId(id)
                             .setAcquisitionTime(now)
@@ -280,5 +278,10 @@ public class ParameterResource extends AbstractWebSocketResource implements Para
         } catch (NoPermissionException e) {
             throw new ProcessorException("No permission", e);
         }
+    }
+
+    @Override
+    public void socketClosed() {
+        pidrm.quit();
     }
 }

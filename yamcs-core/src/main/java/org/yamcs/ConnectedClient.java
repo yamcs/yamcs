@@ -21,13 +21,11 @@ public class ConnectedClient {
         this(user, applicationName, null);
     }
 
-    public ConnectedClient(User user, String applicationName, String yamcsInstance) {
+    public ConnectedClient(User user, String applicationName, Processor processor) {
         this.user = user;
         this.applicationName = applicationName;
+        this.processor = processor;
         loginTime = TimeEncoding.getWallclockTime();
-        if (yamcsInstance != null) {
-            processor = Processor.getFirstProcessor(yamcsInstance);
-        }
     }
 
     public int getId() {
@@ -60,12 +58,12 @@ public class ConnectedClient {
     }
 
     /**
-     * Select a processor for this client.
+     * Select or change the processor for this client.
      * 
      * @param processor
      *            the processor to select
      */
-    public void selectProcessor(Processor processor) throws ProcessorException {
+    public void setProcessor(Processor processor) throws ProcessorException {
         this.processor = processor;
     }
 

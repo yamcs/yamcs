@@ -19,6 +19,7 @@ import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 
 /**
@@ -32,9 +33,9 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
     private List<AbstractWebSocketResource> resources = new CopyOnWriteArrayList<>();
     private WebSocketFrameHandler wsHandler;
 
-    public ConnectedWebSocketClient(User user, String applicationName, String yamcsInstance,
+    public ConnectedWebSocketClient(User user, String applicationName, Processor processor,
             WebSocketFrameHandler wsHandler) {
-        super(user, applicationName, yamcsInstance);
+        super(user, applicationName, processor);
         this.wsHandler = wsHandler;
 
         // Built-in resources, we could consider moving this to services so that
@@ -54,12 +55,18 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
     }
 
     @Override
-    public void selectProcessor(Processor newProcessor) throws ProcessorException {
+    public void setProcessor(Processor newProcessor) throws ProcessorException {
         log.info("Switching {} to processor {}/{}", getId(), newProcessor.getInstance(), newProcessor.getName());
         Processor oldProcessor = getProcessor();
-        super.selectProcessor(newProcessor);
+        super.setProcessor(newProcessor);
+
         for (AbstractWebSocketResource resource : resources) {
-            resource.switchProcessor(oldProcessor, newProcessor);
+            if (oldProcessor != null) {
+                resource.unselectProcessor();
+            }
+            if (newProcessor != null) {
+                resource.selectProcessor(newProcessor);
+            }
         }
         sendConnectionInfo();
     }
@@ -77,14 +84,11 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
     public void processorQuit() {
     }
 
-    /**
-     * Called when the socket is closed.
-     */
-    public void quit() {
+    public void socketClosed() {
         ManagementService managementService = ManagementService.getInstance();
         managementService.unregisterClient(getId());
         managementService.removeManagementListener(this);
-        resources.forEach(r -> r.quit());
+        resources.forEach(AbstractWebSocketResource::socketClosed);
     }
 
     @Override
@@ -129,6 +133,12 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
             wsHandler.sendData(ProtoDataType.CONNECTION_INFO, conninf.build());
         } catch (IOException e) {
             log.error("Exception when sending data", e);
+        }
+    }
+
+    public void checkSystemPrivilege(int requestId, SystemPrivilege systemPrivilege) throws WebSocketException {
+        if (!getUser().hasSystemPrivilege(systemPrivilege)) {
+            throw new WebSocketException(requestId, "Need " + systemPrivilege + " privilege for this operation");
         }
     }
 }

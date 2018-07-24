@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.Processor;
+import org.yamcs.ProcessorException;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
@@ -69,7 +71,17 @@ public class InstanceResource extends AbstractWebSocketResource implements Manag
     }
 
     @Override
-    public void quit() {
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        // Ignore
+    }
+
+    @Override
+    public void unselectProcessor() {
+        // Ignore
+    }
+
+    @Override
+    public void socketClosed() {
         ManagementService.getInstance().removeManagementListener(this);
         subscribed = false;
     }

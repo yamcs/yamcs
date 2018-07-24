@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.Processor;
+import org.yamcs.ProcessorException;
 import org.yamcs.management.LinkListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Web.LinkSubscriptionRequest;
@@ -76,7 +78,17 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
     }
 
     @Override
-    public void quit() {
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        // Ignore
+    }
+
+    @Override
+    public void unselectProcessor() {
+        // Ignore
+    }
+
+    @Override
+    public void socketClosed() {
         ManagementService mservice = ManagementService.getInstance();
         mservice.removeLinkListener(this);
     }
@@ -110,7 +122,7 @@ public class LinkResource extends AbstractWebSocketResource implements LinkListe
                 wsHandler.sendData(ProtoDataType.LINK_EVENT, linkb.build());
             } catch (Exception e) {
                 log.warn("got error when sending link event, quitting", e);
-                quit();
+                socketClosed();
             }
         }
     }

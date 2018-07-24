@@ -30,8 +30,11 @@ public class EventResource extends AbstractWebSocketResource {
 
     public EventResource(ConnectedWebSocketClient client) {
         super(client);
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
-        stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
+            stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
+        }
     }
 
     @Override
@@ -54,12 +57,13 @@ public class EventResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        if (streamSubscriber == null) {
-            super.switchProcessor(oldProcessor, newProcessor);
-        } else {
-            doUnsubscribe();
-            super.switchProcessor(oldProcessor, newProcessor);
+    public void unselectProcessor() {
+        doUnsubscribe();
+    }
+
+    @Override
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        if (streamSubscriber != null) {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
             stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
             doSubscribe();
@@ -72,7 +76,7 @@ public class EventResource extends AbstractWebSocketResource {
     }
 
     @Override
-    public void quit() {
+    public void socketClosed() {
         doUnsubscribe();
     }
 
@@ -90,7 +94,7 @@ public class EventResource extends AbstractWebSocketResource {
                         wsHandler.sendData(ProtoDataType.EVENT, event);
                     } catch (Exception e) {
                         log.warn("got error when sending event, quitting", e);
-                        quit();
+                        socketClosed();
                     }
                 }
 

@@ -2,22 +2,18 @@ package org.yamcs.web.websocket;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
-import org.yamcs.security.SystemPrivilege;
-
-import io.netty.channel.Channel;
 
 /**
  * A resource bundles a set of logically related operations. Instances of this class are created for every client
  * session separately.
  */
 public abstract class AbstractWebSocketResource {
-    protected Processor processor;
+
     protected ConnectedWebSocketClient client;
     protected WebSocketFrameHandler wsHandler;
 
     public AbstractWebSocketResource(ConnectedWebSocketClient client) {
         this.client = client;
-        this.processor = client.getProcessor();
         wsHandler = client.getWebSocketFrameHandler();
     }
 
@@ -32,19 +28,9 @@ public abstract class AbstractWebSocketResource {
     /**
      * Called when the web socket is closed
      */
-    public abstract void quit();
+    public abstract void socketClosed();
 
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        this.processor = newProcessor;
-    }
+    public abstract void selectProcessor(Processor processor) throws ProcessorException;
 
-    public Channel getChannel() {
-        return wsHandler.getChannel();
-    }
-
-    protected void checkSystemPrivilege(int requestId, SystemPrivilege systemPrivilege) throws WebSocketException {
-        if (!client.getUser().hasSystemPrivilege(systemPrivilege)) {
-            throw new WebSocketException(requestId, "Need " + systemPrivilege + " privilege for this operation");
-        }
-    }
+    public abstract void unselectProcessor();
 }

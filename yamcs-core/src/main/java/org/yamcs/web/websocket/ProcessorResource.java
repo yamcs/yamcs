@@ -34,8 +34,11 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
     private boolean allProcessors;
     private boolean allInstances;
 
+    private Processor processor;
+
     public ProcessorResource(ConnectedWebSocketClient client) {
         super(client);
+        processor = client.getProcessor();
     }
 
     @Override
@@ -93,7 +96,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
     }
 
     @Override
-    public void quit() {
+    public void socketClosed() {
         ManagementService.getInstance().removeManagementListener(this);
         subscribed = false;
     }
@@ -144,18 +147,23 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
     }
 
     @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        super.switchProcessor(oldProcessor, newProcessor);
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        this.processor = processor;
         if (subscribed) {
             if (!allInstances && !allProcessors) {
                 try {
-                    ProcessorInfo processorInfo = ManagementGpbHelper.toProcessorInfo(newProcessor);
+                    ProcessorInfo processorInfo = ManagementGpbHelper.toProcessorInfo(processor);
                     wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
                 } catch (IOException e) {
                     log.error("Exception when sending data", e);
                 }
             }
         }
+    }
+
+    @Override
+    public void unselectProcessor() {
+        processor = null;
     }
 
     @Override
