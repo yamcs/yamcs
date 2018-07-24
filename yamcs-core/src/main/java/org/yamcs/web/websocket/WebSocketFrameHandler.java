@@ -25,8 +25,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.HandshakeComplete;
 import io.netty.util.AttributeKey;
@@ -105,35 +103,23 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
             HandshakeComplete handshakeEvt = (HandshakeComplete) evt;
             String subprotocol = handshakeEvt.selectedSubprotocol();
-
-            // TODO We should allow subprotocol to be null, but currently this triggers
-            // autodetection rather than defaulting to json. So warn for now to give
-            // clients time to upgrade.
             if (subprotocol == null) {
-                log.warn("Detected a WebSocket client that does not specify "
-                        + "'Sec-WebSocket-Protocol: protobuf' "
-                        + "or 'Sec-WebSocket-Protocol: json'. Defaulting to deprecated frame detection.");
+                log.info("No subprotocol defined. Using JSON.");
             }
 
-            // TODO eventually uncomment below comment. But first the deprecated incoming frame
-            // detection in channelRead0 should be removed.
-            if (/*subprotocol == null ||*/ "json".equals(subprotocol)) {
-                decoder = new JsonDecoder();
-                encoder = new JsonEncoder();
-            } else if ("protobuf".equals(subprotocol)) {
+            if ("protobuf".equals(subprotocol)) {
                 decoder = new ProtobufDecoder();
                 encoder = new ProtobufEncoder(ctx);
+            } else {
+                decoder = new JsonDecoder();
+                encoder = new JsonEncoder();
             }
 
             // After upgrade, no further HTTP messages will be received
             ctx.pipeline().remove(HttpRequestHandler.class);
 
             // Send data with server-assigned connection state (clientId, instance, processor)
-            // TODO remove the if-condition once frame detection is removed from channelRead0.
-            // The 'if' was added to prevent sending an early json message to an old gpb client
-            if (subprotocol != null) {
-                processorClient.sendConnectionInfo();
-            }
+            processorClient.sendConnectionInfo();
         } else {
             super.userEventTriggered(ctx, evt);
         }
@@ -144,19 +130,6 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         try {
             try {
                 log.debug("Received frame {}", frame);
-
-                // TODO this type of frame detection is deprecated. Use the new mechanism
-                // via a Sec-WebSocket-Protocol header directly on the upgrade request.
-                if (encoder == null) {
-                    if (frame instanceof TextWebSocketFrame) {
-                        decoder = new JsonDecoder();
-                        encoder = new JsonEncoder();
-                    } else if (frame instanceof BinaryWebSocketFrame) {
-                        decoder = new ProtobufDecoder();
-                        encoder = new ProtobufEncoder(ctx);
-                    }
-                }
-
                 ByteBuf binary = frame.content();
                 if (binary != null) {
                     if (log.isTraceEnabled()) {
