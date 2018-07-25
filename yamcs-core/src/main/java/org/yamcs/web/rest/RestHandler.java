@@ -32,6 +32,7 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
@@ -367,6 +368,33 @@ public abstract class RestHandler extends RouteHandler {
         }
 
         throw new NotFoundException(req, "No such algorithm");
+    }
+
+    protected static ParameterType verifyParameterType(RestRequest req, XtceDb mdb, String pathName)
+            throws NotFoundException {
+        int lastSlash = pathName.lastIndexOf('/');
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
+            throw new NotFoundException(req, "No such parameter type (missing namespace?)");
+        }
+
+        String namespace = pathName.substring(0, lastSlash);
+        String name = pathName.substring(lastSlash + 1);
+
+        // First try with a prefixed slash (should be the common case)
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
+        ParameterType type = mdb.getParameterType(id);
+        if (type != null) {
+            return type;
+        }
+
+        // Maybe some non-xtce namespace like MDB:OPS Name
+        id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+        type = mdb.getParameterType(id);
+        if (type != null) {
+            return type;
+        }
+
+        throw new NotFoundException(req, "No such parameter type");
     }
 
     protected static SequenceContainer verifyContainer(RestRequest req, XtceDb mdb, String pathName)

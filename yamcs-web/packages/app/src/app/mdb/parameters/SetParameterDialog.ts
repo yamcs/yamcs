@@ -59,6 +59,9 @@ export class SetParameterDialog {
       case 'double':
         value = { type: 'DOUBLE', doubleValue: userValue };
         break;
+      case 'enumeration':
+        value = { type: 'STRING', stringValue: userValue };
+        break;
       case 'integer':
         value = { type: 'SINT32', sint32Value: userValue };
         break;

@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.EventRecorder;
@@ -28,7 +29,9 @@ import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.web.BadRequestException;
+import org.yamcs.web.GpbExtensionRegistry;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpServer;
 import org.yamcs.web.rest.ParameterReplayToChunkedCSVEncoder;
 import org.yamcs.web.rest.ParameterReplayToChunkedProtobufEncoder;
 import org.yamcs.web.rest.RestHandler;
@@ -61,6 +64,8 @@ import io.netty.buffer.ByteBufOutputStream;
  * without needing to determine a content length on the server.
  */
 public class ArchiveDownloadRestHandler extends RestHandler {
+
+    private GpbExtensionRegistry gpbExtensionRegistry;
 
     @Route(path = "/api/archive/:instance/downloads/parameters", method = { "GET", "POST" })
     public void downloadParameters(RestRequest req) throws HttpException {
@@ -203,6 +208,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList, addRaw, addMonitoring,
                     filename);
             l.setNoRepeat(noRepeat);
+            System.out.println("will do replay " + rr);
             RestReplays.replay(instance, req.getUser(), rr, l);
         } else {
             RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req, filename);
@@ -399,12 +405,12 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
             @Override
             public String[] getCSVHeader() {
-                return ArchiveHelper.EVENT_CSV_HEADER;
+                return ArchiveHelper.getEventCSVHeader(getExtensionRegistry());
             }
 
             @Override
             public void processTuple(Tuple tuple, CsvWriter csvWriter) throws IOException {
-                String[] record = ArchiveHelper.tupleToCSVEvent(tuple);
+                String[] record = ArchiveHelper.tupleToCSVEvent(tuple, getExtensionRegistry());
                 csvWriter.writeRecord(record);
             }
         });
@@ -416,8 +422,16 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
             @Override
             public Event mapTuple(Tuple tuple) {
-                return ArchiveHelper.tupleToEvent(tuple);
+                return ArchiveHelper.tupleToEvent(tuple, getExtensionRegistry());
             }
         });
+    }
+
+    private GpbExtensionRegistry getExtensionRegistry() {
+        if (gpbExtensionRegistry == null) {
+            HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
+            gpbExtensionRegistry = httpServer.getGpbExtensionRegistry();
+        }
+        return gpbExtensionRegistry;
     }
 }

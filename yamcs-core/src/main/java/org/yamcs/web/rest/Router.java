@@ -50,6 +50,7 @@ import org.yamcs.web.rest.mdb.MDBAlgorithmRestHandler;
 import org.yamcs.web.rest.mdb.MDBCommandRestHandler;
 import org.yamcs.web.rest.mdb.MDBContainerRestHandler;
 import org.yamcs.web.rest.mdb.MDBParameterRestHandler;
+import org.yamcs.web.rest.mdb.MDBParameterTypeRestHandler;
 import org.yamcs.web.rest.mdb.MDBRestHandler;
 import org.yamcs.web.rest.mdb.MDBSpaceSystemRestHandler;
 import org.yamcs.web.rest.processor.ProcessorCommandQueueRestHandler;
@@ -132,6 +133,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new MDBRestHandler());
         registerRouteHandler(null, new MDBSpaceSystemRestHandler());
         registerRouteHandler(null, new MDBParameterRestHandler());
+        registerRouteHandler(null, new MDBParameterTypeRestHandler());
         registerRouteHandler(null, new MDBContainerRestHandler());
         registerRouteHandler(null, new MDBCommandRestHandler());
         registerRouteHandler(null, new MDBAlgorithmRestHandler());
@@ -314,7 +316,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                         req.getHttpRequest().uri());
             }, 2, TimeUnit.SECONDS);
         }
-        
+
         // the handlers will send themselves the response unless they throw an exception, case which is handled in the
         // catch below.
         try {
@@ -333,13 +335,13 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             req.getCompletableFuture().completeExceptionally(t);
             handleException(req, t);
         }
-        if(twoSecWarn!=null) {
+        if (twoSecWarn != null) {
             twoSecWarn.cancel(true);
         }
-        
+
         CompletableFuture<Void> cf = req.getCompletableFuture();
         if (logSlowRequests) {
-            int numSec = offThread?120:20;
+            int numSec = offThread ? 120 : 20;
             timer.schedule(() -> {
                 if (!cf.isDone()) {
                     log.warn("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(),

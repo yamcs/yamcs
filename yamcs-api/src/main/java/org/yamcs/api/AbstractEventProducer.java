@@ -112,11 +112,7 @@ public abstract class AbstractEventProducer implements EventProducer {
 
     private void sendMessage(EventSeverity severity, String type, String msg) {
         if (logAllMessages) {
-            if (severity == EventSeverity.INFO) {
-                log.info("event: {}; {}; {}", severity, type, msg);
-            } else { // we do not use log.error - this is reserved for problems inside the software
-                log.warn("event: {}; {}; {}", severity, type, msg);
-            }
+            log.debug("event: {}; {}; {}", severity, type, msg);
         }
         Event.Builder eventb = newEvent().setSeverity(severity).setMessage(msg);
         if (type != null) {

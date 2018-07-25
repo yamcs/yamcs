@@ -24,9 +24,6 @@ import org.yamcs.web.websocket.WebSocketResourceProvider;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.protobuf.Descriptors.FieldDescriptor.Type;
-import com.google.protobuf.ExtensionRegistry;
-import com.google.protobuf.GeneratedMessage.GeneratedExtension;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -72,8 +69,7 @@ public class HttpServer extends AbstractService implements YamcsService {
 
     private WebSocketConfig wsConfig;
 
-    // Needed for JSON serialization of message extensions
-    private ExtensionRegistry gpbExtensionRegistry = ExtensionRegistry.newInstance();
+    private GpbExtensionRegistry gpbExtensionRegistry = new GpbExtensionRegistry();
 
     public HttpServer() {
         this(Collections.emptyMap());
@@ -97,13 +93,12 @@ public class HttpServer extends AbstractService implements YamcsService {
                 webRoots.add(YConfiguration.getString(args, "webRoot"));
             }
         }
-    
+
         // this is used to execute the routes marked as offThread
         ThreadFactory tf = new ThreadFactoryBuilder().setNameFormat("YamcsHttpExecutor-%d").setDaemon(false).build();
         executor = new ThreadPoolExecutor(0, 2 * Runtime.getRuntime().availableProcessors(), 60, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(), tf);
         apiRouter = new Router(executor);
-
 
         if (args.containsKey("gpbExtensions")) {
             List<Map<String, Object>> extensionsConf = YConfiguration.getList(args, "gpbExtensions");
@@ -113,11 +108,7 @@ public class HttpServer extends AbstractService implements YamcsService {
                 try {
                     Class<?> extensionClass = Class.forName(className);
                     Field field = extensionClass.getField(fieldName);
-
-                    @SuppressWarnings("unchecked")
-                    GeneratedExtension<?, Type> genExtension = (GeneratedExtension<?, Type>) field.get(null);
-                    gpbExtensionRegistry.add(genExtension);
-                    log.info("Installing extension " + genExtension.getDescriptor().getFullName());
+                    gpbExtensionRegistry.installExtension(extensionClass, field);
                 } catch (IllegalAccessException e) {
                     log.error("Could not load extension class", e);
                     continue;
@@ -199,7 +190,6 @@ public class HttpServer extends AbstractService implements YamcsService {
         EventLoopGroup workerGroup = new NioEventLoopGroup(0,
                 new ThreadPerTaskExecutor(new DefaultThreadFactory("YamcsHttpServer")));
 
-        
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
@@ -233,7 +223,7 @@ public class HttpServer extends AbstractService implements YamcsService {
         return webSocketResourceProviders;
     }
 
-    public ExtensionRegistry getGpbExtensionRegistry() {
+    public GpbExtensionRegistry getGpbExtensionRegistry() {
         return gpbExtensionRegistry;
     }
 

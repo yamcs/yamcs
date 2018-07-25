@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { YamcsService } from '../services/YamcsService';
 
 @Injectable()
@@ -13,8 +13,9 @@ export class InstanceExistsGuard implements CanActivate {
 
     return new Promise<boolean>((resolve, reject) => {
       this.yamcsService.selectInstance(instanceId)
-          .then(() => resolve(true))
-          .catch(err => {
+        .then(() => resolve(true))
+        .catch(err => {
+          if (err.statusCode === 404) {
             this.router.navigate(['/404'], {
               queryParams: {
                 page: state.url,
@@ -25,8 +26,15 @@ export class InstanceExistsGuard implements CanActivate {
               //
               // skipLocationChange: true
             });
-            resolve(false);
-          });
+          } else {
+            this.router.navigate(['/down'], {
+              queryParams: {
+                page: state.url,
+              },
+            });
+          }
+          resolve(false);
+        });
     });
   }
 }

@@ -33,6 +33,10 @@ message ListParameterInfoResponse {
   repeated mdb.ParameterInfo parameter = 1;
 }
 
+message ListParameterTypeInfoResponse {
+  repeated mdb.ParameterTypeInfo type = 1;
+}
+
 message BulkGetParameterInfoRequest {
   repeated yamcs.NamedObjectId id = 1;
 }
