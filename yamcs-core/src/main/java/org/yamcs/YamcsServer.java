@@ -31,6 +31,7 @@ import org.yamcs.xtce.DatabaseLoadException;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.YarchDatabase;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Service.State;
@@ -268,6 +269,7 @@ public class YamcsServer {
                 staticlog.error("Instance did not terminate normally", e);
             }
         }
+        YarchDatabase.removeInstance(instanceName);
         XtceDbFactory.remove(instanceName);
         staticlog.info("Re-loading instance '{}'", instanceName);
 
@@ -306,6 +308,8 @@ public class YamcsServer {
                         "There already exists an instance named '%s' and is not in FAILED or TERMINATED state", name));
             } else {
                 staticlog.info("Re-loading instance '{}'", name);
+                YarchDatabase.removeInstance(name);
+                XtceDbFactory.remove(name);
             }
         } else {
             staticlog.info("Loading instance '{}'", name);
