@@ -62,8 +62,8 @@ public class SequenceContainer extends Container {
     /**
      * Insert the given entry in position idx. Shift all the subsequent entries to the right.
      * 
-     * @param k
-     * @param parameterEntry
+     * @param idx
+     * @param entry
      */
     public void insertEntry(int idx, SequenceEntry entry) {
         entryList.add(idx, entry);
