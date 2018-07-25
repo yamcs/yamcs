@@ -1,3 +1,9 @@
+Version 4.6.2 released 18-July-2018
+- better cleanup before instance restart
+- store CCSDS TM Index also in the tablespace (rahter than in a separate
+rocksdb database)
+
+
 Version 4.6.1 released 18-July-2018
 - added support for XTCE IndirectParameterRefEntry
 - added EXTERNAL data sources to better support writable parameters not
