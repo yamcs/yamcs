@@ -79,7 +79,6 @@ public class ParameterArchiveTest {
 
     @Before
     public void openDb() throws Exception {
-        java.util.logging.Logger.getLogger("org.yamcs").setLevel(java.util.logging.Level.ALL);
         String dbroot = YarchDatabase.getInstance(instance).getRoot();
         FileUtils.deleteRecursively(dbroot);
         FileUtils.deleteRecursively(dbroot + ".rdb");
