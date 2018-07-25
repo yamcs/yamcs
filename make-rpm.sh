@@ -50,5 +50,7 @@ rpmbuild --define "_buildweb $buildweb" -ba $HOME/rpmbuild/SPECS/yamcs.spec
 
 cd "$yamcshome"
 mkdir -p dist
-cp $HOME/rpmbuild/RPMS/noarch/$dist*.noarch.rpm dist/
+mv $HOME/rpmbuild/RPMS/noarch/$dist*.noarch.rpm dist/
+rpmsign --key-id yamcs@spaceapplications.com --addsign dist/$dist*.noarch.rpm
+
 ls -l dist/$dist*
