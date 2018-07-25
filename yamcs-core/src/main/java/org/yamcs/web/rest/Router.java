@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -91,8 +90,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     private static final Logger log = LoggerFactory.getLogger(Router.class);
 
     // Order, because patterns are matched top-down in insertion order
-    private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> defaultRoutes = new LinkedHashMap<>();
-    private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> dynamicRoutes = new LinkedHashMap<>();
+    private List<RouteElement> defaultRoutes = new ArrayList<>();
+    private List<RouteElement> dynamicRoutes = new ArrayList<>();
 
     private boolean logSlowRequests = true;
     int SLOW_REQUEST_TIME = 20;// seconds; requests that execute more than this are logged
@@ -176,7 +175,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         // 3. Actual path contents (should not matter too much)
         Collections.sort(routeConfigs);
 
-        LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> targetRoutes;
+        List<RouteElement> targetRoutes;
         targetRoutes = (yamcsInstance == null) ? defaultRoutes : dynamicRoutes;
 
         for (RouteConfig routeConfig : routeConfigs) {
@@ -190,10 +189,23 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 routeString = routeString.replace(":instance", yamcsInstance);
             }
             Pattern pattern = toPattern(routeString);
-            targetRoutes.putIfAbsent(pattern, new LinkedHashMap<>());
-            Map<HttpMethod, RouteConfig> configByMethod = targetRoutes.get(pattern);
+            Map<HttpMethod, RouteConfig> configByMethod = createAndGet(targetRoutes, pattern).configByMethod;
+            if (routeHandler.getClass().getName().contains("EuroSim")) {
+                System.out.println("putting " + routeConfig.httpMethod + " " + routeConfig);
+            }
             configByMethod.put(routeConfig.httpMethod, routeConfig);
         }
+    }
+
+    private RouteElement createAndGet(List<RouteElement> routes, Pattern pattern) {
+        for (RouteElement re : routes) {
+            if (re.pattern.pattern().equals(pattern.pattern())) {
+                return re;
+            }
+        }
+        RouteElement re = new RouteElement(pattern);
+        routes.add(re);
+        return re;
     }
 
     /**
@@ -270,10 +282,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     public RouteMatch matchURI(HttpMethod method, String uri) throws MethodNotAllowedException {
         Set<HttpMethod> allowedMethods = null;
-        for (Entry<Pattern, Map<HttpMethod, RouteConfig>> entry : defaultRoutes.entrySet()) {
-            Matcher matcher = entry.getKey().matcher(uri);
+        for (RouteElement re : defaultRoutes) {
+            Matcher matcher = re.pattern.matcher(uri);
             if (matcher.matches()) {
-                Map<HttpMethod, RouteConfig> byMethod = entry.getValue();
+                Map<HttpMethod, RouteConfig> byMethod = re.configByMethod;
                 if (byMethod.containsKey(method)) {
                     return new RouteMatch(matcher, byMethod.get(method));
                 } else {
@@ -285,10 +297,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             }
         }
 
-        for (Entry<Pattern, Map<HttpMethod, RouteConfig>> entry : dynamicRoutes.entrySet()) {
-            Matcher matcher = entry.getKey().matcher(uri);
+        for (RouteElement re : dynamicRoutes) {
+            Matcher matcher = re.pattern.matcher(uri);
             if (matcher.matches()) {
-                Map<HttpMethod, RouteConfig> byMethod = entry.getValue();
+                Map<HttpMethod, RouteConfig> byMethod = re.configByMethod;
                 if (byMethod.containsKey(method)) {
                     return new RouteMatch(matcher, byMethod.get(method));
                 } else {
@@ -444,7 +456,6 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         public int maxBodySize() {
             return maxBodySize;
         }
-
     }
 
     /**
@@ -465,6 +476,18 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
         public String getRouteParam(String name) {
             return regexMatch.group(name);
+        }
+    }
+
+    /**
+     * stores the matching patterns together with the config per HttpMethod
+     */
+    public static final class RouteElement {
+        final Pattern pattern;
+        final Map<HttpMethod, RouteConfig> configByMethod = new LinkedHashMap<>();
+
+        RouteElement(Pattern p) {
+            this.pattern = p;
         }
     }
 
@@ -512,8 +535,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
             // Aggregate to unique urls, and keep insertion order
             Map<String, RouteInfo.Builder> builders = new LinkedHashMap<>();
-            for (Map<HttpMethod, RouteConfig> map : defaultRoutes.values()) {
-                map.values().forEach(v -> {
+            for (RouteElement re : defaultRoutes) {
+                re.configByMethod.values().forEach(v -> {
                     RouteInfo.Builder builder = builders.get(v.originalPath);
                     if (builder == null) {
                         builder = RouteInfo.newBuilder();
