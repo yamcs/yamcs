@@ -13,7 +13,7 @@ Source: 	%{name}-%{version}.tar.gz
 BuildRoot: 	%{_tmppath}/%{name}-%{version}-buildroot
 Prefix: 	/opt/yamcs
 BuildArch:	noarch
-Requires:       lsb
+
 %description
 Yet another Mission Control System
 
