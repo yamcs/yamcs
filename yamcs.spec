@@ -18,12 +18,12 @@ BuildArch:	noarch
 Yet another Mission Control System
 
 %prep
-%setup 
+%setup
 
 %build
 
 %if %{_buildweb}
-  cd yamcs-web && yarn install && yarn build && cd ..
+    cd yamcs-web && yarn install && yarn build && cd ..
 %endif
 
 mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
@@ -32,11 +32,6 @@ mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=fa
 mkdir -p %{buildroot}/%{prefix}/mdb
 mkdir -p %{buildroot}/%{prefix}/log
 mkdir -p %{buildroot}/%{prefix}/cache
-mkdir -p %{buildroot}/etc # For system /etc
-mkdir -p %{buildroot}/etc/init.d
-mkdir -p %{buildroot}/%{prefix}/lib/ext
-mkdir -p %{buildroot}/%{prefix}/lib/yamcs-web
-mkdir -p %{buildroot}/%{prefix}/lib/xtce
 
 cp -a yamcs-server/lib %{buildroot}/%{prefix}/
 cp -an yamcs-client/lib %{buildroot}/%{prefix}/ || :
@@ -44,7 +39,9 @@ cp -an yamcs-client/lib %{buildroot}/%{prefix}/ || :
 cp -a yamcs-core/etc %{buildroot}/%{prefix}/
 cp -an yamcs-client/etc %{buildroot}/%{prefix}/ || :
 
+rm yamcs-server/bin/*.bat
 cp -a yamcs-server/bin %{buildroot}/%{prefix}/
+rm yamcs-client/bin/*.bat
 cp -an yamcs-client/bin %{buildroot}/%{prefix}/ || :
 
 rm yamcs-client/target/yamcs-*-sources.jar
@@ -57,11 +54,16 @@ cp yamcs-artemis/lib/*.jar %{buildroot}/%{prefix}/lib
 rm yamcs-artemis/target/yamcs-*-sources.jar
 cp yamcs-artemis/target/yamcs-artemis*.jar %{buildroot}/%{prefix}/lib
 
+# Placeholder for extensions
+mkdir -p %{buildroot}/%{prefix}/lib/ext
+
+mkdir -p %{buildroot}/etc/init.d
 cp -a contrib/sysvinit/* %{buildroot}/etc/init.d/
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
 %if %{_buildweb}
-cp -a yamcs-web/packages/app/dist/* %{buildroot}/%{prefix}/lib/yamcs-web/
+    mkdir -p %{buildroot}/%{prefix}/lib/yamcs-web
+    cp -a yamcs-web/packages/app/dist/* %{buildroot}/%{prefix}/lib/yamcs-web/
 %endif
 
 
@@ -71,7 +73,7 @@ rm -rf %{buildroot}
 %pre
 if [ "$1" = 1 -o "$1" = install ] ; then
     groupadd -r yamcs >/dev/null 2>&1 || :
-    useradd -M -r -d /opt/yamcs -g yamcs -s /bin/bash -c "Yamcs Suite" yamcs >/dev/null 2>&1 || :
+    useradd -M -r -d %{prefix} -g yamcs -s /bin/bash -c "Yamcs daemon" yamcs >/dev/null 2>&1 || :
 fi
 
 %postun
@@ -81,21 +83,20 @@ if [ "$1" = 0 -o "$1" = remove ] ; then
 fi
 
 %files
-%defattr(644,root,root,755)
+%defattr(-,root,root)
+
+%dir %{prefix}
 %config %{prefix}/mdb
 %config %{prefix}/etc
 %{prefix}/lib
-%exclude %{prefix}/lib/ext
-%exclude %{prefix}/lib/xtce
 
+%dir %{prefix}/bin
+%attr(755, root, root) %{prefix}/bin/*
 
-%defattr(644,yamcs,yamcs,755)
-%{prefix}/cache
-%{prefix}/log
+%attr(755, root, root) /etc/init.d/*
 
-%defattr(755,root,root,755) 
-%config /etc/init.d/* 
-%config %{prefix}/bin/*
+%attr(-,yamcs,yamcs) %{prefix}/cache
+%attr(-,yamcs,yamcs) %{prefix}/log
 
 %post
 
