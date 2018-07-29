@@ -17,7 +17,6 @@ public class InstancesCli extends Command {
         super("instances", parent);
         addSubCommand(new InstancesDescribe());
         addSubCommand(new InstancesList());
-        setYcpRequired(true, false);
     }
 
     @Parameters(commandDescription = "List instances")

@@ -1,4 +1,4 @@
-package org.yamcs.cli;
+package org.yamcs.server.cli;
 
 import java.io.Console;
 import java.util.Arrays;
@@ -14,7 +14,7 @@ import com.beust.jcommander.Parameters;
 @Parameters(commandDescription = "Generate password hash for use in users.yaml")
 public class PasswordHashCli extends Command {
 
-    public PasswordHashCli(YamcsCli yamcsCli) {
+    public PasswordHashCli(YamcsCtlCli yamcsCli) {
         super("password-hash", yamcsCli);
     }
 

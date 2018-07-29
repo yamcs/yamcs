@@ -1,4 +1,4 @@
-package org.yamcs.cli;
+package org.yamcs.server.cli;
 
 import static org.junit.Assert.assertTrue;
 
@@ -20,7 +20,7 @@ public class YamcsCliTest {
 
     @Test
     public void testXtceDbCli() throws Exception {
-        YamcsCli yamcsCli = new YamcsCli();
+        YamcsCtlCli yamcsCli = new YamcsCtlCli();
         yamcsCli.parse(new String[] { "xtcedb", "print", "refmdb" });
         yamcsCli.validate();
         yamcsCli.execute();

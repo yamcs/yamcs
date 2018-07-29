@@ -1,4 +1,4 @@
-package org.yamcs.cli;
+package org.yamcs.server.cli;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import org.rocksdb.BackupEngine;
 import org.rocksdb.BackupInfo;
@@ -21,30 +20,24 @@ import org.rocksdb.Options;
 import org.rocksdb.RestoreOptions;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.yamcs.api.YamcsConnectionProperties;
-import org.yamcs.api.rest.RestClient;
 import org.yamcs.yarch.BackupUtils;
 
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
-
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.QueryStringEncoder;
 
 /**
  * Command line backup utility for yamcs.
  * 
- * Taking a backup can be done via the REST interface when the Yamcs server is running.
+ * Taking a backup can be done while Yamcs server is running.
  * 
- * Restoring it has to be done using this tool when the Yamcs server is not running.
+ * Restoring it has to be done while Yamcs is offline.
  * 
  * @author nm
  *
  */
 @Parameters(commandDescription = "Perform and restore backups")
 public class Backup extends Command {
-    public Backup(YamcsCli yamcsCli) {
+    public Backup(YamcsCtlCli yamcsCli) {
         super("backup", yamcsCli);
         addSubCommand(new BackupCreate());
         addSubCommand(new BackupDelete());
@@ -58,11 +51,6 @@ public class Backup extends Command {
         super.execute();
     }
 
-    private void error(String msg) {
-        throw new ParameterException(getFullCommandName() + ": " + msg);
-
-    }
-
     private abstract class BackupCommand extends Command {
         public BackupCommand(String name, Command parent) {
             super(name, parent);
@@ -73,7 +61,7 @@ public class Backup extends Command {
 
     }
 
-    @Parameters(commandDescription = "Create a new backup. Backups can be done directly or via a running Yamcs server.")
+    @Parameters(commandDescription = "Create a new backup.")
     private class BackupCreate extends BackupCommand {
         @Parameter(names = "--dbDir", description = "database directory", required = true)
         String dbDir;
@@ -83,47 +71,12 @@ public class Backup extends Command {
         }
 
         @Override
-        void validate() {
-            YamcsConnectionProperties yamcsConn = getYamcsConnectionProperties();
-            if (yamcsConn != null) {
-                if (yamcsConn.getInstance() == null) {
-                    error("please specify the yamcs instance in the yamcs connection url (-y)");
-                }
-            }
-        }
-
-        @Override
         void execute() throws Exception {
-            YamcsConnectionProperties yamcsConn = getYamcsConnectionProperties();
-            if (yamcsConn == null) {
-                File current = new File(dbDir + File.separatorChar + "CURRENT");
-                if (!current.exists()) {
-                    throw new Exception("'" + dbDir + "' does not look like a RocksDB database directory");
-                }
-
-                backupDirectly();
-                // backup directly
-
-            } else {
-                // make a rest request
-                RestClient restClient = new RestClient(yamcsConn);
-                QueryStringEncoder qse = new QueryStringEncoder(
-                        "/archive/" + yamcsConn.getInstance() + "/rocksdb/backup" + dbDir);
-                qse.addParam("backupDir", backupDir);
-                String resource = qse.toString();
-                try {
-                    restClient.doRequest(resource, HttpMethod.POST).get();
-                } catch (ExecutionException e) {
-                    Throwable t = e.getCause();
-                    throw new Exception("got error when performing POST request for resource '" + resource + "': "
-                            + t.getMessage());
-
-                }
+            File current = new File(dbDir + File.separatorChar + "CURRENT");
+            if (!current.exists()) {
+                throw new Exception("'" + dbDir + "' does not look like a RocksDB database directory");
             }
-            console.println("Backup performed succesfully");
-        }
 
-        private void backupDirectly() throws IOException {
             BackupUtils.verifyBackupDirectory(backupDir, false);
             try (Options opt = new Options();
                     BackupableDBOptions bopt = new BackupableDBOptions(backupDir);
@@ -146,6 +99,8 @@ public class Backup extends Command {
                         cfh.close();
                     }
                 }
+
+                console.println("Backup performed succesfully");
             } catch (RocksDBException e) {
                 throw new IOException(
                         "Error when backing up database '" + dbDir + "' to '" + backupDir + "': " + e.getMessage());
@@ -153,7 +108,7 @@ public class Backup extends Command {
         }
     }
 
-    @Parameters(commandDescription = "Restore a backup. This can only be done when the Yamcs server is not running.")
+    @Parameters(commandDescription = "Restore a backup. This can only be done when Yamcs is not running.")
     private class BackupRestore extends BackupCommand {
 
         @Parameter(names = "--restoreDir", description = "restore directory (where the backup will be restored)", required = true)

@@ -1,4 +1,4 @@
-package org.yamcs.cli;
+package org.yamcs.server.cli;
 
 import java.util.HashMap;
 
@@ -19,13 +19,13 @@ import com.beust.jcommander.Parameters;
  * @author nm
  *
  */
-@Parameters(commandDescription = "Parameter Archive operations (offline)")
+@Parameters(commandDescription = "Parameter Archive operations")
 public class ParameterArchiveCli extends Command {
 
     @Parameter(names = "--instance", description = "yamcs instance", required = true)
     String yamcsInstance;
 
-    public ParameterArchiveCli(YamcsCli yamcsCli) {
+    public ParameterArchiveCli(YamcsCtlCli yamcsCli) {
         super("parchive", yamcsCli);
         addSubCommand(new PrintPid());
         addSubCommand(new PrintPgid());

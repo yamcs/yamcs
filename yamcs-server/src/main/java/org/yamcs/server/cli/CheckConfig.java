@@ -1,4 +1,4 @@
-package org.yamcs.cli;
+package org.yamcs.server.cli;
 
 import java.io.File;
 import java.util.List;
@@ -38,7 +38,7 @@ public class CheckConfig extends Command {
         if (noEtc && args == null) {
             throw new ParameterException("If --no-etc option is specified, the config-dir becomes mandatory.");
         }
-        if (noEtc && getYamcsCli().getEtcDir() != null) {
+        if (noEtc && getYamcsCtlCli().getEtcDir() != null) {
             throw new ParameterException("You cannot specify both --etc-dir and --no-etc.");
         }
         if (args != null) {
@@ -55,16 +55,16 @@ public class CheckConfig extends Command {
 
     @Override
     void execute() throws Exception {
-        String etcDir = getYamcsCli().getEtcDir();
+        String etcDir = getYamcsCtlCli().getEtcDir();
         if (etcDir != null) {
             if (configDir == null) {
-                YConfiguration.setResolver(new YamcsCli.DirConfigurationResolver(etcDir));
+                YConfiguration.setResolver(new YamcsCtlCli.DirConfigurationResolver(etcDir));
             } else {
-                YConfiguration.setResolver(new YamcsCli.DirConfigurationResolver(configDir, etcDir));
+                YConfiguration.setResolver(new YamcsCtlCli.DirConfigurationResolver(configDir, etcDir));
             }
         } else {
             if (noEtc) {
-                YConfiguration.setResolver(new YamcsCli.DirConfigurationResolver(configDir));
+                YConfiguration.setResolver(new YamcsCtlCli.DirConfigurationResolver(configDir));
             } else if (configDir != null) {
                 YConfiguration.setup(null, configDir);
             }

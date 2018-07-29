@@ -47,13 +47,14 @@ mkdir -p $TARGET/lib/ext
 cp -an $YAMCS_HOME/yamcs-server/bin/* $TARGET/bin
 cp -an $YAMCS_HOME/yamcs-client/bin/* $TARGET/bin
 
-ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-core/mdb/* $TARGET/mdb
+
+ln -fs $YAMCS_HOME/yamcs-core/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-artemis/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-artemis/lib/*.jar $TARGET/lib
+ln -fs $YAMCS_HOME/yamcs-server/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-server/lib/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/packages/app/dist $TARGET/lib/yamcs-web
-
 ln -fs $YAMCS_HOME/yamcs-client/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-client/lib/jcommander*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-client/lib/jdatepicker*.jar $TARGET/lib

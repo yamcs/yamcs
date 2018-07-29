@@ -1,4 +1,4 @@
-package org.yamcs.cli;
+package org.yamcs.server.cli;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +12,6 @@ import java.util.ServiceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsVersion;
-import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.spi.Plugin;
 
 import com.beust.jcommander.JCommander;
@@ -41,12 +40,6 @@ public abstract class Command {
     @Parameter(names = { "-h", "--help" }, description = "Show usage", help = true)
     private boolean help;
 
-    private boolean instanceRequired = false;
-
-    public void setInstanceRequired(boolean requireInstance) {
-        this.instanceRequired = requireInstance;
-    }
-
     public Command(String name, Command parent) {
         this.name = name;
         this.parent = parent;
@@ -58,15 +51,11 @@ public abstract class Command {
         jc.addCommand(cmd.name, cmd);
     }
 
-    protected YamcsConnectionProperties getYamcsConnectionProperties() {
-        return getYamcsCli().ycp;
-    }
-
-    protected YamcsCli getYamcsCli() {
+    protected YamcsCtlCli getYamcsCtlCli() {
         Command c = this;
         while (c != null) {
-            if (c instanceof YamcsCli) {
-                return (YamcsCli) c;
+            if (c instanceof YamcsCtlCli) {
+                return (YamcsCtlCli) c;
             }
             c = c.parent;
         }
@@ -103,7 +92,7 @@ public abstract class Command {
         }
 
         // Special case. Global --version flag prints version info and quits
-        if (this instanceof YamcsCli && ((YamcsCli) this).version) {
+        if (this instanceof YamcsCtlCli && ((YamcsCtlCli) this).version) {
             console.println("yamcs " + YamcsVersion.version);
             for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
                 console.println(plugin.getName() + " " + plugin.getVersion());
@@ -182,15 +171,6 @@ public abstract class Command {
     }
 
     void validate() throws ParameterException {
-        YamcsConnectionProperties ycp = getYamcsConnectionProperties();
-        if (ycp == null) {
-            throw new ParameterException(
-                    "This command requires a connection to Yamcs. Use the 'yamcs -y' option");
-        }
-        if (instanceRequired && ycp.getInstance() == null) {
-            throw new ParameterException(
-                    "This command requires the Yamcs instance specified in the Yamcs URL. Use the 'yamcs -y http://host:port/instance' option");
-        }
         if (selectedCommand != null) {
             selectedCommand.validate();
         }
