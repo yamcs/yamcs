@@ -17,16 +17,11 @@ Client utilities for Yamcs.
 
 %install
 cd %{name}-%{version}
-mkdir -p %{buildroot}/%{prefix}/mdb
 
-cp -a yamcs-client/etc %{buildroot}/%{prefix}/
-cp -a yamcs-client/bin %{buildroot}/%{prefix}/
-cp -a yamcs-client/lib %{buildroot}/%{prefix}/
-cp yamcs-client/target/yamcs*.jar %{buildroot}/%{prefix}/lib
+mkdir -p %{buildroot}/%{prefix}
+cp -a * %{buildroot}/%{prefix}/
 
-# Clean-up
 rm %{buildroot}/%{prefix}/bin/*.bat
-rm %{buildroot}/%{prefix}/lib/yamcs-*-sources.jar
 
 %files
 %defattr(-,root,root)

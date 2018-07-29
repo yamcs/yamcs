@@ -7,11 +7,13 @@ fi
 
 cd `dirname $0`
 yamcshome=`pwd`
-version=`grep -m 1 '<version>.*</version>' pom.xml | sed -e 's/.*<version>\(.*\)<\/version>.*/\1/'`
+pomversion=`grep -m 1 '<version>.*</version>' pom.xml | sed -e 's/.*<version>\(.*\)<\/version>.*/\1/'`
+
+mkdir -p dist
 
 #change x.y.z-SNAPSHOT into x.y.z_SNAPSHOT because "-" is not allowed in RPM version names
 d=`date +%Y%m%d%H%M%S`
-version=${version/-SNAPSHOT/_SNAPSHOT$d}
+version=${pomversion/-SNAPSHOT/_SNAPSHOT$d}
 
 rev=`git rev-parse --short HEAD`
 
@@ -49,13 +51,6 @@ echo "done: $dist"
 cat "$yamcshome/contrib/rpm/yamcs.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs.spec
 rpmbuild --define "_buildweb $buildweb" -ba $HOME/rpmbuild/SPECS/yamcs.spec
 
-# Client RPM
-clientdist=yamcs-client-${version}+r$rev
-rm -rf "$HOME/rpmbuild/BUILD/$clientdist"
-cp -r "$HOME/rpmbuild/BUILD/$dist" "$HOME/rpmbuild/BUILD/$clientdist"
-cat "$yamcshome/contrib/rpm/yamcs-client.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-client.spec
-rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-client.spec
-
 # Simulation RPM
 simdist=yamcs-simulation-${version}+r$rev
 rm -rf "$HOME/rpmbuild/BUILD/$simdist"
@@ -63,9 +58,27 @@ cp -r "$HOME/rpmbuild/BUILD/$dist" "$HOME/rpmbuild/BUILD/$simdist"
 cat "$yamcshome/contrib/rpm/yamcs-simulation.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-simulation.spec
 rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-simulation.spec
 
+# Client (tar.gz, zip, RPM)
+clientdist=yamcs-client-${version}+r$rev
+rm -rf /tmp/$clientdist
+mkdir -p /tmp/$clientdist/{bin,etc,lib,mdb}
+cp $yamcshome/yamcs-client/bin/* /tmp/$clientdist/bin/
+cp $yamcshome/yamcs-client/etc/* /tmp/$clientdist/etc/
+cp $yamcshome/yamcs-client/target/yamcs-client-$pomversion.jar /tmp/$clientdist/lib/
+cp $yamcshome/yamcs-client/lib/*.jar /tmp/$clientdist/lib/
+
+cd /tmp
+tar czfh $yamcshome/dist/$clientdist.tar.gz $clientdist
+zip -r $yamcshome/dist/$clientdist.zip $clientdist
+
+rm -rf "$HOME/rpmbuild/BUILD/$clientdist"
+cp -r "/tmp/$clientdist" "$HOME/rpmbuild/BUILD/"
+cat "$yamcshome/contrib/rpm/yamcs-client.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-client.spec
+rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-client.spec
+
+rm -rf /tmp/$clientdist
 
 cd "$yamcshome"
-mkdir -p dist
 mv $HOME/rpmbuild/RPMS/noarch/*${version}+r$rev* dist/
 
 rpmsign --key-id yamcs@spaceapplications.com --addsign dist/*${version}+r$rev*.rpm
