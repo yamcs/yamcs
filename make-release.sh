@@ -1,10 +1,19 @@
 #!/bin/bash
+set -e
+
+# This script generates releases in two steps:
+# 1. Compile a fresh clone of the development tree (somewhere under /tmp)
+# 2. Emit artifacts (yamcs, yamcs-simulation, yamcs-client) in various formats.
+#
+# By design (2) does not require any sort of compilation.
 
 buildweb=1
 
-if [ "$1" = "-noweb" ]; then
-   buildweb=0
-fi
+for arg in "$@"; do
+    if [ "$arg" = "--no-web" ]; then
+        buildweb=0
+    fi
+done
 
 cd `dirname $0`
 yamcshome=`pwd`
@@ -16,14 +25,18 @@ version=${pomversion/-SNAPSHOT/_SNAPSHOT$d}
 
 rev=`git rev-parse --short HEAD`
 
+buildroot=/tmp/yamcs-${version}+r$rev-buildroot
+
 serverdist=yamcs-${version}+r$rev
+simdist=yamcs-simulation-${version}+r$rev
+clientdist=yamcs-client-${version}+r$rev
 
-rm -rf /tmp/$serverdist
-mkdir /tmp/$serverdist
+rm -rf $buildroot
+mkdir $buildroot
+git clone . $buildroot
+rm -rf $buildroot/.git
 
-git clone . /tmp/$serverdist
-rm -rf /tmp/$serverdist/.git
-cd /tmp/$serverdist
+cd $buildroot
 
 # fix revision in pom.xml
 for f in `find . -name pom.xml`; do
@@ -36,7 +49,7 @@ logproperties=yamcs-core/etc/logging.properties.sample
 sed -e 's/%h\/.yamcs\/log/\/opt\/yamcs\/log/g' $logproperties > $logproperties.tmp;
 mv $logproperties.tmp $logproperties
 
-if [[ $buildweb -ne 0 ]]; then
+if [[ $buildweb -eq 1 ]]; then
     cd yamcs-web
     yarn install
     yarn build
@@ -46,31 +59,54 @@ fi
 
 mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
 
-mkdir -p dist
+mkdir -p $yamcshome/dist
 
 mkdir -p $HOME/rpmbuild/{RPMS,BUILD,SPECS,tmp}
 
-# Server RPM
-rm -rf "$HOME/rpmbuild/BUILD/$serverdist"
-cp -r "/tmp/$serverdist" "$HOME/rpmbuild/BUILD/"
+# Assemble Yamcs Server
+rm -rf /tmp/$serverdist
+mkdir -p /tmp/$serverdist/{bin,cache,etc,lib,lib/ext,log,mdb}
+cp -a yamcs-server/bin/* /tmp/$serverdist/bin/
+cp -a yamcs-core/etc/* /tmp/$serverdist/etc/
+cp -a yamcs-server/lib/* /tmp/$serverdist/lib/
+cp -a yamcs-api/src/main/*.proto /tmp/$serverdist/lib/
+cp -a yamcs-server/target/yamcs*.jar /tmp/$serverdist/lib/
+cp -a yamcs-artemis/lib/*.jar /tmp/$serverdist/lib/
+cp -a yamcs-artemis/target/yamcs-artemis*.jar /tmp/$serverdist/lib/
+rm -f /tmp/$serverdist/lib/*-sources.jar
+
+if [[ $buildweb -eq 1 ]]; then
+    mkdir -p /tmp/$serverdist/lib/yamcs-web
+    cp -a yamcs-web/packages/app/dist/* /tmp/$serverdist/lib/yamcs-web/
+fi
+
+# Emit Yamcs Server packages (tarball, rpm)
+cd /tmp
+tar czfh $yamcshome/dist/$serverdist.tar.gz $serverdist
+
+rpmbuilddir="$HOME/rpmbuild/BUILD/$serverdist"
+rm -rf $rpmbuilddir
+mkdir -p "$rpmbuilddir/opt/yamcs"
+cp -a /tmp/$serverdist/* "$rpmbuilddir/opt/yamcs"
+mkdir -p "$rpmbuilddir/etc/init.d"
+cp -a $yamcshome/contrib/sysvinit/* "$rpmbuilddir/etc/init.d"
 cat "$yamcshome/contrib/rpm/yamcs.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs.spec
 rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs.spec
 
-# Simulation RPM
-simdist=yamcs-simulation-${version}+r$rev
+# Simulation Configuration (RPM)
 rm -rf "$HOME/rpmbuild/BUILD/$simdist"
-cp -r "/tmp/$serverdist" "$HOME/rpmbuild/BUILD/$simdist"
+cp -r $buildroot "$HOME/rpmbuild/BUILD/$simdist"
 cat "$yamcshome/contrib/rpm/yamcs-simulation.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-simulation.spec
 rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-simulation.spec
 
 # Client (tar.gz, zip, RPM)
-clientdist=yamcs-client-${version}+r$rev
+cd $buildroot
 rm -rf /tmp/$clientdist
 mkdir -p /tmp/$clientdist/{bin,etc,lib,mdb}
-cp /tmp/$serverdist/yamcs-client/bin/* /tmp/$clientdist/bin/
-cp /tmp/$serverdist/yamcs-client/etc/* /tmp/$clientdist/etc/
-cp /tmp/$serverdist/yamcs-client/target/yamcs-client-$pomversion.jar /tmp/$clientdist/lib/
-cp /tmp/$serverdist/yamcs-client/lib/*.jar /tmp/$clientdist/lib/
+cp yamcs-client/bin/* /tmp/$clientdist/bin/
+cp yamcs-client/etc/* /tmp/$clientdist/etc/
+cp yamcs-client/target/yamcs-client-$pomversion.jar /tmp/$clientdist/lib/
+cp yamcs-client/lib/*.jar /tmp/$clientdist/lib/
 
 cd /tmp
 tar czfh $yamcshome/dist/$clientdist.tar.gz $clientdist
@@ -87,4 +123,7 @@ cd "$yamcshome"
 mv $HOME/rpmbuild/RPMS/noarch/*${version}+r$rev* dist/
 
 rpmsign --key-id yamcs@spaceapplications.com --addsign dist/*${version}+r$rev*.rpm
+
+echo
+echo 'All done. Generated artifacts:'
 ls -lh dist/*${version}+r$rev*

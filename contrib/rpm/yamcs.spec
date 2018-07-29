@@ -12,40 +12,20 @@ URL: https://www.yamcs.org
 Prefix: /opt/yamcs
 BuildArch: noarch
 
+
 %description
 Yet another Mission Control System
+
 
 %install
 cd %{name}-%{version}
 
-mkdir -p %{buildroot}/%{prefix}/mdb
-mkdir -p %{buildroot}/%{prefix}/log
-mkdir -p %{buildroot}/%{prefix}/cache
+mkdir -p %{buildroot}
+cp -r etc %{buildroot}
+cp -r opt %{buildroot}
 
-cp -a yamcs-core/etc %{buildroot}/%{prefix}/
-
-cp -a yamcs-server/bin %{buildroot}/%{prefix}/
-
-cp -a yamcs-server/lib %{buildroot}/%{prefix}/
-cp yamcs-server/target/yamcs*.jar %{buildroot}/%{prefix}/lib
-cp yamcs-artemis/lib/*.jar %{buildroot}/%{prefix}/lib
-cp yamcs-artemis/target/yamcs-artemis*.jar %{buildroot}/%{prefix}/lib
-
-# Placeholder for extensions
-mkdir -p %{buildroot}/%{prefix}/lib/ext
-
-mkdir -p %{buildroot}/etc/init.d
-cp -a contrib/sysvinit/* %{buildroot}/etc/init.d/
-cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
-
-if [ -d yamcs-web/packages/app/dist ]; then
-    mkdir -p %{buildroot}/%{prefix}/lib/yamcs-web
-    cp -a yamcs-web/packages/app/dist/* %{buildroot}/%{prefix}/lib/yamcs-web/
-fi
-
-# Clean-up
 rm %{buildroot}/%{prefix}/bin/*.bat
-rm %{buildroot}/%{prefix}/lib/yamcs-*-sources.jar
+
 
 %pre
 if [ "$1" = 1 -o "$1" = install ] ; then
@@ -53,11 +33,13 @@ if [ "$1" = 1 -o "$1" = install ] ; then
     useradd -M -r -d %{prefix} -g yamcs -s /bin/bash -c "Yamcs daemon" yamcs >/dev/null 2>&1 || :
 fi
 
+
 %postun
 if [ "$1" = 0 -o "$1" = remove ] ; then
     userdel yamcs >/dev/null 2>&1 || :
     groupdel yamcs >/dev/null 2>&1 || :
 fi
+
 
 %files
 %defattr(-,root,root)
@@ -75,7 +57,6 @@ fi
 %attr(-,yamcs,yamcs) %{prefix}/cache
 %attr(-,yamcs,yamcs) %{prefix}/log
 
-%post
 
 %changelog
 * Mon Jul 30 2018 fdi
