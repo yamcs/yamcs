@@ -8,12 +8,45 @@ set -e
 # By design (2) does not require any sort of compilation.
 
 buildweb=1
+sign=1
+
+all=1
+yamcs=0
+yamcsclient=0
+yamcssimulation=0
 
 for arg in "$@"; do
-    if [ "$arg" = "--no-web" ]; then
+    case "$arg" in
+    --no-web)
         buildweb=0
-    fi
+        ;;
+    --no-sign)
+        sign=0
+        ;;
+    yamcs)
+        all=0
+        yamcs=1
+        ;;
+    yamcs-client)
+        all=0
+        yamcsclient=1
+        ;;
+    yamcs-server)
+        all=0
+        yamcsserver=1
+        ;;
+    *)
+        echo "Usage: $0 [--no-web] [--no-sign] [yamcs|yamcs-client|yamcs-simulation]..."
+        exit 1;
+        ;;
+    esac
 done
+
+if [[ $all -eq 1 ]]; then
+    yamcs=1
+    yamcsclient=1
+    yamcssimulation=1
+fi
 
 cd `dirname $0`
 yamcshome=`pwd`
@@ -44,12 +77,7 @@ for f in `find . -name pom.xml`; do
     mv $f.fixed $f
 done
 
-# fix the default location of the server logs
-logproperties=yamcs-core/etc/logging.properties.sample
-sed -e 's/%h\/.yamcs\/log/\/opt\/yamcs\/log/g' $logproperties > $logproperties.tmp;
-mv $logproperties.tmp $logproperties
-
-if [[ $buildweb -eq 1 ]]; then
+if [ $yamcs -eq 1 -a $buildweb -eq 1 ]; then
     cd yamcs-web
     yarn install
     yarn build
@@ -60,69 +88,76 @@ fi
 mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
 
 mkdir -p $yamcshome/dist
-
 mkdir -p $HOME/rpmbuild/{RPMS,BUILD,SPECS,tmp}
 
-# Assemble Yamcs Server
-rm -rf /tmp/$serverdist
-mkdir -p /tmp/$serverdist/{bin,cache,etc,lib,lib/ext,log,mdb}
-cp -a yamcs-server/bin/* /tmp/$serverdist/bin/
-cp -a yamcs-core/etc/* /tmp/$serverdist/etc/
-cp -a yamcs-server/lib/* /tmp/$serverdist/lib/
-cp -a yamcs-api/src/main/*.proto /tmp/$serverdist/lib/
-cp -a yamcs-server/target/yamcs*.jar /tmp/$serverdist/lib/
-cp -a yamcs-artemis/lib/*.jar /tmp/$serverdist/lib/
-cp -a yamcs-artemis/target/yamcs-artemis*.jar /tmp/$serverdist/lib/
-rm -f /tmp/$serverdist/lib/*-sources.jar
+if [ $yamcs -eq 1 ]; then
+    rm -rf /tmp/$serverdist
+    mkdir -p /tmp/$serverdist/{bin,cache,etc,lib,lib/ext,log,mdb}
+    cp -a yamcs-server/bin/* /tmp/$serverdist/bin/
+    cp -a yamcs-core/etc/* /tmp/$serverdist/etc/
+    cp -a yamcs-server/lib/* /tmp/$serverdist/lib/
+    cp -a yamcs-api/src/main/*.proto /tmp/$serverdist/lib/
+    cp -a yamcs-server/target/yamcs*.jar /tmp/$serverdist/lib/
+    cp -a yamcs-artemis/lib/*.jar /tmp/$serverdist/lib/
+    cp -a yamcs-artemis/target/yamcs-artemis*.jar /tmp/$serverdist/lib/
+    rm -f /tmp/$serverdist/lib/*-sources.jar
 
-if [[ $buildweb -eq 1 ]]; then
-    mkdir -p /tmp/$serverdist/lib/yamcs-web
-    cp -a yamcs-web/packages/app/dist/* /tmp/$serverdist/lib/yamcs-web/
+    if [[ $buildweb -eq 1 ]]; then
+        mkdir -p /tmp/$serverdist/lib/yamcs-web
+        cp -a yamcs-web/packages/app/dist/* /tmp/$serverdist/lib/yamcs-web/
+    fi
+
+    cd /tmp
+    tar czfh $yamcshome/dist/$serverdist.tar.gz $serverdist
+
+    rpmbuilddir="$HOME/rpmbuild/BUILD/$serverdist"
+    rm -rf $rpmbuilddir
+    mkdir -p "$rpmbuilddir/opt/yamcs"
+    cp -a /tmp/$serverdist/* "$rpmbuilddir/opt/yamcs"
+    mkdir -p "$rpmbuilddir/etc/init.d"
+    cp -a $yamcshome/contrib/sysvinit/* "$rpmbuilddir/etc/init.d"
+    cat "$yamcshome/contrib/rpm/yamcs.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs.spec
+    rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs.spec
+    
+    rm -rf /tmp/$serverdist
 fi
 
-# Emit Yamcs Server packages (tarball, rpm)
-cd /tmp
-tar czfh $yamcshome/dist/$serverdist.tar.gz $serverdist
+if [ $yamcssimulation -eq 1]; then
+    rm -rf "$HOME/rpmbuild/BUILD/$simdist"
+    cp -r $buildroot "$HOME/rpmbuild/BUILD/$simdist"
+    cat "$yamcshome/contrib/rpm/yamcs-simulation.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-simulation.spec
+    rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-simulation.spec
+fi
 
-rpmbuilddir="$HOME/rpmbuild/BUILD/$serverdist"
-rm -rf $rpmbuilddir
-mkdir -p "$rpmbuilddir/opt/yamcs"
-cp -a /tmp/$serverdist/* "$rpmbuilddir/opt/yamcs"
-mkdir -p "$rpmbuilddir/etc/init.d"
-cp -a $yamcshome/contrib/sysvinit/* "$rpmbuilddir/etc/init.d"
-cat "$yamcshome/contrib/rpm/yamcs.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs.spec
-rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs.spec
+if [ $yamcsclient -eq 1 ]; then
+    cd $buildroot
+    rm -rf /tmp/$clientdist
+    mkdir -p /tmp/$clientdist/{bin,etc,lib,mdb}
+    cp yamcs-client/bin/* /tmp/$clientdist/bin/
+    cp yamcs-client/etc/* /tmp/$clientdist/etc/
+    cp yamcs-client/target/yamcs-client-$pomversion.jar /tmp/$clientdist/lib/
+    cp yamcs-client/lib/*.jar /tmp/$clientdist/lib/
 
-# Simulation Configuration (RPM)
-rm -rf "$HOME/rpmbuild/BUILD/$simdist"
-cp -r $buildroot "$HOME/rpmbuild/BUILD/$simdist"
-cat "$yamcshome/contrib/rpm/yamcs-simulation.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-simulation.spec
-rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-simulation.spec
+    cd /tmp
+    tar czfh $yamcshome/dist/$clientdist.tar.gz $clientdist
+    zip -r $yamcshome/dist/$clientdist.zip $clientdist
 
-# Client (tar.gz, zip, RPM)
-cd $buildroot
-rm -rf /tmp/$clientdist
-mkdir -p /tmp/$clientdist/{bin,etc,lib,mdb}
-cp yamcs-client/bin/* /tmp/$clientdist/bin/
-cp yamcs-client/etc/* /tmp/$clientdist/etc/
-cp yamcs-client/target/yamcs-client-$pomversion.jar /tmp/$clientdist/lib/
-cp yamcs-client/lib/*.jar /tmp/$clientdist/lib/
+    rm -rf "$HOME/rpmbuild/BUILD/$clientdist"
+    cp -r "/tmp/$clientdist" "$HOME/rpmbuild/BUILD/"
+    cat "$yamcshome/contrib/rpm/yamcs-client.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-client.spec
+    rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-client.spec
 
-cd /tmp
-tar czfh $yamcshome/dist/$clientdist.tar.gz $clientdist
-zip -r $yamcshome/dist/$clientdist.zip $clientdist
+    rm -rf /tmp/$clientdist
+fi
 
-rm -rf "$HOME/rpmbuild/BUILD/$clientdist"
-cp -r "/tmp/$clientdist" "$HOME/rpmbuild/BUILD/"
-cat "$yamcshome/contrib/rpm/yamcs-client.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-client.spec
-rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-client.spec
-
-rm -rf /tmp/$clientdist
+rm -rf $buildroot
 
 cd "$yamcshome"
 mv $HOME/rpmbuild/RPMS/noarch/*${version}+r$rev* dist/
 
-rpmsign --key-id yamcs@spaceapplications.com --addsign dist/*${version}+r$rev*.rpm
+if [[ $sign -eq 1 ]]; then
+    rpmsign --key-id yamcs@spaceapplications.com --addsign dist/*${version}+r$rev*.rpm
+fi
 
 echo
 echo 'All done. Generated artifacts:'
