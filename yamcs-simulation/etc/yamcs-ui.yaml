@@ -1,3 +1,0 @@
-#if set to true, the yamcs connect dialog will allow to specify the username/password to be used for connecting to yamcs
-authenticationEnabled: true
-

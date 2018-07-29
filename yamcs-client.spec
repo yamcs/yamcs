@@ -27,9 +27,6 @@ cp -a yamcs-client/bin %{buildroot}/%{prefix}/
 cp -a yamcs-client/lib %{buildroot}/%{prefix}/
 cp yamcs-client/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 
-mv %{buildroot}/%{prefix}/etc/yamcs-ui.yaml.sample %{buildroot}/%{prefix}/etc/yamcs-ui.yaml
-mv %{buildroot}/%{prefix}/etc/event-viewer.yaml.sample %{buildroot}/%{prefix}/etc/event-viewer.yaml
-
 # Clean-up
 rm %{buildroot}/%{prefix}/bin/*.bat
 rm %{buildroot}/%{prefix}/lib/yamcs-*-sources.jar
