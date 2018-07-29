@@ -1,10 +1,10 @@
 import { Action } from '../Action';
-import RenderContext from '../RenderContext';
-import Timeline from '../Timeline';
 import Band, { BandOptions } from '../core/Band';
 import { EventEvent } from '../events';
+import RenderContext from '../RenderContext';
 import { G, Rect, Set, Title } from '../tags';
-import { isAfter, isBefore, toDate } from '../utils';
+import Timeline from '../Timeline';
+import { generateId, isAfter, isBefore, toDate } from '../utils';
 
 export interface CommsBandOptions extends BandOptions {
   bands?: any[];
@@ -60,7 +60,7 @@ export default class CommsBand extends Band {
         for (let i = 0; i < this.commsBands.length; i++) {
           const commsBand = this.commsBands[i];
           if (event[commsBand['type']]) {
-            const id = Timeline.nextId();
+            const id = generateId();
             const bgRect = new Rect({
               id,
               x: ctx.x + this.timeline.positionDate(start),

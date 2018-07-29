@@ -1,29 +1,26 @@
 import { Action, ActionType } from './Action';
+import EventBand from './core/EventBand';
+import HorizontalSelection from './core/HorizontalSelection';
+import LocationTracker from './core/LocationTracker';
+import NoDataZone from './core/NoDataZone';
+import SpacerBand from './core/SpacerBand';
+import Timescale from './core/Timescale';
+import WallclockLocator from './core/WallclockLocator';
 import EventHandling from './EventHandling';
-import { Range } from './Range';
-import VDom from './VDom';
-import * as core from './core/index';
 import { LoadRangeEvent, RangeSelectionChangedEvent, TimelineEventMap, ViewportChangedEvent } from './events';
 import { PanMode, TimelineOptions, TrackerMode } from './options';
-import * as space from './space/index';
-import { baseTheme, darkTheme } from './theme/index';
+import { Range } from './Range';
+import AttitudeBand from './space/AttitudeBand';
+import CommsBand from './space/CommsBand';
+import DayNightBand from './space/DayNightBand';
+import OrbitNumberBand from './space/OrbitNumberBand';
+import SaaBand from './space/SaaBand';
+import { default as baseTheme } from './theme/baseTheme';
+import { default as darkTheme } from './theme/darkTheme';
 import * as utils from './utils';
+import VDom from './VDom';
 
 export default class Timeline {
-
-  /**
-   * Returns a statically unique identifier
-   */
-  static nextId(): string {
-    const newId = 'tlid' + Timeline.idCounter;
-    Timeline.idCounter += 1;
-    return newId;
-  }
-
-  /**
-   * Statically incrementing id for uniquely identifying something across contributions, or timelines
-   */
-  private static idCounter = 0;
 
   containerEl: HTMLElement;
   contributions: any[] = [];
@@ -117,19 +114,19 @@ export default class Timeline {
   constructor(el: HTMLElement, opts: TimelineOptions) {
     this.containerEl = el;
 
-    this.registerPlugin(core.EventBand);
-    this.registerPlugin(core.SpacerBand);
-    this.registerPlugin(core.LocationTracker);
-    this.registerPlugin(core.NoDataZone);
-    this.registerPlugin(core.HorizontalSelection);
-    this.registerPlugin(core.WallclockLocator);
-    this.registerPlugin(core.Timescale);
+    this.registerPlugin(EventBand);
+    this.registerPlugin(SpacerBand);
+    this.registerPlugin(LocationTracker);
+    this.registerPlugin(NoDataZone);
+    this.registerPlugin(HorizontalSelection);
+    this.registerPlugin(WallclockLocator);
+    this.registerPlugin(Timescale);
 
-    this.registerPlugin(space.AttitudeBand);
-    this.registerPlugin(space.CommsBand);
-    this.registerPlugin(space.DayNightBand);
-    this.registerPlugin(space.OrbitNumberBand);
-    this.registerPlugin(space.SaaBand);
+    this.registerPlugin(AttitudeBand);
+    this.registerPlugin(CommsBand);
+    this.registerPlugin(DayNightBand);
+    this.registerPlugin(OrbitNumberBand);
+    this.registerPlugin(SaaBand);
 
     this.registerTheme(baseTheme);
     this.registerTheme(darkTheme);
@@ -615,7 +612,7 @@ export default class Timeline {
     }
 
     for (const contribution of this.contributions) {
-      if (contribution.type === core.HorizontalSelection.type) {
+      if (contribution.type === HorizontalSelection.type) {
         contribution.setSelection(this.selectedRange);
         this.fireEvent('rangeSelectionChanged', new RangeSelectionChangedEvent(this.selectedRange));
         return;
@@ -626,7 +623,7 @@ export default class Timeline {
   clearSelection() {
     this.selectedRange = undefined;
     for (const contribution of this.contributions) {
-      if (contribution.type === core.HorizontalSelection.type) {
+      if (contribution.type === HorizontalSelection.type) {
         contribution.clearSelection();
         this.fireEvent('rangeSelectionChanged', new RangeSelectionChangedEvent());
         return;

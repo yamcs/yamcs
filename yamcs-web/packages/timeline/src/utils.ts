@@ -1,5 +1,17 @@
+// Incrementing id for uniquely identifying something across contributions, or timelines
+let idCounter = 0;
+
 function leftPad(nr: number, n: number) {
   return Array(n - String(nr).length + 1).join('0') + nr;
+}
+
+/**
+ * Returns a 'unique' identifier
+ */
+export function generateId(): string {
+  const newId = 'tlid' + idCounter;
+  idCounter += 1;
+  return newId;
 }
 
 export function toDate(obj: any): Date {
