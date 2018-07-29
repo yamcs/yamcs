@@ -31,9 +31,9 @@ for arg in "$@"; do
         all=0
         yamcsclient=1
         ;;
-    yamcs-server)
+    yamcs-simulation)
         all=0
-        yamcsserver=1
+        yamcssimulation=1
         ;;
     *)
         echo "Usage: $0 [--no-web] [--no-sign] [yamcs|yamcs-client|yamcs-simulation]..."
@@ -42,7 +42,7 @@ for arg in "$@"; do
     esac
 done
 
-if [[ $all -eq 1 ]]; then
+if [ $all -eq 1 ]; then
     yamcs=1
     yamcsclient=1
     yamcssimulation=1
@@ -59,6 +59,13 @@ if [[ $pomversion == *-SNAPSHOT ]]; then
 else
     version=$pomversion
     release=1.`git rev-parse --short HEAD`
+fi
+
+if [[ -n $(git status -s) ]]; then
+    read -p 'Your workspace contains dirty or untracked files. These will not be part of your release. Continue? [Y/n]' yesNo
+    if [[ -n $yesNo ]] && [[ $yesNo -eq 'n' ]]; then
+        exit 0
+    fi
 fi
 
 buildroot=/tmp/yamcs-$version-$release-buildroot
@@ -99,7 +106,7 @@ if [ $yamcs -eq 1 ]; then
     cp -a yamcs-artemis/target/yamcs-artemis*.jar /tmp/$serverdist/lib/
     rm -f /tmp/$serverdist/lib/*-sources.jar
 
-    if [[ $buildweb -eq 1 ]]; then
+    if [ $buildweb -eq 1 ]; then
         mkdir -p /tmp/$serverdist/lib/yamcs-web
         cp -a yamcs-web/packages/app/dist/* /tmp/$serverdist/lib/yamcs-web/
     fi
@@ -152,7 +159,7 @@ rm -rf $buildroot
 cd "$yamcshome"
 mv $HOME/rpmbuild/RPMS/noarch/*$version-$release* dist/
 
-if [[ $sign -eq 1 ]]; then
+if [ $sign -eq 1 ]; then
     rpmsign --key-id yamcs@spaceapplications.com --addsign dist/*$version-$release*.rpm
 fi
 
