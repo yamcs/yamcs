@@ -28,8 +28,8 @@ cd /tmp/$dist
 ln -s $yamcshome/$yjar lib/
 ln -s $yamcshome/yamcs-client/lib/*.jar lib/
 ln -s $yamcshome/yamcs-client/bin/* bin/
-cp $yamcshome/yamcs-client/etc/yamcs-ui.yaml.sample etc/yamcs-ui.yaml
-cp $yamcshome/yamcs-client/etc/event-viewer.yaml.sample etc/event-viewer.yaml
+mv $yamcshome/yamcs-client/etc/yamcs-ui.yaml.sample etc/yamcs-ui.yaml
+mv $yamcshome/yamcs-client/etc/event-viewer.yaml.sample etc/event-viewer.yaml
 
 cd /tmp
 
