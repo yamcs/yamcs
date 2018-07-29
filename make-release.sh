@@ -52,17 +52,20 @@ cd `dirname $0`
 yamcshome=`pwd`
 pomversion=`grep -m 1 '<version>.*</version>' pom.xml | sed -e 's/.*<version>\(.*\)<\/version>.*/\1/'`
 
-#change x.y.z-SNAPSHOT into x.y.z_SNAPSHOT because "-" is not allowed in RPM version names
-d=`date +%Y%m%d%H%M%S`
-version=${pomversion/-SNAPSHOT/_SNAPSHOT$d}
+if [[ $pomversion == *-SNAPSHOT ]]; then
+    d=`date +%Y%m%d%H%M%S`
+    version=${pomversion/-SNAPSHOT/}
+    release=SNAPSHOT$d.`git rev-parse --short HEAD`
+else
+    version=$pomversion
+    release=1.`git rev-parse --short HEAD`
+fi
 
-rev=`git rev-parse --short HEAD`
+buildroot=/tmp/yamcs-$version-$release-buildroot
 
-buildroot=/tmp/yamcs-${version}+r$rev-buildroot
-
-serverdist=yamcs-${version}+r$rev
-simdist=yamcs-simulation-${version}+r$rev
-clientdist=yamcs-client-${version}+r$rev
+serverdist=yamcs-$version-$release
+simdist=yamcs-simulation-$version-$release
+clientdist=yamcs-client-$version-$release
 
 rm -rf $buildroot
 mkdir $buildroot
@@ -70,12 +73,6 @@ git clone . $buildroot
 rm -rf $buildroot/.git
 
 cd $buildroot
-
-# fix revision in pom.xml
-for f in `find . -name pom.xml`; do
-    cat $f | sed -e 's/<version>'$version'/<version>'$version'-'$rev/ | sed -e 's/-\${buildNumber}/'/ >$f.fixed
-    mv $f.fixed $f
-done
 
 if [ $yamcs -eq 1 -a $buildweb -eq 1 ]; then
     cd yamcs-web
@@ -85,7 +82,7 @@ if [ $yamcs -eq 1 -a $buildweb -eq 1 ]; then
     cd ..
 fi
 
-mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
+mvn clean package -DskipTests
 
 mkdir -p $yamcshome/dist
 mkdir -p $HOME/rpmbuild/{RPMS,BUILD,SPECS,tmp}
@@ -116,7 +113,7 @@ if [ $yamcs -eq 1 ]; then
     cp -a /tmp/$serverdist/* "$rpmbuilddir/opt/yamcs"
     mkdir -p "$rpmbuilddir/etc/init.d"
     cp -a $yamcshome/contrib/sysvinit/* "$rpmbuilddir/etc/init.d"
-    cat "$yamcshome/contrib/rpm/yamcs.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs.spec
+    cat "$yamcshome/contrib/rpm/yamcs.spec" | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $HOME/rpmbuild/SPECS/yamcs.spec
     rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs.spec
     
     rm -rf /tmp/$serverdist
@@ -125,7 +122,7 @@ fi
 if [ $yamcssimulation -eq 1]; then
     rm -rf "$HOME/rpmbuild/BUILD/$simdist"
     cp -r $buildroot "$HOME/rpmbuild/BUILD/$simdist"
-    cat "$yamcshome/contrib/rpm/yamcs-simulation.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-simulation.spec
+    cat "$yamcshome/contrib/rpm/yamcs-simulation.spec" | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $HOME/rpmbuild/SPECS/yamcs-simulation.spec
     rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-simulation.spec
 fi
 
@@ -144,7 +141,7 @@ if [ $yamcsclient -eq 1 ]; then
 
     rm -rf "$HOME/rpmbuild/BUILD/$clientdist"
     cp -r "/tmp/$clientdist" "$HOME/rpmbuild/BUILD/"
-    cat "$yamcshome/contrib/rpm/yamcs-client.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-client.spec
+    cat "$yamcshome/contrib/rpm/yamcs-client.spec" | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $HOME/rpmbuild/SPECS/yamcs-client.spec
     rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-client.spec
 
     rm -rf /tmp/$clientdist
@@ -153,12 +150,12 @@ fi
 rm -rf $buildroot
 
 cd "$yamcshome"
-mv $HOME/rpmbuild/RPMS/noarch/*${version}+r$rev* dist/
+mv $HOME/rpmbuild/RPMS/noarch/*$version-$release* dist/
 
 if [[ $sign -eq 1 ]]; then
-    rpmsign --key-id yamcs@spaceapplications.com --addsign dist/*${version}+r$rev*.rpm
+    rpmsign --key-id yamcs@spaceapplications.com --addsign dist/*$version-$release*.rpm
 fi
 
 echo
 echo 'All done. Generated artifacts:'
-ls -lh dist/*${version}+r$rev*
+ls -lh dist/*$version-$release*

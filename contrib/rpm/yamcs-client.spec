@@ -1,6 +1,6 @@
 Name: yamcs-client
-Version: $VERSION$+r$REVISION$
-Release: 1
+Version: @@VERSION@@
+Release: @@RELEASE@@
 
 Group: MCS
 Summary: Yamcs Client Utilities
@@ -16,7 +16,7 @@ BuildArch: noarch
 Client utilities for Yamcs.
 
 %install
-cd %{name}-%{version}
+cd %{name}-%{version}-%{release}
 
 mkdir -p %{buildroot}/%{prefix}
 cp -a * %{buildroot}/%{prefix}/

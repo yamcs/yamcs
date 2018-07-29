@@ -1,6 +1,6 @@
 Name: yamcs
-Version: $VERSION$+r$REVISION$
-Release: 1
+Version: @@VERSION@@
+Release: @@RELEASE@@
 
 Group: MCS
 Summary: Mission Control System
@@ -18,7 +18,7 @@ Yet another Mission Control System
 
 
 %install
-cd %{name}-%{version}
+cd %{name}-%{version}-%{release}
 
 mkdir -p %{buildroot}
 cp -r etc %{buildroot}

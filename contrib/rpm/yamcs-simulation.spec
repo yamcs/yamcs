@@ -1,6 +1,6 @@
 Name: yamcs-simulation
-Version: $VERSION$+r$REVISION$
-Release: 1
+Version: @@VERSION@@
+Release: @@RELEASE@@
 
 Group: MCS
 Summary: Configures Yamcs for simulation
@@ -17,7 +17,7 @@ Requires: yamcs
 Configures Yamcs for simulation
 
 %install
-cd %{name}-%{version}
+cd %{name}-%{version}-%{release}
 
 mkdir -p %{buildroot}/%{prefix}/lib
 cp yamcs-simulation/target/yamcs*.jar %{buildroot}/%{prefix}/lib
