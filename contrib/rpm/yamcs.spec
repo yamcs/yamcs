@@ -41,14 +41,10 @@ mkdir -p %{buildroot}/%{prefix}/log
 mkdir -p %{buildroot}/%{prefix}/cache
 
 cp -a yamcs-core/etc %{buildroot}/%{prefix}/
-cp -an yamcs-client/etc %{buildroot}/%{prefix}/ || :
 
 cp -a yamcs-server/bin %{buildroot}/%{prefix}/
-cp -an yamcs-client/bin %{buildroot}/%{prefix}/ || :
 
 cp -a yamcs-server/lib %{buildroot}/%{prefix}/
-cp -an yamcs-client/lib %{buildroot}/%{prefix}/ || :
-cp yamcs-client/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 cp yamcs-server/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 cp yamcs-artemis/lib/*.jar %{buildroot}/%{prefix}/lib
 cp yamcs-artemis/target/yamcs-artemis*.jar %{buildroot}/%{prefix}/lib
@@ -100,6 +96,8 @@ fi
 %post
 
 %changelog
+* Mon Jul 30 2018 fdi
+- stripped out yamcs-client (now in distinct RPM)
 * Tue Feb 23 2016 nm
 - added an option to disable building yamcs-web part of the rpm
 * Mon Nov 16 2015 fdi
