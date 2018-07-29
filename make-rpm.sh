@@ -56,11 +56,17 @@ cp -r "$HOME/rpmbuild/BUILD/$dist" "$HOME/rpmbuild/BUILD/$clientdist"
 cat "$yamcshome/contrib/rpm/yamcs-client.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-client.spec
 rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-client.spec
 
+# Simulation RPM
+simdist=yamcs-simulation-${version}+r$rev
+rm -rf "$HOME/rpmbuild/BUILD/$simdist"
+cp -r "$HOME/rpmbuild/BUILD/$dist" "$HOME/rpmbuild/BUILD/$simdist"
+cat "$yamcshome/contrib/rpm/yamcs-simulation.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-simulation.spec
+rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-simulation.spec
+
 
 cd "$yamcshome"
 mkdir -p dist
-mv $HOME/rpmbuild/RPMS/noarch/$dist*.noarch.rpm dist/
-mv $HOME/rpmbuild/RPMS/noarch/$clientdist*.noarch.rpm dist/
+mv $HOME/rpmbuild/RPMS/noarch/*${version}+r$rev* dist/
 
-rpmsign --key-id yamcs@spaceapplications.com --addsign dist/$dist*.noarch.rpm dist/$clientdist*.noarch.rpm
+rpmsign --key-id yamcs@spaceapplications.com --addsign dist/*${version}+r$rev*.rpm
 ls -l dist/*${version}+r$rev*

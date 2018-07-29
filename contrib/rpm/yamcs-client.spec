@@ -15,9 +15,6 @@ BuildArch:	noarch
 %description
 Client utilities for Yamcs.
 
-%clean
-rm -rf %{buildroot}
-
 %install
 cd %{name}-%{version}
 mkdir -p %{buildroot}/%{prefix}/mdb
