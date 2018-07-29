@@ -54,6 +54,7 @@ cp yamcs-client/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 cp yamcs-server/target/yamcs*.jar %{buildroot}/%{prefix}/lib
 
 cp yamcs-artemis/lib/*.jar %{buildroot}/%{prefix}/lib
+rm yamcs-artemis/target/yamcs-*-sources.jar
 cp yamcs-artemis/target/yamcs-artemis*.jar %{buildroot}/%{prefix}/lib
 
 cp -a contrib/sysvinit/* %{buildroot}/etc/init.d/
