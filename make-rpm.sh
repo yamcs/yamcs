@@ -31,7 +31,7 @@ for f in pom.xml yamcs-core/pom.xml yamcs-client/pom.xml yamcs-server/pom.xml ya
 done
 
 # fix the default location of the server logs
-logproperties=yamcs-core/etc/logging.yamcs-server.properties.sample
+logproperties=yamcs-core/etc/logging.properties.sample
 sed -e 's/%h\/.yamcs\/log/\/opt\/yamcs\/log/g' $logproperties > $logproperties.tmp;
 mv $logproperties.tmp $logproperties
 
