@@ -144,10 +144,11 @@ public class ArchiveUpgradeCommand extends Command {
 
     private void changePpGroup(YarchDatabaseInstance ydb, TableDefinition tblDef) {
         if (tblDef.getColumnDefinition("ppgroup") == null) {
-            log.info("Table {}/{} has no ppgroup column", ydb.getName(), tblDef.getName());
+            console.println(String.format("Table %s/%s has no ppgroup column", ydb.getName(), tblDef.getName()));
             return;
         }
-        log.info("Renaming ppgroup -> group column in table {}/{}", ydb.getName(), tblDef.getName());
+        console.println(
+                String.format("Renaming ppgroup -> group column in table {}/{}", ydb.getName(), tblDef.getName()));
         tblDef.renameColumn("ppgroup", "group");
     }
 

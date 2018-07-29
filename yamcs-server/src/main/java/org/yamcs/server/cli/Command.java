@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsVersion;
 import org.yamcs.spi.Plugin;
 
@@ -35,7 +33,6 @@ public abstract class Command {
     protected Command selectedCommand;
     final private String name;
     final Command parent;
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Parameter(names = { "-h", "--help" }, description = "Show usage", help = true)
     private boolean help;

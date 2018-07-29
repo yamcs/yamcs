@@ -18,7 +18,7 @@ import com.beust.jcommander.ParameterException;
 /**
  * Command line utility for doing yamcs stuff.
  *
- * This usage is yamcs &lt;command&gt; [command_specific_options]
+ * This usage is yamcsctl &lt;command&gt; [command_specific_options]
  *
  * @author nm
  */
@@ -29,7 +29,6 @@ public class YamcsCtlCli extends Command {
         addSubCommand(new ArchiveCli(this));
         addSubCommand(new Backup(this));
         addSubCommand(new CheckConfig(this));
-        addSubCommand(new Config(this));
         addSubCommand(new ParameterArchiveCli(this));
         addSubCommand(new PasswordHashCli(this));
         addSubCommand(new RocksDbCli(this));
