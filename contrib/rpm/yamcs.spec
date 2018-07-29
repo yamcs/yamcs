@@ -1,41 +1,23 @@
-Name: 		yamcs
-Version: 	$VERSION$+r$REVISION$
-Release: 	1
+Name: yamcs
+Version: $VERSION$+r$REVISION$
+Release: 1
 
-Group:		MCS
-Summary: 	Mission Control System
+Group: MCS
+Summary: Mission Control System
 
-Vendor:		Space Applications Services
-Packager:	Yamcs Team <yamcs@spaceapplications.com>
-License: 	AGPL (server) + LGPL (API)
-URL: 		https://www.yamcs.org
-Source: 	%{name}-%{version}.tar.gz
-BuildRoot: 	%{_tmppath}/%{name}-%{version}-buildroot
-Prefix: 	/opt/yamcs
-BuildArch:	noarch
+Vendor: Space Applications Services
+Packager: Yamcs Team <yamcs@spaceapplications.com>
+License: AGPL (server) + LGPL (API)
+URL: https://www.yamcs.org
+Prefix: /opt/yamcs
+BuildArch: noarch
 
 %description
 Yet another Mission Control System
 
-%clean
-rm -rf %{buildroot}
-
-%prep
-%setup
-
-%build
-
-%if %{_buildweb}
-    cd yamcs-web
-    yarn install
-    yarn build
-    rm -rf `find . -name node_modules`
-    cd ..
-%endif
-
-mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
-
 %install
+cd %{name}-%{version}
+
 mkdir -p %{buildroot}/%{prefix}/mdb
 mkdir -p %{buildroot}/%{prefix}/log
 mkdir -p %{buildroot}/%{prefix}/cache
@@ -56,10 +38,10 @@ mkdir -p %{buildroot}/etc/init.d
 cp -a contrib/sysvinit/* %{buildroot}/etc/init.d/
 cp -a yamcs-api/src/main/*.proto %{buildroot}/%{prefix}/lib/
 
-%if %{_buildweb}
+if [ -d yamcs-web/packages/app/dist ]; then
     mkdir -p %{buildroot}/%{prefix}/lib/yamcs-web
     cp -a yamcs-web/packages/app/dist/* %{buildroot}/%{prefix}/lib/yamcs-web/
-%endif
+fi
 
 # Clean-up
 rm %{buildroot}/%{prefix}/bin/*.bat

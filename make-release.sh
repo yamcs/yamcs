@@ -1,7 +1,8 @@
 #!/bin/bash
+
 buildweb=1
 
-if [ "$1" = "-noweb" ] ; then
+if [ "$1" = "-noweb" ]; then
    buildweb=0
 fi
 
@@ -9,25 +10,23 @@ cd `dirname $0`
 yamcshome=`pwd`
 pomversion=`grep -m 1 '<version>.*</version>' pom.xml | sed -e 's/.*<version>\(.*\)<\/version>.*/\1/'`
 
-mkdir -p dist
-
 #change x.y.z-SNAPSHOT into x.y.z_SNAPSHOT because "-" is not allowed in RPM version names
 d=`date +%Y%m%d%H%M%S`
 version=${pomversion/-SNAPSHOT/_SNAPSHOT$d}
 
 rev=`git rev-parse --short HEAD`
 
-dist=yamcs-${version}+r$rev
+serverdist=yamcs-${version}+r$rev
 
-rm -rf /tmp/$dist
-mkdir /tmp/$dist
- 
-git clone . /tmp/$dist
-rm -rf /tmp/$dist/.git
-cd /tmp/$dist
+rm -rf /tmp/$serverdist
+mkdir /tmp/$serverdist
+
+git clone . /tmp/$serverdist
+rm -rf /tmp/$serverdist/.git
+cd /tmp/$serverdist
 
 # fix revision in pom.xml
-for f in pom.xml yamcs-core/pom.xml yamcs-client/pom.xml yamcs-server/pom.xml yamcs-api/pom.xml yamcs-xtce/pom.xml yamcs-artemis/pom.xml yamcs-simulation/pom.xml; do
+for f in `find . -name pom.xml`; do
     cat $f | sed -e 's/<version>'$version'/<version>'$version'-'$rev/ | sed -e 's/-\${buildNumber}/'/ >$f.fixed
     mv $f.fixed $f
 done
@@ -37,24 +36,30 @@ logproperties=yamcs-core/etc/logging.properties.sample
 sed -e 's/%h\/.yamcs\/log/\/opt\/yamcs\/log/g' $logproperties > $logproperties.tmp;
 mv $logproperties.tmp $logproperties
 
-cd /tmp
+if [[ $buildweb -ne 0 ]]; then
+    cd yamcs-web
+    yarn install
+    yarn build
+    rm -rf `find . -maxdepth 3 -name node_modules`
+    cd ..
+fi
 
-mkdir -p $HOME/rpmbuild/{SRPMS,RPMS,BUILD,SPECS,SOURCES,tmp}
+mvn clean compile package -Dmaven.test.skip=true -Dmaven.buildNumber.doUpdate=false
 
-echo "Packing up sources..."
-tar czfh $HOME/rpmbuild/SOURCES/$dist.tar.gz $dist
-echo "done: $dist"
+mkdir -p dist
 
-#rm -rf $dist
+mkdir -p $HOME/rpmbuild/{RPMS,BUILD,SPECS,tmp}
 
 # Server RPM
+rm -rf "$HOME/rpmbuild/BUILD/$serverdist"
+cp -r "/tmp/$serverdist" "$HOME/rpmbuild/BUILD/"
 cat "$yamcshome/contrib/rpm/yamcs.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs.spec
-rpmbuild --define "_buildweb $buildweb" -ba $HOME/rpmbuild/SPECS/yamcs.spec
+rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs.spec
 
 # Simulation RPM
 simdist=yamcs-simulation-${version}+r$rev
 rm -rf "$HOME/rpmbuild/BUILD/$simdist"
-cp -r "$HOME/rpmbuild/BUILD/$dist" "$HOME/rpmbuild/BUILD/$simdist"
+cp -r "/tmp/$serverdist" "$HOME/rpmbuild/BUILD/$simdist"
 cat "$yamcshome/contrib/rpm/yamcs-simulation.spec" | sed -e 's/\$VERSION\$/'$version/ | sed -e 's/\$REVISION\$/'$rev/ > $HOME/rpmbuild/SPECS/yamcs-simulation.spec
 rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-simulation.spec
 
@@ -62,10 +67,10 @@ rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-simulation.spec
 clientdist=yamcs-client-${version}+r$rev
 rm -rf /tmp/$clientdist
 mkdir -p /tmp/$clientdist/{bin,etc,lib,mdb}
-cp $yamcshome/yamcs-client/bin/* /tmp/$clientdist/bin/
-cp $yamcshome/yamcs-client/etc/* /tmp/$clientdist/etc/
-cp $yamcshome/yamcs-client/target/yamcs-client-$pomversion.jar /tmp/$clientdist/lib/
-cp $yamcshome/yamcs-client/lib/*.jar /tmp/$clientdist/lib/
+cp /tmp/$serverdist/yamcs-client/bin/* /tmp/$clientdist/bin/
+cp /tmp/$serverdist/yamcs-client/etc/* /tmp/$clientdist/etc/
+cp /tmp/$serverdist/yamcs-client/target/yamcs-client-$pomversion.jar /tmp/$clientdist/lib/
+cp /tmp/$serverdist/yamcs-client/lib/*.jar /tmp/$clientdist/lib/
 
 cd /tmp
 tar czfh $yamcshome/dist/$clientdist.tar.gz $clientdist
@@ -82,4 +87,4 @@ cd "$yamcshome"
 mv $HOME/rpmbuild/RPMS/noarch/*${version}+r$rev* dist/
 
 rpmsign --key-id yamcs@spaceapplications.com --addsign dist/*${version}+r$rev*.rpm
-ls -l dist/*${version}+r$rev*
+ls -lh dist/*${version}+r$rev*
