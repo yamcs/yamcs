@@ -126,7 +126,7 @@ if [ $yamcs -eq 1 ]; then
     rm -rf /tmp/$serverdist
 fi
 
-if [ $yamcssimulation -eq 1]; then
+if [ $yamcssimulation -eq 1 ]; then
     rm -rf "$HOME/rpmbuild/BUILD/$simdist"
     cp -r $buildroot "$HOME/rpmbuild/BUILD/$simdist"
     cat "$yamcshome/contrib/rpm/yamcs-simulation.spec" | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $HOME/rpmbuild/SPECS/yamcs-simulation.spec
@@ -148,6 +148,7 @@ if [ $yamcsclient -eq 1 ]; then
 
     rm -rf "$HOME/rpmbuild/BUILD/$clientdist"
     cp -r "/tmp/$clientdist" "$HOME/rpmbuild/BUILD/"
+    cp -a $yamcshome/contrib/completion "$HOME/rpmbuild/BUILD/$clientdist"
     cat "$yamcshome/contrib/rpm/yamcs-client.spec" | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $HOME/rpmbuild/SPECS/yamcs-client.spec
     rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-client.spec
 

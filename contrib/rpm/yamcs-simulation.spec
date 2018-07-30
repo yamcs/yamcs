@@ -13,8 +13,10 @@ Prefix: /opt/yamcs
 BuildArch: noarch
 Requires: yamcs
 
+
 %description
 Configures Yamcs for simulation
+
 
 %install
 cd %{name}-%{version}-%{release}
@@ -40,6 +42,7 @@ rm %{buildroot}/%{prefix}/bin/*.bat
 rm %{buildroot}/%{prefix}/lib/yamcs-*-sources.jar
 rm %{buildroot}/%{prefix}/etc/users.yaml
 rm %{buildroot}/%{prefix}/etc/roles.yaml
+
 
 %files
 %defattr(-,root,root)

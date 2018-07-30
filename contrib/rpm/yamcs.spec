@@ -57,10 +57,10 @@ fi
 %dir %{prefix}/bin
 %attr(755, root, root) %{prefix}/bin/*
 
-%attr(755, root, root) /etc/init.d/*
-
 %attr(-,yamcs,yamcs) %{prefix}/cache
 %attr(-,yamcs,yamcs) %{prefix}/log
+
+%attr(755, root, root) /etc/init.d/*
 
 
 %changelog
