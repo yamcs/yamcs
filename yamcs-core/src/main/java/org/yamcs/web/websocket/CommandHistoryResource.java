@@ -34,21 +34,16 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
     }
 
     @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-        switch (ctx.getOperation()) {
-        case "subscribe":
-            return subscribe(ctx.getRequestId());
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
-        }
-    }
-
-    private WebSocketReply subscribe(int requestId) {
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         if (commandHistoryRequestManager != null) {
             subscription = commandHistoryRequestManager.subscribeCommandHistory(null, 0, this);
         }
-        return WebSocketReply.ack(requestId);
+        return WebSocketReply.ack(ctx.getRequestId());
+    }
+
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        return null;
     }
 
     @Override

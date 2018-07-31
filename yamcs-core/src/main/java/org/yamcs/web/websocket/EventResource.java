@@ -19,9 +19,6 @@ public class EventResource implements WebSocketResource {
 
     public static final String RESOURCE_NAME = "events";
 
-    public static final String OP_subscribe = "subscribe";
-    public static final String OP_unsubscribe = "unsubscribe";
-
     private ConnectedWebSocketClient client;
 
     private Stream stream;
@@ -37,22 +34,16 @@ public class EventResource implements WebSocketResource {
     }
 
     @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-        switch (ctx.getOperation()) {
-        case OP_subscribe:
-            return subscribe(ctx.getRequestId());
-        case OP_unsubscribe:
-            return unsubscribe(ctx.getRequestId());
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
-        }
-    }
-
-    private WebSocketReply subscribe(int requestId) throws WebSocketException {
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         doUnsubscribe(); // Only one subscription at a time
         doSubscribe();
-        return WebSocketReply.ack(requestId);
+        return WebSocketReply.ack(ctx.getRequestId());
+    }
+
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        doUnsubscribe();
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     @Override
@@ -67,11 +58,6 @@ public class EventResource implements WebSocketResource {
             stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
             doSubscribe();
         }
-    }
-
-    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
-        doUnsubscribe();
-        return WebSocketReply.ack(requestId);
     }
 
     @Override

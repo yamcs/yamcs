@@ -22,9 +22,6 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
 
     public static final String RESOURCE_NAME = "cqueues";
 
-    public static final String OP_subscribe = "subscribe";
-    public static final String OP_unsubscribe = "unsubscribe";
-
     private ConnectedWebSocketClient client;
 
     private volatile boolean subscribed = false;
@@ -41,23 +38,9 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
     }
 
     @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         client.checkSystemPrivilege(ctx.getRequestId(), SystemPrivilege.ControlCommandQueue);
-
-        switch (ctx.getOperation()) {
-        case OP_subscribe:
-            return subscribe(ctx.getRequestId());
-        case OP_unsubscribe:
-            return unsubscribe(ctx.getRequestId());
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
-        }
-    }
-
-    private WebSocketReply subscribe(int requestId) throws WebSocketException {
-        WebSocketReply reply = WebSocketReply.ack(requestId);
+        WebSocketReply reply = WebSocketReply.ack(ctx.getRequestId());
         client.sendReply(reply);
 
         subscribed = true;
@@ -70,12 +53,13 @@ public class CommandQueueResource implements WebSocketResource, CommandQueueList
         return null;
     }
 
-    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         if (commandQueueManager != null) {
             commandQueueManager.removeListener(this);
         }
         subscribed = false;
-        return WebSocketReply.ack(requestId);
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     @Override

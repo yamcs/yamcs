@@ -20,8 +20,6 @@ public class PacketResource implements WebSocketResource {
 
     public static final String RESOURCE_NAME = "packets";
 
-    public static final String OP_subscribe = "subscribe";
-    public static final String OP_unsubscribe = "unsubscribe";
     private String streamName;
     private Stream stream;
     private StreamSubscriber streamSubscriber;
@@ -39,43 +37,39 @@ public class PacketResource implements WebSocketResource {
     }
 
     @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-        String op = ctx.getOperation();
-        if (OP_unsubscribe.equals(op)) {
-            return unsubscribe(ctx.getRequestId());
-        }
-
-        if (op.startsWith(OP_subscribe)) {
-            if (streamSubscriber != null) {
-                throw new WebSocketException(ctx.getRequestId(), "Already subscribed to a stream");
-            }
-
-            String[] a = op.split("\\s+");
-            if (a.length != 2) {
-                throw new WebSocketException(ctx.getRequestId(), "Invalid request. Use 'subscribe <stream_name>'");
-            }
-            this.streamName = a[1];
-            if (yamcsInstance != null) {
-                YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-                stream = ydb.getStream(streamName);
-                if (stream == null) {
-                    throw new WebSocketException(ctx.getRequestId(),
-                            "Invalid request. No stream named '" + streamName + "'");
-                }
-            } else {
-                throw new WebSocketException(ctx.getRequestId(), "Invalid request. Instance unspecified");
-            }
-            return subscribe(ctx.getRequestId());
-        }
-
-        throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        // TODO add websocket message for this
+        throw new UnsupportedOperationException();
     }
 
-    private WebSocketReply subscribe(int requestId) throws WebSocketException {
+    @Override
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder, String argument)
+            throws WebSocketException {
+        if (streamSubscriber != null) {
+            throw new WebSocketException(ctx.getRequestId(), "Already subscribed to a stream");
+        }
+
+        this.streamName = argument;
+        if (yamcsInstance != null) {
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+            stream = ydb.getStream(streamName);
+            if (stream == null) {
+                throw new WebSocketException(ctx.getRequestId(),
+                        "Invalid request. No stream named '" + streamName + "'");
+            }
+        } else {
+            throw new WebSocketException(ctx.getRequestId(), "Invalid request. Instance unspecified");
+        }
+
         doUnsubscribe(); // Only one subscription at a time
         doSubscribe();
-        return WebSocketReply.ack(requestId);
+        return WebSocketReply.ack(ctx.getRequestId());
+    }
+
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        doUnsubscribe();
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     @Override
@@ -90,11 +84,6 @@ public class PacketResource implements WebSocketResource {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         stream = ydb.getStream(streamName);
         doSubscribe();
-    }
-
-    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
-        doUnsubscribe();
-        return WebSocketReply.ack(requestId);
     }
 
     @Override

@@ -15,8 +15,6 @@ import org.yamcs.utils.TimeEncoding;
 public class TimeResource implements WebSocketResource {
 
     public static final String RESOURCE_NAME = "time";
-    public static final String OP_subscribe = "subscribe";
-    public static final String OP_unsubscribe = "unsubscribe";
     private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
     private ConnectedWebSocketClient client;
@@ -33,24 +31,7 @@ public class TimeResource implements WebSocketResource {
     }
 
     @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-        switch (ctx.getOperation()) {
-        case OP_subscribe:
-            return processSubscribeRequest(ctx, decoder);
-        case OP_unsubscribe:
-            if (future != null) {
-                future.cancel(false);
-            }
-            subscribed.set(false);
-            return WebSocketReply.ack(ctx.getRequestId());
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
-        }
-    }
-
-    private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         if (!subscribed.getAndSet(true)) {
             future = timer.scheduleAtFixedRate(() -> {
                 long currentTime = processor.getCurrentTime();
@@ -77,6 +58,15 @@ public class TimeResource implements WebSocketResource {
 
         client.sendReply(reply);
         return null;
+    }
+
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        if (future != null) {
+            future.cancel(false);
+        }
+        subscribed.set(false);
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     @Override

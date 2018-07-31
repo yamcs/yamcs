@@ -31,23 +31,21 @@ public class AlarmResource implements WebSocketResource, AlarmListener {
     }
 
     @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
-        switch (ctx.getOperation()) {
-        case "subscribe":
-            client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
-            subscribed = true;
-            applySubscription();
-            return null;
-        case "unsubscribe":
-            if (alarmServer != null) {
-                alarmServer.unsubscribe(this);
-            }
-            subscribed = false;
-            return WebSocketReply.ack(ctx.getRequestId());
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
+        client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
+        subscribed = true;
+        applySubscription();
+        return null;
+    }
+
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        if (alarmServer != null) {
+            alarmServer.unsubscribe(this);
         }
+        subscribed = false;
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     @Override

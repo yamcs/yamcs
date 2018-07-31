@@ -34,7 +34,6 @@ import org.yamcs.protobuf.Table.TableLoadResponse;
 import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
-import org.yamcs.web.websocket.ParameterResource;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.ColumnSerializerFactory;
 import org.yamcs.yarch.DataType;
@@ -72,7 +71,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 "/REFMDB/SUBSYS1/IntegerPara1_1_7",
                 "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double",
                 "/REFMDB/SUBSYS1/processed_para_enum_nc");
-        WebSocketRequest wsr = new WebSocketRequest("parameter", ParameterResource.WSR_SUBSCRIBE, subscrList);
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscrList);
         wsClient.sendRequest(wsr);
 
         // these are from the realtime processor cache
@@ -157,7 +156,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 "/REFMDB/SUBSYS1/IntegerPara1_1_7",
                 "/REFMDB/SUBSYS1/processed_para_uint", "/REFMDB/SUBSYS1/processed_para_double",
                 "/REFMDB/SUBSYS1/processed_para_enum_nc");
-        WebSocketRequest wsr = new WebSocketRequest("parameter", ParameterResource.WSR_SUBSCRIBE, subscrList);
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subscrList);
         wsClient.sendRequest(wsr);
 
         // these are from the realtime processor cache

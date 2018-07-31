@@ -22,9 +22,6 @@ public class ManagementResource implements WebSocketResource, ManagementListener
 
     public static final String RESOURCE_NAME = "management";
 
-    public static final String OP_subscribe = "subscribe";
-    public static final String OP_unsubscribe = "unsubscribe";
-
     private ConnectedWebSocketClient client;
 
     private boolean emitClientInfo;
@@ -34,19 +31,6 @@ public class ManagementResource implements WebSocketResource, ManagementListener
         this.client = client;
     }
 
-    @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-        switch (ctx.getOperation()) {
-        case OP_subscribe:
-            return processSubscribeRequest(ctx, decoder);
-        case OP_unsubscribe:
-            return processUnsubscribeRequest(ctx, decoder);
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
-        }
-    }
-
     /**
      * Registers for updates on any processor or client. Sends the current set of processor, and clients (in that order)
      * to the requester.
@@ -54,8 +38,8 @@ public class ManagementResource implements WebSocketResource, ManagementListener
      * Calling this multiple times, will cause the current set of data to be sent again. Further updates will still
      * arrive one-time only.
      */
-    private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
+    @Override
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         emitClientInfo = true;
         emitProcessorStatistics = true;
         if (ctx.getData() != null) {
@@ -79,7 +63,8 @@ public class ManagementResource implements WebSocketResource, ManagementListener
         return null;
     }
 
-    private WebSocketReply processUnsubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         ManagementService.getInstance().removeManagementListener(this);
         client.sendReply(new WebSocketReply(ctx.getRequestId()));
         return null;

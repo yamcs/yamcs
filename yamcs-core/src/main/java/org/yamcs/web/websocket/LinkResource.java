@@ -16,9 +16,6 @@ public class LinkResource implements WebSocketResource, LinkListener {
 
     public static final String RESOURCE_NAME = "links";
 
-    public static final String OP_subscribe = "subscribe";
-    public static final String OP_unsubscribe = "unsubscribe";
-
     private ConnectedWebSocketClient client;
 
     // Instance requested by the user. This should not update when the processor changes.
@@ -29,9 +26,7 @@ public class LinkResource implements WebSocketResource, LinkListener {
     }
 
     @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         if (ctx.getData() != null) {
             LinkSubscriptionRequest req = decoder.decodeMessageData(ctx, LinkSubscriptionRequest.newBuilder()).build();
             if (req.hasInstance()) {
@@ -39,20 +34,9 @@ public class LinkResource implements WebSocketResource, LinkListener {
             }
         }
 
-        switch (ctx.getOperation()) {
-        case OP_subscribe:
-            return subscribe(ctx.getRequestId());
-        case OP_unsubscribe:
-            return unsubscribe(ctx.getRequestId());
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
-        }
-    }
-
-    private WebSocketReply subscribe(int requestId) throws WebSocketException {
         ManagementService mservice = ManagementService.getInstance();
 
-        client.sendReply(WebSocketReply.ack(requestId));
+        client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
 
         for (LinkInfo linkInfo : mservice.getLinkInfo()) {
             if (instance == null || instance.equals(linkInfo.getInstance())) {
@@ -63,10 +47,11 @@ public class LinkResource implements WebSocketResource, LinkListener {
         return null;
     }
 
-    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         ManagementService mservice = ManagementService.getInstance();
         mservice.removeLinkListener(this);
-        return WebSocketReply.ack(requestId);
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     @Override

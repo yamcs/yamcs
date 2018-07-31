@@ -3,23 +3,15 @@ package org.yamcs.web.websocket;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
-import org.yamcs.protobuf.Archive.ColumnData;
 import org.yamcs.protobuf.Archive.StreamData;
 import org.yamcs.protobuf.Rest.StreamSubscribeRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.Yamcs.Value;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.web.rest.archive.ArchiveHelper;
-import org.yamcs.yarch.ColumnDefinition;
-import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
@@ -28,11 +20,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  */
 public class StreamResource implements WebSocketResource {
 
-    private static final Logger log = LoggerFactory.getLogger(StreamResource.class);
     public static final String RESOURCE_NAME = "stream";
-
-    public static final String OP_subscribe = "subscribe";
-    public static final String OP_publish = "publish";
 
     private ConnectedWebSocketClient client;
 
@@ -49,20 +37,7 @@ public class StreamResource implements WebSocketResource {
     }
 
     @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-        switch (ctx.getOperation()) {
-        case OP_subscribe:
-            return processSubscribeRequest(ctx, decoder);
-        case OP_publish:
-            return processPublishRequest(ctx, decoder);
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
-        }
-    }
-
-    private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
         // Optionally read body. If it's not provided, suppose the subscription concerns
@@ -93,112 +68,8 @@ public class StreamResource implements WebSocketResource {
         return WebSocketReply.ack(ctx.getRequestId());
     }
 
-    private static DataType dataTypeFromValue(Value value) {
-        switch (value.getType()) {
-        case SINT32:
-            return DataType.INT;
-        case DOUBLE:
-            return DataType.DOUBLE;
-        case BINARY:
-            return DataType.BINARY;
-        case TIMESTAMP:
-            return DataType.TIMESTAMP;
-        case STRING:
-            return DataType.STRING;
-        default:
-            throw new IllegalArgumentException("Unexpected value type " + value.getType());
-        }
-    }
-
-    private Object makeTupleColumn(WebSocketDecodeContext ctx, String name, Value value, DataType columnType)
-            throws WebSocketException {
-        // Sanity check. We should perhaps find a better way to do all of this
-        switch (columnType.val) {
-        case SHORT:
-        case INT:
-            if (value.getType() != Type.SINT32) {
-                throw new WebSocketException(ctx.getRequestId(), String.format(
-                        "Value type for column %s should be '%s'", name, Type.SINT32));
-            }
-            return value.getSint32Value();
-        case DOUBLE:
-            if (value.getType() != Type.DOUBLE) {
-                throw new WebSocketException(ctx.getRequestId(), String.format(
-                        "Value type for column %s should be '%s'", name, Type.DOUBLE));
-            }
-            return value.getDoubleValue();
-        case BINARY:
-            if (value.getType() != Type.BINARY) {
-                throw new WebSocketException(ctx.getRequestId(), String.format(
-                        "Value type for column %s should be '%s'", name, Type.BINARY));
-            }
-            return value.getBinaryValue().toByteArray();
-        case TIMESTAMP:
-            if (value.getType() != Type.TIMESTAMP) {
-                throw new WebSocketException(ctx.getRequestId(), String.format(
-                        "Value type for column %s should be '%s'", name, Type.TIMESTAMP));
-            }
-            return value.getTimestampValue();
-        case ENUM:
-        case STRING:
-            if (value.getType() != Type.STRING) {
-                throw new WebSocketException(ctx.getRequestId(), String.format(
-                        "Value type for column %s should be '%s'", name, Type.STRING));
-            }
-            return value.getStringValue();
-        default:
-            throw new IllegalArgumentException("Tuple column type " + columnType.val + " is currently not supported");
-        }
-    }
-
-    private WebSocketReply processPublishRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
-
-        StreamData req = decoder.decodeMessageData(ctx, StreamData.newBuilder()).build();
-        Stream stream = ydb.getStream(req.getStream());
-        if (stream == null) {
-            throw new WebSocketException(ctx.getRequestId(), "Cannot find stream '" + req.getStream() + "'");
-        }
-
-        TupleDefinition tdef = stream.getDefinition();
-        List<Object> tupleColumns = new ArrayList<>();
-
-        // 'fixed' colums
-        for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
-            ColumnData providedField = findColumnValue(req, cdef.getName());
-            if (providedField == null) {
-                continue;
-            }
-            if (!providedField.hasValue()) {
-                throw new WebSocketException(ctx.getRequestId(), "No value was provided for column " + cdef.getName());
-            }
-            Object column = makeTupleColumn(ctx, cdef.getName(), providedField.getValue(), cdef.getType());
-            tupleColumns.add(column);
-        }
-
-        // 'dynamic' columns
-        for (ColumnData val : req.getColumnList()) {
-            if (stream.getDefinition().getColumn(val.getName()) == null) {
-                DataType type = dataTypeFromValue(val.getValue());
-                tdef.addColumn(val.getName(), type);
-                Object column = makeTupleColumn(ctx, val.getName(), val.getValue(), type);
-                tupleColumns.add(column);
-            }
-        }
-
-        Tuple t = new Tuple(tdef, tupleColumns);
-        log.info("Emitting tuple {} to {}", t, stream.getName());
-        stream.emitTuple(t);
-        return WebSocketReply.ack(ctx.getRequestId());
-    }
-
-    private static ColumnData findColumnValue(StreamData tupleData, String name) {
-        for (ColumnData val : tupleData.getColumnList()) {
-            if (val.getName().equals(name)) {
-                return val;
-            }
-        }
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         return null;
     }
 
