@@ -35,27 +35,19 @@ public class AlarmResource implements WebSocketResource, AlarmListener {
             throws WebSocketException {
         switch (ctx.getOperation()) {
         case "subscribe":
-            return subscribe(ctx.getRequestId());
+            client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
+            subscribed = true;
+            applySubscription();
+            return null;
         case "unsubscribe":
-            return unsubscribe(ctx.getRequestId());
+            if (alarmServer != null) {
+                alarmServer.unsubscribe(this);
+            }
+            subscribed = false;
+            return WebSocketReply.ack(ctx.getRequestId());
         default:
             throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
         }
-    }
-
-    private WebSocketReply subscribe(int requestId) throws WebSocketException {
-        client.sendReply(WebSocketReply.ack(requestId));
-        subscribed = true;
-        applySubscription();
-        return null;
-    }
-
-    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
-        if (alarmServer != null) {
-            alarmServer.unsubscribe(this);
-        }
-        subscribed = false;
-        return WebSocketReply.ack(requestId);
     }
 
     @Override
