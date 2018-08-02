@@ -6,9 +6,11 @@
   <artifactId>yamcs-scpi</artifactId>
   <version>0.1-SNAPSHOT</version>
 
+
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <main>${project.groupId}.Main</main>
   </properties>
 
   <build>
