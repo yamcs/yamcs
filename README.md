@@ -16,5 +16,5 @@ mvn clean package exec:java
 
 Alternatively you can also simply run the application from the jar (assuming you manually manage the classpath):
 ```
-java -jar target/target/yamcs-scpi-$version.jar
+java -jar target/yamcs-scpi-$version.jar
 ```
