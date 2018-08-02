@@ -39,6 +39,12 @@ export interface Parameter extends NameDescription {
   | 'TELEMETERED';
 
   type?: ParameterType;
+  usedBy?: UsedByInfo;
+}
+
+export interface UsedByInfo {
+  algorithm?: Algorithm[];
+  container?: Container[];
 }
 
 export interface UnitInfo {

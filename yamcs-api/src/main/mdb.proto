@@ -117,6 +117,11 @@ message AbsoluteTimeInfo {
   optional string epoch = 5;
 }
 
+message UsedByInfo {
+  repeated AlgorithmInfo algorithm = 1;
+  repeated ContainerInfo container = 2;
+}
+
 message ParameterInfo {
   optional string name = 1;
   optional string qualifiedName = 2;
@@ -125,6 +130,7 @@ message ParameterInfo {
   repeated yamcs.NamedObjectId alias = 5;
   optional ParameterTypeInfo type = 6;
   optional DataSourceType dataSource = 7;
+  optional UsedByInfo usedBy = 8;
 }
 
 message ArgumentTypeInfo {
@@ -250,6 +256,7 @@ message ContainerInfo {
   optional ContainerInfo baseContainer = 8;
   repeated ComparisonInfo restrictionCriteria = 9;
   repeated SequenceEntryInfo entry = 10;
+  optional UsedByInfo usedBy = 11;
 }
 
 message InputParameterInfo {

@@ -8,7 +8,9 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Mdb.ContainerInfo;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
+import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.protobuf.Rest.BulkGetParameterInfoRequest;
 import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse;
 import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse.GetParameterInfoResponse;
@@ -22,7 +24,10 @@ import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.mdb.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.xtce.Container;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
@@ -78,6 +83,28 @@ public class MDBParameterRestHandler extends RestHandler {
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
 
         ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(p, DetailLevel.FULL);
+        List<ParameterEntry> parameterEntries = mdb.getParameterEntries(p);
+        if (parameterEntries != null) {
+            ParameterInfo.Builder pinfob = ParameterInfo.newBuilder(pinfo);
+            Set<SequenceContainer> usingContainers = new HashSet<>();
+            for (ParameterEntry entry : parameterEntries) {
+                Container containingContainer = entry.getContainer();
+                if (containingContainer instanceof SequenceContainer) {
+                    usingContainers.add((SequenceContainer) containingContainer);
+                }
+            }
+
+            UsedByInfo.Builder usedByb = UsedByInfo.newBuilder();
+            List<SequenceContainer> unsortedContainers = new ArrayList<>(usingContainers);
+            Collections.sort(unsortedContainers, (c1, c2) -> c1.getQualifiedName().compareTo(c2.getQualifiedName()));
+            for (SequenceContainer seqContainer : unsortedContainers) {
+                ContainerInfo usingContainer = XtceToGpbAssembler.toContainerInfo(seqContainer, DetailLevel.LINK);
+                usedByb.addContainer(usingContainer);
+            }
+            pinfob.setUsedBy(usedByb);
+            pinfo = pinfob.build();
+        }
+
         completeOK(req, pinfo);
     }
 
