@@ -9,7 +9,7 @@ This project implements the Test Support Equipment (TSE) Interface (IF) for CDMS
 It will be integrated with YAMCS (Yet Another Mission Control System). YAMCS is the front- and back-end used to assist payload and system operators their daily tasks.
 
 ## Running
-The project incorporates the maven exec plugin for easy development.
+The project incorporates the maven exec plugin for easy development. The following command executes the main class after packaging:
 ```
 mvn exec:java
 ```
