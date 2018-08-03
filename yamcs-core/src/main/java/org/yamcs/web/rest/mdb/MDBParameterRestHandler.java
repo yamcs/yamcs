@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ import org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest;
 import org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse;
 import org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
-import org.yamcs.protobuf.Mdb.ListParameterInfoResponse;
+import org.yamcs.protobuf.Mdb.ListParametersResponse;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -153,6 +154,9 @@ public class MDBParameterRestHandler extends RestHandler {
             }
         } else { // List all
             for (Parameter p : mdb.getParameters()) {
+                if (!hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+                    continue;
+                }
                 if (matcher != null && !matcher.matches(p)) {
                     continue;
                 }
@@ -166,19 +170,35 @@ public class MDBParameterRestHandler extends RestHandler {
             return p1.getQualifiedName().compareTo(p2.getQualifiedName());
         });
 
+        int totalSize = matchedParameters.size();
+
+        String next = req.getQueryParameter("next", null);
         int pos = req.getQueryParameterAsInt("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
-        if (pos > 0) {
+        if (next != null) {
+            NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
+            matchedParameters = matchedParameters.stream().filter(p -> {
+                return p.getQualifiedName().compareTo(pageToken.name) > 0;
+            }).collect(Collectors.toList());
+        } else if (pos > 0) {
             matchedParameters = matchedParameters.subList(pos, matchedParameters.size());
         }
+
+        NamedObjectPageToken continuationToken = null;
         if (limit < matchedParameters.size()) {
             matchedParameters = matchedParameters.subList(0, limit);
+            Parameter lastParameter = matchedParameters.get(limit - 1);
+            continuationToken = new NamedObjectPageToken(lastParameter.getQualifiedName());
         }
 
-        ListParameterInfoResponse.Builder responseb = ListParameterInfoResponse.newBuilder();
+        ListParametersResponse.Builder responseb = ListParametersResponse.newBuilder();
+        responseb.setTotalSize(totalSize);
         for (Parameter p : matchedParameters) {
             responseb.addParameter(
                     XtceToGpbAssembler.toParameterInfo(p, details ? DetailLevel.FULL : DetailLevel.SUMMARY));
+        }
+        if (continuationToken != null) {
+            responseb.setContinuationToken(continuationToken.encodeAsString());
         }
         completeOK(req, responseb.build());
     }

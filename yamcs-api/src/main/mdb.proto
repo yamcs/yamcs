@@ -5,6 +5,20 @@ option java_package = "org.yamcs.protobuf";
 
 import "yamcs.proto";
 
+message MissionDatabase {
+  optional string configName = 1; //this is the config section in mdb.yaml
+  optional string name = 2; //XTCE root SpaceSystem name
+  optional string version = 3; //XTCE root SpaceSystem header version
+  repeated SpaceSystemInfo spaceSystem = 4;
+}
+
+message HistoryInfo {
+  optional string version = 1;
+  optional string date = 2;
+  optional string message = 3;
+  optional string author = 4;
+}
+
 enum DataSourceType {
   TELEMETERED = 0;
   DERIVED = 1;
@@ -290,14 +304,16 @@ message AlgorithmInfo {
   repeated int64 onPeriodicRate = 12;
 }
 
-message ListParameterInfoResponse {
+message ListParametersResponse {
   repeated ParameterInfo parameter = 1;
   optional string continuationToken = 2;
+  optional int32 totalSize = 3;
 }
 
-message ListParameterTypeInfoResponse {
+message ListParameterTypesResponse {
   repeated ParameterTypeInfo type = 1;
   optional string continuationToken = 2;
+  optional int32 totalSize = 3;
 }
 
 message BulkGetParameterInfoRequest {
@@ -312,17 +328,40 @@ message BulkGetParameterInfoResponse {
   repeated GetParameterInfoResponse response = 1;
 }
 
-message ListContainerInfoResponse {
+message ListContainersResponse {
   repeated mdb.ContainerInfo container = 1;
   optional string continuationToken = 2;
+  optional int32 totalSize = 3;
 }
 
-message ListCommandInfoResponse {
+message ListCommandsResponse {
   repeated mdb.CommandInfo command = 1;
   optional string continuationToken = 2;
+  optional int32 totalSize = 3;
 }
 
-message ListAlgorithmInfoResponse {
+message ListAlgorithmsResponse {
   repeated mdb.AlgorithmInfo algorithm = 1;
   optional string continuationToken = 2;
+  optional int32 totalSize = 3;
+}
+
+message ListSpaceSystemsResponse {
+  repeated SpaceSystemInfo spaceSystem = 1;
+  optional string continuationToken = 2;
+  optional int32 totalSize = 3;
+}
+
+message SpaceSystemInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  optional string version = 5;
+  optional int32 parameterCount = 6;
+  optional int32 containerCount = 7;
+  optional int32 commandCount = 8;
+  optional int32 algorithmCount = 9;
+  repeated HistoryInfo history = 14;
+  repeated SpaceSystemInfo sub = 15;
 }

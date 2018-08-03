@@ -3,10 +3,11 @@ package org.yamcs.web.rest.mdb;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse;
+import org.yamcs.protobuf.Mdb.ListParameterTypesResponse;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
@@ -83,19 +84,31 @@ public class MDBParameterTypeRestHandler extends RestHandler {
             return ((NameDescription) t1).getQualifiedName().compareTo(((NameDescription) t2).getQualifiedName());
         });
 
-        int pos = req.getQueryParameterAsInt("pos", 0);
+        int totalSize = matchedTypes.size();
+
+        String next = req.getQueryParameter("next", null);
         int limit = req.getQueryParameterAsInt("limit", 100);
-        if (pos > 0) {
-            matchedTypes = matchedTypes.subList(pos, matchedTypes.size());
+        if (next != null) {
+            NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
+            matchedTypes = matchedTypes.stream().filter(t -> {
+                return ((NameDescription) t).getQualifiedName().compareTo(pageToken.name) > 0;
+            }).collect(Collectors.toList());
         }
+        NamedObjectPageToken continuationToken = null;
         if (limit < matchedTypes.size()) {
             matchedTypes = matchedTypes.subList(0, limit);
+            ParameterType lastType = matchedTypes.get(limit - 1);
+            continuationToken = new NamedObjectPageToken(((NameDescription) lastType).getQualifiedName());
         }
 
-        ListParameterTypeInfoResponse.Builder responseb = ListParameterTypeInfoResponse.newBuilder();
+        ListParameterTypesResponse.Builder responseb = ListParameterTypesResponse.newBuilder();
+        responseb.setTotalSize(totalSize);
         for (ParameterType t : matchedTypes) {
             responseb.addType(
                     XtceToGpbAssembler.toParameterTypeInfo(t, details ? DetailLevel.FULL : DetailLevel.SUMMARY));
+        }
+        if (continuationToken != null) {
+            responseb.setContinuationToken(continuationToken.encodeAsString());
         }
         completeOK(req, responseb.build());
     }

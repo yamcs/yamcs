@@ -3,6 +3,7 @@ syntax="proto2";
 package yamcsManagement;
 option java_package = "org.yamcs.protobuf";
 
+import "mdb.proto";
 import "yamcs.proto";
 
 /*service states coming from guava (numbers have to correspond)*/
@@ -29,48 +30,14 @@ message YamcsInstance {
     STOPPING = 5;
     FAILED = 6;
   }
-  required string name = 1;
-  optional MissionDatabase missionDatabase = 3;
+  optional string name = 1;
+  optional mdb.MissionDatabase missionDatabase = 3;
   repeated ProcessorInfo processor = 4;
   optional InstanceState state = 11;
   //in case the state=FAILED, this field will indicate the cause of the failure
   // the missionDatabase and other fields may not be filled when this happens
   optional string failureCause = 9;
   optional string missionTime = 10;
-}
-
-message HistoryInfo {
-  optional string version = 1;
-  optional string date = 2;
-  optional string message = 3;
-  optional string author = 4;
-}
-
-message SpaceSystemInfo {
-  optional string name = 1;
-  optional string qualifiedName = 2;
-  optional string shortDescription = 3;
-  optional string longDescription = 4;
-  optional string version = 5;
-  optional int32 parameterCount = 6;
-  optional int32 containerCount = 7;
-  optional int32 commandCount = 8;
-  optional int32 algorithmCount = 9;
-  repeated HistoryInfo history = 14;
-  repeated SpaceSystemInfo sub = 15;
-}
-
-message MissionDatabase {
-  optional string configName = 1; //this is the config section in mdb.yaml
-  optional string name = 2; //XTCE root SpaceSystem name
-  optional string version = 3; //XTCE root SpaceSystem header version
-  repeated SpaceSystemInfo spaceSystem = 4;
-}
-
-//used as parameter for the GetMissionDatabase, specify one of the instance or dbConfigName but not both
-message MissionDatabaseRequest {
-  optional string dbConfigName = 1;
-  optional string instance = 2;
 }
 
 message ProcessorInfo {
@@ -121,7 +88,7 @@ message UserInfo {
 }
 
 message TmStatistics {
-  required string packetName = 1;
+  optional string packetName = 1;
   optional int64 receivedPackets = 2;
   optional int64 lastReceived = 3;
   optional string lastReceivedUTC = 8;
@@ -131,8 +98,8 @@ message TmStatistics {
 }
 
 message Statistics {
-  required string instance = 1;
-  required string yProcessorName = 2;
+  optional string instance = 1;
+  optional string yProcessorName = 2;
   repeated TmStatistics tmstats = 3;
   optional int64 lastUpdated = 4; //java local time of the last update
   optional string lastUpdatedUTC = 5; // String representation in ISO8601 format
@@ -167,8 +134,8 @@ message ProcessorRequest {
 }
 
 message LinkInfo {
-  required string instance = 1;
-  required string name = 2;
+  optional string instance = 1;
+  optional string name = 2;
   optional string type = 3;
   optional string spec = 4;
   optional string stream = 5;

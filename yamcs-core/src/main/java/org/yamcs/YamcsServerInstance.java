@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
-import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
+import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.time.RealtimeTimeService;

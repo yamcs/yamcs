@@ -6,7 +6,7 @@ import java.io.ObjectOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
-import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
+import org.yamcs.protobuf.Mdb.MissionDatabase;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;

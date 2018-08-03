@@ -53,10 +53,6 @@ message BulkDownloadParameterValueRequest {
   optional string namespace = 4; // Namespace used to display parameter names in e.g. csv header. Only used when no parameter ids were specified.
 }
 
-message ListSpaceSystemInfoResponse {
-  repeated yamcsManagement.SpaceSystemInfo spaceSystem = 1;
-}
-
 message ListLinkInfoResponse {
   repeated yamcsManagement.LinkInfo link = 1;
 }

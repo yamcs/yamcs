@@ -4224,12 +4224,6 @@ public final class Web {
             return false;
           }
         }
-        if (hasStatistics()) {
-          if (!getStatistics().isInitialized()) {
-            memoizedIsInitialized = 0;
-            return false;
-          }
-        }
         if (hasEvent()) {
           if (!getEvent().isInitialized()) {
             memoizedIsInitialized = 0;
@@ -4244,12 +4238,6 @@ public final class Web {
         }
         if (hasAlarmData()) {
           if (!getAlarmData().isInitialized()) {
-            memoizedIsInitialized = 0;
-            return false;
-          }
-        }
-        if (hasLinkEvent()) {
-          if (!getLinkEvent().isInitialized()) {
             memoizedIsInitialized = 0;
             return false;
           }
@@ -5088,11 +5076,6 @@ public final class Web {
               return false;
             }
           }
-          if (hasStatistics()) {
-            if (!getStatistics().isInitialized()) {
-              return false;
-            }
-          }
           if (hasEvent()) {
             if (!getEvent().isInitialized()) {
               return false;
@@ -5105,11 +5088,6 @@ public final class Web {
           }
           if (hasAlarmData()) {
             if (!getAlarmData().isInitialized()) {
-              return false;
-            }
-          }
-          if (hasLinkEvent()) {
-            if (!getLinkEvent().isInitialized()) {
               return false;
             }
           }

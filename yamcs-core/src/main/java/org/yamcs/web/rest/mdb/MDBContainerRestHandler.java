@@ -5,9 +5,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.yamcs.protobuf.Mdb.ContainerInfo;
-import org.yamcs.protobuf.Mdb.ListContainerInfoResponse;
+import org.yamcs.protobuf.Mdb.ListContainersResponse;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
@@ -82,7 +83,7 @@ public class MDBContainerRestHandler extends RestHandler {
 
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
 
-        ListContainerInfoResponse.Builder responseb = ListContainerInfoResponse.newBuilder();
+        List<SequenceContainer> matchedContainers = new ArrayList<>();
         if (req.hasQueryParameter("namespace")) {
             String namespace = req.getQueryParameter("namespace");
 
@@ -93,7 +94,7 @@ public class MDBContainerRestHandler extends RestHandler {
 
                 String alias = c.getAlias(namespace);
                 if (alias != null || (recurse && c.getQualifiedName().startsWith(namespace))) {
-                    responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, DetailLevel.SUMMARY));
+                    matchedContainers.add(c);
                 }
             }
         } else { // List all
@@ -101,10 +102,40 @@ public class MDBContainerRestHandler extends RestHandler {
                 if (matcher != null && !matcher.matches(c)) {
                     continue;
                 }
-                responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, DetailLevel.SUMMARY));
+                matchedContainers.add(c);
             }
         }
 
+        Collections.sort(matchedContainers, (p1, p2) -> {
+            return p1.getQualifiedName().compareTo(p2.getQualifiedName());
+        });
+
+        int totalSize = matchedContainers.size();
+
+        String next = req.getQueryParameter("next", null);
+        int limit = req.getQueryParameterAsInt("limit", 100);
+        if (next != null) {
+            NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
+            matchedContainers = matchedContainers.stream().filter(p -> {
+                return p.getQualifiedName().compareTo(pageToken.name) > 0;
+            }).collect(Collectors.toList());
+        }
+
+        NamedObjectPageToken continuationToken = null;
+        if (limit < matchedContainers.size()) {
+            matchedContainers = matchedContainers.subList(0, limit);
+            SequenceContainer lastContainer = matchedContainers.get(limit - 1);
+            continuationToken = new NamedObjectPageToken(lastContainer.getQualifiedName());
+        }
+
+        ListContainersResponse.Builder responseb = ListContainersResponse.newBuilder();
+        responseb.setTotalSize(totalSize);
+        for (SequenceContainer c : matchedContainers) {
+            responseb.addContainer(XtceToGpbAssembler.toContainerInfo(c, DetailLevel.SUMMARY));
+        }
+        if (continuationToken != null) {
+            responseb.setContinuationToken(continuationToken.encodeAsString());
+        }
         completeOK(req, responseb.build());
     }
 }

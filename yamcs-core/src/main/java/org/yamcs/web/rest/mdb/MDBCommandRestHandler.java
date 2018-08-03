@@ -1,7 +1,12 @@
 package org.yamcs.web.rest.mdb;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.yamcs.protobuf.Mdb.CommandInfo;
-import org.yamcs.protobuf.Mdb.ListCommandInfoResponse;
+import org.yamcs.protobuf.Mdb.ListCommandsResponse;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
@@ -55,7 +60,7 @@ public class MDBCommandRestHandler extends RestHandler {
 
         DetailLevel detailLevel = details ? DetailLevel.FULL : DetailLevel.SUMMARY;
 
-        ListCommandInfoResponse.Builder responseb = ListCommandInfoResponse.newBuilder();
+        List<MetaCommand> matchedCommands = new ArrayList<>();
         if (req.hasQueryParameter("namespace")) {
             String namespace = req.getQueryParameter("namespace");
             for (MetaCommand cmd : mdb.getMetaCommands()) {
@@ -68,7 +73,7 @@ public class MDBCommandRestHandler extends RestHandler {
 
                 String alias = cmd.getAlias(namespace);
                 if (alias != null || (recurse && cmd.getQualifiedName().startsWith(namespace))) {
-                    responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, detailLevel));
+                    matchedCommands.add(cmd);
                 }
             }
         } else { // List all
@@ -76,10 +81,40 @@ public class MDBCommandRestHandler extends RestHandler {
                 if (matcher != null && !matcher.matches(cmd)) {
                     continue;
                 }
-                responseb.addCommand(XtceToGpbAssembler.toCommandInfo(cmd, detailLevel));
+                matchedCommands.add(cmd);
             }
         }
 
+        Collections.sort(matchedCommands, (p1, p2) -> {
+            return p1.getQualifiedName().compareTo(p2.getQualifiedName());
+        });
+
+        int totalSize = matchedCommands.size();
+
+        String next = req.getQueryParameter("next", null);
+        int limit = req.getQueryParameterAsInt("limit", 100);
+        if (next != null) {
+            NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
+            matchedCommands = matchedCommands.stream().filter(p -> {
+                return p.getQualifiedName().compareTo(pageToken.name) > 0;
+            }).collect(Collectors.toList());
+        }
+
+        NamedObjectPageToken continuationToken = null;
+        if (limit < matchedCommands.size()) {
+            matchedCommands = matchedCommands.subList(0, limit);
+            MetaCommand lastCommand = matchedCommands.get(limit - 1);
+            continuationToken = new NamedObjectPageToken(lastCommand.getQualifiedName());
+        }
+
+        ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
+        responseb.setTotalSize(totalSize);
+        for (MetaCommand c : matchedCommands) {
+            responseb.addCommand(XtceToGpbAssembler.toCommandInfo(c, detailLevel));
+        }
+        if (continuationToken != null) {
+            responseb.setContinuationToken(continuationToken.encodeAsString());
+        }
         completeOK(req, responseb.build());
     }
 }
