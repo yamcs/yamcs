@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.ListContainerInfoResponse;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
-import org.yamcs.protobuf.Rest.ListContainerInfoResponse;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;

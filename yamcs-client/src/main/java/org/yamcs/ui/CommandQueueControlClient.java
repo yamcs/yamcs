@@ -46,8 +46,7 @@ public class CommandQueueControlClient
 
     @Override
     public void connected(String url) {
-        WebSocketRequest wsr = new WebSocketRequest(CommandQueueResource.RESOURCE_NAME,
-                CommandQueueResource.OP_subscribe);
+        WebSocketRequest wsr = new WebSocketRequest(CommandQueueResource.RESOURCE_NAME, "subscribe");
         yconnector.performSubscription(wsr, this, this);
     }
 

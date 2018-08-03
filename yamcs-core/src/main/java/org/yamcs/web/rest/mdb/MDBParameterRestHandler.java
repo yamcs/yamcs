@@ -8,13 +8,13 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest;
+import org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse;
+import org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse;
 import org.yamcs.protobuf.Mdb.ContainerInfo;
+import org.yamcs.protobuf.Mdb.ListParameterInfoResponse;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Mdb.UsedByInfo;
-import org.yamcs.protobuf.Rest.BulkGetParameterInfoRequest;
-import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse;
-import org.yamcs.protobuf.Rest.BulkGetParameterInfoResponse.GetParameterInfoResponse;
-import org.yamcs.protobuf.Rest.ListParameterInfoResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;

@@ -289,3 +289,40 @@ message AlgorithmInfo {
   repeated ParameterInfo onParameterUpdate = 11;
   repeated int64 onPeriodicRate = 12;
 }
+
+message ListParameterInfoResponse {
+  repeated ParameterInfo parameter = 1;
+  optional string continuationToken = 2;
+}
+
+message ListParameterTypeInfoResponse {
+  repeated ParameterTypeInfo type = 1;
+  optional string continuationToken = 2;
+}
+
+message BulkGetParameterInfoRequest {
+  repeated yamcs.NamedObjectId id = 1;
+}
+
+message BulkGetParameterInfoResponse {
+  message GetParameterInfoResponse {
+    optional yamcs.NamedObjectId id = 1;
+    optional mdb.ParameterInfo parameter = 2;
+  }
+  repeated GetParameterInfoResponse response = 1;
+}
+
+message ListContainerInfoResponse {
+  repeated mdb.ContainerInfo container = 1;
+  optional string continuationToken = 2;
+}
+
+message ListCommandInfoResponse {
+  repeated mdb.CommandInfo command = 1;
+  optional string continuationToken = 2;
+}
+
+message ListAlgorithmInfoResponse {
+  repeated mdb.AlgorithmInfo algorithm = 1;
+  optional string continuationToken = 2;
+}

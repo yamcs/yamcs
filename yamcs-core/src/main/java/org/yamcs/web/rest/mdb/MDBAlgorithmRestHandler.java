@@ -1,7 +1,7 @@
 package org.yamcs.web.rest.mdb;
 
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
-import org.yamcs.protobuf.Rest.ListAlgorithmInfoResponse;
+import org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;

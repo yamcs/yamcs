@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse;
 import org.yamcs.protobuf.Mdb.ParameterTypeInfo;
-import org.yamcs.protobuf.Rest.ListParameterTypeInfoResponse;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;

@@ -38801,6 +38801,6923 @@ public final class Mdb {
 
   }
 
+  public interface ListParameterInfoResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ListParameterInfoResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ParameterInfo> 
+        getParameterList();
+    /**
+     * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ParameterInfo getParameter(int index);
+    /**
+     * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+     */
+    int getParameterCount();
+    /**
+     * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> 
+        getParameterOrBuilderList();
+    /**
+     * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder(
+        int index);
+
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    boolean hasContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    java.lang.String getContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getContinuationTokenBytes();
+  }
+  /**
+   * Protobuf type {@code mdb.ListParameterInfoResponse}
+   */
+  public  static final class ListParameterInfoResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:mdb.ListParameterInfoResponse)
+      ListParameterInfoResponseOrBuilder {
+    // Use ListParameterInfoResponse.newBuilder() to construct.
+    private ListParameterInfoResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ListParameterInfoResponse() {
+      parameter_ = java.util.Collections.emptyList();
+      continuationToken_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ListParameterInfoResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                parameter_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ParameterInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              parameter_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.ParameterInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              continuationToken_ = bs;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          parameter_ = java.util.Collections.unmodifiableList(parameter_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ListParameterInfoResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ListParameterInfoResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.ListParameterInfoResponse.class, org.yamcs.protobuf.Mdb.ListParameterInfoResponse.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int PARAMETER_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Mdb.ParameterInfo> parameter_;
+    /**
+     * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ParameterInfo> getParameterList() {
+      return parameter_;
+    }
+    /**
+     * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> 
+        getParameterOrBuilderList() {
+      return parameter_;
+    }
+    /**
+     * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+     */
+    public int getParameterCount() {
+      return parameter_.size();
+    }
+    /**
+     * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ParameterInfo getParameter(int index) {
+      return parameter_.get(index);
+    }
+    /**
+     * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder(
+        int index) {
+      return parameter_.get(index);
+    }
+
+    public static final int CONTINUATIONTOKEN_FIELD_NUMBER = 2;
+    private volatile java.lang.Object continuationToken_;
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public boolean hasContinuationToken() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public java.lang.String getContinuationToken() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          continuationToken_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getContinuationTokenBytes() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        continuationToken_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getParameterCount(); i++) {
+        if (!getParameter(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < parameter_.size(); i++) {
+        output.writeMessage(1, parameter_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < parameter_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, parameter_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.ListParameterInfoResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.ListParameterInfoResponse other = (org.yamcs.protobuf.Mdb.ListParameterInfoResponse) obj;
+
+      boolean result = true;
+      result = result && getParameterList()
+          .equals(other.getParameterList());
+      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (hasContinuationToken()) {
+        result = result && getContinuationToken()
+            .equals(other.getContinuationToken());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getParameterCount() > 0) {
+        hash = (37 * hash) + PARAMETER_FIELD_NUMBER;
+        hash = (53 * hash) + getParameterList().hashCode();
+      }
+      if (hasContinuationToken()) {
+        hash = (37 * hash) + CONTINUATIONTOKEN_FIELD_NUMBER;
+        hash = (53 * hash) + getContinuationToken().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.ListParameterInfoResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code mdb.ListParameterInfoResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ListParameterInfoResponse)
+        org.yamcs.protobuf.Mdb.ListParameterInfoResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListParameterInfoResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListParameterInfoResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.ListParameterInfoResponse.class, org.yamcs.protobuf.Mdb.ListParameterInfoResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.ListParameterInfoResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getParameterFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (parameterBuilder_ == null) {
+          parameter_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          parameterBuilder_.clear();
+        }
+        continuationToken_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListParameterInfoResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.ListParameterInfoResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.ListParameterInfoResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.ListParameterInfoResponse build() {
+        org.yamcs.protobuf.Mdb.ListParameterInfoResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.ListParameterInfoResponse buildPartial() {
+        org.yamcs.protobuf.Mdb.ListParameterInfoResponse result = new org.yamcs.protobuf.Mdb.ListParameterInfoResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (parameterBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            parameter_ = java.util.Collections.unmodifiableList(parameter_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.parameter_ = parameter_;
+        } else {
+          result.parameter_ = parameterBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.continuationToken_ = continuationToken_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.ListParameterInfoResponse) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.ListParameterInfoResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.ListParameterInfoResponse other) {
+        if (other == org.yamcs.protobuf.Mdb.ListParameterInfoResponse.getDefaultInstance()) return this;
+        if (parameterBuilder_ == null) {
+          if (!other.parameter_.isEmpty()) {
+            if (parameter_.isEmpty()) {
+              parameter_ = other.parameter_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureParameterIsMutable();
+              parameter_.addAll(other.parameter_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.parameter_.isEmpty()) {
+            if (parameterBuilder_.isEmpty()) {
+              parameterBuilder_.dispose();
+              parameterBuilder_ = null;
+              parameter_ = other.parameter_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              parameterBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getParameterFieldBuilder() : null;
+            } else {
+              parameterBuilder_.addAllMessages(other.parameter_);
+            }
+          }
+        }
+        if (other.hasContinuationToken()) {
+          bitField0_ |= 0x00000002;
+          continuationToken_ = other.continuationToken_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getParameterCount(); i++) {
+          if (!getParameter(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.ListParameterInfoResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.ListParameterInfoResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.yamcs.protobuf.Mdb.ParameterInfo> parameter_ =
+        java.util.Collections.emptyList();
+      private void ensureParameterIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          parameter_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ParameterInfo>(parameter_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> parameterBuilder_;
+
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ParameterInfo> getParameterList() {
+        if (parameterBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(parameter_);
+        } else {
+          return parameterBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public int getParameterCount() {
+        if (parameterBuilder_ == null) {
+          return parameter_.size();
+        } else {
+          return parameterBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfo getParameter(int index) {
+        if (parameterBuilder_ == null) {
+          return parameter_.get(index);
+        } else {
+          return parameterBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public Builder setParameter(
+          int index, org.yamcs.protobuf.Mdb.ParameterInfo value) {
+        if (parameterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureParameterIsMutable();
+          parameter_.set(index, value);
+          onChanged();
+        } else {
+          parameterBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public Builder setParameter(
+          int index, org.yamcs.protobuf.Mdb.ParameterInfo.Builder builderForValue) {
+        if (parameterBuilder_ == null) {
+          ensureParameterIsMutable();
+          parameter_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          parameterBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public Builder addParameter(org.yamcs.protobuf.Mdb.ParameterInfo value) {
+        if (parameterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureParameterIsMutable();
+          parameter_.add(value);
+          onChanged();
+        } else {
+          parameterBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public Builder addParameter(
+          int index, org.yamcs.protobuf.Mdb.ParameterInfo value) {
+        if (parameterBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureParameterIsMutable();
+          parameter_.add(index, value);
+          onChanged();
+        } else {
+          parameterBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public Builder addParameter(
+          org.yamcs.protobuf.Mdb.ParameterInfo.Builder builderForValue) {
+        if (parameterBuilder_ == null) {
+          ensureParameterIsMutable();
+          parameter_.add(builderForValue.build());
+          onChanged();
+        } else {
+          parameterBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public Builder addParameter(
+          int index, org.yamcs.protobuf.Mdb.ParameterInfo.Builder builderForValue) {
+        if (parameterBuilder_ == null) {
+          ensureParameterIsMutable();
+          parameter_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          parameterBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public Builder addAllParameter(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ParameterInfo> values) {
+        if (parameterBuilder_ == null) {
+          ensureParameterIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, parameter_);
+          onChanged();
+        } else {
+          parameterBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public Builder clearParameter() {
+        if (parameterBuilder_ == null) {
+          parameter_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          parameterBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public Builder removeParameter(int index) {
+        if (parameterBuilder_ == null) {
+          ensureParameterIsMutable();
+          parameter_.remove(index);
+          onChanged();
+        } else {
+          parameterBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfo.Builder getParameterBuilder(
+          int index) {
+        return getParameterFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder(
+          int index) {
+        if (parameterBuilder_ == null) {
+          return parameter_.get(index);  } else {
+          return parameterBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> 
+           getParameterOrBuilderList() {
+        if (parameterBuilder_ != null) {
+          return parameterBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(parameter_);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfo.Builder addParameterBuilder() {
+        return getParameterFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfo.Builder addParameterBuilder(
+          int index) {
+        return getParameterFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ParameterInfo parameter = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ParameterInfo.Builder> 
+           getParameterBuilderList() {
+        return getParameterFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> 
+          getParameterFieldBuilder() {
+        if (parameterBuilder_ == null) {
+          parameterBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder>(
+                  parameter_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          parameter_ = null;
+        }
+        return parameterBuilder_;
+      }
+
+      private java.lang.Object continuationToken_ = "";
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public boolean hasContinuationToken() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public java.lang.String getContinuationToken() {
+        java.lang.Object ref = continuationToken_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            continuationToken_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getContinuationTokenBytes() {
+        java.lang.Object ref = continuationToken_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          continuationToken_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationToken(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder clearContinuationToken() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        continuationToken_ = getDefaultInstance().getContinuationToken();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationTokenBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:mdb.ListParameterInfoResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:mdb.ListParameterInfoResponse)
+    private static final org.yamcs.protobuf.Mdb.ListParameterInfoResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.ListParameterInfoResponse();
+    }
+
+    public static org.yamcs.protobuf.Mdb.ListParameterInfoResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ListParameterInfoResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ListParameterInfoResponse>() {
+      public ListParameterInfoResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ListParameterInfoResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ListParameterInfoResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ListParameterInfoResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.ListParameterInfoResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ListParameterTypeInfoResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ListParameterTypeInfoResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo> 
+        getTypeList();
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ParameterTypeInfo getType(int index);
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    int getTypeCount();
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> 
+        getTypeOrBuilderList();
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder getTypeOrBuilder(
+        int index);
+
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    boolean hasContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    java.lang.String getContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getContinuationTokenBytes();
+  }
+  /**
+   * Protobuf type {@code mdb.ListParameterTypeInfoResponse}
+   */
+  public  static final class ListParameterTypeInfoResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:mdb.ListParameterTypeInfoResponse)
+      ListParameterTypeInfoResponseOrBuilder {
+    // Use ListParameterTypeInfoResponse.newBuilder() to construct.
+    private ListParameterTypeInfoResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ListParameterTypeInfoResponse() {
+      type_ = java.util.Collections.emptyList();
+      continuationToken_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ListParameterTypeInfoResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                type_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ParameterTypeInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              type_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.ParameterTypeInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              continuationToken_ = bs;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          type_ = java.util.Collections.unmodifiableList(type_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ListParameterTypeInfoResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ListParameterTypeInfoResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse.class, org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo> type_;
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo> getTypeList() {
+      return type_;
+    }
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> 
+        getTypeOrBuilderList() {
+      return type_;
+    }
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    public int getTypeCount() {
+      return type_.size();
+    }
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ParameterTypeInfo getType(int index) {
+      return type_.get(index);
+    }
+    /**
+     * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder getTypeOrBuilder(
+        int index) {
+      return type_.get(index);
+    }
+
+    public static final int CONTINUATIONTOKEN_FIELD_NUMBER = 2;
+    private volatile java.lang.Object continuationToken_;
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public boolean hasContinuationToken() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public java.lang.String getContinuationToken() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          continuationToken_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getContinuationTokenBytes() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        continuationToken_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getTypeCount(); i++) {
+        if (!getType(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < type_.size(); i++) {
+        output.writeMessage(1, type_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < type_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, type_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse other = (org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse) obj;
+
+      boolean result = true;
+      result = result && getTypeList()
+          .equals(other.getTypeList());
+      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (hasContinuationToken()) {
+        result = result && getContinuationToken()
+            .equals(other.getContinuationToken());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getTypeCount() > 0) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + getTypeList().hashCode();
+      }
+      if (hasContinuationToken()) {
+        hash = (37 * hash) + CONTINUATIONTOKEN_FIELD_NUMBER;
+        hash = (53 * hash) + getContinuationToken().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code mdb.ListParameterTypeInfoResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ListParameterTypeInfoResponse)
+        org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListParameterTypeInfoResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListParameterTypeInfoResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse.class, org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getTypeFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (typeBuilder_ == null) {
+          type_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          typeBuilder_.clear();
+        }
+        continuationToken_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListParameterTypeInfoResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse build() {
+        org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse buildPartial() {
+        org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse result = new org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (typeBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            type_ = java.util.Collections.unmodifiableList(type_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.type_ = type_;
+        } else {
+          result.type_ = typeBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.continuationToken_ = continuationToken_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse other) {
+        if (other == org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse.getDefaultInstance()) return this;
+        if (typeBuilder_ == null) {
+          if (!other.type_.isEmpty()) {
+            if (type_.isEmpty()) {
+              type_ = other.type_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureTypeIsMutable();
+              type_.addAll(other.type_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.type_.isEmpty()) {
+            if (typeBuilder_.isEmpty()) {
+              typeBuilder_.dispose();
+              typeBuilder_ = null;
+              type_ = other.type_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              typeBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getTypeFieldBuilder() : null;
+            } else {
+              typeBuilder_.addAllMessages(other.type_);
+            }
+          }
+        }
+        if (other.hasContinuationToken()) {
+          bitField0_ |= 0x00000002;
+          continuationToken_ = other.continuationToken_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getTypeCount(); i++) {
+          if (!getType(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo> type_ =
+        java.util.Collections.emptyList();
+      private void ensureTypeIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          type_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ParameterTypeInfo>(type_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ParameterTypeInfo, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder, org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> typeBuilder_;
+
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo> getTypeList() {
+        if (typeBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(type_);
+        } else {
+          return typeBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public int getTypeCount() {
+        if (typeBuilder_ == null) {
+          return type_.size();
+        } else {
+          return typeBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterTypeInfo getType(int index) {
+        if (typeBuilder_ == null) {
+          return type_.get(index);
+        } else {
+          return typeBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder setType(
+          int index, org.yamcs.protobuf.Mdb.ParameterTypeInfo value) {
+        if (typeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTypeIsMutable();
+          type_.set(index, value);
+          onChanged();
+        } else {
+          typeBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder setType(
+          int index, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder builderForValue) {
+        if (typeBuilder_ == null) {
+          ensureTypeIsMutable();
+          type_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          typeBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder addType(org.yamcs.protobuf.Mdb.ParameterTypeInfo value) {
+        if (typeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTypeIsMutable();
+          type_.add(value);
+          onChanged();
+        } else {
+          typeBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder addType(
+          int index, org.yamcs.protobuf.Mdb.ParameterTypeInfo value) {
+        if (typeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTypeIsMutable();
+          type_.add(index, value);
+          onChanged();
+        } else {
+          typeBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder addType(
+          org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder builderForValue) {
+        if (typeBuilder_ == null) {
+          ensureTypeIsMutable();
+          type_.add(builderForValue.build());
+          onChanged();
+        } else {
+          typeBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder addType(
+          int index, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder builderForValue) {
+        if (typeBuilder_ == null) {
+          ensureTypeIsMutable();
+          type_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          typeBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder addAllType(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ParameterTypeInfo> values) {
+        if (typeBuilder_ == null) {
+          ensureTypeIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, type_);
+          onChanged();
+        } else {
+          typeBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder clearType() {
+        if (typeBuilder_ == null) {
+          type_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          typeBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public Builder removeType(int index) {
+        if (typeBuilder_ == null) {
+          ensureTypeIsMutable();
+          type_.remove(index);
+          onChanged();
+        } else {
+          typeBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder getTypeBuilder(
+          int index) {
+        return getTypeFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder getTypeOrBuilder(
+          int index) {
+        if (typeBuilder_ == null) {
+          return type_.get(index);  } else {
+          return typeBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> 
+           getTypeOrBuilderList() {
+        if (typeBuilder_ != null) {
+          return typeBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(type_);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder addTypeBuilder() {
+        return getTypeFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ParameterTypeInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder addTypeBuilder(
+          int index) {
+        return getTypeFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ParameterTypeInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ParameterTypeInfo type = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder> 
+           getTypeBuilderList() {
+        return getTypeFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ParameterTypeInfo, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder, org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder> 
+          getTypeFieldBuilder() {
+        if (typeBuilder_ == null) {
+          typeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.ParameterTypeInfo, org.yamcs.protobuf.Mdb.ParameterTypeInfo.Builder, org.yamcs.protobuf.Mdb.ParameterTypeInfoOrBuilder>(
+                  type_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          type_ = null;
+        }
+        return typeBuilder_;
+      }
+
+      private java.lang.Object continuationToken_ = "";
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public boolean hasContinuationToken() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public java.lang.String getContinuationToken() {
+        java.lang.Object ref = continuationToken_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            continuationToken_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getContinuationTokenBytes() {
+        java.lang.Object ref = continuationToken_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          continuationToken_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationToken(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder clearContinuationToken() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        continuationToken_ = getDefaultInstance().getContinuationToken();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationTokenBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:mdb.ListParameterTypeInfoResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:mdb.ListParameterTypeInfoResponse)
+    private static final org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse();
+    }
+
+    public static org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ListParameterTypeInfoResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ListParameterTypeInfoResponse>() {
+      public ListParameterTypeInfoResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ListParameterTypeInfoResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ListParameterTypeInfoResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ListParameterTypeInfoResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.ListParameterTypeInfoResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface BulkGetParameterInfoRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.BulkGetParameterInfoRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
+        getIdList();
+    /**
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+     */
+    org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index);
+    /**
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+     */
+    int getIdCount();
+    /**
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+        getIdOrBuilderList();
+    /**
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+     */
+    org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code mdb.BulkGetParameterInfoRequest}
+   */
+  public  static final class BulkGetParameterInfoRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:mdb.BulkGetParameterInfoRequest)
+      BulkGetParameterInfoRequestOrBuilder {
+    // Use BulkGetParameterInfoRequest.newBuilder() to construct.
+    private BulkGetParameterInfoRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private BulkGetParameterInfoRequest() {
+      id_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private BulkGetParameterInfoRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              id_.add(
+                  input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          id_ = java.util.Collections.unmodifiableList(id_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest.class, org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest.Builder.class);
+    }
+
+    public static final int ID_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_;
+    /**
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getIdList() {
+      return id_;
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+        getIdOrBuilderList() {
+      return id_;
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+     */
+    public int getIdCount() {
+      return id_.size();
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index) {
+      return id_.get(index);
+    }
+    /**
+     * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+     */
+    public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
+        int index) {
+      return id_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getIdCount(); i++) {
+        if (!getId(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < id_.size(); i++) {
+        output.writeMessage(1, id_.get(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < id_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, id_.get(i));
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest other = (org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest) obj;
+
+      boolean result = true;
+      result = result && getIdList()
+          .equals(other.getIdList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getIdCount() > 0) {
+        hash = (37 * hash) + ID_FIELD_NUMBER;
+        hash = (53 * hash) + getIdList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code mdb.BulkGetParameterInfoRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.BulkGetParameterInfoRequest)
+        org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest.class, org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getIdFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (idBuilder_ == null) {
+          id_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          idBuilder_.clear();
+        }
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest build() {
+        org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest buildPartial() {
+        org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest result = new org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest(this);
+        int from_bitField0_ = bitField0_;
+        if (idBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            id_ = java.util.Collections.unmodifiableList(id_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.id_ = id_;
+        } else {
+          result.id_ = idBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest other) {
+        if (other == org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest.getDefaultInstance()) return this;
+        if (idBuilder_ == null) {
+          if (!other.id_.isEmpty()) {
+            if (id_.isEmpty()) {
+              id_ = other.id_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureIdIsMutable();
+              id_.addAll(other.id_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.id_.isEmpty()) {
+            if (idBuilder_.isEmpty()) {
+              idBuilder_.dispose();
+              idBuilder_ = null;
+              id_ = other.id_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              idBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getIdFieldBuilder() : null;
+            } else {
+              idBuilder_.addAllMessages(other.id_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getIdCount(); i++) {
+          if (!getId(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> id_ =
+        java.util.Collections.emptyList();
+      private void ensureIdIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          id_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(id_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> idBuilder_;
+
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getIdList() {
+        if (idBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(id_);
+        } else {
+          return idBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public int getIdCount() {
+        if (idBuilder_ == null) {
+          return id_.size();
+        } else {
+          return idBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectId getId(int index) {
+        if (idBuilder_ == null) {
+          return id_.get(index);
+        } else {
+          return idBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public Builder setId(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (idBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureIdIsMutable();
+          id_.set(index, value);
+          onChanged();
+        } else {
+          idBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public Builder setId(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          idBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public Builder addId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (idBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureIdIsMutable();
+          id_.add(value);
+          onChanged();
+        } else {
+          idBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public Builder addId(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+        if (idBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureIdIsMutable();
+          id_.add(index, value);
+          onChanged();
+        } else {
+          idBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public Builder addId(
+          org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.add(builderForValue.build());
+          onChanged();
+        } else {
+          idBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public Builder addId(
+          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          idBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public Builder addAllId(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, id_);
+          onChanged();
+        } else {
+          idBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public Builder clearId() {
+        if (idBuilder_ == null) {
+          id_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          idBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public Builder removeId(int index) {
+        if (idBuilder_ == null) {
+          ensureIdIsMutable();
+          id_.remove(index);
+          onChanged();
+        } else {
+          idBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getIdBuilder(
+          int index) {
+        return getIdFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder(
+          int index) {
+        if (idBuilder_ == null) {
+          return id_.get(index);  } else {
+          return idBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+           getIdOrBuilderList() {
+        if (idBuilder_ != null) {
+          return idBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(id_);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addIdBuilder() {
+        return getIdFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addIdBuilder(
+          int index) {
+        return getIdFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.NamedObjectId id = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
+           getIdBuilderList() {
+        return getIdFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+          getIdFieldBuilder() {
+        if (idBuilder_ == null) {
+          idBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
+                  id_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          id_ = null;
+        }
+        return idBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:mdb.BulkGetParameterInfoRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:mdb.BulkGetParameterInfoRequest)
+    private static final org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest();
+    }
+
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<BulkGetParameterInfoRequest>
+        PARSER = new com.google.protobuf.AbstractParser<BulkGetParameterInfoRequest>() {
+      public BulkGetParameterInfoRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new BulkGetParameterInfoRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<BulkGetParameterInfoRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<BulkGetParameterInfoRequest> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.BulkGetParameterInfoRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface BulkGetParameterInfoResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.BulkGetParameterInfoResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse> 
+        getResponseList();
+    /**
+     * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse getResponse(int index);
+    /**
+     * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+     */
+    int getResponseCount();
+    /**
+     * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponseOrBuilder> 
+        getResponseOrBuilderList();
+    /**
+     * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponseOrBuilder getResponseOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code mdb.BulkGetParameterInfoResponse}
+   */
+  public  static final class BulkGetParameterInfoResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:mdb.BulkGetParameterInfoResponse)
+      BulkGetParameterInfoResponseOrBuilder {
+    // Use BulkGetParameterInfoResponse.newBuilder() to construct.
+    private BulkGetParameterInfoResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private BulkGetParameterInfoResponse() {
+      response_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private BulkGetParameterInfoResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                response_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              response_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          response_ = java.util.Collections.unmodifiableList(response_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.class, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.Builder.class);
+    }
+
+    public interface GetParameterInfoResponseOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <code>optional .yamcs.NamedObjectId id = 1;</code>
+       */
+      boolean hasId();
+      /**
+       * <code>optional .yamcs.NamedObjectId id = 1;</code>
+       */
+      org.yamcs.protobuf.Yamcs.NamedObjectId getId();
+      /**
+       * <code>optional .yamcs.NamedObjectId id = 1;</code>
+       */
+      org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder();
+
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+       */
+      boolean hasParameter();
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+       */
+      org.yamcs.protobuf.Mdb.ParameterInfo getParameter();
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+       */
+      org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder();
+    }
+    /**
+     * Protobuf type {@code mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse}
+     */
+    public  static final class GetParameterInfoResponse extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse)
+        GetParameterInfoResponseOrBuilder {
+      // Use GetParameterInfoResponse.newBuilder() to construct.
+      private GetParameterInfoResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private GetParameterInfoResponse() {
+      }
+
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+      getUnknownFields() {
+        return this.unknownFields;
+      }
+      private GetParameterInfoResponse(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        this();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 10: {
+                org.yamcs.protobuf.Yamcs.NamedObjectId.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                  subBuilder = id_.toBuilder();
+                }
+                id_ = input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(id_);
+                  id_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000001;
+                break;
+              }
+              case 18: {
+                org.yamcs.protobuf.Mdb.ParameterInfo.Builder subBuilder = null;
+                if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                  subBuilder = parameter_.toBuilder();
+                }
+                parameter_ = input.readMessage(org.yamcs.protobuf.Mdb.ParameterInfo.PARSER, extensionRegistry);
+                if (subBuilder != null) {
+                  subBuilder.mergeFrom(parameter_);
+                  parameter_ = subBuilder.buildPartial();
+                }
+                bitField0_ |= 0x00000002;
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.class, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder.class);
+      }
+
+      private int bitField0_;
+      public static final int ID_FIELD_NUMBER = 1;
+      private org.yamcs.protobuf.Yamcs.NamedObjectId id_;
+      /**
+       * <code>optional .yamcs.NamedObjectId id = 1;</code>
+       */
+      public boolean hasId() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcs.NamedObjectId id = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectId getId() {
+        return id_ == null ? org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance() : id_;
+      }
+      /**
+       * <code>optional .yamcs.NamedObjectId id = 1;</code>
+       */
+      public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder() {
+        return id_ == null ? org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance() : id_;
+      }
+
+      public static final int PARAMETER_FIELD_NUMBER = 2;
+      private org.yamcs.protobuf.Mdb.ParameterInfo parameter_;
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+       */
+      public boolean hasParameter() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfo getParameter() {
+        return parameter_ == null ? org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance() : parameter_;
+      }
+      /**
+       * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder() {
+        return parameter_ == null ? org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance() : parameter_;
+      }
+
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        if (hasId()) {
+          if (!getId().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        if (hasParameter()) {
+          if (!getParameter().isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeMessage(1, getId());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeMessage(2, getParameter());
+        }
+        unknownFields.writeTo(output);
+      }
+
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(1, getId());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(2, getParameter());
+        }
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse)) {
+          return super.equals(obj);
+        }
+        org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse other = (org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse) obj;
+
+        boolean result = true;
+        result = result && (hasId() == other.hasId());
+        if (hasId()) {
+          result = result && getId()
+              .equals(other.getId());
+        }
+        result = result && (hasParameter() == other.hasParameter());
+        if (hasParameter()) {
+          result = result && getParameter()
+              .equals(other.getParameter());
+        }
+        result = result && unknownFields.equals(other.unknownFields);
+        return result;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptorForType().hashCode();
+        if (hasId()) {
+          hash = (37 * hash) + ID_FIELD_NUMBER;
+          hash = (53 * hash) + getId().hashCode();
+        }
+        if (hasParameter()) {
+          hash = (37 * hash) + PARAMETER_FIELD_NUMBER;
+          hash = (53 * hash) + getParameter().hashCode();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse)
+          org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponseOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.class, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder.class);
+        }
+
+        // Construct using org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
+            getIdFieldBuilder();
+            getParameterFieldBuilder();
+          }
+        }
+        public Builder clear() {
+          super.clear();
+          if (idBuilder_ == null) {
+            id_ = null;
+          } else {
+            idBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000001);
+          if (parameterBuilder_ == null) {
+            parameter_ = null;
+          } else {
+            parameterBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000002);
+          return this;
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_descriptor;
+        }
+
+        public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse getDefaultInstanceForType() {
+          return org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.getDefaultInstance();
+        }
+
+        public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse build() {
+          org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse buildPartial() {
+          org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse result = new org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          if (idBuilder_ == null) {
+            result.id_ = id_;
+          } else {
+            result.id_ = idBuilder_.build();
+          }
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          if (parameterBuilder_ == null) {
+            result.parameter_ = parameter_;
+          } else {
+            result.parameter_ = parameterBuilder_.build();
+          }
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder clone() {
+          return (Builder) super.clone();
+        }
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.setField(field, value);
+        }
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return (Builder) super.clearField(field);
+        }
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return (Builder) super.clearOneof(oneof);
+        }
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, Object value) {
+          return (Builder) super.setRepeatedField(field, index, value);
+        }
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            Object value) {
+          return (Builder) super.addRepeatedField(field, value);
+        }
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse) {
+            return mergeFrom((org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse other) {
+          if (other == org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.getDefaultInstance()) return this;
+          if (other.hasId()) {
+            mergeId(other.getId());
+          }
+          if (other.hasParameter()) {
+            mergeParameter(other.getParameter());
+          }
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (hasId()) {
+            if (!getId().isInitialized()) {
+              return false;
+            }
+          }
+          if (hasParameter()) {
+            if (!getParameter().isInitialized()) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse) e.getUnfinishedMessage();
+            throw e.unwrapIOException();
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        private org.yamcs.protobuf.Yamcs.NamedObjectId id_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
+            org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> idBuilder_;
+        /**
+         * <code>optional .yamcs.NamedObjectId id = 1;</code>
+         */
+        public boolean hasId() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>optional .yamcs.NamedObjectId id = 1;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.NamedObjectId getId() {
+          if (idBuilder_ == null) {
+            return id_ == null ? org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance() : id_;
+          } else {
+            return idBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .yamcs.NamedObjectId id = 1;</code>
+         */
+        public Builder setId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+          if (idBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            id_ = value;
+            onChanged();
+          } else {
+            idBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000001;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.NamedObjectId id = 1;</code>
+         */
+        public Builder setId(
+            org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
+          if (idBuilder_ == null) {
+            id_ = builderForValue.build();
+            onChanged();
+          } else {
+            idBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000001;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.NamedObjectId id = 1;</code>
+         */
+        public Builder mergeId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
+          if (idBuilder_ == null) {
+            if (((bitField0_ & 0x00000001) == 0x00000001) &&
+                id_ != null &&
+                id_ != org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance()) {
+              id_ =
+                org.yamcs.protobuf.Yamcs.NamedObjectId.newBuilder(id_).mergeFrom(value).buildPartial();
+            } else {
+              id_ = value;
+            }
+            onChanged();
+          } else {
+            idBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000001;
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.NamedObjectId id = 1;</code>
+         */
+        public Builder clearId() {
+          if (idBuilder_ == null) {
+            id_ = null;
+            onChanged();
+          } else {
+            idBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000001);
+          return this;
+        }
+        /**
+         * <code>optional .yamcs.NamedObjectId id = 1;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getIdBuilder() {
+          bitField0_ |= 0x00000001;
+          onChanged();
+          return getIdFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .yamcs.NamedObjectId id = 1;</code>
+         */
+        public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder() {
+          if (idBuilder_ != null) {
+            return idBuilder_.getMessageOrBuilder();
+          } else {
+            return id_ == null ?
+                org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance() : id_;
+          }
+        }
+        /**
+         * <code>optional .yamcs.NamedObjectId id = 1;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilderV3<
+            org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
+            getIdFieldBuilder() {
+          if (idBuilder_ == null) {
+            idBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+                org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
+                    getId(),
+                    getParentForChildren(),
+                    isClean());
+            id_ = null;
+          }
+          return idBuilder_;
+        }
+
+        private org.yamcs.protobuf.Mdb.ParameterInfo parameter_ = null;
+        private com.google.protobuf.SingleFieldBuilderV3<
+            org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> parameterBuilder_;
+        /**
+         * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+         */
+        public boolean hasParameter() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+         */
+        public org.yamcs.protobuf.Mdb.ParameterInfo getParameter() {
+          if (parameterBuilder_ == null) {
+            return parameter_ == null ? org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance() : parameter_;
+          } else {
+            return parameterBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+         */
+        public Builder setParameter(org.yamcs.protobuf.Mdb.ParameterInfo value) {
+          if (parameterBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            parameter_ = value;
+            onChanged();
+          } else {
+            parameterBuilder_.setMessage(value);
+          }
+          bitField0_ |= 0x00000002;
+          return this;
+        }
+        /**
+         * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+         */
+        public Builder setParameter(
+            org.yamcs.protobuf.Mdb.ParameterInfo.Builder builderForValue) {
+          if (parameterBuilder_ == null) {
+            parameter_ = builderForValue.build();
+            onChanged();
+          } else {
+            parameterBuilder_.setMessage(builderForValue.build());
+          }
+          bitField0_ |= 0x00000002;
+          return this;
+        }
+        /**
+         * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+         */
+        public Builder mergeParameter(org.yamcs.protobuf.Mdb.ParameterInfo value) {
+          if (parameterBuilder_ == null) {
+            if (((bitField0_ & 0x00000002) == 0x00000002) &&
+                parameter_ != null &&
+                parameter_ != org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance()) {
+              parameter_ =
+                org.yamcs.protobuf.Mdb.ParameterInfo.newBuilder(parameter_).mergeFrom(value).buildPartial();
+            } else {
+              parameter_ = value;
+            }
+            onChanged();
+          } else {
+            parameterBuilder_.mergeFrom(value);
+          }
+          bitField0_ |= 0x00000002;
+          return this;
+        }
+        /**
+         * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+         */
+        public Builder clearParameter() {
+          if (parameterBuilder_ == null) {
+            parameter_ = null;
+            onChanged();
+          } else {
+            parameterBuilder_.clear();
+          }
+          bitField0_ = (bitField0_ & ~0x00000002);
+          return this;
+        }
+        /**
+         * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+         */
+        public org.yamcs.protobuf.Mdb.ParameterInfo.Builder getParameterBuilder() {
+          bitField0_ |= 0x00000002;
+          onChanged();
+          return getParameterFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+         */
+        public org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder getParameterOrBuilder() {
+          if (parameterBuilder_ != null) {
+            return parameterBuilder_.getMessageOrBuilder();
+          } else {
+            return parameter_ == null ?
+                org.yamcs.protobuf.Mdb.ParameterInfo.getDefaultInstance() : parameter_;
+          }
+        }
+        /**
+         * <code>optional .mdb.ParameterInfo parameter = 2;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilderV3<
+            org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder> 
+            getParameterFieldBuilder() {
+          if (parameterBuilder_ == null) {
+            parameterBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+                org.yamcs.protobuf.Mdb.ParameterInfo, org.yamcs.protobuf.Mdb.ParameterInfo.Builder, org.yamcs.protobuf.Mdb.ParameterInfoOrBuilder>(
+                    getParameter(),
+                    getParentForChildren(),
+                    isClean());
+            parameter_ = null;
+          }
+          return parameterBuilder_;
+        }
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse)
+      }
+
+      // @@protoc_insertion_point(class_scope:mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse)
+      private static final org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse();
+      }
+
+      public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<GetParameterInfoResponse>
+          PARSER = new com.google.protobuf.AbstractParser<GetParameterInfoResponse>() {
+        public GetParameterInfoResponse parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+            return new GetParameterInfoResponse(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<GetParameterInfoResponse> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<GetParameterInfoResponse> getParserForType() {
+        return PARSER;
+      }
+
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
+    }
+
+    public static final int RESPONSE_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse> response_;
+    /**
+     * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse> getResponseList() {
+      return response_;
+    }
+    /**
+     * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponseOrBuilder> 
+        getResponseOrBuilderList() {
+      return response_;
+    }
+    /**
+     * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+     */
+    public int getResponseCount() {
+      return response_.size();
+    }
+    /**
+     * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse getResponse(int index) {
+      return response_.get(index);
+    }
+    /**
+     * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponseOrBuilder getResponseOrBuilder(
+        int index) {
+      return response_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getResponseCount(); i++) {
+        if (!getResponse(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < response_.size(); i++) {
+        output.writeMessage(1, response_.get(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < response_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, response_.get(i));
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse other = (org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse) obj;
+
+      boolean result = true;
+      result = result && getResponseList()
+          .equals(other.getResponseList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getResponseCount() > 0) {
+        hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
+        hash = (53 * hash) + getResponseList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code mdb.BulkGetParameterInfoResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.BulkGetParameterInfoResponse)
+        org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.class, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getResponseFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (responseBuilder_ == null) {
+          response_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          responseBuilder_.clear();
+        }
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_BulkGetParameterInfoResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse build() {
+        org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse buildPartial() {
+        org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse result = new org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse(this);
+        int from_bitField0_ = bitField0_;
+        if (responseBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            response_ = java.util.Collections.unmodifiableList(response_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.response_ = response_;
+        } else {
+          result.response_ = responseBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse other) {
+        if (other == org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.getDefaultInstance()) return this;
+        if (responseBuilder_ == null) {
+          if (!other.response_.isEmpty()) {
+            if (response_.isEmpty()) {
+              response_ = other.response_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureResponseIsMutable();
+              response_.addAll(other.response_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.response_.isEmpty()) {
+            if (responseBuilder_.isEmpty()) {
+              responseBuilder_.dispose();
+              responseBuilder_ = null;
+              response_ = other.response_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              responseBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getResponseFieldBuilder() : null;
+            } else {
+              responseBuilder_.addAllMessages(other.response_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getResponseCount(); i++) {
+          if (!getResponse(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse> response_ =
+        java.util.Collections.emptyList();
+      private void ensureResponseIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          response_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse>(response_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponseOrBuilder> responseBuilder_;
+
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse> getResponseList() {
+        if (responseBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(response_);
+        } else {
+          return responseBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public int getResponseCount() {
+        if (responseBuilder_ == null) {
+          return response_.size();
+        } else {
+          return responseBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse getResponse(int index) {
+        if (responseBuilder_ == null) {
+          return response_.get(index);
+        } else {
+          return responseBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public Builder setResponse(
+          int index, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse value) {
+        if (responseBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureResponseIsMutable();
+          response_.set(index, value);
+          onChanged();
+        } else {
+          responseBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public Builder setResponse(
+          int index, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder builderForValue) {
+        if (responseBuilder_ == null) {
+          ensureResponseIsMutable();
+          response_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          responseBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public Builder addResponse(org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse value) {
+        if (responseBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureResponseIsMutable();
+          response_.add(value);
+          onChanged();
+        } else {
+          responseBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public Builder addResponse(
+          int index, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse value) {
+        if (responseBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureResponseIsMutable();
+          response_.add(index, value);
+          onChanged();
+        } else {
+          responseBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public Builder addResponse(
+          org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder builderForValue) {
+        if (responseBuilder_ == null) {
+          ensureResponseIsMutable();
+          response_.add(builderForValue.build());
+          onChanged();
+        } else {
+          responseBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public Builder addResponse(
+          int index, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder builderForValue) {
+        if (responseBuilder_ == null) {
+          ensureResponseIsMutable();
+          response_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          responseBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public Builder addAllResponse(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse> values) {
+        if (responseBuilder_ == null) {
+          ensureResponseIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, response_);
+          onChanged();
+        } else {
+          responseBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public Builder clearResponse() {
+        if (responseBuilder_ == null) {
+          response_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          responseBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public Builder removeResponse(int index) {
+        if (responseBuilder_ == null) {
+          ensureResponseIsMutable();
+          response_.remove(index);
+          onChanged();
+        } else {
+          responseBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder getResponseBuilder(
+          int index) {
+        return getResponseFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponseOrBuilder getResponseOrBuilder(
+          int index) {
+        if (responseBuilder_ == null) {
+          return response_.get(index);  } else {
+          return responseBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponseOrBuilder> 
+           getResponseOrBuilderList() {
+        if (responseBuilder_ != null) {
+          return responseBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(response_);
+        }
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder addResponseBuilder() {
+        return getResponseFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder addResponseBuilder(
+          int index) {
+        return getResponseFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse response = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder> 
+           getResponseBuilderList() {
+        return getResponseFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponseOrBuilder> 
+          getResponseFieldBuilder() {
+        if (responseBuilder_ == null) {
+          responseBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponse.Builder, org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse.GetParameterInfoResponseOrBuilder>(
+                  response_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          response_ = null;
+        }
+        return responseBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:mdb.BulkGetParameterInfoResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:mdb.BulkGetParameterInfoResponse)
+    private static final org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse();
+    }
+
+    public static org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<BulkGetParameterInfoResponse>
+        PARSER = new com.google.protobuf.AbstractParser<BulkGetParameterInfoResponse>() {
+      public BulkGetParameterInfoResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new BulkGetParameterInfoResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<BulkGetParameterInfoResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<BulkGetParameterInfoResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.BulkGetParameterInfoResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ListContainerInfoResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ListContainerInfoResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .mdb.ContainerInfo container = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ContainerInfo> 
+        getContainerList();
+    /**
+     * <code>repeated .mdb.ContainerInfo container = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ContainerInfo getContainer(int index);
+    /**
+     * <code>repeated .mdb.ContainerInfo container = 1;</code>
+     */
+    int getContainerCount();
+    /**
+     * <code>repeated .mdb.ContainerInfo container = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder> 
+        getContainerOrBuilderList();
+    /**
+     * <code>repeated .mdb.ContainerInfo container = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder getContainerOrBuilder(
+        int index);
+
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    boolean hasContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    java.lang.String getContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getContinuationTokenBytes();
+  }
+  /**
+   * Protobuf type {@code mdb.ListContainerInfoResponse}
+   */
+  public  static final class ListContainerInfoResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:mdb.ListContainerInfoResponse)
+      ListContainerInfoResponseOrBuilder {
+    // Use ListContainerInfoResponse.newBuilder() to construct.
+    private ListContainerInfoResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ListContainerInfoResponse() {
+      container_ = java.util.Collections.emptyList();
+      continuationToken_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ListContainerInfoResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                container_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ContainerInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              container_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.ContainerInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              continuationToken_ = bs;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          container_ = java.util.Collections.unmodifiableList(container_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ListContainerInfoResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ListContainerInfoResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.ListContainerInfoResponse.class, org.yamcs.protobuf.Mdb.ListContainerInfoResponse.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int CONTAINER_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Mdb.ContainerInfo> container_;
+    /**
+     * <code>repeated .mdb.ContainerInfo container = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ContainerInfo> getContainerList() {
+      return container_;
+    }
+    /**
+     * <code>repeated .mdb.ContainerInfo container = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder> 
+        getContainerOrBuilderList() {
+      return container_;
+    }
+    /**
+     * <code>repeated .mdb.ContainerInfo container = 1;</code>
+     */
+    public int getContainerCount() {
+      return container_.size();
+    }
+    /**
+     * <code>repeated .mdb.ContainerInfo container = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ContainerInfo getContainer(int index) {
+      return container_.get(index);
+    }
+    /**
+     * <code>repeated .mdb.ContainerInfo container = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder getContainerOrBuilder(
+        int index) {
+      return container_.get(index);
+    }
+
+    public static final int CONTINUATIONTOKEN_FIELD_NUMBER = 2;
+    private volatile java.lang.Object continuationToken_;
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public boolean hasContinuationToken() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public java.lang.String getContinuationToken() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          continuationToken_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getContinuationTokenBytes() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        continuationToken_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getContainerCount(); i++) {
+        if (!getContainer(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < container_.size(); i++) {
+        output.writeMessage(1, container_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < container_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, container_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.ListContainerInfoResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.ListContainerInfoResponse other = (org.yamcs.protobuf.Mdb.ListContainerInfoResponse) obj;
+
+      boolean result = true;
+      result = result && getContainerList()
+          .equals(other.getContainerList());
+      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (hasContinuationToken()) {
+        result = result && getContinuationToken()
+            .equals(other.getContinuationToken());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getContainerCount() > 0) {
+        hash = (37 * hash) + CONTAINER_FIELD_NUMBER;
+        hash = (53 * hash) + getContainerList().hashCode();
+      }
+      if (hasContinuationToken()) {
+        hash = (37 * hash) + CONTINUATIONTOKEN_FIELD_NUMBER;
+        hash = (53 * hash) + getContinuationToken().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.ListContainerInfoResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code mdb.ListContainerInfoResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ListContainerInfoResponse)
+        org.yamcs.protobuf.Mdb.ListContainerInfoResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListContainerInfoResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListContainerInfoResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.ListContainerInfoResponse.class, org.yamcs.protobuf.Mdb.ListContainerInfoResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.ListContainerInfoResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getContainerFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (containerBuilder_ == null) {
+          container_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          containerBuilder_.clear();
+        }
+        continuationToken_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListContainerInfoResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.ListContainerInfoResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.ListContainerInfoResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.ListContainerInfoResponse build() {
+        org.yamcs.protobuf.Mdb.ListContainerInfoResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.ListContainerInfoResponse buildPartial() {
+        org.yamcs.protobuf.Mdb.ListContainerInfoResponse result = new org.yamcs.protobuf.Mdb.ListContainerInfoResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (containerBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            container_ = java.util.Collections.unmodifiableList(container_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.container_ = container_;
+        } else {
+          result.container_ = containerBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.continuationToken_ = continuationToken_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.ListContainerInfoResponse) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.ListContainerInfoResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.ListContainerInfoResponse other) {
+        if (other == org.yamcs.protobuf.Mdb.ListContainerInfoResponse.getDefaultInstance()) return this;
+        if (containerBuilder_ == null) {
+          if (!other.container_.isEmpty()) {
+            if (container_.isEmpty()) {
+              container_ = other.container_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureContainerIsMutable();
+              container_.addAll(other.container_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.container_.isEmpty()) {
+            if (containerBuilder_.isEmpty()) {
+              containerBuilder_.dispose();
+              containerBuilder_ = null;
+              container_ = other.container_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              containerBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getContainerFieldBuilder() : null;
+            } else {
+              containerBuilder_.addAllMessages(other.container_);
+            }
+          }
+        }
+        if (other.hasContinuationToken()) {
+          bitField0_ |= 0x00000002;
+          continuationToken_ = other.continuationToken_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getContainerCount(); i++) {
+          if (!getContainer(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.ListContainerInfoResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.ListContainerInfoResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.yamcs.protobuf.Mdb.ContainerInfo> container_ =
+        java.util.Collections.emptyList();
+      private void ensureContainerIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          container_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ContainerInfo>(container_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ContainerInfo, org.yamcs.protobuf.Mdb.ContainerInfo.Builder, org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder> containerBuilder_;
+
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ContainerInfo> getContainerList() {
+        if (containerBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(container_);
+        } else {
+          return containerBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public int getContainerCount() {
+        if (containerBuilder_ == null) {
+          return container_.size();
+        } else {
+          return containerBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContainerInfo getContainer(int index) {
+        if (containerBuilder_ == null) {
+          return container_.get(index);
+        } else {
+          return containerBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public Builder setContainer(
+          int index, org.yamcs.protobuf.Mdb.ContainerInfo value) {
+        if (containerBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContainerIsMutable();
+          container_.set(index, value);
+          onChanged();
+        } else {
+          containerBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public Builder setContainer(
+          int index, org.yamcs.protobuf.Mdb.ContainerInfo.Builder builderForValue) {
+        if (containerBuilder_ == null) {
+          ensureContainerIsMutable();
+          container_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          containerBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public Builder addContainer(org.yamcs.protobuf.Mdb.ContainerInfo value) {
+        if (containerBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContainerIsMutable();
+          container_.add(value);
+          onChanged();
+        } else {
+          containerBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public Builder addContainer(
+          int index, org.yamcs.protobuf.Mdb.ContainerInfo value) {
+        if (containerBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContainerIsMutable();
+          container_.add(index, value);
+          onChanged();
+        } else {
+          containerBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public Builder addContainer(
+          org.yamcs.protobuf.Mdb.ContainerInfo.Builder builderForValue) {
+        if (containerBuilder_ == null) {
+          ensureContainerIsMutable();
+          container_.add(builderForValue.build());
+          onChanged();
+        } else {
+          containerBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public Builder addContainer(
+          int index, org.yamcs.protobuf.Mdb.ContainerInfo.Builder builderForValue) {
+        if (containerBuilder_ == null) {
+          ensureContainerIsMutable();
+          container_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          containerBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public Builder addAllContainer(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ContainerInfo> values) {
+        if (containerBuilder_ == null) {
+          ensureContainerIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, container_);
+          onChanged();
+        } else {
+          containerBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public Builder clearContainer() {
+        if (containerBuilder_ == null) {
+          container_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          containerBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public Builder removeContainer(int index) {
+        if (containerBuilder_ == null) {
+          ensureContainerIsMutable();
+          container_.remove(index);
+          onChanged();
+        } else {
+          containerBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContainerInfo.Builder getContainerBuilder(
+          int index) {
+        return getContainerFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder getContainerOrBuilder(
+          int index) {
+        if (containerBuilder_ == null) {
+          return container_.get(index);  } else {
+          return containerBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder> 
+           getContainerOrBuilderList() {
+        if (containerBuilder_ != null) {
+          return containerBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(container_);
+        }
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContainerInfo.Builder addContainerBuilder() {
+        return getContainerFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ContainerInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContainerInfo.Builder addContainerBuilder(
+          int index) {
+        return getContainerFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ContainerInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.ContainerInfo container = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ContainerInfo.Builder> 
+           getContainerBuilderList() {
+        return getContainerFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ContainerInfo, org.yamcs.protobuf.Mdb.ContainerInfo.Builder, org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder> 
+          getContainerFieldBuilder() {
+        if (containerBuilder_ == null) {
+          containerBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.ContainerInfo, org.yamcs.protobuf.Mdb.ContainerInfo.Builder, org.yamcs.protobuf.Mdb.ContainerInfoOrBuilder>(
+                  container_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          container_ = null;
+        }
+        return containerBuilder_;
+      }
+
+      private java.lang.Object continuationToken_ = "";
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public boolean hasContinuationToken() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public java.lang.String getContinuationToken() {
+        java.lang.Object ref = continuationToken_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            continuationToken_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getContinuationTokenBytes() {
+        java.lang.Object ref = continuationToken_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          continuationToken_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationToken(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder clearContinuationToken() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        continuationToken_ = getDefaultInstance().getContinuationToken();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationTokenBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:mdb.ListContainerInfoResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:mdb.ListContainerInfoResponse)
+    private static final org.yamcs.protobuf.Mdb.ListContainerInfoResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.ListContainerInfoResponse();
+    }
+
+    public static org.yamcs.protobuf.Mdb.ListContainerInfoResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ListContainerInfoResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ListContainerInfoResponse>() {
+      public ListContainerInfoResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ListContainerInfoResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ListContainerInfoResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ListContainerInfoResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.ListContainerInfoResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ListCommandInfoResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ListCommandInfoResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .mdb.CommandInfo command = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.CommandInfo> 
+        getCommandList();
+    /**
+     * <code>repeated .mdb.CommandInfo command = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.CommandInfo getCommand(int index);
+    /**
+     * <code>repeated .mdb.CommandInfo command = 1;</code>
+     */
+    int getCommandCount();
+    /**
+     * <code>repeated .mdb.CommandInfo command = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.CommandInfoOrBuilder> 
+        getCommandOrBuilderList();
+    /**
+     * <code>repeated .mdb.CommandInfo command = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.CommandInfoOrBuilder getCommandOrBuilder(
+        int index);
+
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    boolean hasContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    java.lang.String getContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getContinuationTokenBytes();
+  }
+  /**
+   * Protobuf type {@code mdb.ListCommandInfoResponse}
+   */
+  public  static final class ListCommandInfoResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:mdb.ListCommandInfoResponse)
+      ListCommandInfoResponseOrBuilder {
+    // Use ListCommandInfoResponse.newBuilder() to construct.
+    private ListCommandInfoResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ListCommandInfoResponse() {
+      command_ = java.util.Collections.emptyList();
+      continuationToken_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ListCommandInfoResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                command_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.CommandInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              command_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.CommandInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              continuationToken_ = bs;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          command_ = java.util.Collections.unmodifiableList(command_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ListCommandInfoResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ListCommandInfoResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.ListCommandInfoResponse.class, org.yamcs.protobuf.Mdb.ListCommandInfoResponse.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int COMMAND_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Mdb.CommandInfo> command_;
+    /**
+     * <code>repeated .mdb.CommandInfo command = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.CommandInfo> getCommandList() {
+      return command_;
+    }
+    /**
+     * <code>repeated .mdb.CommandInfo command = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.CommandInfoOrBuilder> 
+        getCommandOrBuilderList() {
+      return command_;
+    }
+    /**
+     * <code>repeated .mdb.CommandInfo command = 1;</code>
+     */
+    public int getCommandCount() {
+      return command_.size();
+    }
+    /**
+     * <code>repeated .mdb.CommandInfo command = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.CommandInfo getCommand(int index) {
+      return command_.get(index);
+    }
+    /**
+     * <code>repeated .mdb.CommandInfo command = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.CommandInfoOrBuilder getCommandOrBuilder(
+        int index) {
+      return command_.get(index);
+    }
+
+    public static final int CONTINUATIONTOKEN_FIELD_NUMBER = 2;
+    private volatile java.lang.Object continuationToken_;
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public boolean hasContinuationToken() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public java.lang.String getContinuationToken() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          continuationToken_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getContinuationTokenBytes() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        continuationToken_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getCommandCount(); i++) {
+        if (!getCommand(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < command_.size(); i++) {
+        output.writeMessage(1, command_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < command_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, command_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.ListCommandInfoResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.ListCommandInfoResponse other = (org.yamcs.protobuf.Mdb.ListCommandInfoResponse) obj;
+
+      boolean result = true;
+      result = result && getCommandList()
+          .equals(other.getCommandList());
+      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (hasContinuationToken()) {
+        result = result && getContinuationToken()
+            .equals(other.getContinuationToken());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getCommandCount() > 0) {
+        hash = (37 * hash) + COMMAND_FIELD_NUMBER;
+        hash = (53 * hash) + getCommandList().hashCode();
+      }
+      if (hasContinuationToken()) {
+        hash = (37 * hash) + CONTINUATIONTOKEN_FIELD_NUMBER;
+        hash = (53 * hash) + getContinuationToken().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.ListCommandInfoResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code mdb.ListCommandInfoResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ListCommandInfoResponse)
+        org.yamcs.protobuf.Mdb.ListCommandInfoResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListCommandInfoResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListCommandInfoResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.ListCommandInfoResponse.class, org.yamcs.protobuf.Mdb.ListCommandInfoResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.ListCommandInfoResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getCommandFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (commandBuilder_ == null) {
+          command_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          commandBuilder_.clear();
+        }
+        continuationToken_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListCommandInfoResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.ListCommandInfoResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.ListCommandInfoResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.ListCommandInfoResponse build() {
+        org.yamcs.protobuf.Mdb.ListCommandInfoResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.ListCommandInfoResponse buildPartial() {
+        org.yamcs.protobuf.Mdb.ListCommandInfoResponse result = new org.yamcs.protobuf.Mdb.ListCommandInfoResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (commandBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            command_ = java.util.Collections.unmodifiableList(command_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.command_ = command_;
+        } else {
+          result.command_ = commandBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.continuationToken_ = continuationToken_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.ListCommandInfoResponse) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.ListCommandInfoResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.ListCommandInfoResponse other) {
+        if (other == org.yamcs.protobuf.Mdb.ListCommandInfoResponse.getDefaultInstance()) return this;
+        if (commandBuilder_ == null) {
+          if (!other.command_.isEmpty()) {
+            if (command_.isEmpty()) {
+              command_ = other.command_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureCommandIsMutable();
+              command_.addAll(other.command_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.command_.isEmpty()) {
+            if (commandBuilder_.isEmpty()) {
+              commandBuilder_.dispose();
+              commandBuilder_ = null;
+              command_ = other.command_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              commandBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getCommandFieldBuilder() : null;
+            } else {
+              commandBuilder_.addAllMessages(other.command_);
+            }
+          }
+        }
+        if (other.hasContinuationToken()) {
+          bitField0_ |= 0x00000002;
+          continuationToken_ = other.continuationToken_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getCommandCount(); i++) {
+          if (!getCommand(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.ListCommandInfoResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.ListCommandInfoResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.yamcs.protobuf.Mdb.CommandInfo> command_ =
+        java.util.Collections.emptyList();
+      private void ensureCommandIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          command_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.CommandInfo>(command_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.CommandInfo, org.yamcs.protobuf.Mdb.CommandInfo.Builder, org.yamcs.protobuf.Mdb.CommandInfoOrBuilder> commandBuilder_;
+
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.CommandInfo> getCommandList() {
+        if (commandBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(command_);
+        } else {
+          return commandBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public int getCommandCount() {
+        if (commandBuilder_ == null) {
+          return command_.size();
+        } else {
+          return commandBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CommandInfo getCommand(int index) {
+        if (commandBuilder_ == null) {
+          return command_.get(index);
+        } else {
+          return commandBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public Builder setCommand(
+          int index, org.yamcs.protobuf.Mdb.CommandInfo value) {
+        if (commandBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureCommandIsMutable();
+          command_.set(index, value);
+          onChanged();
+        } else {
+          commandBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public Builder setCommand(
+          int index, org.yamcs.protobuf.Mdb.CommandInfo.Builder builderForValue) {
+        if (commandBuilder_ == null) {
+          ensureCommandIsMutable();
+          command_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          commandBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public Builder addCommand(org.yamcs.protobuf.Mdb.CommandInfo value) {
+        if (commandBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureCommandIsMutable();
+          command_.add(value);
+          onChanged();
+        } else {
+          commandBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public Builder addCommand(
+          int index, org.yamcs.protobuf.Mdb.CommandInfo value) {
+        if (commandBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureCommandIsMutable();
+          command_.add(index, value);
+          onChanged();
+        } else {
+          commandBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public Builder addCommand(
+          org.yamcs.protobuf.Mdb.CommandInfo.Builder builderForValue) {
+        if (commandBuilder_ == null) {
+          ensureCommandIsMutable();
+          command_.add(builderForValue.build());
+          onChanged();
+        } else {
+          commandBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public Builder addCommand(
+          int index, org.yamcs.protobuf.Mdb.CommandInfo.Builder builderForValue) {
+        if (commandBuilder_ == null) {
+          ensureCommandIsMutable();
+          command_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          commandBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public Builder addAllCommand(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.CommandInfo> values) {
+        if (commandBuilder_ == null) {
+          ensureCommandIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, command_);
+          onChanged();
+        } else {
+          commandBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public Builder clearCommand() {
+        if (commandBuilder_ == null) {
+          command_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          commandBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public Builder removeCommand(int index) {
+        if (commandBuilder_ == null) {
+          ensureCommandIsMutable();
+          command_.remove(index);
+          onChanged();
+        } else {
+          commandBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CommandInfo.Builder getCommandBuilder(
+          int index) {
+        return getCommandFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CommandInfoOrBuilder getCommandOrBuilder(
+          int index) {
+        if (commandBuilder_ == null) {
+          return command_.get(index);  } else {
+          return commandBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.CommandInfoOrBuilder> 
+           getCommandOrBuilderList() {
+        if (commandBuilder_ != null) {
+          return commandBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(command_);
+        }
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CommandInfo.Builder addCommandBuilder() {
+        return getCommandFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.CommandInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CommandInfo.Builder addCommandBuilder(
+          int index) {
+        return getCommandFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.CommandInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.CommandInfo command = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.CommandInfo.Builder> 
+           getCommandBuilderList() {
+        return getCommandFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.CommandInfo, org.yamcs.protobuf.Mdb.CommandInfo.Builder, org.yamcs.protobuf.Mdb.CommandInfoOrBuilder> 
+          getCommandFieldBuilder() {
+        if (commandBuilder_ == null) {
+          commandBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.CommandInfo, org.yamcs.protobuf.Mdb.CommandInfo.Builder, org.yamcs.protobuf.Mdb.CommandInfoOrBuilder>(
+                  command_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          command_ = null;
+        }
+        return commandBuilder_;
+      }
+
+      private java.lang.Object continuationToken_ = "";
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public boolean hasContinuationToken() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public java.lang.String getContinuationToken() {
+        java.lang.Object ref = continuationToken_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            continuationToken_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getContinuationTokenBytes() {
+        java.lang.Object ref = continuationToken_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          continuationToken_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationToken(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder clearContinuationToken() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        continuationToken_ = getDefaultInstance().getContinuationToken();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationTokenBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:mdb.ListCommandInfoResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:mdb.ListCommandInfoResponse)
+    private static final org.yamcs.protobuf.Mdb.ListCommandInfoResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.ListCommandInfoResponse();
+    }
+
+    public static org.yamcs.protobuf.Mdb.ListCommandInfoResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ListCommandInfoResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ListCommandInfoResponse>() {
+      public ListCommandInfoResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ListCommandInfoResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ListCommandInfoResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ListCommandInfoResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.ListCommandInfoResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ListAlgorithmInfoResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:mdb.ListAlgorithmInfoResponse)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.AlgorithmInfo> 
+        getAlgorithmList();
+    /**
+     * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.AlgorithmInfo getAlgorithm(int index);
+    /**
+     * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+     */
+    int getAlgorithmCount();
+    /**
+     * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder> 
+        getAlgorithmOrBuilderList();
+    /**
+     * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder getAlgorithmOrBuilder(
+        int index);
+
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    boolean hasContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    java.lang.String getContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getContinuationTokenBytes();
+  }
+  /**
+   * Protobuf type {@code mdb.ListAlgorithmInfoResponse}
+   */
+  public  static final class ListAlgorithmInfoResponse extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:mdb.ListAlgorithmInfoResponse)
+      ListAlgorithmInfoResponseOrBuilder {
+    // Use ListAlgorithmInfoResponse.newBuilder() to construct.
+    private ListAlgorithmInfoResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ListAlgorithmInfoResponse() {
+      algorithm_ = java.util.Collections.emptyList();
+      continuationToken_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ListAlgorithmInfoResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                algorithm_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlgorithmInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              algorithm_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.AlgorithmInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              continuationToken_ = bs;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          algorithm_ = java.util.Collections.unmodifiableList(algorithm_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ListAlgorithmInfoResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_mdb_ListAlgorithmInfoResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse.class, org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int ALGORITHM_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Mdb.AlgorithmInfo> algorithm_;
+    /**
+     * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.AlgorithmInfo> getAlgorithmList() {
+      return algorithm_;
+    }
+    /**
+     * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder> 
+        getAlgorithmOrBuilderList() {
+      return algorithm_;
+    }
+    /**
+     * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+     */
+    public int getAlgorithmCount() {
+      return algorithm_.size();
+    }
+    /**
+     * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.AlgorithmInfo getAlgorithm(int index) {
+      return algorithm_.get(index);
+    }
+    /**
+     * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder getAlgorithmOrBuilder(
+        int index) {
+      return algorithm_.get(index);
+    }
+
+    public static final int CONTINUATIONTOKEN_FIELD_NUMBER = 2;
+    private volatile java.lang.Object continuationToken_;
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public boolean hasContinuationToken() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public java.lang.String getContinuationToken() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          continuationToken_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getContinuationTokenBytes() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        continuationToken_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getAlgorithmCount(); i++) {
+        if (!getAlgorithm(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < algorithm_.size(); i++) {
+        output.writeMessage(1, algorithm_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < algorithm_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, algorithm_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse other = (org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse) obj;
+
+      boolean result = true;
+      result = result && getAlgorithmList()
+          .equals(other.getAlgorithmList());
+      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (hasContinuationToken()) {
+        result = result && getContinuationToken()
+            .equals(other.getContinuationToken());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getAlgorithmCount() > 0) {
+        hash = (37 * hash) + ALGORITHM_FIELD_NUMBER;
+        hash = (53 * hash) + getAlgorithmList().hashCode();
+      }
+      if (hasContinuationToken()) {
+        hash = (37 * hash) + CONTINUATIONTOKEN_FIELD_NUMBER;
+        hash = (53 * hash) + getContinuationToken().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code mdb.ListAlgorithmInfoResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:mdb.ListAlgorithmInfoResponse)
+        org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListAlgorithmInfoResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListAlgorithmInfoResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse.class, org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getAlgorithmFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (algorithmBuilder_ == null) {
+          algorithm_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          algorithmBuilder_.clear();
+        }
+        continuationToken_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_mdb_ListAlgorithmInfoResponse_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse build() {
+        org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse buildPartial() {
+        org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse result = new org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (algorithmBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            algorithm_ = java.util.Collections.unmodifiableList(algorithm_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.algorithm_ = algorithm_;
+        } else {
+          result.algorithm_ = algorithmBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.continuationToken_ = continuationToken_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse other) {
+        if (other == org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse.getDefaultInstance()) return this;
+        if (algorithmBuilder_ == null) {
+          if (!other.algorithm_.isEmpty()) {
+            if (algorithm_.isEmpty()) {
+              algorithm_ = other.algorithm_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureAlgorithmIsMutable();
+              algorithm_.addAll(other.algorithm_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.algorithm_.isEmpty()) {
+            if (algorithmBuilder_.isEmpty()) {
+              algorithmBuilder_.dispose();
+              algorithmBuilder_ = null;
+              algorithm_ = other.algorithm_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              algorithmBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getAlgorithmFieldBuilder() : null;
+            } else {
+              algorithmBuilder_.addAllMessages(other.algorithm_);
+            }
+          }
+        }
+        if (other.hasContinuationToken()) {
+          bitField0_ |= 0x00000002;
+          continuationToken_ = other.continuationToken_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getAlgorithmCount(); i++) {
+          if (!getAlgorithm(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.yamcs.protobuf.Mdb.AlgorithmInfo> algorithm_ =
+        java.util.Collections.emptyList();
+      private void ensureAlgorithmIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          algorithm_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlgorithmInfo>(algorithm_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.AlgorithmInfo, org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder, org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder> algorithmBuilder_;
+
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.AlgorithmInfo> getAlgorithmList() {
+        if (algorithmBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(algorithm_);
+        } else {
+          return algorithmBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public int getAlgorithmCount() {
+        if (algorithmBuilder_ == null) {
+          return algorithm_.size();
+        } else {
+          return algorithmBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlgorithmInfo getAlgorithm(int index) {
+        if (algorithmBuilder_ == null) {
+          return algorithm_.get(index);
+        } else {
+          return algorithmBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public Builder setAlgorithm(
+          int index, org.yamcs.protobuf.Mdb.AlgorithmInfo value) {
+        if (algorithmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAlgorithmIsMutable();
+          algorithm_.set(index, value);
+          onChanged();
+        } else {
+          algorithmBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public Builder setAlgorithm(
+          int index, org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder builderForValue) {
+        if (algorithmBuilder_ == null) {
+          ensureAlgorithmIsMutable();
+          algorithm_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          algorithmBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public Builder addAlgorithm(org.yamcs.protobuf.Mdb.AlgorithmInfo value) {
+        if (algorithmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAlgorithmIsMutable();
+          algorithm_.add(value);
+          onChanged();
+        } else {
+          algorithmBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public Builder addAlgorithm(
+          int index, org.yamcs.protobuf.Mdb.AlgorithmInfo value) {
+        if (algorithmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAlgorithmIsMutable();
+          algorithm_.add(index, value);
+          onChanged();
+        } else {
+          algorithmBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public Builder addAlgorithm(
+          org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder builderForValue) {
+        if (algorithmBuilder_ == null) {
+          ensureAlgorithmIsMutable();
+          algorithm_.add(builderForValue.build());
+          onChanged();
+        } else {
+          algorithmBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public Builder addAlgorithm(
+          int index, org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder builderForValue) {
+        if (algorithmBuilder_ == null) {
+          ensureAlgorithmIsMutable();
+          algorithm_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          algorithmBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public Builder addAllAlgorithm(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.AlgorithmInfo> values) {
+        if (algorithmBuilder_ == null) {
+          ensureAlgorithmIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, algorithm_);
+          onChanged();
+        } else {
+          algorithmBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public Builder clearAlgorithm() {
+        if (algorithmBuilder_ == null) {
+          algorithm_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          algorithmBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public Builder removeAlgorithm(int index) {
+        if (algorithmBuilder_ == null) {
+          ensureAlgorithmIsMutable();
+          algorithm_.remove(index);
+          onChanged();
+        } else {
+          algorithmBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder getAlgorithmBuilder(
+          int index) {
+        return getAlgorithmFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder getAlgorithmOrBuilder(
+          int index) {
+        if (algorithmBuilder_ == null) {
+          return algorithm_.get(index);  } else {
+          return algorithmBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder> 
+           getAlgorithmOrBuilderList() {
+        if (algorithmBuilder_ != null) {
+          return algorithmBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(algorithm_);
+        }
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder addAlgorithmBuilder() {
+        return getAlgorithmFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.AlgorithmInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder addAlgorithmBuilder(
+          int index) {
+        return getAlgorithmFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.AlgorithmInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .mdb.AlgorithmInfo algorithm = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder> 
+           getAlgorithmBuilderList() {
+        return getAlgorithmFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.AlgorithmInfo, org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder, org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder> 
+          getAlgorithmFieldBuilder() {
+        if (algorithmBuilder_ == null) {
+          algorithmBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.AlgorithmInfo, org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder, org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder>(
+                  algorithm_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          algorithm_ = null;
+        }
+        return algorithmBuilder_;
+      }
+
+      private java.lang.Object continuationToken_ = "";
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public boolean hasContinuationToken() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public java.lang.String getContinuationToken() {
+        java.lang.Object ref = continuationToken_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            continuationToken_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getContinuationTokenBytes() {
+        java.lang.Object ref = continuationToken_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          continuationToken_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationToken(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder clearContinuationToken() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        continuationToken_ = getDefaultInstance().getContinuationToken();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationTokenBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:mdb.ListAlgorithmInfoResponse)
+    }
+
+    // @@protoc_insertion_point(class_scope:mdb.ListAlgorithmInfoResponse)
+    private static final org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse();
+    }
+
+    public static org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ListAlgorithmInfoResponse>
+        PARSER = new com.google.protobuf.AbstractParser<ListAlgorithmInfoResponse>() {
+      public ListAlgorithmInfoResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ListAlgorithmInfoResponse(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ListAlgorithmInfoResponse> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ListAlgorithmInfoResponse> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.ListAlgorithmInfoResponse getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_mdb_UnitInfo_descriptor;
   private static final 
@@ -38956,6 +45873,46 @@ public final class Mdb {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_mdb_AlgorithmInfo_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mdb_ListParameterInfoResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mdb_ListParameterInfoResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mdb_ListParameterTypeInfoResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mdb_ListParameterTypeInfoResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mdb_BulkGetParameterInfoRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mdb_BulkGetParameterInfoRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mdb_BulkGetParameterInfoResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mdb_BulkGetParameterInfoResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mdb_ListContainerInfoResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mdb_ListContainerInfoResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mdb_ListCommandInfoResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mdb_ListCommandInfoResponse_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_mdb_ListAlgorithmInfoResponse_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_mdb_ListAlgorithmInfoResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -39094,14 +46051,32 @@ public final class Mdb {
       "fo\022-\n\021onParameterUpdate\030\013 \003(\0132\022.mdb.Para" +
       "meterInfo\022\026\n\016onPeriodicRate\030\014 \003(\003\"-\n\005Sco" +
       "pe\022\n\n\006GLOBAL\020\000\022\030\n\024COMMAND_VERIFICATION\020\001" +
-      "*\242\001\n\016DataSourceType\022\017\n\013TELEMETERED\020\000\022\013\n\007",
-      "DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SY" +
-      "STEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006" +
-      "\022\r\n\tEXTERNAL1\020\007\022\r\n\tEXTERNAL2\020\010\022\r\n\tEXTERN" +
-      "AL3\020\t*\\\n\016AlarmLevelType\022\n\n\006NORMAL\020\000\022\t\n\005W" +
-      "ATCH\020\001\022\013\n\007WARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRI" +
-      "TICAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022org.yamcs.protobu" +
-      "f"
+      "\"]\n\031ListParameterInfoResponse\022%\n\tparamet",
+      "er\030\001 \003(\0132\022.mdb.ParameterInfo\022\031\n\021continua" +
+      "tionToken\030\002 \001(\t\"`\n\035ListParameterTypeInfo" +
+      "Response\022$\n\004type\030\001 \003(\0132\026.mdb.ParameterTy" +
+      "peInfo\022\031\n\021continuationToken\030\002 \001(\t\"?\n\033Bul" +
+      "kGetParameterInfoRequest\022 \n\002id\030\001 \003(\0132\024.y" +
+      "amcs.NamedObjectId\"\321\001\n\034BulkGetParameterI" +
+      "nfoResponse\022L\n\010response\030\001 \003(\0132:.mdb.Bulk" +
+      "GetParameterInfoResponse.GetParameterInf" +
+      "oResponse\032c\n\030GetParameterInfoResponse\022 \n" +
+      "\002id\030\001 \001(\0132\024.yamcs.NamedObjectId\022%\n\tparam",
+      "eter\030\002 \001(\0132\022.mdb.ParameterInfo\"]\n\031ListCo" +
+      "ntainerInfoResponse\022%\n\tcontainer\030\001 \003(\0132\022" +
+      ".mdb.ContainerInfo\022\031\n\021continuationToken\030" +
+      "\002 \001(\t\"W\n\027ListCommandInfoResponse\022!\n\007comm" +
+      "and\030\001 \003(\0132\020.mdb.CommandInfo\022\031\n\021continuat" +
+      "ionToken\030\002 \001(\t\"]\n\031ListAlgorithmInfoRespo" +
+      "nse\022%\n\talgorithm\030\001 \003(\0132\022.mdb.AlgorithmIn" +
+      "fo\022\031\n\021continuationToken\030\002 \001(\t*\242\001\n\016DataSo" +
+      "urceType\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020\001\022\014" +
+      "\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007C",
+      "OMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006\022\r\n\tEXTERNA" +
+      "L1\020\007\022\r\n\tEXTERNAL2\020\010\022\r\n\tEXTERNAL3\020\t*\\\n\016Al" +
+      "armLevelType\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n\007W" +
+      "ARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n\n\006" +
+      "SEVERE\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -39302,6 +46277,54 @@ public final class Mdb {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_mdb_AlgorithmInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "Scope", "Language", "Text", "InputParameter", "OutputParameter", "OnParameterUpdate", "OnPeriodicRate", });
+    internal_static_mdb_ListParameterInfoResponse_descriptor =
+      getDescriptor().getMessageTypes().get(30);
+    internal_static_mdb_ListParameterInfoResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mdb_ListParameterInfoResponse_descriptor,
+        new java.lang.String[] { "Parameter", "ContinuationToken", });
+    internal_static_mdb_ListParameterTypeInfoResponse_descriptor =
+      getDescriptor().getMessageTypes().get(31);
+    internal_static_mdb_ListParameterTypeInfoResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mdb_ListParameterTypeInfoResponse_descriptor,
+        new java.lang.String[] { "Type", "ContinuationToken", });
+    internal_static_mdb_BulkGetParameterInfoRequest_descriptor =
+      getDescriptor().getMessageTypes().get(32);
+    internal_static_mdb_BulkGetParameterInfoRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mdb_BulkGetParameterInfoRequest_descriptor,
+        new java.lang.String[] { "Id", });
+    internal_static_mdb_BulkGetParameterInfoResponse_descriptor =
+      getDescriptor().getMessageTypes().get(33);
+    internal_static_mdb_BulkGetParameterInfoResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mdb_BulkGetParameterInfoResponse_descriptor,
+        new java.lang.String[] { "Response", });
+    internal_static_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_descriptor =
+      internal_static_mdb_BulkGetParameterInfoResponse_descriptor.getNestedTypes().get(0);
+    internal_static_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_descriptor,
+        new java.lang.String[] { "Id", "Parameter", });
+    internal_static_mdb_ListContainerInfoResponse_descriptor =
+      getDescriptor().getMessageTypes().get(34);
+    internal_static_mdb_ListContainerInfoResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mdb_ListContainerInfoResponse_descriptor,
+        new java.lang.String[] { "Container", "ContinuationToken", });
+    internal_static_mdb_ListCommandInfoResponse_descriptor =
+      getDescriptor().getMessageTypes().get(35);
+    internal_static_mdb_ListCommandInfoResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mdb_ListCommandInfoResponse_descriptor,
+        new java.lang.String[] { "Command", "ContinuationToken", });
+    internal_static_mdb_ListAlgorithmInfoResponse_descriptor =
+      getDescriptor().getMessageTypes().get(36);
+    internal_static_mdb_ListAlgorithmInfoResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_mdb_ListAlgorithmInfoResponse_descriptor,
+        new java.lang.String[] { "Algorithm", "ContinuationToken", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
   }
 

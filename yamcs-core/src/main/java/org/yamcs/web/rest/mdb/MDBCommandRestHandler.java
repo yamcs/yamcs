@@ -1,7 +1,7 @@
 package org.yamcs.web.rest.mdb;
 
 import org.yamcs.protobuf.Mdb.CommandInfo;
-import org.yamcs.protobuf.Rest.ListCommandInfoResponse;
+import org.yamcs.protobuf.Mdb.ListCommandInfoResponse;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
