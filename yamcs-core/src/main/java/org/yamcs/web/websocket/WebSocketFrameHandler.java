@@ -98,22 +98,20 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof HandshakeComplete) {
-            log.info("{} {} {}", originalRequestInfo.getMethod(), originalRequestInfo.getUri(),
-                    HttpResponseStatus.SWITCHING_PROTOCOLS.code());
-
             HandshakeComplete handshakeEvt = (HandshakeComplete) evt;
             String subprotocol = handshakeEvt.selectedSubprotocol();
-            if (subprotocol == null) {
-                log.info("No subprotocol defined. Using JSON.");
-            }
 
             if ("protobuf".equals(subprotocol)) {
                 decoder = new ProtobufDecoder();
                 encoder = new ProtobufEncoder(ctx);
             } else {
+                subprotocol = "json";
                 decoder = new JsonDecoder();
                 encoder = new JsonEncoder();
             }
+
+            log.info("{} {} {} [subprotocol: {}]", originalRequestInfo.getMethod(), originalRequestInfo.getUri(),
+                    HttpResponseStatus.SWITCHING_PROTOCOLS.code(), subprotocol);
 
             // After upgrade, no further HTTP messages will be received
             ctx.pipeline().remove(HttpRequestHandler.class);
