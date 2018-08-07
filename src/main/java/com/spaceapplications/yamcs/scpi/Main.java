@@ -16,22 +16,29 @@ public class Main {
   public static Integer MAX_INOMING_CONNECTIONS = 5;
 
   public static void main(String[] args) {
+    new Main(args);
+  }
+
+  public Main(String[] args) {
     EventLoopGroup bossEventLoop = new NioEventLoopGroup();
     EventLoopGroup workerEventLoop = new NioEventLoopGroup();
-
+    
     try {
-      ServerBootstrap bootstrap = new ServerBootstrap();
-      bootstrap.group(bossEventLoop, workerEventLoop)
-          .channel(NioServerSocketChannel.class) // Set up a TCP server
-          .option(ChannelOption.SO_BACKLOG, MAX_INOMING_CONNECTIONS)
-          .handler(new LoggingHandler(LogLevel.INFO)) // Handler for boss channel (incl. port binding, accepting
-                                                      // connections, etc.)
-          .childHandler(new ServerInitializer()); // Handler for worker channel (incl. receiving new data, etc.)
-      ChannelFuture f = unchecked(bootstrap.bind(DEFAULT_PORT)::sync).get();
+      ServerBootstrap b = bootstrap(bossEventLoop, workerEventLoop);
+      ChannelFuture f = unchecked(b.bind(DEFAULT_PORT)::sync).get();
       unchecked(f.channel().closeFuture()::sync).get();
     } finally {
       bossEventLoop.shutdownGracefully();
       workerEventLoop.shutdownGracefully();
     }
+  }
+
+  private ServerBootstrap bootstrap(EventLoopGroup bossEventLoop, EventLoopGroup workerEventLoop) {
+    return new ServerBootstrap()
+      .group(bossEventLoop, workerEventLoop)
+      .channel(NioServerSocketChannel.class)
+      .option(ChannelOption.SO_BACKLOG, MAX_INOMING_CONNECTIONS)
+      .handler(new LoggingHandler(LogLevel.INFO))
+      .childHandler(new ServerInitializer());
   }
 }
