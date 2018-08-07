@@ -12,6 +12,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 public class Main {
+  public static Integer DEFAULT_PORT = 1337;
   public static Integer MAX_INOMING_CONNECTIONS = 5;
 
   public static void main(String[] args) {
@@ -26,7 +27,7 @@ public class Main {
           .handler(new LoggingHandler(LogLevel.INFO)) // Handler for boss channel (incl. port binding, accepting
                                                       // connections, etc.)
           .childHandler(new ServerInitializer()); // Handler for worker channel (incl. receiving new data, etc.)
-      ChannelFuture f = unchecked(bootstrap.bind(1337)::sync).get();
+      ChannelFuture f = unchecked(bootstrap.bind(DEFAULT_PORT)::sync).get();
       unchecked(f.channel().closeFuture()::sync).get();
     } finally {
       bossEventLoop.shutdownGracefully();
