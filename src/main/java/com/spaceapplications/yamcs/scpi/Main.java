@@ -12,8 +12,9 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 public class Main {
+  public static Integer MAX_INOMING_CONNECTIONS = 5;
+
   public static void main(String[] args) {
-    System.out.println("hello world");
     EventLoopGroup bossEventLoop = new NioEventLoopGroup();
     EventLoopGroup workerEventLoop = new NioEventLoopGroup();
 
@@ -21,7 +22,7 @@ public class Main {
       ServerBootstrap bootstrap = new ServerBootstrap();
       bootstrap.group(bossEventLoop, workerEventLoop)
           .channel(NioServerSocketChannel.class) // Set up a TCP server
-          .option(ChannelOption.SO_BACKLOG, 1) // Max incoming connections.
+          .option(ChannelOption.SO_BACKLOG, MAX_INOMING_CONNECTIONS)
           .handler(new LoggingHandler(LogLevel.INFO)) // Handler for boss channel (incl. port binding, accepting
                                                       // connections, etc.)
           .childHandler(new ServerInitializer()); // Handler for worker channel (incl. receiving new data, etc.)
