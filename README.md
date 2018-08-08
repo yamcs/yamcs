@@ -11,7 +11,7 @@ It will be integrated with YAMCS (Yet Another Mission Control System). YAMCS is 
 ## running
 The project incorporates the maven exec plugin for easy development. The following command executes the main class after packaging:
 ```
-mvn compile exec:java
+mvn compile exec:java -Dexec.args="--help"
 ```
 
 Alternatively you can also simply run the application from the jar (assuming you manually manage the classpath):
