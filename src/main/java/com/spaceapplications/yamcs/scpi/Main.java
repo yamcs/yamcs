@@ -5,7 +5,6 @@ import static pl.touk.throwing.ThrowingSupplier.unchecked;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
@@ -20,8 +19,8 @@ public class Main {
   }
 
   public Main(String[] args) {
-    EventLoopGroup bossEventLoop = new NioEventLoopGroup();
-    EventLoopGroup workerEventLoop = new NioEventLoopGroup();
+    NioEventLoopGroup bossEventLoop = new NioEventLoopGroup();
+    NioEventLoopGroup workerEventLoop = new NioEventLoopGroup();
     
     try {
       ServerBootstrap b = bootstrap(bossEventLoop, workerEventLoop);
@@ -33,7 +32,7 @@ public class Main {
     }
   }
 
-  private ServerBootstrap bootstrap(EventLoopGroup bossEventLoop, EventLoopGroup workerEventLoop) {
+  private ServerBootstrap bootstrap(NioEventLoopGroup bossEventLoop, NioEventLoopGroup workerEventLoop) {
     return new ServerBootstrap()
       .group(bossEventLoop, workerEventLoop)
       .channel(NioServerSocketChannel.class)
