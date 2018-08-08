@@ -15,13 +15,13 @@ public class Main {
   public static Integer MAX_INOMING_CONNECTIONS = 5;
 
   public static void main(String[] args) {
-    new Main(args);
+    new Main(Args.parse(args));
   }
 
-  public Main(String[] args) {
+  public Main(Args args) {
     NioEventLoopGroup bossEventLoop = new NioEventLoopGroup();
     NioEventLoopGroup workerEventLoop = new NioEventLoopGroup();
-    
+
     try {
       ServerBootstrap b = bootstrap(bossEventLoop, workerEventLoop);
       ChannelFuture f = unchecked(b.bind(DEFAULT_PORT)::sync).get();
@@ -34,10 +34,10 @@ public class Main {
 
   private ServerBootstrap bootstrap(NioEventLoopGroup bossEventLoop, NioEventLoopGroup workerEventLoop) {
     return new ServerBootstrap()
-      .group(bossEventLoop, workerEventLoop)
-      .channel(NioServerSocketChannel.class)
-      .option(ChannelOption.SO_BACKLOG, MAX_INOMING_CONNECTIONS)
-      .handler(new LoggingHandler(LogLevel.INFO))
-      .childHandler(new ServerInitializer());
+        .group(bossEventLoop, workerEventLoop)
+        .channel(NioServerSocketChannel.class)
+        .option(ChannelOption.SO_BACKLOG, MAX_INOMING_CONNECTIONS)
+        .handler(new LoggingHandler(LogLevel.INFO))
+        .childHandler(new ServerInitializer());
   }
 }
