@@ -16,5 +16,5 @@ mvn compile exec:java
 
 Alternatively you can also simply run the application from the jar (assuming you manually manage the classpath):
 ```
-java -jar target/yamcs-scpi-$version.jar
+java -classpath $CLASSPATH_DIR -jar target/yamcs-scpi-$version.jar
 ```
