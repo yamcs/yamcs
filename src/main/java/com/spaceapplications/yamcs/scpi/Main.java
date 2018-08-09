@@ -4,7 +4,6 @@ import static pl.touk.throwing.ThrowingSupplier.unchecked;
 
 import java.util.Optional;
 
-import com.spaceapplications.yamcs.scpi.config.SafeArgs;
 import com.spaceapplications.yamcs.scpi.config.SafeConfig;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -20,19 +19,20 @@ public class Main {
   public static Integer DEFAULT_MAX_CONNECTIONS = 5;
 
   public static void main(String[] args) {
-    new Main(SafeArgs.parse(args));
+    new Main(Args.parse(args));
   }
 
-  public Main(SafeArgs args) {
-    Optional<SafeConfig> config = args.<String>get("config").map(SafeConfig::load);
-    int port = config.flatMap(c -> c.<Integer>get("daemon.port")).orElse(DEFAULT_PORT);
+  public Main(Args args) {
+    Optional.ofNullable(args.config).map(SafeConfig::load);
+    SafeConfig c = SafeConfig.load("config.yaml");
+    Optional<Integer> port =  c.get("daemon.port");
 
     NioEventLoopGroup bossEventLoop = new NioEventLoopGroup();
     NioEventLoopGroup workerEventLoop = new NioEventLoopGroup();
 
     try {
       ServerBootstrap b = bootstrap(bossEventLoop, workerEventLoop);
-      ChannelFuture f = unchecked(b.bind(port)::sync).get();
+      ChannelFuture f = unchecked(b.bind(port.orElse(DEFAULT_PORT))::sync).get();
       unchecked(f.channel().closeFuture()::sync).get();
     } finally {
       bossEventLoop.shutdownGracefully();
