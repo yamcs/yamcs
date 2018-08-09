@@ -2,6 +2,8 @@ package com.spaceapplications.yamcs.scpi;
 
 import static pl.touk.throwing.ThrowingSupplier.unchecked;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import com.spaceapplications.yamcs.scpi.config.SafeConfig;
@@ -19,9 +21,14 @@ public class Main {
   public static Integer MAX_INOMING_CONNECTIONS = 5;
 
   public static void main(String[] args) {
-    Optional<Integer> port = SafeConfig.load("config.yaml").get("port");
-    System.out.println("port: " + port);
-    // new Main(Args.parse(args));
+    SafeConfig c = SafeConfig.load("config.yaml");
+    System.out.println("base: " + c.get("base"));
+    System.out.println("base.port: " + c.get("base.port"));
+    
+    Optional<List<Integer>> bla = c.get("devices.tenma");
+    
+    List<Integer> b = bla.orElse(Arrays.asList());
+    System.out.println("base.stuff: " + b);
   }
 
   public Main(Args args) {

@@ -1,1 +1,9 @@
-portz
+daemon:
+  port: 1337
+
+devices:
+  tenma-72-2540:
+    uri: "serial:/dev/ttyUSB0"
+
+  test:
+    uri: "tcp:localhost:1338"
