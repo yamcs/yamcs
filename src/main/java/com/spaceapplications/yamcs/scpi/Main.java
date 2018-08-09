@@ -2,6 +2,10 @@ package com.spaceapplications.yamcs.scpi;
 
 import static pl.touk.throwing.ThrowingSupplier.unchecked;
 
+import java.util.Optional;
+
+import com.spaceapplications.yamcs.scpi.config.SafeConfig;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -15,7 +19,9 @@ public class Main {
   public static Integer MAX_INOMING_CONNECTIONS = 5;
 
   public static void main(String[] args) {
-    new Main(Args.parse(args));
+    Optional<Integer> port = SafeConfig.load("config.yaml").get("port");
+    System.out.println("port: " + port);
+    // new Main(Args.parse(args));
   }
 
   public Main(Args args) {
