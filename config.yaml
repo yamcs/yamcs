@@ -1,5 +1,6 @@
 daemon:
-  port: 1337
+  port: 8080
+  max-connections: 5
 
 devices:
   tenma-72-2540:
