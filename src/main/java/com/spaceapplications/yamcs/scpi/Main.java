@@ -4,8 +4,6 @@ import static pl.touk.throwing.ThrowingSupplier.unchecked;
 
 import java.util.Optional;
 
-import com.spaceapplications.yamcs.scpi.config.SafeConfig;
-
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -23,16 +21,15 @@ public class Main {
   }
 
   public Main(Args args) {
-    Optional.ofNullable(args.config).map(SafeConfig::load);
-    SafeConfig c = SafeConfig.load("config.yaml");
-    Optional<Integer> port =  c.get("daemon.port");
+    Optional<Config> config = Optional.ofNullable(args.config).map(Config::load);
+    int port = config.map(c -> c.daemon.port).orElse(DEFAULT_PORT);
 
     NioEventLoopGroup bossEventLoop = new NioEventLoopGroup();
     NioEventLoopGroup workerEventLoop = new NioEventLoopGroup();
 
     try {
       ServerBootstrap b = bootstrap(bossEventLoop, workerEventLoop);
-      ChannelFuture f = unchecked(b.bind(port.orElse(DEFAULT_PORT))::sync).get();
+      ChannelFuture f = unchecked(b.bind(port)::sync).get();
       unchecked(f.channel().closeFuture()::sync).get();
     } finally {
       bossEventLoop.shutdownGracefully();

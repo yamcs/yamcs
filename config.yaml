@@ -1,10 +1,11 @@
-daemon:
+daemon: {
   port: 8080
-  max-connections: 5
+  # max_connections: 5
+}
 
-devices:
-  tenma-72-2540:
-    uri: "serial:/dev/ttyUSB0"
+# devices:
+#   tenma-72-2540:
+#     uri: "serial:/dev/ttyUSB0"
 
-  test:
-    uri: "tcp:localhost:1338"
+#   test:
+#     uri: "tcp:localhost:1338"
