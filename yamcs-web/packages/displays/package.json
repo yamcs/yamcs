@@ -33,12 +33,12 @@
     "@types/pegjs": "^0.10.0",
     "jasmine-core": "^3.1.0",
     "jasmine-spec-reporter": "~4.2.1",
-    "karma": "^2.0.0",
+    "karma": "^3.0.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-cli": "~1.0.1",
     "karma-jasmine": "~1.1.0",
     "pegjs": "^0.10.0",
-    "rollup": "^0.63.0",
+    "rollup": "^0.64.1",
     "rollup-plugin-commonjs": "^9.0.0",
     "rollup-plugin-node-resolve": "^3.2.0",
     "rollup-plugin-peer-deps-external": "^2.1.0",
@@ -46,6 +46,6 @@
     "rollup-plugin-typescript2": "^0.16.1",
     "ts-pegjs": "^0.2.1",
     "tslint": "^5.8.0",
-    "typescript": "~2.7.2"
+    "typescript": "~2.9.0"
   }
 }
