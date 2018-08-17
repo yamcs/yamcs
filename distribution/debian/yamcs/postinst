@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+chown 'yamcs:yamcs' '/opt/yamcs/cache'
+chown 'yamcs:yamcs' '/opt/yamcs/log'
