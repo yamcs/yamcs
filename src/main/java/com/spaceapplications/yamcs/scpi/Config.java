@@ -18,22 +18,22 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
 public class Config {
-  public Daemon daemon = new Daemon();
-  public List<Device> decices = Arrays.asList();
+  public DaemonConfig daemon = new DaemonConfig();
+  public List<DeviceConfig> decices = Arrays.asList();
 
-  public static class Daemon {
+  public static class DaemonConfig {
     public int port;
     public int max_connections;
   }
 
-  public static class Device {
+  public static class DeviceConfig {
     public String name = "";
   }
 
   public static Config load(String path) {
     Constructor c = new Constructor(Config.class);
     TypeDescription d = new TypeDescription(Config.class);
-    d.putListPropertyType("devices", Device.class);
+    d.putListPropertyType("devices", DeviceConfig.class);
     c.addTypeDescription(d);
     Yaml yaml = new Yaml(c);
     InputStream is = unchecked(Config::inputStream).apply(path);
