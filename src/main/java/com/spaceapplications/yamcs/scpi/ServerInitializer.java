@@ -1,5 +1,7 @@
 package com.spaceapplications.yamcs.scpi;
 
+import java.util.function.Supplier;
+
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -10,9 +12,9 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 public class ServerInitializer extends ChannelInitializer<SocketChannel> {
-  public ServerHandler serverHandler;
+  public Supplier<ServerHandler> serverHandler;
 
-  public ServerInitializer(ServerHandler serverHandler) {
+  public ServerInitializer(Supplier<ServerHandler> serverHandler) {
     this.serverHandler = serverHandler;
   }
 
@@ -26,6 +28,6 @@ public class ServerInitializer extends ChannelInitializer<SocketChannel> {
     pipeline.addLast(delimitedDecoder);
     pipeline.addLast(stringDecoder);
     pipeline.addLast(stringEncoder);
-    pipeline.addLast(serverHandler);
+    pipeline.addLast(serverHandler.get());
   }
 }

@@ -12,14 +12,12 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    ctx.write(commander.execute(Commander.CONFIRM));
-    ctx.flush();
+    ctx.writeAndFlush(commander.execute(Commander.CONFIRM));
   }
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, String cmd) throws Exception {
-    ctx.write(commander.execute(cmd));
-    ctx.flush();
+    ctx.writeAndFlush(commander.execute(cmd));
   }
 
   @Override
@@ -29,7 +27,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    cause.printStackTrace();
+    System.out.println(cause);
     ctx.close();
   }
 }

@@ -28,9 +28,10 @@ public class Main {
     NioEventLoopGroup boss = new NioEventLoopGroup();
     NioEventLoopGroup worker = new NioEventLoopGroup();
 
-    Commander commander = new Commander(config);
-    ServerHandler handler = new ServerHandler(commander);
-    ServerInitializer init = new ServerInitializer(handler);
+    ServerInitializer init = new ServerInitializer(() ->{
+      Commander commander = new Commander(config);
+      return new ServerHandler(commander);
+    });
 
     try {
       bootstrap(boss, worker, init, port);
