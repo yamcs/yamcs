@@ -19,7 +19,7 @@ import org.yaml.snakeyaml.error.YAMLException;
 
 public class Config {
   public DaemonConfig daemon = new DaemonConfig();
-  public List<DeviceConfig> decices = Arrays.asList();
+  public List<DeviceConfig> devices = Arrays.asList();
 
   public static class DaemonConfig {
     public int port;

@@ -12,7 +12,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    ctx.writeAndFlush(commander.execute(Commander.CONFIRM));
+    ctx.writeAndFlush(commander.confirm());
   }
 
   @Override
