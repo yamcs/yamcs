@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 public class Commander {
   private static String PROMPT = "\r\n$ ";
 
-  private Config config;
   private String context = "";
 
   private static class Command {
@@ -51,7 +50,7 @@ public class Commander {
   }
 
   public String execute(String cmd) {
-    String result = commands.stream().filter(c -> c.cmd.equals(cmd)).findFirst().map(c -> c.execute())
+    String result = commands.stream().filter(c -> c.cmd.startsWith(cmd)).findFirst().map(c -> c.execute())
         .orElse(cmd + ": command not found");
     return context + result + PROMPT;
   }
