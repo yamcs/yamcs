@@ -5,10 +5,10 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
 public class Args {
-  @Parameter(names = "--config", description = "Load YAML config file.")
+  @Parameter(names = "--config", required = true, description = "Load YAML config file.")
   public String config;
 
-  @Parameter(names = "--help", description = "Print this help message.")
+  @Parameter(names = "--help", help = true, description = "Print this help message.")
   public boolean help;
 
   public static Args parse(String[] arguments) {
@@ -18,7 +18,7 @@ public class Args {
 
     try {
       jc.parse(arguments);
-    } catch(ParameterException e) {
+    } catch (ParameterException e) {
       System.out.println(e.getMessage());
       System.exit(-1);
     }
@@ -27,7 +27,7 @@ public class Args {
       jc.usage();
       System.exit(0);
     }
-    
+
     return args;
   }
 }

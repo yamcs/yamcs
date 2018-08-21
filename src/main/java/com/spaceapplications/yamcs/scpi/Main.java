@@ -21,28 +21,34 @@ public class Main {
   }
 
   public Main(Args args) {
-    Optional<Config> config = Optional.ofNullable(args.config).map(Config::load);
-    int port = config.map(c -> c.daemon.port).orElse(DEFAULT_PORT);
+    // No null checking for args.config as it is an obligated arg.
+    Config config = Config.load(args.config); 
+    int port = Optional.ofNullable(config.daemon).map(d -> d.port).orElse(DEFAULT_PORT);
 
-    NioEventLoopGroup bossEventLoop = new NioEventLoopGroup();
-    NioEventLoopGroup workerEventLoop = new NioEventLoopGroup();
+    NioEventLoopGroup boss = new NioEventLoopGroup();
+    NioEventLoopGroup worker = new NioEventLoopGroup();
+
+    Commander commander = new Commander(config);
+    ServerHandler handler = new ServerHandler(commander);
+    ServerInitializer init = new ServerInitializer(handler);
 
     try {
-      ServerBootstrap b = bootstrap(bossEventLoop, workerEventLoop);
-      ChannelFuture f = unchecked(b.bind(port)::sync).get();
-      unchecked(f.channel().closeFuture()::sync).get();
+      bootstrap(boss, worker, init, port);
     } finally {
-      bossEventLoop.shutdownGracefully();
-      workerEventLoop.shutdownGracefully();
+      boss.shutdownGracefully();
+      worker.shutdownGracefully();
     }
   }
 
-  private ServerBootstrap bootstrap(NioEventLoopGroup bossEventLoop, NioEventLoopGroup workerEventLoop) {
-    return new ServerBootstrap()
-        .group(bossEventLoop, workerEventLoop)
-        .channel(NioServerSocketChannel.class)
-        .option(ChannelOption.SO_BACKLOG, DEFAULT_MAX_CONNECTIONS)
-        .handler(new LoggingHandler(LogLevel.INFO))
-        .childHandler(new ServerInitializer());
+  private void bootstrap(NioEventLoopGroup boss, NioEventLoopGroup worker, ServerInitializer initializer, int port) {
+    ChannelFuture f = new ServerBootstrap().group(boss, worker).channel(NioServerSocketChannel.class)
+        .option(ChannelOption.SO_BACKLOG, DEFAULT_MAX_CONNECTIONS).handler(new LoggingHandler(LogLevel.INFO))
+        .childHandler(initializer).bind(port);
+    blockUntilInterrupted(f);
+  }
+
+  private void blockUntilInterrupted(ChannelFuture channelFuture) {
+    channelFuture = unchecked(channelFuture::sync).get();
+    unchecked(channelFuture.channel().closeFuture()::sync).get();
   }
 }

@@ -10,16 +10,22 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 public class ServerInitializer extends ChannelInitializer<SocketChannel> {
-	@Override
-	protected void initChannel(SocketChannel ch) throws Exception {
-        ChannelHandler delimitedDecoder = new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter());
-        ChannelHandler stringDecoder = new StringDecoder();
-        ChannelHandler stringEncoder = new StringEncoder();
-        
-        ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast(delimitedDecoder);
-        pipeline.addLast(stringDecoder);
-        pipeline.addLast(stringEncoder);
-        pipeline.addLast(new ServerHandler());
-	}
+  public ServerHandler serverHandler;
+
+  public ServerInitializer(ServerHandler serverHandler) {
+    this.serverHandler = serverHandler;
+  }
+
+  @Override
+  protected void initChannel(SocketChannel ch) throws Exception {
+    ChannelHandler delimitedDecoder = new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter());
+    ChannelHandler stringDecoder = new StringDecoder();
+    ChannelHandler stringEncoder = new StringEncoder();
+
+    ChannelPipeline pipeline = ch.pipeline();
+    pipeline.addLast(delimitedDecoder);
+    pipeline.addLast(stringDecoder);
+    pipeline.addLast(stringEncoder);
+    pipeline.addLast(serverHandler);
+  }
 }
