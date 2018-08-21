@@ -27,7 +27,8 @@ public class Config {
   }
 
   public static class DeviceConfig {
-    public String name = "";
+    public String name;
+    public String locator;
   }
 
   public static Config load(String path) {
