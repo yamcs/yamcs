@@ -1,10 +1,11 @@
 daemon:
   port: 8080
-  # max_connections: 5
-
 
 devices:
-  tenma-72-2540:
+  tenma:
     locator: "serial:/dev/ttyUSB0"
+    description: "Tenma-72-2540 programmable DC power supply 30V 5A"
+    
   test:
     locator: "tcp:localhost:1338"
+    description: "TCP stub for testing"

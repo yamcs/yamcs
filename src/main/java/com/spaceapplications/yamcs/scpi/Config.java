@@ -26,11 +26,7 @@ public class Config {
 
   public static class DeviceConfig {
     public String locator;
-
-    @Override
-    public String toString() {
-      return "Device:";
-    }
+    public String description;
   }
 
   public static Config load(String path) {

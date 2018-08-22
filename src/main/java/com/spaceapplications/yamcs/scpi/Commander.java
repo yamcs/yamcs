@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Commander {
+  private static String COL_FORMAT = "%-20s %s";
   private static String PROMPT = "\r\n$ ";
 
   private String context = "";
@@ -42,15 +43,21 @@ public class Commander {
   private List<Command> commands = new ArrayList<>();
 
   public Commander(Config config) {
-    commands.add(Command.of("device list", "List available devices to manage.", args -> config.devices.toString()));
-    commands.add(Command.of("device inspect", "Print device configuration details.", args -> {
-      return Optional.ofNullable(config.devices)
-        .map(devices -> devices.get(args))
-        .map(Config::dump)
-        .orElse(MessageFormat.format("device \"{0}\" not found", args));
+    commands.add(Command.of("device list", "List available devices to manage.", args -> {
+      String header = String.format("Available devices:\n" + COL_FORMAT + "\n", "ID", "DESCRIPTION");
+      String devList = config.devices.entrySet().stream()
+          .map(set -> String.format(COL_FORMAT, set.getKey(), set.getValue().description))
+          .collect(Collectors.joining("\n"));
+      return header + devList;
     }));
+
+    commands.add(Command.of("device inspect", "Print device configuration details.", args -> {
+      return Optional.ofNullable(config.devices).map(devices -> devices.get(args)).map(Config::dump)
+          .orElse(MessageFormat.format("device \"{0}\" not found", args));
+    }));
+
     commands.add(Command.of("help", "Prints this description.", args -> {
-      return "Available commands:\n" + commands.stream().map(c -> String.format("%-20s %s", c.cmd(), c.description()))
+      return "Available commands:\n" + commands.stream().map(c -> String.format(COL_FORMAT, c.cmd(), c.description()))
           .collect(Collectors.joining("\n"));
     }));
   }
