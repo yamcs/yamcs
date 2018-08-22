@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Map;
 
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -25,12 +26,16 @@ public class Config {
 
   public static class DeviceConfig {
     public String locator;
+
+    @Override
+    public String toString() {
+      return "Device:";
+    }
   }
 
   public static Config load(String path) {
     Constructor c = new Constructor(Config.class);
     TypeDescription d = new TypeDescription(Config.class);
-    d.putMapPropertyType("devices", String.class, DeviceConfig.class);
     c.addTypeDescription(d);
     Yaml yaml = new Yaml(c);
     InputStream is = unchecked(Config::inputStream).apply(path);
@@ -43,6 +48,16 @@ public class Config {
     } catch (Exception e) {
       throw throwRuntimeException("{1}", path, e);
     }
+  }
+
+  public static String dump(Object configObject) {
+    DumperOptions opts = new DumperOptions();
+    opts.setPrettyFlow(true);
+    opts.setCanonical(false);
+    opts.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+    String dump = new Yaml(opts).dump(configObject);
+    // FIXME Could not find a better way to remove class tags from the dump, we use a regex here as a workaround.
+    return dump.replaceAll("\\!\\!.*\n","").trim(); 
   }
 
   private static RuntimeException throwRuntimeException(String msg, Object... args) {
