@@ -71,7 +71,7 @@ public class Commander {
       Command contextCmd = Command.of("", "", (na, cmd) -> {
         return deviceId + "(" + cmd + ")";
       });
-      contextCmd.setPrompt("device:" + deviceId + Command.DEFAULT_PROMPT);
+      contextCmd.setPrompt(prompt);
       context = Optional.of(contextCmd);
       return "connect to: " + deviceId;
     }));
