@@ -2,12 +2,13 @@ package com.spaceapplications.yamcs.scpi;
 
 import java.util.function.Supplier;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
@@ -20,7 +21,13 @@ public class ServerInitializer extends ChannelInitializer<SocketChannel> {
 
   @Override
   protected void initChannel(SocketChannel ch) throws Exception {
-    ChannelHandler delimitedDecoder = new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter());
+    ByteBuf[] delimiters = new ByteBuf[]{
+      Unpooled.wrappedBuffer(new byte[] { '\r', '\n' }),
+      Unpooled.wrappedBuffer(new byte[] { '\n' }),
+      Unpooled.wrappedBuffer(new byte[] { '\4' })
+    };
+
+    ChannelHandler delimitedDecoder = new DelimiterBasedFrameDecoder(8192, false, delimiters);
     ChannelHandler stringDecoder = new StringDecoder();
     ChannelHandler stringEncoder = new StringEncoder();
 

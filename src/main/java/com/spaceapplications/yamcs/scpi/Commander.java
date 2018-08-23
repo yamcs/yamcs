@@ -5,12 +5,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Commander {
   private static String COL_FORMAT = "%-20s %s";
   private Optional<Command> context = Optional.empty();
+  private List<Command> commands = new ArrayList<>();
+
+  @SuppressWarnings("serial")
+  public class ExitException extends RuntimeException {
+    ExitException(String msg) {
+      super(msg);
+    }
+  }
 
   private static class Command {
     private static final String DEFAULT_PROMPT = "$ ";
@@ -49,8 +56,6 @@ public class Commander {
     }
   }
 
-  private List<Command> commands = new ArrayList<>();
-
   public Commander(Config config) {
     commands.add(Command.of("device list", "List available devices to manage.", (command, na) -> {
       String header = String.format("Available devices:\n" + COL_FORMAT + "\n", "ID", "DESCRIPTION");
@@ -80,24 +85,40 @@ public class Commander {
       return "Available commands:\n" + commands.stream().map(c -> String.format(COL_FORMAT, c.cmd(), c.description()))
           .collect(Collectors.joining("\n"));
     }));
-
   }
 
   public String confirm() {
-    return "Connected. Run help for more info." + "\r\n$ ";
+    return "Connected. Run help for more info.\n" + Command.DEFAULT_PROMPT;
   }
 
   public String execute(String cmd) {
-    return context.map(command -> exec(command, cmd)).orElse(execMatching(cmd));
+    System.out.println("context: " + context);
+    return context.map(command -> exec(command, cmd)).orElseGet(() -> execMatching(cmd));
   }
 
   private String execMatching(String cmd) {
     return commands.stream().filter(command -> cmd.startsWith(command.cmd())).findFirst()
-        .map(command -> exec(command, cmd))
-        .orElse(cmd.isEmpty() ? Command.DEFAULT_PROMPT : cmd + ": command not found\n" + Command.DEFAULT_PROMPT);
+        .map(command -> exec(command, cmd)).orElse(handleUnknownCmd(cmd));
+  }
+  
+  private String handleUnknownCmd(String cmd) {
+    if (isCtrlD(cmd)) {
+      throw new ExitException("bye");
+    } else if (isLineEnd(cmd))
+      return Command.DEFAULT_PROMPT;
+    else
+      return cmd + ": command not found\n" + Command.DEFAULT_PROMPT;
   }
 
   private String exec(Command command, String cmd) {
-    return cmd.isEmpty() ? command.prompt() : command.execute(cmd) + "\n" + command.prompt();
+    return isLineEnd(cmd) ? command.prompt() : command.execute(cmd) + "\n" + command.prompt();
+  }
+
+  private boolean isLineEnd(String msg) {
+    return "\n".equals(msg) || "\r\n".equals(msg);
+  }
+
+  private boolean isCtrlD(String msg) {
+    return "\4".equals(msg);
   }
 }
