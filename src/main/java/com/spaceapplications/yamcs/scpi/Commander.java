@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 public class Commander {
   private static String COL_FORMAT = "%-20s %s";
-  private static String PROMPT = "\r\n$ ";
 
   private String context = "";
 
@@ -56,19 +55,27 @@ public class Commander {
           .orElse(MessageFormat.format("device \"{0}\" not found", args));
     }));
 
+    commands.add(Command.of("device connect", "Connect and interact with a given device.", args -> {
+      context = args;
+      return "connect to: " + args;
+    }));
+
     commands.add(Command.of("help", "Prints this description.", args -> {
       return "Available commands:\n" + commands.stream().map(c -> String.format(COL_FORMAT, c.cmd(), c.description()))
           .collect(Collectors.joining("\n"));
     }));
+
   }
 
   public String confirm() {
-    return "Connected. Run help for more info." + PROMPT;
+    return "Connected. Run help for more info." + "\r\n$ ";
   }
 
   public String execute(String cmd) {
     String result = commands.stream().filter(c -> cmd.startsWith(c.cmd)).findFirst().map(c -> c.execute(cmd))
-        .orElse(cmd + ": command not found");
-    return context + result + PROMPT;
+        .orElse(cmd.isEmpty() ? "" : cmd + ": command not found");
+
+    result = result.isEmpty() ? "" : result + "\n";
+    return MessageFormat.format("{0}{1}$ ", result, context);
   }
 }
