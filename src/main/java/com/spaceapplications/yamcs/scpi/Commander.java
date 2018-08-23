@@ -68,7 +68,9 @@ public class Commander {
     commands.add(Command.of("device connect", "Connect and interact with a given device.", (command, deviceId) -> {
       String prompt = "device:" + deviceId + Command.DEFAULT_PROMPT;
       command.setPrompt(prompt);
-      Command contextCmd = Command.of("", "", (na, cmd) -> cmd.isEmpty() ? "" : deviceId + "(" + cmd + ")");
+      Command contextCmd = Command.of("", "", (na, cmd) -> {
+        return deviceId + "(" + cmd + ")";
+      });
       contextCmd.setPrompt("device:" + deviceId + Command.DEFAULT_PROMPT);
       context = Optional.of(contextCmd);
       return "connect to: " + deviceId;
