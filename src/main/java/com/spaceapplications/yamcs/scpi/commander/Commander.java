@@ -21,44 +21,6 @@ public class Commander {
     }
   }
 
-  private static class Command {
-    private static final String DEFAULT_PROMPT = "$ ";
-    private String cmd;
-    private String description;
-    private BiFunction<Command, String, String> exec;
-    private String prompt = DEFAULT_PROMPT;
-
-    public static Command of(String cmd, String description, BiFunction<Command, String, String> exec) {
-      Command c = new Command();
-      c.cmd = cmd;
-      c.description = description;
-      c.exec = exec;
-      return c;
-    }
-
-    public String cmd() {
-      return cmd;
-    }
-
-    public void setPrompt(String prompt) {
-      this.prompt = prompt;
-    }
-
-    public String prompt() {
-      return prompt;
-    }
-
-    public String description() {
-      return description;
-    }
-
-    public String execute(String cmd) {
-      String args = cmd.replaceFirst(this.cmd + " ", "").replaceAll("\r", "").replaceAll("\n", "");
-      return exec.apply(this, args);
-    }
-  }
-
-  
   public Commander(Config config) {
     commands.add(Command.of("device list", "List available devices to manage.", (command, na) -> {
       String header = String.format("Available devices:\n" + COL_FORMAT + "\n", "ID", "DESCRIPTION");
