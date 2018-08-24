@@ -51,9 +51,7 @@ public class Commander {
     }
 
     public String execute(String cmd) {
-      String args = cmd.replaceFirst(this.cmd + " ", "")
-        .replaceAll("\r", "")
-        .replaceAll("\n", "");
+      String args = cmd.replaceFirst(this.cmd + " ", "").replaceAll("\r", "").replaceAll("\n", "");
       return exec.apply(this, args);
     }
   }
@@ -75,12 +73,12 @@ public class Commander {
     commands.add(Command.of("device connect", "Connect and interact with a given device.", (command, deviceId) -> {
       String prompt = "device:" + deviceId + Command.DEFAULT_PROMPT;
       command.setPrompt(prompt);
-      Command contextCmd = Command.of("", "", (na, cmd) -> {
-        System.out.println("size: " + cmd.length());
-        
+      Command contextCmd = Command.of("", "", (c, cmd) -> {
         if (isCtrlD(cmd)) {
+          c.setPrompt(Command.DEFAULT_PROMPT);
+          command.setPrompt(Command.DEFAULT_PROMPT);
           context = Optional.empty();
-          return "disconnect from " + deviceId;
+          return "\ndisconnect from " + deviceId;
         }
         return deviceId + "(" + cmd + ")";
       });
@@ -103,11 +101,6 @@ public class Commander {
     return context.map(command -> exec(command, cmd)).orElseGet(() -> execMatching(cmd));
   }
 
-  private String execMatching(String cmd) {
-    return commands.stream().filter(command -> cmd.startsWith(command.cmd())).findFirst()
-        .map(command -> exec(command, cmd)).orElse(handleUnknownCmd(cmd));
-  }
-
   private String handleUnknownCmd(String cmd) {
     if (isCtrlD(cmd)) {
       throw new ExitException("bye");
@@ -115,6 +108,11 @@ public class Commander {
       return Command.DEFAULT_PROMPT;
     else
       return cmd + ": command not found\n" + Command.DEFAULT_PROMPT;
+  }
+
+  private String execMatching(String cmd) {
+    return commands.stream().filter(command -> cmd.startsWith(command.cmd())).findFirst()
+        .map(command -> exec(command, cmd)).orElse(handleUnknownCmd(cmd));
   }
 
   private String exec(Command command, String cmd) {
