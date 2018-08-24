@@ -51,7 +51,9 @@ public class Commander {
     }
 
     public String execute(String cmd) {
-      String args = cmd.replaceFirst(this.cmd, "").trim();
+      String args = cmd.replaceFirst(this.cmd + " ", "")
+        .replaceAll("\r", "")
+        .replaceAll("\n", "");
       return exec.apply(this, args);
     }
   }
@@ -74,6 +76,12 @@ public class Commander {
       String prompt = "device:" + deviceId + Command.DEFAULT_PROMPT;
       command.setPrompt(prompt);
       Command contextCmd = Command.of("", "", (na, cmd) -> {
+        System.out.println("size: " + cmd.length());
+        
+        if (isCtrlD(cmd)) {
+          context = Optional.empty();
+          return "disconnect from " + deviceId;
+        }
         return deviceId + "(" + cmd + ")";
       });
       contextCmd.setPrompt(prompt);
@@ -92,7 +100,6 @@ public class Commander {
   }
 
   public String execute(String cmd) {
-    System.out.println("context: " + context);
     return context.map(command -> exec(command, cmd)).orElseGet(() -> execMatching(cmd));
   }
 
@@ -100,7 +107,7 @@ public class Commander {
     return commands.stream().filter(command -> cmd.startsWith(command.cmd())).findFirst()
         .map(command -> exec(command, cmd)).orElse(handleUnknownCmd(cmd));
   }
-  
+
   private String handleUnknownCmd(String cmd) {
     if (isCtrlD(cmd)) {
       throw new ExitException("bye");
