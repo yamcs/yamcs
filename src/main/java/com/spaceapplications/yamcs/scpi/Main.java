@@ -2,9 +2,17 @@ package com.spaceapplications.yamcs.scpi;
 
 import static pl.touk.throwing.ThrowingSupplier.unchecked;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import com.spaceapplications.yamcs.scpi.commander.Commander;
+import com.spaceapplications.yamcs.scpi.commander.DeviceConnect;
+import com.spaceapplications.yamcs.scpi.commander.DeviceInspect;
+import com.spaceapplications.yamcs.scpi.commander.DeviceList;
+import com.spaceapplications.yamcs.scpi.commander.Command;
+import com.spaceapplications.yamcs.scpi.commander.HelpCommand;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -31,7 +39,13 @@ public class Main {
     NioEventLoopGroup worker = new NioEventLoopGroup();
 
     ServerInitializer init = new ServerInitializer(() -> {
-      Commander commander = new Commander(config);
+      Commander commander = new Commander();
+      List<Command> commands = new ArrayList<>();
+      commands.add(new DeviceInspect("device inspect", "Print device configuration details.", commander, config));
+      commands.add(new DeviceList("device list", "List available devices to manage.", commander, config));
+      commands.add(new DeviceConnect("device connect", "Connect and interact with a given device.", commander));
+      commands.add(new HelpCommand("help", "Prints this description.", commander, commands));
+      commander.addAll(commands);
       return new ServerHandler(commander);
     });
 
