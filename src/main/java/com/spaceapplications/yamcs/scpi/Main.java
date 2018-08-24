@@ -4,6 +4,8 @@ import static pl.touk.throwing.ThrowingSupplier.unchecked;
 
 import java.util.Optional;
 
+import com.spaceapplications.yamcs.scpi.commander.Commander;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -22,13 +24,13 @@ public class Main {
 
   public Main(Args args) {
     // No null checking for args.config as it is an obligated arg.
-    Config config = Config.load(args.config); 
+    Config config = Config.load(args.config);
     int port = Optional.ofNullable(config.daemon).map(d -> d.port).orElse(DEFAULT_PORT);
 
     NioEventLoopGroup boss = new NioEventLoopGroup();
     NioEventLoopGroup worker = new NioEventLoopGroup();
 
-    ServerInitializer init = new ServerInitializer(() ->{
+    ServerInitializer init = new ServerInitializer(() -> {
       Commander commander = new Commander(config);
       return new ServerHandler(commander);
     });

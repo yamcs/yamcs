@@ -1,5 +1,7 @@
 package com.spaceapplications.yamcs.scpi;
 
+import com.spaceapplications.yamcs.scpi.commander.Commander;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 

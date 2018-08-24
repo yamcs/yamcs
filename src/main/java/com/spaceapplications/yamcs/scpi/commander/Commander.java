@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi;
+package com.spaceapplications.yamcs.scpi.commander;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+
+import com.spaceapplications.yamcs.scpi.Config;
 
 public class Commander {
   private static String COL_FORMAT = "%-20s %s";
@@ -56,6 +58,7 @@ public class Commander {
     }
   }
 
+  
   public Commander(Config config) {
     commands.add(Command.of("device list", "List available devices to manage.", (command, na) -> {
       String header = String.format("Available devices:\n" + COL_FORMAT + "\n", "ID", "DESCRIPTION");
@@ -119,11 +122,11 @@ public class Commander {
     return isLineEnd(cmd) ? command.prompt() : command.execute(cmd) + "\n" + command.prompt();
   }
 
-  private boolean isLineEnd(String msg) {
+  public static boolean isLineEnd(String msg) {
     return "\n".equals(msg) || "\r\n".equals(msg);
   }
 
-  private boolean isCtrlD(String msg) {
+  public static boolean isCtrlD(String msg) {
     return "\4".equals(msg);
   }
 }
