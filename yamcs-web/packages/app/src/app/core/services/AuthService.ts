@@ -32,16 +32,9 @@ export class AuthService {
       this.authInfo$.next(authInfo);
     });
 
-    // Restore access token from cookie on app bootstrap
-    // We don't actually need the access token to be in a cookie in the app.
-    // The refresh token gives us enough.
-    // It's only really useful to pass authentication info on the websocket
-    // client. So maybe we should refactor this stuff in the yamcsclient.
-    this.accessToken = this.getCookie('access_token');
+    // Restore refresh token from session cookie on app bootstrap
+    // Should maybe refactor this stuff in the yamcsclient.
     this.refreshToken = this.getCookie('refresh_token');
-    if (this.accessToken) {
-      yamcsService.yamcsClient.setAccessToken(this.accessToken);
-    }
 
     /*
      * Attempts to prevent 401 exceptions by checking if locally available
