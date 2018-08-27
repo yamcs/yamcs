@@ -16,16 +16,6 @@ public abstract class Command {
     public void setContextCmd(Command context);
     public void clearContextCmd();
   }
-  // private BiFunction<Command, String, String> exec;
-
-  // public static Command of(String cmd, String description, BiFunction<Command,
-  // String, String> exec) {
-  // Command c = new Command();
-  // c.cmd = cmd;
-  // c.description = description;
-  // c.exec = exec;
-  // return c;
-  // }
 
   public Command(String cmd, String description, HasContext context) {
     this.cmd = cmd;

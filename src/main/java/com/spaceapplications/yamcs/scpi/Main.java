@@ -43,7 +43,7 @@ public class Main {
       List<Command> commands = new ArrayList<>();
       commands.add(new DeviceInspect("device inspect", "Print device configuration details.", commander, config));
       commands.add(new DeviceList("device list", "List available devices to manage.", commander, config));
-      commands.add(new DeviceConnect("device connect", "Connect and interact with a given device.", commander));
+      commands.add(new DeviceConnect("device connect", "Connect and interact with a given device.", commander, ConfigDeviceParser.get(config)));
       commands.add(new HelpCommand("help", "Prints this description.", commander, commands));
       commander.addAll(commands);
       return new ServerHandler(commander);
