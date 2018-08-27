@@ -3,7 +3,7 @@ daemon:
 
 devices:
   tenma:
-    locator: "serial:/dev/ttyUSB0"
+    locator: "serial:/dev/tty.usbmodem31"
     description: "Tenma-72-2540 programmable DC power supply 30V 5A"
 
   # test:
