@@ -116,7 +116,7 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
         int limit = req.getQueryParameterAsInt("limit", 100);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
 
-        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p.getItem(), true);
+        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p.getRequestedId(), true);
 
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();

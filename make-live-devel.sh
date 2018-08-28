@@ -68,17 +68,6 @@ if [ $YSS_CONFIGURATION -eq "1" ]; then
     cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
     ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
     ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
-
-    mkdir -p $YAMCS_DATA/simulator/profiles
-    if [ $? -ne 0 ]; then
-        echo "ERROR: could not create $YAMCS_DATA/simulator/profiles - please create it and make sure this script has write permissions in it!"
-        exit 1
-    fi
-    if [ ! -w "$YAMCS_DATA/simulator/profiles" ]; then
-        echo "ERROR: please make sure this script has write permissions in the $YAMCS_DATA/simulator/profiles folder!"
-        exit 2
-    fi
-    cp -an $YAMCS_HOME/yamcs-simulation/profiles/* $YAMCS_DATA/simulator/
 fi
 
 if [ -f make-live-devel-local.sh ]; then

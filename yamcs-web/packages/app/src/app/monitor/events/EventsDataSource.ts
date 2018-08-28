@@ -1,8 +1,8 @@
-import { BehaviorSubject ,  Subscription } from 'rxjs';
+import { CollectionViewer } from '@angular/cdk/collections';
 import { DataSource } from '@angular/cdk/table';
 import { Event, GetEventsOptions } from '@yamcs/client';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { CollectionViewer } from '@angular/cdk/collections';
 
 export interface AnimatableEvent extends Event {
   animate?: boolean;
@@ -12,6 +12,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
 
   pageSize = 100;
   offscreenRecord: Event | null;
+  options: GetEventsOptions;
 
   events$ = new BehaviorSubject<Event[]>([]);
   public loading$ = new BehaviorSubject<boolean>(false);
@@ -49,6 +50,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
    * the server uses the interval bounds: [start,stop)
    */
   private loadPage(options: GetEventsOptions) {
+    this.options = options;
     return this.yamcs.getInstanceClient()!.getEvents(options).then(events => {
       if (events.length > this.pageSize) {
         events.splice(events.length - 1, 1);
@@ -84,13 +86,60 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
     this.yamcs.getInstanceClient()!.getEventUpdates().then(response => {
       this.streaming$.next(true);
       this.realtimeSubscription = response.event$.subscribe(event => {
-        if (!this.loading$.getValue()) {
+        if (!this.loading$.getValue() && this.matchesFilter(event)) {
           (event as AnimatableEvent).animate = true;
           const combinedEvents = [event].concat(this.events$.getValue());
           this.events$.next(combinedEvents);
         }
       });
     });
+  }
+
+
+  private matchesFilter(event: Event) {
+    if (this.options) {
+      if (this.options.source) {
+        if (event.source !== this.options.source) {
+          return false;
+        }
+      }
+      if (this.options.q) {
+        if (event.message.indexOf(this.options.q) === -1) {
+          return false;
+        }
+      }
+      if (this.options.severity) {
+        switch (this.options.severity) {
+          case 'SEVERE':
+          case 'ERROR':
+            if (event.severity === 'CRITICAL') {
+              return false;
+            }
+            // fall
+          case 'CRITICAL':
+            if (event.severity === 'DISTRESS') {
+              return false;
+            }
+            // fall
+          case 'DISTRESS':
+            if (event.severity === 'WARNING') {
+              return false;
+            }
+            // fall
+          case 'WARNING':
+            if (event.severity === 'WATCH') {
+              return false;
+            }
+            // fall
+          case 'WATCH':
+            if (event.severity === 'INFO') {
+              return false;
+            }
+        }
+      }
+    }
+
+    return true;
   }
 
   stopStreaming() {

@@ -68,15 +68,6 @@ public class WebSocketClient {
 
     private int maxFramePayloadLength = 65536;
 
-    // Try old websocket URL when the new one doesn't work. This is useful when using a Yamcs v4+
-    // client against an old Yamcs instance.
-    @Deprecated
-    private boolean enableLegacyURLFallback = false;
-
-    // If true, the old websocket path will be attempted
-    @Deprecated
-    boolean legacyMode = false;
-
     public int getMaxFramePayloadLength() {
         return maxFramePayloadLength;
     }
@@ -117,11 +108,6 @@ public class WebSocketClient {
      */
     public void enableReconnection(boolean enableReconnection) {
         this.enableReconnection.set(enableReconnection);
-    }
-
-    @Deprecated
-    public void enableLegacyURLFallback(boolean enableLegacyURLFallback) {
-        this.enableLegacyURLFallback = enableLegacyURLFallback;
     }
 
     public ChannelFuture connect() {
@@ -166,11 +152,6 @@ public class WebSocketClient {
             subprotocol = SUBPROTOCOL_PROTOBUF;
         }
         URI uri = yprops.webSocketURI();
-        if (legacyMode) {
-            uri = yprops.webSocketURI(true);
-            subprotocol = null;
-        }
-
         WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13,
                 subprotocol, false, header, maxFramePayloadLength);
         WebSocketClientHandler webSocketHandler = new WebSocketClientHandler(handshaker, this, callback);
@@ -261,11 +242,6 @@ public class WebSocketClient {
 
     boolean isReconnectionEnabled() {
         return enableReconnection.get();
-    }
-
-    @Deprecated
-    boolean isLegacyURLFallbackEnabled() {
-        return enableLegacyURLFallback;
     }
 
     public boolean isUseProtobuf() {

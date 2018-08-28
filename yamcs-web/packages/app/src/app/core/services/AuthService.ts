@@ -13,9 +13,9 @@ export interface Claims {
   exp: number;
 }
 
-// TODO enforce only one access token request is done at a time.
-// Because otherwise it may be that our refresh token do not updated
-// correctly (server enforces single use).
+// TODO enforce only one access token request is done at a time
+// because otherwise our refresh token may not update correctly
+// (server enforces single use).
 @Injectable({
   providedIn: 'root',
 })
@@ -32,16 +32,9 @@ export class AuthService {
       this.authInfo$.next(authInfo);
     });
 
-    // Restore access token from cookie on app bootstrap
-    // We don't actually need the access token to be in a cookie in the app.
-    // The refresh token gives us enough.
-    // It's only really useful to pass authentication info on the websocket
-    // client. So maybe we should refactor this stuff in the yamcsclient.
-    this.accessToken = this.getCookie('access_token');
+    // Restore refresh token from session cookie on app bootstrap
+    // Should maybe refactor this stuff in the yamcsclient.
     this.refreshToken = this.getCookie('refresh_token');
-    if (this.accessToken) {
-      yamcsService.yamcsClient.setAccessToken(this.accessToken);
-    }
 
     /*
      * Attempts to prevent 401 exceptions by checking if locally available
@@ -55,12 +48,14 @@ export class AuthService {
 
         let response = await next.handle(url, init);
         if (response.status === 401) {
-          // Server must have refused our token.
-          this.logout(false);
 
-          // Depending on configuration of Yamcs, it could be that we can
-          // login automatically (e.g. SPNEGO) and try a second attempt.
+          // Server must have refused our access token. Attempt to refresh.
+          this.accessToken = undefined;
+          this.yamcsService.yamcsClient.clearAccessToken();
           await this.loginAutomatically();
+          if (init) {
+            (init.headers as Headers).set('Authorization', `Bearer ${this.accessToken}`);
+          }
           response = await next.handle(url, init);
         }
 
@@ -109,6 +104,15 @@ export class AuthService {
           const user = new User(await response.json() as UserInfo);
           this.user$.next(user);
         } else if (response.status === 401) {
+          if (this.refreshToken) {
+            this.accessToken = undefined;
+            this.yamcsService.yamcsClient.clearAccessToken();
+            try {
+              return await this.loginWithRefreshToken(this.refreshToken);
+            } catch {
+              console.log('Server refused our refresh token');
+            }
+          }
           this.logout(false);
           return await this.loginAutomatically();
         } else {

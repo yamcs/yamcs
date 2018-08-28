@@ -159,7 +159,7 @@ export class UssDisplay implements Display {
     svg.addChild(style);
   }
 
-  drawElements(parent: Tag, elementNodes: Node[]) {
+  drawElements(parent: Tag, elementNodes: Element[]) {
     for (let i = 0; i < elementNodes.length; i++) {
       const node = elementNodes[i];
       if (node.attributes.getNamedItem('reference')) {
@@ -187,11 +187,11 @@ export class UssDisplay implements Display {
     }
   }
 
-  createWidget(node: Node) {
+  createWidget(node: Element) {
     return this.createWidgetByName(node, node.nodeName);
   }
 
-  private createWidgetByName(node: Node, widgetName: string): AbstractWidget | undefined {
+  private createWidgetByName(node: Element, widgetName: string): AbstractWidget | undefined {
     switch (widgetName) {
       case 'Compound':
         return new Compound(node, this);

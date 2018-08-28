@@ -26,8 +26,6 @@ function is_running {
 
 WAIT_FOR_START=120
 
-. /lib/lsb/init-functions
-
 case "$1" in
     start)
         echo -n "Starting the yamcs server...   "
@@ -38,7 +36,7 @@ case "$1" in
             pid=`cat $PID_FILE`
             if is_running $pid ; then
                 alreadyrunning=1
-                log_failure_msg -n "already running (pid=$pid)"
+                echo "already running (pid=$pid)"
             else
                 rm $PID_FILE
             fi
@@ -62,21 +60,21 @@ case "$1" in
                     if [ "$yamcsstartup" != "" ] ; then
                         stat=`echo $yamcsstartup | cut -d " " -f 2`
                         if [ $stat = "success" ] ; then
-                            log_success_msg
+                            echo done
                         else
                             echo $yamcsstartup | cut -d " " -f 3-
-                            log_failure_msg
+                            echo failure
                         fi
                         break
                     fi
                     i=$((i+1))
                 else
-                    log_failure_msg "yamcs failed to start; see $OUTERR.0 for details"
+                    echo "yamcs failed to start; see $OUTERR.0 for details"
                     exit 1
                 fi
             done
             if [ $i -eq $WAIT_FOR_START ] ; then 
-                log_failure_msg "yamcs-server didn't finish the initialization in $WAIT_FOR_START seconds"
+                echo "yamcs-server didn't finish the initialization in $WAIT_FOR_START seconds"
             fi
         fi
 
@@ -102,7 +100,7 @@ case "$1" in
                 done
 
                 if [ $i -eq 5 ] ; then 
-                    log_failure_msg timeout
+                    echo timeout
                 fi
             else
                 echo -n "not running"
@@ -120,20 +118,20 @@ case "$1" in
         # Remember status and be quiet
         ;;
     status)
-        echo -n "Checking for the yamcs server "
+        echo -n "Checking for the yamcs server: "
         if [ -s $PID_FILE ] ; then
             pid=`cat $PID_FILE`
             if is_running $pid ; then 
-                log_success_msg "running"
+                echo "running"
             else
-                log_failure_msg "not running"
+                echo "not running"
             fi
         else 
-            log_success_msg "not running"
+            echo "not running"
         fi
         ;;
     *)
-        echo "Usage: $0 {start|stop|status}"
+        echo "Usage: $0 {start|stop|restart|status}"
         exit 1
         ;;
 esac

@@ -26,7 +26,6 @@ import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
 import io.netty.util.CharsetUtil;
 
 public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
@@ -161,20 +160,11 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        if (!client.legacyMode
-                && client.isLegacyURLFallbackEnabled()
-                && client.isReconnectionEnabled() // Functionality depends on channelInactive hook
-                && cause instanceof WebSocketHandshakeException
-                && cause.getMessage().contains("404")) {
-            log.info("WebSocket handshake failed due to 404. Attempting legacy URL");
-            client.legacyMode = true;
-        } else {
-            log.error("WebSocket exception. Closing channel", cause);
-            if (!handshakeFuture.isDone()) {
-                handshakeFuture.setFailure(cause);
-            }
-            ctx.close();
-            callback.connectionFailed(cause);
+        log.error("WebSocket exception. Closing channel", cause);
+        if (!handshakeFuture.isDone()) {
+            handshakeFuture.setFailure(cause);
         }
+        ctx.close();
+        callback.connectionFailed(cause);
     }
 }

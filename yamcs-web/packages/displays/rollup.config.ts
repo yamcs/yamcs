@@ -7,7 +7,6 @@ import typescript from 'rollup-plugin-typescript2';
 export default {
   input: 'src/index.ts',
   output: [
-    { file: 'dist/displays.umd.js', name: 'displays', format: 'umd', sourcemap: true },
     { file: 'dist/displays.es5.js', format: 'es', sourcemap: true },
   ],
   watch: {

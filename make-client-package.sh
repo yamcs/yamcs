@@ -21,7 +21,6 @@ fi
 rm -rf /tmp/$dist
 mkdir -p /tmp/$dist/lib
 mkdir -p /tmp/$dist/etc
-mkdir -p /tmp/$dist/etc/orekit
 mkdir -p /tmp/$dist/bin
 
 cd /tmp/$dist
@@ -29,7 +28,6 @@ cd /tmp/$dist
 ln -s $yamcshome/$yjar lib/
 ln -s $yamcshome/yamcs-client/lib/*.jar lib/
 ln -s $yamcshome/yamcs-client/bin/* bin/
-cp $yamcshome/yamcs-core/etc/UTC-TAI.history etc/orekit
 cp $yamcshome/yamcs-client/etc/yamcs-ui.yaml.sample etc/yamcs-ui.yaml
 cp $yamcshome/yamcs-client/etc/event-viewer.yaml.sample etc/event-viewer.yaml
 

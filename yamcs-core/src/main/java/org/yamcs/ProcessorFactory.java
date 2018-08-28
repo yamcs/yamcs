@@ -48,20 +48,9 @@ public class ProcessorFactory {
     public static Processor create(String yamcsInstance, String name, String type, String creator, Object spec)
             throws ProcessorException, ConfigurationException {
         Map<String, Object> processorConfig = null;
-        YConfiguration conf;
+        YConfiguration conf = YConfiguration.getConfiguration("processor");
 
-        if (!YConfiguration.isDefined("processor")) {
-            if (YConfiguration.isDefined("yprocessor")) {
-                log.warn("yprocessor.yaml is deprecated. Please rename it to processor.yaml.");
-                conf = YConfiguration.getConfiguration("yprocessor");
-            } else {
-                throw new ConfigurationException("Cannot find processor.yaml in the class path");
-            }
-        } else {
-            conf = YConfiguration.getConfiguration("processor");
-        }
         List<ServiceWithConfig> serviceList = new ArrayList<>();
-
         try {
             if (!conf.containsKey(type)) {
                 throw new ConfigurationException("No processor type '" + type + "' found in " + conf.getFilename());

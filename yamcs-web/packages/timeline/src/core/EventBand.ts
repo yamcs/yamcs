@@ -4,7 +4,7 @@ import Point from '../Point';
 import RenderContext from '../RenderContext';
 import { ClipPath, Ellipse, G, Line, Path, Rect, Set, Text, Title } from '../tags';
 import Timeline from '../Timeline';
-import { isAfter, isBefore, toDate } from '../utils';
+import { generateId, isAfter, isBefore, toDate } from '../utils';
 import Band, { BandOptions } from './Band';
 
 /**
@@ -225,7 +225,7 @@ export default class EventBand extends Band {
           }
         }
 
-        const id = Timeline.nextId();
+        const id = generateId();
         if (this.opts.interactive) {
           this.timeline.registerActionTarget('click', id);
           this.timeline.registerActionTarget('contextmenu', id);
@@ -498,7 +498,7 @@ export default class EventBand extends Band {
         }, title));
       } else if (this.opts.wrap || titleFitsInBox) { // Render text inside box
         // A clipPath for the text, with same dimensions as background
-        const pathId = Timeline.nextId();
+        const pathId = generateId();
         eventG.addChild(new ClipPath({ id: pathId }).addChild(
           new Rect({
             x: rectX,

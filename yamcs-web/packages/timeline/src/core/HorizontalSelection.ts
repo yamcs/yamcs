@@ -1,8 +1,8 @@
 import Plugin from '../Plugin';
 import { Range } from '../Range';
 import RenderContext from '../RenderContext';
-import Timeline from '../Timeline';
 import { G, Line, Rect } from '../tags';
+import { generateId } from '../utils';
 
 /**
  * Highlights horizontal range selections
@@ -25,10 +25,10 @@ export default class HorizontalSelection extends Plugin {
     };
   }
 
-  private trackerId = Timeline.nextId();
-  private rectId = Timeline.nextId();
-  private lineLeftId = Timeline.nextId();
-  private lineRightId = Timeline.nextId();
+  private trackerId = generateId();
+  private rectId = generateId();
+  private lineLeftId = generateId();
+  private lineRightId = generateId();
 
   private ctx: RenderContext;
   private svgEl: any;
