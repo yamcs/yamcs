@@ -23,7 +23,7 @@ public class Commander implements HasContext {
   }
 
   public String confirm() {
-    return "Connected. Run help for more info.\n" + Command.DEFAULT_PROMPT;
+    return "Connected. Run help for more info. (ctrl+d to exit)\n" + Command.DEFAULT_PROMPT;
   }
 
   public String execute(String cmd) {

@@ -48,7 +48,7 @@ public class DeviceConnect extends Command {
     
     contextCmd.setPrompt(prompt);
     context.setContextCmd(contextCmd);
-    return "connect to: " + deviceId;
+    return "connected to: " + deviceId + " (ctrl+d to exit)";
   }
 
   private Optional<Device> findDevice(String deviceId) {
