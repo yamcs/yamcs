@@ -2,18 +2,23 @@ package com.spaceapplications.yamcs.scpi;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Optional;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.spaceapplications.yamcs.scpi.commander.DeviceConnect.Device;
 
 public class SerialDevice implements Device {
-  private String id;
-  private String devicePath;
+  private static final int DEFAULT_BAUD_RATE = 9600;
   private static SerialPort sp;
 
-  public SerialDevice(String id, String devicePath) {
+  private String id;
+  private String devicePath;
+  private Optional<Integer> baudrate;
+
+  public SerialDevice(String id, String devicePath, Optional<Integer> baudrate) {
     this.id = id;
     this.devicePath = devicePath;
+    this.baudrate = baudrate;
   }
 
   @Override
@@ -25,7 +30,7 @@ public class SerialDevice implements Device {
   public synchronized void open() {
     if (sp == null) {
       sp = SerialPort.getCommPort(devicePath);
-      sp.setBaudRate(9600);
+      sp.setBaudRate(baudrate.orElse(DEFAULT_BAUD_RATE));
       sp.openPort();
       sp.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 100, 0);
     }

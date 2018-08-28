@@ -27,6 +27,7 @@ public class Config {
   public static class DeviceConfig {
     public String locator;
     public String description;
+    public int baudrate;
   }
 
   public static Config load(String path) {

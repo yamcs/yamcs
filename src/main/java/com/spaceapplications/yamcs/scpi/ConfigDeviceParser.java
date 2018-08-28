@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -14,7 +15,7 @@ public class ConfigDeviceParser {
   private static Map<String, BiFunction<String, DeviceConfig, Device>> typeToDevice = new HashMap<>();
 
   static {
-    typeToDevice.put("serial", (id, config) -> new SerialDevice(id, config.locator));
+    typeToDevice.put("serial", (id, config) -> new SerialDevice(id, config.locator, Optional.ofNullable(config.baudrate)));
   }
 
   public static List<Device> get(Config config) {
