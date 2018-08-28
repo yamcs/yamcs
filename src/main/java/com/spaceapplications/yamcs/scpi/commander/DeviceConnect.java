@@ -31,14 +31,21 @@ public class DeviceConnect extends Command {
     String prompt = "device:" + deviceId + Command.DEFAULT_PROMPT;
     setPrompt(prompt);
     Command parent = this;
+
     Command contextCmd = new Command("", "", context) {
       @Override
       String handleExecute(String cmd) {
-        if (Commander.isCtrlD(cmd))
-          return disconnect(deviceId, parent, device.get());
+        if (Commander.isCtrlD(cmd)) {
+          setPrompt(Command.DEFAULT_PROMPT);
+          parent.setPrompt(Command.DEFAULT_PROMPT);
+          context.clearContextCmd();
+          device.get().close();
+          return "\ndisconnect from " + deviceId;
+        }
         return device.get().exec(cmd);
       }
     };
+    
     contextCmd.setPrompt(prompt);
     context.setContextCmd(contextCmd);
     return "connect to: " + deviceId;
@@ -46,13 +53,5 @@ public class DeviceConnect extends Command {
 
   private Optional<Device> findDevice(String deviceId) {
     return devices.stream().filter(d -> deviceId.equals(d.id())).findFirst();
-  }
-
-  private String disconnect(String deviceId, Command parent, Device device) {
-    setPrompt(Command.DEFAULT_PROMPT);
-    parent.setPrompt(Command.DEFAULT_PROMPT);
-    context.clearContextCmd();
-    device.close();
-    return "\ndisconnect from " + deviceId;
   }
 }
