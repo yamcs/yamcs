@@ -24,6 +24,8 @@ class ArchiveFillerTask implements ParameterConsumer {
     final private Logger log;
     
     long numParams = 0;
+    static int DEFAULT_MAX_SEGMENT_SIZE = 65535;
+   
     
   //segment start -> ParameterGroup_id -> PGSegment
     protected TreeMap<Long, Map<Integer, PGSegment>> pgSegments = new TreeMap<>();
@@ -34,12 +36,14 @@ class ArchiveFillerTask implements ParameterConsumer {
     protected long collectionSegmentStart;
     
     long threshold = 60000;
-
-    public ArchiveFillerTask(ParameterArchiveV2 parameterArchive) {
+    int maxSegmentSize;
+    
+    public ArchiveFillerTask(ParameterArchiveV2 parameterArchive, int maxSegmentSize) {
         this.parameterArchive = parameterArchive;
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
         log = LoggingUtils.getLogger(this.getClass(), parameterArchive.getYamcsInstance());
+        this.maxSegmentSize = maxSegmentSize;
     }
     
 
@@ -102,7 +106,7 @@ class ArchiveFillerTask implements ParameterConsumer {
             }
             PGSegment pgs = m.get(parameterGroupId);
             if(pgs==null) {
-                pgs = new PGSegment(parameterGroupId, segmentId, pvList.parameterIdArray);
+                pgs = new PGSegment(parameterGroupId, segmentId, pvList.parameterIdArray, maxSegmentSize);
                 m.put(parameterGroupId, pgs);
             }
 

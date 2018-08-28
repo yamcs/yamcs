@@ -9,9 +9,9 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.SortedIntArray;
 
 /**
- * Parameter Group segment - keeps references to Time and Value segments for a given parameter group and segment. 
- *  
- *  This class is used during the parameter archive buildup
+ * Parameter Group segment - keeps references to Time and Value segments for a given parameter group and segment.
+ * 
+ * This class is used during the parameter archive buildup
  * 
  * @author nm
  *
@@ -23,40 +23,46 @@ public class PGSegment {
     private List<ValueSegment> engValueSegments;
     private List<ValueSegment> rawValueSegments;
     private List<ParameterStatusSegment> parameterStatusSegments;
-    
+
     private List<BaseSegment> consolidatedValueSegments;
     private List<BaseSegment> consolidatedRawValueSegments;
     private List<ParameterStatusSegment> consolidatedParameterStatusSegments;
-    
+
     private final boolean storeRawValues = ParameterArchiveV2.STORE_RAW_VALUES;
     private long segmentStart;
-    
+
+   
+    private final int maxSize;
     public PGSegment(int parameterGroupId, long segmentStart, SortedIntArray parameterIds) {
+        this(parameterGroupId, segmentStart, parameterIds, ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
+    }
+    
+    public PGSegment(int parameterGroupId, long segmentStart, SortedIntArray parameterIds, int maxSize) {
         this.parameterGroupId = parameterGroupId;
         this.parameterIds = parameterIds;
         this.segmentStart = segmentStart;
+        this.maxSize = maxSize;
     }
-    
-    
+
     private void init(List<ParameterValue> sortedPvList) {
         timeSegment = new SortedTimeSegment(segmentStart);
-        
+
         engValueSegments = new ArrayList<>(parameterIds.size());
         parameterStatusSegments = new ArrayList<>(parameterIds.size());
-        if(storeRawValues) {
+        if (storeRawValues) {
             rawValueSegments = new ArrayList<>(parameterIds.size());
         }
 
-        for(int i=0; i<parameterIds.size(); i++) {
+        for (int i = 0; i < parameterIds.size(); i++) {
             ParameterValue pv = sortedPvList.get(i);
             Value v = pv.getEngValue();
-            if(v!=null) {
+            if (v != null) {
                 engValueSegments.add(getNewSegment(v.getType()));
             }
             parameterStatusSegments.add(new ParameterStatusSegment(true));
             Value rawV = pv.getRawValue();
-            if(storeRawValues) {
-                if(rawV==null) {
+            if (storeRawValues) {
+                if (rawV == null) {
                     rawValueSegments.add(null);
                 } else {
                     rawValueSegments.add(getNewSegment(rawV.getType()));
@@ -64,12 +70,10 @@ public class PGSegment {
             }
         }
     }
-   
-    
-  
+
 
     static private ValueSegment getNewSegment(Type type) {
-        switch(type) {
+        switch (type) {
         case BINARY:
             return new BinaryValueSegment(true);
         case STRING:
@@ -81,76 +85,78 @@ public class PGSegment {
         case FLOAT:
             return new FloatValueSegment();
         case SINT64:
-        case UINT64: 
-        case TIMESTAMP:  //intentional fall through
+        case UINT64:
+        case TIMESTAMP: // intentional fall through
             return new LongValueSegment(type);
         case DOUBLE:
             return new DoubleValueSegment();
         case BOOLEAN:
             return new BooleanValueSegment();
-            
-       default:
-         throw new IllegalStateException("Unknown type "+type);
+
+        default:
+            throw new IllegalStateException("Unknown type " + type);
         }
     }
 
     /**
-     * Add a new record 
-     *  instant goes into the timeSegment
-     *  the values goes each into a value segment
-     *  
-     *  the sortedPvList list has to be already sorted according to the definition of the ParameterGroup 
+     * Add a new record
+     * instant goes into the timeSegment
+     * the values goes each into a value segment
+     * 
+     * the sortedPvList list has to be already sorted according to the definition of the ParameterGroup
      * 
      * 
      * @param instant
      * @param sortedPvList
      */
-    public void addRecord(long instant, List<ParameterValue> sortedPvList) {       
-        if(sortedPvList.size() != parameterIds.size()) {
-            throw new IllegalArgumentException("Wrong number of values passed: "+sortedPvList.size()+";expected "+engValueSegments.size());
+    public void addRecord(long instant, List<ParameterValue> sortedPvList) {
+        if (sortedPvList.size() != parameterIds.size()) {
+            throw new IllegalArgumentException(
+                    "Wrong number of values passed: " + sortedPvList.size() + ";expected " + engValueSegments.size());
         }
-        
-        if(engValueSegments==null) {
+
+        if (engValueSegments == null) {
             init(sortedPvList);
         }
-        
-        
+
+        if (timeSegment.size() >= maxSize) {
+            throw new ParameterArchiveException("Segment size reached the maximum " + maxSize);
+        }
         int pos = timeSegment.add(instant);
-        for(int i = 0; i<engValueSegments.size(); i++) {
+        for (int i = 0; i < engValueSegments.size(); i++) {
             ParameterValue pv = sortedPvList.get(i);
             engValueSegments.get(i).add(pos, pv.getEngValue());
             Value rawValue = pv.getRawValue();
-            if(storeRawValues && (rawValue!=null)) {
+            if (storeRawValues && (rawValue != null)) {
                 rawValueSegments.get(i).add(pos, rawValue);
             }
             parameterStatusSegments.get(i).addParameterValue(pos, pv);
         }
     }
 
-    
     public void consolidate() {
-        consolidatedValueSegments  = new ArrayList<BaseSegment>(engValueSegments.size());
-        for(ValueSegment gvs: engValueSegments) {
+        consolidatedValueSegments = new ArrayList<BaseSegment>(engValueSegments.size());
+        for (ValueSegment gvs : engValueSegments) {
             BaseSegment bs = gvs.consolidate();
             consolidatedValueSegments.add(bs);
         }
-        if(storeRawValues && rawValueSegments.size()>0) {
-            consolidatedRawValueSegments  = new ArrayList<BaseSegment>(engValueSegments.size());
-            
-            //the raw values will only be stored if they are different than the engineering values
-            for(int i=0; i<engValueSegments.size(); i++) {
+        if (storeRawValues && rawValueSegments.size() > 0) {
+            consolidatedRawValueSegments = new ArrayList<BaseSegment>(engValueSegments.size());
+
+            // the raw values will only be stored if they are different than the engineering values
+            for (int i = 0; i < engValueSegments.size(); i++) {
                 ValueSegment rvs = rawValueSegments.get(i);
                 ValueSegment vs = engValueSegments.get(i);
-                if((rvs==null) || rvs.equals(vs)) {
+                if ((rvs == null) || rvs.equals(vs)) {
                     consolidatedRawValueSegments.add(null);
                 } else {
                     consolidatedRawValueSegments.add(rvs.consolidate());
                 }
             }
         }
-        
-        consolidatedParameterStatusSegments =  new ArrayList<>(parameterStatusSegments.size());
-        for(int i=0;i<engValueSegments.size(); i++) {
+
+        consolidatedParameterStatusSegments = new ArrayList<>(parameterStatusSegments.size());
+        for (int i = 0; i < engValueSegments.size(); i++) {
             consolidatedParameterStatusSegments.add(parameterStatusSegments.get(i).consolidate());
         }
     }
@@ -160,13 +166,13 @@ public class PGSegment {
     }
 
     public SortedTimeSegment getTimeSegment() {
-       return timeSegment;
+        return timeSegment;
     }
 
     public int getParameterGroupId() {
         return parameterGroupId;
     }
-    
+
     public int getParameterId(int index) {
         return parameterIds.get(index);
     }
