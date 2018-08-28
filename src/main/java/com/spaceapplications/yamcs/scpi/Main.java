@@ -12,6 +12,7 @@ import com.spaceapplications.yamcs.scpi.commander.DeviceConnect;
 import com.spaceapplications.yamcs.scpi.commander.DeviceInspect;
 import com.spaceapplications.yamcs.scpi.commander.DeviceList;
 import com.spaceapplications.yamcs.scpi.commander.HelpCommand;
+import com.spaceapplications.yamcs.scpi.device.ConfigDeviceParser;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;

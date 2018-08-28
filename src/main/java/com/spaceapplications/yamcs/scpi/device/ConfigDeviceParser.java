@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi;
+package com.spaceapplications.yamcs.scpi.device;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -8,8 +8,8 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import com.spaceapplications.yamcs.scpi.Config;
 import com.spaceapplications.yamcs.scpi.Config.DeviceConfig;
-import com.spaceapplications.yamcs.scpi.device.Device;
 
 public class ConfigDeviceParser {
   private static Map<String, BiFunction<String, DeviceConfig, Device>> typeToDevice = new HashMap<>();
