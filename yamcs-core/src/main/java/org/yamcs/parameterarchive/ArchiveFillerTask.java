@@ -12,7 +12,6 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.Processor;
-import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.LoggingUtils;
@@ -67,7 +66,7 @@ class ArchiveFillerTask implements ParameterConsumer {
      * @return
      */
     void processParameters(List<ParameterValue> items) {
-        Map<Long, SortedParameterList> m = new HashMap<>();
+        Map<Long, BasicParameterList> m = new HashMap<>();
         for (ParameterValue pv : items) {
             long t = pv.getGenerationTime();
             if (t < collectionSegmentStart) {
@@ -82,22 +81,14 @@ class ArchiveFillerTask implements ParameterConsumer {
             if(engValue == null) {
                 log.warn("Ignoring parameter without engineering value: {} ", pv.getParameterQualifiedNamed());
             }
-            if (engValue instanceof AggregateValue) {
-                // log.warn("{}: aggregate values not supported, ignoring", pv.getParameterQualifiedNamed());
-                continue;
-            }
-            SortedParameterList l = m.get(t);
-            if (l == null) {
-                l = new SortedParameterList(parameterIdMap);
-                m.put(t, l);
-            }
+            BasicParameterList l = m.computeIfAbsent(t, x ->new BasicParameterList(parameterIdMap));
             l.add(pv);
         }
         boolean needsFlush = false;
         long maxTimestamp = collectionSegmentStart;
-        for (Map.Entry<Long, SortedParameterList> entry : m.entrySet()) {
+        for (Map.Entry<Long, BasicParameterList> entry : m.entrySet()) {
             long t = entry.getKey();
-            SortedParameterList pvList = entry.getValue();
+            BasicParameterList pvList = entry.getValue();
             if (processParameters(t, pvList)) {
                 needsFlush = true;
             }
@@ -111,18 +102,19 @@ class ArchiveFillerTask implements ParameterConsumer {
         }
     }
 
-    private boolean processParameters(long t, SortedParameterList pvList) {
+    private boolean processParameters(long t, BasicParameterList pvList) {
+        pvList.sort();
         numParams += pvList.size();
         try {
-            int parameterGroupId = parameterGroupIdMap.createAndGet(pvList.parameterIdArray);
+            int parameterGroupId = parameterGroupIdMap.createAndGet(pvList.getPids());
 
             PGSegment pgs = pgSegments.get(parameterGroupId);
             if (pgs == null) {
-                pgs = new PGSegment(parameterGroupId, collectionSegmentStart, pvList.parameterIdArray);
+                pgs = new PGSegment(parameterGroupId, collectionSegmentStart, pvList.getPids());
                 pgSegments.put(parameterGroupId, pgs);
             }
 
-            pgs.addRecord(t, pvList.sortedPvList);
+            pgs.addRecord(t, pvList.getValues());
             return pgs.size() > maxSegmentSize;
 
         } catch (RocksDBException e) {

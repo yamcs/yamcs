@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
@@ -20,7 +20,7 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
     public ParameterStatusSegment(boolean buildForSerialisation) {
         super(serializer, buildForSerialisation);
     }
-    static public final ParameterStatus getStatus(ParameterValue pv, ParameterStatus prevStatus) {
+    static public final ParameterStatus getStatus(BasicParameterValue pv, ParameterStatus prevStatus) {
         AcquisitionStatus acq = pv.getAcquisitionStatus();
         MonitoringResult mr = pv.getMonitoringResult();
 
@@ -39,7 +39,7 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
 
     
 
-    public void addParameterValue(int pos, ParameterValue pv) {
+    public void addParameterValue(int pos, BasicParameterValue pv) {
         ParameterStatus prevStatus = null;
         if (pos > 0) {
             prevStatus = get(pos - 1);
@@ -48,7 +48,7 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
         add(pos, getStatus(pv, prevStatus));
     }
 
-    public void addParameterValue(ParameterValue pv) {
+    public void addParameterValue(BasicParameterValue pv) {
         ParameterStatus prevStatus = null;
         if (size > 0) {
             prevStatus = get(size - 1);

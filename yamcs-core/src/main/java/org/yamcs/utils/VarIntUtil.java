@@ -2,6 +2,7 @@ package org.yamcs.utils;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class VarIntUtil {
     /**
@@ -76,9 +77,6 @@ public class VarIntUtil {
 
     /**
      * decodes an array of varints
-     * 
-     * @author nm
-     *
      */
     public static class ArrayDecoder {
         int pos=0; 
@@ -213,15 +211,64 @@ public class VarIntUtil {
     }
     /**
      * get the number of bytes necessary to encode value
-     * @param size
+     * @param value
      * @return
      */
-    public static int getEncodedSize(int size) {
-        if(size<128) return 1;
-        if(size<16384) return 2;
-        if(size<2097152) return 3;
-        if(size<268435456) return 4;
+    public static int getEncodedSize(int value) {
+        if(value<128) return 1;
+        if(value<16384) return 2;
+        if(value<2097152) return 3;
+        if(value<268435456) return 4;
         return 5;
+    }
+    /**
+     * Encode an int array as a sequence of varints representing the deltas between the subsequent elements of the input array.
+     * 
+     * It is best if the array is sorted in ascending order (because encoding negative numbers in varint is not efficient).
+     * 
+     * @param s
+     * @return
+     */
+    public static byte[] encodeDeltaIntArray(IntArray s) {
+        int[] a = s.array();
+        int length = s.size();
+        byte[] buf = new byte[length * 5];
+
+        if (length == 0) {
+            return buf;
+        }
+
+        int pos = VarIntUtil.writeVarint32(buf, 0, a[0]);
+
+        for (int i = 1; i < length; i++) {
+            pos = VarIntUtil.writeVarint32(buf, pos, (a[i] - a[i - 1]));
+        }
+        if (pos == buf.length) {
+            return buf;
+        } else {
+            return Arrays.copyOf(buf, pos);
+        }
+    }
+
+    /**
+     * The reverse of the {@link #encodeDeltaIntArray(IntArray)} method.
+     * 
+     * @param buf
+     * @return
+     */
+    public static IntArray decodeDeltaIntArray(byte[] buf) {
+        if (buf.length == 0) {
+            return new IntArray(0);
+        }
+        IntArray sia = new IntArray();
+
+        ArrayDecoder ad = newArrayDecoder(buf);
+        int s = 0;
+        while (ad.hasNext()) {
+            s += ad.next();
+            sia.add(s);
+        }
+        return sia;
     }
 
     

@@ -80,5 +80,27 @@ public class VarIntUtilTest {
         
     }
     
+    @Test
+    public void testEncodeDecodeIntArray() {
+        IntArray s1 = IntArray.wrap(1,5,20);
+        byte[] encoded = VarIntUtil.encodeDeltaIntArray(s1);
+        IntArray s2 = VarIntUtil.decodeDeltaIntArray(encoded);
+        assertTrue(s1.equals(s2));
+    }
+    
+    @Test
+    public void testEncodeDecodeNegative() {
+        IntArray s1 = IntArray.wrap(-1, 5, 20);
+        byte[] encoded = VarIntUtil.encodeDeltaIntArray(s1);
+        IntArray s2 = VarIntUtil.decodeDeltaIntArray(encoded);
+        assertTrue(s1.equals(s2));
+    }
+    @Test
+    public void testEncodeDecodeZeroLength() {
+        IntArray s1 = new IntArray();
+        byte[] encoded = VarIntUtil.encodeDeltaIntArray(s1);
+        IntArray s2 = VarIntUtil.decodeDeltaIntArray(encoded);
+        assertTrue(s1.equals(s2));
+    }
     
 }

@@ -1,6 +1,9 @@
 package org.yamcs.utils;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * int array
@@ -97,6 +100,10 @@ public class IntArray {
         a = Arrays.copyOf(a, newCapacity);
     }
 
+    public IntStream stream() {
+        return Arrays.stream(a, 0, length);
+    }
+    
     public boolean isEmpty() {
         return a.length == 0;
     }
@@ -138,7 +145,89 @@ public class IntArray {
         return -1;
     }
 
-   
+    /**
+     * get the backing array
+     * 
+     * @return the backing array
+     */
+    public int[] array() {
+        return a;
+    }
+
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        int n = length - 1;
+        if (n == -1) {
+            return "[]";
+        }
+        b.append('[');
+        for (int i = 0;; i++) {
+            b.append(a[i]);
+            if (i == n)
+                return b.append(']').toString();
+            b.append(", ");
+        }
+    }
+
+    /**
+     * Assuming that the array is sorted, performs a binary search and returns the position of the found element.
+     * 
+     * See {@link Arrays#binarySearch(int[], int)} for details.
+     * 
+     * If the array is not sorted, the behaviour is undefined.
+     * @param pid
+     * @return
+     */
+    public int binarySearch(int x) {
+        return Arrays.binarySearch(a, 0, length, x);
+    }
+
+    /**
+     * Sort the array concurrently swapping the elements in the list such that the
+     * correspondence is kept.
+     * 
+     * The list has to contain the same number of elements as the array
+     * 
+     * @param list
+     */
+    public void sort(List<?> list) {
+        if (list.size() != length) {
+            throw new IllegalArgumentException("The list has not the same number of elements as the array");
+        }
+        quickSort(0, length-1, list);
+    }
+    
+    private void quickSort(int lo, int hi, List<?> list) {
+        if (lo < hi) {
+            int partitionIndex = partition(lo, hi, list);
+     
+            quickSort(lo, partitionIndex-1, list);
+            quickSort(partitionIndex+1, hi, list);
+        }
+    }
+    
+    private int partition(int lo, int hi, List<?> list) {
+        int pivot = a[hi];
+        int i = lo-1;
+     
+        for (int j = lo; j < hi; j++) {
+            if (a[j] <= pivot) {
+                i++;
+                swap(i, j, list);
+            }
+        }
+     
+        swap(i+1, hi, list);
+     
+        return i+1;
+    }
+    
+    private void swap(int i, int j, List<?> list) {
+        int tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+        Collections.swap(list, i, j);
+    }
 
     @Override
     public int hashCode() {
@@ -177,26 +266,4 @@ public class IntArray {
         return true;
     }
 
-    /**
-     * get the backing array
-     * 
-     * @return the backing array
-     */
-    public int[] array() {
-        return a;
-    }
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        int n = length - 1;
-        if(n==-1) {
-            return "[]";
-        }
-        b.append('[');
-        for (int i = 0;; i++) {
-            b.append(a[i]);
-            if (i == n)
-                return b.append(']').toString();
-            b.append(", ");
-        }
-    }
 }

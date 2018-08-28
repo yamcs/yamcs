@@ -204,7 +204,7 @@ public class MultiParameterDataRetrieval {
         @Override
         public void accept(TimedValue tv) {
             long k = k(currentParameterGroupId, tv.instant);
-            ParameterIdValueList vlist = values.computeIfAbsent(k, k1 -> new ParameterIdValueList(tv.instant, currentParameterGroupId));
+            ParameterIdValueList vlist = values.computeIfAbsent(k, k1 -> new ParameterIdValueList(tv.instant));
             
             ParameterValue pv = new ParameterValue(currentParameterName);
             pv.setGenerationTime(tv.instant);

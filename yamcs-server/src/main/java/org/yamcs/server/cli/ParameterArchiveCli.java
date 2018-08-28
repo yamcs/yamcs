@@ -7,6 +7,7 @@ import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
+import org.yamcs.utils.IntArray;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 
@@ -72,8 +73,8 @@ public class ParameterArchiveCli extends Command {
                 int[] groups = pgid.getAllGroups(p.pid);
                 for (int g : groups) {
                     console.print(g + ": ");
-                    SortedIntArray sia = pgid.getParameterGroup(g);
-                    for (int a : sia.getArray()) {
+                    IntArray sia = pgid.getParameterGroup(g);
+                    for (int a : sia.array()) {
                         console.print(pid.getParameterFqnById(a) + " ");
                     }
                     console.println("");

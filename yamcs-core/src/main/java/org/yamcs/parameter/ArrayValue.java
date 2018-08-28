@@ -121,6 +121,20 @@ public class ArrayValue extends Value {
         }
         return n;
     }
+    
+    /**
+     * unflatten the flatIndex into the idx array
+     */
+    public void unFlattenIndex(int flatIndex, int[] idx) {
+        if(idx.length!=dim.length) {
+            throw new IllegalArgumentException("idx length is not the expected one");
+        }
+        if (dim.length == 1) {
+            idx[0] = flatIndex;
+            return;
+        }
+        
+    }
 
     /**
      * Set the value of an element using the flat index

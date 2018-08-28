@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
-import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.LoggingUtils;
@@ -156,7 +155,7 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
      * @throws IOException
      */
     protected long processParameters(List<ParameterValue> items) throws IOException, RocksDBException {
-        Map<Long, SortedParameterList> m = new HashMap<>();
+        Map<Long, BasicParameterList> m = new HashMap<>();
         for (ParameterValue pv : items) {
             long t = pv.getGenerationTime();
             if (t < first.intervalStart) {
@@ -166,17 +165,13 @@ public class RealtimeArchiveFiller extends AbstractExecutionThreadService implem
                 log.warn("No qualified name for parameter value {}, ignoring", pv);
                 continue;
             }
-            if (pv.getEngValue() instanceof AggregateValue) {
-                // log.warn("{}: aggregate values not supported, ignoring", pv.getParameterQualifiedNamed());
-                continue;
-            }
-            SortedParameterList l = m.computeIfAbsent(t, k -> new SortedParameterList(parameterIdMap));
+            BasicParameterList l = m.computeIfAbsent(t, k -> new BasicParameterList(parameterIdMap));
             l.add(pv);
         }
         long maxTimestamp = -1;
-        for (Map.Entry<Long, SortedParameterList> entry : m.entrySet()) {
+        for (Map.Entry<Long, BasicParameterList> entry : m.entrySet()) {
             long t = entry.getKey();
-            SortedParameterList pvList = entry.getValue();
+            BasicParameterList pvList = entry.getValue();
             long is = ParameterArchive.getIntervalStart(t);
             if(is == first.intervalStart) {
                 first.addParameters(t, pvList);    

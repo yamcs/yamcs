@@ -3,10 +3,10 @@ package org.yamcs.parameterarchive;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.utils.SortedIntArray;
+import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -19,7 +19,7 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class PGSegment {
     final int parameterGroupId;
-    final SortedIntArray parameterIds;
+    final IntArray parameterIds; //sorted array of parameter ids
     private SortedTimeSegment timeSegment;
     private List<ValueSegment> engValueSegments;
     private List<ValueSegment> rawValueSegments;
@@ -33,14 +33,14 @@ public class PGSegment {
     private long segmentStart;
 
     
-    public PGSegment(int parameterGroupId, long segmentStart, SortedIntArray parameterIds) {
+    public PGSegment(int parameterGroupId, long segmentStart, IntArray parameterIds) {
         this.parameterGroupId = parameterGroupId;
         this.parameterIds = parameterIds;
         this.segmentStart = segmentStart;
         timeSegment = new SortedTimeSegment(segmentStart);
     }
 
-    private void init(List<ParameterValue> sortedPvList) {
+    private void init(List<BasicParameterValue> sortedPvList) {
         engValueSegments = new ArrayList<>(parameterIds.size());
         parameterStatusSegments = new ArrayList<>(parameterIds.size());
         if (storeRawValues) {
@@ -48,7 +48,7 @@ public class PGSegment {
         }
 
         for (int i = 0; i < parameterIds.size(); i++) {
-            ParameterValue pv = sortedPvList.get(i);
+            BasicParameterValue pv = sortedPvList.get(i);
             Value v = pv.getEngValue();
             if (v != null) {
                 engValueSegments.add(getNewSegment(v.getType()));
@@ -103,7 +103,7 @@ public class PGSegment {
      * @param instant
      * @param sortedPvList
      */
-    public void addRecord(long instant, List<ParameterValue> sortedPvList) {
+    public void addRecord(long instant, List<BasicParameterValue> sortedPvList) {
         
         if (sortedPvList.size() != parameterIds.size()) {
             throw new IllegalArgumentException(
@@ -116,7 +116,7 @@ public class PGSegment {
         
         int pos = timeSegment.add(instant);
         for (int i = 0; i < engValueSegments.size(); i++) {
-            ParameterValue pv = sortedPvList.get(i);
+            BasicParameterValue pv = sortedPvList.get(i);
             engValueSegments.get(i).add(pos, pv.getEngValue());
             Value rawValue = pv.getRawValue();
             if (storeRawValues && (rawValue != null)) {

@@ -33,7 +33,7 @@ import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.FileUtils;
-import org.yamcs.utils.SortedIntArray;
+import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
@@ -132,8 +132,8 @@ public class ParameterArchiveTest {
         int p1id = pidMap.createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
                 pv1_0.getRawValue().getType());
 
-        int pg1id = pgidMap.createAndGet(new int[] { p1id });
-        PGSegment pgSegment1 = new PGSegment(pg1id, 0, new SortedIntArray(new int[] { p1id }));
+        int pg1id = pgidMap.createAndGet(IntArray.wrap(p1id));
+        PGSegment pgSegment1 = new PGSegment(pg1id, 0, IntArray.wrap(p1id));
 
         pgSegment1.addRecord(100, Arrays.asList(pv1_0));
         ParameterValue pv1_1 = getParameterValue(p1, 200, "blala200", 200);
@@ -176,7 +176,7 @@ public class ParameterArchiveTest {
         // new value in a different interval but same partition
         long t2 = ParameterArchive.getIntervalEnd(0) + 100;
         PGSegment pgSegment2 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t2),
-                new SortedIntArray(new int[] { p1id }));
+                IntArray.wrap(p1id));
         ParameterValue pv1_2 = getParameterValue(p1, t2, "pv1_2", 30);
         pv1_2.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
 
@@ -186,7 +186,7 @@ public class ParameterArchiveTest {
         // new value in a different partition
         long t3 = TimeEncoding.parse("2017-01-01T00:00:51");
         PGSegment pgSegment3 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t3),
-                new SortedIntArray(new int[] { p1id }));
+                IntArray.wrap(p1id));
         ParameterValue pv1_3 = getParameterValue(p1, t3, "pv1_3", 45);
         pgSegment3.addRecord(t3, Arrays.asList(pv1_3));
         parchive.writeToArchive(pgSegment3);
@@ -233,8 +233,8 @@ public class ParameterArchiveTest {
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
                 pv1_0.getRawValue().getType());
 
-        int pg1id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id });
-        PGSegment pgSegment1 = new PGSegment(pg1id, 0, new SortedIntArray(new int[] { p1id }));
+        int pg1id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id));
+        PGSegment pgSegment1 = new PGSegment(pg1id, 0, IntArray.wrap(p1id));
 
         pgSegment1.addRecord(100, Arrays.asList(pv1_0));
         ParameterValue pv1_1 = getParameterValue(p1, 200, "blala200", "blala200");
@@ -320,8 +320,8 @@ public class ParameterArchiveTest {
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType());
         int p2id = parchive.getParameterIdDb().createAndGet(p2.getQualifiedName(), pv2_0.getEngValue().getType());
 
-        int pg1id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id, p2id });
-        int pg2id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id });
+        int pg1id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id, p2id ));
+        int pg2id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id));
 
         // ascending on empty db
         List<ParameterValueArray> l0a = retrieveSingleValueMultigroup(0, TimeEncoding.MAX_INSTANT, p1id,
@@ -332,10 +332,10 @@ public class ParameterArchiveTest {
                 new int[] { pg1id, pg2id }, false);
         assertEquals(0, l0d.size());
 
-        PGSegment pgSegment1 = new PGSegment(pg1id, 0, new SortedIntArray(new int[] { p1id, p2id }));
+        PGSegment pgSegment1 = new PGSegment(pg1id, 0, IntArray.wrap(p1id, p2id));
         pgSegment1.addRecord(100, Arrays.asList(pv1_0, pv2_0));
 
-        PGSegment pgSegment2 = new PGSegment(pg2id, 0, new SortedIntArray(new int[] { p1id }));
+        PGSegment pgSegment2 = new PGSegment(pg2id, 0, IntArray.wrap(p1id));
         pgSegment2.addRecord(200, Arrays.asList(pv1_1));
         pgSegment2.addRecord(300, Arrays.asList(pv1_2));
 
@@ -356,7 +356,7 @@ public class ParameterArchiveTest {
         // new value in a different interval but same partition
         long t2 = ParameterArchive.getIntervalEnd(0) + 100;
         PGSegment pgSegment3 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t2),
-                new SortedIntArray(new int[] { p1id, p2id }));
+                IntArray.wrap(p1id, p2id));
         ParameterValue pv1_3 = getParameterValue(p1, t2, "pv1_3");
         ParameterValue pv2_1 = getParameterValue(p1, t2, "pv2_1");
         pgSegment3.addRecord(t2, Arrays.asList(pv1_3, pv2_1));
@@ -365,7 +365,7 @@ public class ParameterArchiveTest {
         // new value in a different partition
         long t3 = TimeEncoding.parse("2017-01-01T00:00:00");
         PGSegment pgSegment4 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t3),
-                new SortedIntArray(new int[] { p1id, p2id }));
+                IntArray.wrap(p1id, p2id));
         ParameterValue pv1_4 = getParameterValue(p1, t3, "pv1_4");
         ParameterValue pv2_2 = getParameterValue(p1, t3, "pv2_2");
         pgSegment4.addRecord(t3, Arrays.asList(pv1_4, pv2_2));
@@ -454,8 +454,8 @@ public class ParameterArchiveTest {
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType());
         int p2id = parchive.getParameterIdDb().createAndGet(p2.getQualifiedName(), pv2_0.getEngValue().getType());
 
-        int pg1id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id, p2id });
-        int pg2id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id });
+        int pg1id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id, p2id));
+        int pg2id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id));
 
         // ascending on empty db
         List<ParameterIdValueList> l0a = retrieveMultipleParameters(0, TimeEncoding.MAX_INSTANT,
@@ -467,10 +467,10 @@ public class ParameterArchiveTest {
                 new int[] { p1id, p2id }, new int[] { pg1id, pg1id }, false);
         assertEquals(0, l0d.size());
 
-        PGSegment pgSegment1 = new PGSegment(pg1id, 0, new SortedIntArray(new int[] { p1id, p2id }));
+        PGSegment pgSegment1 = new PGSegment(pg1id, 0, IntArray.wrap(p1id, p2id));
         pgSegment1.addRecord(100, Arrays.asList(pv1_0, pv2_0));
 
-        PGSegment pgSegment2 = new PGSegment(pg2id, 0, new SortedIntArray(new int[] { p1id }));
+        PGSegment pgSegment2 = new PGSegment(pg2id, 0, IntArray.wrap(p1id));
         pgSegment2.addRecord(200, Arrays.asList(pv1_1));
         pgSegment2.addRecord(300, Arrays.asList(pv1_2));
 
@@ -517,7 +517,7 @@ public class ParameterArchiveTest {
         // new value in a different interval but same partition
         long t2 = ParameterArchive.getIntervalEnd(0) + 100;
         PGSegment pgSegment3 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t2),
-                new SortedIntArray(new int[] { p1id, p2id }));
+                IntArray.wrap(p1id, p2id));
         ParameterValue pv1_3 = getParameterValue(p1, t2, "pv1_3");
         ParameterValue pv2_1 = getParameterValue(p1, t2, "pv2_1");
         pgSegment3.addRecord(t2, Arrays.asList(pv1_3, pv2_1));
@@ -526,7 +526,7 @@ public class ParameterArchiveTest {
         // new value in a different partition
         long t3 = TimeEncoding.parse("2017-01-01T00:00:00");
         PGSegment pgSegment4 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t3),
-                new SortedIntArray(new int[] { p1id, p2id }));
+                IntArray.wrap(p1id, p2id));
         ParameterValue pv1_4 = getParameterValue(p1, t3, "pv1_4");
         ParameterValue pv2_2 = getParameterValue(p1, t3, "pv2_2");
         pgSegment4.addRecord(t3, Arrays.asList(pv1_4, pv2_2));
@@ -588,9 +588,9 @@ public class ParameterArchiveTest {
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
                 pv1_0.getRawValue().getType());
 
-        int pg1id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id });
+        int pg1id = parchive.getParameterGroupIdDb().createAndGet(IntArray.wrap(p1id));
         PGSegment pgSegment1 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t),
-                new SortedIntArray(new int[] { p1id }));
+                IntArray.wrap(p1id));
 
         pgSegment1.addRecord(t, Arrays.asList(pv1_0));
 

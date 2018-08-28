@@ -15,15 +15,13 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class ParameterIdValueList {
     final long instant;
-    final int parameterGroupId;
     
     IntArray pids = new IntArray();
     
     List<ParameterValue> values = new ArrayList<>();
     
-    public ParameterIdValueList(long instant, int parameterGroupId) {
+    public ParameterIdValueList(long instant) {
         this.instant = instant;
-        this.parameterGroupId = parameterGroupId;
     }
     
     public void add(int parameterId, ParameterValue v) {
@@ -36,6 +34,21 @@ public class ParameterIdValueList {
         return values;
     }
     
+  
+
+    public long size() {
+        return pids.size();
+    }
+
+    public void sortByPid() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public IntArray getPids() {
+        return pids;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(TimeEncoding.toCombinedFormat(instant)+" [");

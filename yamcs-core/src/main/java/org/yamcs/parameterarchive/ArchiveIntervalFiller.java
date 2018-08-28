@@ -36,35 +36,33 @@ public class ArchiveIntervalFiller {
         this.intervalStart = intervalStart;
     }
 
-    void addParameters(long t, SortedParameterList pvList) throws IOException, RocksDBException {
+    void addParameters(long t, BasicParameterList pvList) throws IOException, RocksDBException {
         if (intervalStart != ParameterArchive.getIntervalStart(t)) {
             throw new IllegalArgumentException("Data does not fit into this interval");
         }
+        pvList.sort();
 
         numParams += pvList.size();
-        int parameterGroupId = parameterGroupIdMap.createAndGet(pvList.parameterIdArray);
+        int parameterGroupId = parameterGroupIdMap.createAndGet(pvList.getPids());
 
         PGSegment pgs = pgSegments.computeIfAbsent(parameterGroupId,
-                k -> new PGSegment(parameterGroupId, intervalStart, pvList.parameterIdArray));
+                k -> new PGSegment(parameterGroupId, intervalStart, pvList.getPids()));
 
         if (t < pgs.getSegmentStart()) {
-            String name =  pvList.sortedPvList.get(0).getParameterQualifiedNamed() 
-                    + ((pvList.sortedPvList.size()>1)?" and "+(pvList.sortedPvList.size()-1)+" others"
-                            :"");
-            log.warn("Ignoring parameter data ({}) because the time {} is too old for this segment starting at {}"
+            log.warn("Ignoring parameter data ({} parameters) because the time {} is too old for this segment starting at {}"
                     + "(this may happen in case of badly ordered high frequency data)",
-                    name,
+                    pvList.size(),
                     TimeEncoding.toString(t), TimeEncoding.toString(pgs.getSegmentStart()));
             return;
         }
 
-        pgs.addRecord(t, pvList.sortedPvList);
+        pgs.addRecord(t, pvList.getValues());
         if (pgs.size() >= maxSegmentSize) {
             pgs.trimSegmentStart();
             log.debug("Segment {} reached max size {}, writing to disk", pgs, maxSegmentSize);
             parchive.writeToArchive(pgs);
             pgSegments.put(parameterGroupId,
-                    new PGSegment(parameterGroupId, pgs.getSegmentEnd() + 1, pvList.parameterIdArray));
+                    new PGSegment(parameterGroupId, pgs.getSegmentEnd() + 1, pvList.getPids()));
         }
     }
 

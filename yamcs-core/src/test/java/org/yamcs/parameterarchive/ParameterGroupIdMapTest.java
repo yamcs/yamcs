@@ -21,16 +21,16 @@ public class ParameterGroupIdMapTest {
         tablespace.loadDb(false);
         
         ParameterGroupIdDb pgidMap = new ParameterGroupIdDb("test1", tablespace);
-        int[] p1 = new int[] {1,3,4};
-        int[] p2 = new int[] {1,3,4};
-        int[] p3 = new int[] {1,4,5};
+        IntArray p1 = IntArray.wrap(1,3,4);
+        IntArray p2 = IntArray.wrap(1,3,4);
+        IntArray p3 = IntArray.wrap(1,4,5);
         
         int pg1 = pgidMap.createAndGet(p1);
         int pg3 = pgidMap.createAndGet(p3);
         int pg2 = pgidMap.createAndGet(p2);
 
         int[] ia = pgidMap.getAllGroups(1);
-        assertArrayEquals(ia, new int[] {pg1, pg3});
+        assertArrayEquals(new int[] {pg1, pg3}, ia);
         
         assertEquals(pg1, pg2);
         assertTrue(pg3 > pg1);
@@ -43,7 +43,7 @@ public class ParameterGroupIdMapTest {
         int pg4 = pgidMap.createAndGet(p1);
         assertEquals(pg1, pg4);
         
-        int[] p4 = new int[] {1,4,7};
+        IntArray p4 = IntArray.wrap(1,4,7);
         
         int pg6 = pgidMap.createAndGet(p4);
         

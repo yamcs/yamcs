@@ -66,32 +66,6 @@ public class SortedIntArrayTest {
         assertFalse(s1.hashCode() == s3.hashCode());
     }
     
-    @Test
-    public void testEncodeDecode() {
-        SortedIntArray s1 = new SortedIntArray(1,5,20);
-        byte[] encoded = s1.encodeToVarIntArray();
-        SortedIntArray s2 = SortedIntArray.decodeFromVarIntArray(encoded);
-        assertTrue(s1.equals(s2));
-    }
-    
-    @Test
-    public void testEncodeDecodeNegative() {
-        SortedIntArray s1 = new SortedIntArray(-1, 5, 20);
-        byte[] encoded = s1.encodeToVarIntArray();
-        SortedIntArray s2 = SortedIntArray.decodeFromVarIntArray(encoded);
-        System.out.println("s2 encoded: "+s2);
-        
-        assertTrue(s1.equals(s2));
-    }
-    @Test
-    public void testEncodeDecodeZeroLength() {
-        SortedIntArray s1 = new SortedIntArray();
-        byte[] encoded = s1.encodeToVarIntArray();
-        SortedIntArray s2 = SortedIntArray.decodeFromVarIntArray(encoded);
-        assertTrue(s1.equals(s2));
-        
-        assertTrue(s2.equals(s1));
-    }
     
     private void assertItEquals(PrimitiveIterator.OfInt it, int ...a) {
         for(int i=0; i<a.length;i++) {

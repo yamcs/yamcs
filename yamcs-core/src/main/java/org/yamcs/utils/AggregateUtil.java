@@ -25,6 +25,7 @@ import com.google.common.base.Splitter;
 public class AggregateUtil {
     /**
      * finds the first occurrence of . or [
+     * 
      * @param s
      * @return
      */
@@ -36,13 +37,14 @@ public class AggregateUtil {
         }
         return -1;
     }
-    
-    
+
     /**
      * parses a reference of shape
+     * 
      * <pre>
      * x.y[3][4].z
-     * </pre> 
+     * </pre>
+     * 
      * into an array of PathElement
      * 
      * @param name
@@ -65,31 +67,31 @@ public class AggregateUtil {
      */
     public static boolean verifyPath(ParameterType parameterType, PathElement[] path) {
         ParameterType ptype = parameterType;
-       for(PathElement pe: path) {
-           if(pe.getName()!=null) {
-               if(!(ptype instanceof AggregateParameterType)) {
-                   return false;
-               }
-               Member m = ((AggregateParameterType)ptype).getMember(pe.getName());
-               if(m==null) {
-                   return false;
-               }
-               ptype = (ParameterType) m.getType();
-           }
-           if(pe.getIndex()!=null) {
-               int[] idx = pe.getIndex();
-               if(!(ptype instanceof ArrayParameterType)) {
-                   return false;
-               }
-               ArrayParameterType at = (ArrayParameterType)ptype;
-               if(at.getNumberOfDimensions()!=idx.length) {
-                   return false;
-               }
-               ptype = (ParameterType) at.getElementType();
-           }
-       }
-       
-       return true;
+        for (PathElement pe : path) {
+            if (pe.getName() != null) {
+                if (!(ptype instanceof AggregateParameterType)) {
+                    return false;
+                }
+                Member m = ((AggregateParameterType) ptype).getMember(pe.getName());
+                if (m == null) {
+                    return false;
+                }
+                ptype = (ParameterType) m.getType();
+            }
+            if (pe.getIndex() != null) {
+                int[] idx = pe.getIndex();
+                if (!(ptype instanceof ArrayParameterType)) {
+                    return false;
+                }
+                ArrayParameterType at = (ArrayParameterType) ptype;
+                if (at.getNumberOfDimensions() != idx.length) {
+                    return false;
+                }
+                ptype = (ParameterType) at.getElementType();
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -114,7 +116,7 @@ public class AggregateUtil {
             int[] idx = pe.getIndex();
             if (idx != null) {
                 ArrayValue av = (ArrayValue) engValue;
-                if(!av.hasElement(idx)) {
+                if (!av.hasElement(idx)) {
                     return null;
                 }
                 engValue = av.getElementValue(idx);
@@ -135,7 +137,6 @@ public class AggregateUtil {
         return pv1;
     }
 
-
     /**
      * Patches a parameter value with a new value for one member of an aggregate or array
      * 
@@ -143,14 +144,15 @@ public class AggregateUtil {
      * 
      * @param pv
      * @param patch
-     * @throws IllegalArgumentException if the member to be updated or the array element does not exist 
+     * @throws IllegalArgumentException
+     *             if the member to be updated or the array element does not exist
      */
     public static void updateMember(ParameterValue pv, PartialParameterValue patch) {
         Value engValue = pv.getEngValue();
         Value rawValue = pv.getRawValue();
         PathElement[] path = patch.getPath();
-        
-        for (int i=0; i<path.length-1; i++) {
+
+        for (int i = 0; i < path.length - 1; i++) {
             PathElement pe = path[i];
             if (pe.getName() != null) {
                 engValue = ((AggregateValue) engValue).getMemberValue(pe.getName());
@@ -161,8 +163,8 @@ public class AggregateUtil {
             int[] idx = pe.getIndex();
             if (idx != null) {
                 ArrayValue av = (ArrayValue) engValue;
-                if(!av.hasElement(idx)) {
-                   throw new IllegalArgumentException("Invalid path element (array element does not exist) ");
+                if (!av.hasElement(idx)) {
+                    throw new IllegalArgumentException("Invalid path element (array element does not exist) ");
                 }
                 engValue = av.getElementValue(idx);
                 if (engValue == null) {
@@ -173,10 +175,10 @@ public class AggregateUtil {
                 }
             }
         }
-        PathElement pe = path[path.length-1];
-        if(pe.getIndex()==null) {
+        PathElement pe = path[path.length - 1];
+        if (pe.getIndex() == null) {
             ((AggregateValue) engValue).setValue(pe.getName(), patch.getEngValue());
-            if (rawValue != null && patch.getRawValue()!=null) {
+            if (rawValue != null && patch.getRawValue() != null) {
                 ((AggregateValue) rawValue).setValue(pe.getName(), patch.getRawValue());
             }
         } else {
@@ -186,13 +188,13 @@ public class AggregateUtil {
                     rawValue = ((AggregateValue) rawValue).getMemberValue(pe.getName());
                 }
             }
-            ((ArrayValue)engValue).setElementValue(pe.getIndex(), patch.getEngValue());
-            if (rawValue != null && patch.getRawValue()!=null) {
+            ((ArrayValue) engValue).setElementValue(pe.getIndex(), patch.getEngValue());
+            if (rawValue != null && patch.getRawValue() != null) {
                 ((ArrayValue) rawValue).setElementValue(pe.getIndex(), patch.getRawValue());
             }
         }
     }
-    
+
     /**
      * This function is used to retrieve values from hierarchical aggregates.
      * 
@@ -232,7 +234,7 @@ public class AggregateUtil {
             } else if (idx != null) {
                 return null;
             }
-            
+
             if (v == null) {
                 return null;
             }

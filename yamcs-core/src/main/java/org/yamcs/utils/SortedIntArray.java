@@ -189,33 +189,7 @@ public class SortedIntArray implements Serializable {
         }
     }
 
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        int n = length - 1;
-
-        b.append('[');
-        for (int i = 0;; i++) {
-            b.append(a[i]);
-            if (i == n)
-                return b.append(']').toString();
-            b.append(", ");
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        int h = hash;
-        if (h == 0 && length > 0) {
-            h = 1;
-
-            for (int i = 0; i < length; i++) {
-                h = 31 * h + a[i];
-            }
-            hash = h;
-        }
-        return h;
-    }
-
+  
     /**
      * Performs a binary search and returns true if this array contains the value.
      * 
@@ -228,25 +202,6 @@ public class SortedIntArray implements Serializable {
         return Arrays.binarySearch(a, 0, length, x) >= 0;
     }
 
-    public byte[] encodeToVarIntArray() {
-        byte[] buf = new byte[length * 5];
-
-        if (length == 0) {
-            return buf;
-        }
-
-        int pos = VarIntUtil.writeVarint32(buf, 0, a[0]);
-
-        for (int i = 1; i < length; i++) {
-            pos = VarIntUtil.writeVarint32(buf, pos, (a[i] - a[i - 1]));
-        }
-        if (pos == buf.length) {
-            return buf;
-        } else {
-            return Arrays.copyOf(buf, pos);
-        }
-
-    }
 
     public static SortedIntArray decodeFromVarIntArray(byte[] buf) {
         if (buf.length == 0) {
@@ -297,4 +252,32 @@ public class SortedIntArray implements Serializable {
             a[i] += x;
         }
     }
+    
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        int n = length - 1;
+
+        b.append('[');
+        for (int i = 0;; i++) {
+            b.append(a[i]);
+            if (i == n)
+                return b.append(']').toString();
+            b.append(", ");
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int h = hash;
+        if (h == 0 && length > 0) {
+            h = 1;
+
+            for (int i = 0; i < length; i++) {
+                h = 31 * h + a[i];
+            }
+            hash = h;
+        }
+        return h;
+    }
+
 }

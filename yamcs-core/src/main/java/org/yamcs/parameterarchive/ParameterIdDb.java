@@ -130,7 +130,7 @@ public class ParameterIdDb {
         if(et==0xFFFF) {
             return null;
         }
-        else return Value.Type.valueOf(et);
+        else return Value.Type.forNumber(et);
     }
     
     static Value.Type getRawType(int x) {
@@ -138,7 +138,7 @@ public class ParameterIdDb {
         if(rt==0xFFFF) {
             return null;
         }
-        else return Value.Type.valueOf(rt);
+        else return Value.Type.forNumber(rt);
     }
     
     public int getTimeParameterId() {
