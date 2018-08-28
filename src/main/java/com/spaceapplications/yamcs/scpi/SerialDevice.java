@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import com.fazecast.jSerialComm.SerialPort;
-import com.spaceapplications.yamcs.scpi.commander.DeviceConnect.Device;
+import com.spaceapplications.yamcs.scpi.device.Device;
 
 public class SerialDevice implements Device {
   private static final int DEFAULT_BAUD_RATE = 9600;

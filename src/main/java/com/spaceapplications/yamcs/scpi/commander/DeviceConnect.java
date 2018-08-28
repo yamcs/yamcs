@@ -4,18 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.spaceapplications.yamcs.scpi.device.Device;
+
 public class DeviceConnect extends Command {
   private List<Device> devices = new ArrayList<>();
 
-  public interface Device {
-    public String id();
-
-    public void open();
-
-    public void close();
-
-    public String exec(String cmd);
-  }
+  
 
   public DeviceConnect(String cmd, String description, HasContext context, List<Device> devices) {
     super(cmd, description, context);
