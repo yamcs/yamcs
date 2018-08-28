@@ -17,7 +17,12 @@ public class SerialDevice implements Device {
   }
 
   @Override
-  public void open() {
+  public String id() {
+    return id;
+  }
+
+  @Override
+  public synchronized void open() {
     if (sp == null) {
       sp = SerialPort.getCommPort(devicePath);
       sp.setBaudRate(9600);
@@ -27,7 +32,7 @@ public class SerialDevice implements Device {
   }
 
   @Override
-  public String exec(String cmd) {
+  public synchronized String exec(String cmd) {
     byte[] bytes = cmd.getBytes();
     sp.writeBytes(bytes, bytes.length);
     ByteArrayOutputStream buf = new ByteArrayOutputStream();
@@ -43,11 +48,6 @@ public class SerialDevice implements Device {
   }
 
   @Override
-  public String id() {
-    return id;
-  }
-
-  @Override
-  public void close() {
+  public synchronized void close() {
   }
 }
