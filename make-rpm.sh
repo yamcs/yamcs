@@ -22,6 +22,7 @@ rm -rf /tmp/$dist
 mkdir /tmp/$dist
  
 git clone . /tmp/$dist
+rm -rf /tmp/$dist/.git
 cd /tmp/$dist
 
 # fix revision in pom.xml

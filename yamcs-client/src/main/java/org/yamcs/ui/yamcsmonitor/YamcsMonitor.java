@@ -808,12 +808,15 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
     @Override
     public void connected(String url) {
         log("connected to " + url);
-        final List<String> instances = yconnector.getYamcsInstances();
         setTitle("connected to " + url);
+
+        List<String> instances = yconnector.getYamcsInstances();
         if (instances == null) {
             log("Failed to get instances from " + url);
             return;
         }
+
+        selectedInstance = connectionParams.getInstance();
         if (selectedInstance == null) {
             selectedInstance = instances.get(0);
         }

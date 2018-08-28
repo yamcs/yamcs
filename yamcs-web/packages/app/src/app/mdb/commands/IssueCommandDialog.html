@@ -12,6 +12,12 @@
           </select>
         </label>
 
+        <label *ngSwitchCase="'boolean'">
+          {{ argument.name }}<br>
+          <input type="radio" [formControlName]="argument.name" value="true"> true
+          <input type="radio" [formControlName]="argument.name" value="false"> false
+        </label>
+
         <label *ngSwitchDefault>
           {{ argument.name }}
           <input type="text" [formControlName]="argument.name">

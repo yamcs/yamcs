@@ -207,20 +207,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             }
             return;
         default:
-            if (path.length >= 3 && WebSocketFrameHandler.WEBSOCKET_PATH.equals(path[2])) {
-                verifyAuthentication(ctx, req);
-                if (YamcsServer.hasInstance(path[1])) {
-                    log.warn(String.format("Deprecated url request for /%s/%s. Migrate to /%s/%s instead.",
-                            path[1], path[2], path[2], path[1]));
-                    prepareChannelForWebSocketUpgrade(ctx, req, path[1]);
-                } else {
-                    sendPlainTextError(ctx, req, NOT_FOUND);
-                }
-            } else {
-                // Everything else is handled by angular's router
-                // (enables deep linking in html5 mode)
-                fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
-            }
+            // Everything else is handled client-side by the Angular router (HTML5 deep-linking)
+            fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
         }
     }
 

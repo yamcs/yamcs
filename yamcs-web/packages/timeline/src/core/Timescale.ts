@@ -1,9 +1,10 @@
-import { Defs, G, Line, Pattern, Rect, Svg, Text } from '../tags';
-import * as utils from '../utils';
-import Band, { BandOptions } from './Band';
-import Timeline from '../Timeline';
-import RenderContext from '../RenderContext';
 import { Action } from '../Action';
+import RenderContext from '../RenderContext';
+import { Defs, G, Line, Pattern, Rect, Svg, Text } from '../tags';
+import Timeline from '../Timeline';
+import * as utils from '../utils';
+import { generateId } from '../utils';
+import Band, { BandOptions } from './Band';
 
 const SCALE_1H = 1;
 const SCALE_QD = 2;
@@ -97,7 +98,7 @@ export default class Timescale extends Band {
     }
 
     this.dayFormat = this.opts.dayFormat || 'DDDD';
-    this.contributionId = Timeline.nextId();
+    this.contributionId = generateId();
   }
 
   /**
@@ -119,7 +120,7 @@ export default class Timescale extends Band {
       style: 'overflow: visible',
     }).addChild(new Defs().addChild(this._renderHourPattern()));
 
-    this.scaleBgId = Timeline.nextId();
+    this.scaleBgId = generateId();
     const scaleBg: any = {
       id: this.scaleBgId,
       x: this.timeline.positionDate(this.timeline.loadStart),

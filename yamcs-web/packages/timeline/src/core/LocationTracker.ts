@@ -1,8 +1,8 @@
+import { ViewportHoverEvent } from '../events';
 import Plugin from '../Plugin';
 import RenderContext from '../RenderContext';
-import Timeline from '../Timeline';
-import { ViewportHoverEvent } from '../events';
 import { Ellipse, G, Line } from '../tags';
+import { generateId } from '../utils';
 
 /**
  * Mouse tracker for non-mobile devices.
@@ -26,7 +26,7 @@ export default class LocationTracker extends Plugin {
     };
   }
 
-  private trackerId = Timeline.nextId();
+  private trackerId = generateId();
   private hoverListener: ((event: ViewportHoverEvent) => any);
 
   renderViewportXOverlay(ctx: RenderContext) {

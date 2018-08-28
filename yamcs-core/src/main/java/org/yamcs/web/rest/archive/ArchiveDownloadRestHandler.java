@@ -181,9 +181,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         NamedObjectId requestedId = verifyParameterId(req, mdb, req.getRouteParam("name"));
-        Parameter p = mdb.getParameter(requestedId);
 
-        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, false);
+        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, requestedId, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
 
         String filename = requestedId.getName();

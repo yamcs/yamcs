@@ -1,10 +1,10 @@
 import { Action } from '../Action';
-import RenderContext from '../RenderContext';
-import Timeline from '../Timeline';
 import Band, { BandOptions } from '../core/Band';
 import { EventEvent } from '../events';
+import RenderContext from '../RenderContext';
 import { G, Line, Rect, Title } from '../tags';
-import { isAfter, isBefore, toDate } from '../utils';
+import Timeline from '../Timeline';
+import { generateId, isAfter, isBefore, toDate } from '../utils';
 
 export interface SaaBandOptions extends BandOptions {
   events?: any[];
@@ -56,7 +56,7 @@ export default class SaaBand extends Band {
 
       // Only render if somehow visible within load range
       if (isBefore(start, this.timeline.loadStop) && isAfter(stop, this.timeline.loadStart)) {
-        const id = Timeline.nextId();
+        const id = generateId();
         const eventG = new G({ id });
         eventG.addChild(
           new Rect({

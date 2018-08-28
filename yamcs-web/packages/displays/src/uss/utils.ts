@@ -9,7 +9,7 @@ export function findChild(parentNode: Node, childNodeName: string) {
   for (let i = 0; i < parentNode.childNodes.length; i++) {
     const child = parentNode.childNodes[i];
     if (child.nodeName === childNodeName) {
-      return child;
+      return child as Element;
     }
   }
 
@@ -32,9 +32,9 @@ export function hasChild(parentNode: Node, childNodeName: string) {
  * array.
  */
 export function findChildren(parentNode: Node, childNodeName?: string) {
-  const matchingChildren: Node[] = [];
+  const matchingChildren: Element[] = [];
   for (let i = 0; i < parentNode.childNodes.length; i++) {
-    const child = parentNode.childNodes[i];
+    const child = parentNode.childNodes[i] as Element;
     if (child.nodeType !== 3) { // Ignore text or whitespace
       if (!childNodeName || (child.nodeName === childNodeName)) {
         matchingChildren.push(child);
@@ -49,7 +49,7 @@ export function findChildren(parentNode: Node, childNodeName?: string) {
  *
  * @throws when no such child was found and defaultValue was undefined
  */
-export function parseStringChild(parentNode: Node, childNodeName: string, defaultValue?: string) {
+export function parseStringChild(parentNode: Element, childNodeName: string, defaultValue?: string) {
   for (let i = 0; i < parentNode.childNodes.length; i++) {
     const child = parentNode.childNodes[i];
     if (child.nodeName === childNodeName) {
@@ -71,7 +71,7 @@ export function parseStringChild(parentNode: Node, childNodeName: string, defaul
  *
  * @throws when no such child was found and defaultValue was undefined.
  */
-export function parseIntChild(parentNode: Node, childNodeName: string, defaultValue?: number) {
+export function parseIntChild(parentNode: Element, childNodeName: string, defaultValue?: number) {
   for (let i = 0; i < parentNode.childNodes.length; i++) {
     const child = parentNode.childNodes[i];
     if (child.nodeName === childNodeName) {
@@ -93,7 +93,7 @@ export function parseIntChild(parentNode: Node, childNodeName: string, defaultVa
  *
  * @throws when no such child was found and defaultValue was undefined.
  */
-export function parseFloatChild(parentNode: Node, childNodeName: string, defaultValue?: number) {
+export function parseFloatChild(parentNode: Element, childNodeName: string, defaultValue?: number) {
   for (let i = 0; i < parentNode.childNodes.length; i++) {
     const child = parentNode.childNodes[i];
     if (child.nodeName === childNodeName) {
@@ -115,7 +115,7 @@ export function parseFloatChild(parentNode: Node, childNodeName: string, default
  *
  * @throws when no such child was found and defaultValue was undefined.
  */
-export function parseBooleanChild(parentNode: Node, childNodeName: string, defaultValue?: boolean) {
+export function parseBooleanChild(parentNode: Element, childNodeName: string, defaultValue?: boolean) {
   for (let i = 0; i < parentNode.childNodes.length; i++) {
     const child = parentNode.childNodes[i];
     if (child.nodeName === childNodeName) {
@@ -135,9 +135,9 @@ export function parseBooleanChild(parentNode: Node, childNodeName: string, defau
  *
  * @throws when no such child was found and defaultValue was undefined.
  */
-export function parseColorChild(parentNode: Node, childNodeName: string, defaultValue?: Color) {
+export function parseColorChild(parentNode: Element, childNodeName: string, defaultValue?: Color) {
   for (let i = 0; i < parentNode.childNodes.length; i++) {
-    const child = parentNode.childNodes[i];
+    const child = parentNode.childNodes[i] as Element;
     if (child.nodeName === childNodeName) {
       return parseColorNode(child);
     }
@@ -150,7 +150,7 @@ export function parseColorChild(parentNode: Node, childNodeName: string, default
   }
 }
 
-export function parseColorNode(node: Node) {
+export function parseColorNode(node: Element) {
   const r = parseFloatChild(node, 'red');
   const g = parseFloatChild(node, 'green');
   const b = parseFloatChild(node, 'blue');
@@ -158,7 +158,7 @@ export function parseColorNode(node: Node) {
   return new Color(r, g, b, a);
 }
 
-export function parseFillStyle(node: Node) {
+export function parseFillStyle(node: Element) {
   const fillStyleNode = findChild(node, 'FillStyle');
   const pattern = parseStringChild(fillStyleNode, 'Pattern');
   return {
@@ -167,7 +167,7 @@ export function parseFillStyle(node: Node) {
   };
 }
 
-export function parseDrawStyle(node: Node) {
+export function parseDrawStyle(node: Element) {
   const drawStyleNode = findChild(node, 'DrawStyle');
   const pattern = parseStringChild(drawStyleNode, 'Pattern');
   return {
@@ -177,7 +177,7 @@ export function parseDrawStyle(node: Node) {
   };
 }
 
-export function parseTextStyle(node: Node) {
+export function parseTextStyle(node: Element) {
   const style: { [key: string]: any } = {
     fill: parseColorChild(node, 'Color').toString(),
     'font-family': parseStringChild(node, 'Fontname'),
@@ -202,7 +202,7 @@ export function parseTextStyle(node: Node) {
   return style;
 }
 
-export function parseStringAttribute(node: Node, attributeName: string) {
+export function parseStringAttribute(node: Element, attributeName: string) {
   const attr = node.attributes.getNamedItem(attributeName);
   if (attr === null) {
     throw new Error(`No attribute named ${attributeName}`);
@@ -211,7 +211,7 @@ export function parseStringAttribute(node: Node, attributeName: string) {
   }
 }
 
-export function parseBooleanAttribute(node: Node, attributeName: string) {
+export function parseBooleanAttribute(node: Element, attributeName: string) {
   const attr = node.attributes.getNamedItem(attributeName);
   if (attr === null) {
     throw new Error(`No attribute named ${attributeName}`);
@@ -220,7 +220,7 @@ export function parseBooleanAttribute(node: Node, attributeName: string) {
   }
 }
 
-export function getReferencedElement(node: Node) {
+export function getReferencedElement(node: Element) {
   let e = node;
 
   const reference = parseStringAttribute(e, 'reference');
@@ -229,7 +229,7 @@ export function getReferencedElement(node: Node) {
       if (!e.parentNode) {
         throw new Error('No such parent');
       }
-      e = e.parentNode;
+      e = e.parentNode as Element;
     } else {
       let idx = 0;
       const k = token.indexOf('[');

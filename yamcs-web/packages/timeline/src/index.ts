@@ -1,16 +1,19 @@
-// FIXME reording exports leads to problems (presumably circular)
-export {
-  addDays,
-  isAfter,
-  isBefore,
-  toDate,
-} from './utils';
-
-export { default as Timeline } from './Timeline';
-
-export { Range } from './Range';
-
-export * from './tags';
-export * from './core/index';
-export * from './space/index';
+export { default as Band } from './core/Band';
+export { default as EventBand, Event } from './core/EventBand';
+export { default as HorizontalSelection } from './core/HorizontalSelection';
+export { default as LocationTracker } from './core/LocationTracker';
+export { default as NoDataZone } from './core/NoDataZone';
+export { default as SpacerBand } from './core/SpacerBand';
+export { default as Timescale } from './core/Timescale';
+export { default as WallclockLocator } from './core/WallclockLocator';
 export * from './options';
+export { Range } from './Range';
+export { default as AttitudeBand } from './space/AttitudeBand';
+export { default as CommsBand } from './space/CommsBand';
+export { default as DayNightBackgroundAddon } from './space/DayNightBackgroundAddon';
+export { default as DayNightBand } from './space/DayNightBand';
+export { default as OrbitNumberBand } from './space/OrbitNumberBand';
+export { default as SaaBand } from './space/SaaBand';
+export * from './tags';
+export { default as Timeline } from './Timeline';
+export { addDays, isAfter, isBefore, toDate } from './utils';

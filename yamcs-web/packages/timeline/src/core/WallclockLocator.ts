@@ -1,7 +1,8 @@
 import Plugin, { PluginOptions } from '../Plugin';
 import RenderContext from '../RenderContext';
-import Timeline from '../Timeline';
 import { Ellipse, G, Line, Rect } from '../tags';
+import Timeline from '../Timeline';
+import { generateId } from '../utils';
 
 class LocalTimeProvider {
 
@@ -75,8 +76,8 @@ export default class WallclockLocator extends Plugin {
   private wallclockLocatorLineEl: any;
   private wallclockLocatorPastEl: any;
 
-  private wallclockLocatorPastId = Timeline.nextId();
-  private wallclockLocatorLineId = Timeline.nextId();
+  private wallclockLocatorPastId = generateId();
+  private wallclockLocatorLineId = generateId();
 
   constructor(timeline: Timeline, protected opts: WallclockLocatorOptions, protected style: WallclockLocatorStyle) {
     super(timeline, opts, style);
