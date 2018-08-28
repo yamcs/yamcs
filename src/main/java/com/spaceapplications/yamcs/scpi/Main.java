@@ -3,15 +3,14 @@ package com.spaceapplications.yamcs.scpi;
 import static pl.touk.throwing.ThrowingSupplier.unchecked;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.spaceapplications.yamcs.scpi.commander.Command;
 import com.spaceapplications.yamcs.scpi.commander.Commander;
 import com.spaceapplications.yamcs.scpi.commander.DeviceConnect;
 import com.spaceapplications.yamcs.scpi.commander.DeviceInspect;
 import com.spaceapplications.yamcs.scpi.commander.DeviceList;
-import com.spaceapplications.yamcs.scpi.commander.Command;
 import com.spaceapplications.yamcs.scpi.commander.HelpCommand;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -23,7 +22,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 public class Main {
-  public static Integer DEFAULT_PORT = 1337;
+  public static Integer DEFAULT_PORT = 8080;
   public static Integer DEFAULT_MAX_CONNECTIONS = 5;
 
   public static void main(String[] args) {
