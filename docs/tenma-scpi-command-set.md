@@ -27,7 +27,7 @@ Returns the CH1 output current setting.
 ```
 
 ```
-1. VSET<X>:<NR2>
+VSET<X>:<NR2>
 Description：Sets the output voltage.
 Example: VSET1:20.50
 Sets the CH1 voltage to 20.50V
