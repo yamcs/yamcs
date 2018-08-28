@@ -1,3 +1,9 @@
+Version 4.6.3 released 28-August-2018
+- limit the number of parameters that can be stored in one segment of the
+parameter arhchive to avoid OOM errors
+- various small bugfixes
+
+
 Version 4.6.2 released 18-July-2018
 - better cleanup before instance restart
 - store CCSDS TM Index also in the tablespace (rahter than in a separate
