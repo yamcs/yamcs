@@ -17,12 +17,8 @@ public class StringValueSegment extends ObjectSegment<String> implements ValueSe
         super(serializer, buildForSerialisation);
     }
 
-
     public static final int MAX_UTF8_CHAR_LENGTH = 3; //I've seen this in protobuf somwhere
-    protected List<String> values;
 
-
-    
     public StringValueSegment consolidate() {
         return (StringValueSegment)super.consolidate();
     }

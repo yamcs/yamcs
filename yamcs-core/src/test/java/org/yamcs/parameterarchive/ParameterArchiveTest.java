@@ -95,7 +95,7 @@ public class ParameterArchiveTest {
         }
         parchive = new ParameterArchiveV2(instance, conf);
         pidMap = parchive.getParameterIdDb();
-        ParameterGroupIdDb pgidMap = parchive.getParameterGroupIdDb();
+        pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);
         assertNotNull(pgidMap);
     }
@@ -129,10 +129,10 @@ public class ParameterArchiveTest {
 
         ParameterValue pv1_0 = getParameterValue(p1, 100, "blala100", 100);
 
-        int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
+        int p1id = pidMap.createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
                 pv1_0.getRawValue().getType());
 
-        int pg1id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id });
+        int pg1id = pgidMap.createAndGet(new int[] { p1id });
         PGSegment pgSegment1 = new PGSegment(pg1id, 0, new SortedIntArray(new int[] { p1id }));
 
         pgSegment1.addRecord(100, Arrays.asList(pv1_0));
