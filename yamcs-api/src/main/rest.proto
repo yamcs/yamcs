@@ -164,6 +164,8 @@ message CreateEventRequest {
   optional string message = 2;
   optional string severity = 3;
   optional string time = 4;
+  optional string source = 5;
+  optional int32 sequenceNumber = 6;
 }
 
 message CreateProcessorRequest {

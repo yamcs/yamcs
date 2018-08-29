@@ -16,7 +16,7 @@ import org.yaml.snakeyaml.Yaml;
 import io.netty.handler.codec.http.HttpMethod;
 
 /**
- * An EventProducer that publishes events over WebSocket
+ * An EventProducer that publishes events over the web api
  * <p>
  * By default, repeated message are detected and reduced, resulting in pseudo events with a message like 'last event
  * repeated X times'. This behaviour can be turned off.
@@ -82,21 +82,22 @@ public class RestEventProducer extends AbstractEventProducer {
         if (event.hasType()) {
             req.setType(event.getType());
         }
+        if (event.hasSource()) {
+            req.setSource(event.getSource());
+            if (event.hasSeqNumber()) { // 'should' be linked to source
+                req.setSequenceNumber(event.getSeqNumber());
+            }
+        }
         restClient.doRequest(eventResource, HttpMethod.POST, req.build().toByteArray());
     }
 
     @Override
     public String toString() {
-        return RestEventProducer.class.getName() + " sendign events to " + connProp;
+        return RestEventProducer.class.getName() + " sending events to " + connProp;
     }
 
     @Override
     public long getMissionTime() {
         return TimeEncoding.getWallclockTime();
     }
-
-    public void main(String[] args) {
-
-    }
-
 }

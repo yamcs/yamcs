@@ -26371,6 +26371,29 @@ public final class Rest {
      */
     com.google.protobuf.ByteString
         getTimeBytes();
+
+    /**
+     * <code>optional string source = 5;</code>
+     */
+    boolean hasSource();
+    /**
+     * <code>optional string source = 5;</code>
+     */
+    java.lang.String getSource();
+    /**
+     * <code>optional string source = 5;</code>
+     */
+    com.google.protobuf.ByteString
+        getSourceBytes();
+
+    /**
+     * <code>optional int32 sequenceNumber = 6;</code>
+     */
+    boolean hasSequenceNumber();
+    /**
+     * <code>optional int32 sequenceNumber = 6;</code>
+     */
+    int getSequenceNumber();
   }
   /**
    * Protobuf type {@code parameters.CreateEventRequest}
@@ -26388,6 +26411,8 @@ public final class Rest {
       message_ = "";
       severity_ = "";
       time_ = "";
+      source_ = "";
+      sequenceNumber_ = 0;
     }
 
     @java.lang.Override
@@ -26440,6 +26465,17 @@ public final class Rest {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000008;
               time_ = bs;
+              break;
+            }
+            case 42: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000010;
+              source_ = bs;
+              break;
+            }
+            case 48: {
+              bitField0_ |= 0x00000020;
+              sequenceNumber_ = input.readInt32();
               break;
             }
           }
@@ -26635,6 +26671,63 @@ public final class Rest {
       }
     }
 
+    public static final int SOURCE_FIELD_NUMBER = 5;
+    private volatile java.lang.Object source_;
+    /**
+     * <code>optional string source = 5;</code>
+     */
+    public boolean hasSource() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional string source = 5;</code>
+     */
+    public java.lang.String getSource() {
+      java.lang.Object ref = source_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          source_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string source = 5;</code>
+     */
+    public com.google.protobuf.ByteString
+        getSourceBytes() {
+      java.lang.Object ref = source_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        source_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int SEQUENCENUMBER_FIELD_NUMBER = 6;
+    private int sequenceNumber_;
+    /**
+     * <code>optional int32 sequenceNumber = 6;</code>
+     */
+    public boolean hasSequenceNumber() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional int32 sequenceNumber = 6;</code>
+     */
+    public int getSequenceNumber() {
+      return sequenceNumber_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -26659,6 +26752,12 @@ public final class Rest {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, time_);
       }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, source_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeInt32(6, sequenceNumber_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -26678,6 +26777,13 @@ public final class Rest {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, time_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, source_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(6, sequenceNumber_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -26716,6 +26822,16 @@ public final class Rest {
         result = result && getTime()
             .equals(other.getTime());
       }
+      result = result && (hasSource() == other.hasSource());
+      if (hasSource()) {
+        result = result && getSource()
+            .equals(other.getSource());
+      }
+      result = result && (hasSequenceNumber() == other.hasSequenceNumber());
+      if (hasSequenceNumber()) {
+        result = result && (getSequenceNumber()
+            == other.getSequenceNumber());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -26742,6 +26858,14 @@ public final class Rest {
       if (hasTime()) {
         hash = (37 * hash) + TIME_FIELD_NUMBER;
         hash = (53 * hash) + getTime().hashCode();
+      }
+      if (hasSource()) {
+        hash = (37 * hash) + SOURCE_FIELD_NUMBER;
+        hash = (53 * hash) + getSource().hashCode();
+      }
+      if (hasSequenceNumber()) {
+        hash = (37 * hash) + SEQUENCENUMBER_FIELD_NUMBER;
+        hash = (53 * hash) + getSequenceNumber();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -26869,6 +26993,10 @@ public final class Rest {
         bitField0_ = (bitField0_ & ~0x00000004);
         time_ = "";
         bitField0_ = (bitField0_ & ~0x00000008);
+        source_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
+        sequenceNumber_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -26909,6 +27037,14 @@ public final class Rest {
           to_bitField0_ |= 0x00000008;
         }
         result.time_ = time_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.source_ = source_;
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        result.sequenceNumber_ = sequenceNumber_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -26970,6 +27106,14 @@ public final class Rest {
           bitField0_ |= 0x00000008;
           time_ = other.time_;
           onChanged();
+        }
+        if (other.hasSource()) {
+          bitField0_ |= 0x00000010;
+          source_ = other.source_;
+          onChanged();
+        }
+        if (other.hasSequenceNumber()) {
+          setSequenceNumber(other.getSequenceNumber());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -27299,6 +27443,114 @@ public final class Rest {
   }
   bitField0_ |= 0x00000008;
         time_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object source_ = "";
+      /**
+       * <code>optional string source = 5;</code>
+       */
+      public boolean hasSource() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional string source = 5;</code>
+       */
+      public java.lang.String getSource() {
+        java.lang.Object ref = source_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            source_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string source = 5;</code>
+       */
+      public com.google.protobuf.ByteString
+          getSourceBytes() {
+        java.lang.Object ref = source_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          source_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string source = 5;</code>
+       */
+      public Builder setSource(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        source_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string source = 5;</code>
+       */
+      public Builder clearSource() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        source_ = getDefaultInstance().getSource();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string source = 5;</code>
+       */
+      public Builder setSourceBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        source_ = value;
+        onChanged();
+        return this;
+      }
+
+      private int sequenceNumber_ ;
+      /**
+       * <code>optional int32 sequenceNumber = 6;</code>
+       */
+      public boolean hasSequenceNumber() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional int32 sequenceNumber = 6;</code>
+       */
+      public int getSequenceNumber() {
+        return sequenceNumber_;
+      }
+      /**
+       * <code>optional int32 sequenceNumber = 6;</code>
+       */
+      public Builder setSequenceNumber(int value) {
+        bitField0_ |= 0x00000020;
+        sequenceNumber_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 sequenceNumber = 6;</code>
+       */
+      public Builder clearSequenceNumber() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        sequenceNumber_ = 0;
         onChanged();
         return this;
       }
@@ -47361,16 +47613,17 @@ public final class Rest {
       "anding.CommandId\022F\n\014historyEntry\030\002 \003(\01320" +
       ".parameters.UpdateCommandHistoryRequest." +
       "KeyValue\032&\n\010KeyValue\022\013\n\003key\030\001 \002(\t\022\r\n\005val",
-      "ue\030\002 \002(\t\"S\n\022CreateEventRequest\022\014\n\004type\030\001" +
+      "ue\030\002 \002(\t\"{\n\022CreateEventRequest\022\014\n\004type\030\001" +
       " \001(\t\022\017\n\007message\030\002 \001(\t\022\020\n\010severity\030\003 \001(\t\022" +
-      "\014\n\004time\030\004 \001(\t\"\214\002\n\026CreateProcessorRequest" +
+      "\014\n\004time\030\004 \001(\t\022\016\n\006source\030\005 \001(\t\022\026\n\016sequenc" +
+      "eNumber\030\006 \001(\005\"\214\002\n\026CreateProcessorRequest" +
       "\022\014\n\004name\030\001 \001(\t\022\021\n\005start\030\002 \001(\tB\002\030\001\022\020\n\004sto" +
       "p\030\003 \001(\tB\002\030\001\022\020\n\004loop\030\004 \001(\010B\002\030\001\022\021\n\005speed\030\005" +
       " \001(\tB\002\030\001\022\020\n\010clientId\030\006 \003(\005\022\024\n\010paraname\030\007" +
       " \003(\tB\002\030\001\022\023\n\007ppgroup\030\010 \003(\tB\002\030\001\022\026\n\npacketn" +
       "ame\030\t \003(\tB\002\030\001\022\023\n\007cmdhist\030\n \001(\010B\002\030\001\022\022\n\npe" +
-      "rsistent\030\013 \001(\010\022\014\n\004type\030\014 \001(\t\022\016\n\006config\030\r" +
-      " \001(\t\"B\n\024EditProcessorRequest\022\r\n\005state\030\001 ",
+      "rsistent\030\013 \001(\010\022\014\n\004type\030\014 \001(\t\022\016\n\006config\030\r",
+      " \001(\t\"B\n\024EditProcessorRequest\022\r\n\005state\030\001 " +
       "\001(\t\022\014\n\004seek\030\002 \001(\t\022\r\n\005speed\030\003 \001(\t\"(\n\026Stre" +
       "amSubscribeRequest\022\016\n\006stream\030\001 \001(\t\"e\n\030Se" +
       "tSimulationTimeRequest\022\r\n\005time0\030\001 \001(\003\022\020\n" +
@@ -47379,8 +47632,8 @@ public final class Rest {
       "se\0220\n\010instance\030\001 \003(\0132\036.yamcsManagement.Y" +
       "amcsInstance\"2\n\020ListTagsResponse\022\036\n\003tag\030" +
       "\001 \003(\0132\021.yamcs.ArchiveTag\"a\n\020CreateTagReq" +
-      "uest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004sto" +
-      "p\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005 ",
+      "uest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004sto",
+      "p\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005 " +
       "\001(\t\"_\n\016EditTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005s" +
       "tart\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030" +
       "\004 \001(\t\022\r\n\005color\030\005 \001(\t\"6\n\022ListAlarmsRespon" +
@@ -47389,8 +47642,8 @@ public final class Rest {
       "nt\030\002 \001(\t\"7\n\022ListTablesResponse\022!\n\005table\030" +
       "\001 \003(\0132\022.archive.TableInfo\":\n\023ListStreams" +
       "Response\022#\n\006stream\030\001 \003(\0132\023.archive.Strea" +
-      "mInfo\"1\n\022ListEventsResponse\022\033\n\005event\030\001 \003" +
-      "(\0132\014.yamcs.Event\":\n\023ListPacketsResponse\022",
+      "mInfo\"1\n\022ListEventsResponse\022\033\n\005event\030\001 \003",
+      "(\0132\014.yamcs.Event\":\n\023ListPacketsResponse\022" +
       "#\n\006packet\030\001 \003(\0132\023.yamcs.TmPacketData\"H\n\027" +
       "ListServiceInfoResponse\022-\n\007service\030\001 \003(\013" +
       "2\034.yamcsManagement.ServiceInfo\"#\n\022EditSe" +
@@ -47399,8 +47652,8 @@ public final class Rest {
       "\016\n\006filter\030\003 \003(\t\022\022\n\npacketname\030\004 \003(\t\"#\n\023C" +
       "reateBucketRequest\022\014\n\004name\030\001 \001(\t\"<\n\nBuck" +
       "etInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004size\030\002 \001(\004\022\022\n\nnu" +
-      "mObjects\030\003 \001(\r\"\242\001\n\nObjectInfo\022\014\n\004name\030\001 " +
-      "\001(\t\022\017\n\007created\030\002 \001(\t\022\014\n\004size\030\003 \001(\004\0226\n\010me",
+      "mObjects\030\003 \001(\r\"\242\001\n\nObjectInfo\022\014\n\004name\030\001 ",
+      "\001(\t\022\017\n\007created\030\002 \001(\t\022\014\n\004size\030\003 \001(\004\0226\n\010me" +
       "tadata\030\004 \003(\0132$.parameters.ObjectInfo.Met" +
       "adataEntry\032/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t" +
       "\022\r\n\005value\030\002 \001(\t:\0028\001\"=\n\023ListBucketsRespon" +
@@ -47625,7 +47878,7 @@ public final class Rest {
     internal_static_parameters_CreateEventRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_parameters_CreateEventRequest_descriptor,
-        new java.lang.String[] { "Type", "Message", "Severity", "Time", });
+        new java.lang.String[] { "Type", "Message", "Severity", "Time", "Source", "SequenceNumber", });
     internal_static_parameters_CreateProcessorRequest_descriptor =
       getDescriptor().getMessageTypes().get(27);
     internal_static_parameters_CreateProcessorRequest_fieldAccessorTable = new

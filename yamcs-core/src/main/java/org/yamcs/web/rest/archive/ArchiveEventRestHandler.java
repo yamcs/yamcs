@@ -178,13 +178,23 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
 
         Event.Builder eventb = Event.newBuilder();
-        eventb.setSource("User");
         eventb.setCreatedBy(req.getUser().getUsername());
-        eventb.setSeqNumber(eventSequenceNumber.getAndIncrement());
         eventb.setMessage(request.getMessage());
 
         if (request.hasType()) {
             eventb.setType(request.getType());
+        }
+
+        if (request.hasSource()) {
+            eventb.setSource(request.getSource());
+            if (eventb.hasSeqNumber()) { // 'should' be linked to source
+                eventb.setSeqNumber(eventb.getSeqNumber());
+            } else {
+                eventb.setSeqNumber(eventSequenceNumber.getAndIncrement());
+            }
+        } else {
+            eventb.setSource("User");
+            eventb.setSeqNumber(eventSequenceNumber.getAndIncrement());
         }
 
         long missionTime = YamcsServer.getTimeService(instance).getMissionTime();
