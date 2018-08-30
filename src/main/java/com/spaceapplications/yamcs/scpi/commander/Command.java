@@ -3,46 +3,48 @@ package com.spaceapplications.yamcs.scpi.commander;
 import java.util.Optional;
 
 public abstract class Command {
-  public static final String DEFAULT_PROMPT = "$ ";
-  public static String COL_FORMAT = "%-20s %s";
+    public static final String DEFAULT_PROMPT = "$ ";
+    public static String COL_FORMAT = "%-20s %s";
 
-  private String prompt = DEFAULT_PROMPT;
-  private String cmd;
-  private String description;
-  protected HasContext context;
+    private String prompt = DEFAULT_PROMPT;
+    private String cmd;
+    private String description;
+    protected HasContext context;
 
-  public interface HasContext {
-    public Optional<Command> contextCmd();
-    public void setContextCmd(Command context);
-    public void clearContextCmd();
-  }
+    public interface HasContext {
+        public Optional<Command> contextCmd();
 
-  public Command(String cmd, String description, HasContext context) {
-    this.cmd = cmd;
-    this.description = description;
-    this.context = context;
-  }
+        public void setContextCmd(Command context);
 
-  public String cmd() {
-    return cmd;
-  }
+        public void clearContextCmd();
+    }
 
-  public void setPrompt(String prompt) {
-    this.prompt = prompt;
-  }
+    public Command(String cmd, String description, HasContext context) {
+        this.cmd = cmd;
+        this.description = description;
+        this.context = context;
+    }
 
-  public String prompt() {
-    return prompt;
-  }
+    public String cmd() {
+        return cmd;
+    }
 
-  public String description() {
-    return description;
-  }
+    public void setPrompt(String prompt) {
+        this.prompt = prompt;
+    }
 
-  public String execute(String cmd) {
-    String args = cmd.replaceFirst(this.cmd + " ", "").replaceAll("\r", "").replaceAll("\n", "");
-    return handleExecute(args);
-  }
+    public String prompt() {
+        return prompt;
+    }
 
-  abstract String handleExecute(String args);
+    public String description() {
+        return description;
+    }
+
+    public String execute(String cmd) {
+        String args = cmd.replaceFirst(this.cmd + " ", "").replaceAll("\r", "").replaceAll("\n", "");
+        return handleExecute(args);
+    }
+
+    abstract String handleExecute(String args);
 }

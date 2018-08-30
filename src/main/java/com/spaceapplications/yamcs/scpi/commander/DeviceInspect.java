@@ -18,5 +18,4 @@ public class DeviceInspect extends Command {
         return Optional.ofNullable(config.devices).map(devices -> devices.get(deviceId)).map(Config::dump)
                 .orElse(MessageFormat.format("device \"{0}\" not found", deviceId));
     }
-
 }
