@@ -36,9 +36,13 @@ public class SerialDevice implements Device {
     }
 
     @Override
-    public synchronized String exec(String cmd) {
+    public synchronized void write(String cmd) {
         byte[] bytes = cmd.getBytes();
         sp.writeBytes(bytes, bytes.length);
+    }
+
+    @Override
+    public synchronized String read() {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         byte[] singleByte = { 0 };
         while (sp.readBytes(singleByte, 1) > 0) {
@@ -53,5 +57,8 @@ public class SerialDevice implements Device {
 
     @Override
     public synchronized void close() {
+        if (sp != null) {
+            sp.closePort();
+        }
     }
 }

@@ -35,7 +35,8 @@ public class DeviceConnect extends Command {
                     device.get().close();
                     return "\ndisconnect from " + deviceId;
                 }
-                return device.get().exec(cmd);
+                device.get().write(cmd);
+                return device.get().read();
             }
         };
 

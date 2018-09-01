@@ -12,8 +12,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.CharsetUtil;
 
 public class TcpIpDevice implements Device {
@@ -44,7 +42,6 @@ public class TcpIpDevice implements Device {
             b.group(group)
                     .channel(NioSocketChannel.class)
                     .remoteAddress(new InetSocketAddress(host, port))
-                    .handler(new LoggingHandler(LogLevel.TRACE))
                     .handler(new ChannelInitializer<Channel>() {
 
                         @Override
@@ -77,11 +74,15 @@ public class TcpIpDevice implements Device {
     }
 
     @Override
-    public String exec(String cmd) {
+    public void write(String cmd) {
         if (channel != null) {
             channel.write(cmd);
             channel.writeAndFlush("\n");
         }
+    }
+
+    @Override
+    public String read() {
         return "todo";
     }
 }

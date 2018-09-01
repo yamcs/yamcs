@@ -7,5 +7,7 @@ public interface Device {
 
     public void close();
 
-    public String exec(String cmd);
+    public void write(String cmd);
+
+    public String read();
 }

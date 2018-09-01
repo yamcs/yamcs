@@ -9,5 +9,4 @@ devices:
 
   rigol:
     locator: "tcpip:192.168.88.185:5555"
-    baudrate: 9600
     description: "Rigol"
