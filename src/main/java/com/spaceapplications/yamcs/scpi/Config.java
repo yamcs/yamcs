@@ -51,9 +51,9 @@ public class Config {
         return dump.replaceAll("\\!\\!.*\n", "").trim();
     }
 
-    private static RuntimeException throwRuntimeException(String msg, Object... args) {
+    private static ConfigurationException throwRuntimeException(String msg, Object... args) {
         String baseMsg = "Error loading config file \"{0}\". ";
         msg = MessageFormat.format(baseMsg + msg, args);
-        throw new RuntimeException(msg);
+        throw new ConfigurationException(msg);
     }
 }

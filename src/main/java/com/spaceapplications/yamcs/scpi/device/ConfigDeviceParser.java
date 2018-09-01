@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.spaceapplications.yamcs.scpi.Config;
 import com.spaceapplications.yamcs.scpi.Config.DeviceConfig;
+import com.spaceapplications.yamcs.scpi.ConfigurationException;
 
 public class ConfigDeviceParser {
 
@@ -22,7 +23,7 @@ public class ConfigDeviceParser {
             String msg = MessageFormat.format(
                     "Invalid locator \"{0}\" for device \"{1}\". Expecting locator similar to serial:/dev/ttyUSB0.",
                     config.locator, id);
-            throw new RuntimeException(msg);
+            throw new ConfigurationException(msg);
         }
 
         String type = parts[0];
@@ -36,7 +37,7 @@ public class ConfigDeviceParser {
             return new TcpIpDevice(id, hostAndPort[0], Integer.parseInt(hostAndPort[1]));
         default:
             String msg = "Unknown device type \"{0}\" for device \"{1}\". Supported device types: serial, tcpip";
-            throw new RuntimeException(MessageFormat.format(msg, type, id));
+            throw new ConfigurationException(MessageFormat.format(msg, type, id));
         }
     }
 }
