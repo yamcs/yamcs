@@ -1,6 +1,9 @@
 package com.spaceapplications.yamcs.scpi.device;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -26,6 +29,8 @@ public class TcpIpDevice implements Device {
 
     private EventLoopGroup group;
     private Channel channel;
+
+    private BlockingQueue<String> responseQueue = new LinkedBlockingQueue<>();
 
     public TcpIpDevice(String id, String host, int port) {
         this.id = id;
@@ -53,7 +58,8 @@ public class TcpIpDevice implements Device {
                             ch.pipeline().addLast("frameDecoder", new LineBasedFrameDecoder(80));
                             ch.pipeline().addLast("stringDecoder", STRING_DECODER);
                             ch.pipeline().addLast("stringEncoder", STRING_ENCODER);
-                            ch.pipeline().addLast("lxiHandler", new TcpIpClientHandler());
+                            ch.pipeline().addLast("responseHandler",
+                                    new TcpIpDeviceResponseHandler(TcpIpDevice.this, responseQueue));
                         }
                     });
             ChannelFuture f = b.connect().sync();
@@ -75,6 +81,7 @@ public class TcpIpDevice implements Device {
         }
         group = null;
         channel = null;
+        responseQueue.clear();
     }
 
     @Override
@@ -86,7 +93,7 @@ public class TcpIpDevice implements Device {
     }
 
     @Override
-    public String read() {
-        return "todo";
+    public String read(long timeout, TimeUnit unit) throws InterruptedException {
+        return responseQueue.poll(timeout, unit);
     }
 }

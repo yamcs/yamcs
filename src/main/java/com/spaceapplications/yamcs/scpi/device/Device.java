@@ -1,5 +1,7 @@
 package com.spaceapplications.yamcs.scpi.device;
 
+import java.util.concurrent.TimeUnit;
+
 public interface Device {
     public String id();
 
@@ -9,5 +11,5 @@ public interface Device {
 
     public void write(String cmd);
 
-    public String read();
+    public String read(long timeout, TimeUnit unit) throws InterruptedException;
 }

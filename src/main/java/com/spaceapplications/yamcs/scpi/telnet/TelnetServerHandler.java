@@ -9,21 +9,35 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
-    private Commander commander;
+
+    private static final String DEFAULT_PROMPT = "$ ";
+
+    private TelnetCommandHandler commandHandler;
 
     public TelnetServerHandler(Config config, List<Device> devices) {
-        commander = new Commander(config, devices);
+        commandHandler = new TelnetCommandHandler(config, devices);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("Client connected: " + ctx.channel().remoteAddress());
-        ctx.writeAndFlush("Welcome! Run 'help' for more info.\n" + Commander.DEFAULT_PROMPT);
+        ctx.writeAndFlush("Welcome! Run 'help' for more info.\n" + DEFAULT_PROMPT);
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String cmd) throws Exception {
-        ctx.writeAndFlush(commander.execute(cmd));
+        String response = commandHandler.execute(cmd);
+        if (response != null) {
+            ctx.write(response);
+            ctx.write("\n");
+        }
+
+        Device device = commandHandler.getConnectedDevice();
+        if (device != null) {
+            ctx.writeAndFlush(device.id() + DEFAULT_PROMPT);
+        } else {
+            ctx.writeAndFlush(DEFAULT_PROMPT);
+        }
     }
 
     @Override
@@ -35,7 +49,7 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("Client disconnected: " + ctx.channel().remoteAddress());
-        commander.disconnectDevice();
+        commandHandler.disconnectDevice();
         super.channelInactive(ctx);
     }
 }

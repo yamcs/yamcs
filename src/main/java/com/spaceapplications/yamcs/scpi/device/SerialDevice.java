@@ -3,6 +3,7 @@ package com.spaceapplications.yamcs.scpi.device;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import com.fazecast.jSerialComm.SerialPort;
 
@@ -42,7 +43,7 @@ public class SerialDevice implements Device {
     }
 
     @Override
-    public synchronized String read() {
+    public synchronized String read(long timeout, TimeUnit unit) {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         byte[] singleByte = { 0 };
         while (sp.readBytes(singleByte, 1) > 0) {
