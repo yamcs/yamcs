@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi.commander;
+package com.spaceapplications.yamcs.scpi.telnet;
 
 import java.text.MessageFormat;
 import java.util.Optional;
@@ -8,8 +8,8 @@ import com.spaceapplications.yamcs.scpi.Config;
 public class DeviceInspect extends Command {
     private Config config;
 
-    public DeviceInspect(String cmd, String description, HasContext context, Config config) {
-        super(cmd, description, context);
+    public DeviceInspect(String cmd, String description, Commander commander, Config config) {
+        super(cmd, description, commander);
         this.config = config;
     }
 

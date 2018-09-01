@@ -1,5 +1,5 @@
 daemon:
-  port: 8181
+  port: 8023
 
 devices:
   tenma:

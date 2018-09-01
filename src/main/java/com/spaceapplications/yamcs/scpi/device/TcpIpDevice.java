@@ -16,6 +16,10 @@ import io.netty.util.CharsetUtil;
 
 public class TcpIpDevice implements Device {
 
+    // These are marked as '@Sharable'
+    private static final StringDecoder STRING_DECODER = new StringDecoder(CharsetUtil.US_ASCII);
+    private static final StringEncoder STRING_ENCODER = new StringEncoder(CharsetUtil.US_ASCII);
+
     private String id;
     private String host;
     private int port;
@@ -35,7 +39,7 @@ public class TcpIpDevice implements Device {
     }
 
     @Override
-    public void open() {
+    public void connect() {
         group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
@@ -47,8 +51,8 @@ public class TcpIpDevice implements Device {
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
                             ch.pipeline().addLast("frameDecoder", new LineBasedFrameDecoder(80));
-                            ch.pipeline().addLast("stringDecoder", new StringDecoder(CharsetUtil.US_ASCII));
-                            ch.pipeline().addLast("stringEncoder", new StringEncoder(CharsetUtil.US_ASCII));
+                            ch.pipeline().addLast("stringDecoder", STRING_DECODER);
+                            ch.pipeline().addLast("stringEncoder", STRING_ENCODER);
                             ch.pipeline().addLast("lxiHandler", new TcpIpClientHandler());
                         }
                     });
@@ -61,7 +65,7 @@ public class TcpIpDevice implements Device {
     }
 
     @Override
-    public void close() {
+    public void disconnect() {
         if (group != null) {
             try {
                 group.shutdownGracefully().sync();

@@ -26,7 +26,7 @@ public class SerialDevice implements Device {
     }
 
     @Override
-    public synchronized void open() {
+    public synchronized void connect() {
         if (sp == null) {
             sp = SerialPort.getCommPort(devicePath);
             sp.setBaudRate(baudrate.orElse(DEFAULT_BAUD_RATE));
@@ -56,7 +56,7 @@ public class SerialDevice implements Device {
     }
 
     @Override
-    public synchronized void close() {
+    public synchronized void disconnect() {
         if (sp != null) {
             sp.closePort();
         }
