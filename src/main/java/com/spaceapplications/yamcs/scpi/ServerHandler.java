@@ -14,6 +14,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        System.out.println("Client connected: " + ctx.channel());
         ctx.writeAndFlush(commander.confirm());
     }
 

@@ -16,7 +16,6 @@ public class Config {
 
     public static class DaemonConfig {
         public int port;
-        public int max_connections;
     }
 
     public static class DeviceConfig {
