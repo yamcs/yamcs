@@ -3,10 +3,11 @@ daemon:
 
 devices:
   tenma:
-    locator: "serial:/dev/tty.usbmodem31"
+    locator: "serial:/dev/tty.usbmodem14141"
     baudrate: 19200
     description: "Tenma-72-2540 programmable DC power supply 30V 5A"
 
-  # test:
-  #   locator: "tcp:localhost:1338"
-  #   description: "TCP stub for testing"
+  rigol:
+    locator: "tcpip:192.168.88.185:5555"
+    baudrate: 9600
+    description: "Rigol"
