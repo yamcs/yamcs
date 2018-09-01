@@ -42,14 +42,20 @@ public class Commander {
         this.connectedDevice = device;
     }
 
-    private String commandDevice(String cmd) {
+    public String commandDevice(String cmd) {
         if ("\\q".equals(cmd) && connectedDevice != null) {
-            connectedDevice.disconnect();
-            connectedDevice = null;
+            disconnectDevice();
             return "disconnected";
         }
         connectedDevice.write(cmd);
         return connectedDevice.read();
+    }
+
+    public void disconnectDevice() {
+        if (connectedDevice != null) {
+            connectedDevice.disconnect();
+            connectedDevice = null;
+        }
     }
 
     public String getPrompt() {

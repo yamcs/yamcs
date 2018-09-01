@@ -35,6 +35,7 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("Client disconnected: " + ctx.channel().remoteAddress());
+        commander.disconnectDevice();
         super.channelInactive(ctx);
     }
 }
