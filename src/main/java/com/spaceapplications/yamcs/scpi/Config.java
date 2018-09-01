@@ -1,12 +1,7 @@
 package com.spaceapplications.yamcs.scpi;
 
-import static pl.touk.throwing.ThrowingFunction.unchecked;
-
-import java.io.IOException;
+import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Map;
 
@@ -35,9 +30,7 @@ public class Config {
         TypeDescription d = new TypeDescription(Config.class);
         c.addTypeDescription(d);
         Yaml yaml = new Yaml(c);
-        InputStream is = unchecked(Config::inputStream).apply(path);
-
-        try {
+        try (InputStream is = new FileInputStream(path)) {
             Config config = (Config) yaml.load(is);
             if (config == null) {
                 throw throwRuntimeException("The file is empty.", path);
@@ -62,10 +55,5 @@ public class Config {
         String baseMsg = "Error loading config file \"{0}\". ";
         msg = MessageFormat.format(baseMsg + msg, args);
         throw new RuntimeException(msg);
-    }
-
-    private static InputStream inputStream(String path) throws IOException {
-        Path p = Paths.get("config.yaml");
-        return Files.newInputStream(p);
     }
 }
