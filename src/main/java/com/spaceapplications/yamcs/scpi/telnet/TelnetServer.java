@@ -3,7 +3,7 @@ package com.spaceapplications.yamcs.scpi.telnet;
 import java.util.List;
 
 import com.spaceapplications.yamcs.scpi.Config;
-import com.spaceapplications.yamcs.scpi.device.Device;
+import com.spaceapplications.yamcs.scpi.Device;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -23,8 +23,8 @@ public class TelnetServer {
     public TelnetServer(Config config, List<Device> devices) {
         this.config = config;
         this.devices = devices;
-        if (config.daemon != null) {
-            port = config.daemon.port;
+        if (config.telnet != null) {
+            port = config.telnet.port;
         }
     }
 

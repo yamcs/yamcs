@@ -2,16 +2,12 @@ package com.spaceapplications.yamcs.scpi;
 
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.spaceapplications.yamcs.scpi.Config.DeviceConfig;
-import com.spaceapplications.yamcs.scpi.device.Device;
-import com.spaceapplications.yamcs.scpi.device.SerialDevice;
-import com.spaceapplications.yamcs.scpi.device.TcpIpDevice;
 import com.spaceapplications.yamcs.scpi.telnet.TelnetServer;
 
 public class Main {
@@ -67,15 +63,38 @@ public class Main {
         String type = parts[0];
         String descriptor = parts[1];
 
+        Device device;
         switch (type) {
         case "serial":
-            return new SerialDevice(id, descriptor, Optional.ofNullable(config.baudrate));
+            SerialDevice sDevice = new SerialDevice(id, descriptor);
+            sDevice.setDescription(config.description);
+            if (config.baudrate != null) {
+                sDevice.setBaudrate(config.baudrate);
+            }
+            if (config.dataBits != null) {
+                sDevice.setDataBits(config.dataBits);
+            }
+            if (config.parity != null) {
+                sDevice.setParity(config.parity);
+            }
+            device = sDevice;
+            break;
         case "tcpip":
             String[] hostAndPort = parts[1].split(":");
-            return new TcpIpDevice(id, hostAndPort[0], Integer.parseInt(hostAndPort[1]));
+            TcpIpDevice tcpDevice = new TcpIpDevice(id, hostAndPort[0], Integer.parseInt(hostAndPort[1]));
+            tcpDevice.setDescription(config.description);
+            device = tcpDevice;
+            break;
         default:
             String msg = "Unknown device type \"{0}\" for device \"{1}\". Supported device types: serial, tcpip";
             throw new ConfigurationException(MessageFormat.format(msg, type, id));
         }
+
+        device.setResponseTermination(config.responseTermination);
+        if (config.responseTimeout != null) {
+            device.setResponseTimeout(config.responseTimeout);
+        }
+
+        return device;
     }
 }

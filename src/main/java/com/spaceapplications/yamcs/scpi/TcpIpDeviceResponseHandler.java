@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi.device;
+package com.spaceapplications.yamcs.scpi;
 
 import java.util.concurrent.BlockingQueue;
 
@@ -17,7 +17,7 @@ public class TcpIpDeviceResponseHandler extends SimpleChannelInboundHandler<Stri
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-        System.out.println(String.format("[%s] %s", device.id(), msg));
+        System.out.println(String.format("[%s] %s", device.getId(), msg));
         responseQueue.put(msg);
     }
 

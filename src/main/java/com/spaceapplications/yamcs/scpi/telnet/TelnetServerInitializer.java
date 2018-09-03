@@ -3,7 +3,7 @@ package com.spaceapplications.yamcs.scpi.telnet;
 import java.util.List;
 
 import com.spaceapplications.yamcs.scpi.Config;
-import com.spaceapplications.yamcs.scpi.device.Device;
+import com.spaceapplications.yamcs.scpi.Device;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;

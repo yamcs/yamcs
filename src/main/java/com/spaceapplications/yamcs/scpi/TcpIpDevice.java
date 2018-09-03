@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi.device;
+package com.spaceapplications.yamcs.scpi;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
@@ -15,15 +15,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import io.netty.util.CharsetUtil;
 
-public class TcpIpDevice implements Device {
+public class TcpIpDevice extends Device {
 
-    // These are marked as '@Sharable'
-    private static final StringDecoder STRING_DECODER = new StringDecoder(CharsetUtil.US_ASCII);
-    private static final StringEncoder STRING_ENCODER = new StringEncoder(CharsetUtil.US_ASCII);
-
-    private String id;
     private String host;
     private int port;
 
@@ -33,14 +27,9 @@ public class TcpIpDevice implements Device {
     private BlockingQueue<String> responseQueue = new LinkedBlockingQueue<>();
 
     public TcpIpDevice(String id, String host, int port) {
-        this.id = id;
+        super(id);
         this.host = host;
         this.port = port;
-    }
-
-    @Override
-    public String id() {
-        return id;
     }
 
     @Override
@@ -55,9 +44,9 @@ public class TcpIpDevice implements Device {
 
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
-                            ch.pipeline().addLast("frameDecoder", new LineBasedFrameDecoder(80));
-                            ch.pipeline().addLast("stringDecoder", STRING_DECODER);
-                            ch.pipeline().addLast("stringEncoder", STRING_ENCODER);
+                            ch.pipeline().addLast("frameDecoder", new LineBasedFrameDecoder(Integer.MAX_VALUE));
+                            ch.pipeline().addLast("stringDecoder", new StringDecoder(encoding));
+                            ch.pipeline().addLast("stringEncoder", new StringEncoder(encoding));
                             ch.pipeline().addLast("responseHandler",
                                     new TcpIpDeviceResponseHandler(TcpIpDevice.this, responseQueue));
                         }
@@ -93,7 +82,7 @@ public class TcpIpDevice implements Device {
     }
 
     @Override
-    public String read(long timeout, TimeUnit unit) throws InterruptedException {
-        return responseQueue.poll(timeout, unit);
+    public String read() throws InterruptedException {
+        return responseQueue.poll(responseTimeout, TimeUnit.MILLISECONDS);
     }
 }

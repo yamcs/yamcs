@@ -1,12 +1,23 @@
-daemon:
+telnet:
   port: 8023
 
+
 devices:
+
   tenma:
-    locator: "serial:/dev/tty.usbmodem14141"
-    baudrate: 19200
-    description: "Tenma-72-2540 programmable DC power supply 30V 5A"
+    locator: serial:/dev/tty.usbmodem14141
+    description: Tenma-72-2540 programmable DC power supply 30V 5A
+  
+    # This device does not terminate responses. To ensure quick feedback
+    # use a low response timeout (spec says responses take ~50ms)
+    responseTimeout: 100
+
+
+  zup:
+    locator: serial:/dev/tty.usbmodem14141
+    responseTermination: 0x0d0a
+    responseTimeout: 3000
+
 
   rigol:
-    locator: "tcpip:192.168.88.185:5555"
-    description: "Rigol"
+    locator: tcpip:192.168.88.185:5555
