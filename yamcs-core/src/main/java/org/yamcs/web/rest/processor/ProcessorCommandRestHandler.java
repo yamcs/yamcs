@@ -93,9 +93,6 @@ public class ProcessorCommandRestHandler extends RestHandler {
             case "dryRun":
                 dryRun = req.getQueryParameterAsBoolean("dryRun");
                 break;
-            case "pretty":
-            case "nolink":
-                break;
             default:
                 String value = req.getQueryParameter(p);
                 assignments.add(new ArgumentAssignment(p, value));

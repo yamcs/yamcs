@@ -63,7 +63,7 @@ fi
 
 if [[ -n $(git status -s) ]]; then
     read -p 'Your workspace contains dirty or untracked files. These will not be part of your release. Continue? [Y/n]' yesNo
-    if [[ -n $yesNo ]] && [[ $yesNo -eq 'n' ]]; then
+    if [[ -n $yesNo ]] && [[ $yesNo == 'n' ]]; then
         exit 0
     fi
 fi
@@ -144,7 +144,6 @@ if [ $yamcsclient -eq 1 ]; then
 
     cd /tmp
     tar czfh $yamcshome/dist/$clientdist.tar.gz $clientdist
-    zip -r $yamcshome/dist/$clientdist.zip $clientdist
 
     rm -rf "$HOME/rpmbuild/BUILD/$clientdist"
     cp -r "/tmp/$clientdist" "$HOME/rpmbuild/BUILD/"
