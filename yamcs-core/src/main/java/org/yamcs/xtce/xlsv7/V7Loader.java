@@ -32,6 +32,7 @@ import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
@@ -49,8 +50,10 @@ import org.yamcs.xtce.BooleanDataEncoding;
 import org.yamcs.xtce.BooleanParameterType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.CheckWindow;
+import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
 import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.CommandVerifier;
+import org.yamcs.xtce.CommandVerifier.TerminationAction;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.ConditionParser;
 import org.yamcs.xtce.ContainerEntry;
@@ -97,6 +100,7 @@ import org.yamcs.xtce.ReferenceTime;
 import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.Significance;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SplineCalibrator;
@@ -105,6 +109,7 @@ import org.yamcs.xtce.SpreadsheetLoadContext;
 import org.yamcs.xtce.SpreadsheetLoadException;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
+import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TransmissionConstraint;
@@ -112,14 +117,9 @@ import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.XtceDb;
-import org.yamcs.xtce.Algorithm.Scope;
-import org.yamcs.xtce.CheckWindow.TimeWindowIsRelativeToType;
-import org.yamcs.xtce.CommandVerifier.TerminationAction;
-import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
-import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtce.util.NameReference;
-import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.util.NameReference.Type;
+import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.xml.XtceAliasSet;
 import org.yamcs.xtceproc.JavaExpressionCalibratorFactory;
 
@@ -1220,8 +1220,9 @@ public class V7Loader extends V7LoaderBase {
             String refParamName = refMatcher.group(1);
             String aliasNameSpace = (refMatcher.groupCount() > 1) ? refMatcher.group(2) : null;
             Parameter refParam = parameters.get(refParamName);
-            if(refParam == null) {
-                throw new SpreadsheetLoadException(ctx, "Entry '"+paraname+"' makes reference to unkonw parameter '"+refParamName+"'");
+            if (refParam == null) {
+                throw new SpreadsheetLoadException(ctx,
+                        "Entry '" + paraname + "' makes reference to unkonw parameter '" + refParamName + "'");
             }
             se = new IndirectParameterRefEntry(pos, location, new ParameterInstanceRef(refParam), aliasNameSpace);
             size = -1;
@@ -1792,15 +1793,19 @@ public class V7Loader extends V7LoaderBase {
 
     private List<ArgumentAssignment> toArgumentAssignmentList(String argAssignment) {
         List<ArgumentAssignment> aal = new ArrayList<>();
-        String splitted[] = argAssignment.split(";");
+        String[] splitted = argAssignment.split("\\r?\\n");
+        if (splitted.length < 2) {
+            splitted = argAssignment.split(";");
+        }
+
         for (String part : splitted) {
-            aal.add(toArgumentAssignment(part));
+            aal.add(toArgumentAssignment(part.trim()));
         }
         return aal;
     }
 
     private ArgumentAssignment toArgumentAssignment(String argAssignment) {
-        Matcher m = Pattern.compile("(.*?)(=)(.*)").matcher(argAssignment);
+        Matcher m = Pattern.compile("(.*?)(=)([^=]*)").matcher(argAssignment);
         if (!m.matches()) {
             throw new SpreadsheetLoadException(ctx, "Cannot parse argument assignment '" + argAssignment + "'");
         }
@@ -2269,8 +2274,7 @@ public class V7Loader extends V7LoaderBase {
 
     /**
      * If repeat != null, decodes it to either an integer or a parameter and adds it to the SequenceEntry If repeat is
-     * an
-     * integer, this integer is returned
+     * an integer, this integer is returned
      */
     private int addRepeat(SequenceEntry se, String repeat) {
         if (repeat != null) {
