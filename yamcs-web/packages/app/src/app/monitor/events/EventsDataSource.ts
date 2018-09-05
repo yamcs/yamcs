@@ -3,6 +3,7 @@ import { DataSource } from '@angular/cdk/table';
 import { Event, GetEventsOptions } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
+import { EventBuffer } from './EventBuffer';
 
 export interface AnimatableEvent extends Event {
   animate?: boolean;
@@ -13,15 +14,35 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   pageSize = 100;
   offscreenRecord: Event | null;
   options: GetEventsOptions;
+  blockHasMore = false;
 
   events$ = new BehaviorSubject<Event[]>([]);
+  private eventBuffer: EventBuffer;
+
   public loading$ = new BehaviorSubject<boolean>(false);
   public streaming$ = new BehaviorSubject<boolean>(false);
 
+  private realtimeSynchronizer: number;
   private realtimeSubscription: Subscription;
 
   constructor(private yamcs: YamcsService) {
     super();
+    this.realtimeSynchronizer = window.setInterval(() => {
+      if (this.eventBuffer.dirty && !this.loading$.getValue()) {
+        this.events$.next(this.eventBuffer.snapshot());
+        this.eventBuffer.dirty = false;
+      }
+    }, 1000 /* update rate */);
+
+    this.eventBuffer = new EventBuffer(() => {
+      console.log('Compacting event buffer');
+
+      // Best solution for now, alternative is to re-establish
+      // the offscreenRecord after compacting.
+      this.blockHasMore = true;
+
+      this.eventBuffer.compact(500);
+    });
   }
 
   connect(collectionViewer: CollectionViewer) {
@@ -35,12 +56,14 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
       limit: this.pageSize + 1, // One extra to detect hasMore
     }).then(events => {
       this.loading$.next(false);
-      this.events$.next(events);
+      this.eventBuffer.reset();
+      this.blockHasMore = false;
+      this.eventBuffer.addArchiveData(events);
     });
   }
 
   hasMore() {
-    return this.offscreenRecord != null;
+    return this.offscreenRecord != null && !this.blockHasMore;
   }
 
   /**
@@ -77,8 +100,7 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
       stop: this.offscreenRecord.generationTimeUTC,
       limit: this.pageSize + 1, // One extra to detect hasMore
     }).then(events => {
-      const combinedEvents = this.events$.getValue().concat(events);
-      this.events$.next(combinedEvents);
+      this.eventBuffer.addArchiveData(events);
     });
   }
 
@@ -88,13 +110,11 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
       this.realtimeSubscription = response.event$.subscribe(event => {
         if (!this.loading$.getValue() && this.matchesFilter(event)) {
           (event as AnimatableEvent).animate = true;
-          const combinedEvents = [event].concat(this.events$.getValue());
-          this.events$.next(combinedEvents);
+          this.eventBuffer.addRealtimeEvent(event);
         }
       });
     });
   }
-
 
   private matchesFilter(event: Event) {
     if (this.options) {
@@ -152,6 +172,9 @@ export class EventsDataSource extends DataSource<AnimatableEvent> {
   disconnect(collectionViewer: CollectionViewer) {
     if (this.realtimeSubscription) {
       this.realtimeSubscription.unsubscribe();
+    }
+    if (this.realtimeSynchronizer) {
+      window.clearInterval(this.realtimeSynchronizer);
     }
     this.events$.complete();
     this.loading$.complete();
