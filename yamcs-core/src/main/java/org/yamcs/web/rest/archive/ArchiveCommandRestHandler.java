@@ -18,6 +18,8 @@ import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
 public class ArchiveCommandRestHandler extends RestHandler {
 
@@ -28,6 +30,12 @@ public class ArchiveCommandRestHandler extends RestHandler {
 
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
+
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+        if (ydb.getTable(CommandHistoryRecorder.TABLE_NAME) == null) {
+            completeOK(req, ListCommandsResponse.newBuilder().build());
+            return;
+        }
 
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
