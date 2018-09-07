@@ -107,7 +107,7 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         String instanceName = ysi.getName();
         // if the client is not connected to this instance we ignore the message
         Processor processor = getProcessor();
-        if (processor == null || processor.getInstance().equals(instanceName)) {
+        if (processor == null || !processor.getInstance().equals(instanceName)) {
             return;
         }
 

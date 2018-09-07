@@ -34,27 +34,28 @@ public class TimeResource implements WebSocketResource {
     public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         if (!subscribed.getAndSet(true)) {
             future = timer.scheduleAtFixedRate(() -> {
-                long currentTime = processor.getCurrentTime();
-                TimeInfo ti = TimeInfo.newBuilder()
-                        .setCurrentTime(currentTime)
-                        .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
-                        .build();
-                client.sendData(ProtoDataType.TIME_INFO, ti);
+                if (processor != null && processor.isRunning()) {
+                    long currentTime = processor.getCurrentTime();
+                    client.sendData(ProtoDataType.TIME_INFO, TimeInfo.newBuilder()
+                            .setCurrentTime(currentTime)
+                            .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
+                            .build());
+                }
             }, 1, 1, TimeUnit.SECONDS);
         }
 
         WebSocketReply reply = new WebSocketReply(ctx.getRequestId());
 
+        TimeSubscriptionResponse.Builder responseb = TimeSubscriptionResponse.newBuilder();
+
         // Already send actual time in response, for client convenience.
-        long currentTime = processor.getCurrentTime();
-        TimeInfo ti = TimeInfo.newBuilder()
-                .setCurrentTime(currentTime)
-                .setCurrentTimeUTC(TimeEncoding.toString(currentTime))
-                .build();
-        TimeSubscriptionResponse response = TimeSubscriptionResponse.newBuilder()
-                .setTimeInfo(ti)
-                .build();
-        reply.attachData(TimeResource.class.getSimpleName(), response);
+        if (processor != null && processor.isRunning()) {
+            long currentTime = processor.getCurrentTime();
+            responseb.setTimeInfo(TimeInfo.newBuilder()
+                    .setCurrentTime(currentTime)
+                    .setCurrentTimeUTC(TimeEncoding.toString(currentTime)));
+        }
+        reply.attachData(TimeResource.class.getSimpleName(), responseb.build());
 
         client.sendReply(reply);
         return null;
