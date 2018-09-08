@@ -1,11 +1,16 @@
-package com.spaceapplications.yamcs.scpi.commander;
+package org.yamcs.tse.commander;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import com.fazecast.jSerialComm.SerialPort;
 
+/**
+ * Connect and command a device over a serial port.
+ */
 public class SerialDevice extends Device {
+
+    private static final int POLLING_INTERVAL = 20;
 
     private static SerialPort link;
 
@@ -49,22 +54,24 @@ public class SerialDevice extends Device {
 
     @Override
     public synchronized void connect() {
-        if (link == null) {
-            link = SerialPort.getCommPort(devicePath);
-            link.setBaudRate(baudrate);
-            link.setNumDataBits(dataBits);
-
-            if ("odd".equals(parity)) {
-                link.setParity(SerialPort.ODD_PARITY);
-            } else if ("even".equals(parity)) {
-                link.setParity(SerialPort.EVEN_PARITY);
-            } else {
-                link.setParity(SerialPort.NO_PARITY);
-            }
-
-            link.openPort();
-            link.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
+        if (link != null && link.isOpen()) {
+            return;
         }
+
+        link = SerialPort.getCommPort(devicePath);
+        link.setBaudRate(baudrate);
+        link.setNumDataBits(dataBits);
+
+        if ("odd".equals(parity)) {
+            link.setParity(SerialPort.ODD_PARITY);
+        } else if ("even".equals(parity)) {
+            link.setParity(SerialPort.EVEN_PARITY);
+        } else {
+            link.setParity(SerialPort.NO_PARITY);
+        }
+
+        link.openPort();
+        link.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING, 0, 0);
     }
 
     @Override
@@ -86,7 +93,7 @@ public class SerialDevice extends Device {
                 link.readBytes(buf, n);
                 bout.write(buf);
             }
-            Thread.sleep(20L);
+            Thread.sleep(POLLING_INTERVAL);
         }
 
         byte[] barr = bout.toByteArray();

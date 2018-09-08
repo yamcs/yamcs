@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi.commander;
+package org.yamcs.tse.commander;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -6,7 +6,12 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
+/**
+ * Connect and command a device over TCP/IP. Typical use case is an instrument with LXI support.
+ */
 public class TcpIpDevice extends Device {
+
+    private static final int POLLING_INTERVAL = 20;
 
     private String host;
     private int port;
@@ -20,27 +25,35 @@ public class TcpIpDevice extends Device {
     }
 
     @Override
-    public void connect() throws IOException {
+    public synchronized void connect() throws IOException {
+        if (socket != null && !socket.isClosed()) {
+            return;
+        }
+
         socket = new Socket(host, port);
-        socket.setSoTimeout(20); // Use this as 'polling period'
+
+        socket.setSoTimeout(POLLING_INTERVAL);
+        if (responseTimeout < POLLING_INTERVAL) {
+            socket.setSoTimeout((int) responseTimeout);
+        }
     }
 
     @Override
-    public void disconnect() throws IOException {
+    public synchronized void disconnect() throws IOException {
         if (socket != null) {
             socket.close();
         }
     }
 
     @Override
-    public void write(String cmd) throws IOException {
+    public synchronized void write(String cmd) throws IOException {
         OutputStream out = socket.getOutputStream();
         out.write((cmd + "\n").getBytes(encoding));
         out.flush();
     }
 
     @Override
-    public String read() throws InterruptedException, IOException {
+    public synchronized String read() throws InterruptedException, IOException {
         long time = System.currentTimeMillis();
         long timeoutTime = time + responseTimeout;
 
@@ -62,7 +75,7 @@ public class TcpIpDevice extends Device {
                 }
             } catch (SocketTimeoutException e) {
                 // Ignore. SoTimeout is used as polling interval
-                // This allows to read multiple buffers within the actual intended timeout.
+                // This allows to read multiple buffers while respecting the actual intended timeout.
             }
         }
 

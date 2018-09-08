@@ -1,5 +1,7 @@
-package com.spaceapplications.yamcs.scpi.commander;
+package org.yamcs.tse.commander;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -23,8 +25,16 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String cmd) throws Exception {
-        String response = commandHandler.execute(cmd);
-        if (response != null) {
+        StringWriter out = new StringWriter();
+        try {
+            commandHandler.execute(cmd, out);
+        } catch (IOException e) {
+            e.printStackTrace();
+            out.write("error: " + e.getMessage());
+        }
+
+        String response = out.toString();
+        if (!response.isEmpty()) {
             ctx.write(response);
             ctx.write("\n");
         }

@@ -1,6 +1,5 @@
-package com.spaceapplications.yamcs.scpi.commander;
+package org.yamcs.tse.commander;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,7 @@ public class DeviceCommander {
         String[] parts = locator.split(":", 2);
         if (parts.length < 2) {
             throw new ConfigurationException(String.format(
-                    "Invalid locator '%s' for device '%s'. Expecting locator similar to serial:/dev/ttyUSB0.",
+                    "Invalid locator '%s' for device '%s'. Expecting locator similar to serial:/dev/ttyUSB0",
                     locator, id));
         }
 
@@ -69,8 +68,8 @@ public class DeviceCommander {
             device = new TcpIpDevice(id, hostAndPort[0], Integer.parseInt(hostAndPort[1]));
             break;
         default:
-            String msg = "Unknown device type \"{0}\" for device \"{1}\". Supported device types: serial, tcpip";
-            throw new ConfigurationException(MessageFormat.format(msg, type, id));
+            throw new ConfigurationException(String.format(
+                    "Unknown device type '%s' for device '%s'. Use one of: serial, tcpip", type, id));
         }
 
         if (config.containsKey("description")) {

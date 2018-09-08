@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi.commander;
+package org.yamcs.tse.commander;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

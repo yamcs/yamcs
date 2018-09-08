@@ -2,42 +2,24 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.spaceapplications.yamcs.scpi</groupId>
+  <groupId>org.yamcs.tse</groupId>
   <artifactId>yamcs-scpi</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-
 
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <main>${project.groupId}.commander.DeviceCommander</main>
   </properties>
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.6.0</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <mainClass>${main}</mainClass>
-        </configuration>
-      </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
             <manifest>
-              <mainClass>${main}</mainClass>
+              <mainClass>org.yamcs.tse.commander.DeviceCommander</mainClass>
             </manifest>
           </archive>
         </configuration>
