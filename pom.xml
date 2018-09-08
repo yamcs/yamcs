@@ -10,7 +10,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <main>${project.groupId}.Main</main>
+    <main>${project.groupId}.commander.DeviceCommander</main>
   </properties>
 
   <build>

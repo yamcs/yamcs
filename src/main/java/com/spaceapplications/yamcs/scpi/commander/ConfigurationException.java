@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi;
+package com.spaceapplications.yamcs.scpi.commander;
 
 @SuppressWarnings("serial")
 public class ConfigurationException extends RuntimeException {

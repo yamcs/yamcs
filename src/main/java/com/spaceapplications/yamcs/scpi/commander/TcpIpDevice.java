@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi;
+package com.spaceapplications.yamcs.scpi.commander;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class TcpIpDevice extends Device {
                     }
                 }
             } catch (SocketTimeoutException e) {
-                // Ignore. SoTimeout is used polling interval
+                // Ignore. SoTimeout is used as polling interval
                 // This allows to read multiple buffers within the actual intended timeout.
             }
         }

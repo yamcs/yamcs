@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi;
+package com.spaceapplications.yamcs.scpi.commander;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -7,10 +7,9 @@ import java.util.stream.Collectors;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import com.spaceapplications.yamcs.scpi.Config.DeviceConfig;
-import com.spaceapplications.yamcs.scpi.telnet.TelnetServer;
+import com.spaceapplications.yamcs.scpi.commander.Config.DeviceConfig;
 
-public class Main {
+public class DeviceCommander {
 
     @Parameter(names = "--config", required = true, description = "Load YAML config file.")
     public String config;
@@ -21,10 +20,10 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         args = new String[] { "--config", "/Users/fdi/workspace/yamcs-scpi/config.yaml" };
 
-        Main main = new Main();
+        DeviceCommander main = new DeviceCommander();
 
         JCommander jc = new JCommander(main);
-        jc.setProgramName("yamcs-scpi");
+        jc.setProgramName("device-commander");
         try {
             jc.parse(args);
         } catch (ParameterException e) {

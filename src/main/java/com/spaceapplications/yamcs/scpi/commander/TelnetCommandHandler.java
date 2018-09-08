@@ -1,12 +1,8 @@
-package com.spaceapplications.yamcs.scpi.telnet;
+package com.spaceapplications.yamcs.scpi.commander;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.spaceapplications.yamcs.scpi.Config;
-import com.spaceapplications.yamcs.scpi.Device;
-import com.spaceapplications.yamcs.scpi.SerialDevice;
 
 public class TelnetCommandHandler {
 

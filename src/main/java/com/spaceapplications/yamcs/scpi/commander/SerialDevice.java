@@ -1,4 +1,4 @@
-package com.spaceapplications.yamcs.scpi;
+package com.spaceapplications.yamcs.scpi.commander;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

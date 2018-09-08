@@ -1,9 +1,6 @@
-package com.spaceapplications.yamcs.scpi.telnet;
+package com.spaceapplications.yamcs.scpi.commander;
 
 import java.util.List;
-
-import com.spaceapplications.yamcs.scpi.Config;
-import com.spaceapplications.yamcs.scpi.Device;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
