@@ -10,3 +10,4 @@ protoc --java_out=java archive.proto
 protoc --java_out=java rest.proto
 protoc --java_out=java web.proto
 protoc --java_out=java table.proto
+protoc --java_out=java tse.proto

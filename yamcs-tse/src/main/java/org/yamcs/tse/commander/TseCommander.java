@@ -1,7 +1,5 @@
 package org.yamcs.tse.commander;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -10,29 +8,35 @@ import org.yamcs.YConfiguration;
 
 public class TseCommander {
 
-    public static void main(String[] args) throws InterruptedException {
-        new TseCommander().start();
-    }
+    private DevicePool devicePool;
 
-    public void start() throws InterruptedException {
+    private TelnetServer telnetServer;
+    private RpcServer rpcServer;
+
+    public TseCommander() {
         YConfiguration yconf = YConfiguration.getConfiguration("tse");
 
-        List<Device> devices = new ArrayList<>();
-
+        devicePool = new DevicePool();
         if (yconf.containsKey("devices")) {
             for (Entry<String, Object> entry : yconf.getMap("devices").entrySet()) {
                 @SuppressWarnings("unchecked")
                 Device device = parseDevice(entry.getKey(), (Map<String, Object>) entry.getValue());
-                devices.add(device);
+                devicePool.add(device);
             }
         }
 
-        TelnetServer telnetServer = new TelnetServer(devices);
+        TelnetServer telnetServer = new TelnetServer(devicePool);
         if (yconf.containsKey("telnet", "port")) {
             int port = yconf.getInt("telnet", "port");
             telnetServer.setPort(port);
         }
+
+        rpcServer = new RpcServer(devicePool);
+    }
+
+    public void start() throws InterruptedException {
         telnetServer.start();
+        rpcServer.start();
     }
 
     private static Device parseDevice(String id, Map<String, Object> config) {
@@ -83,5 +87,9 @@ public class TseCommander {
         }
 
         return device;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        new TseCommander().start();
     }
 }

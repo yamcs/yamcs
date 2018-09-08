@@ -46,6 +46,19 @@ public abstract class Device {
         this.responseTimeout = responseTimeout;
     }
 
+    public String command(String cmd) throws IOException, InterruptedException {
+        System.out.format("%s <<< %s\n", id, cmd);
+        write(cmd);
+        if (cmd.contains("?") || cmd.contains("!")) { // Should maybe make this configurable
+            String response = read();
+            if (response != null) {
+                System.out.format("%s >>> %s\n", id, response);
+            }
+            return response;
+        }
+        return null;
+    }
+
     public abstract void connect() throws IOException;
 
     public abstract void disconnect() throws IOException;

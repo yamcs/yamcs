@@ -1,30 +1,30 @@
 package org.yamcs.tse.commander;
 
+import org.yamcs.protobuf.Tse.CommandDeviceRequest;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
-import io.netty.util.CharsetUtil;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
 
-public class TelnetServer {
-
-    // These are marked as '@Sharable'
-    private static final StringDecoder STRING_DECODER = new StringDecoder(CharsetUtil.US_ASCII);
-    private static final StringEncoder STRING_ENCODER = new StringEncoder(CharsetUtil.US_ASCII);
+/**
+ * Responds to RPC calls in the form of Protobuf messages over TCP/IP.
+ */
+public class RpcServer {
 
     private DevicePool devicePool;
-    private int port = 8023;
+    private int port = 8135;
 
     private NioEventLoopGroup bossGroup;
     private NioEventLoopGroup workerGroup;
 
-    public TelnetServer(DevicePool devicePool) {
+    public RpcServer(DevicePool devicePool) {
         this.devicePool = devicePool;
     }
 
@@ -43,24 +43,25 @@ public class TelnetServer {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast("frameDecoder",
-                                new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-                        pipeline.addLast("stringDecoder", STRING_DECODER);
-                        pipeline.addLast("stringEncoder", STRING_ENCODER);
-                        pipeline.addLast(new TelnetServerHandler(devicePool));
+
+                        pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 4, 0, 4));
+                        pipeline.addLast("protobufDecoder",
+                                new ProtobufDecoder(CommandDeviceRequest.getDefaultInstance()));
+
+                        pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
+                        pipeline.addLast("protobufEncoder", new ProtobufEncoder());
+
+                        pipeline.addLast(new RpcServerHandler(devicePool));
                     }
                 });
 
         b.bind(port).sync();
-        System.out.println("Listening for telnet clients on port " + port);
+        System.out.println("Listening for RPC clients on port " + port);
     }
 
     public void stop() throws InterruptedException {
         if (bossGroup != null) {
             bossGroup.shutdownGracefully().sync();
-        }
-        if (workerGroup != null) {
-            workerGroup.shutdownGracefully().sync();
         }
     }
 }

@@ -1,0 +1,13 @@
+syntax="proto2";
+
+option java_package = "org.yamcs.protobuf";
+
+package tse;
+
+message CommandDeviceRequest {
+  optional string message = 1;
+}
+
+message CommandDeviceResponse {
+  optional string response = 1;
+}
