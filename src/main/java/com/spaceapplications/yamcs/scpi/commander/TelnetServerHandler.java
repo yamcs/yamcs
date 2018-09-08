@@ -11,8 +11,8 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
     private TelnetCommandHandler commandHandler;
 
-    public TelnetServerHandler(Config config, List<Device> devices) {
-        commandHandler = new TelnetCommandHandler(config, devices);
+    public TelnetServerHandler(List<Device> devices) {
+        commandHandler = new TelnetCommandHandler(devices);
     }
 
     @Override

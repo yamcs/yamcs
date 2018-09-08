@@ -5,24 +5,21 @@ import java.util.List;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 
 public class TelnetServer {
 
-    private Config config;
     private List<Device> devices;
     private int port = 8023;
 
     private NioEventLoopGroup bossGroup;
     private NioEventLoopGroup workerGroup;
 
-    public TelnetServer(Config config, List<Device> devices) {
-        this.config = config;
+    public TelnetServer(List<Device> devices) {
         this.devices = devices;
-        if (config.telnet != null) {
-            port = config.telnet.port;
-        }
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public void start() throws InterruptedException {
@@ -32,8 +29,7 @@ public class TelnetServer {
         ServerBootstrap b = new ServerBootstrap()
                 .group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
-                .handler(new LoggingHandler(LogLevel.DEBUG))
-                .childHandler(new TelnetServerInitializer(config, devices));
+                .childHandler(new TelnetServerInitializer(devices));
 
         b.bind(port).sync();
         System.out.println("Listening for telnet clients on port " + port);

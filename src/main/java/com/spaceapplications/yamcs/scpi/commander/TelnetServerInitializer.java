@@ -17,11 +17,9 @@ public class TelnetServerInitializer extends ChannelInitializer<SocketChannel> {
     private static final StringDecoder STRING_DECODER = new StringDecoder(CharsetUtil.US_ASCII);
     private static final StringEncoder STRING_ENCODER = new StringEncoder(CharsetUtil.US_ASCII);
 
-    private Config config;
     private List<Device> devices;
 
-    public TelnetServerInitializer(Config config, List<Device> devices) {
-        this.config = config;
+    public TelnetServerInitializer(List<Device> devices) {
         this.devices = devices;
     }
 
@@ -32,6 +30,6 @@ public class TelnetServerInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast("stringDecoder", STRING_DECODER);
         pipeline.addLast("stringEncoder", STRING_ENCODER);
 
-        pipeline.addLast(new TelnetServerHandler(config, devices));
+        pipeline.addLast(new TelnetServerHandler(devices));
     }
 }

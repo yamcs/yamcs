@@ -8,15 +8,13 @@ public class TelnetCommandHandler {
 
     private static final char[] HEXCHARS = "0123456789ABCDEF".toCharArray();
 
-    private Config config;
     private List<Device> devices;
 
     private boolean printHex;
 
     private Device connectedDevice;
 
-    public TelnetCommandHandler(Config config, List<Device> devices) {
-        this.config = config;
+    public TelnetCommandHandler(List<Device> devices) {
         this.devices = devices;
     }
 
@@ -37,8 +35,8 @@ public class TelnetCommandHandler {
             return getHelpString();
         } else if (cmd.equals("list")) {
             String header = String.format("%-20s %s\n", "ID", "DESCRIPTION");
-            String devList = config.devices.entrySet().stream()
-                    .map(set -> String.format("%-20s %s", set.getKey(), set.getValue().description))
+            String devList = devices.stream()
+                    .map(d -> String.format("%-20s %s", d.getId(), d.getDescription()))
                     .collect(Collectors.joining("\n"));
             return header + devList;
         } else if (cmd.startsWith("describe")) {
@@ -76,7 +74,7 @@ public class TelnetCommandHandler {
     public String commandDevice(String cmd) throws IOException, InterruptedException {
         if ("\\q".equals(cmd) && connectedDevice != null) {
             disconnectDevice();
-            return "disconnected";
+            return null;
         } else if ("\\hex".equals(cmd)) {
             printHex = true;
             return null;
