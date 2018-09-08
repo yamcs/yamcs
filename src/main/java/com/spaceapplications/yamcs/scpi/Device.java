@@ -46,9 +46,9 @@ public abstract class Device {
         this.responseTimeout = responseTimeout;
     }
 
-    public abstract void connect();
+    public abstract void connect() throws IOException;
 
-    public abstract void disconnect();
+    public abstract void disconnect() throws IOException;
 
     public abstract void write(String cmd) throws IOException;
 

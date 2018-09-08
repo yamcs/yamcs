@@ -57,7 +57,12 @@ public class TelnetCommandHandler {
             String deviceId = cmd.split("\\s+", 2)[1];
             for (Device device : devices) {
                 if (deviceId.equals(device.getId())) {
-                    connectDevice(device);
+                    try {
+                        connectDevice(device);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return "error: " + e.getMessage();
+                    }
                     return null;
                 }
             }
@@ -67,7 +72,7 @@ public class TelnetCommandHandler {
         return cmd.trim() + ": command not found";
     }
 
-    public void connectDevice(Device device) {
+    public void connectDevice(Device device) throws IOException {
         device.connect();
         this.connectedDevice = device;
     }
@@ -97,7 +102,7 @@ public class TelnetCommandHandler {
         return null;
     }
 
-    public void disconnectDevice() {
+    public void disconnectDevice() throws IOException {
         if (connectedDevice != null) {
             connectedDevice.disconnect();
             connectedDevice = null;
