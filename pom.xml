@@ -151,13 +151,14 @@
   </dependencyManagement>
 
   <modules>
-    <module>yamcs-core</module>
     <module>yamcs-api</module>
-    <module>yamcs-xtce</module>
     <module>yamcs-artemis</module>
+    <module>yamcs-client</module>
+    <module>yamcs-core</module>
     <module>yamcs-server</module>
     <module>yamcs-simulation</module>
-    <module>yamcs-client</module>
+    <module>yamcs-tse</module>
+    <module>yamcs-xtce</module>
   </modules>
 
   <distributionManagement>
