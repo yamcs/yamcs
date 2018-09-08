@@ -63,7 +63,7 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
 
     @Override
     public void setProcessor(Processor newProcessor) throws ProcessorException {
-        log.info("Switching {} to processor {}/{}", getId(), newProcessor.getInstance(), newProcessor.getName());
+        log.info("Switching client {} to processor {}/{}", getId(), newProcessor.getInstance(), newProcessor.getName());
         Processor oldProcessor = getProcessor();
         super.setProcessor(newProcessor);
 

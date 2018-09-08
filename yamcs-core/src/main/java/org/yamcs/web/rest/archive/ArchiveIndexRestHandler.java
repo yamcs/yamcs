@@ -23,6 +23,7 @@ import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.HttpRequestHandler.ChunkedTransferStats;
+import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
@@ -113,7 +114,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, false));
         } catch (YamcsException e) {
-            log.error("Error while processing index request", e);
+            throw new InternalServerErrorException(e);
         }
     }
 
@@ -146,7 +147,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
         } catch (YamcsException e) {
-            log.error("Error while processing index request", e);
+            throw new InternalServerErrorException(e);
         }
     }
 
@@ -169,7 +170,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
         } catch (YamcsException e) {
-            log.error("Error while processing index request", e);
+            throw new InternalServerErrorException(e);
         }
     }
 
@@ -192,7 +193,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
         } catch (YamcsException e) {
-            log.error("Error while processing index request", e);
+            throw new InternalServerErrorException(e);
         }
     }
 
@@ -215,7 +216,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
         } catch (YamcsException e) {
-            log.error("Error while processing index request", e);
+            throw new InternalServerErrorException(e);
         }
     }
 
@@ -238,7 +239,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         try {
             indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
         } catch (YamcsException e) {
-            log.error("Error while processing index request", e);
+            throw new InternalServerErrorException(e);
         }
     }
 
