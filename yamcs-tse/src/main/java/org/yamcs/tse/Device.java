@@ -1,4 +1,4 @@
-package org.yamcs.tse.commander;
+package org.yamcs.tse;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -14,40 +14,30 @@ public abstract class Device {
 
     private static final Logger log = LoggerFactory.getLogger(Device.class);
 
-    protected String id;
-    protected String locator;
-    protected String description;
+    protected String name;
 
     protected String responseTermination;
     protected int responseTimeout = 3000;
+    protected int maxAttempts = 3;
 
     protected Charset encoding = StandardCharsets.US_ASCII;
 
-    public Device(String id, Map<String, Object> args) {
-        this.id = id;
-        locator = YConfiguration.getString(args, "locator");
+    public Device(String name, Map<String, Object> args) {
+        this.name = name;
 
-        if (args.containsKey("description")) {
-            description = YConfiguration.getString(args, "description");
-        }
         if (args.containsKey("responseTermination")) {
             responseTermination = YConfiguration.getString(args, "responseTermination");
         }
         if (args.containsKey("responseTimeout")) {
             responseTimeout = YConfiguration.getInt(args, "responseTimeout");
         }
+        if (args.containsKey("maxAttempts")) {
+            maxAttempts = YConfiguration.getInt(args, "maxAttempts");
+        }
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getLocator() {
-        return locator;
-    }
-
-    public String getDescription() {
-        return description;
+    public String getName() {
+        return name;
     }
 
     public String getResponseTermination() {
@@ -58,16 +48,30 @@ public abstract class Device {
         return responseTimeout;
     }
 
-    public String command(String cmd) throws IOException, TimeoutException {
-        log.info("{} <<< {}", id, cmd);
-        write(cmd);
-        if (cmd.contains("?") || cmd.contains("!")) { // Should maybe make this configurable
-            String response = read();
-            if (response != null) {
-                log.info("{} >>> {}", id, response);
+    public String command(String command) throws IOException, TimeoutException {
+        connect();
+        log.info("{} <<< {}", name, command);
+        for (int i = 1; i <= maxAttempts; i++) {
+            try {
+                write(command);
+                if (command.contains("?") || command.contains("!")) { // Should maybe make this configurable
+                    String response = read();
+                    if (response != null) {
+                        log.info("{} >>> {}", name, response);
+                    }
+                    return response;
+                }
+            } catch (IOException | TimeoutException e) {
+                if (i < maxAttempts) {
+                    log.info("Attempt {} of {} failed ({})", i, maxAttempts, e);
+                    disconnect();
+                    connect();
+                } else {
+                    throw e;
+                }
             }
-            return response;
         }
+
         return null;
     }
 

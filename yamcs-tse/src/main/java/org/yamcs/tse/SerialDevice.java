@@ -1,4 +1,4 @@
-package org.yamcs.tse.commander;
+package org.yamcs.tse;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,10 +24,9 @@ public class SerialDevice extends Device {
     private int dataBits = 8;
     private String parity;
 
-    public SerialDevice(String id, Map<String, Object> args) {
-        super(id, args);
-        String[] parts = locator.split(":", 2);
-        this.devicePath = parts[1];
+    public SerialDevice(String name, Map<String, Object> args) {
+        super(name, args);
+        this.devicePath = YConfiguration.getString(args, "path");
 
         if (args.containsKey("baudrate")) {
             baudrate = YConfiguration.getInt(args, "baudrate");
@@ -111,7 +110,7 @@ public class SerialDevice extends Device {
 
         // Timed out. Return whatever we have.
         String response = responseBuilder.parsePartialResponse();
-        throw new TimeoutException(response);
+        throw new TimeoutException(response != null ? "unterminated response: " + response : null);
     }
 
     @Override

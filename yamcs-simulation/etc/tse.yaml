@@ -6,17 +6,24 @@ rpc:
 
 devices:
 
-  tenma:
-    locator: serial:/dev/tty.usbmodem14141
-    description: Tenma-72-2540 programmable DC power supply 30V 5A
-    responseTimeout: 3000
-    # Note: This device does not terminate responses.
+  - name: tenma
+    class: org.yamcs.tse.SerialDevice
+    args:
+      path: /dev/tty.usbmodem14141
+      responseTimeout: 3000
+      # Note: this device does not terminate responses.
+      # responseTermination: "\n"
 
-  zup:
-    locator: serial:/dev/tty.usbmodem14141
-    responseTermination: "\r\n"
-    responseTimeout: 3000
+  - name: zup
+    class: org.yamcs.tse.SerialDevice
+    args:
+      path: /dev/tty.usbmodem14141
+      responseTermination: "\r\n"
+      responseTimeout: 3000
 
-  rigol:
-    locator: tcpip:192.168.88.185:5555
-    responseTermination: "\n"
+  - name: rigol
+    class: org.yamcs.tse.TcpIpDevice
+    args:
+      host: 192.168.88.185
+      port: 5555
+      responseTermination: "\n"

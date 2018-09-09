@@ -1,4 +1,4 @@
-package org.yamcs.tse.commander;
+package org.yamcs.tse;
 
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 

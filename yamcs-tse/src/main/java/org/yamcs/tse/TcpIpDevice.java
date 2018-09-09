@@ -1,6 +1,7 @@
-package org.yamcs.tse.commander;
+package org.yamcs.tse;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -10,6 +11,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 
 /**
  * Connect and command a device over TCP/IP. Typical use case is an instrument with LXI support.
@@ -27,12 +29,10 @@ public class TcpIpDevice extends Device {
 
     private Socket socket;
 
-    public TcpIpDevice(String id, Map<String, Object> args) {
-        super(id, args);
-        String[] parts = locator.split(":", 2);
-        String[] hostAndPort = parts[1].split(":");
-        this.host = hostAndPort[0];
-        this.port = Integer.parseInt(hostAndPort[1]);
+    public TcpIpDevice(String name, Map<String, Object> args) {
+        super(name, args);
+        host = YConfiguration.getString(args, "host");
+        port = YConfiguration.getInt(args, "port");
     }
 
     @Override
@@ -78,9 +78,10 @@ public class TcpIpDevice extends Device {
 
         ResponseBuilder responseBuilder = new ResponseBuilder(encoding, getResponseTermination());
         byte[] buf = new byte[4096];
+        InputStream socketIn = socket.getInputStream();
         while (System.currentTimeMillis() < timeoutTime) {
             try {
-                int n = socket.getInputStream().read(buf);
+                int n = socketIn.read(buf);
                 if (n > 0) {
                     responseBuilder.append(buf, 0, n);
                     String response = responseBuilder.parseCompleteResponse();
@@ -94,8 +95,7 @@ public class TcpIpDevice extends Device {
             }
         }
 
-        // Timed out. Return whatever we have.
         String response = responseBuilder.parsePartialResponse();
-        throw new TimeoutException(response);
+        throw new TimeoutException(response != null ? "unterminated response: " + response : null);
     }
 }

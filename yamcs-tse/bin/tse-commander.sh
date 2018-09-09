@@ -18,4 +18,4 @@ YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
 . "$YAMCS_HOME"/bin/setclasspath.sh
 
-exec "$_RUNJAVA" org.yamcs.tse.commander.TseCommander "$@"
+exec "$_RUNJAVA" org.yamcs.tse.TseCommander "$@"

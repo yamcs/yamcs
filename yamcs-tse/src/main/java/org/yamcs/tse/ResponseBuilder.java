@@ -1,4 +1,4 @@
-package org.yamcs.tse.commander;
+package org.yamcs.tse;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
@@ -33,8 +33,6 @@ public class ResponseBuilder {
                 return result;
             } else if (result.endsWith(responseTermination)) {
                 return result.substring(0, result.length() - responseTermination.length());
-            } else {
-                return result;
             }
         }
         return null;

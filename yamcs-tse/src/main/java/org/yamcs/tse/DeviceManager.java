@@ -1,4 +1,4 @@
-package org.yamcs.tse.commander;
+package org.yamcs.tse;
 
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 
@@ -22,7 +22,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 public class DeviceManager extends AbstractService {
 
     private List<Device> devices = new ArrayList<>();
-    private Map<String, ListeningExecutorService> executorsById = new HashMap<>();
+    private Map<String, ListeningExecutorService> executorsByName = new HashMap<>();
 
     public void add(Device device) {
         devices.add(device);
@@ -31,22 +31,19 @@ public class DeviceManager extends AbstractService {
     @Override
     protected void doStart() {
         for (Device device : devices) {
-            executorsById.put(device.getId(), listeningDecorator(Executors.newSingleThreadExecutor()));
+            executorsByName.put(device.getName(), listeningDecorator(Executors.newSingleThreadExecutor()));
         }
         notifyStarted();
     }
 
     public ListenableFuture<String> queueCommand(Device device, String command) {
-        ListeningExecutorService exec = executorsById.get(device.getId());
-        return exec.submit(() -> {
-            device.connect();
-            return device.command(command);
-        });
+        ListeningExecutorService exec = executorsByName.get(device.getName());
+        return exec.submit(() -> device.command(command));
     }
 
-    public Device getDevice(String id) {
+    public Device getDevice(String name) {
         for (Device device : devices) {
-            if (id.equals(device.getId())) {
+            if (name.equals(device.getName())) {
                 return device;
             }
         }
@@ -62,13 +59,13 @@ public class DeviceManager extends AbstractService {
         ListeningExecutorService closers = listeningDecorator(Executors.newCachedThreadPool());
 
         List<ListenableFuture<?>> closeFutures = new ArrayList<>();
-        for (ExecutorService exec : executorsById.values()) {
+        for (ExecutorService exec : executorsByName.values()) {
             closeFutures.add(closers.submit(() -> {
                 exec.shutdown();
                 return exec.awaitTermination(10, TimeUnit.SECONDS);
             }));
         }
-        executorsById.clear();
+        executorsByName.clear();
 
         closers.shutdown();
         Futures.addCallback(Futures.allAsList(closeFutures), new FutureCallback<Object>() {

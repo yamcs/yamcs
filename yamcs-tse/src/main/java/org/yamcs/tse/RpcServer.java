@@ -1,9 +1,8 @@
-package org.yamcs.tse.commander;
-
-import static io.netty.handler.codec.Delimiters.lineDelimiter;
+package org.yamcs.tse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Tse.CommandDeviceRequest;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -13,25 +12,26 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
-import io.netty.util.CharsetUtil;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
 
-public class TelnetServer extends AbstractService {
+/**
+ * Responds to RPC calls in the form of Protobuf messages over TCP/IP.
+ */
+public class RpcServer extends AbstractService {
 
-    private static final Logger log = LoggerFactory.getLogger(TelnetServer.class);
+    private static final Logger log = LoggerFactory.getLogger(RpcServer.class);
 
-    // These are marked as '@Sharable'
-    private static final StringDecoder STRING_DECODER = new StringDecoder(CharsetUtil.US_ASCII);
-    private static final StringEncoder STRING_ENCODER = new StringEncoder(CharsetUtil.US_ASCII);
+    private static final int MAX_FRAME_LENGTH = 512 * 1024; // 512 KB
 
     private DeviceManager deviceManager;
-    private int port = 8023;
+    private int port = 8135;
 
     private NioEventLoopGroup eventLoopGroup;
 
-    public TelnetServer(DeviceManager deviceManager) {
+    public RpcServer(DeviceManager deviceManager) {
         this.deviceManager = deviceManager;
     }
 
@@ -49,16 +49,17 @@ public class TelnetServer extends AbstractService {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast(new DelimiterBasedFrameDecoder(8192, lineDelimiter()));
-                        pipeline.addLast(STRING_DECODER);
-                        pipeline.addLast(STRING_ENCODER);
-                        pipeline.addLast(new TelnetServerHandler(deviceManager));
+                        pipeline.addLast(new LengthFieldBasedFrameDecoder(MAX_FRAME_LENGTH, 0, 4, 0, 4));
+                        pipeline.addLast(new ProtobufDecoder(CommandDeviceRequest.getDefaultInstance()));
+                        pipeline.addLast(new LengthFieldPrepender(4));
+                        pipeline.addLast(new ProtobufEncoder());
+                        pipeline.addLast(new RpcServerHandler(deviceManager));
                     }
                 });
 
         try {
             b.bind(port).sync();
-            log.info("Listening for Telnet clients on port " + port);
+            log.info("Listening for RPC clients on port " + port);
             notifyStarted();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -67,7 +68,7 @@ public class TelnetServer extends AbstractService {
     }
 
     @Override
-    protected void doStop() {
+    public void doStop() {
         eventLoopGroup.shutdownGracefully().addListener(future -> {
             if (future.isSuccess()) {
                 notifyStopped();

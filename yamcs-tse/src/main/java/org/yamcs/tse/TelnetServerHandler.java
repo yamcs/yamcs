@@ -1,4 +1,4 @@
-package org.yamcs.tse.commander;
+package org.yamcs.tse;
 
 import java.io.StringWriter;
 import java.util.concurrent.ExecutionException;
@@ -62,7 +62,7 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
         }
 
         if (currentDevice != null) {
-            ctx.writeAndFlush(currentDevice.getId() + PROMPT);
+            ctx.writeAndFlush(currentDevice.getName() + PROMPT);
         } else {
             ctx.writeAndFlush(PROMPT);
         }
@@ -102,19 +102,18 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
     }
 
     private void listDevices(String cmd, StringWriter out) {
-        out.write(String.format("%-20s %s\n", "ID", "DESCRIPTION"));
-        String table = deviceManager.getDevices().stream()
-                .map(d -> String.format("%-20s %s", d.getId(), d.getDescription()))
-                .collect(Collectors.joining("\n"));
-        out.write(table);
+        out.write(deviceManager.getDevices().stream()
+                .map(d -> d.getName())
+                .sorted()
+                .collect(Collectors.joining("\n")));
     }
 
     private void describeDevice(String cmd, StringWriter out) {
-        String deviceId = cmd.split("\\s+", 2)[1];
-        Device device = deviceManager.getDevice(deviceId);
+        String name = cmd.split("\\s+", 2)[1];
+        Device device = deviceManager.getDevice(name);
         if (device != null) {
             StringBuilder buf = new StringBuilder();
-            buf.append("locator: ").append(device.getLocator()).append("\n");
+            buf.append("class: ").append(device.getClass().getName()).append("\n");
             if (device instanceof SerialDevice) {
                 SerialDevice sDevice = (SerialDevice) device;
                 buf.append("baudrate: ").append(sDevice.getBaudrate()).append("\n");
@@ -141,12 +140,12 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
     private String getHelpString() {
         StringBuilder buf = new StringBuilder();
         buf.append("Available commands:\n");
-        buf.append("    list           List available devices\n");
-        buf.append("    describe <id>  Print device configuration details\n");
-        buf.append("    use <id>       Set current device\n");
+        buf.append("    list             List available devices\n");
+        buf.append("    describe <name>  Print device configuration details\n");
+        buf.append("    use <name>       Set current device\n");
         buf.append("\n");
-        buf.append("    \\ascii         Print the ASCII value of device responses (default)\n");
-        buf.append("    \\hex           Print the hexadecimal value of device responses\n");
+        buf.append("    \\ascii           Print the ASCII value of device responses (default)\n");
+        buf.append("    \\hex             Print the hexadecimal value of device responses\n");
         buf.append("\n");
         buf.append("    Any other command is sent to the selected device.");
         return buf.toString();
