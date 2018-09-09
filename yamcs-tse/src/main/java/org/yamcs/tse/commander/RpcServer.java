@@ -49,15 +49,10 @@ public class RpcServer extends AbstractService {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-
-                        pipeline.addLast("frameDecoder",
-                                new LengthFieldBasedFrameDecoder(MAX_FRAME_LENGTH, 0, 4, 0, 4));
-                        pipeline.addLast("protobufDecoder",
-                                new ProtobufDecoder(CommandDeviceRequest.getDefaultInstance()));
-
-                        pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
-                        pipeline.addLast("protobufEncoder", new ProtobufEncoder());
-
+                        pipeline.addLast(new LengthFieldBasedFrameDecoder(MAX_FRAME_LENGTH, 0, 4, 0, 4));
+                        pipeline.addLast(new ProtobufDecoder(CommandDeviceRequest.getDefaultInstance()));
+                        pipeline.addLast(new LengthFieldPrepender(4));
+                        pipeline.addLast(new ProtobufEncoder());
                         pipeline.addLast(new RpcServerHandler(deviceManager));
                     }
                 });

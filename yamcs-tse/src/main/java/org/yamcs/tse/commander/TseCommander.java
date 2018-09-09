@@ -85,51 +85,24 @@ public class TseCommander {
         return Arrays.asList(deviceManager, telnetServer, rpcServer);
     }
 
-    private static Device parseDevice(String id, Map<String, Object> config) {
-        String locator = YConfiguration.getString(config, "locator");
+    private static Device parseDevice(String id, Map<String, Object> args) {
+        String locator = YConfiguration.getString(args, "locator");
         String[] parts = locator.split(":", 2);
         if (parts.length < 2) {
-            throw new ConfigurationException(String.format(
-                    "Invalid locator '%s' for device '%s'. Expecting locator similar to serial:/dev/ttyUSB0",
-                    locator, id));
+            throw new ConfigurationException(String.format("Invalid locator for device '%s'", id));
         }
 
-        String type = parts[0];
-        String descriptor = parts[1];
-
         Device device;
-        switch (type) {
+        switch (parts[0]) {
         case "serial":
-            SerialDevice sDevice = new SerialDevice(id, descriptor);
-
-            if (config.containsKey("baudrate")) {
-                sDevice.setBaudrate(YConfiguration.getInt(config, "baudrate"));
-            }
-            if (config.containsKey("dataBits")) {
-                sDevice.setDataBits(YConfiguration.getInt(config, "dataBits"));
-            }
-            if (config.containsKey("parity")) {
-                sDevice.setParity(YConfiguration.getString(config, "parity"));
-            }
-            device = sDevice;
+            device = new SerialDevice(id, args);
             break;
         case "tcpip":
-            String[] hostAndPort = parts[1].split(":");
-            device = new TcpIpDevice(id, hostAndPort[0], Integer.parseInt(hostAndPort[1]));
+            device = new TcpIpDevice(id, args);
             break;
         default:
             throw new ConfigurationException(String.format(
-                    "Unknown device type '%s' for device '%s'. Use one of: serial, tcpip", type, id));
-        }
-
-        if (config.containsKey("description")) {
-            device.setDescription(YConfiguration.getString(config, "description"));
-        }
-        // if (config.containsKey("responseTermination")) {
-        // device.setResponseTermination(YConfiguration.getInteger(config, "responseTermination"));
-        // }
-        if (config.containsKey("responseTimeout")) {
-            device.setResponseTimeout(YConfiguration.getLong(config, "responseTimeout"));
+                    "Unknown device type '%s' for device '%s'. Use one of: serial, tcpip", parts[0], id));
         }
 
         return device;

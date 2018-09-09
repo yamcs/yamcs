@@ -1,5 +1,7 @@
 package org.yamcs.tse.commander;
 
+import static io.netty.handler.codec.Delimiters.lineDelimiter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +14,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.CharsetUtil;
@@ -25,13 +26,13 @@ public class TelnetServer extends AbstractService {
     private static final StringDecoder STRING_DECODER = new StringDecoder(CharsetUtil.US_ASCII);
     private static final StringEncoder STRING_ENCODER = new StringEncoder(CharsetUtil.US_ASCII);
 
-    private DeviceManager devicePool;
+    private DeviceManager deviceManager;
     private int port = 8023;
 
     private NioEventLoopGroup eventLoopGroup;
 
-    public TelnetServer(DeviceManager devicePool) {
-        this.devicePool = devicePool;
+    public TelnetServer(DeviceManager deviceManager) {
+        this.deviceManager = deviceManager;
     }
 
     public void setPort(int port) {
@@ -48,11 +49,10 @@ public class TelnetServer extends AbstractService {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast("frameDecoder",
-                                new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-                        pipeline.addLast("stringDecoder", STRING_DECODER);
-                        pipeline.addLast("stringEncoder", STRING_ENCODER);
-                        pipeline.addLast(new TelnetServerHandler(devicePool));
+                        pipeline.addLast(new DelimiterBasedFrameDecoder(8192, lineDelimiter()));
+                        pipeline.addLast(STRING_DECODER);
+                        pipeline.addLast(STRING_ENCODER);
+                        pipeline.addLast(new TelnetServerHandler(deviceManager));
                     }
                 });
 

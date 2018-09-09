@@ -1,10 +1,15 @@
 package org.yamcs.tse.commander;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Connect and command a device over TCP/IP. Typical use case is an instrument with LXI support.
@@ -13,6 +18,8 @@ import java.net.SocketTimeoutException;
  */
 public class TcpIpDevice extends Device {
 
+    private static final Logger log = LoggerFactory.getLogger(TcpIpDevice.class);
+
     private static final int POLLING_INTERVAL = 20;
 
     private String host;
@@ -20,28 +27,32 @@ public class TcpIpDevice extends Device {
 
     private Socket socket;
 
-    public TcpIpDevice(String id, String host, int port) {
-        super(id);
-        this.host = host;
-        this.port = port;
-    }
-
-    @Override
-    public boolean isConnected() {
-        return socket != null && !socket.isClosed();
+    public TcpIpDevice(String id, Map<String, Object> args) {
+        super(id, args);
+        String[] parts = locator.split(":", 2);
+        String[] hostAndPort = parts[1].split(":");
+        this.host = hostAndPort[0];
+        this.port = Integer.parseInt(hostAndPort[1]);
     }
 
     @Override
     public void connect() throws IOException {
-        if (isConnected()) {
-            return;
+        if (socket != null) {
+            if (socket.isConnected() && socket.isBound() && !socket.isClosed()) {
+                return;
+            }
+            socket.close();
         }
 
-        socket = new Socket(host, port);
+        socket = new Socket();
+
+        log.info("Connecting to {}:{}", host, port);
+        socket.connect(new InetSocketAddress(host, port), responseTimeout);
+        log.info("Connected to {}:{}", host, port);
 
         socket.setSoTimeout(POLLING_INTERVAL);
         if (responseTimeout < POLLING_INTERVAL) {
-            socket.setSoTimeout((int) responseTimeout);
+            socket.setSoTimeout(responseTimeout);
         }
     }
 
@@ -49,6 +60,7 @@ public class TcpIpDevice extends Device {
     public void disconnect() throws IOException {
         if (socket != null) {
             socket.close();
+            socket = null;
         }
     }
 
@@ -60,24 +72,20 @@ public class TcpIpDevice extends Device {
     }
 
     @Override
-    public String read() throws InterruptedException, IOException {
+    public String read() throws IOException, TimeoutException {
         long time = System.currentTimeMillis();
         long timeoutTime = time + responseTimeout;
 
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        ResponseBuilder responseBuilder = new ResponseBuilder(encoding, getResponseTermination());
         byte[] buf = new byte[4096];
-        String responseString = null;
         while (System.currentTimeMillis() < timeoutTime) {
             try {
                 int n = socket.getInputStream().read(buf);
                 if (n > 0) {
-                    bout.write(buf, 0, n);
-                    byte[] barr = bout.toByteArray();
-                    responseString = new String(barr, encoding);
-
-                    if (responseString.endsWith("\n")) {
-                        responseString = responseString.substring(0, responseString.length() - 1);
-                        break;
+                    responseBuilder.append(buf, 0, n);
+                    String response = responseBuilder.parseCompleteResponse();
+                    if (response != null) {
+                        return response;
                     }
                 }
             } catch (SocketTimeoutException e) {
@@ -86,6 +94,8 @@ public class TcpIpDevice extends Device {
             }
         }
 
-        return responseString;
+        // Timed out. Return whatever we have.
+        String response = responseBuilder.parsePartialResponse();
+        throw new TimeoutException(response);
     }
 }

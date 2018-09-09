@@ -1,7 +1,10 @@
 package org.yamcs.tse.commander;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
+import org.yamcs.YConfiguration;
 
 import com.fazecast.jSerialComm.SerialPort;
 
@@ -21,33 +24,32 @@ public class SerialDevice extends Device {
     private int dataBits = 8;
     private String parity;
 
-    public SerialDevice(String id, String devicePath) {
-        super(id);
-        this.devicePath = devicePath;
+    public SerialDevice(String id, Map<String, Object> args) {
+        super(id, args);
+        String[] parts = locator.split(":", 2);
+        this.devicePath = parts[1];
+
+        if (args.containsKey("baudrate")) {
+            baudrate = YConfiguration.getInt(args, "baudrate");
+        }
+        if (args.containsKey("dataBits")) {
+            dataBits = YConfiguration.getInt(args, "dataBits");
+        }
+        if (args.containsKey("parity")) {
+            parity = YConfiguration.getString(args, "parity");
+        }
     }
 
     public int getBaudrate() {
         return baudrate;
     }
 
-    public void setBaudrate(int baudrate) {
-        this.baudrate = baudrate;
-    }
-
     public int getDataBits() {
         return dataBits;
     }
 
-    public void setDataBits(int dataBits) {
-        this.dataBits = dataBits;
-    }
-
     public String getParity() {
         return parity;
-    }
-
-    public void setParity(String parity) {
-        this.parity = parity;
     }
 
     public String getPath() {
@@ -55,13 +57,8 @@ public class SerialDevice extends Device {
     }
 
     @Override
-    public boolean isConnected() {
-        return link != null && link.isOpen();
-    }
-
-    @Override
     public void connect() {
-        if (isConnected()) {
+        if (link != null && link.isOpen()) {
             return;
         }
 
@@ -88,23 +85,33 @@ public class SerialDevice extends Device {
     }
 
     @Override
-    public String read() throws IOException, InterruptedException {
+    public String read() throws IOException, TimeoutException {
         long time = System.currentTimeMillis();
         long timeoutTime = time + responseTimeout;
 
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        while (System.currentTimeMillis() < timeoutTime) {
-            int n = link.bytesAvailable();
-            if (n > 0) {
-                byte[] buf = new byte[n];
-                link.readBytes(buf, n);
-                bout.write(buf);
+        ResponseBuilder responseBuilder = new ResponseBuilder(encoding, getResponseTermination());
+        try {
+            while (System.currentTimeMillis() < timeoutTime) {
+                int n = link.bytesAvailable();
+                if (n > 0) {
+                    byte[] buf = new byte[n];
+                    link.readBytes(buf, n);
+                    responseBuilder.append(buf, 0, n);
+                    String response = responseBuilder.parseCompleteResponse();
+                    if (response != null) {
+                        return response;
+                    }
+                }
+                Thread.sleep(POLLING_INTERVAL);
             }
-            Thread.sleep(POLLING_INTERVAL);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
         }
 
-        byte[] barr = bout.toByteArray();
-        return (barr.length > 0) ? new String(barr, encoding) : null;
+        // Timed out. Return whatever we have.
+        String response = responseBuilder.parsePartialResponse();
+        throw new TimeoutException(response);
     }
 
     @Override
