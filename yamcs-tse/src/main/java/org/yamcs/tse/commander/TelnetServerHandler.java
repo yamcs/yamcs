@@ -2,6 +2,7 @@ package org.yamcs.tse.commander;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -12,12 +13,12 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
     private static final String DEFAULT_PROMPT = "$ ";
     private static final char[] HEXCHARS = "0123456789ABCDEF".toCharArray();
 
-    private DevicePool devicePool;
+    private DeviceManager deviceManager;
     private boolean printHex;
     private Device currentDevice;
 
-    public TelnetServerHandler(DevicePool devicePool) {
-        this.devicePool = devicePool;
+    public TelnetServerHandler(DeviceManager deviceManager) {
+        this.deviceManager = deviceManager;
     }
 
     @Override
@@ -70,15 +71,13 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("Telnet client disconnected: " + ctx.channel().remoteAddress());
-        disconnectDevice();
-        super.channelInactive(ctx);
     }
 
+    // Does not really 'connect' (this is handled by the DeviceManager), but changes the prompt
     private void connectDevice(String cmd, StringWriter out) throws IOException {
         String deviceId = cmd.split("\\s+", 2)[1];
-        Device device = devicePool.getDevice(deviceId);
+        Device device = deviceManager.getDevice(deviceId);
         if (device != null) {
-            device.connect();
             currentDevice = device;
         } else {
             out.write("unknown device");
@@ -87,35 +86,28 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
     private void commandDevice(String cmd, StringWriter out) throws IOException, InterruptedException {
         if ("\\q".equals(cmd)) {
-            disconnectDevice();
+            currentDevice = null;
         } else if ("\\hex".equals(cmd)) {
             printHex = true;
         } else if ("\\ascii".equals(cmd)) {
             printHex = false;
-        } else if ("help".equals(cmd) || "?".equals(cmd)) {
+        } else if ("?".equals(cmd) || "help".equals(cmd)) {
             out.write(getDeviceHelpString());
         } else if (!cmd.isEmpty()) {
-            String response = currentDevice.command(cmd);
-            if (response != null) {
-                if (printHex) {
-                    out.write(toHex(response.getBytes()));
-                } else {
-                    out.write(response);
+            try {
+                String result = deviceManager.queueCommand(currentDevice, cmd).get();
+                if (result != null) {
+                    out.write(printHex ? toHex(result.getBytes()) : result);
                 }
+            } catch (ExecutionException e) {
+                out.write(e.getCause().getMessage());
             }
-        }
-    }
-
-    private void disconnectDevice() throws IOException {
-        if (currentDevice != null) {
-            currentDevice.disconnect();
-            currentDevice = null;
         }
     }
 
     private void listDevices(String cmd, StringWriter out) {
         out.write(String.format("%-20s %s\n", "ID", "DESCRIPTION"));
-        String table = devicePool.getDevices().stream()
+        String table = deviceManager.getDevices().stream()
                 .map(d -> String.format("%-20s %s", d.getId(), d.getDescription()))
                 .collect(Collectors.joining("\n"));
         out.write(table);
@@ -123,7 +115,7 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
     private void describeDevice(String cmd, StringWriter out) {
         String deviceId = cmd.split("\\s+", 2)[1];
-        Device device = devicePool.getDevice(deviceId);
+        Device device = deviceManager.getDevice(deviceId);
         if (device != null) {
             StringBuilder buf = new StringBuilder();
             if (device instanceof SerialDevice) {

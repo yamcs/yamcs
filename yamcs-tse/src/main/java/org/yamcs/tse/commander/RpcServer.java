@@ -2,6 +2,8 @@ package org.yamcs.tse.commander;
 
 import org.yamcs.protobuf.Tse.CommandDeviceRequest;
 
+import com.google.common.util.concurrent.AbstractService;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -16,52 +18,64 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
 /**
  * Responds to RPC calls in the form of Protobuf messages over TCP/IP.
  */
-public class RpcServer {
+public class RpcServer extends AbstractService {
 
-    private DevicePool devicePool;
+    private static final int MAX_FRAME_LENGTH = 512 * 1024; // 512 KB
+
+    private DeviceManager deviceManager;
     private int port = 8135;
 
-    private NioEventLoopGroup bossGroup;
-    private NioEventLoopGroup workerGroup;
+    private NioEventLoopGroup eventLoopGroup;
 
-    public RpcServer(DevicePool devicePool) {
-        this.devicePool = devicePool;
+    public RpcServer(DeviceManager deviceManager) {
+        this.deviceManager = deviceManager;
     }
 
     public void setPort(int port) {
         this.port = port;
     }
 
-    public void start() throws InterruptedException {
-        bossGroup = new NioEventLoopGroup(1);
-        workerGroup = new NioEventLoopGroup();
-
+    @Override
+    protected void doStart() {
+        eventLoopGroup = new NioEventLoopGroup();
         ServerBootstrap b = new ServerBootstrap()
-                .group(bossGroup, workerGroup)
+                .group(eventLoopGroup)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
 
-                        pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 4, 0, 4));
+                        pipeline.addLast("frameDecoder",
+                                new LengthFieldBasedFrameDecoder(MAX_FRAME_LENGTH, 0, 4, 0, 4));
                         pipeline.addLast("protobufDecoder",
                                 new ProtobufDecoder(CommandDeviceRequest.getDefaultInstance()));
 
                         pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
                         pipeline.addLast("protobufEncoder", new ProtobufEncoder());
 
-                        pipeline.addLast(new RpcServerHandler(devicePool));
+                        pipeline.addLast(new RpcServerHandler(deviceManager));
                     }
                 });
 
-        b.bind(port).sync();
-        System.out.println("Listening for RPC clients on port " + port);
+        try {
+            b.bind(port).sync();
+            System.out.println("Listening for RPC clients on port " + port);
+            notifyStarted();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            notifyFailed(e);
+        }
     }
 
-    public void stop() throws InterruptedException {
-        if (bossGroup != null) {
-            bossGroup.shutdownGracefully().sync();
-        }
+    @Override
+    public void doStop() {
+        eventLoopGroup.shutdownGracefully().addListener(future -> {
+            if (future.isSuccess()) {
+                notifyStopped();
+            } else {
+                notifyFailed(future.cause());
+            }
+        });
     }
 }

@@ -1,42 +1,72 @@
 package org.yamcs.tse.commander;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.ServiceManager;
+import com.google.common.util.concurrent.ServiceManager.Listener;
+
 public class TseCommander {
 
-    private DevicePool devicePool;
-
-    private TelnetServer telnetServer;
-    private RpcServer rpcServer;
-
-    public TseCommander() {
+    public static void main(String[] args) {
         YConfiguration yconf = YConfiguration.getConfiguration("tse");
+        List<Service> services = createServices(yconf);
 
-        devicePool = new DevicePool();
+        ServiceManager serviceManager = new ServiceManager(services);
+        serviceManager.addListener(new Listener() {
+            @Override
+            public void failure(Service service) {
+                // Stop entire process as soon as one service fails.
+                System.exit(1);
+            }
+        });
+
+        // Allow services to shutdown gracefully
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                try {
+                    serviceManager.stopAsync().awaitStopped(10, TimeUnit.SECONDS);
+                } catch (TimeoutException e) {
+                    // ignore
+                }
+            }
+        });
+
+        serviceManager.startAsync();
+    }
+
+    private static List<Service> createServices(YConfiguration yconf) {
+        DeviceManager deviceManager = new DeviceManager();
         if (yconf.containsKey("devices")) {
             for (Entry<String, Object> entry : yconf.getMap("devices").entrySet()) {
                 @SuppressWarnings("unchecked")
                 Device device = parseDevice(entry.getKey(), (Map<String, Object>) entry.getValue());
-                devicePool.add(device);
+                deviceManager.add(device);
             }
         }
 
-        TelnetServer telnetServer = new TelnetServer(devicePool);
+        TelnetServer telnetServer = new TelnetServer(deviceManager);
         if (yconf.containsKey("telnet", "port")) {
             int port = yconf.getInt("telnet", "port");
             telnetServer.setPort(port);
         }
 
-        rpcServer = new RpcServer(devicePool);
-    }
+        RpcServer rpcServer = new RpcServer(deviceManager);
+        if (yconf.containsKey("rpc", "port")) {
+            int port = yconf.getInt("rpc", "port");
+            rpcServer.setPort(port);
+        }
 
-    public void start() throws InterruptedException {
-        telnetServer.start();
-        rpcServer.start();
+        return Arrays.asList(deviceManager, telnetServer, rpcServer);
     }
 
     private static Device parseDevice(String id, Map<String, Object> config) {
@@ -87,9 +117,5 @@ public class TseCommander {
         }
 
         return device;
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        new TseCommander().start();
     }
 }

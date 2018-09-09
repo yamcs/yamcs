@@ -1,5 +1,7 @@
 package org.yamcs.tse.commander;
 
+import com.google.common.util.concurrent.AbstractService;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -12,19 +14,18 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.CharsetUtil;
 
-public class TelnetServer {
+public class TelnetServer extends AbstractService {
 
     // These are marked as '@Sharable'
     private static final StringDecoder STRING_DECODER = new StringDecoder(CharsetUtil.US_ASCII);
     private static final StringEncoder STRING_ENCODER = new StringEncoder(CharsetUtil.US_ASCII);
 
-    private DevicePool devicePool;
+    private DeviceManager devicePool;
     private int port = 8023;
 
-    private NioEventLoopGroup bossGroup;
-    private NioEventLoopGroup workerGroup;
+    private NioEventLoopGroup eventLoopGroup;
 
-    public TelnetServer(DevicePool devicePool) {
+    public TelnetServer(DeviceManager devicePool) {
         this.devicePool = devicePool;
     }
 
@@ -32,12 +33,11 @@ public class TelnetServer {
         this.port = port;
     }
 
-    public void start() throws InterruptedException {
-        bossGroup = new NioEventLoopGroup(1);
-        workerGroup = new NioEventLoopGroup();
-
+    @Override
+    protected void doStart() {
+        eventLoopGroup = new NioEventLoopGroup();
         ServerBootstrap b = new ServerBootstrap()
-                .group(bossGroup, workerGroup)
+                .group(eventLoopGroup)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -51,16 +51,24 @@ public class TelnetServer {
                     }
                 });
 
-        b.bind(port).sync();
-        System.out.println("Listening for telnet clients on port " + port);
+        try {
+            b.bind(port).sync();
+            System.out.println("Listening for Telnet clients on port " + port);
+            notifyStarted();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            notifyFailed(e);
+        }
     }
 
-    public void stop() throws InterruptedException {
-        if (bossGroup != null) {
-            bossGroup.shutdownGracefully().sync();
-        }
-        if (workerGroup != null) {
-            workerGroup.shutdownGracefully().sync();
-        }
+    @Override
+    protected void doStop() {
+        eventLoopGroup.shutdownGracefully().addListener(future -> {
+            if (future.isSuccess()) {
+                notifyStopped();
+            } else {
+                notifyFailed(future.cause());
+            }
+        });
     }
 }

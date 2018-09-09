@@ -1,5 +1,8 @@
 telnet:
   port: 8023
+  
+rpc:
+  port: 8135
 
 
 devices:

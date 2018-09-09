@@ -8,6 +8,8 @@ import java.net.SocketTimeoutException;
 
 /**
  * Connect and command a device over TCP/IP. Typical use case is an instrument with LXI support.
+ * 
+ * Not thread safe.
  */
 public class TcpIpDevice extends Device {
 
@@ -25,7 +27,7 @@ public class TcpIpDevice extends Device {
     }
 
     @Override
-    public synchronized void connect() throws IOException {
+    public void connect() throws IOException {
         if (socket != null && !socket.isClosed()) {
             return;
         }
@@ -39,21 +41,21 @@ public class TcpIpDevice extends Device {
     }
 
     @Override
-    public synchronized void disconnect() throws IOException {
+    public void disconnect() throws IOException {
         if (socket != null) {
             socket.close();
         }
     }
 
     @Override
-    public synchronized void write(String cmd) throws IOException {
+    public void write(String cmd) throws IOException {
         OutputStream out = socket.getOutputStream();
         out.write((cmd + "\n").getBytes(encoding));
         out.flush();
     }
 
     @Override
-    public synchronized String read() throws InterruptedException, IOException {
+    public String read() throws InterruptedException, IOException {
         long time = System.currentTimeMillis();
         long timeoutTime = time + responseTimeout;
 

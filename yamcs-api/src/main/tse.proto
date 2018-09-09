@@ -9,5 +9,6 @@ message CommandDeviceRequest {
 }
 
 message CommandDeviceResponse {
-  optional string response = 1;
+  optional string result = 1;
+  optional string exception = 2;
 }

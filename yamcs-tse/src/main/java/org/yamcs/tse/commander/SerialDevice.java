@@ -7,6 +7,8 @@ import com.fazecast.jSerialComm.SerialPort;
 
 /**
  * Connect and command a device over a serial port.
+ * 
+ * Not thread safe.
  */
 public class SerialDevice extends Device {
 
@@ -53,7 +55,7 @@ public class SerialDevice extends Device {
     }
 
     @Override
-    public synchronized void connect() {
+    public void connect() {
         if (link != null && link.isOpen()) {
             return;
         }
@@ -75,13 +77,13 @@ public class SerialDevice extends Device {
     }
 
     @Override
-    public synchronized void write(String cmd) {
+    public void write(String cmd) {
         byte[] bytes = cmd.getBytes();
         link.writeBytes(bytes, bytes.length);
     }
 
     @Override
-    public synchronized String read() throws IOException, InterruptedException {
+    public String read() throws IOException, InterruptedException {
         long time = System.currentTimeMillis();
         long timeoutTime = time + responseTimeout;
 
@@ -101,7 +103,7 @@ public class SerialDevice extends Device {
     }
 
     @Override
-    public synchronized void disconnect() {
+    public void disconnect() {
         if (link != null) {
             link.closePort();
         }

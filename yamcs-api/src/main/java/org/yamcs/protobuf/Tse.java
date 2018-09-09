@@ -563,18 +563,32 @@ public final class Tse {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string response = 1;</code>
+     * <code>optional string result = 1;</code>
      */
-    boolean hasResponse();
+    boolean hasResult();
     /**
-     * <code>optional string response = 1;</code>
+     * <code>optional string result = 1;</code>
      */
-    java.lang.String getResponse();
+    java.lang.String getResult();
     /**
-     * <code>optional string response = 1;</code>
+     * <code>optional string result = 1;</code>
      */
     com.google.protobuf.ByteString
-        getResponseBytes();
+        getResultBytes();
+
+    /**
+     * <code>optional string exception = 2;</code>
+     */
+    boolean hasException();
+    /**
+     * <code>optional string exception = 2;</code>
+     */
+    java.lang.String getException();
+    /**
+     * <code>optional string exception = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getExceptionBytes();
   }
   /**
    * Protobuf type {@code tse.CommandDeviceResponse}
@@ -588,7 +602,8 @@ public final class Tse {
       super(builder);
     }
     private CommandDeviceResponse() {
-      response_ = "";
+      result_ = "";
+      exception_ = "";
     }
 
     @java.lang.Override
@@ -622,7 +637,13 @@ public final class Tse {
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              response_ = bs;
+              result_ = bs;
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              exception_ = bs;
               break;
             }
           }
@@ -650,19 +671,19 @@ public final class Tse {
     }
 
     private int bitField0_;
-    public static final int RESPONSE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object response_;
+    public static final int RESULT_FIELD_NUMBER = 1;
+    private volatile java.lang.Object result_;
     /**
-     * <code>optional string response = 1;</code>
+     * <code>optional string result = 1;</code>
      */
-    public boolean hasResponse() {
+    public boolean hasResult() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional string response = 1;</code>
+     * <code>optional string result = 1;</code>
      */
-    public java.lang.String getResponse() {
-      java.lang.Object ref = response_;
+    public java.lang.String getResult() {
+      java.lang.Object ref = result_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -670,22 +691,64 @@ public final class Tse {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          response_ = s;
+          result_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>optional string response = 1;</code>
+     * <code>optional string result = 1;</code>
      */
     public com.google.protobuf.ByteString
-        getResponseBytes() {
-      java.lang.Object ref = response_;
+        getResultBytes() {
+      java.lang.Object ref = result_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        response_ = b;
+        result_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int EXCEPTION_FIELD_NUMBER = 2;
+    private volatile java.lang.Object exception_;
+    /**
+     * <code>optional string exception = 2;</code>
+     */
+    public boolean hasException() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string exception = 2;</code>
+     */
+    public java.lang.String getException() {
+      java.lang.Object ref = exception_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          exception_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string exception = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getExceptionBytes() {
+      java.lang.Object ref = exception_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        exception_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -705,7 +768,10 @@ public final class Tse {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, response_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, result_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, exception_);
       }
       unknownFields.writeTo(output);
     }
@@ -716,7 +782,10 @@ public final class Tse {
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, response_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, result_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, exception_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -735,10 +804,15 @@ public final class Tse {
       org.yamcs.protobuf.Tse.CommandDeviceResponse other = (org.yamcs.protobuf.Tse.CommandDeviceResponse) obj;
 
       boolean result = true;
-      result = result && (hasResponse() == other.hasResponse());
-      if (hasResponse()) {
-        result = result && getResponse()
-            .equals(other.getResponse());
+      result = result && (hasResult() == other.hasResult());
+      if (hasResult()) {
+        result = result && getResult()
+            .equals(other.getResult());
+      }
+      result = result && (hasException() == other.hasException());
+      if (hasException()) {
+        result = result && getException()
+            .equals(other.getException());
       }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
@@ -751,9 +825,13 @@ public final class Tse {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasResponse()) {
-        hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
-        hash = (53 * hash) + getResponse().hashCode();
+      if (hasResult()) {
+        hash = (37 * hash) + RESULT_FIELD_NUMBER;
+        hash = (53 * hash) + getResult().hashCode();
+      }
+      if (hasException()) {
+        hash = (37 * hash) + EXCEPTION_FIELD_NUMBER;
+        hash = (53 * hash) + getException().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -873,8 +951,10 @@ public final class Tse {
       }
       public Builder clear() {
         super.clear();
-        response_ = "";
+        result_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
+        exception_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -902,7 +982,11 @@ public final class Tse {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.response_ = response_;
+        result.result_ = result_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.exception_ = exception_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -945,9 +1029,14 @@ public final class Tse {
 
       public Builder mergeFrom(org.yamcs.protobuf.Tse.CommandDeviceResponse other) {
         if (other == org.yamcs.protobuf.Tse.CommandDeviceResponse.getDefaultInstance()) return this;
-        if (other.hasResponse()) {
+        if (other.hasResult()) {
           bitField0_ |= 0x00000001;
-          response_ = other.response_;
+          result_ = other.result_;
+          onChanged();
+        }
+        if (other.hasException()) {
+          bitField0_ |= 0x00000002;
+          exception_ = other.exception_;
           onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
@@ -978,24 +1067,24 @@ public final class Tse {
       }
       private int bitField0_;
 
-      private java.lang.Object response_ = "";
+      private java.lang.Object result_ = "";
       /**
-       * <code>optional string response = 1;</code>
+       * <code>optional string result = 1;</code>
        */
-      public boolean hasResponse() {
+      public boolean hasResult() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>optional string result = 1;</code>
        */
-      public java.lang.String getResponse() {
-        java.lang.Object ref = response_;
+      public java.lang.String getResult() {
+        java.lang.Object ref = result_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            response_ = s;
+            result_ = s;
           }
           return s;
         } else {
@@ -1003,53 +1092,129 @@ public final class Tse {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>optional string result = 1;</code>
        */
       public com.google.protobuf.ByteString
-          getResponseBytes() {
-        java.lang.Object ref = response_;
+          getResultBytes() {
+        java.lang.Object ref = result_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          response_ = b;
+          result_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>optional string result = 1;</code>
        */
-      public Builder setResponse(
+      public Builder setResult(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000001;
-        response_ = value;
+        result_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>optional string result = 1;</code>
        */
-      public Builder clearResponse() {
+      public Builder clearResult() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        response_ = getDefaultInstance().getResponse();
+        result_ = getDefaultInstance().getResult();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>optional string result = 1;</code>
        */
-      public Builder setResponseBytes(
+      public Builder setResultBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000001;
-        response_ = value;
+        result_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object exception_ = "";
+      /**
+       * <code>optional string exception = 2;</code>
+       */
+      public boolean hasException() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string exception = 2;</code>
+       */
+      public java.lang.String getException() {
+        java.lang.Object ref = exception_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            exception_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string exception = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getExceptionBytes() {
+        java.lang.Object ref = exception_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          exception_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string exception = 2;</code>
+       */
+      public Builder setException(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        exception_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string exception = 2;</code>
+       */
+      public Builder clearException() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        exception_ = getDefaultInstance().getException();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string exception = 2;</code>
+       */
+      public Builder setExceptionBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        exception_ = value;
         onChanged();
         return this;
       }
@@ -1122,9 +1287,9 @@ public final class Tse {
   static {
     java.lang.String[] descriptorData = {
       "\n\ttse.proto\022\003tse\"\'\n\024CommandDeviceRequest" +
-      "\022\017\n\007message\030\001 \001(\t\")\n\025CommandDeviceRespon" +
-      "se\022\020\n\010response\030\001 \001(\tB\024\n\022org.yamcs.protob" +
-      "uf"
+      "\022\017\n\007message\030\001 \001(\t\":\n\025CommandDeviceRespon" +
+      "se\022\016\n\006result\030\001 \001(\t\022\021\n\texception\030\002 \001(\tB\024\n" +
+      "\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1149,7 +1314,7 @@ public final class Tse {
     internal_static_tse_CommandDeviceResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_tse_CommandDeviceResponse_descriptor,
-        new java.lang.String[] { "Response", });
+        new java.lang.String[] { "Result", "Exception", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
