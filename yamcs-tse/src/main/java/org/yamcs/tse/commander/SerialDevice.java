@@ -55,8 +55,13 @@ public class SerialDevice extends Device {
     }
 
     @Override
+    public boolean isConnected() {
+        return link != null && link.isOpen();
+    }
+
+    @Override
     public void connect() {
-        if (link != null && link.isOpen()) {
+        if (isConnected()) {
             return;
         }
 

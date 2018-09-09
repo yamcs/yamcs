@@ -27,8 +27,13 @@ public class TcpIpDevice extends Device {
     }
 
     @Override
+    public boolean isConnected() {
+        return socket != null && !socket.isClosed();
+    }
+
+    @Override
     public void connect() throws IOException {
-        if (socket != null && !socket.isClosed()) {
+        if (isConnected()) {
             return;
         }
 

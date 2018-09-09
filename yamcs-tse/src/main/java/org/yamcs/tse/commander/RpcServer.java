@@ -1,5 +1,7 @@
 package org.yamcs.tse.commander;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Tse.CommandDeviceRequest;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -19,6 +21,8 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
  * Responds to RPC calls in the form of Protobuf messages over TCP/IP.
  */
 public class RpcServer extends AbstractService {
+
+    private static final Logger log = LoggerFactory.getLogger(RpcServer.class);
 
     private static final int MAX_FRAME_LENGTH = 512 * 1024; // 512 KB
 
@@ -60,7 +64,7 @@ public class RpcServer extends AbstractService {
 
         try {
             b.bind(port).sync();
-            System.out.println("Listening for RPC clients on port " + port);
+            log.info("Listening for RPC clients on port " + port);
             notifyStarted();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

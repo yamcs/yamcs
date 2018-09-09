@@ -1,5 +1,8 @@
 package org.yamcs.tse.commander;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.util.concurrent.AbstractService;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -15,6 +18,8 @@ import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.CharsetUtil;
 
 public class TelnetServer extends AbstractService {
+
+    private static final Logger log = LoggerFactory.getLogger(TelnetServer.class);
 
     // These are marked as '@Sharable'
     private static final StringDecoder STRING_DECODER = new StringDecoder(CharsetUtil.US_ASCII);
@@ -53,7 +58,7 @@ public class TelnetServer extends AbstractService {
 
         try {
             b.bind(port).sync();
-            System.out.println("Listening for Telnet clients on port " + port);
+            log.info("Listening for Telnet clients on port " + port);
             notifyStarted();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

@@ -5,10 +5,15 @@ import java.io.StringWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
+
+    private static final Logger log = LoggerFactory.getLogger(TelnetServerHandler.class);
 
     private static final String DEFAULT_PROMPT = "$ ";
     private static final char[] HEXCHARS = "0123456789ABCDEF".toCharArray();
@@ -23,7 +28,7 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Telnet client connected: " + ctx.channel().remoteAddress());
+        log.info("Telnet client connected: " + ctx.channel().remoteAddress());
         ctx.writeAndFlush("Welcome! Run '?' for more info.\n" + DEFAULT_PROMPT);
     }
 
@@ -70,7 +75,7 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("Telnet client disconnected: " + ctx.channel().remoteAddress());
+        log.info("Telnet client disconnected: " + ctx.channel().remoteAddress());
     }
 
     // Does not really 'connect' (this is handled by the DeviceManager), but changes the prompt

@@ -4,6 +4,8 @@ import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 
 import java.util.concurrent.ExecutionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.protobuf.Tse.CommandDeviceRequest;
 import org.yamcs.protobuf.Tse.CommandDeviceResponse;
 
@@ -14,6 +16,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 public class RpcServerHandler extends SimpleChannelInboundHandler<CommandDeviceRequest> {
 
+    private static final Logger log = LoggerFactory.getLogger(RpcServerHandler.class);
+
     private DeviceManager deviceManager;
 
     public RpcServerHandler(DeviceManager deviceManager) {
@@ -22,7 +26,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<CommandDeviceR
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("RPC client connected: " + ctx.channel().remoteAddress());
+        log.info("RPC client connected: " + ctx.channel().remoteAddress());
     }
 
     @Override
@@ -60,6 +64,6 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<CommandDeviceR
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("RPC client disconnected: " + ctx.channel().remoteAddress());
+        log.info("RPC client disconnected: " + ctx.channel().remoteAddress());
     }
 }

@@ -4,7 +4,12 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class Device {
+
+    private static final Logger log = LoggerFactory.getLogger(Device.class);
 
     private String id;
     private String description;
@@ -47,17 +52,19 @@ public abstract class Device {
     }
 
     public String command(String cmd) throws IOException, InterruptedException {
-        System.out.format("%s <<< %s\n", id, cmd);
+        log.info("{} <<< {}", id, cmd);
         write(cmd);
         if (cmd.contains("?") || cmd.contains("!")) { // Should maybe make this configurable
             String response = read();
             if (response != null) {
-                System.out.format("%s >>> %s\n", id, response);
+                log.info("{} >>> {}", id, response);
             }
             return response;
         }
         return null;
     }
+
+    public abstract boolean isConnected();
 
     public abstract void connect() throws IOException;
 

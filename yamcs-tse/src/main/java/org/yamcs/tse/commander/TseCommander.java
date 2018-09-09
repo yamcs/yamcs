@@ -1,11 +1,14 @@
 package org.yamcs.tse.commander;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.LogManager;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -17,6 +20,8 @@ import com.google.common.util.concurrent.ServiceManager.Listener;
 public class TseCommander {
 
     public static void main(String[] args) {
+        configureLogging();
+
         YConfiguration yconf = YConfiguration.getConfiguration("tse");
         List<Service> services = createServices(yconf);
 
@@ -42,6 +47,17 @@ public class TseCommander {
         });
 
         serviceManager.startAsync();
+    }
+
+    private static void configureLogging() {
+        try {
+            LogManager logManager = LogManager.getLogManager();
+            try (InputStream in = TseCommander.class.getResourceAsStream("/tse-logging.properties")) {
+                logManager.readConfiguration(in);
+            }
+        } catch (IOException e) {
+            System.err.println("[WARN] Failed to set up logging configuration: " + e.getMessage());
+        }
     }
 
     private static List<Service> createServices(YConfiguration yconf) {
