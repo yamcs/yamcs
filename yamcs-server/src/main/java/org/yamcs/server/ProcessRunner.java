@@ -63,7 +63,7 @@ public class ProcessRunner extends AbstractService implements YamcsService {
                     log.error("Failed to start process", e);
                 }
             }
-        }, 5, 1, TimeUnit.SECONDS);
+        }, 5, 5, TimeUnit.SECONDS);
     }
 
     private void startProcess() throws IOException {

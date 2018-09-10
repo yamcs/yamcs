@@ -2,23 +2,20 @@ package org.yamcs.simulator;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.LogManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
-import org.yamcs.simulator.ui.SimWindow;
 import org.yamcs.utils.YObjectLoader;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-
 public class Simulator extends Thread {
-
-    @Parameter(names = { "--with-ui" })
-    private boolean uiEnabled;
 
     // no more than 100 pending commands
     protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100);
@@ -31,8 +28,6 @@ public class Simulator extends Thread {
 
     private boolean isLos = false;
     private LosStore losStore;
-
-    private SimWindow simWindow;
 
     private static final Logger log = LoggerFactory.getLogger(Simulator.class);
 
@@ -92,7 +87,6 @@ public class Simulator extends Thread {
             CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
             tmLink.ackPacketSend(ackPacket(packet, 0, 0));
             return packet;
-
         } catch (IOException e) {
             log.error("Connection lost:" + e.getMessage(), e);
         } catch (Exception e) {
@@ -187,14 +181,6 @@ public class Simulator extends Thread {
         return packet;
     }
 
-    public SimWindow getSimWindow() {
-        return simWindow;
-    }
-
-    public void setSimWindow(SimWindow simWindow) {
-        this.simWindow = simWindow;
-    }
-
     public void startTriggeringLos() {
         losStore.startTriggeringLos();
     }
@@ -221,29 +207,47 @@ public class Simulator extends Thread {
     }
 
     public static void main(String[] args) throws IOException {
-        YConfiguration.setup(System.getProperty("user.dir"));
+        configureLogging();
+
         SimulationConfiguration simConfig = SimulationConfiguration.loadFromFile();
 
-        String modelClass = simConfig.getModelClass().getName();
-        Simulator simulator = YObjectLoader.loadObject(modelClass, simConfig);
-
-        new JCommander(simulator).parse(args);
-
-        if (simulator.uiEnabled) {
-            SimWindow simWindow = new SimWindow(simulator);
-            simulator.setSimWindow(simWindow);
+        YConfiguration yconf = YConfiguration.getConfiguration("simulator");
+        Simulator simulator;
+        Map<String, Object> m = yconf.getMap("simulator");
+        try {
+            simulator = YObjectLoader.loadObject(m, simConfig);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
 
         System.out.println("----------------------------");
-        System.out.println("Yamcs Simulator Demo");
-        System.out.println("  Model: " + modelClass);
+        System.out.println("Yamcs Demo Simulator");
+        System.out.println("  Model: " + simulator.getClass().getName());
         System.out.println("----------------------------");
 
         simulator.start();
 
+        if (yconf.containsKey("telnet")) {
+            int port = yconf.getInt("telnet", "port");
+            TelnetServer telnetServer = new TelnetServer(simulator);
+            telnetServer.setPort(port);
+            telnetServer.startAsync();
+        }
+
         // start alternating los and aos
-        if (simConfig.isLOSEnabled() && !simulator.uiEnabled) {
+        if (simConfig.isLOSEnabled()) {
             simulator.startTriggeringLos();
+        }
+    }
+
+    private static void configureLogging() {
+        try {
+            LogManager logManager = LogManager.getLogManager();
+            try (InputStream in = Simulator.class.getResourceAsStream("/simulator-logging.properties")) {
+                logManager.readConfiguration(in);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to set up logging configuration: " + e.getMessage());
         }
     }
 }

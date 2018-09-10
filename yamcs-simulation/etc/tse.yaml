@@ -14,12 +14,12 @@ devices:
       # Note: this device does not terminate responses.
       # responseTermination: "\n"
 
-  - name: zup
-    class: org.yamcs.tse.SerialDevice
+  - name: simulator
+    class: org.yamcs.tse.TcpIpDevice
     args:
-      path: /dev/tty.usbmodem14141
+      host: localhost
+      port: 10023
       responseTermination: "\r\n"
-      responseTimeout: 3000
 
   - name: rigol
     class: org.yamcs.tse.TcpIpDevice

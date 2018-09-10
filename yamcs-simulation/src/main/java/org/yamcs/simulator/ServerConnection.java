@@ -2,15 +2,13 @@ package org.yamcs.simulator;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-
 public class ServerConnection {
 
-    public enum ConnectionStatus{
+    public enum ConnectionStatus {
         NOT_CONNECTED,
         CONNECTING,
         CONNECTED,
@@ -34,7 +32,7 @@ public class ServerConnection {
 
     private int id;
 
-    BlockingQueue<CCSDSPacket> tmQueue = new LinkedBlockingQueue<>();//no more than 100 pending commands
+    BlockingQueue<CCSDSPacket> tmQueue = new LinkedBlockingQueue<>();// no more than 100 pending commands
     BlockingQueue<CCSDSPacket> tmDumpQueue = new ArrayBlockingQueue<>(1000);
 
     public ServerConnection(int id, int tmPort, int tcPort, int losPort) {
@@ -108,7 +106,7 @@ public class ServerConnection {
         this.connected = connected;
     }
 
-    public  CCSDSPacket getTmPacket() {
+    public CCSDSPacket getTmPacket() {
         return tmQueue.remove();
 
     }

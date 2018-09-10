@@ -1,20 +1,17 @@
-model: org.yamcs.simulator.launchland.LaunchAndLandingSimulator
+tmPort: 10015
+tcPort: 10025
+dumpPort: 10115
+
+telnet:
+  port: 10023
+
+simulator:
+  class: org.yamcs.simulator.launchland.LaunchAndLandingSimulator
 
 # Alternance of AOS and LOS periods
 losAos: false
 los_period_s: 60
 aos_period_s: 120
 
-#directory where the test data is located
+# Directory where the test data is located
 test_data: test_data
-
-# Listening ports, several Yamcs server are supported, telemetry is sent to both of them
-servers:
-    server1:
-        tmPort: 10015
-        tcPort: 10025
-        dumpPort: 10115
-#    server2:
-#        tmPort: 10045
-#        tcPort: 10055
-#        dumpPort: 10125
