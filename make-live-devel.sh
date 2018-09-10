@@ -54,6 +54,7 @@ ln -fs $YAMCS_HOME/yamcs-artemis/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-artemis/lib/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-tse/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-tse/lib/*.jar $TARGET/lib
+ln -fs $YAMCS_HOME/yamcs-server/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-server/lib/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/packages/app/dist $TARGET/lib/yamcs-web
 
