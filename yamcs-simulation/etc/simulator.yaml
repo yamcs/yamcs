@@ -1,10 +1,7 @@
 model: org.yamcs.simulator.launchland.LaunchAndLandingSimulator
 
-# Should the User Interface be used
-ui: true
-
 # Alternance of AOS and LOS periods
-losAos: true 
+losAos: false
 los_period_s: 60
 aos_period_s: 120
 

@@ -5,14 +5,23 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.simulator.ui.SimWindow;
+import org.yamcs.utils.YObjectLoader;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 
 public class Simulator extends Thread {
 
-    protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); // no more than 100 pending
-    // commands
+    @Parameter(names = { "--with-ui" })
+    private boolean uiEnabled;
+
+    // no more than 100 pending commands
+    protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
     private int DEFAULT_MAX_LENGTH = 65542;
     private int maxLength = DEFAULT_MAX_LENGTH;
@@ -45,8 +54,9 @@ public class Simulator extends Thread {
                         // read commands
                         CCSDSPacket packet = readPacket(
                                 new DataInputStream(serverConnection.getTcSocket().getInputStream()));
-                        if (packet != null)
+                        if (packet != null) {
                             pendingCommands.put(packet);
+                        }
 
                     } catch (IOException e) {
                         serverConnection.setConnected(false);
@@ -72,8 +82,10 @@ public class Simulator extends Thread {
             byte hdr[] = new byte[6];
             dIn.readFully(hdr);
             int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
-            if (remaining > maxLength - 6)
-                throw new IOException("Remaining packet length too big: " + remaining + " maximum allowed is " + (maxLength - 6));
+            if (remaining > maxLength - 6) {
+                throw new IOException(
+                        "Remaining packet length too big: " + remaining + " maximum allowed is " + (maxLength - 6));
+            }
             byte[] b = new byte[6 + remaining];
             System.arraycopy(hdr, 0, b, 0, 6);
             dIn.readFully(b, 6, remaining);
@@ -87,7 +99,6 @@ public class Simulator extends Thread {
             log.error("Error reading command " + e.getMessage(), e);
         }
         return null;
-
     }
 
     public SimulationConfiguration getSimulationConfiguration() {
@@ -121,14 +132,16 @@ public class Simulator extends Thread {
             filename = losStore.getCurrentFileName();
         }
         DataInputStream dataStream = losStore.readLosFile(filename);
-        if (dataStream == null)
+        if (dataStream == null) {
             return;
+        }
         try {
             while (dataStream.available() > 0) {
                 CCSDSPacket packet = readPacket(dataStream);
                 if (packet != null) {
-                    for (ServerConnection serverConnection : simConfig.getServerConnections())
+                    for (ServerConnection serverConnection : simConfig.getServerConnections()) {
                         serverConnection.addTmDumpPacket(packet);
+                    }
                 }
             }
 
@@ -137,7 +150,7 @@ public class Simulator extends Thread {
             for (ServerConnection serverConnection : simConfig.getServerConnections()) {
                 serverConnection.addTmDumpPacket(confirmationPacket);
             }
-            
+
             dataStream.close();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -205,6 +218,32 @@ public class Simulator extends Thread {
         ackPacket.appendUserDataBuffer(bb.array());
 
         return ackPacket;
+    }
 
+    public static void main(String[] args) throws IOException {
+        YConfiguration.setup(System.getProperty("user.dir"));
+        SimulationConfiguration simConfig = SimulationConfiguration.loadFromFile();
+
+        String modelClass = simConfig.getModelClass().getName();
+        Simulator simulator = YObjectLoader.loadObject(modelClass, simConfig);
+
+        new JCommander(simulator).parse(args);
+
+        if (simulator.uiEnabled) {
+            SimWindow simWindow = new SimWindow(simulator);
+            simulator.setSimWindow(simWindow);
+        }
+
+        System.out.println("----------------------------");
+        System.out.println("Yamcs Simulator Demo");
+        System.out.println("  Model: " + modelClass);
+        System.out.println("----------------------------");
+
+        simulator.start();
+
+        // start alternating los and aos
+        if (simConfig.isLOSEnabled() && !simulator.uiEnabled) {
+            simulator.startTriggeringLos();
+        }
     }
 }

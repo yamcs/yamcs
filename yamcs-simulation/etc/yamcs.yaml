@@ -6,6 +6,9 @@ services:
       port: 8090
   - class: org.yamcs.server.ProcessRunner
     args:
+      command: bin/simulator.sh
+  - class: org.yamcs.server.ProcessRunner
+    args:
       command: bin/tse-commander.sh
 
 #instances (or domains). One yarch database will be created for each of them 
