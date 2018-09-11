@@ -43,8 +43,6 @@ tmDataLinks:
 #    args:
 #      simulationDataPath: etc/gs-simulation.xml
 
-
-# config the tc uplinkers
 tcDataLinks: 
   - class: org.yamcs.tctm.TcpTcDataLink
     stream: tc_realtime
@@ -53,16 +51,23 @@ tcDataLinks:
       host: localhost
       port: 10025
 
-#Specify which MDB configuration to use, references a named section in mdb.yaml 
-mdb: landing
-
+mdb:
+  # Configuration of the active loaders
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: "sheet"
+    spec: "mdb/simulator-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/landing.xls"
+      - type: "sheet"
+        spec: "mdb/GS-tmtc.xls"
 
 #Configuration for streams created at server startup
 streamConfig:
   tm: 
     - name: "tm_realtime"
     - name: "tm_dump"
-  cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
   param: ["pp_realtime", "sys_param"]
   alarm: ["alarms_realtime"]
