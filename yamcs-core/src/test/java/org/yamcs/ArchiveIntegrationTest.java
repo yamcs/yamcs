@@ -141,6 +141,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         EditClientRequest pcrequest = EditClientRequest.newBuilder().setProcessor("realtime").build();
         restClient.doRequest("/clients/" + connectionInfo.getClientId(), HttpMethod.PATCH, toJson(pcrequest)).get();
 
+        Thread.sleep(500); // Allow new connection info to arrive
         connectionInfo = wsClient.getConnectionInfo();
         assertEquals("realtime", connectionInfo.getProcessor().getName());
     }
