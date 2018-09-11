@@ -136,19 +136,18 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
      * Read properties from configuration file
      */
     private void readConfiguration() throws ConfigurationException {
-        YConfiguration cfg = null;
-
-        cfg = YConfiguration.getConfiguration("event-viewer");
-        if (cfg.containsKey("soundfile")) {
-            soundFile = cfg.getString("soundfile");
-        }
-        if (cfg.containsKey("extraColumns")) {
-            extraColumns = cfg.getList("extraColumns");
-        }
-        if (cfg.containsKey("linkstatus")) {
-            linkStatus = cfg.getList("linkstatus");
-        } else {
-            linkStatus = new ArrayList<>();
+        linkStatus = new ArrayList<>();
+        if (YConfiguration.isDefined("event-viewer")) {
+            YConfiguration cfg = YConfiguration.getConfiguration("event-viewer");
+            if (cfg.containsKey("soundfile")) {
+                soundFile = cfg.getString("soundfile");
+            }
+            if (cfg.containsKey("extraColumns")) {
+                extraColumns = cfg.getList("extraColumns");
+            }
+            if (cfg.containsKey("linkstatus")) {
+                linkStatus = cfg.getList("linkstatus");
+            }
         }
     }
 

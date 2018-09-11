@@ -113,11 +113,14 @@ public class ProcessorsTest {
 
         Thread.sleep(3000);// to allow for events to come
 
-        /*
-         * for(ProcessorInfo pi: ml.yprocUpdated) {
-         * System.out.println("\t"+pi.getInstance()+"/"+pi.getName()+" state: "+pi.getState()+" replayState: "+pi.
-         * getReplayState()); }
-         */
+        /*for (Entry<String, List<ProcessorInfo>> entries : ml.procUpdated.entrySet()) {
+            System.out.println(entries.getKey());
+            System.out.println("----------------");
+            for (ProcessorInfo pi : entries.getValue()) {
+                System.out.println("\t" + pi.getInstance() + "/" + pi.getName() + " state: " + pi.getState()
+                        + " replayState: " + pi.getReplayState());
+            }
+        }*/
 
         List<ProcessorInfo> l = ml.procUpdated.get("realtime");
         assertEquals(1, l.size());
