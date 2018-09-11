@@ -364,7 +364,7 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         popupMenu.setBorder(new BevelBorder(BevelBorder.RAISED));
         eventTable.addMouseListener(new MousePopupListener());
 
-        // updateStatus();
+        updateStatus();
         pack();
         setLocation(30, 30);
         setVisible(true);
@@ -470,65 +470,68 @@ public class EventViewer extends JFrame implements ActionListener, ItemListener,
         return new ImageIcon(getClass().getResource("/org/yamcs/images/" + imagename));
     }
 
-    public void updateStatus(String name, String status) {
-        javax.swing.SwingUtilities.invokeLater(() -> {
+    public void updateStatus() {
+        SwingUtilities.invokeLater(() -> {
             StringBuffer title = new StringBuffer("Event Viewer");
-            JLabel label = linkLabel.get(name);
+
             if (yconnector.isConnected()) {
                 if (miRetrievePast != null) {
                     miRetrievePast.setEnabled(true);
                 }
                 title.append(" (connected)");
-                if (status.equals("OK")) {
-                    label.setBackground(iconColorGreen);
-                    label.setIcon(linkOKIcon.get(name));
-                } else if (status.equals("DISABLED")) {
-                    label.setBackground(iconColorRed);
-                    label.setIcon(linkNOKIcon.get(name));
-                } else {
-                    title.append(" (not connected)");
-                    label.setBackground(iconColorGrey);
-                    label.setIcon(linkOKIcon.get(name));
-                }
             } else if (yconnector.isConnecting()) {
                 if (miRetrievePast != null) {
                     miRetrievePast.setEnabled(false);
                 }
                 title.append(" (connecting)");
-                label.setBackground(iconColorGrey);
+                linkLabel.values().forEach(l -> l.setBackground(iconColorGrey));
             } else {
                 if (miRetrievePast != null) {
                     miRetrievePast.setEnabled(false);
                 }
                 title.append(" (not connected)");
-                label.setBackground(iconColorGrey);
+                linkLabel.values().forEach(l -> l.setBackground(iconColorGrey));
             }
             setTitle(title.toString());
         });
     }
 
+    public void updateLinkLabel(String name, String status) {
+        JLabel label = linkLabel.get(name);
+        if (status.equals("OK")) {
+            label.setBackground(iconColorGreen);
+            label.setIcon(linkOKIcon.get(name));
+        } else if (status.equals("DISABLED")) {
+            label.setBackground(iconColorRed);
+            label.setIcon(linkNOKIcon.get(name));
+        } else {
+            label.setBackground(iconColorGrey);
+            label.setIcon(linkOKIcon.get(name));
+        }
+    }
+
     @Override
     public void connected(String url) {
         log("Connected to " + url);
-        // updateStatus();
+        updateStatus();
     }
 
     @Override
     public void connecting(String url) {
         log("Connecting to " + url);
-        // updateStatus();
+        updateStatus();
     }
 
     @Override
     public void disconnected() {
         log("Disconnected");
-        // updateStatus();
+        updateStatus();
     }
 
     @Override
     public void connectionFailed(String url, YamcsException exception) {
         log("Connection to " + url + " failed: " + exception);
-        // updateStatus();
+        updateStatus();
     }
 
     @Override
