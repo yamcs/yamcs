@@ -571,26 +571,30 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         createPanel.add(label);
 
         ArrayList<ProcessorWidget> widgets = new ArrayList<>();
-        try {
-            YConfiguration yconf = YConfiguration.getConfiguration("yamcs-ui");
-            if (yconf.containsKey("processorWidgets")) {
-                @SuppressWarnings("rawtypes")
-                List ywidgets = yconf.getList("processorWidgets");
-                for (Object ywidget : ywidgets) {
+        if (YConfiguration.isDefined("yamcs-ui")) {
+            try {
+                YConfiguration yconf = YConfiguration.getConfiguration("yamcs-ui");
+                if (yconf.containsKey("processorWidgets")) {
                     @SuppressWarnings("rawtypes")
-                    Map m = (Map) ywidget;
-                    String processorType = YConfiguration.getString(m, "type");
-                    String widgetClass = YConfiguration.getString(m, "class");
-                    ProcessorWidget widget = YObjectLoader.loadObject(widgetClass, processorType);
-                    widgets.add(widget);
+                    List ywidgets = yconf.getList("processorWidgets");
+                    for (Object ywidget : ywidgets) {
+                        @SuppressWarnings("rawtypes")
+                        Map m = (Map) ywidget;
+                        String processorType = YConfiguration.getString(m, "type");
+                        String widgetClass = YConfiguration.getString(m, "class");
+                        ProcessorWidget widget = YObjectLoader.loadObject(widgetClass, processorType);
+                        widgets.add(widget);
+                    }
+                } else {
+                    widgets.add(new ArchiveProcWidget("Archive"));
                 }
-            } else {
-                widgets.add(new ArchiveProcWidget("Archive"));
+            } catch (ConfigurationException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        } catch (ConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } else {
+            widgets.add(new ArchiveProcWidget("Archive"));
         }
 
         processorChooser = new JComboBox<>(widgets.toArray(new ProcessorWidget[widgets.size()]));

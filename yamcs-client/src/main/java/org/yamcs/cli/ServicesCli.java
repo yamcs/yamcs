@@ -21,7 +21,7 @@ public class ServicesCli extends Command {
         addSubCommand(new ServicesEnable());
         addSubCommand(new ServicesDisable());
         addSubCommand(new ServicesDescribe());
-        setYcpRequired(true, true);
+        setInstanceRequired(true);
     }
 
     @Parameters(commandDescription = "List services")

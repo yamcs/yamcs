@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.YamcsVersion;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
@@ -521,15 +522,16 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             // Property to be interpreted at client's leisure.
             // Concept of defaultInstance could be moved into YamcsServer
             // at some point, but there's for now unsufficient support.
-            // (would need websocket adjmustments, which are now
+            // (would need websocket adjustments, which are now
             // instance-specific).
             YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
             if (yconf.containsKey("defaultInstance")) {
                 responseb.setDefaultYamcsInstance(yconf.getString("defaultInstance"));
             } else {
-                Set<String> instances = YamcsServer.getYamcsInstanceNames();
+                Set<YamcsServerInstance> instances = YamcsServer.getInstances();
                 if (!instances.isEmpty()) {
-                    responseb.setDefaultYamcsInstance(instances.iterator().next());
+                    YamcsServerInstance anyInstance = instances.iterator().next();
+                    responseb.setDefaultYamcsInstance(anyInstance.getName());
                 }
             }
 

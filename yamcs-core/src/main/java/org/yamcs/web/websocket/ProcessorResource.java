@@ -1,9 +1,6 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.management.ManagementGpbHelper;
@@ -12,88 +9,63 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Web.ProcessorSubscriptionRequest;
 import org.yamcs.protobuf.Web.ProcessorSubscriptionResponse;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 
 /**
  * Provides lifecycle updates on one or all processors.
- * 
- * TODO this is currently undocumented while we migrate the api to official clients. It is however intended to
- * eventually deprecate and remove management/subscribe of processors. Clients should not use both in parallel because
- * they both emit PROCESSOR_INFO data.
  */
-public class ProcessorResource extends AbstractWebSocketResource implements ManagementListener {
+public class ProcessorResource implements WebSocketResource, ManagementListener {
 
-    private static final Logger log = LoggerFactory.getLogger(ProcessorResource.class);
     public static final String RESOURCE_NAME = "processor";
-    public static final String OP_subscribe = "subscribe";
-    public static final String OP_unsubscribe = "unsubscribe";
+
+    private ConnectedWebSocketClient client;
 
     private volatile boolean subscribed;
     private boolean allProcessors;
     private boolean allInstances;
 
-    public ProcessorResource(WebSocketProcessorClient client) {
-        super(client);
-    }
+    private Processor processor;
 
-    @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-        switch (ctx.getOperation()) {
-        case OP_subscribe:
-            return processSubscribeRequest(ctx, decoder);
-        case OP_unsubscribe:
-            return processUnsubscribeRequest(ctx, decoder);
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
-        }
+    public ProcessorResource(ConnectedWebSocketClient client) {
+        this.client = client;
+        processor = client.getProcessor();
     }
 
     /**
      * Registers for updates on any processor or client. Sends the current set of processor, and clients (in that order)
      * to the requester.
      */
-    private WebSocketReply processSubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-
+    @Override
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         if (ctx.getData() != null) {
             ProcessorSubscriptionRequest req = decoder.decodeMessageData(ctx, ProcessorSubscriptionRequest.newBuilder())
                     .build();
             allProcessors = req.hasAllProcessors() && req.getAllProcessors();
             allInstances = req.hasAllInstances() && req.getAllInstances();
         }
-        try {
-            WebSocketReply reply = new WebSocketReply(ctx.getRequestId());
-            ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
-            ProcessorSubscriptionResponse response = ProcessorSubscriptionResponse.newBuilder()
-                    .setProcessor(pinfo)
-                    .build();
-            reply.attachData("ProcessorSubscriptionResponse", response);
-            wsHandler.sendReply(reply);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
-        }
+        WebSocketReply reply = new WebSocketReply(ctx.getRequestId());
+        ProcessorInfo pinfo = ManagementGpbHelper.toProcessorInfo(processor);
+        ProcessorSubscriptionResponse response = ProcessorSubscriptionResponse.newBuilder()
+                .setProcessor(pinfo)
+                .build();
+        reply.attachData("ProcessorSubscriptionResponse", response);
+        client.sendReply(reply);
+
         ManagementService.getInstance().addManagementListener(this);
         subscribed = true;
         return null;
     }
 
-    private WebSocketReply processUnsubscribeRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder) {
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         ManagementService.getInstance().removeManagementListener(this);
-        try {
-            wsHandler.sendReply(new WebSocketReply(ctx.getRequestId()));
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
-        }
+        client.sendReply(new WebSocketReply(ctx.getRequestId()));
         return null;
     }
 
     @Override
-    public void quit() {
+    public void socketClosed() {
         ManagementService.getInstance().removeManagementListener(this);
         subscribed = false;
     }
@@ -106,11 +78,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
             return;
         }
-        try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-        }
+        client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
     }
 
     @Override
@@ -121,11 +89,7 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
             return;
         }
-        try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-        }
+        client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
     }
 
     @Override
@@ -136,38 +100,35 @@ public class ProcessorResource extends AbstractWebSocketResource implements Mana
         if (!allProcessors && !processorInfo.getName().equals(processor.getName())) {
             return;
         }
-        try {
-            wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-        }
+        client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
     }
 
     @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        super.switchProcessor(oldProcessor, newProcessor);
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        this.processor = processor;
         if (subscribed) {
             if (!allInstances && !allProcessors) {
-                try {
-                    ProcessorInfo processorInfo = ManagementGpbHelper.toProcessorInfo(newProcessor);
-                    wsHandler.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
-                } catch (IOException e) {
-                    log.error("Exception when sending data", e);
-                }
+                ProcessorInfo processorInfo = ManagementGpbHelper.toProcessorInfo(processor);
+                client.sendData(ProtoDataType.PROCESSOR_INFO, processorInfo);
             }
         }
     }
 
     @Override
-    public void clientRegistered(ClientInfo ci) {
+    public void unselectProcessor() {
+        processor = null;
     }
 
     @Override
-    public void clientInfoChanged(ClientInfo ci) {
+    public void clientRegistered(ConnectedClient client) {
     }
 
     @Override
-    public void clientUnregistered(ClientInfo ci) {
+    public void clientInfoChanged(ConnectedClient client) {
+    }
+
+    @Override
+    public void clientUnregistered(ConnectedClient client) {
     }
 
     @Override

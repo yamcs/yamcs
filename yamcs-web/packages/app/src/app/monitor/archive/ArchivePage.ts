@@ -1,7 +1,7 @@
 import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
@@ -49,6 +49,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     private overlay: Overlay,
     private dialog: MatDialog,
     private dateTimePipe: DateTimePipe,
+    private snackBar: MatSnackBar,
   ) {
     title.setTitle('TM Archive - Yamcs');
     this.instance = yamcs.getInstance();
@@ -269,12 +270,30 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
   replayRange() {
     const currentRange = this.rangeSelection$.value;
     if (currentRange) {
-      this.dialog.open(StartReplayDialog, {
+      const dialogRef = this.dialog.open(StartReplayDialog, {
         width: '400px',
         data: {
           start: currentRange.start,
           stop: currentRange.stop,
         },
+      });
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.snackBar.open(`Initializing replay ${result.name}...`, undefined, {
+            horizontalPosition: 'end',
+          });
+          this.yamcs.getInstanceClient()!.createProcessor(result).then(() => {
+            this.snackBar.open(`Joined replay ${result.name}`, undefined, {
+              duration: 3000,
+              horizontalPosition: 'end',
+            });
+          }).catch(err => {
+            this.snackBar.open(`Failed to initialize replay`, undefined, {
+              duration: 3000,
+              horizontalPosition: 'end',
+            });
+          });
+        }
       });
     }
   }

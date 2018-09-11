@@ -2,6 +2,7 @@ package org.yamcs.parameter;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -231,63 +232,65 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         listener.update(subscriptionId, plist);
     }
 
-    /**
-     * Change processor and return the list of parameters that were valid in the old processor and are not anymore
-     */
-    public List<NamedObjectId> switchPrm(ParameterRequestManager newPrm, User user)
-            throws NoPermissionException {
+    public void unselectPrm() {
+        for (int subscriptionId : subscriptions.keySet()) {
+            prm.removeRequest(subscriptionId);
+        }
+        prm = null;
+    }
+
+    public List<NamedObjectId> selectPrm(ParameterRequestManager prm, User user) throws NoPermissionException {
         List<NamedObjectId> invalid = new ArrayList<>();
-        if (prm.getXtceDb() == newPrm.getXtceDb()) {
-            for (int subscriptionId : subscriptions.keySet()) {
-                List<Parameter> plist = prm.removeRequest(subscriptionId);
-                // checking permission
-                for (Parameter p : plist) {
-                    checkParameterPrivilege(user, p.getQualifiedName());
-                }
-                newPrm.addRequest(subscriptionId, plist, this);
-            }
-            prm = newPrm;
-        } else {
-            // this is the tricky case: the XtceDB has changed so all Parameter references are invalid for the new
-            // processor
-            // we have to re-create the subscriptions starting from the original subscribed names
-            // and take care that some names may have become invalid
-            log.info("XtceDB has changed, recreating the parameter subscriptions");
-            subscriptions.keySet().forEach(id -> prm.removeRequest(id));
-            prm = newPrm;
-            for (int subscriptionId : subscriptions.keySet()) {
-                Subscription subscr = subscriptions.get(subscriptionId);
-                synchronized (subscr) {
-                    List<NamedObjectId> idList = subscr.getallIds();
-                    List<Parameter> plist;
+        // Parameter references may be invalid for the new processor
+        // we have to re-create the subscriptions starting from the original subscribed names
+        // and take care that some names may have become invalid
+        this.prm = prm;
+        for (int subscriptionId : subscriptions.keySet()) {
+            Subscription subscr = subscriptions.get(subscriptionId);
+            synchronized (subscr) {
+                List<NamedObjectId> idList = subscr.getallIds();
+                List<Parameter> plist;
+                try {
+                    plist = checkNames(idList);
+                } catch (InvalidIdentification e) {
+                    log.warn("Got invalid identification when selecting parameters for processor {}: {}",
+                            prm.yproc.getName(), e.getInvalidParameters());
+                    idList.removeAll(e.getInvalidParameters());
+                    invalid.addAll(e.getInvalidParameters());
                     try {
                         plist = checkNames(idList);
-                    } catch (InvalidIdentification e) {
-                        log.warn("Got invalid identification when moving parameters to a new processor: {}",
-                                e.getInvalidParameters());
-                        idList.removeAll(e.getInvalidParameters());
-                        invalid.addAll(e.getInvalidParameters());
-                        try {
-                            plist = checkNames(idList);
-                        } catch (InvalidIdentification e1) { // shouldn't happen again
-                            throw new IllegalStateException(e1);
-                        }
+                    } catch (InvalidIdentification e1) { // shouldn't happen again
+                        throw new IllegalStateException(e1);
                     }
-                    assert (idList.size() == plist.size());
-                    Subscription subscr1 = new Subscription(subscr.checkExpiration);
-
-                    for (int i = 0; i < plist.size(); i++) {
-                        Parameter p = plist.get(i);
-                        checkParameterPrivilege(user, p.getQualifiedName());
-                        NamedObjectId id = idList.get(i);
-                        subscr1.put(p, id);
-                    }
-                    newPrm.addRequest(subscriptionId, plist, this);
-                    subscriptions.put(subscriptionId, subscr1);
                 }
+                assert (idList.size() == plist.size());
+                Subscription subscr1 = new Subscription(subscr.checkExpiration);
+
+                for (int i = 0; i < plist.size(); i++) {
+                    Parameter p = plist.get(i);
+                    checkParameterPrivilege(user, p.getQualifiedName());
+                    NamedObjectId id = idList.get(i);
+                    subscr1.put(p, id);
+                }
+                prm.addRequest(subscriptionId, plist, this);
+                subscriptions.put(subscriptionId, subscr1);
             }
         }
         return invalid;
+    }
+
+    /**
+     * Change processor and return the list of parameters that were valid in the old processor and are not anymore
+     */
+    public List<NamedObjectId> switchPrm(ParameterRequestManager newPrm, User user) throws NoPermissionException {
+        if (prm != null) {
+            unselectPrm();
+        }
+        if (newPrm != null) {
+            return selectPrm(newPrm, user);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     private long getAquisitionTime(List<ParameterValue> items) {

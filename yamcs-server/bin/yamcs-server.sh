@@ -42,7 +42,7 @@ fi
 exec "$_RUNJAVA" $MODULE_OPTS $JAVA_OPTS $JMX_OPTS\
     -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/\
     -Djxl.nowarnings=true \
-    -Djava.util.logging.config.file=$YAMCS_HOME/etc/logging.yamcs-server.properties \
+    -Djava.util.logging.config.file=$YAMCS_HOME/etc/logging.properties \
     -Djacorb.home=$YAMCS_HOME\
     -Djavax.net.ssl.trustStore=$YAMCS_HOME/etc/trustStore\
     org.yamcs.YamcsServer "$@"

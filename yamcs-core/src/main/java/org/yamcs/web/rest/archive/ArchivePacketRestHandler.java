@@ -65,6 +65,11 @@ public class ArchivePacketRestHandler extends RestHandler {
 
         GetPacketNamesResponse.Builder responseb = GetPacketNamesResponse.newBuilder();
         TableDefinition tableDefinition = ydb.getTable(XtceTmRecorder.TABLE_NAME);
+        if (tableDefinition == null) {
+            completeOK(req, responseb.build());
+            return;
+        }
+
         BiMap<String, Short> enumValues = tableDefinition.getEnumValues(XtceTmRecorder.PNAME_COLUMN);
         if (enumValues != null) {
             List<String> unsortedPackets = new ArrayList<>();

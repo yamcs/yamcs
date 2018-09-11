@@ -122,6 +122,9 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
                 processExceptionData(message.getException());
                 break;
             case DATA:
+                if (message.getData().hasConnectionInfo()) {
+                    client.setConnectionInfo(message.getData().getConnectionInfo());
+                }
                 callback.onMessage(message.getData());
                 break;
             default:

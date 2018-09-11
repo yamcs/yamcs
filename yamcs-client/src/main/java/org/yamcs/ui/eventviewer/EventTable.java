@@ -20,19 +20,25 @@ import org.yamcs.ui.UiColors;
 
 public class EventTable extends JTable {
     private static final long serialVersionUID = 1L;
-    private static final ImageIcon INFO_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level0s.png"));
-    private static final ImageIcon WATCH_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level1s.png"));
-    private static final ImageIcon WARNING_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level2s.png"));
-    private static final ImageIcon ERROR_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/error.png"));
-    private static final ImageIcon DISTRESS_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level3s.png"));
-    private static final ImageIcon CRITICAL_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level4s.png"));
-    private static final ImageIcon SEVERE_ICON = new ImageIcon(EventTable.class.getResource("/org/yamcs/images/level5s.png"));
-    
-    
+    private static final ImageIcon INFO_ICON = new ImageIcon(
+            EventTable.class.getResource("/org/yamcs/images/level0s.png"));
+    private static final ImageIcon WATCH_ICON = new ImageIcon(
+            EventTable.class.getResource("/org/yamcs/images/level1s.png"));
+    private static final ImageIcon WARNING_ICON = new ImageIcon(
+            EventTable.class.getResource("/org/yamcs/images/level2s.png"));
+    private static final ImageIcon ERROR_ICON = new ImageIcon(
+            EventTable.class.getResource("/org/yamcs/images/error.png"));
+    private static final ImageIcon DISTRESS_ICON = new ImageIcon(
+            EventTable.class.getResource("/org/yamcs/images/level3s.png"));
+    private static final ImageIcon CRITICAL_ICON = new ImageIcon(
+            EventTable.class.getResource("/org/yamcs/images/level4s.png"));
+    private static final ImageIcon SEVERE_ICON = new ImageIcon(
+            EventTable.class.getResource("/org/yamcs/images/level5s.png"));
+
     private final EventTableRenderer renderer = new EventTableRenderer();
     private boolean inLayout;
     private Preferences uiPrefs;
-    
+
     public EventTable(EventTableModel model) {
         super(model);
         setShowHorizontalLines(true);
@@ -41,35 +47,33 @@ public class EventTable extends JTable {
         uiPrefs = Preferences.userNodeForPackage(EventTable.class);
         Object columnOrder = PrefsObject.getObject(uiPrefs, "ColumnOrder");
         if (columnOrder != null) {
-        	setColumnOrder((int[]) columnOrder);
+            setColumnOrder((int[]) columnOrder);
         }
-        setColumnSelectionAllowed(true);
-        setRowSelectionAllowed(true);
     }
 
     @Override
     public boolean isCellEditable(int row, int column) {
         return false;
     }
-    
+
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
         Component c = super.prepareRenderer(renderer, row, column);
         if (!isRowSelected(row)) {
             c.setBackground(getBackground());
             int modelRow = convertRowIndexToModel(row);
-            Event event = (Event)getModel().getValueAt(modelRow, EventTableModel.EVENT_TEXT_COL);
-            if(event.getSeverity()==EventSeverity.ERROR) {
+            Event event = (Event) getModel().getValueAt(modelRow, EventTableModel.EVENT_TEXT_COL);
+            if (event.getSeverity() == EventSeverity.ERROR) {
                 c.setBackground(UiColors.ERROR_FAINT_BG);
-            } else if(event.getSeverity()==EventSeverity.WARNING) {
+            } else if (event.getSeverity() == EventSeverity.WARNING) {
                 c.setBackground(UiColors.WARNING_FAINT_BG);
-            } else if(event.getSeverity()==EventSeverity.WATCH) {
+            } else if (event.getSeverity() == EventSeverity.WATCH) {
                 c.setBackground(UiColors.WARNING_FAINT_BG);
-            }else if(event.getSeverity()==EventSeverity.DISTRESS) {
+            } else if (event.getSeverity() == EventSeverity.DISTRESS) {
                 c.setBackground(UiColors.DISTRESS_FAINT_BG);
-            } else if(event.getSeverity()==EventSeverity.CRITICAL) {
+            } else if (event.getSeverity() == EventSeverity.CRITICAL) {
                 c.setBackground(UiColors.CRITICAL_FAINT_BG);
-            } else if(event.getSeverity()==EventSeverity.SEVERE) {
+            } else if (event.getSeverity() == EventSeverity.SEVERE) {
                 c.setBackground(UiColors.SEVERE_FAINT_BG);
             }
         }
@@ -84,25 +88,26 @@ public class EventTable extends JTable {
         } else if (convertColumnIndexToModel(column) == EventTableModel.SOURCE_COL) {
             return new DefaultTableCellRenderer() {
                 private static final long serialVersionUID = 1L;
-                
+
                 @Override
-                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                        boolean hasFocus, int row, int column) {
                     super.getTableCellRendererComponent(table, value, isSelected, false /* no focus ! */, row, column);
                     int modelRow = convertRowIndexToModel(row);
-                    Event event = (Event)getModel().getValueAt(modelRow, EventTableModel.EVENT_TEXT_COL);
-                    if(event.getSeverity()==EventSeverity.ERROR) {
+                    Event event = (Event) getModel().getValueAt(modelRow, EventTableModel.EVENT_TEXT_COL);
+                    if (event.getSeverity() == EventSeverity.ERROR) {
                         setIcon(ERROR_ICON);
-                    } else if(event.getSeverity()==EventSeverity.INFO) {
+                    } else if (event.getSeverity() == EventSeverity.INFO) {
                         setIcon(INFO_ICON);
-                    } else if(event.getSeverity()==EventSeverity.WATCH) {
+                    } else if (event.getSeverity() == EventSeverity.WATCH) {
                         setIcon(WATCH_ICON);
-                    } else if(event.getSeverity()==EventSeverity.WARNING) {
+                    } else if (event.getSeverity() == EventSeverity.WARNING) {
                         setIcon(WARNING_ICON);
-                    } else if(event.getSeverity()==EventSeverity.DISTRESS) {
+                    } else if (event.getSeverity() == EventSeverity.DISTRESS) {
                         setIcon(DISTRESS_ICON);
-                    } else if(event.getSeverity()==EventSeverity.CRITICAL) {
+                    } else if (event.getSeverity() == EventSeverity.CRITICAL) {
                         setIcon(CRITICAL_ICON);
-                    } else if(event.getSeverity()==EventSeverity.SEVERE) {
+                    } else if (event.getSeverity() == EventSeverity.SEVERE) {
                         setIcon(SEVERE_ICON);
                     }
                     return this;
@@ -112,17 +117,19 @@ public class EventTable extends JTable {
             // Disable blue focus border
             return new DefaultTableCellRenderer() {
                 private static final long serialVersionUID = 1L;
-                
+
                 @Override
-                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                    return super.getTableCellRendererComponent(table, value, isSelected, false /* no focus ! */, row, column);
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                        boolean hasFocus, int row, int column) {
+                    return super.getTableCellRendererComponent(table, value, isSelected, false /* no focus ! */, row,
+                            column);
                 }
             };
         }
     }
-    
+
     private void setColumnOrder(int[] indices) {
-    	// Remember all columns
+        // Remember all columns
         TableColumn[] columns = new TableColumn[columnModel.getColumnCount()];
         for (int i = 0; i < columnModel.getColumnCount(); i++) {
             columns[i] = columnModel.getColumn(i);
@@ -133,15 +140,15 @@ public class EventTable extends JTable {
         }
         // Re-add, give preference to columns in indices[]
         for (int i = 0; i < indices.length; i++) {
-        	if (indices[i] < columns.length) {
-        		columnModel.addColumn(columns[indices[i]]);
-        		columns[indices[i]] = null;
-        	}
+            if (indices[i] < columns.length) {
+                columnModel.addColumn(columns[indices[i]]);
+                columns[indices[i]] = null;
+            }
         }
         for (TableColumn column : columns) {
-        	if (column != null) {
-        		columnModel.addColumn(column);
-        	}
+            if (column != null) {
+                columnModel.addColumn(column);
+            }
         }
     }
 
@@ -167,7 +174,6 @@ public class EventTable extends JTable {
         autoResizeMode = AUTO_RESIZE_OFF;
     }
 
-
     protected boolean hasExcessWidth() {
         return getPreferredSize().width < getParent().getWidth();
     }
@@ -187,12 +193,12 @@ public class EventTable extends JTable {
         resizeAndRepaint();
     }
 
-	public void storePreferences() {
-		// Store column order
-		int[] columnOrder=new int[columnModel.getColumnCount()];
-		for(int i=0; i<columnModel.getColumnCount(); i++) {
-			columnOrder[i] = columnModel.getColumn(i).getModelIndex();
-		}
-		PrefsObject.putObject(uiPrefs, "ColumnOrder", columnOrder);
-	}
+    public void storePreferences() {
+        // Store column order
+        int[] columnOrder = new int[columnModel.getColumnCount()];
+        for (int i = 0; i < columnModel.getColumnCount(); i++) {
+            columnOrder[i] = columnModel.getColumn(i).getModelIndex();
+        }
+        PrefsObject.putObject(uiPrefs, "ColumnOrder", columnOrder);
+    }
 }

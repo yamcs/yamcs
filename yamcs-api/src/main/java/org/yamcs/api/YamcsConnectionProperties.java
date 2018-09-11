@@ -72,23 +72,14 @@ public class YamcsConnectionProperties {
     }
 
     public URI webSocketURI() {
+        String urlString = "ws://" + host + ":" + port + "/_websocket";
+        if (instance != null) {
+            urlString += "/" + instance;
+        }
         try {
-            return new URI("ws://" + host + ":" + port + "/_websocket/" + instance);
+            return new URI(urlString);
         } catch (URISyntaxException e) {
             throw new ConfigurationException("Invalid URL", e);
-        }
-    }
-
-    @Deprecated
-    public URI webSocketURI(boolean legacyMode) {
-        if (legacyMode) {
-            try {
-                return new URI("ws://" + host + ":" + port + "/" + instance + "/_websocket");
-            } catch (URISyntaxException e) {
-                throw new ConfigurationException("Invalid URL", e);
-            }
-        } else {
-            return webSocketURI();
         }
     }
 

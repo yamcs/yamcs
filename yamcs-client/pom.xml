@@ -15,6 +15,12 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>yamcs-core</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.rocksdb</groupId>
+          <artifactId>rocksdbjni</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
     <dependency>

@@ -43,7 +43,7 @@ public class TablesCli extends Command {
         addSubCommand(new TablesList());
         addSubCommand(new TablesDump());
         addSubCommand(new TablesLoad());
-        setYcpRequired(true, true);
+        setInstanceRequired(true);
     }
 
     @Parameters(commandDescription = "List existing tables")
@@ -132,7 +132,6 @@ public class TablesCli extends Command {
         @Parameter(description = "table1 table2...", required = true)
         List<String> tableList;
 
-        @SuppressWarnings("squid:S2095")
         private void loadTable(String tableName) throws Exception {
             String fileName = tableName + ".dump";
             if (dir != null) {

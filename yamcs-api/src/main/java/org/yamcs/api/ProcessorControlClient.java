@@ -2,6 +2,7 @@ package org.yamcs.api;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import org.yamcs.YamcsException;
 import org.yamcs.api.rest.RestClient;
@@ -12,6 +13,8 @@ import org.yamcs.api.ws.WebSocketResponseHandler;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
 import org.yamcs.protobuf.Rest.EditClientRequest;
 import org.yamcs.protobuf.Rest.EditProcessorRequest;
+import org.yamcs.protobuf.Rest.ListProcessorsResponse;
+import org.yamcs.protobuf.Web.ProcessorSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs;
@@ -22,6 +25,7 @@ import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
 import org.yamcs.utils.TimeEncoding;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
 import io.netty.handler.codec.http.HttpMethod;
@@ -79,6 +83,7 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
         return cf;
     }
 
+    @SuppressWarnings("unchecked")
     public CompletableFuture<Void> connectToProcessor(String instance, String processorName, int[] clients)
             throws YamcsException, YamcsApiException {
         RestClient restClient = yconnector.getRestClient();
@@ -145,8 +150,26 @@ public class ProcessorControlClient implements ConnectionListener, WebSocketClie
     public void connecting(String url) {
     }
 
-    public void receiveInitialConfig() {
+    private void receiveInitialConfig() {
         WebSocketRequest wsr = new WebSocketRequest("management", "subscribe");
+        yconnector.performSubscription(wsr, this, this);
+
+        yconnector.getRestClient().doRequest("/processors", HttpMethod.GET).whenComplete((response, exc) -> {
+            if (exc == null) {
+                try {
+                    for (ProcessorInfo pi : ListProcessorsResponse.parseFrom(response).getProcessorList()) {
+                        yamcsMonitor.processorUpdated(pi);
+                    }
+                } catch (InvalidProtocolBufferException e) {
+                    throw new CompletionException(e);
+                }
+            }
+        });
+
+        ProcessorSubscriptionRequest.Builder optionsb = ProcessorSubscriptionRequest.newBuilder();
+        optionsb.setAllInstances(true);
+        optionsb.setAllProcessors(true);
+        wsr = new WebSocketRequest("processor", "subscribe", optionsb.build());
         yconnector.performSubscription(wsr, this, this);
     }
 

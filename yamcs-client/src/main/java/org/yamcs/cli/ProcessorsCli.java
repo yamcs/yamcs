@@ -14,7 +14,7 @@ public class ProcessorsCli extends Command {
     public ProcessorsCli(Command parent) {
         super("processors", parent);
         addSubCommand(new ProcessorsList());
-        setYcpRequired(true, true);
+        setInstanceRequired(true);
     }
 
     @Parameters(commandDescription = "List processors")

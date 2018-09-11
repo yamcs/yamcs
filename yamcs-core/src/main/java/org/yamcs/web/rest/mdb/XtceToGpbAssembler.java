@@ -30,6 +30,7 @@ import org.yamcs.protobuf.Mdb.DataEncodingInfo;
 import org.yamcs.protobuf.Mdb.DataEncodingInfo.Type;
 import org.yamcs.protobuf.Mdb.DataSourceType;
 import org.yamcs.protobuf.Mdb.FixedValueInfo;
+import org.yamcs.protobuf.Mdb.HistoryInfo;
 import org.yamcs.protobuf.Mdb.InputParameterInfo;
 import org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo;
 import org.yamcs.protobuf.Mdb.OutputParameterInfo;
@@ -40,13 +41,12 @@ import org.yamcs.protobuf.Mdb.RepeatInfo;
 import org.yamcs.protobuf.Mdb.SequenceEntryInfo;
 import org.yamcs.protobuf.Mdb.SignificanceInfo;
 import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
+import org.yamcs.protobuf.Mdb.SpaceSystemInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
 import org.yamcs.protobuf.Mdb.TransmissionConstraintInfo;
 import org.yamcs.protobuf.Mdb.UnitInfo;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.YamcsManagement.HistoryInfo;
-import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.rest.RestRequest;
@@ -249,9 +249,11 @@ public class XtceToGpbAssembler {
         } else if (xtceRepeat.getCount() instanceof DynamicIntegerValue) {
             DynamicIntegerValue val = (DynamicIntegerValue) xtceRepeat.getCount();
             if (detail == DetailLevel.SUMMARY) {
-                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), DetailLevel.LINK));
+                b.setDynamicCount(
+                        toParameterInfo(val.getParameterInstnaceRef().getParameter(), DetailLevel.LINK));
             } else if (detail == DetailLevel.FULL) {
-                b.setDynamicCount(toParameterInfo(val.getParameterInstnaceRef().getParameter(), DetailLevel.FULL));
+                b.setDynamicCount(
+                        toParameterInfo(val.getParameterInstnaceRef().getParameter(), DetailLevel.FULL));
             }
         } else {
             throw new IllegalStateException("Unexpected repeat count " + xtceRepeat.getCount());
@@ -906,7 +908,8 @@ public class XtceToGpbAssembler {
 
     public static InputParameterInfo toInputParameterInfo(InputParameter xtceInput) {
         InputParameterInfo.Builder resultb = InputParameterInfo.newBuilder();
-        resultb.setParameter(toParameterInfo(xtceInput.getParameterInstance().getParameter(), DetailLevel.SUMMARY));
+        resultb.setParameter(
+                toParameterInfo(xtceInput.getParameterInstance().getParameter(), DetailLevel.SUMMARY));
         if (xtceInput.getInputName() != null) {
             resultb.setInputName(xtceInput.getInputName());
         }

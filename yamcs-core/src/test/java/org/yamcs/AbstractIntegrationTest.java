@@ -21,7 +21,6 @@ import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
-import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmData;
@@ -50,7 +49,6 @@ import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.HttpServer;
-import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -104,14 +102,6 @@ public abstract class AbstractIntegrationTest {
         restClient.setAutoclose(false);
         packetGenerator = packetProvider.mdbPacketGenerator;
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
-    }
-
-    protected ClientInfo getClientInfo() throws InterruptedException {
-        WebSocketRequest wsr = new WebSocketRequest("management", ManagementResource.OP_getClientInfo);
-        wsClient.sendRequest(wsr);
-        ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
-        assertNotNull(cinfo);
-        return cinfo;
     }
 
     private static void setupYamcs() throws Exception {

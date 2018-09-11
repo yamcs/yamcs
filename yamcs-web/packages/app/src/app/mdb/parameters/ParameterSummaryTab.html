@@ -7,6 +7,39 @@
                             [currentValue]="parameterValue$ | async">
       </app-parameter-detail>
 
+      <ng-container *ngIf="parameter.usedBy?.algorithm || parameter.usedBy?.container">
+        <div class="section-divider">
+          <mat-divider></mat-divider>
+        </div>
+
+        <h4>Used By</h4>
+        <table yaDataTable>
+          <tr>
+            <th>Type</th>
+            <th>Ref</th>
+          </tr>
+          <tr *ngFor="let algorithm of parameter.usedBy.algorithm">
+            <td>Algorithm</td>
+            <td>
+              <a [routerLink]="['/mdb/algorithms/', algorithm.qualifiedName]"
+                 [queryParams]="{instance: instance.name}">
+                {{ algorithm.qualifiedName }}
+              </a>
+            </td>
+          </tr>
+          <tr *ngFor="let container of parameter.usedBy.container">
+            <td>Container</td>
+            <td>
+              <a [routerLink]="['/mdb/containers/', container.qualifiedName]"
+                 [queryParams]="{instance: instance.name}">
+                {{ container.qualifiedName }}
+              </a>
+            </td>
+          </tr>
+        </table>
+        <p>&nbsp;</p>
+      </ng-container>
+
       <ng-container *ngIf="parameter.type?.engType === 'integer' || parameter.type?.engType === 'float'">
         <div class="section-divider">
           <mat-divider></mat-divider>

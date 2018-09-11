@@ -70,7 +70,7 @@ public class LinkControlClient implements ConnectionListener, WebSocketResponseH
      * subscribed.
      */
     public void receiveInitialConfig() {
-        WebSocketRequest wsr = new WebSocketRequest(LinkResource.RESOURCE_NAME, LinkResource.OP_subscribe);
+        WebSocketRequest wsr = new WebSocketRequest(LinkResource.RESOURCE_NAME, "subscribe");
         yconnector.performSubscription(wsr, this, this);
     }
 

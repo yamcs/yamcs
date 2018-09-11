@@ -93,7 +93,6 @@ message ProcessorSubscriptionRequest {
 
 message ManagementSubscriptionRequest {
   optional bool clientInfo = 1;
-  optional bool processorInfo = 2;
   optional bool processorStatistics = 3;
 }
 
@@ -122,11 +121,6 @@ message ParameterSubscriptionRequest {
   // -1 means to create a new subscription
   // >1 means to add parameters to the existing subcription with that id
   optional int32 subscriptionId = 5;
-
-//Hack to allow the old subscribe with NamedObjectList to work when json is used.
-// When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-// remove this field when we are sure nobody uses the old method
-  repeated yamcs.NamedObjectId list = 10000 [deprecated=true]; 
 }
 
 /*
