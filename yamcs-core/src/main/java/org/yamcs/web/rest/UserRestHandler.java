@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.yamcs.ConnectedClient;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
+import org.yamcs.protobuf.YamcsManagement.ClientInfo.ClientState;
 import org.yamcs.protobuf.YamcsManagement.ObjectPrivilegeInfo;
 import org.yamcs.protobuf.YamcsManagement.UserInfo;
 import org.yamcs.security.ObjectPrivilege;
@@ -53,8 +54,8 @@ public class UserRestHandler extends RestHandler {
         Collections.sort(unsortedObjectPrivileges, (p1, p2) -> p1.getType().compareTo(p2.getType()));
         userInfob.addAllObjectPrivilege(unsortedObjectPrivileges);
 
-        for (ClientInfo ci : ManagementService.getInstance().getClientInfo(userInfob.getLogin())) {
-            userInfob.addClientInfo(ci);
+        for (ConnectedClient client : ManagementService.getInstance().getClients(user.getUsername())) {
+            userInfob.addClientInfo(YamcsToGpbAssembler.toClientInfo(client, ClientState.CONNECTED));
         }
 
         return userInfob.build();

@@ -21,7 +21,6 @@ import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.web.HttpServer;
-import org.yamcs.web.websocket.ParameterResource;
 
 public class LongWebsocketFrameTest {
     YamcsConnectionProperties ycp = new YamcsConnectionProperties("localhost", 9191, "LongWebsocketFrameTest");
@@ -73,7 +72,7 @@ public class LongWebsocketFrameTest {
 
         assertTrue(req.toByteArray().length > 65535);
 
-        WebSocketRequest wsr = new WebSocketRequest("parameter", ParameterResource.WSR_SUBSCRIBE, req);
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", req);
         TimeoutException timeout = null;
         try {
             wsClient.sendRequest(wsr).get(5, TimeUnit.SECONDS);

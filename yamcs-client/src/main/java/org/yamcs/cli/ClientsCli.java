@@ -14,7 +14,7 @@ public class ClientsCli extends Command {
     public ClientsCli(Command parent) {
         super("clients", parent);
         addSubCommand(new ClientsList());
-        setYcpRequired(true, true);
+        setInstanceRequired(true);
     }
 
     @Parameters(commandDescription = "List connected clients")

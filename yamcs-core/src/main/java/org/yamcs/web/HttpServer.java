@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -20,7 +19,6 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
 import org.yamcs.web.rest.Router;
-import org.yamcs.web.websocket.WebSocketResourceProvider;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -57,7 +55,6 @@ public class HttpServer extends AbstractService implements YamcsService {
 
     private EventLoopGroup bossGroup;
     private Router apiRouter;
-    private List<WebSocketResourceProvider> webSocketResourceProviders = new CopyOnWriteArrayList<>();
 
     private int port;
     private boolean zeroCopyEnabled;
@@ -213,14 +210,6 @@ public class HttpServer extends AbstractService implements YamcsService {
 
     public void registerRouteHandler(String yamcsInstance, RouteHandler routeHandler) {
         apiRouter.registerRouteHandler(yamcsInstance, routeHandler);
-    }
-
-    public void registerWebSocketRouteHandler(WebSocketResourceProvider provider) {
-        webSocketResourceProviders.add(provider);
-    }
-
-    public List<WebSocketResourceProvider> getWebSocketResourceProviders() {
-        return webSocketResourceProviders;
     }
 
     public GpbExtensionRegistry getGpbExtensionRegistry() {

@@ -21,7 +21,7 @@ public class LinksCli extends Command {
         addSubCommand(new LinksEnable());
         addSubCommand(new LinksDisable());
         addSubCommand(new LinksDescribe());
-        setYcpRequired(true, true);
+        setInstanceRequired(true);
     }
 
     @Parameters(commandDescription = "List links")

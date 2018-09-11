@@ -1,9 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.alarms.ActiveAlarm;
@@ -16,78 +12,74 @@ import org.yamcs.web.rest.processor.ProcessorHelper;
 /**
  * Provides realtime alarm subscription via web.
  */
-public class AlarmResource extends AbstractWebSocketResource implements AlarmListener {
-    private static final Logger log = LoggerFactory.getLogger(AlarmResource.class);
+public class AlarmResource implements WebSocketResource, AlarmListener {
+
     public static final String RESOURCE_NAME = "alarms";
+
+    private ConnectedWebSocketClient client;
+
     private volatile boolean subscribed = false;
 
-    public AlarmResource(WebSocketProcessorClient client) {
-        super(client);
+    private AlarmServer alarmServer;
+
+    public AlarmResource(ConnectedWebSocketClient client) {
+        this.client = client;
+        Processor processor = client.getProcessor();
+        if (processor != null && processor.hasAlarmServer()) {
+            alarmServer = processor.getParameterRequestManager().getAlarmServer();
+        }
     }
 
     @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
             throws WebSocketException {
-        switch (ctx.getOperation()) {
-        case "subscribe":
-            return subscribe(ctx.getRequestId());
-        case "unsubscribe":
-            return unsubscribe(ctx.getRequestId());
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
-        }
-    }
-
-    private WebSocketReply subscribe(int requestId) throws WebSocketException {
-        try {
-            wsHandler.sendReply(WebSocketReply.ack(requestId));
-            doSubscribe();
-            return null;
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
-        }
-    }
-
-    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
-        doUnsubscribe();
-        return WebSocketReply.ack(requestId);
-    }
-
-    @Override
-    public void quit() {
-        doUnsubscribe();
-    }
-
-    @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        if (subscribed) {
-            doUnsubscribe();
-            super.switchProcessor(oldProcessor, newProcessor);
-            doSubscribe();
-        } else {
-            super.switchProcessor(oldProcessor, newProcessor);
-
-        }
-    }
-
-    private void doSubscribe() {
+        client.sendReply(WebSocketReply.ack(ctx.getRequestId()));
         subscribed = true;
+        applySubscription();
+        return null;
+    }
+
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        if (alarmServer != null) {
+            alarmServer.unsubscribe(this);
+        }
+        subscribed = false;
+        return WebSocketReply.ack(ctx.getRequestId());
+    }
+
+    @Override
+    public void socketClosed() {
+        if (alarmServer != null) {
+            alarmServer.unsubscribe(this);
+        }
+    }
+
+    @Override
+    public void unselectProcessor() {
+        if (alarmServer != null) {
+            alarmServer.unsubscribe(this);
+        }
+        alarmServer = null;
+    }
+
+    @Override
+    public void selectProcessor(Processor processor) throws ProcessorException {
         if (processor.hasAlarmServer()) {
-            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
+            alarmServer = processor.getParameterRequestManager().getAlarmServer();
+        }
+        if (subscribed) {
+            applySubscription();
+        }
+    }
+
+    private void applySubscription() {
+        if (alarmServer != null) {
             for (ActiveAlarm activeAlarm : alarmServer.getActiveAlarms().values()) {
                 sendAlarm(AlarmData.Type.ACTIVE, activeAlarm);
             }
             alarmServer.subscribe(this);
         }
-    }
-
-    private void doUnsubscribe() {
-        if (processor.hasAlarmServer()) {
-            AlarmServer alarmServer = processor.getParameterRequestManager().getAlarmServer();
-            alarmServer.unsubscribe(this);
-        }
-        subscribed = false;
     }
 
     @Override
@@ -117,12 +109,6 @@ public class AlarmResource extends AbstractWebSocketResource implements AlarmLis
 
     private void sendAlarm(AlarmData.Type type, ActiveAlarm activeAlarm) {
         AlarmData alarmData = ProcessorHelper.toAlarmData(type, activeAlarm);
-
-        try {
-            wsHandler.sendData(ProtoDataType.ALARM_DATA, alarmData);
-        } catch (Exception e) {
-            log.warn("Got error when sending alarm, quitting", e);
-            quit();
-        }
+        client.sendData(ProtoDataType.ALARM_DATA, alarmData);
     }
 }

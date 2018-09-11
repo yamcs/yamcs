@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsVersion;
 import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.spi.Plugin;
@@ -36,16 +34,13 @@ public abstract class Command {
     protected Command selectedCommand;
     final private String name;
     final Command parent;
-    Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Parameter(names = { "-h", "--help" }, description = "Show usage", help = true)
     private boolean help;
 
-    private boolean ycpRequired = false;
     private boolean instanceRequired = false;
 
-    public void setYcpRequired(boolean requiredYcp, boolean requireInstance) {
-        this.ycpRequired = requiredYcp;
+    public void setInstanceRequired(boolean requireInstance) {
         this.instanceRequired = requireInstance;
     }
 
@@ -184,16 +179,14 @@ public abstract class Command {
     }
 
     void validate() throws ParameterException {
-        if (ycpRequired) {
-            YamcsConnectionProperties ycp = getYamcsConnectionProperties();
-            if (ycp == null) {
-                throw new ParameterException(
-                        "This command requires a connection to a live Yamcs. Use the 'yamcs -y' option");
-            }
-            if (instanceRequired && ycp.getInstance() == null) {
-                throw new ParameterException(
-                        "This command requires the Yamcs instance specified in the Yamcs URL. Use the 'yamcs -y http://host:port/instance' option");
-            }
+        YamcsConnectionProperties ycp = getYamcsConnectionProperties();
+        if (ycp == null) {
+            throw new ParameterException(
+                    "This command requires a connection to Yamcs. Use the 'yamcs -y' option");
+        }
+        if (instanceRequired && ycp.getInstance() == null) {
+            throw new ParameterException(
+                    "This command requires the Yamcs instance specified in the Yamcs URL. Use the 'yamcs -y http://host:port/instance' option");
         }
         if (selectedCommand != null) {
             selectedCommand.validate();

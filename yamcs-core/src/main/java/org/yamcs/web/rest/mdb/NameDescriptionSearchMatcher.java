@@ -18,8 +18,9 @@ class NameDescriptionSearchMatcher {
     public boolean matches(NameDescription nameDescription) {
         for (String term : terms) {
             boolean match = false;
-            if (nameDescription.getQualifiedName().toLowerCase().contains(term))
+            if (nameDescription.getQualifiedName().toLowerCase().contains(term)) {
                 continue;
+            }
             if (nameDescription.getAliasSet() != null) {
                 for (Entry<String, String> entry : nameDescription.getAliasSet().getAliases().entrySet()) {
                     if (entry.getKey().toLowerCase().contains(term) || entry.getValue().toLowerCase().contains(term)) {
@@ -28,8 +29,9 @@ class NameDescriptionSearchMatcher {
                     }
                 }
             }
-            if (!match)
+            if (!match) {
                 return false;
+            }
         }
         return true;
     }

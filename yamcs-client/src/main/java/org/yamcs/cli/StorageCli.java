@@ -24,7 +24,7 @@ public class StorageCli extends Command {
         addSubCommand(new StorageList());
         addSubCommand(new StorageMakeBuckets());
         addSubCommand(new StorageRemoveBuckets());
-        setYcpRequired(true, true);
+        setInstanceRequired(true);
     }
 
     @Parameters(commandDescription = "List buckets or objects")

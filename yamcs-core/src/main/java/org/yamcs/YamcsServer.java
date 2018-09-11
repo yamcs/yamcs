@@ -18,18 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.archive.ReplayServer;
 import org.yamcs.management.ManagementService;
-import org.yamcs.protobuf.YamcsManagement.MissionDatabase;
-import org.yamcs.protobuf.YamcsManagement.ServiceState;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
-import org.yamcs.protobuf.YamcsManagement.YamcsInstances;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.spi.Plugin;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.xtce.DatabaseLoadException;
-import org.yamcs.xtce.Header;
-import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
 
@@ -261,10 +255,9 @@ public class YamcsServer {
     public static YamcsServerInstance restartYamcsInstance(String instanceName) {
         YamcsServerInstance ysi = instances.get(instanceName);
 
-        if (ysi.isRunning()) {
-            ysi.stopAsync();
+        if (ysi.getState() == InstanceState.RUNNING) {
             try {
-                ysi.awaitTerminated();
+                ysi.stop();
             } catch (IllegalStateException e) {
                 staticlog.error("Instance did not terminate normally", e);
             }
@@ -274,14 +267,14 @@ public class YamcsServer {
         staticlog.info("Re-loading instance '{}'", instanceName);
 
         ysi = new YamcsServerInstance(instanceName);
+        instances.put(instanceName, ysi);
+        ManagementService.getInstance().registerYamcsInstance(ysi);
         try {
             ysi.init();
             ysi.startAsync();
         } catch (IOException e) {
             staticlog.error("Failed to init/start instance '{}'", instanceName, e);
         }
-        instances.put(instanceName, ysi);
-        ManagementService.getInstance().registerYamcsInstance(ysi);
 
         return ysi;
     }
@@ -291,8 +284,8 @@ public class YamcsServer {
     }
 
     /**
-     * Creates a new yamcs instance without starting it. If the instance already exist and not in the state FAILED or
-     * TERMINATED a ConfigurationException is thrown
+     * Creates a new yamcs instance. If the instance already exist and not in the state FAILED or OFFLINE a
+     * ConfigurationException is thrown
      * 
      * @param name
      *            the name of the new instance
@@ -303,9 +296,9 @@ public class YamcsServer {
     public static YamcsServerInstance createYamcsInstance(String name) throws IOException {
         YamcsServerInstance ysi = instances.get(name);
         if (ysi != null) {
-            if ((ysi.state() != State.FAILED) && (ysi.state() != State.TERMINATED)) {
+            if ((ysi.getState() != InstanceState.FAILED) && (ysi.getState() != InstanceState.OFFLINE)) {
                 throw new IllegalArgumentException(String.format(
-                        "There already exists an instance named '%s' and is not in FAILED or TERMINATED state", name));
+                        "There already exists an instance named '%s' and it is not in FAILED or OFFLINE state", name));
             } else {
                 staticlog.info("Re-loading instance '{}'", name);
                 YarchDatabase.removeInstance(name);
@@ -319,52 +312,6 @@ public class YamcsServer {
         instances.put(name, ysi);
         ManagementService.getInstance().registerYamcsInstance(ysi);
         return ysi;
-    }
-
-    public static Set<String> getYamcsInstanceNames() {
-        return instances.keySet();
-    }
-
-    public static YamcsInstances getYamcsInstances() {
-        YamcsInstances.Builder aisb = YamcsInstances.newBuilder();
-        for (String name : instances.keySet()) {
-            aisb.addInstance(getYamcsInstance(name));
-        }
-        return aisb.build();
-    }
-
-    public static YamcsInstance getYamcsInstance(String name) {
-        if (!hasInstance(name)) {
-            return null;
-        }
-        YamcsInstance.Builder aib = YamcsInstance.newBuilder().setName(name);
-        YamcsServerInstance ysi = getInstance(name);
-        Service.State state = ysi.state();
-        aib.setState(ServiceState.valueOf(state.name()));
-        if (state == State.FAILED) {
-            aib.setFailureCause(ysi.failureCause().toString());
-        }
-        try {
-            MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
-            YConfiguration c = YConfiguration.getConfiguration("yamcs." + name);
-            if (!c.isList("mdb")) {
-                String configName = c.getString("mdb");
-                mdb.setConfigName(configName);
-            }
-            XtceDb xtcedb = ysi.getXtceDb();
-            if (xtcedb != null) { // if the instance is in a failed state, it could be that it doesn't have a XtceDB
-                                  // (the failure might be due to the load of the XtceDb)
-                mdb.setName(xtcedb.getRootSpaceSystem().getName());
-                Header h = xtcedb.getRootSpaceSystem().getHeader();
-                if ((h != null) && (h.getVersion() != null)) {
-                    mdb.setVersion(h.getVersion());
-                }
-            }
-            aib.setMissionDatabase(mdb.build());
-        } catch (ConfigurationException | DatabaseLoadException e) {
-            staticlog.warn("Got error when finding the mission database for instance {}", name, e);
-        }
-        return aib.build();
     }
 
     private static String deriveServerId() {
@@ -399,6 +346,10 @@ public class YamcsServer {
                     + " Set 'secretKey: <secret>' in yamcs.yaml to avoid this message.");
             secretKey = CryptoUtils.generateRandomSecretKey();
         }
+    }
+
+    public static Set<YamcsServerInstance> getInstances() {
+        return new HashSet<>(instances.values());
     }
 
     public static YamcsServerInstance getInstance(String yamcsInstance) {

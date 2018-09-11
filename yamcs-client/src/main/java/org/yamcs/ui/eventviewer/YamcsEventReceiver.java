@@ -30,6 +30,7 @@ import org.yamcs.api.ws.WebSocketClientCallback;
 import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.api.ws.WebSocketResponseHandler;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
@@ -62,9 +63,10 @@ public class YamcsEventReceiver
             eventViewer.addEvent(ev);
         }
         if (data.hasParameterData()) {
-            ParameterData par = data.getParameterData();
-            eventViewer.updateStatus(par.getParameter(0).getId().getName(),
-                    par.getParameter(0).getEngValue().getStringValue());
+            ParameterData pdata = data.getParameterData();
+            ParameterValue pval = pdata.getParameter(0);
+            eventViewer.updateLinkLabel(pval.getId().getName(),
+                    pval.getEngValue().getStringValue());
         }
     }
 

@@ -1,7 +1,5 @@
 package org.yamcs.web.websocket;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.archive.EventRecorder;
@@ -17,62 +15,53 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 /**
  * Provides realtime event subscription via web.
  */
-public class EventResource extends AbstractWebSocketResource {
+public class EventResource implements WebSocketResource {
 
-    private static final Logger log = LoggerFactory.getLogger(EventResource.class);
     public static final String RESOURCE_NAME = "events";
 
-    public static final String OP_subscribe = "subscribe";
-    public static final String OP_unsubscribe = "unsubscribe";
+    private ConnectedWebSocketClient client;
 
     private Stream stream;
     private StreamSubscriber streamSubscriber;
 
-    public EventResource(WebSocketProcessorClient client) {
-        super(client);
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
-        stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
-    }
-
-    @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-        switch (ctx.getOperation()) {
-        case OP_subscribe:
-            return subscribe(ctx.getRequestId());
-        case OP_unsubscribe:
-            return unsubscribe(ctx.getRequestId());
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
+    public EventResource(ConnectedWebSocketClient client) {
+        this.client = client;
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
+            stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
         }
     }
 
-    private WebSocketReply subscribe(int requestId) throws WebSocketException {
+    @Override
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
         doUnsubscribe(); // Only one subscription at a time
         doSubscribe();
-        return WebSocketReply.ack(requestId);
+        return WebSocketReply.ack(ctx.getRequestId());
     }
 
     @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        if (streamSubscriber == null) {
-            super.switchProcessor(oldProcessor, newProcessor);
-        } else {
-            doUnsubscribe();
-            super.switchProcessor(oldProcessor, newProcessor);
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        doUnsubscribe();
+        return WebSocketReply.ack(ctx.getRequestId());
+    }
+
+    @Override
+    public void unselectProcessor() {
+        doUnsubscribe();
+    }
+
+    @Override
+    public void selectProcessor(Processor processor) throws ProcessorException {
+        if (streamSubscriber != null) {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(processor.getInstance());
             stream = ydb.getStream(EventRecorder.REALTIME_EVENT_STREAM_NAME);
             doSubscribe();
         }
     }
 
-    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
-        doUnsubscribe();
-        return WebSocketReply.ack(requestId);
-    }
-
     @Override
-    public void quit() {
+    public void socketClosed() {
         doUnsubscribe();
     }
 
@@ -81,17 +70,12 @@ public class EventResource extends AbstractWebSocketResource {
             streamSubscriber = new StreamSubscriber() {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
-                    try {
-                        Event event = (Event) tuple.getColumn("body");
-                        event = Event.newBuilder(event)
-                                .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
-                                .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
-                                .build();
-                        wsHandler.sendData(ProtoDataType.EVENT, event);
-                    } catch (Exception e) {
-                        log.warn("got error when sending event, quitting", e);
-                        quit();
-                    }
+                    Event event = (Event) tuple.getColumn("body");
+                    event = Event.newBuilder(event)
+                            .setGenerationTimeUTC(TimeEncoding.toString(event.getGenerationTime()))
+                            .setReceptionTimeUTC(TimeEncoding.toString(event.getReceptionTime()))
+                            .build();
+                    client.sendData(ProtoDataType.EVENT, event);
                 }
 
                 @Override

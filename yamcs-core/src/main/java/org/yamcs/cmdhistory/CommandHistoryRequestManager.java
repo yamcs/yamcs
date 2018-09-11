@@ -10,10 +10,10 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.parameter.Value;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.Stream;
@@ -23,9 +23,11 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * Part of processors: handles filtered requests for command history.
  * 
- * We handle two kind of subscriptions: - subscription to specific commands - subscription to all the commands but
- * filtered on source and time.
- * 
+ * We handle two kind of subscriptions:
+ * <ul>
+ * <li>subscription to specific commands
+ * <li>subscription to all the commands but filtered on source and time.
+ * </ul>
  * 
  * It receives commands from the cmd_history stream
  * 
@@ -81,24 +83,21 @@ public class CommandHistoryRequestManager extends AbstractService {
      */
     public void unsubscribeCommand(CommandId cmdId, CommandHistoryConsumer consumer) {
         ConcurrentLinkedQueue<CommandHistoryConsumer> l = cmdSubcriptions.get(cmdId);
-        if (l != null)
+        if (l != null) {
             l.remove(consumer);
+        }
     }
 
     /**
      * Called by the CommandHistory consumers when they want to receive all updates corresponding to a command.
-     * 
-     * @param commandsOrigin
-     * @param commandsSince
-     * @param consumer
-     * @return
      */
-    public int subscribeCommandHistory(String commandsOrigin, long commandsSince, CommandHistoryConsumer consumer) {
+    public CommandHistoryFilter subscribeCommandHistory(String commandsOrigin, long commandsSince,
+            CommandHistoryConsumer consumer) {
         log.debug("commandsOrigin={}", commandsOrigin);
         CommandHistoryFilter filter = new CommandHistoryFilter(subscriptionIdGenerator.getAndIncrement(),
                 commandsOrigin, commandsSince);
         historySubcriptions.put(filter, consumer);
-        return filter.subscriptionId;
+        return filter;
     }
 
     /**

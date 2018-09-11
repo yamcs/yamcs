@@ -522,41 +522,6 @@ public final class Pvalue {
 
     /**
      * <pre>
-     *starting with Yamcs 3.3.0,  expirationTime is replaced by expireMillis below. 
-     * It used to be computed from the acquisitionTime; to emulate the old behaviour, simply do expirationTime = acquisitionTime+expireMillis. 
-     * However it might make more sensible to use the generation instead of the acquisition time (this is one reason for the change)
-     * </pre>
-     *
-     * <code>optional int64 expirationTime = 23 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated boolean hasExpirationTime();
-    /**
-     * <pre>
-     *starting with Yamcs 3.3.0,  expirationTime is replaced by expireMillis below. 
-     * It used to be computed from the acquisitionTime; to emulate the old behaviour, simply do expirationTime = acquisitionTime+expireMillis. 
-     * However it might make more sensible to use the generation instead of the acquisition time (this is one reason for the change)
-     * </pre>
-     *
-     * <code>optional int64 expirationTime = 23 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated long getExpirationTime();
-
-    /**
-     * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated boolean hasExpirationTimeUTC();
-    /**
-     * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.lang.String getExpirationTimeUTC();
-    /**
-     * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated com.google.protobuf.ByteString
-        getExpirationTimeUTCBytes();
-
-    /**
-     * <pre>
      * context-dependent ranges
      * </pre>
      *
@@ -602,7 +567,7 @@ public final class Pvalue {
     /**
      * <pre>
      *how long (in milliseconds) this parameter value is valid
-     *Note that from Yamcs 3.3 there is an option when subscribing to parameters to get updated when the parameter values expire 
+     *Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
      * </pre>
      *
      * <code>optional int64 expireMillis = 26;</code>
@@ -611,7 +576,7 @@ public final class Pvalue {
     /**
      * <pre>
      *how long (in milliseconds) this parameter value is valid
-     *Note that from Yamcs 3.3 there is an option when subscribing to parameters to get updated when the parameter values expire 
+     *Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
      * </pre>
      *
      * <code>optional int64 expireMillis = 26;</code>
@@ -643,8 +608,6 @@ public final class Pvalue {
       rangeCondition_ = 0;
       acquisitionTimeUTC_ = "";
       generationTimeUTC_ = "";
-      expirationTime_ = 0L;
-      expirationTimeUTC_ = "";
       alarmRange_ = java.util.Collections.emptyList();
       expireMillis_ = 0L;
     }
@@ -776,28 +739,17 @@ public final class Pvalue {
               generationTimeUTC_ = bs;
               break;
             }
-            case 184: {
-              bitField0_ |= 0x00000800;
-              expirationTime_ = input.readInt64();
-              break;
-            }
-            case 194: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00001000;
-              expirationTimeUTC_ = bs;
-              break;
-            }
             case 202: {
-              if (!((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
+              if (!((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
                 alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlarmRange>();
-                mutable_bitField0_ |= 0x00002000;
+                mutable_bitField0_ |= 0x00000800;
               }
               alarmRange_.add(
                   input.readMessage(org.yamcs.protobuf.Mdb.AlarmRange.PARSER, extensionRegistry));
               break;
             }
             case 208: {
-              bitField0_ |= 0x00002000;
+              bitField0_ |= 0x00000800;
               expireMillis_ = input.readInt64();
               break;
             }
@@ -809,7 +761,7 @@ public final class Pvalue {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
+        if (((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
           alarmRange_ = java.util.Collections.unmodifiableList(alarmRange_);
         }
         this.unknownFields = unknownFields.build();
@@ -1081,75 +1033,6 @@ public final class Pvalue {
       }
     }
 
-    public static final int EXPIRATIONTIME_FIELD_NUMBER = 23;
-    private long expirationTime_;
-    /**
-     * <pre>
-     *starting with Yamcs 3.3.0,  expirationTime is replaced by expireMillis below. 
-     * It used to be computed from the acquisitionTime; to emulate the old behaviour, simply do expirationTime = acquisitionTime+expireMillis. 
-     * However it might make more sensible to use the generation instead of the acquisition time (this is one reason for the change)
-     * </pre>
-     *
-     * <code>optional int64 expirationTime = 23 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public boolean hasExpirationTime() {
-      return ((bitField0_ & 0x00000800) == 0x00000800);
-    }
-    /**
-     * <pre>
-     *starting with Yamcs 3.3.0,  expirationTime is replaced by expireMillis below. 
-     * It used to be computed from the acquisitionTime; to emulate the old behaviour, simply do expirationTime = acquisitionTime+expireMillis. 
-     * However it might make more sensible to use the generation instead of the acquisition time (this is one reason for the change)
-     * </pre>
-     *
-     * <code>optional int64 expirationTime = 23 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public long getExpirationTime() {
-      return expirationTime_;
-    }
-
-    public static final int EXPIRATIONTIMEUTC_FIELD_NUMBER = 24;
-    private volatile java.lang.Object expirationTimeUTC_;
-    /**
-     * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public boolean hasExpirationTimeUTC() {
-      return ((bitField0_ & 0x00001000) == 0x00001000);
-    }
-    /**
-     * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.lang.String getExpirationTimeUTC() {
-      java.lang.Object ref = expirationTimeUTC_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          expirationTimeUTC_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public com.google.protobuf.ByteString
-        getExpirationTimeUTCBytes() {
-      java.lang.Object ref = expirationTimeUTC_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        expirationTimeUTC_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
     public static final int ALARMRANGE_FIELD_NUMBER = 25;
     private java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> alarmRange_;
     /**
@@ -1210,18 +1093,18 @@ public final class Pvalue {
     /**
      * <pre>
      *how long (in milliseconds) this parameter value is valid
-     *Note that from Yamcs 3.3 there is an option when subscribing to parameters to get updated when the parameter values expire 
+     *Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
      * </pre>
      *
      * <code>optional int64 expireMillis = 26;</code>
      */
     public boolean hasExpireMillis() {
-      return ((bitField0_ & 0x00002000) == 0x00002000);
+      return ((bitField0_ & 0x00000800) == 0x00000800);
     }
     /**
      * <pre>
      *how long (in milliseconds) this parameter value is valid
-     *Note that from Yamcs 3.3 there is an option when subscribing to parameters to get updated when the parameter values expire 
+     *Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
      * </pre>
      *
      * <code>optional int64 expireMillis = 26;</code>
@@ -1293,16 +1176,10 @@ public final class Pvalue {
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 12, generationTimeUTC_);
       }
-      if (((bitField0_ & 0x00000800) == 0x00000800)) {
-        output.writeInt64(23, expirationTime_);
-      }
-      if (((bitField0_ & 0x00001000) == 0x00001000)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 24, expirationTimeUTC_);
-      }
       for (int i = 0; i < alarmRange_.size(); i++) {
         output.writeMessage(25, alarmRange_.get(i));
       }
-      if (((bitField0_ & 0x00002000) == 0x00002000)) {
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
         output.writeInt64(26, expireMillis_);
       }
       unknownFields.writeTo(output);
@@ -1355,18 +1232,11 @@ public final class Pvalue {
       if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, generationTimeUTC_);
       }
-      if (((bitField0_ & 0x00000800) == 0x00000800)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt64Size(23, expirationTime_);
-      }
-      if (((bitField0_ & 0x00001000) == 0x00001000)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(24, expirationTimeUTC_);
-      }
       for (int i = 0; i < alarmRange_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(25, alarmRange_.get(i));
       }
-      if (((bitField0_ & 0x00002000) == 0x00002000)) {
+      if (((bitField0_ & 0x00000800) == 0x00000800)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(26, expireMillis_);
       }
@@ -1439,16 +1309,6 @@ public final class Pvalue {
         result = result && getGenerationTimeUTC()
             .equals(other.getGenerationTimeUTC());
       }
-      result = result && (hasExpirationTime() == other.hasExpirationTime());
-      if (hasExpirationTime()) {
-        result = result && (getExpirationTime()
-            == other.getExpirationTime());
-      }
-      result = result && (hasExpirationTimeUTC() == other.hasExpirationTimeUTC());
-      if (hasExpirationTimeUTC()) {
-        result = result && getExpirationTimeUTC()
-            .equals(other.getExpirationTimeUTC());
-      }
       result = result && getAlarmRangeList()
           .equals(other.getAlarmRangeList());
       result = result && (hasExpireMillis() == other.hasExpireMillis());
@@ -1513,15 +1373,6 @@ public final class Pvalue {
       if (hasGenerationTimeUTC()) {
         hash = (37 * hash) + GENERATIONTIMEUTC_FIELD_NUMBER;
         hash = (53 * hash) + getGenerationTimeUTC().hashCode();
-      }
-      if (hasExpirationTime()) {
-        hash = (37 * hash) + EXPIRATIONTIME_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            getExpirationTime());
-      }
-      if (hasExpirationTimeUTC()) {
-        hash = (37 * hash) + EXPIRATIONTIMEUTC_FIELD_NUMBER;
-        hash = (53 * hash) + getExpirationTimeUTC().hashCode();
       }
       if (getAlarmRangeCount() > 0) {
         hash = (37 * hash) + ALARMRANGE_FIELD_NUMBER;
@@ -1693,18 +1544,14 @@ public final class Pvalue {
         bitField0_ = (bitField0_ & ~0x00000200);
         generationTimeUTC_ = "";
         bitField0_ = (bitField0_ & ~0x00000400);
-        expirationTime_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00000800);
-        expirationTimeUTC_ = "";
-        bitField0_ = (bitField0_ & ~0x00001000);
         if (alarmRangeBuilder_ == null) {
           alarmRange_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00002000);
+          bitField0_ = (bitField0_ & ~0x00000800);
         } else {
           alarmRangeBuilder_.clear();
         }
         expireMillis_ = 0L;
-        bitField0_ = (bitField0_ & ~0x00004000);
+        bitField0_ = (bitField0_ & ~0x00001000);
         return this;
       }
 
@@ -1785,25 +1632,17 @@ public final class Pvalue {
           to_bitField0_ |= 0x00000400;
         }
         result.generationTimeUTC_ = generationTimeUTC_;
-        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
-          to_bitField0_ |= 0x00000800;
-        }
-        result.expirationTime_ = expirationTime_;
-        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
-          to_bitField0_ |= 0x00001000;
-        }
-        result.expirationTimeUTC_ = expirationTimeUTC_;
         if (alarmRangeBuilder_ == null) {
-          if (((bitField0_ & 0x00002000) == 0x00002000)) {
+          if (((bitField0_ & 0x00000800) == 0x00000800)) {
             alarmRange_ = java.util.Collections.unmodifiableList(alarmRange_);
-            bitField0_ = (bitField0_ & ~0x00002000);
+            bitField0_ = (bitField0_ & ~0x00000800);
           }
           result.alarmRange_ = alarmRange_;
         } else {
           result.alarmRange_ = alarmRangeBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00004000) == 0x00004000)) {
-          to_bitField0_ |= 0x00002000;
+        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
+          to_bitField0_ |= 0x00000800;
         }
         result.expireMillis_ = expireMillis_;
         result.bitField0_ = to_bitField0_;
@@ -1885,19 +1724,11 @@ public final class Pvalue {
           generationTimeUTC_ = other.generationTimeUTC_;
           onChanged();
         }
-        if (other.hasExpirationTime()) {
-          setExpirationTime(other.getExpirationTime());
-        }
-        if (other.hasExpirationTimeUTC()) {
-          bitField0_ |= 0x00001000;
-          expirationTimeUTC_ = other.expirationTimeUTC_;
-          onChanged();
-        }
         if (alarmRangeBuilder_ == null) {
           if (!other.alarmRange_.isEmpty()) {
             if (alarmRange_.isEmpty()) {
               alarmRange_ = other.alarmRange_;
-              bitField0_ = (bitField0_ & ~0x00002000);
+              bitField0_ = (bitField0_ & ~0x00000800);
             } else {
               ensureAlarmRangeIsMutable();
               alarmRange_.addAll(other.alarmRange_);
@@ -1910,7 +1741,7 @@ public final class Pvalue {
               alarmRangeBuilder_.dispose();
               alarmRangeBuilder_ = null;
               alarmRange_ = other.alarmRange_;
-              bitField0_ = (bitField0_ & ~0x00002000);
+              bitField0_ = (bitField0_ & ~0x00000800);
               alarmRangeBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getAlarmRangeFieldBuilder() : null;
@@ -2699,144 +2530,12 @@ public final class Pvalue {
         return this;
       }
 
-      private long expirationTime_ ;
-      /**
-       * <pre>
-       *starting with Yamcs 3.3.0,  expirationTime is replaced by expireMillis below. 
-       * It used to be computed from the acquisitionTime; to emulate the old behaviour, simply do expirationTime = acquisitionTime+expireMillis. 
-       * However it might make more sensible to use the generation instead of the acquisition time (this is one reason for the change)
-       * </pre>
-       *
-       * <code>optional int64 expirationTime = 23 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public boolean hasExpirationTime() {
-        return ((bitField0_ & 0x00000800) == 0x00000800);
-      }
-      /**
-       * <pre>
-       *starting with Yamcs 3.3.0,  expirationTime is replaced by expireMillis below. 
-       * It used to be computed from the acquisitionTime; to emulate the old behaviour, simply do expirationTime = acquisitionTime+expireMillis. 
-       * However it might make more sensible to use the generation instead of the acquisition time (this is one reason for the change)
-       * </pre>
-       *
-       * <code>optional int64 expirationTime = 23 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public long getExpirationTime() {
-        return expirationTime_;
-      }
-      /**
-       * <pre>
-       *starting with Yamcs 3.3.0,  expirationTime is replaced by expireMillis below. 
-       * It used to be computed from the acquisitionTime; to emulate the old behaviour, simply do expirationTime = acquisitionTime+expireMillis. 
-       * However it might make more sensible to use the generation instead of the acquisition time (this is one reason for the change)
-       * </pre>
-       *
-       * <code>optional int64 expirationTime = 23 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setExpirationTime(long value) {
-        bitField0_ |= 0x00000800;
-        expirationTime_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       *starting with Yamcs 3.3.0,  expirationTime is replaced by expireMillis below. 
-       * It used to be computed from the acquisitionTime; to emulate the old behaviour, simply do expirationTime = acquisitionTime+expireMillis. 
-       * However it might make more sensible to use the generation instead of the acquisition time (this is one reason for the change)
-       * </pre>
-       *
-       * <code>optional int64 expirationTime = 23 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearExpirationTime() {
-        bitField0_ = (bitField0_ & ~0x00000800);
-        expirationTime_ = 0L;
-        onChanged();
-        return this;
-      }
-
-      private java.lang.Object expirationTimeUTC_ = "";
-      /**
-       * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public boolean hasExpirationTimeUTC() {
-        return ((bitField0_ & 0x00001000) == 0x00001000);
-      }
-      /**
-       * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.lang.String getExpirationTimeUTC() {
-        java.lang.Object ref = expirationTimeUTC_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            expirationTimeUTC_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public com.google.protobuf.ByteString
-          getExpirationTimeUTCBytes() {
-        java.lang.Object ref = expirationTimeUTC_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          expirationTimeUTC_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setExpirationTimeUTC(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00001000;
-        expirationTimeUTC_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearExpirationTimeUTC() {
-        bitField0_ = (bitField0_ & ~0x00001000);
-        expirationTimeUTC_ = getDefaultInstance().getExpirationTimeUTC();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string expirationTimeUTC = 24 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setExpirationTimeUTCBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00001000;
-        expirationTimeUTC_ = value;
-        onChanged();
-        return this;
-      }
-
       private java.util.List<org.yamcs.protobuf.Mdb.AlarmRange> alarmRange_ =
         java.util.Collections.emptyList();
       private void ensureAlarmRangeIsMutable() {
-        if (!((bitField0_ & 0x00002000) == 0x00002000)) {
+        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
           alarmRange_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.AlarmRange>(alarmRange_);
-          bitField0_ |= 0x00002000;
+          bitField0_ |= 0x00000800;
          }
       }
 
@@ -3030,7 +2729,7 @@ public final class Pvalue {
       public Builder clearAlarmRange() {
         if (alarmRangeBuilder_ == null) {
           alarmRange_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00002000);
+          bitField0_ = (bitField0_ & ~0x00000800);
           onChanged();
         } else {
           alarmRangeBuilder_.clear();
@@ -3135,7 +2834,7 @@ public final class Pvalue {
           alarmRangeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               org.yamcs.protobuf.Mdb.AlarmRange, org.yamcs.protobuf.Mdb.AlarmRange.Builder, org.yamcs.protobuf.Mdb.AlarmRangeOrBuilder>(
                   alarmRange_,
-                  ((bitField0_ & 0x00002000) == 0x00002000),
+                  ((bitField0_ & 0x00000800) == 0x00000800),
                   getParentForChildren(),
                   isClean());
           alarmRange_ = null;
@@ -3147,18 +2846,18 @@ public final class Pvalue {
       /**
        * <pre>
        *how long (in milliseconds) this parameter value is valid
-       *Note that from Yamcs 3.3 there is an option when subscribing to parameters to get updated when the parameter values expire 
+       *Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
        * </pre>
        *
        * <code>optional int64 expireMillis = 26;</code>
        */
       public boolean hasExpireMillis() {
-        return ((bitField0_ & 0x00004000) == 0x00004000);
+        return ((bitField0_ & 0x00001000) == 0x00001000);
       }
       /**
        * <pre>
        *how long (in milliseconds) this parameter value is valid
-       *Note that from Yamcs 3.3 there is an option when subscribing to parameters to get updated when the parameter values expire 
+       *Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
        * </pre>
        *
        * <code>optional int64 expireMillis = 26;</code>
@@ -3169,13 +2868,13 @@ public final class Pvalue {
       /**
        * <pre>
        *how long (in milliseconds) this parameter value is valid
-       *Note that from Yamcs 3.3 there is an option when subscribing to parameters to get updated when the parameter values expire 
+       *Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
        * </pre>
        *
        * <code>optional int64 expireMillis = 26;</code>
        */
       public Builder setExpireMillis(long value) {
-        bitField0_ |= 0x00004000;
+        bitField0_ |= 0x00001000;
         expireMillis_ = value;
         onChanged();
         return this;
@@ -3183,13 +2882,13 @@ public final class Pvalue {
       /**
        * <pre>
        *how long (in milliseconds) this parameter value is valid
-       *Note that from Yamcs 3.3 there is an option when subscribing to parameters to get updated when the parameter values expire 
+       *Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
        * </pre>
        *
        * <code>optional int64 expireMillis = 26;</code>
        */
       public Builder clearExpireMillis() {
-        bitField0_ = (bitField0_ & ~0x00004000);
+        bitField0_ = (bitField0_ & ~0x00001000);
         expireMillis_ = 0L;
         onChanged();
         return this;
@@ -9257,7 +8956,7 @@ public final class Pvalue {
   static {
     java.lang.String[] descriptorData = {
       "\n\014pvalue.proto\022\006pvalue\032\013yamcs.proto\032\tmdb" +
-      ".proto\"\204\004\n\016ParameterValue\022 \n\002id\030\001 \001(\0132\024." +
+      ".proto\"\311\003\n\016ParameterValue\022 \n\002id\030\001 \001(\0132\024." +
       "yamcs.NamedObjectId\022\036\n\010rawValue\030\002 \001(\0132\014." +
       "yamcs.Value\022\036\n\010engValue\030\003 \001(\0132\014.yamcs.Va" +
       "lue\022\027\n\017acquisitionTime\030\004 \001(\003\022\026\n\016generati" +
@@ -9267,32 +8966,31 @@ public final class Pvalue {
       ".pvalue.MonitoringResult\022.\n\016rangeConditi" +
       "on\030\t \001(\0162\026.pvalue.RangeCondition\022\032\n\022acqu",
       "isitionTimeUTC\030\013 \001(\t\022\031\n\021generationTimeUT" +
-      "C\030\014 \001(\t\022\032\n\016expirationTime\030\027 \001(\003B\002\030\001\022\035\n\021e" +
-      "xpirationTimeUTC\030\030 \001(\tB\002\030\001\022#\n\nalarmRange" +
-      "\030\031 \003(\0132\017.mdb.AlarmRange\022\024\n\014expireMillis\030" +
-      "\032 \001(\003\"\346\001\n\017ParameterStatus\0224\n\021acquisition" +
-      "Status\030\001 \001(\0162\031.pvalue.AcquisitionStatus\022" +
-      "2\n\020monitoringResult\030\002 \001(\0162\030.pvalue.Monit" +
-      "oringResult\022.\n\016rangeCondition\030\003 \001(\0162\026.pv" +
-      "alue.RangeCondition\022#\n\nalarmRange\030\004 \003(\0132" +
-      "\017.mdb.AlarmRange\022\024\n\014expireMillis\030\005 \001(\003\"\211",
-      "\001\n\rParameterData\022)\n\tparameter\030\001 \003(\0132\026.pv" +
-      "alue.ParameterValue\022\r\n\005group\030\002 \001(\t\022\026\n\016ge" +
-      "nerationTime\030\003 \001(\003\022\016\n\006seqNum\030\004 \001(\005\022\026\n\016su" +
-      "bscriptionId\030\005 \001(\005\"\201\001\n\nTimeSeries\022)\n\006sam" +
-      "ple\030\001 \003(\0132\031.pvalue.TimeSeries.Sample\032H\n\006" +
-      "Sample\022\014\n\004time\030\001 \001(\t\022\013\n\003avg\030\002 \001(\001\022\013\n\003min" +
-      "\030\003 \001(\001\022\013\n\003max\030\004 \001(\001\022\t\n\001n\030\005 \001(\005\"\212\001\n\006Range" +
-      "s\022#\n\005range\030\001 \003(\0132\024.pvalue.Ranges.Range\032[" +
-      "\n\005Range\022\021\n\ttimeStart\030\001 \001(\t\022\020\n\010timeStop\030\002" +
-      " \001(\t\022\036\n\010engValue\030\003 \001(\0132\014.yamcs.Value\022\r\n\005",
-      "count\030\004 \001(\005*M\n\021AcquisitionStatus\022\014\n\010ACQU" +
-      "IRED\020\000\022\020\n\014NOT_RECEIVED\020\001\022\013\n\007INVALID\020\002\022\013\n" +
-      "\007EXPIRED\020\003*o\n\020MonitoringResult\022\014\n\010DISABL" +
-      "ED\020\000\022\r\n\tIN_LIMITS\020\001\022\t\n\005WATCH\020\007\022\013\n\007WARNIN" +
-      "G\020\n\022\014\n\010DISTRESS\020\r\022\014\n\010CRITICAL\020\020\022\n\n\006SEVER" +
-      "E\020\023*#\n\016RangeCondition\022\007\n\003LOW\020\000\022\010\n\004HIGH\020\001" +
-      "B\024\n\022org.yamcs.protobuf"
+      "C\030\014 \001(\t\022#\n\nalarmRange\030\031 \003(\0132\017.mdb.AlarmR" +
+      "ange\022\024\n\014expireMillis\030\032 \001(\003\"\346\001\n\017Parameter" +
+      "Status\0224\n\021acquisitionStatus\030\001 \001(\0162\031.pval" +
+      "ue.AcquisitionStatus\0222\n\020monitoringResult" +
+      "\030\002 \001(\0162\030.pvalue.MonitoringResult\022.\n\016rang" +
+      "eCondition\030\003 \001(\0162\026.pvalue.RangeCondition" +
+      "\022#\n\nalarmRange\030\004 \003(\0132\017.mdb.AlarmRange\022\024\n" +
+      "\014expireMillis\030\005 \001(\003\"\211\001\n\rParameterData\022)\n" +
+      "\tparameter\030\001 \003(\0132\026.pvalue.ParameterValue",
+      "\022\r\n\005group\030\002 \001(\t\022\026\n\016generationTime\030\003 \001(\003\022" +
+      "\016\n\006seqNum\030\004 \001(\005\022\026\n\016subscriptionId\030\005 \001(\005\"" +
+      "\201\001\n\nTimeSeries\022)\n\006sample\030\001 \003(\0132\031.pvalue." +
+      "TimeSeries.Sample\032H\n\006Sample\022\014\n\004time\030\001 \001(" +
+      "\t\022\013\n\003avg\030\002 \001(\001\022\013\n\003min\030\003 \001(\001\022\013\n\003max\030\004 \001(\001" +
+      "\022\t\n\001n\030\005 \001(\005\"\212\001\n\006Ranges\022#\n\005range\030\001 \003(\0132\024." +
+      "pvalue.Ranges.Range\032[\n\005Range\022\021\n\ttimeStar" +
+      "t\030\001 \001(\t\022\020\n\010timeStop\030\002 \001(\t\022\036\n\010engValue\030\003 " +
+      "\001(\0132\014.yamcs.Value\022\r\n\005count\030\004 \001(\005*M\n\021Acqu" +
+      "isitionStatus\022\014\n\010ACQUIRED\020\000\022\020\n\014NOT_RECEI",
+      "VED\020\001\022\013\n\007INVALID\020\002\022\013\n\007EXPIRED\020\003*o\n\020Monit" +
+      "oringResult\022\014\n\010DISABLED\020\000\022\r\n\tIN_LIMITS\020\001" +
+      "\022\t\n\005WATCH\020\007\022\013\n\007WARNING\020\n\022\014\n\010DISTRESS\020\r\022\014" +
+      "\n\010CRITICAL\020\020\022\n\n\006SEVERE\020\023*#\n\016RangeConditi" +
+      "on\022\007\n\003LOW\020\000\022\010\n\004HIGH\020\001B\024\n\022org.yamcs.proto" +
+      "buf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -9313,7 +9011,7 @@ public final class Pvalue {
     internal_static_pvalue_ParameterValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_pvalue_ParameterValue_descriptor,
-        new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "RangeCondition", "AcquisitionTimeUTC", "GenerationTimeUTC", "ExpirationTime", "ExpirationTimeUTC", "AlarmRange", "ExpireMillis", });
+        new java.lang.String[] { "Id", "RawValue", "EngValue", "AcquisitionTime", "GenerationTime", "AcquisitionStatus", "ProcessingStatus", "MonitoringResult", "RangeCondition", "AcquisitionTimeUTC", "GenerationTimeUTC", "AlarmRange", "ExpireMillis", });
     internal_static_pvalue_ParameterStatus_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_pvalue_ParameterStatus_fieldAccessorTable = new

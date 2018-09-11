@@ -43,20 +43,16 @@ import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.RouteHandler;
-import org.yamcs.web.websocket.ManagementResource;
 
 import com.google.gson.JsonStreamParser;
 import com.google.protobuf.Message;
@@ -518,20 +514,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
         return r;
     }
 
-    @Test
-    public void testWsManagement() throws Exception {
-        ClientInfo cinfo = getClientInfo();
-        assertEquals("IntegrationTest", cinfo.getInstance());
-        assertEquals("realtime", cinfo.getProcessorName());
-        assertEquals("it-junit", cinfo.getApplicationName());
-
-        ProcessorInfo pinfo = getProcessorInfo();
-        assertEquals("IntegrationTest", pinfo.getInstance());
-        assertEquals("realtime", pinfo.getName());
-        assertEquals("realtime", pinfo.getType());
-        assertEquals("system", pinfo.getCreator());
-    }
-
     /*
      * private ValidateCommandRequest getValidateCommand(String cmdName, int seq, String... args) { NamedObjectId cmdId
      * = NamedObjectId.newBuilder().setName(cmdName).build();
@@ -543,14 +525,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
      * 
      * return ValidateCommandRequest.newBuilder().addCommand(cmdb.build()).build(); }
      */
-
-    private ProcessorInfo getProcessorInfo() throws InterruptedException {
-        WebSocketRequest wsr = new WebSocketRequest("management", ManagementResource.OP_getProcessorInfo);
-        wsClient.sendRequest(wsr);
-        ProcessorInfo pinfo = wsListener.processorInfoList.poll(5, TimeUnit.SECONDS);
-        assertNotNull(pinfo);
-        return pinfo;
-    }
 
     // Keeping it D-R-Y. Could be refactored into httpClient to make writing short tests easier
     private <T extends Message> String doRealtimeRequest(String path, HttpMethod method, T msg) throws Exception {
@@ -592,54 +566,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
                 fail("Unkonwn parameter " + p.getId());
             }
         }
-    }
-
-    @Test
-    public void testChangeReplaySpeed() throws Exception {
-
-        // generate some data
-        for (int i = 0; i < 100; i++) {
-            packetGenerator.generate_PKT1_1();
-        }
-
-        // sget client info
-        ClientInfo ci = getClientInfo();
-        String config = "{\n"
-                + "  \"utcStart\": \"" + TimeEncoding.toString(0) + "\", \n"
-                + "  \"utcStop\": \"" + TimeEncoding.toString(TimeEncoding.MAX_INSTANT) + "\", \n"
-                + "  \"parameterRequest\": {\n"
-                + "   \"nameFilter\": [{\"name\":\"/REFMDB/SUBSYS1/IntegerPara1_1_6\"}]\n"
-                + "}\n"
-                + "}";
-        // Create replay
-        Rest.CreateProcessorRequest cpr = Rest.CreateProcessorRequest.newBuilder()
-                .setName("replay_test")
-                .setType("Archive")
-                .setConfig(config)
-                .setPersistent(true)
-                .addClientId(ci.getId()).build();
-        String resp1 = restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(cpr)).get();
-
-        assertEquals(resp1, "");
-
-        // Check speed is 1.0
-        ProcessorInfo pi1 = getProcessorInfo();
-        Yamcs.ReplaySpeed speed1 = pi1.getReplayRequest().getSpeed();
-        assertEquals(1.0f, speed1.getParam(), 1e-6);
-
-        // Set replay speed to 2.0
-        Rest.EditProcessorRequest epr = Rest.EditProcessorRequest.newBuilder()
-                .setSpeed("2x").build();
-        String resp2 = restClient.doRequest("/processors/IntegrationTest/replay_test", HttpMethod.POST, toJson(epr))
-                .get();
-        assertEquals(resp2, "");
-
-        // Check speed is 2.0
-        ProcessorInfo pi2 = getProcessorInfo();
-        Yamcs.ReplaySpeed speed2 = pi2.getReplayRequest().getSpeed();
-        assertEquals(speed2.getParam(), 2.0f, 1e-6);
-        restClient.doRequest("/processors/IntegrationTest/replay_test", HttpMethod.DELETE).get();
-        Thread.sleep(2000);
     }
 
     @Test

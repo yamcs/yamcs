@@ -149,9 +149,11 @@ public class PacketViewer extends JFrame implements ActionListener,
 
         uiPrefs = Preferences.userNodeForPackage(PacketViewer.class);
 
-        YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
-        if (config.containsKey("defaultNamespace")) {
-            defaultNamespace = config.getString("defaultNamespace");
+        if (YConfiguration.isDefined("yamcs-ui")) {
+            YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
+            if (config.containsKey("defaultNamespace")) {
+                defaultNamespace = config.getString("defaultNamespace");
+            }
         }
 
         packetPreprocessor = new IssPacketPreprocessor(null);

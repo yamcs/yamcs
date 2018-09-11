@@ -1,9 +1,5 @@
 package org.yamcs.web.websocket;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.commanding.CommandQueue;
@@ -22,156 +18,116 @@ import org.yamcs.security.SystemPrivilege;
 /**
  * Provides realtime command queue subscription via web.
  */
-public class CommandQueueResource extends AbstractWebSocketResource implements CommandQueueListener {
+public class CommandQueueResource implements WebSocketResource, CommandQueueListener {
 
-    private static final Logger log = LoggerFactory.getLogger(CommandQueueResource.class);
     public static final String RESOURCE_NAME = "cqueues";
 
-    public static final String OP_subscribe = "subscribe";
-    public static final String OP_unsubscribe = "unsubscribe";
+    private ConnectedWebSocketClient client;
 
     private volatile boolean subscribed = false;
 
-    public CommandQueueResource(WebSocketProcessorClient client) {
-        super(client);
-    }
+    private CommandQueueManager commandQueueManager;
 
-    @Override
-    public WebSocketReply processRequest(WebSocketDecodeContext ctx, WebSocketDecoder decoder)
-            throws WebSocketException {
-
-        checkSystemPrivilege(ctx.getRequestId(), SystemPrivilege.ControlCommandQueue);
-
-        switch (ctx.getOperation()) {
-        case OP_subscribe:
-            return subscribe(ctx.getRequestId());
-        case OP_unsubscribe:
-            return unsubscribe(ctx.getRequestId());
-        default:
-            throw new WebSocketException(ctx.getRequestId(), "Unsupported operation '" + ctx.getOperation() + "'");
+    public CommandQueueResource(ConnectedWebSocketClient client) {
+        this.client = client;
+        Processor processor = client.getProcessor();
+        if (processor != null) {
+            ManagementService mservice = ManagementService.getInstance();
+            commandQueueManager = mservice.getCommandQueueManager(processor);
         }
     }
 
-    private WebSocketReply subscribe(int requestId) throws WebSocketException {
-        try {
-            WebSocketReply reply = WebSocketReply.ack(requestId);
-            wsHandler.sendReply(reply);
-            doSubscribe();
-            return null;
-        } catch (IOException e) {
-            log.error("Exception when sending data", e);
-            return null;
-        }
-    }
-
-    private WebSocketReply unsubscribe(int requestId) throws WebSocketException {
-        doUnsubscribe();
-        return WebSocketReply.ack(requestId);
-    }
-
     @Override
-    public void quit() {
-        doUnsubscribe();
-    }
+    public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        client.checkSystemPrivilege(ctx.getRequestId(), SystemPrivilege.ControlCommandQueue);
+        WebSocketReply reply = WebSocketReply.ack(ctx.getRequestId());
+        client.sendReply(reply);
 
-    private void doSubscribe() {
         subscribed = true;
+        if (commandQueueManager != null) {
+            commandQueueManager.registerListener(this);
+            for (CommandQueue q : commandQueueManager.getQueues()) {
+                sendInitialUpdateQueue(q);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public WebSocketReply unsubscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        if (commandQueueManager != null) {
+            commandQueueManager.removeListener(this);
+        }
+        subscribed = false;
+        return WebSocketReply.ack(ctx.getRequestId());
+    }
+
+    @Override
+    public void unselectProcessor() {
+        if (commandQueueManager != null) {
+            commandQueueManager.removeListener(this);
+        }
+        commandQueueManager = null;
+    }
+
+    @Override
+    public void selectProcessor(Processor processor) throws ProcessorException {
         ManagementService mservice = ManagementService.getInstance();
-        CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
-        if (cqueueManager != null) {
-            cqueueManager.registerListener(this);
-            for (CommandQueue q : cqueueManager.getQueues()) {
+        commandQueueManager = mservice.getCommandQueueManager(processor);
+        if (subscribed && commandQueueManager != null) {
+            commandQueueManager.registerListener(this);
+            for (CommandQueue q : commandQueueManager.getQueues()) {
                 sendInitialUpdateQueue(q);
             }
         }
     }
 
-    private void doUnsubscribe() {
-        ManagementService mservice = ManagementService.getInstance();
-        CommandQueueManager cqueueManager = mservice.getCommandQueueManager(processor);
-        if (cqueueManager != null) {
-            cqueueManager.removeListener(this);
-        }
-        subscribed = false;
-    }
-
-    @Override
-    public void switchProcessor(Processor oldProcessor, Processor newProcessor) throws ProcessorException {
-        if (subscribed) {
-            doUnsubscribe();
-            super.switchProcessor(oldProcessor, newProcessor);
-            doSubscribe();
-        } else {
-            super.switchProcessor(oldProcessor, newProcessor);
-        }
-    }
-
     /**
-     * right after subcription send the full queeue content (commands included). Afterwards the clinets get notified by
+     * right after subcription send the full queue content (commands included). Afterwards the clients get notified by
      * command added/command removed when the queue gets modified.
-     *
-     * @param q
      */
     private void sendInitialUpdateQueue(CommandQueue q) {
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, true);
-        try {
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
-        } catch (Exception e) {
-            log.warn("got error when sending command queue info, quitting", e);
-            quit();
-        }
+        client.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
     }
 
     @Override
     public void updateQueue(CommandQueue q) {
         CommandQueueInfo info = ManagementGpbHelper.toCommandQueueInfo(q, false);
-        try {
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
-        } catch (Exception e) {
-            log.warn("got error when sending command queue info, quitting", e);
-            quit();
-        }
+        client.sendData(ProtoDataType.COMMAND_QUEUE_INFO, info);
     }
 
     @Override
     public void commandAdded(CommandQueue q, PreparedCommand pc) {
         CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
-        try {
-            CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
-            evtb.setType(Type.COMMAND_ADDED);
-            evtb.setData(data);
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
-        } catch (Exception e) {
-            log.warn("got error when sending command queue event, quitting", e);
-            quit();
-        }
+        CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+        evtb.setType(Type.COMMAND_ADDED);
+        evtb.setData(data);
+        client.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
     }
 
     @Override
     public void commandRejected(CommandQueue q, PreparedCommand pc) {
         CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
-        try {
-            CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
-            evtb.setType(Type.COMMAND_REJECTED);
-            evtb.setData(data);
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
-        } catch (Exception e) {
-            log.warn("got error when sending command queue event, quitting", e);
-            quit();
-        }
+        CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+        evtb.setType(Type.COMMAND_REJECTED);
+        evtb.setData(data);
+        client.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
     }
 
     @Override
     public void commandSent(CommandQueue q, PreparedCommand pc) {
         CommandQueueEntry data = ManagementGpbHelper.toCommandQueueEntry(q, pc);
-        try {
-            CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
-            evtb.setType(Type.COMMAND_SENT);
-            evtb.setData(data);
-            wsHandler.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
-        } catch (Exception e) {
-            log.warn("got error when sending command queue event, quitting", e);
-            quit();
+        CommandQueueEvent.Builder evtb = CommandQueueEvent.newBuilder();
+        evtb.setType(Type.COMMAND_SENT);
+        evtb.setData(data);
+        client.sendData(ProtoDataType.COMMAND_QUEUE_EVENT, evtb.build());
+    }
+
+    @Override
+    public void socketClosed() {
+        if (commandQueueManager != null) {
+            commandQueueManager.removeListener(this);
         }
     }
 }
