@@ -97,13 +97,21 @@ mkdir -p $HOME/rpmbuild/{RPMS,BUILD,SPECS,tmp}
 if [ $yamcs -eq 1 ]; then
     rm -rf /tmp/$serverdist
     mkdir -p /tmp/$serverdist/{bin,cache,etc,lib,lib/ext,log,mdb}
-    cp -a yamcs-server/bin/* /tmp/$serverdist/bin/
+
     cp -a yamcs-core/etc/* /tmp/$serverdist/etc/
-    cp -a yamcs-server/lib/* /tmp/$serverdist/lib/
     cp -a yamcs-api/src/main/*.proto /tmp/$serverdist/lib/
+    
+    cp -a yamcs-server/bin/* /tmp/$serverdist/bin/
     cp -a yamcs-server/target/yamcs*.jar /tmp/$serverdist/lib/
+    cp -a yamcs-server/lib/* /tmp/$serverdist/lib/
+
     cp -a yamcs-artemis/lib/*.jar /tmp/$serverdist/lib/
     cp -a yamcs-artemis/target/yamcs-artemis*.jar /tmp/$serverdist/lib/
+
+    cp -a yamcs-tse/bin/* /tmp/$serverdist/bin/
+    cp -a yamcs-tse/target/yamcs-tse*.jar /tmp/$serverdist/lib/
+    cp -a yamcs-tse/lib/*.jar /tmp/$serverdist/lib/
+
     rm -f /tmp/$serverdist/lib/*-sources.jar
 
     if [ $buildweb -eq 1 ]; then

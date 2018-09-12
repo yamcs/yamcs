@@ -1,0 +1,29 @@
+telnet:
+  port: 8023
+  
+rpc:
+  port: 8135
+
+devices:
+
+  - name: tenma
+    class: org.yamcs.tse.SerialDevice
+    args:
+      path: /dev/tty.usbmodem14141
+      responseTimeout: 3000
+      # Note: this device does not terminate responses.
+      # responseTermination: "\n"
+
+  - name: simulator
+    class: org.yamcs.tse.TcpIpDevice
+    args:
+      host: localhost
+      port: 10023
+      responseTermination: "\r\n"
+
+  - name: rigol
+    class: org.yamcs.tse.TcpIpDevice
+    args:
+      host: 192.168.88.185
+      port: 5555
+      responseTermination: "\n"

@@ -103,6 +103,11 @@
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.4.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.0.1</version>
           <configuration>
@@ -147,17 +152,23 @@
         <version>4.12</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>com.beust</groupId>
+        <artifactId>jcommander</artifactId>
+        <version>1.48</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <modules>
-    <module>yamcs-core</module>
     <module>yamcs-api</module>
-    <module>yamcs-xtce</module>
     <module>yamcs-artemis</module>
+    <module>yamcs-client</module>
+    <module>yamcs-core</module>
     <module>yamcs-server</module>
     <module>yamcs-simulation</module>
-    <module>yamcs-client</module>
+    <module>yamcs-tse</module>
+    <module>yamcs-xtce</module>
   </modules>
 
   <distributionManagement>

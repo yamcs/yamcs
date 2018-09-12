@@ -33,11 +33,11 @@ public class TelemetryLink {
         while (true) {
             if (!simulator.isLOS()) {
                 tmPacketSend(conn);
-                for (int i=0; i<5; i++) {
+                for (int i = 0; i < 5; i++) {
                     tmPacketDump(conn);
                 }
             } else {
-                //System.out.print("packet store");
+                // System.out.print("packet store");
                 tmPacketStore(conn);
             }
             try {
@@ -48,10 +48,9 @@ public class TelemetryLink {
         }
     }
 
-
     public void yamcsServerConnect(ServerConnection conn) {
 
-        //Check for previous connection, used for loss of server.
+        // Check for previous connection, used for loss of server.
         if (conn.getTmSocket() != null) {
             try {
                 conn.setConnected(false);
@@ -82,8 +81,6 @@ public class TelemetryLink {
             }
         }
 
-        if(simulator.getSimWindow() != null)
-            simulator.getSimWindow().setServerStatus(conn.getId(), ServerConnection.ConnectionStatus.CONNECTING);
         try {
             log.info("Waiting for connection from server {}", conn.getId());
             conn.setTmServerSocket(new ServerSocket(conn.getTmPort()));
@@ -123,8 +120,6 @@ public class TelemetryLink {
 
         if (conn.getTcSocket() != null && conn.getTmSocket() != null && conn.getLosSocket() != null) {
             conn.setConnected(true);
-            if(simulator.getSimWindow() != null)
-                simulator.getSimWindow().setServerStatus(conn.getId(), ServerConnection.ConnectionStatus.CONNECTED);
         }
     }
 
@@ -140,8 +135,8 @@ public class TelemetryLink {
     }
 
     public void ackPacketSend(CCSDSPacket packet) {
-        for(ServerConnection conn : serverConnections) {
-            if(conn.isConnected()) {
+        for (ServerConnection conn : serverConnections) {
+            if (conn.isConnected()) {
                 try {
                     packet.writeTo(conn.getTmSocket().getOutputStream());
                 } catch (IOException e1) {
@@ -166,7 +161,6 @@ public class TelemetryLink {
     private void tmPacketStore(ServerConnection conn) {
         if (conn.isConnected() && !conn.isTmQueueEmpty()) {
             // Not the best solution, the if condition stop the LOS file from having double instances
-            // Might rework the logic at a later date
             if (conn.getId() == 0) {
                 CCSDSPacket packet = conn.getTmPacket();
                 simulator.getLosStore().tmPacketStore(packet);
@@ -174,10 +168,7 @@ public class TelemetryLink {
         }
     }
 
-
     private void logMessage(int serverId, String message) {
         log.info(message);
-        if(simulator.getSimWindow() != null)
-            simulator.getSimWindow().addLog(serverId, message + "\n");
     }
 }

@@ -2,17 +2,23 @@ package org.yamcs.simulator;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.LogManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.simulator.ui.SimWindow;
+import org.yamcs.YConfiguration;
+import org.yamcs.utils.YObjectLoader;
 
 public class Simulator extends Thread {
 
-    protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100); // no more than 100 pending
-    // commands
+    // no more than 100 pending commands
+    protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
     private int DEFAULT_MAX_LENGTH = 65542;
     private int maxLength = DEFAULT_MAX_LENGTH;
@@ -22,8 +28,6 @@ public class Simulator extends Thread {
 
     private boolean isLos = false;
     private LosStore losStore;
-
-    private SimWindow simWindow;
 
     private static final Logger log = LoggerFactory.getLogger(Simulator.class);
 
@@ -45,8 +49,9 @@ public class Simulator extends Thread {
                         // read commands
                         CCSDSPacket packet = readPacket(
                                 new DataInputStream(serverConnection.getTcSocket().getInputStream()));
-                        if (packet != null)
+                        if (packet != null) {
                             pendingCommands.put(packet);
+                        }
 
                     } catch (IOException e) {
                         serverConnection.setConnected(false);
@@ -72,22 +77,22 @@ public class Simulator extends Thread {
             byte hdr[] = new byte[6];
             dIn.readFully(hdr);
             int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
-            if (remaining > maxLength - 6)
-                throw new IOException("Remaining packet length too big: " + remaining + " maximum allowed is " + (maxLength - 6));
+            if (remaining > maxLength - 6) {
+                throw new IOException(
+                        "Remaining packet length too big: " + remaining + " maximum allowed is " + (maxLength - 6));
+            }
             byte[] b = new byte[6 + remaining];
             System.arraycopy(hdr, 0, b, 0, 6);
             dIn.readFully(b, 6, remaining);
             CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
             tmLink.ackPacketSend(ackPacket(packet, 0, 0));
             return packet;
-
         } catch (IOException e) {
             log.error("Connection lost:" + e.getMessage(), e);
         } catch (Exception e) {
             log.error("Error reading command " + e.getMessage(), e);
         }
         return null;
-
     }
 
     public SimulationConfiguration getSimulationConfiguration() {
@@ -121,14 +126,16 @@ public class Simulator extends Thread {
             filename = losStore.getCurrentFileName();
         }
         DataInputStream dataStream = losStore.readLosFile(filename);
-        if (dataStream == null)
+        if (dataStream == null) {
             return;
+        }
         try {
             while (dataStream.available() > 0) {
                 CCSDSPacket packet = readPacket(dataStream);
                 if (packet != null) {
-                    for (ServerConnection serverConnection : simConfig.getServerConnections())
+                    for (ServerConnection serverConnection : simConfig.getServerConnections()) {
                         serverConnection.addTmDumpPacket(packet);
+                    }
                 }
             }
 
@@ -137,7 +144,7 @@ public class Simulator extends Thread {
             for (ServerConnection serverConnection : simConfig.getServerConnections()) {
                 serverConnection.addTmDumpPacket(confirmationPacket);
             }
-            
+
             dataStream.close();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -174,14 +181,6 @@ public class Simulator extends Thread {
         return packet;
     }
 
-    public SimWindow getSimWindow() {
-        return simWindow;
-    }
-
-    public void setSimWindow(SimWindow simWindow) {
-        this.simWindow = simWindow;
-    }
-
     public void startTriggeringLos() {
         losStore.startTriggeringLos();
     }
@@ -205,6 +204,50 @@ public class Simulator extends Thread {
         ackPacket.appendUserDataBuffer(bb.array());
 
         return ackPacket;
+    }
 
+    public static void main(String[] args) throws IOException {
+        configureLogging();
+
+        SimulationConfiguration simConfig = SimulationConfiguration.loadFromFile();
+
+        YConfiguration yconf = YConfiguration.getConfiguration("simulator");
+        Simulator simulator;
+        Map<String, Object> m = yconf.getMap("simulator");
+        try {
+            simulator = YObjectLoader.loadObject(m, simConfig);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        System.out.println("----------------------------");
+        System.out.println("Yamcs Demo Simulator");
+        System.out.println("  Model: " + simulator.getClass().getName());
+        System.out.println("----------------------------");
+
+        simulator.start();
+
+        if (yconf.containsKey("telnet")) {
+            int port = yconf.getInt("telnet", "port");
+            TelnetServer telnetServer = new TelnetServer(simulator);
+            telnetServer.setPort(port);
+            telnetServer.startAsync();
+        }
+
+        // start alternating los and aos
+        if (simConfig.isLOSEnabled()) {
+            simulator.startTriggeringLos();
+        }
+    }
+
+    private static void configureLogging() {
+        try {
+            LogManager logManager = LogManager.getLogManager();
+            try (InputStream in = Simulator.class.getResourceAsStream("/simulator-logging.properties")) {
+                logManager.readConfiguration(in);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to set up logging configuration: " + e.getMessage());
+        }
     }
 }
