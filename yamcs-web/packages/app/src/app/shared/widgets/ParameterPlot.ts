@@ -8,7 +8,7 @@ import { ModifyParameterDialog } from '../../mdb/parameters/ModifyParameterDialo
 import { subtractDuration } from '../utils';
 import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
-import { analyzeStaticValueRanges, DyLegendData } from './dygraphs';
+import { analyzeStaticValueRanges, DyLegendData, TimestampTrackerData } from './dygraphs';
 import GridPlugin from './GridPlugin';
 import { ParameterSeries } from './ParameterSeries';
 
@@ -96,6 +96,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
   private darkModeSubscription: Subscription;
 
   legendData$ = new BehaviorSubject<DyLegendData | null>(null);
+  timestampTrackerData$ = new BehaviorSubject<TimestampTrackerData | null>(null);
 
   constructor(private preferenceStore: PreferenceStore, private dialog: MatDialog) {
     this.darkModeSubscription = preferenceStore.darkMode$.subscribe(darkMode => {
@@ -196,7 +197,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
 
     let lastClickedGraph: any = null;
 
-    const dyOptions: {[key: string]: any} = {
+    const dyOptions: { [key: string]: any } = {
       legend: 'always',
       fillGraph: this.fillGraph,
       drawGrid: false,
@@ -378,6 +379,11 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
           ctx.setLineDash([5, 5]);
           ctx.strokeStyle = this.highlightColor;
           ctx.lineWidth = 1;
+
+          this.timestampTrackerData$.next({
+            timestamp: new Date(g.selPoints_[0].xval),
+            canvasx: g.selPoints_[0].canvasx,
+          });
 
           ctx.beginPath();
           const canvasx = Math.floor(g.selPoints_[0].canvasx) + 0.5; // crisper rendering

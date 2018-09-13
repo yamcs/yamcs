@@ -42,6 +42,7 @@ import { Hex } from './widgets/Hex';
 import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
+import { TimestampTracker } from './widgets/TimestampTracker';
 
 const materialModules = [
   OverlayModule,
@@ -103,6 +104,7 @@ const sharedComponents = [
   Select,
   TabDetailIcon,
   TextAction,
+  TimestampTracker,
   ToolbarActions,
 ];
 

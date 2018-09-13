@@ -1,0 +1,10 @@
+<ng-container *ngIf="legendData?.x">
+  <div class="timestamp"
+      style="pointer-events: none"
+      [style.left]="timestampData.canvasx + 'px'"
+      *ngIf="timestampData">
+    <div class="box" [style.backgroundColor]="'black'">
+      <span class="xvalue">{{ timestampData.timestamp | datetime:0 }}</span>
+    </div>
+  </div>
+</ng-container>

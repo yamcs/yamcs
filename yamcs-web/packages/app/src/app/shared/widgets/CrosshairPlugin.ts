@@ -32,20 +32,13 @@ export default class CrosshairPlugin {
     ctx.clearRect(0, 0, width, height);
     ctx.strokeStyle = '#e1e1e1';
 
+    // Horizontal guides
     ctx.beginPath();
-    const canvasx = Math.floor(e.dygraph.selPoints_[0].canvasx) + 0.5; // crisper rendering
-
-    // Vertical
-    ctx.moveTo(canvasx, 0);
-    ctx.lineTo(canvasx, height);
-
-    // Horizontal
     for (const point of e.dygraph.selPoints_) {
       const canvasy = Math.floor(point.canvasy) + 0.5; // crisper rendering
       ctx.moveTo(0, canvasy);
       ctx.lineTo(width, canvasy);
     }
-
     ctx.stroke();
     ctx.closePath();
   }
