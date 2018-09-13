@@ -40,20 +40,20 @@ import com.google.common.util.concurrent.RateLimiter;
  *
  */
 public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLink, SystemParametersProducer {
-  
+
     protected SocketChannel socketChannel = null;
     protected String host = "whirl";
     protected int port = 10003;
     protected CommandHistoryPublisher commandHistoryListener;
     protected Selector selector;
     SelectionKey selectionKey;
-    
+
     protected ScheduledThreadPoolExecutor timer;
     protected volatile boolean disabled = false;
-  
+
     protected BlockingQueue<PreparedCommand> commandQueue;
     RateLimiter rateLimiter;
-    
+
     protected volatile long tcCount;
 
     private String sv_linkStatus_id, sp_dataCount_id;
@@ -65,16 +65,14 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     TimeService timeService;
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
     TcDequeueAndSend tcSender;
-    
+
     CommandPostprocessor cmdPostProcessor;
-    
-    
-    
+
     public TcpTcDataLink(String yamcsInstance, String name, Map<String, Object> config) throws ConfigurationException {
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
         this.yamcsInstance = yamcsInstance;
         this.name = name;
-        
+
         configure(yamcsInstance, config);
         timeService = YamcsServer.getTimeService(yamcsInstance);
     }
@@ -84,7 +82,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
 
     private void configure(String yamcsInstance, Map<String, Object> config) {
-        if(config.containsKey("tcHost")) {//this is when the config is specified in tcp.yaml
+        if (config.containsKey("tcHost")) {// this is when the config is specified in tcp.yaml
             host = YConfiguration.getString(config, "tcHost");
             port = YConfiguration.getInt(config, "tcPort");
         } else {
@@ -92,19 +90,18 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             port = YConfiguration.getInt(config, "port");
         }
         initPostprocessor(yamcsInstance, config);
-      
-        
+
         if (config.containsKey("tcQueueSize")) {
             commandQueue = new LinkedBlockingQueue<>(YConfiguration.getInt(config, "tcQueueSize"));
         } else {
             commandQueue = new LinkedBlockingQueue<>();
         }
         if (config.containsKey("tcMaxRate")) {
-            rateLimiter = RateLimiter.create( YConfiguration.getInt(config, "tcMaxRate"));
+            rateLimiter = RateLimiter.create(YConfiguration.getInt(config, "tcMaxRate"));
         }
-       
+
     }
-    
+
     protected long getCurrentTime() {
         if (timeService != null) {
             return timeService.getMissionTime();
@@ -123,20 +120,21 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         timer.scheduleAtFixedRate(this, 10L, 10L, TimeUnit.SECONDS);
         notifyStarted();
     }
-    
+
     protected void initPostprocessor(String instance, Map<String, Object> args) {
         String commandPostprocessorClassName = IssCommandPostprocessor.class.getName();
         Object commandPostprocessorArgs = null;
-        
-        if(args!=null) {
+
+        if (args != null) {
             commandPostprocessorClassName = YConfiguration.getString(args, "commandPostprocessorClassName",
                     IssCommandPostprocessor.class.getName());
             commandPostprocessorArgs = args.get("commandPostprocessorArgs");
-        } 
-        
+        }
+
         try {
             if (commandPostprocessorArgs != null) {
-                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance, commandPostprocessorArgs);
+                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance,
+                        commandPostprocessorArgs);
             } else {
                 cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance);
             }
@@ -150,11 +148,12 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
 
     /**
-     * attempts to open the socket if not already open and returns true if its open at the end of the call 
+     * attempts to open the socket if not already open and returns true if its open at the end of the call
+     * 
      * @return
      */
     protected synchronized boolean openSocket() {
-        if(isSocketOpen()) {
+        if (isSocketOpen()) {
             return true;
         }
         try {
@@ -243,7 +242,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
             return;
         }
         if (!commandQueue.offer(pc)) {
-            log.warn("Cannot put command {} in the queue, because it's full; sending NACK", pc); 
+            log.warn("Cannot put command {} in the queue, because it's full; sending NACK", pc);
             commandHistoryListener.publishWithTime(pc.getCommandId(), "Acknowledge_Sent", getCurrentTime(), "NOK");
         }
     }
@@ -268,8 +267,9 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
 
     @Override
     public String getDetailedStatus() {
-        if (disabled)
+        if (disabled) {
             return String.format("DISABLED (should connect to %s:%d)", host, port);
+        }
         if (isSocketOpen()) {
             return String.format("OK, connected to %s:%d", host, port);
         } else {
@@ -312,23 +312,22 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
         notifyStopped();
     }
 
-
     private class TcDequeueAndSend implements Runnable {
         PreparedCommand pc;
-      
+
         @Override
         public void run() {
             while (true) {
                 try {
                     pc = commandQueue.take();
-                    if(pc==SIGNAL_QUIT) { 
+                    if (pc == SIGNAL_QUIT) {
                         break;
                     }
-                    
-                    if(rateLimiter!=null) {
+
+                    if (rateLimiter != null) {
                         rateLimiter.acquire();
                     }
-                   send();
+                    send();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     log.warn("Send command interrupted while waiting for the queue.", e);
@@ -339,15 +338,15 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
                 }
             }
         }
+
         public void send() {
             byte[] binary = cmdPostProcessor.process(pc);
             int retries = 5;
             boolean sent = false;
-            
-           
+
             ByteBuffer bb = ByteBuffer.wrap(binary);
             bb.rewind();
-            while (!sent && (retries > 0)) {              
+            while (!sent && (retries > 0)) {
                 if (openSocket()) {
                     try {
                         socketChannel.write(bb);

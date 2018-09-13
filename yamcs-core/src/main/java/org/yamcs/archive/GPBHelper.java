@@ -47,7 +47,8 @@ public final class GPBHelper {
             if (PreparedCommand.CNAME_GENTIME.equals(name)
                     || PreparedCommand.CNAME_ORIGIN.equals(name)
                     || PreparedCommand.CNAME_SEQNUM.equals(name)
-                    || PreparedCommand.CNAME_CMDNAME.equals(name)) {
+                    || PreparedCommand.CNAME_CMDNAME.equals(name)
+                    || PreparedCommand.CNAME_ASSIGNMENTS.equals(name)) {
                 continue;
             }
             che.addAttr(CommandHistoryAttribute.newBuilder()

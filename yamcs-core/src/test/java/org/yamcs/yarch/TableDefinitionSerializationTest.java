@@ -232,7 +232,6 @@ public class TableDefinitionSerializationTest extends YarchTestCase {
         cd = td1.getColumnDefinition("bbb1");
         assertEquals(cd.getType().val, DataType._type.PROTOBUF);
         assertEquals(id.getClass().getName(), ((ProtobufDataType) cd.getType()).getClassName());
-
     }
 
     @Test
