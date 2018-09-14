@@ -1,7 +1,10 @@
 package org.yamcs.tse;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Tse.CommandDeviceRequest;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -18,11 +21,11 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 
 /**
- * Responds to RPC calls in the form of Protobuf messages over TCP/IP.
+ * Listens for TSE commands in the form of Protobuf messages over TCP/IP.
  */
-public class RpcServer extends AbstractService {
+public class TcServer extends AbstractService {
 
-    private static final Logger log = LoggerFactory.getLogger(RpcServer.class);
+    private static final Logger log = LoggerFactory.getLogger(TcServer.class);
 
     private static final int MAX_FRAME_LENGTH = 512 * 1024; // 512 KB
 
@@ -31,12 +34,9 @@ public class RpcServer extends AbstractService {
 
     private NioEventLoopGroup eventLoopGroup;
 
-    public RpcServer(DeviceManager deviceManager) {
+    public TcServer(Map<String, Object> args, DeviceManager deviceManager) {
+        port = YConfiguration.getInt(args, "port");
         this.deviceManager = deviceManager;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 
     @Override
@@ -53,13 +53,13 @@ public class RpcServer extends AbstractService {
                         pipeline.addLast(new ProtobufDecoder(CommandDeviceRequest.getDefaultInstance()));
                         pipeline.addLast(new LengthFieldPrepender(4));
                         pipeline.addLast(new ProtobufEncoder());
-                        pipeline.addLast(new RpcServerHandler(deviceManager));
+                        pipeline.addLast(new TcServerHandler(deviceManager));
                     }
                 });
 
         try {
             b.bind(port).sync();
-            log.info("Listening for RPC clients on port " + port);
+            log.info("TC Server listing for clients on port " + port);
             notifyStarted();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

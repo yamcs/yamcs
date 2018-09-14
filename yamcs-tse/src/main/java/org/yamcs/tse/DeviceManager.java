@@ -1,14 +1,20 @@
 package org.yamcs.tse;
 
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.FutureCallback;
@@ -21,11 +27,23 @@ import com.google.common.util.concurrent.ListeningExecutorService;
  */
 public class DeviceManager extends AbstractService {
 
+    private static final Logger log = LoggerFactory.getLogger(DeviceManager.class);
+
     private List<Device> devices = new ArrayList<>();
     private Map<String, ListeningExecutorService> executorsByName = new HashMap<>();
 
-    public void add(Device device) {
+    private List<ResponseListener> responseListeners = new CopyOnWriteArrayList<>();
+
+    public void addDevice(Device device) {
         devices.add(device);
+    }
+
+    public void addResponseListener(ResponseListener responseListener) {
+        responseListeners.add(responseListener);
+    }
+
+    public void removeResponseListener(ResponseListener responseListener) {
+        responseListeners.remove(responseListener);
     }
 
     @Override
@@ -38,7 +56,18 @@ public class DeviceManager extends AbstractService {
 
     public ListenableFuture<String> queueCommand(Device device, String command) {
         ListeningExecutorService exec = executorsByName.get(device.getName());
-        return exec.submit(() -> device.command(command));
+        ListenableFuture<String> f = exec.submit(() -> device.command(command));
+        f.addListener(() -> {
+            try {
+                String response = f.get();
+                responseListeners.forEach(l -> l.onResponse(command, response));
+            } catch (ExecutionException e) {
+                log.error("Failed to execute command", e.getCause());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, directExecutor());
+        return f;
     }
 
     public Device getDevice(String name) {

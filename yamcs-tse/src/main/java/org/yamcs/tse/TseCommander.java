@@ -10,6 +10,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
 import com.google.common.util.concurrent.Service;
@@ -20,6 +21,7 @@ public class TseCommander {
 
     public static void main(String[] args) {
         configureLogging();
+        TimeEncoding.setUp();
 
         YConfiguration yconf = YConfiguration.getConfiguration("tse");
         List<Service> services = createServices(yconf);
@@ -70,7 +72,7 @@ public class TseCommander {
                 String name = YConfiguration.getString(m, "name");
                 try {
                     Device device = YObjectLoader.loadObject(m, name);
-                    deviceManager.add(device);
+                    deviceManager.addDevice(device);
                 } catch (IOException e) {
                     throw new Error(e);
                 }
@@ -79,21 +81,16 @@ public class TseCommander {
         services.add(deviceManager);
 
         if (yconf.containsKey("telnet")) {
-            TelnetServer telnetServer = new TelnetServer(deviceManager);
-            if (yconf.containsKey("telnet", "port")) {
-                int port = yconf.getInt("telnet", "port");
-                telnetServer.setPort(port);
-            }
-            services.add(telnetServer);
+            Map<String, Object> args = yconf.getMap("telnet");
+            services.add(new TelnetServer(args, deviceManager));
         }
 
-        if (yconf.containsKey("rpc")) {
-            RpcServer rpcServer = new RpcServer(deviceManager);
-            if (yconf.containsKey("rpc", "port")) {
-                int port = yconf.getInt("rpc", "port");
-                rpcServer.setPort(port);
-            }
-            services.add(rpcServer);
+        if (yconf.containsKey("yamcs")) {
+            Map<String, Object> tcArgs = yconf.getMap("yamcs", "tc");
+            services.add(new TcServer(tcArgs, deviceManager));
+
+            Map<String, Object> tmArgs = yconf.getMap("yamcs", "tm");
+            services.add(new TmSender(tmArgs, deviceManager));
         }
 
         return services;

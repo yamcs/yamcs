@@ -2,8 +2,11 @@ package org.yamcs.tse;
 
 import static io.netty.handler.codec.Delimiters.lineDelimiter;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.YConfiguration;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -27,16 +30,13 @@ public class TelnetServer extends AbstractService {
     private static final StringEncoder STRING_ENCODER = new StringEncoder(CharsetUtil.US_ASCII);
 
     private DeviceManager deviceManager;
-    private int port = 8023;
+    private int port;
 
     private NioEventLoopGroup eventLoopGroup;
 
-    public TelnetServer(DeviceManager deviceManager) {
+    public TelnetServer(Map<String, Object> args, DeviceManager deviceManager) {
+        port = YConfiguration.getInt(args, "port");
         this.deviceManager = deviceManager;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 
     @Override

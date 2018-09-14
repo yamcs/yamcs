@@ -96,7 +96,6 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
                 out.write(printHex ? StringConverter.arrayToHexString(result.getBytes()) : result);
             }
         } catch (ExecutionException e) {
-            log.error("Failed to execute command", e.getCause());
             out.write("error: " + e.getCause().getMessage());
         }
     }

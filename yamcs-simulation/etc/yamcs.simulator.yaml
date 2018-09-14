@@ -37,19 +37,27 @@ tmDataLinks:
       host: localhost
       port: 10115
 
-#parameterDataLinks:
-#  - class: org.yamcs.simulation.SimulationPpProvider
-#    stream: pp_realtime
-#    args:
-#      simulationDataPath: etc/gs-simulation.xml
+parameterDataLinks:
+  - class: org.yamcs.tctm.UdpParameterDataLink
+    name: pp_tse
+    stream: pp_realtime
+    args:
+      port: 31002
 
 tcDataLinks: 
   - class: org.yamcs.tctm.TcpTcDataLink
-    stream: tc_realtime
-    name: tc_realtime
+    name: tc_sim
+    stream: tc_sim
     args:
       host: localhost
       port: 10025
+  - class: org.yamcs.tctm.TcpTcDataLink
+    name: tc_tse
+    stream: tc_tse
+    args:
+      host: localhost
+      port: 8135
+      commandPostprocessorClassName: org.yamcs.tctm.TseCommandPostprocessor
 
 mdb:
   # Configuration of the active loaders
@@ -61,6 +69,10 @@ mdb:
         spec: "mdb/landing.xls"
       - type: "sheet"
         spec: "mdb/GS-tmtc.xls"
+  - type: "org.yamcs.xtce.TseLoader"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/simulator.xls"
 
 #Configuration for streams created at server startup
 streamConfig:
@@ -72,3 +84,4 @@ streamConfig:
   param: ["pp_realtime", "sys_param"]
   alarm: ["alarms_realtime"]
   tc: ["tc_realtime"]
+  sqlFile: "etc/tc_streams.sql"
