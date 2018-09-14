@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.YamcsServer;
-import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
+import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.BadRequestException;
@@ -41,7 +41,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         long start = req.getQueryParameterAsDate("start");
         long stop = req.getQueryParameterAsDate("stop");
 
-        ParameterArchiveV2 parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(instance);
         try {
             parchive.reprocess(start, stop);
         } catch (IllegalArgumentException e) {
@@ -65,7 +65,7 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         long start = req.getQueryParameterAsDate("start");
         long stop = req.getQueryParameterAsDate("stop");
 
-        ParameterArchiveV2 parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(instance);
         try {
             List<Partition> removed = parchive.deletePartitions(start, stop);
             StringBuilder sb = new StringBuilder();
@@ -95,22 +95,20 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
 
         String fqn = req.getRouteParam("name");
-        ParameterArchiveV2 parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(instance);
         ParameterIdDb pdb = parchive.getParameterIdDb();
         ParameterId[] pids = pdb.get(fqn);
         StringMessage sm = StringMessage.newBuilder().setMessage(Arrays.toString(pids)).build();
         completeOK(req, sm);
     }
 
-    private static ParameterArchiveV2 getParameterArchive(String instance) throws BadRequestException {
+    private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
         ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
 
         if (parameterArchive == null) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-        if (!(parameterArchive.getParchive() instanceof ParameterArchiveV2)) {
-            throw new BadRequestException("instance uses old unsupported ParameterArchive");
-        }
-        return (ParameterArchiveV2) parameterArchive.getParchive();
+       
+        return parameterArchive;
     }
 }

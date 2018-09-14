@@ -27,7 +27,7 @@ import org.rocksdb.RocksDBException;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
+import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -54,7 +54,7 @@ public class ParameterArchiveTest {
 
     static MockupTimeService timeService;
     static Parameter p1, p2, p3, p4, p5;
-    ParameterArchiveV2 parchive;
+    ParameterArchive parchive;
     ParameterIdDb pidMap;
     ParameterGroupIdDb pgidMap;
 
@@ -93,7 +93,7 @@ public class ParameterArchiveTest {
         if (partitioningSchema != null) {
             conf.put("partitioningSchema", partitioningSchema);
         }
-        parchive = new ParameterArchiveV2(instance, conf);
+        parchive = new ParameterArchive(instance, conf);
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);
@@ -113,7 +113,7 @@ public class ParameterArchiveTest {
 
         // close and reopen the archive to check that the parameter is still there
 
-        parchive = new ParameterArchiveV2(instance);
+        parchive = new ParameterArchive(instance);
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);

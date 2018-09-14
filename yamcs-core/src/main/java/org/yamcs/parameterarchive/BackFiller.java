@@ -49,7 +49,7 @@ public class BackFiller implements StreamSubscriber {
     long t0;
     int runCount;
     ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(1);
-    final ParameterArchiveV2 parchive;
+    final ParameterArchive parchive;
     long warmupTime;
     final TimeService timeService;
     static AtomicInteger count = new AtomicInteger();
@@ -64,7 +64,7 @@ public class BackFiller implements StreamSubscriber {
   
     private int maxSegmentSize = ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE;
         
-    BackFiller(ParameterArchiveV2 parchive, Map<String, Object> config) {
+    BackFiller(ParameterArchive parchive, Map<String, Object> config) {
         this.parchive = parchive;
         if(config!=null) {
             parseConfig(config);

@@ -20,7 +20,7 @@ import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 
 class ArchiveFillerTask implements ParameterConsumer {
-    final ParameterArchiveV2 parameterArchive;
+    final ParameterArchive parameterArchive;
     final private Logger log;
     
     long numParams = 0;
@@ -38,7 +38,7 @@ class ArchiveFillerTask implements ParameterConsumer {
     long threshold = 60000;
     int maxSegmentSize;
     
-    public ArchiveFillerTask(ParameterArchiveV2 parameterArchive, int maxSegmentSize) {
+    public ArchiveFillerTask(ParameterArchive parameterArchive, int maxSegmentSize) {
         this.parameterArchive = parameterArchive;
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();

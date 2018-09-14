@@ -8,7 +8,6 @@ import java.util.concurrent.Future;
 import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.parameterarchive.ParameterArchive;
-import org.yamcs.parameterarchive.ParameterArchiveV2;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.Ranges;
@@ -219,8 +218,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {
-        ParameterArchive parameterArchiveWrapper = YamcsServer.getService(yamcsInstance, ParameterArchive.class);
-        ParameterArchiveV2 parameterArchive = (ParameterArchiveV2) parameterArchiveWrapper.getParchive();
+        ParameterArchive parameterArchive = YamcsServer.getService(yamcsInstance, ParameterArchive.class);
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse(start),
                 TimeEncoding.parse(stop));
         f.get();

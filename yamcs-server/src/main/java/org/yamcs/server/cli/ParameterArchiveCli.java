@@ -3,7 +3,7 @@ package org.yamcs.server.cli;
 import java.util.HashMap;
 
 import org.rocksdb.RocksDB;
-import org.yamcs.parameterarchive.ParameterArchiveV2;
+import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
@@ -41,7 +41,7 @@ public class ParameterArchiveCli extends Command {
         @Override
         public void execute() throws Exception {
             RocksDB.loadLibrary();
-            ParameterArchiveV2 parchive = new ParameterArchiveV2(yamcsInstance, new HashMap<String, Object>());
+            ParameterArchive parchive = new ParameterArchive(yamcsInstance, new HashMap<String, Object>());
             ParameterIdDb pid = parchive.getParameterIdDb();
             pid.print(System.out);
         }
@@ -59,7 +59,7 @@ public class ParameterArchiveCli extends Command {
         @Override
         public void execute() throws Exception {
             RocksDB.loadLibrary();
-            ParameterArchiveV2 parchive = new ParameterArchiveV2(yamcsInstance, new HashMap<String, Object>());
+            ParameterArchive parchive = new ParameterArchive(yamcsInstance, new HashMap<String, Object>());
             ParameterIdDb pid = parchive.getParameterIdDb();
             ParameterGroupIdDb pgid = parchive.getParameterGroupIdDb();
             ParameterId[] pids = pid.get(name);

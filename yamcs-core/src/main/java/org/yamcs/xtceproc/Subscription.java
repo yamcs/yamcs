@@ -176,19 +176,21 @@ public class Subscription {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Current list of parameter subscribed:\n");
-        for (SequenceContainer sc : container2EntryMap.keySet()) {
+        for (Map.Entry<SequenceContainer,TreeSet<SequenceEntry>> me: container2EntryMap.entrySet()) {
+            SequenceContainer sc = me.getKey();
             sb.append(sc);
             sb.append(" with entries:\n");
-            for (SequenceEntry se : container2EntryMap.get(sc)) {
+            for (SequenceEntry se : me.getValue()) {
                 sb.append("\t").append(se).append("\n");
             }
         }
         sb.append("-----------------------------------\n");
         sb.append("Container inheritance dependency\n");
-        for (SequenceContainer sc : container2InheritingContainerMap.keySet()) {
+        for (Map.Entry<SequenceContainer, HashSet<SequenceContainer>> me: container2InheritingContainerMap.entrySet()) {
+            SequenceContainer sc = me.getKey();
             sb.append(sc.getName());
             sb.append("-->");
-            for (SequenceContainer sc1 : container2InheritingContainerMap.get(sc)) {
+            for (SequenceContainer sc1 : me.getValue()) {
                 sb.append(sc1.getName() + " ");
             }
             sb.append("\n\n");

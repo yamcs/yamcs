@@ -22,7 +22,7 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
     Processor realtimeProcessor;
     int subscriptionId;
 
-    public RealtimeArchiveFiller(ParameterArchiveV2 parameterArchive, Map<String, Object> config) {
+    public RealtimeArchiveFiller(ParameterArchive parameterArchive, Map<String, Object> config) {
         super(parameterArchive, getMaxSegmentSize(config));
         this.yamcsInstance = parameterArchive.getYamcsInstance();
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);

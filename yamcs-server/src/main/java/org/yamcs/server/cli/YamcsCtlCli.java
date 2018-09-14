@@ -25,8 +25,7 @@ import com.beust.jcommander.ParameterException;
 public class YamcsCtlCli extends Command {
 
     public YamcsCtlCli() {
-        super("yamcsctl", null);
-        addSubCommand(new ArchiveCli(this));
+        super("yamcsctl", null);     
         addSubCommand(new Backup(this));
         addSubCommand(new CheckConfig(this));
         addSubCommand(new ParameterArchiveCli(this));

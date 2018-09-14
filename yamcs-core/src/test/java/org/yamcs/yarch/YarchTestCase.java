@@ -106,13 +106,6 @@ public abstract class YarchTestCase {
         return tuples;
     }
 
-    @Parameters
-    public static List<String> getStorageEngineConfigs() {
-        return Arrays.asList("engine rocksdb partition_storage=IN_KEY",
-                "engine rocksdb partition_storage=COLUMN_FAMILY", 
-                "engine rocksdb2");
-    }
-    
     protected void assertNumElementsEqual(Iterator<?> iter, int k) {
         int num =0;
         while(iter.hasNext()) {

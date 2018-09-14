@@ -9,7 +9,7 @@ import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
-import org.yamcs.parameterarchive.ParameterArchiveV2;
+import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterRequest;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.parameterarchive.SingleParameterArchiveRetrieval;
@@ -28,11 +28,11 @@ import com.google.common.collect.Lists;
  */
 public class SingleParameterRetriever {
     final ParameterRequest spvr;
-    final ParameterArchiveV2 parchive;
+    final ParameterArchive parchive;
     final ParameterCache cache;
     final Parameter p;
     
-    public SingleParameterRetriever(ParameterArchiveV2 parchive, ParameterCache cache, Parameter p, ParameterRequest spvr) {
+    public SingleParameterRetriever(ParameterArchive parchive, ParameterCache cache, Parameter p, ParameterRequest spvr) {
         this.spvr = spvr;
         this.cache = cache;
         this.parchive = parchive;

@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.yarch.HistogramInfo;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.PartitionManager;
-import org.yamcs.yarch.oldrocksdb.ColumnValueSerializer;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;

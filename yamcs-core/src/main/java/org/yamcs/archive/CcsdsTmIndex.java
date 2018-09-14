@@ -34,7 +34,7 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
-import org.yamcs.yarch.oldrocksdb.AscendingRangeIterator;
+import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
 import org.yamcs.yarch.rocksdb.HistogramRebuilder;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.rocksdb.Tablespace;

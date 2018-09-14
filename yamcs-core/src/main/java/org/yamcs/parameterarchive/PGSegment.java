@@ -28,7 +28,7 @@ public class PGSegment {
     private List<BaseSegment> consolidatedRawValueSegments;
     private List<ParameterStatusSegment> consolidatedParameterStatusSegments;
 
-    private final boolean storeRawValues = ParameterArchiveV2.STORE_RAW_VALUES;
+    private final boolean storeRawValues = ParameterArchive.STORE_RAW_VALUES;
     private long segmentStart;
 
    

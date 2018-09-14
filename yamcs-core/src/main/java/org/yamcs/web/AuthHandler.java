@@ -112,7 +112,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
      * TODO ignore global CORS settings on this endpoint (?). We should not encourage passing password credentials
      * directly from a browser context, unless for official clients.
      */
-    private void handleTokenRequest(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+    private void handleTokenRequest(ChannelHandlerContext ctx, FullHttpRequest req) {
         if ("application/x-www-form-urlencoded".equals(req.headers().get("Content-Type"))) {
             HttpPostRequestDecoder formDecoder = new HttpPostRequestDecoder(req);
             try {
