@@ -17,12 +17,12 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
 
     private static final String PROMPT = "> ";
 
-    private DeviceManager deviceManager;
+    private InstrumentController instrumentController;
     private boolean printHex;
-    private Device currentDevice;
+    private InstrumentDriver currentInstrument;
 
-    public TelnetServerHandler(DeviceManager deviceManager) {
-        this.deviceManager = deviceManager;
+    public TelnetServerHandler(InstrumentController instrumentController) {
+        this.instrumentController = instrumentController;
     }
 
     @Override
@@ -38,18 +38,18 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
         if (cmd.equals("?")) {
             out.write(getHelpString());
         } else if (cmd.equals("list")) {
-            listDevices(cmd, out);
+            listInstruments(cmd, out);
         } else if (cmd.startsWith("describe")) {
-            describeDevice(cmd, out);
+            describeInstrument(cmd, out);
         } else if (cmd.startsWith("use")) {
-            useDevice(cmd, out);
+            useInstrument(cmd, out);
         } else if ("\\hex".equals(cmd)) {
             printHex = true;
         } else if ("\\ascii".equals(cmd)) {
             printHex = false;
         } else if (!cmd.isEmpty()) {
-            if (currentDevice != null) {
-                commandDevice(cmd, out);
+            if (currentInstrument != null) {
+                commandInstrument(cmd, out);
             } else {
                 out.write(cmd + ": command not found");
             }
@@ -61,8 +61,8 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
             ctx.write("\n");
         }
 
-        if (currentDevice != null) {
-            ctx.writeAndFlush(currentDevice.getName() + PROMPT);
+        if (currentInstrument != null) {
+            ctx.writeAndFlush(currentInstrument.getName() + PROMPT);
         } else {
             ctx.writeAndFlush(PROMPT);
         }
@@ -79,19 +79,19 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
         log.info("Telnet client disconnected: " + ctx.channel().remoteAddress());
     }
 
-    private void useDevice(String cmd, StringWriter out) {
-        String deviceId = cmd.split("\\s+", 2)[1];
-        Device device = deviceManager.getDevice(deviceId);
-        if (device != null) {
-            currentDevice = device;
+    private void useInstrument(String cmd, StringWriter out) {
+        String instrumentId = cmd.split("\\s+", 2)[1];
+        InstrumentDriver instrument = instrumentController.getInstrument(instrumentId);
+        if (instrument != null) {
+            currentInstrument = instrument;
         } else {
-            out.write("unknown device");
+            out.write("unknown instrument");
         }
     }
 
-    private void commandDevice(String cmd, StringWriter out) throws InterruptedException {
+    private void commandInstrument(String cmd, StringWriter out) throws InterruptedException {
         try {
-            String result = deviceManager.queueCommand(currentDevice, cmd).get();
+            String result = instrumentController.queueCommand(currentInstrument, cmd).get();
             if (result != null) {
                 out.write(printHex ? StringConverter.arrayToHexString(result.getBytes()) : result);
             }
@@ -100,53 +100,53 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
         }
     }
 
-    private void listDevices(String cmd, StringWriter out) {
-        out.write(deviceManager.getDevices().stream()
+    private void listInstruments(String cmd, StringWriter out) {
+        out.write(instrumentController.getInstruments().stream()
                 .map(d -> d.getName())
                 .sorted()
                 .collect(Collectors.joining("\n")));
     }
 
-    private void describeDevice(String cmd, StringWriter out) {
+    private void describeInstrument(String cmd, StringWriter out) {
         String name = cmd.split("\\s+", 2)[1];
-        Device device = deviceManager.getDevice(name);
-        if (device != null) {
+        InstrumentDriver instrument = instrumentController.getInstrument(name);
+        if (instrument != null) {
             StringBuilder buf = new StringBuilder();
-            buf.append("class: ").append(device.getClass().getName()).append("\n");
-            if (device instanceof SerialDevice) {
-                SerialDevice sDevice = (SerialDevice) device;
-                buf.append("baudrate: ").append(sDevice.getBaudrate()).append("\n");
-                buf.append("data bits: ").append(sDevice.getDataBits()).append("\n");
-                if (sDevice.getParity() != null) {
-                    buf.append("parity: ").append(sDevice.getParity()).append("\n");
+            buf.append("class: ").append(instrument.getClass().getName()).append("\n");
+            if (instrument instanceof SerialPortDriver) {
+                SerialPortDriver sInstrument = (SerialPortDriver) instrument;
+                buf.append("baudrate: ").append(sInstrument.getBaudrate()).append("\n");
+                buf.append("data bits: ").append(sInstrument.getDataBits()).append("\n");
+                if (sInstrument.getParity() != null) {
+                    buf.append("parity: ").append(sInstrument.getParity()).append("\n");
                 } else {
                     buf.append("parity: none\n");
                 }
             }
-            buf.append("response timeout (ms): ").append(device.getResponseTimeout()).append("\n");
-            if (device.getResponseTermination() != null) {
-                String hex = StringConverter.arrayToHexString(device.getResponseTermination().getBytes());
+            buf.append("response timeout (ms): ").append(instrument.getResponseTimeout()).append("\n");
+            if (instrument.getResponseTermination() != null) {
+                String hex = StringConverter.arrayToHexString(instrument.getResponseTermination().getBytes());
                 buf.append("response termination: 0x").append(hex);
             } else {
                 buf.append("response termination: none");
             }
             out.write(buf.toString());
         } else {
-            out.write("unknown device");
+            out.write("unknown instrument");
         }
     }
 
     private String getHelpString() {
         StringBuilder buf = new StringBuilder();
         buf.append("Available commands:\n");
-        buf.append("    list             List available devices\n");
-        buf.append("    describe <name>  Print device configuration details\n");
-        buf.append("    use <name>       Set current device\n");
+        buf.append("    list             List available instruments\n");
+        buf.append("    describe <name>  Print instrument options\n");
+        buf.append("    use <name>       Set current instrument\n");
         buf.append("\n");
-        buf.append("    \\ascii           Print the ASCII value of device responses (default)\n");
-        buf.append("    \\hex             Print the hexadecimal value of device responses\n");
+        buf.append("    \\ascii           Print the ASCII value of instrument responses (default)\n");
+        buf.append("    \\hex             Print the hexadecimal value of instrument responses\n");
         buf.append("\n");
-        buf.append("    Any other command is sent to the selected device.");
+        buf.append("    Any other command is sent to the selected instrument.");
         return buf.toString();
     }
 }

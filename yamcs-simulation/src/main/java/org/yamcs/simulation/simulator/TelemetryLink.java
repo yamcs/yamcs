@@ -53,7 +53,7 @@ public class TelemetryLink {
 
     public void packetSend() {
         while (true) {
-            if (simulator.getLosStart() == null) {
+            if (!simulator.isLOS()) {
                 tmPacketSend();
                 for (int i = 0; i < 5; i++) {
                     if (connected && !tmDumpQueue.isEmpty()) {

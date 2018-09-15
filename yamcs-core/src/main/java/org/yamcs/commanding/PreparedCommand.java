@@ -176,6 +176,7 @@ public class PreparedCommand {
     public static PreparedCommand fromTuple(Tuple t, XtceDb xtcedb) {
         CommandId cmdId = getCommandId(t);
         PreparedCommand pc = new PreparedCommand(cmdId);
+        pc.setMetaCommand(xtcedb.getMetaCommand(cmdId.getCommandName()));
         for (int i = 0; i < t.size(); i++) {
             ColumnDefinition cd = t.getColumnDefinition(i);
             String name = cd.getName();
@@ -193,9 +194,7 @@ public class PreparedCommand {
         AssignmentInfo assignments = (AssignmentInfo) t.getColumn(CNAME_ASSIGNMENTS);
         pc.argAssignment = new HashMap<>();
         for (Assignment assignment : assignments.getAssignmentList()) {
-            MetaCommand mc = xtcedb.getMetaCommand(cmdId.getCommandName());
-
-            Argument arg = findArgument(mc, assignment.getName());
+            Argument arg = findArgument(pc.getMetaCommand(), assignment.getName());
             Value v = ValueUtility.fromGpb(assignment.getValue());
             pc.argAssignment.put(arg, v);
         }

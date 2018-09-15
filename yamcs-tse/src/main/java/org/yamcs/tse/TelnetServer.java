@@ -29,14 +29,14 @@ public class TelnetServer extends AbstractService {
     private static final StringDecoder STRING_DECODER = new StringDecoder(CharsetUtil.US_ASCII);
     private static final StringEncoder STRING_ENCODER = new StringEncoder(CharsetUtil.US_ASCII);
 
-    private DeviceManager deviceManager;
+    private InstrumentController instrumentController;
     private int port;
 
     private NioEventLoopGroup eventLoopGroup;
 
-    public TelnetServer(Map<String, Object> args, DeviceManager deviceManager) {
+    public TelnetServer(Map<String, Object> args, InstrumentController instrumentController) {
         port = YConfiguration.getInt(args, "port");
-        this.deviceManager = deviceManager;
+        this.instrumentController = instrumentController;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class TelnetServer extends AbstractService {
                         pipeline.addLast(new DelimiterBasedFrameDecoder(8192, lineDelimiter()));
                         pipeline.addLast(STRING_DECODER);
                         pipeline.addLast(STRING_ENCODER);
-                        pipeline.addLast(new TelnetServerHandler(deviceManager));
+                        pipeline.addLast(new TelnetServerHandler(instrumentController));
                     }
                 });
 

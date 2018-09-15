@@ -13,7 +13,7 @@ import com.fazecast.jSerialComm.SerialPort;
  * 
  * Not thread safe.
  */
-public class SerialDevice extends Device {
+public class SerialPortDriver extends InstrumentDriver {
 
     private static final int POLLING_INTERVAL = 20;
 
@@ -24,7 +24,7 @@ public class SerialDevice extends Device {
     private int dataBits = 8;
     private String parity;
 
-    public SerialDevice(String name, Map<String, Object> args) {
+    public SerialPortDriver(String name, Map<String, Object> args) {
         super(name, args);
         this.devicePath = YConfiguration.getString(args, "path");
 

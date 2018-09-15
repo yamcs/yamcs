@@ -18,9 +18,9 @@ import org.yamcs.YConfiguration;
  * 
  * Not thread safe.
  */
-public class TcpIpDevice extends Device {
+public class TcpIpDriver extends InstrumentDriver {
 
-    private static final Logger log = LoggerFactory.getLogger(TcpIpDevice.class);
+    private static final Logger log = LoggerFactory.getLogger(TcpIpDriver.class);
 
     private static final int POLLING_INTERVAL = 20;
 
@@ -29,7 +29,7 @@ public class TcpIpDevice extends Device {
 
     private Socket socket;
 
-    public TcpIpDevice(String name, Map<String, Object> args) {
+    public TcpIpDriver(String name, Map<String, Object> args) {
         super(name, args);
         host = YConfiguration.getString(args, "host");
         port = YConfiguration.getInt(args, "port");

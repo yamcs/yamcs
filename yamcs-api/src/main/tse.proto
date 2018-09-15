@@ -4,11 +4,12 @@ option java_package = "org.yamcs.protobuf";
 
 package tse;
 
-message CommandDeviceRequest {
-  optional string message = 1;
-}
+import "yamcs.proto";
 
-message CommandDeviceResponse {
-  optional string result = 1;
-  optional string exception = 2;
+message TseCommand {
+  optional string device = 1;
+  optional string command = 2;
+  optional string response = 3;
+  map<string, yamcs.Value> argumentMapping = 4;
+  map<string, string> parameterMapping = 5;
 }

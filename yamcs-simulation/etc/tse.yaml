@@ -8,24 +8,24 @@ yamcs:
     host: localhost
     port: 31002
 
-devices:
+instruments:
   - name: tenma
-    class: org.yamcs.tse.SerialDevice
+    class: org.yamcs.tse.SerialPortDriver
     args:
       path: /dev/tty.usbmodem14141
-      responseTimeout: 3000
-      # Note: this device does not terminate responses.
+      responseTimeout: 100
+      # Note: this instrument does not terminate responses.
       # responseTermination: "\n"
 
   - name: simulator
-    class: org.yamcs.tse.TcpIpDevice
+    class: org.yamcs.tse.TcpIpDriver
     args:
       host: localhost
       port: 10023
       responseTermination: "\r\n"
 
   - name: rigol
-    class: org.yamcs.tse.TcpIpDevice
+    class: org.yamcs.tse.TcpIpDriver
     args:
       host: 192.168.88.185
       port: 5555

@@ -10,9 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 
-public abstract class Device {
+public abstract class InstrumentDriver {
 
-    private static final Logger log = LoggerFactory.getLogger(Device.class);
+    private static final Logger log = LoggerFactory.getLogger(InstrumentDriver.class);
 
     protected String name;
 
@@ -22,7 +22,7 @@ public abstract class Device {
 
     protected Charset encoding = StandardCharsets.US_ASCII;
 
-    public Device(String name, Map<String, Object> args) {
+    public InstrumentDriver(String name, Map<String, Object> args) {
         this.name = name;
 
         if (args.containsKey("responseTermination")) {

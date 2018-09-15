@@ -1,7 +1,9 @@
 package org.yamcs.simulation.simulator;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import org.slf4j.Logger;
@@ -26,53 +28,78 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, String cmd) throws Exception {
-        String[] parts = cmd.trim().split("\\s+", 2);
-        switch (parts[0].toUpperCase()) {
-        case "*IDN?":
-            ctx.writeAndFlush("Space Applications Services,Yamcs Demo Simulator\r\n");
-            break;
-        case ":LOS?":
-            ctx.write(simulator.getLosStart() != null ? "1" : "0");
-            ctx.writeAndFlush("\r\n");
-            break;
-        case ":LOS:STAR":
-        case ":LOS:START":
-            simulator.setLOS();
-            break;
-        case ":LOS:STOP":
-            simulator.setAOS();
-            break;
-        case ":LOS:DATE?":
-            Date start = simulator.getLosStart();
-            if (start == null) {
-                ctx.write("0,0,0");
-                ctx.writeAndFlush("\r\n");
-            } else {
-                ctx.write(formatDate(start));
-                ctx.writeAndFlush("\r\n");
+    protected void channelRead0(ChannelHandlerContext ctx, String scpi) throws Exception {
+        String[] commands = scpi.trim().split(";");
+        List<String> responses = new ArrayList<>();
+
+        for (String command : commands) {
+            if (command.trim().isEmpty()) {
+                continue;
             }
-            break;
-        case ":LOS:TIME?":
-            Date time = simulator.getLosStart();
-            if (time == null) {
-                ctx.write("0,0,0");
-                ctx.writeAndFlush("\r\n");
-            } else {
-                ctx.write(formatTime(time));
-                ctx.writeAndFlush("\r\n");
+
+            String[] parts = command.trim().split("\\s+", 2);
+            switch (parts[0].toUpperCase()) {
+            case "*IDN?":
+                responses.add("SPACEAPPS,Demo Simulator");
+                break;
+            case ":LOS?":
+                responses.add((simulator.isLOS() ? "1" : "0"));
+                break;
+            case ":LOS:STAR":
+            case ":LOS:START":
+                simulator.setLOS();
+                break;
+            case ":LOS:STOP":
+                simulator.setAOS();
+                break;
+            case ":LOS:START:DATE?":
+            case ":LOS:STAR:DATE?":
+                Date startDate = simulator.getLastLosStart();
+                if (startDate == null) {
+                    responses.add("");
+                } else {
+                    responses.add(formatDate(startDate));
+                }
+                break;
+            case ":LOS:START:TIME?":
+            case ":LOS:STAR:TIME?":
+                Date startTime = simulator.getLastLosStart();
+                if (startTime == null) {
+                    responses.add("");
+                } else {
+                    responses.add(formatTime(startTime));
+                }
+                break;
+            case ":LOS:STOP:DATE?":
+                Date stopDate = simulator.getLastLosStop();
+                if (stopDate == null) {
+                    responses.add("");
+                } else {
+                    responses.add(formatDate(stopDate));
+                }
+                break;
+            case ":LOS:STOP:TIME?":
+                Date stopTime = simulator.getLastLosStop();
+                if (stopTime == null) {
+                    responses.add("");
+                } else {
+                    responses.add(formatTime(stopTime));
+                }
+                break;
+            case ":DATE?":
+                responses.add(formatDate(new Date()));
+                break;
+            case ":TIME?":
+                responses.add(formatTime(new Date()));
+                break;
+            default:
+                responses.add("unrecognized command");
             }
-            break;
-        case ":DATE?":
-            ctx.write(formatDate(new Date()));
+        }
+
+        if (!responses.isEmpty()) {
+            ctx.write(String.join(";", responses));
             ctx.writeAndFlush("\r\n");
-            break;
-        case ":TIME?":
-            ctx.write(formatTime(new Date()));
-            ctx.writeAndFlush("\r\n");
-            break;
-        default:
-            ctx.writeAndFlush("unrecognized command\r\n");
         }
     }
 

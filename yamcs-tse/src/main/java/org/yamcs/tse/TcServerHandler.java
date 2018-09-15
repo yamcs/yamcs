@@ -2,19 +2,19 @@ package org.yamcs.tse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.protobuf.Tse.CommandDeviceRequest;
+import org.yamcs.protobuf.Tse.TseCommand;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class TcServerHandler extends SimpleChannelInboundHandler<CommandDeviceRequest> {
+public class TcServerHandler extends SimpleChannelInboundHandler<TseCommand> {
 
     private static final Logger log = LoggerFactory.getLogger(TcServerHandler.class);
 
-    private DeviceManager deviceManager;
+    private TcServer tcServer;
 
-    public TcServerHandler(DeviceManager deviceManager) {
-        this.deviceManager = deviceManager;
+    public TcServerHandler(TcServer tcServer) {
+        this.tcServer = tcServer;
     }
 
     @Override
@@ -23,9 +23,8 @@ public class TcServerHandler extends SimpleChannelInboundHandler<CommandDeviceRe
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, CommandDeviceRequest request) throws Exception {
-        Device device = deviceManager.getDevice("simulator" /* TODO */);
-        deviceManager.queueCommand(device, request.getMessage());
+    protected void channelRead0(ChannelHandlerContext ctx, TseCommand command) throws Exception {
+        tcServer.processTseCommand(command);
     }
 
     @Override

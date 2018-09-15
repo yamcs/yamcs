@@ -25,7 +25,9 @@ public class Simulator extends Thread {
 
     private TelemetryLink tmLink;
 
-    private Date los;
+    private boolean los;
+    private Date lastLosStart;
+    private Date lastLosStop;
     private LosRecorder losRecorder;
 
     final private FlightDataHandler flightDataHandler;
@@ -210,21 +212,31 @@ public class Simulator extends Thread {
         return losRecorder;
     }
 
-    public Date getLosStart() {
+    public boolean isLOS() {
         return los;
     }
 
+    public Date getLastLosStart() {
+        return lastLosStart;
+    }
+
+    public Date getLastLosStop() {
+        return lastLosStop;
+    }
+
     public void setAOS() {
-        if (los != null) {
-            los = null;
+        if (los) {
+            los = false;
+            lastLosStop = new Date();
             losRecorder.stopRecording();
         }
     }
 
     public void setLOS() {
-        if (los == null) {
-            los = new Date();
-            losRecorder.startRecording(los);
+        if (!los) {
+            los = true;
+            lastLosStart = new Date();
+            losRecorder.startRecording(lastLosStart);
         }
     }
 

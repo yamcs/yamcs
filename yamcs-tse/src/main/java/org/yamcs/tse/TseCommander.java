@@ -64,33 +64,35 @@ public class TseCommander {
     private static List<Service> createServices(YConfiguration yconf) {
         List<Service> services = new ArrayList<>();
 
-        DeviceManager deviceManager = new DeviceManager();
-        if (yconf.containsKey("devices")) {
-            for (Object entry : yconf.getList("devices")) {
+        InstrumentController instrumentController = new InstrumentController();
+        if (yconf.containsKey("instruments")) {
+            for (Object entry : yconf.getList("instruments")) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> m = ((Map<String, Object>) entry);
                 String name = YConfiguration.getString(m, "name");
                 try {
-                    Device device = YObjectLoader.loadObject(m, name);
-                    deviceManager.addDevice(device);
+                    InstrumentDriver instrument = YObjectLoader.loadObject(m, name);
+                    instrumentController.addInstrument(instrument);
                 } catch (IOException e) {
                     throw new Error(e);
                 }
             }
         }
-        services.add(deviceManager);
+        services.add(instrumentController);
 
         if (yconf.containsKey("telnet")) {
             Map<String, Object> args = yconf.getMap("telnet");
-            services.add(new TelnetServer(args, deviceManager));
+            services.add(new TelnetServer(args, instrumentController));
         }
 
         if (yconf.containsKey("yamcs")) {
-            Map<String, Object> tcArgs = yconf.getMap("yamcs", "tc");
-            services.add(new TcServer(tcArgs, deviceManager));
 
             Map<String, Object> tmArgs = yconf.getMap("yamcs", "tm");
-            services.add(new TmSender(tmArgs, deviceManager));
+            TmSender tmSender = new TmSender(tmArgs);
+            services.add(tmSender);
+
+            Map<String, Object> tcArgs = yconf.getMap("yamcs", "tc");
+            services.add(new TcServer(tcArgs, instrumentController, tmSender));
         }
 
         return services;
