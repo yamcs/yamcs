@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.FutureCallback;
@@ -36,9 +37,9 @@ public class InstrumentController extends AbstractService {
         notifyStarted();
     }
 
-    public ListenableFuture<String> queueCommand(InstrumentDriver instrument, String command) {
+    public ListenableFuture<String> queueCommand(InstrumentDriver instrument, String command, boolean expectResponse) {
         ListeningExecutorService exec = executorsByName.get(instrument.getName());
-        return exec.submit(() -> instrument.command(command));
+        return exec.submit(() -> instrument.command(command, expectResponse));
     }
 
     public InstrumentDriver getInstrument(String name) {
@@ -51,7 +52,9 @@ public class InstrumentController extends AbstractService {
     }
 
     public List<InstrumentDriver> getInstruments() {
-        return instruments;
+        return instruments.stream()
+                .sorted((i1, i2) -> i1.name.compareTo(i2.name))
+                .collect(Collectors.toList());
     }
 
     @Override

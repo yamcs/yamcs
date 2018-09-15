@@ -72,11 +72,13 @@ public class TcServer extends AbstractService {
 
     public void processTseCommand(TseCommand command) {
         InstrumentDriver device = deviceManager.getInstrument(command.getDevice());
-        ListenableFuture<String> f = deviceManager.queueCommand(device, command.getCommand());
+        boolean expectResponse = command.hasResponse();
+
+        ListenableFuture<String> f = deviceManager.queueCommand(device, command.getCommand(), expectResponse);
         f.addListener(() -> {
             try {
                 String response = f.get();
-                if (command.hasResponse()) {
+                if (expectResponse) {
                     tmSender.parseResponse(command, response);
                 }
             } catch (ExecutionException e) {

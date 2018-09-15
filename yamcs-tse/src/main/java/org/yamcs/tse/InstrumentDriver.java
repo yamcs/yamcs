@@ -18,7 +18,6 @@ public abstract class InstrumentDriver {
 
     protected String responseTermination;
     protected int responseTimeout = 3000;
-    protected int maxAttempts = 3;
 
     protected Charset encoding = StandardCharsets.US_ASCII;
 
@@ -30,9 +29,6 @@ public abstract class InstrumentDriver {
         }
         if (args.containsKey("responseTimeout")) {
             responseTimeout = YConfiguration.getInt(args, "responseTimeout");
-        }
-        if (args.containsKey("maxAttempts")) {
-            maxAttempts = YConfiguration.getInt(args, "maxAttempts");
         }
     }
 
@@ -48,28 +44,16 @@ public abstract class InstrumentDriver {
         return responseTimeout;
     }
 
-    public String command(String command) throws IOException, TimeoutException {
+    public String command(String command, boolean expectResponse) throws IOException, TimeoutException {
         connect();
         log.info("{} <<< {}", name, command);
-        for (int i = 1; i <= maxAttempts; i++) {
-            try {
-                write(command);
-                if (command.contains("?") || command.contains("!")) { // Should maybe make this configurable
-                    String response = read();
-                    if (response != null) {
-                        log.info("{} >>> {}", name, response);
-                    }
-                    return response;
-                }
-            } catch (IOException | TimeoutException e) {
-                if (i < maxAttempts) {
-                    log.info("Attempt {} of {} failed ({})", i, maxAttempts, e);
-                    disconnect();
-                    connect();
-                } else {
-                    throw e;
-                }
+        write(command);
+        if (expectResponse) {
+            String response = read();
+            if (response != null) {
+                log.info("{} >>> {}", name, response);
             }
+            return response;
         }
 
         return null;
