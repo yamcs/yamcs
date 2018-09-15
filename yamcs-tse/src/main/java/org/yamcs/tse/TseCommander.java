@@ -3,6 +3,8 @@ package org.yamcs.tse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -10,14 +12,29 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.server.ProcessRunner;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ServiceManager;
-import com.google.common.util.concurrent.ServiceManager.Listener;
 
-public class TseCommander {
+public class TseCommander extends ProcessRunner {
+
+    public TseCommander() {
+        this(Collections.emptyMap());
+    }
+
+    public TseCommander(Map<String, Object> args) {
+        super(superArgs());
+    }
+
+    private static Map<String, Object> superArgs() {
+        Map<String, Object> args = new HashMap<>();
+        args.put("command", "bin/tse-commander.sh");
+        args.put("logPrefix", "");
+        return args;
+    }
 
     public static void main(String[] args) {
         configureLogging();
@@ -27,7 +44,7 @@ public class TseCommander {
         List<Service> services = createServices(yconf);
 
         ServiceManager serviceManager = new ServiceManager(services);
-        serviceManager.addListener(new Listener() {
+        serviceManager.addListener(new ServiceManager.Listener() {
             @Override
             public void failure(Service service) {
                 // Stop entire process as soon as one service fails.

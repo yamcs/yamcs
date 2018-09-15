@@ -22,16 +22,21 @@ import com.google.common.util.concurrent.AbstractService;
  */
 public class ProcessRunner extends AbstractService implements YamcsService {
 
-    private static final Logger log = LoggerFactory.getLogger(ProcessRunner.class);
+    protected Logger log;
 
     private ProcessBuilder pb;
     private String logLevel;
+    private String logPrefix;
 
     private Process process;
     private ScheduledExecutorService watchdog;
 
     public ProcessRunner(Map<String, Object> args) {
-        pb = new ProcessBuilder(YConfiguration.getString(args, "command"));
+        log = LoggerFactory.getLogger(getClass());
+
+        String command = YConfiguration.getString(args, "command");
+
+        pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
         pb.environment().put("YAMCS", "1");
 
@@ -40,6 +45,7 @@ public class ProcessRunner extends AbstractService implements YamcsService {
         }
 
         logLevel = YConfiguration.getString(args, "logLevel", "INFO");
+        logPrefix = YConfiguration.getString(args, "logPrefix", "[" + command + "] ");
     }
 
     @Override
@@ -69,31 +75,36 @@ public class ProcessRunner extends AbstractService implements YamcsService {
     private void startProcess() throws IOException {
         process = pb.start();
 
-        // Starts a thread for logging process output. The thread lifecycle is linked to the process.
+        // Start a thread for reading process output. The thread lifecycle is linked to the process.
         new Thread(() -> {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 reader.lines().forEach(line -> {
                     switch (logLevel) {
                     case "DEBUG":
-                        log.debug(line);
+                        log.debug("{}{}", logPrefix, line);
                         break;
                     case "TRACE":
-                        log.trace(line);
+                        log.trace("{}{}", logPrefix, line);
                         break;
                     case "WARN":
-                        log.warn(line);
+                        log.warn("{}{}", logPrefix, line);
                         break;
                     case "ERROR":
-                        log.error(line);
+                        log.error("{}{}", logPrefix, line);
                         break;
                     default:
-                        log.info(line);
+                        log.info("{}{}", logPrefix, line);
                     }
+                    onProcessOutput(line);
                 });
             } catch (IOException e) {
                 log.error("Exception while gobbling process output", e);
             }
         }).start();
+    }
+
+    protected void onProcessOutput(String line) {
+        // NOP by default
     }
 
     @Override

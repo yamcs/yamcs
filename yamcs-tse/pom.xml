@@ -53,7 +53,7 @@
   <dependencies>
     <dependency>
       <groupId>org.yamcs</groupId>
-      <artifactId>yamcs-core</artifactId>
+      <artifactId>yamcs-server</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

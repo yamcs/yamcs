@@ -7,9 +7,7 @@ services:
   - class: org.yamcs.server.ProcessRunner
     args:
       command: bin/simulator.sh
-  - class: org.yamcs.server.ProcessRunner
-    args:
-      command: bin/tse-commander.sh
+  - class: org.yamcs.tse.TseCommander
 
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml
