@@ -44,8 +44,7 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
 
         StreamConfig streamConfig = StreamConfig.getInstance(yamcsInstance);
 
-        List<String> streams = (List<String>) config.get("streams");
-
+        List<String> streams = YConfiguration.getList(config, "streams");
         for (String streamName : streams) {
             StreamConfigEntry sce = streamConfig.getEntry(StandardStreamType.tm, streamName);
             SequenceContainer rootContainer;

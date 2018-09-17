@@ -7,24 +7,24 @@ import org.yamcs.protobuf.Tse.TseCommand;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class TcServerHandler extends SimpleChannelInboundHandler<TseCommand> {
+public class TcTmServerHandler extends SimpleChannelInboundHandler<TseCommand> {
 
-    private static final Logger log = LoggerFactory.getLogger(TcServerHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(TcTmServerHandler.class);
 
-    private TcServer tcServer;
+    private TcTmServer tctmServer;
 
-    public TcServerHandler(TcServer tcServer) {
-        this.tcServer = tcServer;
+    public TcTmServerHandler(TcTmServer tctmServer) {
+        this.tctmServer = tctmServer;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        log.info("TC client connected: " + ctx.channel().remoteAddress());
+        log.info("TC/TM client connected: " + ctx.channel().remoteAddress());
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TseCommand command) throws Exception {
-        tcServer.processTseCommand(command);
+        tctmServer.processTseCommand(ctx, command);
     }
 
     @Override
@@ -35,6 +35,6 @@ public class TcServerHandler extends SimpleChannelInboundHandler<TseCommand> {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        log.info("TC client disconnected: " + ctx.channel().remoteAddress());
+        log.info("TC/TM client disconnected: " + ctx.channel().remoteAddress());
     }
 }

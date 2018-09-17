@@ -46,11 +46,6 @@
         <td mat-cell *matCellDef="let link">{{ link.spec }}</td>
       </ng-container>
 
-      <ng-container matColumnDef="stream">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px">Stream</th>
-        <td mat-cell *matCellDef="let link">{{ link.stream }}</td>
-      </ng-container>
-
       <ng-container matColumnDef="in">
         <th mat-header-cell *matHeaderCellDef mat-sort-header style="text-align: center">In</th>
         <td mat-cell *matCellDef="let link" style="text-align: center">

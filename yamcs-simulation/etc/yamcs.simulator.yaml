@@ -24,36 +24,29 @@ services:
 #tmIndexer: 
 
 dataLinks:
-  - class: org.yamcs.tctm.TcpTmDataLink
-    name: tm_realtime
+  - name: tm_realtime
+    class: org.yamcs.tctm.TcpTmDataLink
     stream: tm_realtime
     args:
       host: localhost
       port: 10015
-  - class: org.yamcs.tctm.TcpTmDataLink
-    name: tm_dump
+  - name: tm_dump
+    class: org.yamcs.tctm.TcpTmDataLink
     stream: tm_dump
     args:
       host: localhost
       port: 10115
-  - class: org.yamcs.tctm.UdpParameterDataLink
-    name: pp_tse
-    stream: pp_realtime
-    args:
-      port: 31002
-  - class: org.yamcs.tctm.TcpTcDataLink
-    name: tc_sim
+  - name: tc_sim
+    class: org.yamcs.tctm.TcpTcDataLink
     stream: tc_sim
     args:
       host: localhost
       port: 10025
-  - class: org.yamcs.tctm.TcpTcDataLink
-    name: tc_tse
-    stream: tc_tse
+  - name: TSE
+    class: org.yamcs.tctm.TseDataLink
     args:
       host: localhost
       port: 8135
-      commandPostprocessorClassName: org.yamcs.tctm.TseCommandPostprocessor
 
 mdb:
   # Configuration of the active loaders
@@ -72,12 +65,12 @@ mdb:
 
 #Configuration for streams created at server startup
 streamConfig:
-  tm: 
+  tm:
     - name: "tm_realtime"
     - name: "tm_dump"
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
-  param: ["pp_realtime", "sys_param"]
+  param: ["pp_realtime", "pp_tse", "sys_param"]
   alarm: ["alarms_realtime"]
   tc: ["tc_realtime"]
   sqlFile: "etc/tc_streams.sql"

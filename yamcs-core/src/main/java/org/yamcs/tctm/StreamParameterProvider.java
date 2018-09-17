@@ -1,17 +1,19 @@
 package org.yamcs.tctm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.yamcs.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.Processor;
+import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterListener;
+import org.yamcs.parameter.ParameterProvider;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
@@ -39,20 +41,26 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
 
     ParameterTypeProcessor ptypeProcessor;
 
-    public StreamParameterProvider(String archiveInstance, Map<String, String> config) throws ConfigurationException {
+    public StreamParameterProvider(String archiveInstance, Map<String, Object> config) throws ConfigurationException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(archiveInstance);
+        xtceDb = XtceDbFactory.getInstance(archiveInstance);
 
-        if (!config.containsKey("stream")) {
-            throw new ConfigurationException("the config(args) for StreamPpProvider has to contain a parameter"
+        List<String> streamNames;
+        if (config.containsKey("stream")) {
+            streamNames = Arrays.asList(YConfiguration.getString(config, "stream"));
+        } else if (config.containsKey("streams")) {
+            streamNames = YConfiguration.getList(config, "streams");
+        } else {
+            throw new ConfigurationException("the config(args) for StreamParameterProvider has to contain a parameter"
                     + " 'stream' - stream name for retrieving parameters from");
         }
-        String streamName = config.get("stream");
 
-        stream = ydb.getStream(streamName);
-        if (stream == null) {
-            throw new ConfigurationException("Cannot find a stream named " + streamName);
+        for (String streamName : streamNames) {
+            stream = ydb.getStream(streamName);
+            if (stream == null) {
+                throw new ConfigurationException("Cannot find a stream named " + streamName);
+            }
         }
-        xtceDb = XtceDbFactory.getInstance(archiveInstance);
     }
 
     @Override
@@ -147,8 +155,9 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
         Parameter p = xtceDb.getParameter(id);
         if (p == null) {
             throw new InvalidIdentification();
-        } else
+        } else {
             return p;
+        }
     }
 
     @Override

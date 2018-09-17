@@ -164,7 +164,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         }
 
         linksByName.put(name, link);
-        ManagementService.getInstance().registerLink(yamcsInstance, name, s.getName(),
+        ManagementService.getInstance().registerLink(yamcsInstance, name,
                 args != null ? args.toString() : "", link);
     }
 
@@ -224,7 +224,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
             });
 
             linksByName.put(name, link);
-            mgrsrv.registerLink(yamcsInstance, name, streamName, args != null ? args.toString() : "", link);
+            mgrsrv.registerLink(yamcsInstance, name, args != null ? args.toString() : "", link);
             count++;
         }
     }
@@ -289,7 +289,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
 
             tcuplinker.setCommandHistoryPublisher(new StreamCommandHistoryPublisher(yamcsInstance));
             linksByName.put(name, tcuplinker);
-            ManagementService.getInstance().registerLink(yamcsInstance, name, streamName,
+            ManagementService.getInstance().registerLink(yamcsInstance, name,
                     args != null ? args.toString() : "", tcuplinker);
             count++;
         }
@@ -340,7 +340,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
 
             link.setParameterSink(new MyPpListener(stream));
 
-            ManagementService.getInstance().registerLink(yamcsInstance, linkName, streamName,
+            ManagementService.getInstance().registerLink(yamcsInstance, linkName,
                     args != null ? args.toString() : "", link);
             linksByName.put(linkName, link);
             count++;

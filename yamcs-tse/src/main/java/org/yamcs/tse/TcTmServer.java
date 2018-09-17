@@ -2,44 +2,55 @@ package org.yamcs.tse;
 
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Tse.TseCommand;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
 
 /**
  * Listens for TSE commands in the form of Protobuf messages over TCP/IP.
  */
-public class TcServer extends AbstractService {
+public class TcTmServer extends AbstractService {
 
-    private static final Logger log = LoggerFactory.getLogger(TcServer.class);
+    private static final Logger log = LoggerFactory.getLogger(TcTmServer.class);
 
-    private static final int MAX_FRAME_LENGTH = 512 * 1024; // 512 KB
+    private static final int MAX_FRAME_LENGTH = 1024 * 1024; // 1 MB
+    private static final Pattern PARAMETER_REFERENCE = Pattern.compile("([^`]*)`(.*?)`([^`]*)");
 
     private InstrumentController instrumentController;
     private int port = 8135;
 
     private NioEventLoopGroup eventLoopGroup;
+    private int seq = 0;
 
-    private TmSender tmSender;
-
-    public TcServer(Integer port, InstrumentController instrumentController, TmSender tmSender) {
+    public TcTmServer(int port, InstrumentController instrumentController) {
         this.port = port;
         this.instrumentController = instrumentController;
-        this.tmSender = tmSender;
     }
 
     @Override
@@ -52,15 +63,20 @@ public class TcServer extends AbstractService {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
+
                         pipeline.addLast(new LengthFieldBasedFrameDecoder(MAX_FRAME_LENGTH, 0, 4, 0, 4));
                         pipeline.addLast(new ProtobufDecoder(TseCommand.getDefaultInstance()));
-                        pipeline.addLast(new TcServerHandler(TcServer.this));
+
+                        pipeline.addLast(new LengthFieldPrepender(4));
+                        pipeline.addLast(new ProtobufEncoder());
+
+                        pipeline.addLast(new TcTmServerHandler(TcTmServer.this));
                     }
                 });
 
         try {
             b.bind(port).sync();
-            log.info("TC Server listing for clients on port " + port);
+            log.info("TC/TM Server listening for clients on port " + port);
             notifyStarted();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -68,7 +84,7 @@ public class TcServer extends AbstractService {
         }
     }
 
-    public void processTseCommand(TseCommand command) {
+    public void processTseCommand(ChannelHandlerContext ctx, TseCommand command) {
         InstrumentDriver device = instrumentController.getInstrument(command.getInstrument());
         boolean expectResponse = command.hasResponse();
 
@@ -77,7 +93,7 @@ public class TcServer extends AbstractService {
             try {
                 String response = f.get();
                 if (expectResponse) {
-                    tmSender.parseResponse(command, response);
+                    parseResponse(ctx, command, response);
                 }
             } catch (ExecutionException e) {
                 log.error("Failed to execute command", e.getCause());
@@ -85,6 +101,41 @@ public class TcServer extends AbstractService {
                 Thread.currentThread().interrupt();
             }
         }, directExecutor());
+    }
+
+    private void parseResponse(ChannelHandlerContext ctx, TseCommand command, String response) {
+        long now = TimeEncoding.getWallclockTime();
+        ParameterData.Builder pdata = ParameterData.newBuilder();
+        pdata.setGenerationTime(now)
+                .setGroup("TSE")
+                .setSeqNum(seq++);
+
+        StringBuilder regex = new StringBuilder();
+        Matcher m = PARAMETER_REFERENCE.matcher(command.getResponse());
+        while (m.find()) {
+            String l = m.group(1);
+            String name = m.group(2);
+            String r = m.group(3);
+            regex.append(Pattern.quote(l));
+            regex.append("(?<").append(name).append(">.+)");
+            regex.append(Pattern.quote(r));
+        }
+
+        Pattern p = Pattern.compile(regex.toString());
+        m = p.matcher(response);
+        if (m.matches()) {
+            for (Entry<String, String> entry : command.getParameterMappingMap().entrySet()) {
+                String value = m.group(entry.getKey());
+                String qname = entry.getValue();
+                pdata.addParameter(ParameterValue.newBuilder()
+                        .setGenerationTime(now)
+                        .setId(NamedObjectId.newBuilder().setName(qname))
+                        .setRawValue(Value.newBuilder().setType(Type.STRING).setStringValue(value)));
+            }
+            ctx.writeAndFlush(pdata);
+        } else {
+            log.warn("Instrument response '{}' could not be matched to pattern '{}'.", response, command.getResponse());
+        }
     }
 
     @Override

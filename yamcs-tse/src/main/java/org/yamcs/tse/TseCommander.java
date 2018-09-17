@@ -35,19 +35,13 @@ public class TseCommander extends ProcessRunner {
         Map<String, Object> telnetArgs = YConfiguration.getMap(userArgs, "telnet");
         int telnetPort = YConfiguration.getInt(telnetArgs, "port");
 
-        Map<String, Object> tcArgs = YConfiguration.getMap(userArgs, "tc");
-        int tcPort = YConfiguration.getInt(tcArgs, "port");
-
-        Map<String, Object> tmArgs = YConfiguration.getMap(userArgs, "tm");
-        String tmHost = YConfiguration.getString(tmArgs, "host");
-        int tmPort = YConfiguration.getInt(tmArgs, "port");
+        Map<String, Object> yamcsArgs = YConfiguration.getMap(userArgs, "tctm");
+        int tctmPort = YConfiguration.getInt(yamcsArgs, "port");
 
         Map<String, Object> args = new HashMap<>();
         args.put("command", Arrays.asList("bin/tse-commander.sh",
                 "--telnet-port", "" + telnetPort,
-                "--tc-port", "" + tcPort,
-                "--tm-host", "" + tmHost,
-                "--tm-port", "" + tmPort));
+                "--tctm-port", "" + tctmPort));
         args.put("logPrefix", "");
         return args;
     }
@@ -119,10 +113,8 @@ public class TseCommander extends ProcessRunner {
         TelnetServer telnetServer = new TelnetServer(runtimeOptions.telnetPort, instrumentController);
         services.add(telnetServer);
 
-        if (runtimeOptions.tmHost != null && runtimeOptions.tmPort != null) {
-            TmSender tmSender = new TmSender(runtimeOptions.tmHost, runtimeOptions.tmPort);
-            services.add(tmSender);
-            services.add(new TcServer(runtimeOptions.tcPort, instrumentController, tmSender));
+        if (runtimeOptions.tctmPort != null) {
+            services.add(new TcTmServer(runtimeOptions.tctmPort, instrumentController));
         }
 
         return services;

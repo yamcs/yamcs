@@ -14971,17 +14971,17 @@ public final class YamcsManagement {
         getSpecBytes();
 
     /**
-     * <code>optional string stream = 5;</code>
+     * <code>optional string stream = 5 [deprecated = true];</code>
      */
-    boolean hasStream();
+    @java.lang.Deprecated boolean hasStream();
     /**
-     * <code>optional string stream = 5;</code>
+     * <code>optional string stream = 5 [deprecated = true];</code>
      */
-    java.lang.String getStream();
+    @java.lang.Deprecated java.lang.String getStream();
     /**
-     * <code>optional string stream = 5;</code>
+     * <code>optional string stream = 5 [deprecated = true];</code>
      */
-    com.google.protobuf.ByteString
+    @java.lang.Deprecated com.google.protobuf.ByteString
         getStreamBytes();
 
     /**
@@ -15359,15 +15359,15 @@ public final class YamcsManagement {
     public static final int STREAM_FIELD_NUMBER = 5;
     private volatile java.lang.Object stream_;
     /**
-     * <code>optional string stream = 5;</code>
+     * <code>optional string stream = 5 [deprecated = true];</code>
      */
-    public boolean hasStream() {
+    @java.lang.Deprecated public boolean hasStream() {
       return ((bitField0_ & 0x00000010) == 0x00000010);
     }
     /**
-     * <code>optional string stream = 5;</code>
+     * <code>optional string stream = 5 [deprecated = true];</code>
      */
-    public java.lang.String getStream() {
+    @java.lang.Deprecated public java.lang.String getStream() {
       java.lang.Object ref = stream_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
@@ -15382,9 +15382,9 @@ public final class YamcsManagement {
       }
     }
     /**
-     * <code>optional string stream = 5;</code>
+     * <code>optional string stream = 5 [deprecated = true];</code>
      */
-    public com.google.protobuf.ByteString
+    @java.lang.Deprecated public com.google.protobuf.ByteString
         getStreamBytes() {
       java.lang.Object ref = stream_;
       if (ref instanceof java.lang.String) {
@@ -16394,15 +16394,15 @@ public final class YamcsManagement {
 
       private java.lang.Object stream_ = "";
       /**
-       * <code>optional string stream = 5;</code>
+       * <code>optional string stream = 5 [deprecated = true];</code>
        */
-      public boolean hasStream() {
+      @java.lang.Deprecated public boolean hasStream() {
         return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional string stream = 5;</code>
+       * <code>optional string stream = 5 [deprecated = true];</code>
        */
-      public java.lang.String getStream() {
+      @java.lang.Deprecated public java.lang.String getStream() {
         java.lang.Object ref = stream_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
@@ -16417,9 +16417,9 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string stream = 5;</code>
+       * <code>optional string stream = 5 [deprecated = true];</code>
        */
-      public com.google.protobuf.ByteString
+      @java.lang.Deprecated public com.google.protobuf.ByteString
           getStreamBytes() {
         java.lang.Object ref = stream_;
         if (ref instanceof String) {
@@ -16433,9 +16433,9 @@ public final class YamcsManagement {
         }
       }
       /**
-       * <code>optional string stream = 5;</code>
+       * <code>optional string stream = 5 [deprecated = true];</code>
        */
-      public Builder setStream(
+      @java.lang.Deprecated public Builder setStream(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
@@ -16446,18 +16446,18 @@ public final class YamcsManagement {
         return this;
       }
       /**
-       * <code>optional string stream = 5;</code>
+       * <code>optional string stream = 5 [deprecated = true];</code>
        */
-      public Builder clearStream() {
+      @java.lang.Deprecated public Builder clearStream() {
         bitField0_ = (bitField0_ & ~0x00000010);
         stream_ = getDefaultInstance().getStream();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string stream = 5;</code>
+       * <code>optional string stream = 5 [deprecated = true];</code>
        */
-      public Builder setStreamBytes(
+      @java.lang.Deprecated public Builder setStreamBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
@@ -18835,22 +18835,22 @@ public final class YamcsManagement {
       "name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013replaySp" +
       "eed\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\tOperati" +
       "on\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020\n\014C" +
-      "HANGE_SPEED\020\005\"\322\001\n\010LinkInfo\022\020\n\010instance\030\001" +
+      "HANGE_SPEED\020\005\"\326\001\n\010LinkInfo\022\020\n\010instance\030\001" +
       " \001(\t\022\014\n\004name\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec" +
-      "\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010" +
-      "\022\016\n\006status\030\007 \001(\t\022\025\n\tdataCount\030\010 \001(\003B\002\030\001\022" +
-      "\023\n\013dataInCount\030\n \001(\003\022\024\n\014dataOutCount\030\013 \001",
-      "(\003\022\026\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent" +
-      "\022-\n\004type\030\001 \001(\0162\037.yamcsManagement.LinkEve" +
-      "nt.Type\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsManagem" +
-      "ent.LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014" +
-      "UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"\201\001\n\013ServiceI" +
-      "nfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005s" +
-      "tate\030\003 \001(\0162\035.yamcsManagement.ServiceStat" +
-      "e\022\021\n\tclassName\030\004 \001(\t\022\021\n\tprocessor\030\005 \001(\t*" +
-      "\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013" +
-      "\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020",
-      "\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.protobuf"
+      "\030\004 \001(\t\022\022\n\006stream\030\005 \001(\tB\002\030\001\022\020\n\010disabled\030\006" +
+      " \001(\010\022\016\n\006status\030\007 \001(\t\022\025\n\tdataCount\030\010 \001(\003B" +
+      "\002\030\001\022\023\n\013dataInCount\030\n \001(\003\022\024\n\014dataOutCount",
+      "\030\013 \001(\003\022\026\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLinkE" +
+      "vent\022-\n\004type\030\001 \001(\0162\037.yamcsManagement.Lin" +
+      "kEvent.Type\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsMan" +
+      "agement.LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001" +
+      "\022\020\n\014UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"\201\001\n\013Serv" +
+      "iceInfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022" +
+      ",\n\005state\030\003 \001(\0162\035.yamcsManagement.Service" +
+      "State\022\021\n\tclassName\030\004 \001(\t\022\021\n\tprocessor\030\005 " +
+      "\001(\t*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING" +
+      "\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINA",
+      "TED\020\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

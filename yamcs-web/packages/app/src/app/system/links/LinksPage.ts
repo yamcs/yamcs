@@ -18,7 +18,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  displayedColumns = ['status', 'name', 'type', 'spec', 'stream', 'in', 'out', 'actions'];
+  displayedColumns = ['status', 'name', 'type', 'spec', 'in', 'out', 'actions'];
 
   dataSource = new MatTableDataSource<Link>();
 

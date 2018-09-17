@@ -9,13 +9,10 @@ services:
       command: bin/simulator.sh
   - class: org.yamcs.tse.TseCommander
     args:
-      telnet: # Inbound (TCP)
-        port: 8023
-      tc:  # Inbound (TCP)
+      tctm:
         port: 8135
-      tm:  # Outbound (UDP)
-        host: localhost
-        port: 31002
+      telnet:
+        port: 8023
 
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml

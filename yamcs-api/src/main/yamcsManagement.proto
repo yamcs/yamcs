@@ -138,7 +138,7 @@ message LinkInfo {
   optional string name = 2;
   optional string type = 3;
   optional string spec = 4;
-  optional string stream = 5;
+  optional string stream = 5 [deprecated=true];
   optional bool disabled = 6;
   optional string status = 7;
   optional int64 dataCount = 8 [deprecated=true];

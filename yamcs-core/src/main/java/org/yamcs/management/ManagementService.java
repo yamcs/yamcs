@@ -101,9 +101,9 @@ public class ManagementService implements ProcessorListener {
         managementListeners.forEach(l -> l.serviceUnregistered(instance, serviceName));
     }
 
-    public void registerLink(String instance, String linkName, String streamName, String spec, Link link) {
+    public void registerLink(String instance, String linkName, String spec, Link link) {
         LinkInfo.Builder linkb = LinkInfo.newBuilder().setInstance(instance)
-                .setName(linkName).setStream(streamName)
+                .setName(linkName)
                 .setDisabled(link.isDisabled())
                 .setStatus(link.getLinkStatus().name())
                 .setType(link.getClass().getSimpleName()).setSpec(spec)
