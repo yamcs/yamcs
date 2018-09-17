@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.Assignment;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.AssignmentInfo;
 import org.yamcs.parameter.Value;
@@ -15,7 +16,6 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
@@ -124,7 +124,7 @@ public class PreparedCommand {
     }
 
     public Tuple toTuple() {
-        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td = StandardTupleDefinitions.TC.copy();
         ArrayList<Object> al = new ArrayList<>();
         al.add(id.getGenerationTime());
         al.add(id.getOrigin());

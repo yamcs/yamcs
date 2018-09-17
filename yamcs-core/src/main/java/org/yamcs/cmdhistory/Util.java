@@ -2,17 +2,15 @@ package org.yamcs.cmdhistory;
 
 import java.util.ArrayList;
 
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-
-import com.google.protobuf.MessageLite;
 
 public class Util {
 
@@ -31,8 +29,9 @@ public class Util {
             if (PreparedCommand.CNAME_GENTIME.equals(name)
                     || PreparedCommand.CNAME_ORIGIN.equals(name)
                     || PreparedCommand.CNAME_SEQNUM.equals(name)
-                    || PreparedCommand.CNAME_CMDNAME.equals(name))
+                    || PreparedCommand.CNAME_CMDNAME.equals(name)) {
                 continue;
+            }
             che.addAttr(CommandHistoryAttribute.newBuilder()
                     .setName(name)
                     .setValue(ValueUtility.toGbp(ValueUtility.getColumnValue(cd, t.getColumn(i))))
@@ -45,18 +44,18 @@ public class Util {
      * Transforms protobuf messages of type CommandHistoryEntry to tuples.
      */
     public static Tuple transform(CommandHistoryEntry che) {
-        if(!che.hasCommandId()) {
+        if (!che.hasCommandId()) {
             throw new IllegalArgumentException("Cannot transforma command history entry without the command id");
         }
         CommandId id = che.getCommandId();
-        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td = StandardTupleDefinitions.TC.copy();
         ArrayList<Object> al = new ArrayList<>();
         al.add(id.getGenerationTime());
         al.add(id.getOrigin());
         al.add(id.getSequenceNumber());
         al.add(id.getCommandName());
 
-        for (CommandHistoryAttribute cha: che.getAttrList()) { 
+        for (CommandHistoryAttribute cha : che.getAttrList()) {
             td.addColumn(cha.getName(), ValueUtility.getYarchType(cha.getValue().getType()));
             al.add(ValueUtility.getYarchValue(cha.getValue()));
         }

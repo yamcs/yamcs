@@ -7,12 +7,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StreamConfig.StreamConfigEntry;
-import org.yamcs.alarms.AlarmServer;
-import org.yamcs.tctm.ParameterDataLinkInitialiser;
-import org.yamcs.tctm.TcDataLinkInitialiser;
-import org.yamcs.tctm.TmDataLinkInitialiser;
-import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ExecutionContext;
@@ -38,15 +32,6 @@ public class StreamInitializer {
     private static final Logger log = LoggerFactory.getLogger(StreamInitializer.class);
     final String yamcsInstance;
     YarchDatabaseInstance ydb;
-
-    static public final TupleDefinition EVENT_TUPLE_DEFINITION = new TupleDefinition();
-    // this is the commandId (used as the primary key when recording), the rest will be handled dynamically
-    static {
-        EVENT_TUPLE_DEFINITION.addColumn("gentime", DataType.TIMESTAMP);
-        EVENT_TUPLE_DEFINITION.addColumn("source", DataType.ENUM);
-        EVENT_TUPLE_DEFINITION.addColumn("seqNum", DataType.INT);
-        EVENT_TUPLE_DEFINITION.addColumn("body", DataType.protobuf("org.yamcs.protobuf.Yamcs$Event"));
-    }
 
     public static void createStreams(String yamcsInstance) throws IOException {
         StreamInitializer si = new StreamInitializer(yamcsInstance);
@@ -87,29 +72,28 @@ public class StreamInitializer {
     }
 
     private void createEventStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + EVENT_TUPLE_DEFINITION.getStringDefinition());
+        ydb.execute("create stream " + streamName + StandardTupleDefinitions.EVENT.getStringDefinition());
     }
 
     private void createTcStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition());
+        ydb.execute("create stream " + streamName + StandardTupleDefinitions.TC.getStringDefinition());
     }
 
     private void createTmStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + TmDataLinkInitialiser.TM_TUPLE_DEFINITION.getStringDefinition());
+        ydb.execute("create stream " + streamName + StandardTupleDefinitions.TM.getStringDefinition());
     }
 
     private void createParamStream(String streamName) throws StreamSqlException, ParseException {
         ydb.execute("create stream " + streamName
-                + ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION.getStringDefinition());
+                + StandardTupleDefinitions.PARAMETER.getStringDefinition());
     }
 
     private void createCmdHistoryStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition());
-
+        ydb.execute("create stream " + streamName + StandardTupleDefinitions.TC.getStringDefinition());
     }
 
     private void createAlarmStream(String streamName) throws StreamSqlException, ParseException {
-        ydb.execute("create stream " + streamName + AlarmServer.ALARM_TUPLE_DEFINITION.getStringDefinition());
+        ydb.execute("create stream " + streamName + StandardTupleDefinitions.ALARM.getStringDefinition());
     }
 
     private void loadSqlFile(Object o) throws IOException, StreamSqlException, ParseException {

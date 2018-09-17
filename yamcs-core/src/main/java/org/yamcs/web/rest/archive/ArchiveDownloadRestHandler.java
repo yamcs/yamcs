@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.CommandHistoryRecorder;
@@ -27,7 +28,6 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.GpbExtensionRegistry;
 import org.yamcs.web.HttpException;
@@ -246,7 +246,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
                     new StreamToChunkedTransferEncoder(req, MediaType.OCTET_STREAM, filename + ".raw") {
                         @Override
                         public void processTuple(Tuple tuple, ByteBufOutputStream bufOut) throws IOException {
-                            byte[] raw = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
+                            byte[] raw = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
                             bufOut.write(raw);
                         }
                     });

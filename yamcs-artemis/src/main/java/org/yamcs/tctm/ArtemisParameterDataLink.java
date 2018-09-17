@@ -11,6 +11,7 @@ import org.apache.activemq.artemis.api.core.client.ServerLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.api.artemis.Protocol;
 import org.yamcs.artemis.AbstractArtemisTranslatorService;
@@ -103,7 +104,7 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
             if (pd.hasGenerationTime()) {
                 genTime = pd.getGenerationTime();
             } else {
-                Long l = msg.getLongProperty(ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GENTIME);
+                Long l = msg.getLongProperty(StandardTupleDefinitions.PARAMETER_COL_GENTIME);
                 if (l != null) {
                     genTime = l;
                 } else {
@@ -115,7 +116,7 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
             if (pd.hasGroup()) {
                 ppGroup = pd.getGroup();
             } else {
-                ppGroup = msg.getStringProperty(ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP);
+                ppGroup = msg.getStringProperty(StandardTupleDefinitions.PARAMETER_COL_GROUP);
                 if (ppGroup == null) {
                     log.warn("Cannot find PP group either in the body or in the header of the message");
                     return;

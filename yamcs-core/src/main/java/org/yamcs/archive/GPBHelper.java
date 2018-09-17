@@ -1,11 +1,11 @@
 package org.yamcs.archive;
 
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.yarch.ColumnDefinition;
@@ -19,10 +19,10 @@ import com.google.protobuf.ByteString;
 public final class GPBHelper {
 
     public static TmPacketData tupleToTmPacketData(Tuple tuple) {
-        long recTime = (Long) tuple.getColumn(TmDataLinkInitialiser.RECTIME_COLUMN);
-        byte[] pbody = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
-        long genTime = (Long) tuple.getColumn(TmDataLinkInitialiser.GENTIME_COLUMN);
-        int seqNum = (Integer) tuple.getColumn(TmDataLinkInitialiser.SEQNUM_COLUMN);
+        long recTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
+        byte[] pbody = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
+        long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
+        int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN);
         String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
         TmPacketData tm = TmPacketData.newBuilder()
                 .setReceptionTime(recTime)

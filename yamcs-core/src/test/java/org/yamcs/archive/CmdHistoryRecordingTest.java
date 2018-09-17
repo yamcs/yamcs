@@ -6,10 +6,10 @@ import static org.junit.Assert.assertNotNull;
 import java.util.List;
 
 import org.junit.Test;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
@@ -29,7 +29,7 @@ public class CmdHistoryRecordingTest extends YarchTestCase {
     public void testRecording() throws Exception {
         final int n = 100;
         ydb.execute("create stream " + StreamCommandHistoryPublisher.REALTIME_CMDHIST_STREAM_NAME
-                + TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition());
+                + StandardTupleDefinitions.TC.getStringDefinition());
         CommandHistoryRecorder cmdHistRecorder = new CommandHistoryRecorder(ydb.getName());
         cmdHistRecorder.startAsync();
 

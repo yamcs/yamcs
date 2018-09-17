@@ -3,11 +3,11 @@ package org.yamcs.cmdhistory;
 import java.util.List;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandId;
-import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -48,7 +48,7 @@ public class StreamCommandHistoryProvider extends AbstractService implements Com
             PreparedCommand pc = PreparedCommand.fromTuple(tuple, xtcedb);
             chrm.addCommand(pc);
         } else {
-            int i = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getColumnDefinitions().size();
+            int i = StandardTupleDefinitions.TC.getColumnDefinitions().size();
             CommandId cmdId = PreparedCommand.getCommandId(tuple);
             List<ColumnDefinition> columns = tuple.getDefinition().getColumnDefinitions();
             while (i < columns.size()) {

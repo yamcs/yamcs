@@ -8,14 +8,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
@@ -33,15 +31,6 @@ public class AlarmServer extends AbstractService {
     private final Logger log = LoggerFactory.getLogger(AlarmServer.class);
     private Set<AlarmListener> alarmListeners = new HashSet<>();
     private String streamName;
-
-    static public final TupleDefinition ALARM_TUPLE_DEFINITION = new TupleDefinition();
-    // user time, parameter name sequence number and event
-    static {
-        ALARM_TUPLE_DEFINITION.addColumn("triggerTime", DataType.TIMESTAMP);
-        ALARM_TUPLE_DEFINITION.addColumn("parameter", DataType.STRING);
-        ALARM_TUPLE_DEFINITION.addColumn("seqNum", DataType.INT);
-        ALARM_TUPLE_DEFINITION.addColumn("event", DataType.STRING);
-    }
 
     /**
      * alarm server without a listener (used for unit tests )
@@ -119,13 +108,12 @@ public class AlarmServer extends AbstractService {
         boolean noAlarm = (pv.getMonitoringResult() == MonitoringResult.IN_LIMITS
                 || pv.getMonitoringResult() == null
                 || pv.getMonitoringResult() == MonitoringResult.DISABLED);
-        
 
         if (noAlarm) {
             if (activeAlarm == null) {
                 return;
-            } 
-                    
+            }
+
             if (activeAlarm.violations < minViolations) {
                 log.debug("Clearing glitch for {}", param.getQualifiedName());
                 activeAlarms.remove(param);
@@ -207,8 +195,9 @@ public class AlarmServer extends AbstractService {
     }
 
     protected static boolean moreSevere(MonitoringResult mr1, MonitoringResult mr2) {
-        if (mr1 == mr2)
+        if (mr1 == mr2) {
             return false;
+        }
         switch (mr2) {
         case WATCH:
             if (mr1 == MonitoringResult.WARNING) {

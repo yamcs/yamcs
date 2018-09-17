@@ -23,7 +23,7 @@ services:
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
 
-tmDataLinks:
+dataLinks:
   - class: org.yamcs.tctm.TcpTmDataLink
     name: tm_realtime
     stream: tm_realtime
@@ -36,15 +36,11 @@ tmDataLinks:
     args:
       host: localhost
       port: 10115
-
-parameterDataLinks:
   - class: org.yamcs.tctm.UdpParameterDataLink
     name: pp_tse
     stream: pp_realtime
     args:
       port: 31002
-
-tcDataLinks: 
   - class: org.yamcs.tctm.TcpTcDataLink
     name: tc_sim
     stream: tc_sim

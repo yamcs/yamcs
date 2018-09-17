@@ -2,6 +2,7 @@ package org.yamcs.alarms;
 
 import java.util.ArrayList;
 
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -39,7 +40,7 @@ public class AlarmStreamer implements AlarmListener {
 
     @Override
     public void notifyTriggered(ActiveAlarm activeAlarm) {
-        TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
+        TupleDefinition tdef = StandardTupleDefinitions.ALARM.copy();
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.TRIGGERED);
 
         tdef.addColumn("triggerPV", PARAMETER_DATA_TYPE);
@@ -53,7 +54,7 @@ public class AlarmStreamer implements AlarmListener {
 
     @Override
     public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
-        TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
+        TupleDefinition tdef = StandardTupleDefinitions.ALARM.copy();
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.SEVERITY_INCREASED);
 
         tdef.addColumn("severityIncreasedPV", PARAMETER_DATA_TYPE);
@@ -67,12 +68,12 @@ public class AlarmStreamer implements AlarmListener {
 
     @Override
     public void notifyParameterValueUpdate(ActiveAlarm activeAlarm) {
-        //do not send parameter updates
+        // do not send parameter updates
     }
 
     @Override
     public void notifyAcknowledged(ActiveAlarm activeAlarm) {
-        TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
+        TupleDefinition tdef = StandardTupleDefinitions.ALARM.copy();
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.ACKNOWLEDGED);
 
         tdef.addColumn("acknowledgedBy", DataType.STRING);
@@ -96,7 +97,7 @@ public class AlarmStreamer implements AlarmListener {
 
     @Override
     public void notifyCleared(ActiveAlarm activeAlarm) {
-        TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
+        TupleDefinition tdef = StandardTupleDefinitions.ALARM.copy();
         ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.CLEARED);
 
         tdef.addColumn("clearedPV", PARAMETER_DATA_TYPE);

@@ -8,12 +8,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.ParameterDataLinkInitialiser;
-import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -96,13 +95,13 @@ class IndexRequestProcessor implements Runnable {
                 // use 20 sec for the PP to avoid millions of records
                 int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 20000);
                 ok = sendHistogramData(ParameterRecorder.TABLE_NAME,
-                        ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP, mergeTime, null);
+                        StandardTupleDefinitions.PARAMETER_COL_GROUP, mergeTime, null);
             }
 
             if (req.getSendAllCmd()) {
                 int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
                 ok = sendHistogramData(CommandHistoryRecorder.TABLE_NAME,
-                        TcDataLinkInitialiser.CMDHIST_TUPLE_COL_CMDNAME, mergeTime, null);
+                        StandardTupleDefinitions.CMDHIST_TUPLE_COL_CMDNAME, mergeTime, null);
             }
             if (req.getSendAllEvent()) {
                 int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
