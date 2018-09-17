@@ -15008,13 +15008,31 @@ public final class YamcsManagement {
         getStatusBytes();
 
     /**
-     * <code>optional int64 dataCount = 8;</code>
+     * <code>optional int64 dataCount = 8 [deprecated = true];</code>
      */
-    boolean hasDataCount();
+    @java.lang.Deprecated boolean hasDataCount();
     /**
-     * <code>optional int64 dataCount = 8;</code>
+     * <code>optional int64 dataCount = 8 [deprecated = true];</code>
      */
-    long getDataCount();
+    @java.lang.Deprecated long getDataCount();
+
+    /**
+     * <code>optional int64 dataInCount = 10;</code>
+     */
+    boolean hasDataInCount();
+    /**
+     * <code>optional int64 dataInCount = 10;</code>
+     */
+    long getDataInCount();
+
+    /**
+     * <code>optional int64 dataOutCount = 11;</code>
+     */
+    boolean hasDataOutCount();
+    /**
+     * <code>optional int64 dataOutCount = 11;</code>
+     */
+    long getDataOutCount();
 
     /**
      * <code>optional string detailedStatus = 9;</code>
@@ -15050,6 +15068,8 @@ public final class YamcsManagement {
       disabled_ = false;
       status_ = "";
       dataCount_ = 0L;
+      dataInCount_ = 0L;
+      dataOutCount_ = 0L;
       detailedStatus_ = "";
     }
 
@@ -15129,8 +15149,18 @@ public final class YamcsManagement {
             }
             case 74: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000100;
+              bitField0_ |= 0x00000400;
               detailedStatus_ = bs;
+              break;
+            }
+            case 80: {
+              bitField0_ |= 0x00000100;
+              dataInCount_ = input.readInt64();
+              break;
+            }
+            case 88: {
+              bitField0_ |= 0x00000200;
+              dataOutCount_ = input.readInt64();
               break;
             }
           }
@@ -15428,16 +15458,46 @@ public final class YamcsManagement {
     public static final int DATACOUNT_FIELD_NUMBER = 8;
     private long dataCount_;
     /**
-     * <code>optional int64 dataCount = 8;</code>
+     * <code>optional int64 dataCount = 8 [deprecated = true];</code>
      */
-    public boolean hasDataCount() {
+    @java.lang.Deprecated public boolean hasDataCount() {
       return ((bitField0_ & 0x00000080) == 0x00000080);
     }
     /**
-     * <code>optional int64 dataCount = 8;</code>
+     * <code>optional int64 dataCount = 8 [deprecated = true];</code>
      */
-    public long getDataCount() {
+    @java.lang.Deprecated public long getDataCount() {
       return dataCount_;
+    }
+
+    public static final int DATAINCOUNT_FIELD_NUMBER = 10;
+    private long dataInCount_;
+    /**
+     * <code>optional int64 dataInCount = 10;</code>
+     */
+    public boolean hasDataInCount() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>optional int64 dataInCount = 10;</code>
+     */
+    public long getDataInCount() {
+      return dataInCount_;
+    }
+
+    public static final int DATAOUTCOUNT_FIELD_NUMBER = 11;
+    private long dataOutCount_;
+    /**
+     * <code>optional int64 dataOutCount = 11;</code>
+     */
+    public boolean hasDataOutCount() {
+      return ((bitField0_ & 0x00000200) == 0x00000200);
+    }
+    /**
+     * <code>optional int64 dataOutCount = 11;</code>
+     */
+    public long getDataOutCount() {
+      return dataOutCount_;
     }
 
     public static final int DETAILEDSTATUS_FIELD_NUMBER = 9;
@@ -15446,7 +15506,7 @@ public final class YamcsManagement {
      * <code>optional string detailedStatus = 9;</code>
      */
     public boolean hasDetailedStatus() {
-      return ((bitField0_ & 0x00000100) == 0x00000100);
+      return ((bitField0_ & 0x00000400) == 0x00000400);
     }
     /**
      * <code>optional string detailedStatus = 9;</code>
@@ -15518,8 +15578,14 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000080) == 0x00000080)) {
         output.writeInt64(8, dataCount_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 9, detailedStatus_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeInt64(10, dataInCount_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        output.writeInt64(11, dataOutCount_);
       }
       unknownFields.writeTo(output);
     }
@@ -15555,8 +15621,16 @@ public final class YamcsManagement {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(8, dataCount_);
       }
-      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+      if (((bitField0_ & 0x00000400) == 0x00000400)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(9, detailedStatus_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(10, dataInCount_);
+      }
+      if (((bitField0_ & 0x00000200) == 0x00000200)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(11, dataOutCount_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -15615,6 +15689,16 @@ public final class YamcsManagement {
         result = result && (getDataCount()
             == other.getDataCount());
       }
+      result = result && (hasDataInCount() == other.hasDataInCount());
+      if (hasDataInCount()) {
+        result = result && (getDataInCount()
+            == other.getDataInCount());
+      }
+      result = result && (hasDataOutCount() == other.hasDataOutCount());
+      if (hasDataOutCount()) {
+        result = result && (getDataOutCount()
+            == other.getDataOutCount());
+      }
       result = result && (hasDetailedStatus() == other.hasDetailedStatus());
       if (hasDetailedStatus()) {
         result = result && getDetailedStatus()
@@ -15664,6 +15748,16 @@ public final class YamcsManagement {
         hash = (37 * hash) + DATACOUNT_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
             getDataCount());
+      }
+      if (hasDataInCount()) {
+        hash = (37 * hash) + DATAINCOUNT_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getDataInCount());
+      }
+      if (hasDataOutCount()) {
+        hash = (37 * hash) + DATAOUTCOUNT_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getDataOutCount());
       }
       if (hasDetailedStatus()) {
         hash = (37 * hash) + DETAILEDSTATUS_FIELD_NUMBER;
@@ -15803,8 +15897,12 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000040);
         dataCount_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000080);
-        detailedStatus_ = "";
+        dataInCount_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000100);
+        dataOutCount_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000200);
+        detailedStatus_ = "";
+        bitField0_ = (bitField0_ & ~0x00000400);
         return this;
       }
 
@@ -15863,6 +15961,14 @@ public final class YamcsManagement {
         result.dataCount_ = dataCount_;
         if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
           to_bitField0_ |= 0x00000100;
+        }
+        result.dataInCount_ = dataInCount_;
+        if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+          to_bitField0_ |= 0x00000200;
+        }
+        result.dataOutCount_ = dataOutCount_;
+        if (((from_bitField0_ & 0x00000400) == 0x00000400)) {
+          to_bitField0_ |= 0x00000400;
         }
         result.detailedStatus_ = detailedStatus_;
         result.bitField0_ = to_bitField0_;
@@ -15943,8 +16049,14 @@ public final class YamcsManagement {
         if (other.hasDataCount()) {
           setDataCount(other.getDataCount());
         }
+        if (other.hasDataInCount()) {
+          setDataInCount(other.getDataInCount());
+        }
+        if (other.hasDataOutCount()) {
+          setDataOutCount(other.getDataOutCount());
+        }
         if (other.hasDetailedStatus()) {
-          bitField0_ |= 0x00000100;
+          bitField0_ |= 0x00000400;
           detailedStatus_ = other.detailedStatus_;
           onChanged();
         }
@@ -16466,32 +16578,96 @@ public final class YamcsManagement {
 
       private long dataCount_ ;
       /**
-       * <code>optional int64 dataCount = 8;</code>
+       * <code>optional int64 dataCount = 8 [deprecated = true];</code>
        */
-      public boolean hasDataCount() {
+      @java.lang.Deprecated public boolean hasDataCount() {
         return ((bitField0_ & 0x00000080) == 0x00000080);
       }
       /**
-       * <code>optional int64 dataCount = 8;</code>
+       * <code>optional int64 dataCount = 8 [deprecated = true];</code>
        */
-      public long getDataCount() {
+      @java.lang.Deprecated public long getDataCount() {
         return dataCount_;
       }
       /**
-       * <code>optional int64 dataCount = 8;</code>
+       * <code>optional int64 dataCount = 8 [deprecated = true];</code>
        */
-      public Builder setDataCount(long value) {
+      @java.lang.Deprecated public Builder setDataCount(long value) {
         bitField0_ |= 0x00000080;
         dataCount_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int64 dataCount = 8;</code>
+       * <code>optional int64 dataCount = 8 [deprecated = true];</code>
        */
-      public Builder clearDataCount() {
+      @java.lang.Deprecated public Builder clearDataCount() {
         bitField0_ = (bitField0_ & ~0x00000080);
         dataCount_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long dataInCount_ ;
+      /**
+       * <code>optional int64 dataInCount = 10;</code>
+       */
+      public boolean hasDataInCount() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional int64 dataInCount = 10;</code>
+       */
+      public long getDataInCount() {
+        return dataInCount_;
+      }
+      /**
+       * <code>optional int64 dataInCount = 10;</code>
+       */
+      public Builder setDataInCount(long value) {
+        bitField0_ |= 0x00000100;
+        dataInCount_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 dataInCount = 10;</code>
+       */
+      public Builder clearDataInCount() {
+        bitField0_ = (bitField0_ & ~0x00000100);
+        dataInCount_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private long dataOutCount_ ;
+      /**
+       * <code>optional int64 dataOutCount = 11;</code>
+       */
+      public boolean hasDataOutCount() {
+        return ((bitField0_ & 0x00000200) == 0x00000200);
+      }
+      /**
+       * <code>optional int64 dataOutCount = 11;</code>
+       */
+      public long getDataOutCount() {
+        return dataOutCount_;
+      }
+      /**
+       * <code>optional int64 dataOutCount = 11;</code>
+       */
+      public Builder setDataOutCount(long value) {
+        bitField0_ |= 0x00000200;
+        dataOutCount_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 dataOutCount = 11;</code>
+       */
+      public Builder clearDataOutCount() {
+        bitField0_ = (bitField0_ & ~0x00000200);
+        dataOutCount_ = 0L;
         onChanged();
         return this;
       }
@@ -16501,7 +16677,7 @@ public final class YamcsManagement {
        * <code>optional string detailedStatus = 9;</code>
        */
       public boolean hasDetailedStatus() {
-        return ((bitField0_ & 0x00000100) == 0x00000100);
+        return ((bitField0_ & 0x00000400) == 0x00000400);
       }
       /**
        * <code>optional string detailedStatus = 9;</code>
@@ -16544,7 +16720,7 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000100;
+  bitField0_ |= 0x00000400;
         detailedStatus_ = value;
         onChanged();
         return this;
@@ -16553,7 +16729,7 @@ public final class YamcsManagement {
        * <code>optional string detailedStatus = 9;</code>
        */
       public Builder clearDetailedStatus() {
-        bitField0_ = (bitField0_ & ~0x00000100);
+        bitField0_ = (bitField0_ & ~0x00000400);
         detailedStatus_ = getDefaultInstance().getDetailedStatus();
         onChanged();
         return this;
@@ -16566,7 +16742,7 @@ public final class YamcsManagement {
         if (value == null) {
     throw new NullPointerException();
   }
-  bitField0_ |= 0x00000100;
+  bitField0_ |= 0x00000400;
         detailedStatus_ = value;
         onChanged();
         return this;
@@ -18659,21 +18835,22 @@ public final class YamcsManagement {
       "name\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\022\'\n\013replaySp" +
       "eed\030\005 \001(\0132\022.yamcs.ReplaySpeed\">\n\tOperati" +
       "on\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020\n\014C" +
-      "HANGE_SPEED\020\005\"\243\001\n\010LinkInfo\022\020\n\010instance\030\001" +
+      "HANGE_SPEED\020\005\"\322\001\n\010LinkInfo\022\020\n\010instance\030\001" +
       " \001(\t\022\014\n\004name\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec" +
       "\030\004 \001(\t\022\016\n\006stream\030\005 \001(\t\022\020\n\010disabled\030\006 \001(\010" +
-      "\022\016\n\006status\030\007 \001(\t\022\021\n\tdataCount\030\010 \001(\003\022\026\n\016d" +
-      "etailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent\022-\n\004typ",
-      "e\030\001 \001(\0162\037.yamcsManagement.LinkEvent.Type" +
-      "\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsManagement.Lin" +
-      "kInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014UNREGIS" +
-      "TERED\020\002\022\013\n\007UPDATED\020\003\"\201\001\n\013ServiceInfo\022\020\n\010" +
-      "instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005state\030\003 " +
-      "\001(\0162\035.yamcsManagement.ServiceState\022\021\n\tcl" +
-      "assName\030\004 \001(\t\022\021\n\tprocessor\030\005 \001(\t*\\\n\014Serv" +
-      "iceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013\n\007RUNNI" +
-      "NG\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020\004\022\n\n\006FA" +
-      "ILED\020\005B\024\n\022org.yamcs.protobuf"
+      "\022\016\n\006status\030\007 \001(\t\022\025\n\tdataCount\030\010 \001(\003B\002\030\001\022" +
+      "\023\n\013dataInCount\030\n \001(\003\022\024\n\014dataOutCount\030\013 \001",
+      "(\003\022\026\n\016detailedStatus\030\t \001(\t\"\236\001\n\tLinkEvent" +
+      "\022-\n\004type\030\001 \001(\0162\037.yamcsManagement.LinkEve" +
+      "nt.Type\022+\n\010linkInfo\030\002 \001(\0132\031.yamcsManagem" +
+      "ent.LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014" +
+      "UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"\201\001\n\013ServiceI" +
+      "nfo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022,\n\005s" +
+      "tate\030\003 \001(\0162\035.yamcsManagement.ServiceStat" +
+      "e\022\021\n\tclassName\030\004 \001(\t\022\021\n\tprocessor\030\005 \001(\t*" +
+      "\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010STARTING\020\001\022\013" +
+      "\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n\nTERMINATED\020",
+      "\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -18754,7 +18931,7 @@ public final class YamcsManagement {
     internal_static_yamcsManagement_LinkInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcsManagement_LinkInfo_descriptor,
-        new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Stream", "Disabled", "Status", "DataCount", "DetailedStatus", });
+        new java.lang.String[] { "Instance", "Name", "Type", "Spec", "Stream", "Disabled", "Status", "DataCount", "DataInCount", "DataOutCount", "DetailedStatus", });
     internal_static_yamcsManagement_LinkEvent_descriptor =
       getDescriptor().getMessageTypes().get(11);
     internal_static_yamcsManagement_LinkEvent_fieldAccessorTable = new

@@ -107,7 +107,9 @@ public class ManagementService implements ProcessorListener {
                 .setDisabled(link.isDisabled())
                 .setStatus(link.getLinkStatus().name())
                 .setType(link.getClass().getSimpleName()).setSpec(spec)
-                .setDataCount(link.getDataCount());
+                .setDataInCount(link.getDataInCount())
+                .setDataOutCount(link.getDataOutCount())
+                .setDataCount(link.getDataInCount() + link.getDataOutCount());
         if (link.getDetailedStatus() != null) {
             linkb.setDetailedStatus(link.getDetailedStatus());
         }
@@ -549,12 +551,17 @@ public class ManagementService implements ProcessorListener {
         boolean hasChanged() {
             if (!linkInfo.getStatus().equals(link.getLinkStatus().name())
                     || linkInfo.getDisabled() != link.isDisabled()
-                    || linkInfo.getDataCount() != link.getDataCount()
+                    || linkInfo.getDataInCount() != link.getDataInCount()
+                    || linkInfo.getDataOutCount() != link.getDataOutCount()
                     || !linkInfo.getDetailedStatus().equals(link.getDetailedStatus())) {
 
-                linkInfo = LinkInfo.newBuilder(linkInfo).setDisabled(link.isDisabled())
-                        .setStatus(link.getLinkStatus().name()).setDetailedStatus(link.getDetailedStatus())
-                        .setDataCount(link.getDataCount()).build();
+                linkInfo = LinkInfo.newBuilder(linkInfo)
+                        .setDisabled(link.isDisabled())
+                        .setStatus(link.getLinkStatus().name())
+                        .setDetailedStatus(link.getDetailedStatus())
+                        .setDataInCount(link.getDataInCount())
+                        .setDataOutCount(link.getDataOutCount())
+                        .setDataCount(link.getDataInCount() + link.getDataOutCount()).build();
                 return true;
             } else {
                 return false;

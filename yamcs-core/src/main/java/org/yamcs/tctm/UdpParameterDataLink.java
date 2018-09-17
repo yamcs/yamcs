@@ -137,12 +137,17 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
     }
 
     @Override
-    public long getDataCount() {
+    public long getDataInCount() {
         return validDatagramCount;
     }
 
     @Override
-    public void setParameterSink(ParameterSink ppListener) {
-        this.parameterSink = ppListener;
+    public long getDataOutCount() {
+        return 0;
+    }
+
+    @Override
+    public void setParameterSink(ParameterSink parameterSink) {
+        this.parameterSink = parameterSink;
     }
 }

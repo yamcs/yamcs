@@ -141,7 +141,9 @@ message LinkInfo {
   optional string stream = 5;
   optional bool disabled = 6;
   optional string status = 7;
-  optional int64 dataCount = 8;
+  optional int64 dataCount = 8 [deprecated=true];
+  optional int64 dataInCount = 10;
+  optional int64 dataOutCount = 11;
   optional string detailedStatus = 9;
 }
 

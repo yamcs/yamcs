@@ -28,27 +28,29 @@ public interface Link extends Service {
     /**
      * Returns the current link status.
      */
-    public abstract Status getLinkStatus();
+    public Status getLinkStatus();
 
     /**
      * @return more detailed status information
      */
-    public abstract String getDetailedStatus();
+    public String getDetailedStatus();
 
     /**
      * Reenable the data transit if disabled by the disable() method.
      */
-    public abstract void enable();
+    public void enable();
 
     /**
      * Disable any data I/O through this link. Any connection to a server is closed. Can be reenabled using the enable
      * method. Note that this method can be called before starting the service if it's configured as such in the
      * configuration file
      */
-    public abstract void disable();
+    public void disable();
 
-    public abstract boolean isDisabled();
+    public boolean isDisabled();
 
-    public abstract long getDataCount();
+    public long getDataInCount();
+
+    public long getDataOutCount();
 
 }

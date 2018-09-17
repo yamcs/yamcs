@@ -88,8 +88,13 @@ public class ArtemisParameterDataLink extends AbstractService implements Paramet
     }
 
     @Override
-    public long getDataCount() {
+    public long getDataInCount() {
         return totalPpCount;
+    }
+
+    @Override
+    public long getDataOutCount() {
+        return 0;
     }
 
     @Override

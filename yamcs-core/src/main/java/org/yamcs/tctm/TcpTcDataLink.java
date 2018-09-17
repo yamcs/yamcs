@@ -385,7 +385,12 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     }
 
     @Override
-    public long getDataCount() {
+    public long getDataInCount() {
+        return 0;
+    }
+
+    @Override
+    public long getDataOutCount() {
         return tcCount;
     }
 
@@ -405,7 +410,7 @@ public class TcpTcDataLink extends AbstractService implements Runnable, TcDataLi
     public Collection<ParameterValue> getSystemParameters() {
         long time = getCurrentTime();
         ParameterValue linkStatus = SystemParametersCollector.getPV(sv_linkStatus_id, time, getLinkStatus().name());
-        ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataCount());
+        ParameterValue dataCount = SystemParametersCollector.getPV(sp_dataCount_id, time, getDataOutCount());
         return Arrays.asList(linkStatus, dataCount);
     }
 }

@@ -183,7 +183,12 @@ public class ComVerifIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Override
-        public long getDataCount() {
+        public long getDataInCount() {
+            return 0;
+        }
+
+        @Override
+        public long getDataOutCount() {
             return 0;
         }
 

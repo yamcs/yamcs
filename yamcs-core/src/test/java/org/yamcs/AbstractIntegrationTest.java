@@ -289,7 +289,12 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public long getDataCount() {
+        public long getDataInCount() {
+            return 0;
+        }
+
+        @Override
+        public long getDataOutCount() {
             return 0;
         }
 
@@ -362,7 +367,12 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public long getDataCount() {
+        public long getDataInCount() {
+            return 0;
+        }
+
+        @Override
+        public long getDataOutCount() {
             return seqNum * 3;
         }
 

@@ -98,12 +98,6 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         }
         boolean enabledAtStartup = YConfiguration.getBoolean(linkConfig, "enabledAtStartup", true);
 
-        String streamName = YConfiguration.getString(linkConfig, "stream");
-        Stream s = ydb.getStream(streamName);
-        if (s == null) {
-            throw new ConfigurationException("Cannot find stream '" + streamName + "'");
-        }
-
         Link link;
         if (args != null) {
             link = YObjectLoader.loadObject(className, yamcsInstance, name, args);
@@ -115,44 +109,62 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
             link.disable();
         }
 
+        // "stream" should probably be migrated to the args map of a specific link.
+        // Supporting it now for compatibility reasons with the old config.
+        Stream s = null;
+        if (linkConfig.containsKey("stream")) {
+            String streamName = YConfiguration.getString(linkConfig, "stream");
+            s = ydb.getStream(streamName);
+            if (s == null) {
+                throw new ConfigurationException("Cannot find stream '" + streamName + "'");
+            }
+        }
+
         if (link instanceof TmPacketDataLink) {
-            TmPacketDataLink tmLink = (TmPacketDataLink) link;
-            boolean dropCorrupted = YConfiguration.getBoolean(linkConfig, "dropCorruptedPackets", true);
-            tmLink.setTmSink(pwrt -> {
-                if (pwrt.isCorrupted() && dropCorrupted) {
-                    return;
-                }
-                long time = pwrt.getGenerationTime();
-                byte[] pkt = pwrt.getPacket();
-                Tuple t = new Tuple(StandardTupleDefinitions.TM,
-                        new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });
-                s.emitTuple(t);
-            });
+            if (s != null) {
+                Stream stream = s;
+                TmPacketDataLink tmLink = (TmPacketDataLink) link;
+                boolean dropCorrupted = YConfiguration.getBoolean(linkConfig, "dropCorruptedPackets", true);
+                tmLink.setTmSink(pwrt -> {
+                    if (pwrt.isCorrupted() && dropCorrupted) {
+                        return;
+                    }
+                    long time = pwrt.getGenerationTime();
+                    byte[] pkt = pwrt.getPacket();
+                    Tuple t = new Tuple(StandardTupleDefinitions.TM,
+                            new Object[] { time, pwrt.getSeqCount(), pwrt.getReceptionTime(), pkt });
+                    stream.emitTuple(t);
+                });
+            }
         }
 
         if (link instanceof TcDataLink) {
             TcDataLink tcLink = (TcDataLink) link;
-            s.addSubscriber(new StreamSubscriber() {
-                @Override
-                public void onTuple(Stream s, Tuple tuple) {
-                    XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
-                    tcLink.sendTc(PreparedCommand.fromTuple(tuple, xtcedb));
-                }
+            if (s != null) {
+                s.addSubscriber(new StreamSubscriber() {
+                    @Override
+                    public void onTuple(Stream s, Tuple tuple) {
+                        XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+                        tcLink.sendTc(PreparedCommand.fromTuple(tuple, xtcedb));
+                    }
 
-                @Override
-                public void streamClosed(Stream s) {
-                    stopAsync();
-                }
-            });
+                    @Override
+                    public void streamClosed(Stream s) {
+                        stopAsync();
+                    }
+                });
+            }
             tcLink.setCommandHistoryPublisher(new StreamCommandHistoryPublisher(yamcsInstance));
         }
 
         if (link instanceof ParameterDataLink) {
-            ((ParameterDataLink) link).setParameterSink(new MyPpListener(s));
+            if (s != null) {
+                ((ParameterDataLink) link).setParameterSink(new MyPpListener(s));
+            }
         }
 
         linksByName.put(name, link);
-        ManagementService.getInstance().registerLink(yamcsInstance, name, streamName,
+        ManagementService.getInstance().registerLink(yamcsInstance, name, s.getName(),
                 args != null ? args.toString() : "", link);
     }
 
