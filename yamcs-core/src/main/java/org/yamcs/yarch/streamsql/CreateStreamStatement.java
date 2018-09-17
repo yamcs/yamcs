@@ -1,7 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
-import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.InternalStream;
+import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -13,29 +13,30 @@ public class CreateStreamStatement extends StreamSqlStatement {
     TupleDefinition tupleDefinition;
 
     public CreateStreamStatement(String streamName, StreamExpression expression) {
-        this.streamName=streamName;
-        this.expression=expression;
+        this.streamName = streamName;
+        this.expression = expression;
     }
 
     public CreateStreamStatement(String name, TupleDefinition tupleDefinition) {
-        this.streamName=name;
-        this.tupleDefinition=tupleDefinition;
+        this.streamName = name;
+        this.tupleDefinition = tupleDefinition;
     }
 
     @Override
     public StreamSqlResult execute(ExecutionContext c) throws StreamSqlException {
-        YarchDatabaseInstance dict=YarchDatabase.getInstance(c.getDbName());
-        synchronized(dict) {
-            if(dict.streamOrTableExists(streamName))
+        YarchDatabaseInstance dict = YarchDatabase.getInstance(c.getDbName());
+        synchronized (dict) {
+            if (dict.streamOrTableExists(streamName)) {
                 throw new StreamAlreadyExistsException(streamName);
+            }
 
-            AbstractStream stream;
-            if(expression!=null) { 
+            Stream stream;
+            if (expression != null) {
                 expression.bind(c);
-                stream=expression.execute(c);
+                stream = expression.execute(c);
                 stream.setName(streamName);
             } else {
-                stream=new InternalStream(dict, streamName, tupleDefinition);
+                stream = new InternalStream(dict, streamName, tupleDefinition);
             }
             try {
                 dict.addStream(stream);
@@ -43,6 +44,6 @@ public class CreateStreamStatement extends StreamSqlStatement {
                 throw new GenericStreamSqlException(e.getMessage());
             }
             return new StreamSqlResult();
-        } 
+        }
     }
 }

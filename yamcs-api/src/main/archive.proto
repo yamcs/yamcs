@@ -63,6 +63,7 @@ message StreamInfo {
   optional string name = 1;
   repeated ColumnInfo column = 2;
   optional string script = 3;
+  optional int64 dataCount = 4;
 }
 
 message EventSourceInfo {

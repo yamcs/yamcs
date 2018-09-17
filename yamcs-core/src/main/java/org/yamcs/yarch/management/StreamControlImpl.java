@@ -9,42 +9,46 @@ import javax.management.StandardMBean;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 
+public class StreamControlImpl extends StandardMBean implements StreamControl {
 
-public class StreamControlImpl  extends StandardMBean implements StreamControl{
     Stream stream;
+
     public StreamControlImpl(Stream stream) throws NotCompliantMBeanException {
         super(StreamControl.class);
-        this.stream=stream;
+        this.stream = stream;
     }
+
     @Override
     public String getName() {
         return stream.getName();
     }
-    
+
     @Override
     public long getNumEmittedTuples() {
-        return stream.getNumEmittedTuples();
+        return stream.getDataCount();
     }
+
     @Override
     public String getType() {
-       return stream.getClass().getName();
+        return stream.getClass().getName();
     }
+
     @Override
     public String getSchema() {
         return stream.getDefinition().getStringDefinition();
     }
+
     @Override
     public int getSubscriberCount() {
         return stream.getSubscriberCount();
     }
+
     @Override
     public List<String> getSubscribers() {
-        List<String> sl=new ArrayList<String>();
-        for(StreamSubscriber ss:stream.getSubscribers()) {
+        List<String> sl = new ArrayList<>();
+        for (StreamSubscriber ss : stream.getSubscribers()) {
             sl.add(ss.toString());
         }
         return sl;
     }
-    
-    
 }

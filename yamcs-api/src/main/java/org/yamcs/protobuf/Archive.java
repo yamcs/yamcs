@@ -8530,6 +8530,15 @@ public final class Archive {
      */
     com.google.protobuf.ByteString
         getScriptBytes();
+
+    /**
+     * <code>optional int64 dataCount = 4;</code>
+     */
+    boolean hasDataCount();
+    /**
+     * <code>optional int64 dataCount = 4;</code>
+     */
+    long getDataCount();
   }
   /**
    * Protobuf type {@code archive.StreamInfo}
@@ -8546,6 +8555,7 @@ public final class Archive {
       name_ = "";
       column_ = java.util.Collections.emptyList();
       script_ = "";
+      dataCount_ = 0L;
     }
 
     @java.lang.Override
@@ -8595,6 +8605,11 @@ public final class Archive {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000002;
               script_ = bs;
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000004;
+              dataCount_ = input.readInt64();
               break;
             }
           }
@@ -8744,6 +8759,21 @@ public final class Archive {
       }
     }
 
+    public static final int DATACOUNT_FIELD_NUMBER = 4;
+    private long dataCount_;
+    /**
+     * <code>optional int64 dataCount = 4;</code>
+     */
+    public boolean hasDataCount() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional int64 dataCount = 4;</code>
+     */
+    public long getDataCount() {
+      return dataCount_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -8765,6 +8795,9 @@ public final class Archive {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, script_);
       }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt64(4, dataCount_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -8782,6 +8815,10 @@ public final class Archive {
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, script_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(4, dataCount_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -8812,6 +8849,11 @@ public final class Archive {
         result = result && getScript()
             .equals(other.getScript());
       }
+      result = result && (hasDataCount() == other.hasDataCount());
+      if (hasDataCount()) {
+        result = result && (getDataCount()
+            == other.getDataCount());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -8834,6 +8876,11 @@ public final class Archive {
       if (hasScript()) {
         hash = (37 * hash) + SCRIPT_FIELD_NUMBER;
         hash = (53 * hash) + getScript().hashCode();
+      }
+      if (hasDataCount()) {
+        hash = (37 * hash) + DATACOUNT_FIELD_NUMBER;
+        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+            getDataCount());
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -8964,6 +9011,8 @@ public final class Archive {
         }
         script_ = "";
         bitField0_ = (bitField0_ & ~0x00000004);
+        dataCount_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -9005,6 +9054,10 @@ public final class Archive {
           to_bitField0_ |= 0x00000002;
         }
         result.script_ = script_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.dataCount_ = dataCount_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9082,6 +9135,9 @@ public final class Archive {
           bitField0_ |= 0x00000004;
           script_ = other.script_;
           onChanged();
+        }
+        if (other.hasDataCount()) {
+          setDataCount(other.getDataCount());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -9499,6 +9555,38 @@ public final class Archive {
   }
   bitField0_ |= 0x00000004;
         script_ = value;
+        onChanged();
+        return this;
+      }
+
+      private long dataCount_ ;
+      /**
+       * <code>optional int64 dataCount = 4;</code>
+       */
+      public boolean hasDataCount() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional int64 dataCount = 4;</code>
+       */
+      public long getDataCount() {
+        return dataCount_;
+      }
+      /**
+       * <code>optional int64 dataCount = 4;</code>
+       */
+      public Builder setDataCount(long value) {
+        bitField0_ |= 0x00000008;
+        dataCount_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int64 dataCount = 4;</code>
+       */
+      public Builder clearDataCount() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        dataCount_ = 0L;
         onChanged();
         return this;
       }
@@ -13287,16 +13375,16 @@ public final class Archive {
       "tionSchema\030\003 \001(\t\022\023\n\013valueColumn\030\004 \001(\t\022\027\n" +
       "\017valueColumnType\030\005 \001(\t\";\n\020PartitioningTy" +
       "pe\022\010\n\004TIME\020\001\022\t\n\005VALUE\020\002\022\022\n\016TIME_AND_VALU" +
-      "E\020\003\"O\n\nStreamInfo\022\014\n\004name\030\001 \001(\t\022#\n\006colum" +
+      "E\020\003\"b\n\nStreamInfo\022\014\n\004name\030\001 \001(\t\022#\n\006colum" +
       "n\030\002 \003(\0132\023.archive.ColumnInfo\022\016\n\006script\030\003" +
-      " \001(\t\"!\n\017EventSourceInfo\022\016\n\006source\030\001 \003(\t\"" +
-      "3\n\rIndexResponse\022\"\n\005group\030\001 \003(\0132\023.archiv" +
-      "e.IndexGroup\"R\n\nIndexGroup\022 \n\002id\030\001 \001(\0132\024" +
-      ".yamcs.NamedObjectId\022\"\n\005entry\030\002 \003(\0132\023.ar" +
-      "chive.IndexEntry\"8\n\nIndexEntry\022\r\n\005start\030",
-      "\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\r\n\005count\030\003 \001(\005\"&\n\026Ge" +
-      "tPacketNamesResponse\022\014\n\004name\030\001 \003(\tB\024\n\022or" +
-      "g.yamcs.protobuf"
+      " \001(\t\022\021\n\tdataCount\030\004 \001(\003\"!\n\017EventSourceIn" +
+      "fo\022\016\n\006source\030\001 \003(\t\"3\n\rIndexResponse\022\"\n\005g" +
+      "roup\030\001 \003(\0132\023.archive.IndexGroup\"R\n\nIndex" +
+      "Group\022 \n\002id\030\001 \001(\0132\024.yamcs.NamedObjectId\022" +
+      "\"\n\005entry\030\002 \003(\0132\023.archive.IndexEntry\"8\n\nI",
+      "ndexEntry\022\r\n\005start\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\r" +
+      "\n\005count\030\003 \001(\005\"&\n\026GetPacketNamesResponse\022" +
+      "\014\n\004name\030\001 \003(\tB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -13364,7 +13452,7 @@ public final class Archive {
     internal_static_archive_StreamInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_archive_StreamInfo_descriptor,
-        new java.lang.String[] { "Name", "Column", "Script", });
+        new java.lang.String[] { "Name", "Column", "Script", "DataCount", });
     internal_static_archive_EventSourceInfo_descriptor =
       getDescriptor().getMessageTypes().get(8);
     internal_static_archive_EventSourceInfo_fieldAccessorTable = new
