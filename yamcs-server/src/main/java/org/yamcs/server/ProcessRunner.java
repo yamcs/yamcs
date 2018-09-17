@@ -34,9 +34,14 @@ public class ProcessRunner extends AbstractService implements YamcsService {
     public ProcessRunner(Map<String, Object> args) {
         log = LoggerFactory.getLogger(getClass());
 
-        String command = YConfiguration.getString(args, "command");
+        if (YConfiguration.isList(args, "command")) {
+            String[] command = YConfiguration.getList(args, "command").toArray(new String[0]);
+            pb = new ProcessBuilder(command);
+        } else {
+            String command = YConfiguration.getString(args, "command");
+            pb = new ProcessBuilder(command);
+        }
 
-        pb = new ProcessBuilder(command);
         pb.redirectErrorStream(true);
         pb.environment().put("YAMCS", "1");
 
@@ -45,7 +50,7 @@ public class ProcessRunner extends AbstractService implements YamcsService {
         }
 
         logLevel = YConfiguration.getString(args, "logLevel", "INFO");
-        logPrefix = YConfiguration.getString(args, "logPrefix", "[" + command + "] ");
+        logPrefix = YConfiguration.getString(args, "logPrefix", "[" + pb.command().get(0) + "] ");
     }
 
     @Override

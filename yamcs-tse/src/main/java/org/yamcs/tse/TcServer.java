@@ -2,12 +2,10 @@ package org.yamcs.tse;
 
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Tse.TseCommand;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -31,16 +29,16 @@ public class TcServer extends AbstractService {
 
     private static final int MAX_FRAME_LENGTH = 512 * 1024; // 512 KB
 
-    private InstrumentController deviceManager;
+    private InstrumentController instrumentController;
     private int port = 8135;
 
     private NioEventLoopGroup eventLoopGroup;
 
     private TmSender tmSender;
 
-    public TcServer(Map<String, Object> args, InstrumentController deviceManager, TmSender tmSender) {
-        port = YConfiguration.getInt(args, "port");
-        this.deviceManager = deviceManager;
+    public TcServer(Integer port, InstrumentController instrumentController, TmSender tmSender) {
+        this.port = port;
+        this.instrumentController = instrumentController;
         this.tmSender = tmSender;
     }
 
@@ -71,10 +69,10 @@ public class TcServer extends AbstractService {
     }
 
     public void processTseCommand(TseCommand command) {
-        InstrumentDriver device = deviceManager.getInstrument(command.getDevice());
+        InstrumentDriver device = instrumentController.getInstrument(command.getInstrument());
         boolean expectResponse = command.hasResponse();
 
-        ListenableFuture<String> f = deviceManager.queueCommand(device, command.getCommand(), expectResponse);
+        ListenableFuture<String> f = instrumentController.queueCommand(device, command.getCommand(), expectResponse);
         f.addListener(() -> {
             try {
                 String response = f.get();

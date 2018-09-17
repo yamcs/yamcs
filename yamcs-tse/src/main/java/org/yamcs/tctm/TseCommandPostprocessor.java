@@ -37,7 +37,7 @@ public class TseCommandPostprocessor implements CommandPostprocessor {
         SpaceSystem subsystem = xtcedb.getSpaceSystem(subsystemName);
 
         TseCommand.Builder msgb = TseCommand.newBuilder()
-                .setDevice(subsystem.getName());
+                .setInstrument(subsystem.getName());
 
         for (Entry<Argument, Value> entry : pc.getArgAssignment().entrySet()) {
             String name = entry.getKey().getName();

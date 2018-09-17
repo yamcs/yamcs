@@ -19,18 +19,18 @@ public final class Tse {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string device = 1;</code>
+     * <code>optional string instrument = 1;</code>
      */
-    boolean hasDevice();
+    boolean hasInstrument();
     /**
-     * <code>optional string device = 1;</code>
+     * <code>optional string instrument = 1;</code>
      */
-    java.lang.String getDevice();
+    java.lang.String getInstrument();
     /**
-     * <code>optional string device = 1;</code>
+     * <code>optional string instrument = 1;</code>
      */
     com.google.protobuf.ByteString
-        getDeviceBytes();
+        getInstrumentBytes();
 
     /**
      * <code>optional string command = 2;</code>
@@ -140,7 +140,7 @@ public final class Tse {
       super(builder);
     }
     private TseCommand() {
-      device_ = "";
+      instrument_ = "";
       command_ = "";
       response_ = "";
     }
@@ -176,7 +176,7 @@ public final class Tse {
             case 10: {
               com.google.protobuf.ByteString bs = input.readBytes();
               bitField0_ |= 0x00000001;
-              device_ = bs;
+              instrument_ = bs;
               break;
             }
             case 18: {
@@ -255,19 +255,19 @@ public final class Tse {
     }
 
     private int bitField0_;
-    public static final int DEVICE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object device_;
+    public static final int INSTRUMENT_FIELD_NUMBER = 1;
+    private volatile java.lang.Object instrument_;
     /**
-     * <code>optional string device = 1;</code>
+     * <code>optional string instrument = 1;</code>
      */
-    public boolean hasDevice() {
+    public boolean hasInstrument() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>optional string device = 1;</code>
+     * <code>optional string instrument = 1;</code>
      */
-    public java.lang.String getDevice() {
-      java.lang.Object ref = device_;
+    public java.lang.String getInstrument() {
+      java.lang.Object ref = instrument_;
       if (ref instanceof java.lang.String) {
         return (java.lang.String) ref;
       } else {
@@ -275,22 +275,22 @@ public final class Tse {
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
         if (bs.isValidUtf8()) {
-          device_ = s;
+          instrument_ = s;
         }
         return s;
       }
     }
     /**
-     * <code>optional string device = 1;</code>
+     * <code>optional string instrument = 1;</code>
      */
     public com.google.protobuf.ByteString
-        getDeviceBytes() {
-      java.lang.Object ref = device_;
+        getInstrumentBytes() {
+      java.lang.Object ref = instrument_;
       if (ref instanceof java.lang.String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        device_ = b;
+        instrument_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
@@ -552,7 +552,7 @@ public final class Tse {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, device_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, instrument_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, command_);
@@ -581,7 +581,7 @@ public final class Tse {
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, device_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, instrument_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, command_);
@@ -626,10 +626,10 @@ public final class Tse {
       org.yamcs.protobuf.Tse.TseCommand other = (org.yamcs.protobuf.Tse.TseCommand) obj;
 
       boolean result = true;
-      result = result && (hasDevice() == other.hasDevice());
-      if (hasDevice()) {
-        result = result && getDevice()
-            .equals(other.getDevice());
+      result = result && (hasInstrument() == other.hasInstrument());
+      if (hasInstrument()) {
+        result = result && getInstrument()
+            .equals(other.getInstrument());
       }
       result = result && (hasCommand() == other.hasCommand());
       if (hasCommand()) {
@@ -656,9 +656,9 @@ public final class Tse {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasDevice()) {
-        hash = (37 * hash) + DEVICE_FIELD_NUMBER;
-        hash = (53 * hash) + getDevice().hashCode();
+      if (hasInstrument()) {
+        hash = (37 * hash) + INSTRUMENT_FIELD_NUMBER;
+        hash = (53 * hash) + getInstrument().hashCode();
       }
       if (hasCommand()) {
         hash = (37 * hash) + COMMAND_FIELD_NUMBER;
@@ -820,7 +820,7 @@ public final class Tse {
       }
       public Builder clear() {
         super.clear();
-        device_ = "";
+        instrument_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
         command_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -855,7 +855,7 @@ public final class Tse {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.device_ = device_;
+        result.instrument_ = instrument_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
         }
@@ -910,9 +910,9 @@ public final class Tse {
 
       public Builder mergeFrom(org.yamcs.protobuf.Tse.TseCommand other) {
         if (other == org.yamcs.protobuf.Tse.TseCommand.getDefaultInstance()) return this;
-        if (other.hasDevice()) {
+        if (other.hasInstrument()) {
           bitField0_ |= 0x00000001;
-          device_ = other.device_;
+          instrument_ = other.instrument_;
           onChanged();
         }
         if (other.hasCommand()) {
@@ -962,24 +962,24 @@ public final class Tse {
       }
       private int bitField0_;
 
-      private java.lang.Object device_ = "";
+      private java.lang.Object instrument_ = "";
       /**
-       * <code>optional string device = 1;</code>
+       * <code>optional string instrument = 1;</code>
        */
-      public boolean hasDevice() {
+      public boolean hasInstrument() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>optional string device = 1;</code>
+       * <code>optional string instrument = 1;</code>
        */
-      public java.lang.String getDevice() {
-        java.lang.Object ref = device_;
+      public java.lang.String getInstrument() {
+        java.lang.Object ref = instrument_;
         if (!(ref instanceof java.lang.String)) {
           com.google.protobuf.ByteString bs =
               (com.google.protobuf.ByteString) ref;
           java.lang.String s = bs.toStringUtf8();
           if (bs.isValidUtf8()) {
-            device_ = s;
+            instrument_ = s;
           }
           return s;
         } else {
@@ -987,53 +987,53 @@ public final class Tse {
         }
       }
       /**
-       * <code>optional string device = 1;</code>
+       * <code>optional string instrument = 1;</code>
        */
       public com.google.protobuf.ByteString
-          getDeviceBytes() {
-        java.lang.Object ref = device_;
+          getInstrumentBytes() {
+        java.lang.Object ref = instrument_;
         if (ref instanceof String) {
           com.google.protobuf.ByteString b = 
               com.google.protobuf.ByteString.copyFromUtf8(
                   (java.lang.String) ref);
-          device_ = b;
+          instrument_ = b;
           return b;
         } else {
           return (com.google.protobuf.ByteString) ref;
         }
       }
       /**
-       * <code>optional string device = 1;</code>
+       * <code>optional string instrument = 1;</code>
        */
-      public Builder setDevice(
+      public Builder setInstrument(
           java.lang.String value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000001;
-        device_ = value;
+        instrument_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional string device = 1;</code>
+       * <code>optional string instrument = 1;</code>
        */
-      public Builder clearDevice() {
+      public Builder clearInstrument() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        device_ = getDefaultInstance().getDevice();
+        instrument_ = getDefaultInstance().getInstrument();
         onChanged();
         return this;
       }
       /**
-       * <code>optional string device = 1;</code>
+       * <code>optional string instrument = 1;</code>
        */
-      public Builder setDeviceBytes(
+      public Builder setInstrumentBytes(
           com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   bitField0_ |= 0x00000001;
-        device_ = value;
+        instrument_ = value;
         onChanged();
         return this;
       }
@@ -1500,16 +1500,16 @@ public final class Tse {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\ttse.proto\022\003tse\032\013yamcs.proto\"\276\002\n\nTseCom" +
-      "mand\022\016\n\006device\030\001 \001(\t\022\017\n\007command\030\002 \001(\t\022\020\n" +
-      "\010response\030\003 \001(\t\022=\n\017argumentMapping\030\004 \003(\013" +
-      "2$.tse.TseCommand.ArgumentMappingEntry\022?" +
-      "\n\020parameterMapping\030\005 \003(\0132%.tse.TseComman" +
-      "d.ParameterMappingEntry\032D\n\024ArgumentMappi" +
-      "ngEntry\022\013\n\003key\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132\014.ya" +
-      "mcs.Value:\0028\001\0327\n\025ParameterMappingEntry\022\013" +
-      "\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\024\n\022org.ya" +
-      "mcs.protobuf"
+      "\n\ttse.proto\022\003tse\032\013yamcs.proto\"\302\002\n\nTseCom" +
+      "mand\022\022\n\ninstrument\030\001 \001(\t\022\017\n\007command\030\002 \001(" +
+      "\t\022\020\n\010response\030\003 \001(\t\022=\n\017argumentMapping\030\004" +
+      " \003(\0132$.tse.TseCommand.ArgumentMappingEnt" +
+      "ry\022?\n\020parameterMapping\030\005 \003(\0132%.tse.TseCo" +
+      "mmand.ParameterMappingEntry\032D\n\024ArgumentM" +
+      "appingEntry\022\013\n\003key\030\001 \001(\t\022\033\n\005value\030\002 \001(\0132" +
+      "\014.yamcs.Value:\0028\001\0327\n\025ParameterMappingEnt" +
+      "ry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\024\n\022or" +
+      "g.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1529,7 +1529,7 @@ public final class Tse {
     internal_static_tse_TseCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_tse_TseCommand_descriptor,
-        new java.lang.String[] { "Device", "Command", "Response", "ArgumentMapping", "ParameterMapping", });
+        new java.lang.String[] { "Instrument", "Command", "Response", "ArgumentMapping", "ParameterMapping", });
     internal_static_tse_TseCommand_ArgumentMappingEntry_descriptor =
       internal_static_tse_TseCommand_descriptor.getNestedTypes().get(0);
     internal_static_tse_TseCommand_ArgumentMappingEntry_fieldAccessorTable = new

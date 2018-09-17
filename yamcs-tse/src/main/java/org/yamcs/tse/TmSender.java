@@ -1,14 +1,12 @@
 package org.yamcs.tse;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YConfiguration;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Tse.TseCommand;
@@ -46,9 +44,9 @@ public class TmSender extends AbstractService {
 
     private int seq = 0;
 
-    public TmSender(Map<String, Object> args) {
-        host = YConfiguration.getString(args, "host");
-        port = YConfiguration.getInt(args, "port");
+    public TmSender(String host, int port) {
+        this.host = host;
+        this.port = port;
     }
 
     @Override

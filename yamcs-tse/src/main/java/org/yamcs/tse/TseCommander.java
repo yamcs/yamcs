@@ -3,6 +3,7 @@ package org.yamcs.tse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.yamcs.server.ProcessRunner;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 
+import com.beust.jcommander.JCommander;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ServiceManager;
 
@@ -26,22 +28,39 @@ public class TseCommander extends ProcessRunner {
     }
 
     public TseCommander(Map<String, Object> args) {
-        super(superArgs());
+        super(superArgs(args));
     }
 
-    private static Map<String, Object> superArgs() {
+    private static Map<String, Object> superArgs(Map<String, Object> userArgs) {
+        Map<String, Object> telnetArgs = YConfiguration.getMap(userArgs, "telnet");
+        int telnetPort = YConfiguration.getInt(telnetArgs, "port");
+
+        Map<String, Object> tcArgs = YConfiguration.getMap(userArgs, "tc");
+        int tcPort = YConfiguration.getInt(tcArgs, "port");
+
+        Map<String, Object> tmArgs = YConfiguration.getMap(userArgs, "tm");
+        String tmHost = YConfiguration.getString(tmArgs, "host");
+        int tmPort = YConfiguration.getInt(tmArgs, "port");
+
         Map<String, Object> args = new HashMap<>();
-        args.put("command", "bin/tse-commander.sh");
+        args.put("command", Arrays.asList("bin/tse-commander.sh",
+                "--telnet-port", "" + telnetPort,
+                "--tc-port", "" + tcPort,
+                "--tm-host", "" + tmHost,
+                "--tm-port", "" + tmPort));
         args.put("logPrefix", "");
         return args;
     }
 
     public static void main(String[] args) {
+        TseCommanderArgs runtimeOptions = new TseCommanderArgs();
+        new JCommander(runtimeOptions).parse(args);
+
         configureLogging();
         TimeEncoding.setUp();
 
         YConfiguration yconf = YConfiguration.getConfiguration("tse");
-        List<Service> services = createServices(yconf);
+        List<Service> services = createServices(yconf, runtimeOptions);
 
         ServiceManager serviceManager = new ServiceManager(services);
         serviceManager.addListener(new ServiceManager.Listener() {
@@ -78,7 +97,7 @@ public class TseCommander extends ProcessRunner {
         }
     }
 
-    private static List<Service> createServices(YConfiguration yconf) {
+    private static List<Service> createServices(YConfiguration yconf, TseCommanderArgs runtimeOptions) {
         List<Service> services = new ArrayList<>();
 
         InstrumentController instrumentController = new InstrumentController();
@@ -97,19 +116,13 @@ public class TseCommander extends ProcessRunner {
         }
         services.add(instrumentController);
 
-        if (yconf.containsKey("telnet")) {
-            Map<String, Object> args = yconf.getMap("telnet");
-            services.add(new TelnetServer(args, instrumentController));
-        }
+        TelnetServer telnetServer = new TelnetServer(runtimeOptions.telnetPort, instrumentController);
+        services.add(telnetServer);
 
-        if (yconf.containsKey("yamcs")) {
-
-            Map<String, Object> tmArgs = yconf.getMap("yamcs", "tm");
-            TmSender tmSender = new TmSender(tmArgs);
+        if (runtimeOptions.tmHost != null && runtimeOptions.tmPort != null) {
+            TmSender tmSender = new TmSender(runtimeOptions.tmHost, runtimeOptions.tmPort);
             services.add(tmSender);
-
-            Map<String, Object> tcArgs = yconf.getMap("yamcs", "tc");
-            services.add(new TcServer(tcArgs, instrumentController, tmSender));
+            services.add(new TcServer(runtimeOptions.tcPort, instrumentController, tmSender));
         }
 
         return services;

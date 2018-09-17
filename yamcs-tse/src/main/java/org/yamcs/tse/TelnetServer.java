@@ -2,11 +2,8 @@ package org.yamcs.tse;
 
 import static io.netty.handler.codec.Delimiters.lineDelimiter;
 
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.YConfiguration;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -34,8 +31,8 @@ public class TelnetServer extends AbstractService {
 
     private NioEventLoopGroup eventLoopGroup;
 
-    public TelnetServer(Map<String, Object> args, InstrumentController instrumentController) {
-        port = YConfiguration.getInt(args, "port");
+    public TelnetServer(int port, InstrumentController instrumentController) {
+        this.port = port;
         this.instrumentController = instrumentController;
     }
 

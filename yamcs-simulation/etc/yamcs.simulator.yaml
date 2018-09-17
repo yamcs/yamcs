@@ -72,7 +72,7 @@ mdb:
   - type: "org.yamcs.xtce.TseLoader"
     subLoaders:
       - type: "sheet"
-        spec: "mdb/simulator.xls"
+        spec: "mdb/tse/simulator.xls"
 
 #Configuration for streams created at server startup
 streamConfig:

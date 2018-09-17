@@ -1,13 +1,3 @@
-telnet:
-  port: 8023
-
-yamcs:
-  tc:  # Inbound (TCP)
-    port: 8135
-  tm:  # Outbound (UDP)
-    host: localhost
-    port: 31002
-
 instruments:
   - name: tenma
     class: org.yamcs.tse.SerialPortDriver

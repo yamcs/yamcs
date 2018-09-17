@@ -7,7 +7,7 @@ package tse;
 import "yamcs.proto";
 
 message TseCommand {
-  optional string device = 1;
+  optional string instrument = 1;
   optional string command = 2;
   optional string response = 3;
   map<string, yamcs.Value> argumentMapping = 4;
