@@ -2,6 +2,7 @@ package org.yamcs;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -27,7 +28,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         Processor p = Processor.getInstance(yamcsInstance, "realtime");
         p.getParameterCache().clear();
     }
-    
+
     @Test
     public void testRestRetrieval() throws Exception {
         generatePkt13AndPps("2015-01-02T10:00:00", 2 * 3600);
@@ -38,20 +39,18 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         org.yamcs.protobuf.Pvalue.ParameterValue pv;
         TimeSeries vals;
         Sample s0;
-        
-        
+
         // first two requests before the consolidation, should return data from cache
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00",
                 HttpMethod.GET, "").get();
         pdata = fromJson(resp, ParameterData.newBuilder()).build();
-       
+
         assertEquals(100, pdata.getParameterCount());
         pv = pdata.getParameter(0);
         engValue = pv.getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
         assertEquals(2850, pv.getExpireMillis());
-        
 
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/samples?start=2015-01-02T11:40:00&stop=2015-01-02T12:00:00",
@@ -75,8 +74,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(0.167291805148, s0.getMax(), 1e-5);
         assertEquals(0.167291805148, s0.getAvg(), 1e-5);
 
-        
-        
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00",
                 HttpMethod.GET, "").get();
@@ -86,8 +83,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         engValue = pv.getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
         assertEquals(2850, pv.getExpireMillis());
-        
-        
+
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2?start=2015-01-02T10:00:00&stop=2015-01-02T11:00:00&limit=10",
                 HttpMethod.GET, "").get();
@@ -155,7 +151,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
             t += 1000;
         }
     }
-    
+
     @Test
     public void testRestRanges() throws Exception {
         generatePkt13AndPps("2018-01-01T10:00:00", 2 * 3600);
@@ -178,7 +174,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals("2018-01-01T11:59:59.000Z", r0.getTimeStop());
 
         buildParameterArchive("2018-01-01T10:00:00", "2018-01-02T11:00:00");
-        
+
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/ranges?start=2018-01-01T10:00:00&stop=2018-01-02T11:00:00",
                 HttpMethod.GET, "").get();
@@ -188,46 +184,40 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(7200, r0.getCount());
         assertEquals(0.167291805148, r0.getEngValue().getFloatValue(), 1e-5);
 
-        
         generatePkt13AndPps("2018-01-01T13:00:00", 3600);
-        
+
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/ranges?start=2018-01-01T10:00:00&stop=2018-01-02T11:00:00",
                 HttpMethod.GET, "").get();
-        
+
         vals = fromJson(resp, Ranges.newBuilder()).build();
         assertEquals(2, vals.getRangeCount());
         r0 = vals.getRange(0);
         assertEquals(7200, r0.getCount());
-        
+
         assertEquals("2018-01-01T10:00:00.000Z", r0.getTimeStart());
-        assertEquals("2018-01-01T12:00:01.850Z", r0.getTimeStop()); //last parameter time plus expiration 
-        
+        assertEquals("2018-01-01T12:00:01.850Z", r0.getTimeStop()); // last parameter time plus expiration
+
         Range r1 = vals.getRange(1);
         assertEquals(3600, r1.getCount());
         assertEquals("2018-01-01T13:00:00.000Z", r1.getTimeStart());
         assertEquals("2018-01-01T13:59:59.000Z", r1.getTimeStop());
-        
+
         resp = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/SUBSYS1/FloatPara1_1_2/ranges?start=2018-01-01T10:00:00&stop=2018-01-02T11:00:00&minGap=3601001",
                 HttpMethod.GET, "").get();
-        
+
         vals = fromJson(resp, Ranges.newBuilder()).build();
         assertEquals(1, vals.getRangeCount());
         r0 = vals.getRange(0);
-        assertEquals(7200+3600, r0.getCount());
+        assertEquals(7200 + 3600, r0.getCount());
     }
 
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {
-        ParameterArchive parameterArchiveWrapper = YamcsServer.getService(yamcsInstance, ParameterArchive.class);
-        ParameterArchiveV2 parameterArchive = (ParameterArchiveV2) parameterArchiveWrapper.getParchive();
+        List<ParameterArchive> services = YamcsServer.getServices(yamcsInstance, ParameterArchive.class);
+        ParameterArchiveV2 parameterArchive = (ParameterArchiveV2) services.get(0).getParchive();
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse(start),
                 TimeEncoding.parse(stop));
         f.get();
     }
-
-    
-    
-    
-
 }

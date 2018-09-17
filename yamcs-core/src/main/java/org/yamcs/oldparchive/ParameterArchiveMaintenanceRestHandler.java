@@ -1,6 +1,7 @@
 package org.yamcs.oldparchive;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.NavigableMap;
 
 import org.rocksdb.RocksDBException;
@@ -104,11 +105,11 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
     }
 
     private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
-        ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
-        if (parameterArchive == null) {
+        List<ParameterArchive> services = YamcsServer.getServices(instance, ParameterArchive.class);
+        if (services.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-        return parameterArchive;
+        return services.get(0);
     }
 
 }

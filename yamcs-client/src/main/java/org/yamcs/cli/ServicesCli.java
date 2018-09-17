@@ -40,18 +40,18 @@ public class ServicesCli extends Command {
             YamcsClient yamcsClient = new YamcsClient(ycp);
             if (global) {
                 yamcsClient.getServices().thenAccept(response -> {
-                    TableStringBuilder builder = new TableStringBuilder("NAME", "STATUS");
+                    TableStringBuilder builder = new TableStringBuilder("NAME", "CLASS", "STATUS");
                     for (ServiceInfo service : response.getServiceList()) {
-                        builder.addLine(service.getName(), service.getState());
+                        builder.addLine(service.getName(), service.getClassName(), service.getState());
                     }
                     console.println(builder.toString());
                 }).get();
             } else {
                 InstanceClient instanceClient = yamcsClient.selectInstance(ycp.getInstance());
                 instanceClient.getServices().thenAccept(response -> {
-                    TableStringBuilder builder = new TableStringBuilder("NAME", "STATUS");
+                    TableStringBuilder builder = new TableStringBuilder("NAME", "CLASS", "STATUS");
                     for (ServiceInfo service : response.getServiceList()) {
-                        builder.addLine(service.getName(), service.getState());
+                        builder.addLine(service.getName(), service.getClassName(), service.getState());
                     }
                     console.println(builder.toString());
                 }).get();

@@ -224,12 +224,12 @@ public class OldArchiveParameterRestHandler extends RestHandler {
     }
 
     private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
-        org.yamcs.parameterarchive.ParameterArchive parameterArchive = YamcsServer.getService(instance,
+        List<org.yamcs.parameterarchive.ParameterArchive> services = YamcsServer.getServices(instance,
                 org.yamcs.parameterarchive.ParameterArchive.class);
-        if (parameterArchive == null) {
+        if (services.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-        return (ParameterArchive) parameterArchive.getParchive();
+        return (ParameterArchive) services.get(0).getParchive();
     }
 
     /** copied from guava */

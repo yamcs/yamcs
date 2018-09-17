@@ -265,11 +265,11 @@ public class ArchivePacketRestHandler extends RestHandler {
 
     private IndexServer verifyIndexServer(RestRequest req, String instance) throws HttpException {
         verifyInstance(req, instance);
-        IndexServer indexServer = YamcsServer.getService(instance, IndexServer.class);
-        if (indexServer == null) {
+        List<IndexServer> services = YamcsServer.getServices(instance, IndexServer.class);
+        if (services.isEmpty()) {
             throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
         } else {
-            return indexServer;
+            return services.get(0);
         }
     }
 

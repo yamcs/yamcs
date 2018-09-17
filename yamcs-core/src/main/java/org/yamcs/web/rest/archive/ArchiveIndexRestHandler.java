@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -348,11 +349,11 @@ public class ArchiveIndexRestHandler extends RestHandler {
 
     private IndexServer verifyIndexServer(RestRequest req, String instance) throws HttpException {
         verifyInstance(req, instance);
-        IndexServer indexServer = YamcsServer.getService(instance, IndexServer.class);
-        if (indexServer == null) {
+        List<IndexServer> services = YamcsServer.getServices(instance, IndexServer.class);
+        if (services.isEmpty()) {
             throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
         } else {
-            return indexServer;
+            return services.get(0);
         }
     }
 }

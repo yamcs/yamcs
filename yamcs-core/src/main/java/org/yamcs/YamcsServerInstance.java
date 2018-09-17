@@ -233,8 +233,7 @@ public class YamcsServerInstance {
         }
 
         for (ServiceWithConfig swc : serviceList) {
-            Service s = swc.service;
-            if (s.getClass().getName().equals(serviceName)) {
+            if (swc.getName().equals(serviceName)) {
                 return swc;
             }
         }
@@ -247,8 +246,16 @@ public class YamcsServerInstance {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Service> T getService(Class<T> serviceClass) {
-        return (T) getService(serviceClass.getName());
+    public <T extends Service> List<T> getServices(Class<T> serviceClass) {
+        List<T> services = new ArrayList<>();
+        if (serviceList != null) {
+            for (ServiceWithConfig swc : serviceList) {
+                if (swc.getServiceClass().equals(serviceClass.getName())) {
+                    services.add((T) swc.service);
+                }
+            }
+        }
+        return services;
     }
 
     public TimeService getTimeService() {

@@ -178,20 +178,20 @@ public class ArchiveParameterRestHandler extends RestHandler {
     }
 
     private boolean isOldParameterArchive(String instance) throws BadRequestException {
-        ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
-
-        if (parameterArchive == null) {
+        List<ParameterArchive> services = YamcsServer.getServices(instance, ParameterArchive.class);
+        if (services.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
+        ParameterArchive parameterArchive = services.get(0);
         return parameterArchive.getParchive() instanceof org.yamcs.oldparchive.ParameterArchive;
     }
 
     private static ParameterArchiveV2 getParameterArchive(String instance) throws BadRequestException {
-        ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
-        if (parameterArchive == null) {
+        List<ParameterArchive> services = YamcsServer.getServices(instance, ParameterArchive.class);
+        if (services.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-        return (ParameterArchiveV2) parameterArchive.getParchive();
+        return (ParameterArchiveV2) services.get(0).getParchive();
     }
 
     @Route(path = "/api/archive/:instance/parameters/:name*")

@@ -100,8 +100,7 @@ public class ServiceRestHandler extends RestHandler {
             verifyInstance(req, instance);
         }
 
-        // TODO convert to use names instead of classes
-        String serviceClass = req.getRouteParam("name");
+        String serviceName = req.getRouteParam("name");
 
         EditServiceRequest request = req.bodyAsMessage(EditServiceRequest.newBuilder()).build();
         String state = null;
@@ -112,7 +111,7 @@ public class ServiceRestHandler extends RestHandler {
             state = req.getQueryParameter("state");
         }
 
-        if (serviceClass == null) {
+        if (serviceName == null) {
             throw new BadRequestException("No service name specified");
         }
 
@@ -122,12 +121,12 @@ public class ServiceRestHandler extends RestHandler {
             case "stopped":
                 Service s;
                 if (global) {
-                    s = YamcsServer.getGlobalService(serviceClass);
+                    s = YamcsServer.getGlobalService(serviceName);
                 } else {
-                    s = YamcsServer.getInstance(instance).getService(serviceClass);
+                    s = YamcsServer.getInstance(instance).getService(serviceName);
                 }
                 if (s == null) {
-                    throw new NotFoundException(req, "No service by name '" + serviceClass + "'");
+                    throw new NotFoundException(req, "No service by name '" + serviceName + "'");
                 }
 
                 s.stopAsync();
@@ -136,11 +135,11 @@ public class ServiceRestHandler extends RestHandler {
             case "running":
                 try {
                     if (global) {
-                        ServiceWithConfig service = YamcsServer.getGlobalServiceWithConfig(serviceClass);
+                        ServiceWithConfig service = YamcsServer.getGlobalServiceWithConfig(serviceName);
                         YamcsServer.startGlobalService(service.getName());
                     } else {
                         ServiceWithConfig service = YamcsServer.getInstance(instance)
-                                .getServiceWithConfig(serviceClass);
+                                .getServiceWithConfig(serviceName);
                         YamcsServer.getInstance(instance).startService(service.getName());
                     }
                     completeOK(req);

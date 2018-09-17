@@ -301,11 +301,12 @@ public class ReplayService extends AbstractService
     }
 
     private void createReplay() throws ProcessorException {
-        ReplayServer replayServer = YamcsServer.getService(yamcsInstance, ReplayServer.class);
-        if (replayServer == null) {
+        List<ReplayServer> services = YamcsServer.getServices(yamcsInstance, ReplayServer.class);
+        if (services.isEmpty()) {
             throw new ProcessorException("ReplayServer not configured for this instance");
         }
         try {
+            ReplayServer replayServer = services.get(0);
             yarchReplay = replayServer.createReplay(rawDataRequest.build(), this);
         } catch (YamcsException e) {
             log.error("Exception creating the replay", e);
