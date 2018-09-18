@@ -2,6 +2,8 @@ package org.yamcs.tse;
 
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
@@ -15,6 +17,7 @@ import org.yamcs.protobuf.Tse.TseCommand;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -40,6 +43,7 @@ public class TcTmServer extends AbstractService {
     private static final Logger log = LoggerFactory.getLogger(TcTmServer.class);
 
     private static final int MAX_FRAME_LENGTH = 1024 * 1024; // 1 MB
+    private static final Pattern ARGUMENT_REFERENCE = Pattern.compile("([^<]*)<(.*?)>([^>]*)");
     private static final Pattern PARAMETER_REFERENCE = Pattern.compile("([^`]*)`(.*?)`([^`]*)");
 
     private InstrumentController instrumentController;
@@ -88,7 +92,8 @@ public class TcTmServer extends AbstractService {
         InstrumentDriver device = instrumentController.getInstrument(command.getInstrument());
         boolean expectResponse = command.hasResponse();
 
-        ListenableFuture<String> f = instrumentController.queueCommand(device, command.getCommand(), expectResponse);
+        String commandString = replaceArguments(command.getCommand(), command);
+        ListenableFuture<String> f = instrumentController.queueCommand(device, commandString, expectResponse);
         f.addListener(() -> {
             try {
                 String response = f.get();
@@ -103,12 +108,32 @@ public class TcTmServer extends AbstractService {
         }, directExecutor());
     }
 
+    private String replaceArguments(String template, TseCommand command) {
+        StringBuilder buf = new StringBuilder();
+        Matcher m = ARGUMENT_REFERENCE.matcher(template);
+        while (m.find()) {
+            String l = m.group(1);
+            String arg = m.group(2);
+            String r = m.group(3);
+            buf.append(l);
+            Value v = command.getArgumentMappingMap().get(arg);
+            buf.append(StringConverter.toString(v, false));
+            buf.append(r);
+        }
+
+        String replaced = buf.toString();
+        return replaced.isEmpty() ? template : replaced;
+    }
+
     private void parseResponse(ChannelHandlerContext ctx, TseCommand command, String response) {
         long now = TimeEncoding.getWallclockTime();
         ParameterData.Builder pdata = ParameterData.newBuilder();
         pdata.setGenerationTime(now)
                 .setGroup("TSE")
                 .setSeqNum(seq++);
+
+        // Groups may not contain _ and other special characters. So map to a safe name.
+        Map<String, String> group2name = new HashMap<>();
 
         StringBuilder regex = new StringBuilder();
         Matcher m = PARAMETER_REFERENCE.matcher(command.getResponse());
@@ -117,16 +142,21 @@ public class TcTmServer extends AbstractService {
             String name = m.group(2);
             String r = m.group(3);
             regex.append(Pattern.quote(l));
-            regex.append("(?<").append(name).append(">.+)");
+            String groupName = "cap" + group2name.size();
+            group2name.put(groupName, name);
+            regex.append("(?<").append(groupName).append(">.+)");
             regex.append(Pattern.quote(r));
         }
 
         Pattern p = Pattern.compile(regex.toString());
         m = p.matcher(response);
         if (m.matches()) {
-            for (Entry<String, String> entry : command.getParameterMappingMap().entrySet()) {
+            for (Entry<String, String> entry : group2name.entrySet()) {
                 String value = m.group(entry.getKey());
-                String qname = entry.getValue();
+
+                String name = entry.getValue();
+                String qname = command.getParameterMappingMap().get(name);
+                qname = replaceArguments(qname, command);
                 pdata.addParameter(ParameterValue.newBuilder()
                         .setGenerationTime(now)
                         .setId(NamedObjectId.newBuilder().setName(qname))

@@ -21,17 +21,14 @@ public class ResponseBuilder {
 
     /**
      * Reads a 'complete' response. This is defined as a response that ends with the the expected response termination.
-     * If no response termination is defined, then any response whatsoever is considered a complete response (assumed to
-     * have been read in a single read operation).
+     * If no response termination is defined, this will always return null (rely on timeouts).
      * 
      * @return the decoded string with the termination stripped off.
      */
     public String parseCompleteResponse() {
         if (buf.size() > 0) {
             String result = new String(buf.toByteArray(), encoding);
-            if (responseTermination == null) {
-                return result;
-            } else if (result.endsWith(responseTermination)) {
+            if (responseTermination != null && result.endsWith(responseTermination)) {
                 return result.substring(0, result.length() - responseTermination.length());
             }
         }

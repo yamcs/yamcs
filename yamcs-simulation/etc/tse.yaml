@@ -3,9 +3,10 @@ instruments:
     class: org.yamcs.tse.SerialPortDriver
     args:
       path: /dev/tty.usbmodem14141
-      responseTimeout: 100
       # Note: this instrument does not terminate responses.
+      # Use a very short timeout to compensate (still within spec)
       # responseTermination: "\n"
+      responseTimeout: 100
 
   - name: simulator
     class: org.yamcs.tse.TcpIpDriver

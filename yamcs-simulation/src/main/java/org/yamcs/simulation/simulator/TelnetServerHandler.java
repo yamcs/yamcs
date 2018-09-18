@@ -42,6 +42,15 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
             case "*IDN?":
                 responses.add("SPACEAPPS,Demo Simulator");
                 break;
+            case ":BATTERY1:VOLTAGE?":
+                responses.add(Float.toString(simulator.powerDataHandler.getBattery1Voltage()));
+                break;
+            case ":BATTERY2:VOLTAGE?":
+                responses.add(Float.toString(simulator.powerDataHandler.getBattery2Voltage()));
+                break;
+            case ":BATTERY3:VOLTAGE?":
+                responses.add(Float.toString(simulator.powerDataHandler.getBattery3Voltage()));
+                break;
             case ":LOS?":
                 responses.add((simulator.isLOS() ? "1" : "0"));
                 break;

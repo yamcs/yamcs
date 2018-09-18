@@ -30,11 +30,11 @@ public class Simulator extends Thread {
     private Date lastLosStop;
     private LosRecorder losRecorder;
 
-    final private FlightDataHandler flightDataHandler;
-    final private DHSHandler dhsHandler;
-    final private PowerHandler powerDataHandler;
-    final private RCSHandler rcsHandler;
-    final private EpsLvpduHandler epslvpduHandler;
+    FlightDataHandler flightDataHandler;
+    DHSHandler dhsHandler;
+    PowerHandler powerDataHandler;
+    RCSHandler rcsHandler;
+    EpsLvpduHandler epslvpduHandler;
 
     private boolean engageHoldOneCycle = false;
     private boolean unengageHoldOneCycle = false;

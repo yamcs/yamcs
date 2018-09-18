@@ -109,6 +109,11 @@ public class TseDataLink extends AbstractService implements Link {
     }
 
     public void sendTc(PreparedCommand pc) {
+        if (getLinkStatus() != Status.OK) {
+            log.warn("Dropping command (link is not OK)");
+            return;
+        }
+
         MetaCommand mc = pc.getMetaCommand();
         String subsystemName = mc.getSubsystemName();
         SpaceSystem subsystem = xtcedb.getSpaceSystem(subsystemName);

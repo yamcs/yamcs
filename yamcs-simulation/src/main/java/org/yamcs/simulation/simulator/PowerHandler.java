@@ -88,6 +88,21 @@ public class PowerHandler {
         buffer.putShort(13, (short) 0);
     }
 
+    public float getBattery1Voltage() {
+        PowerData data = entries.elementAt(currentEntry);
+        return data.batteryVoltage1;
+    }
+
+    public float getBattery2Voltage() {
+        PowerData data = entries.elementAt(currentEntry);
+        return data.batteryVoltage2;
+    }
+
+    public float getBattery3Voltage() {
+        PowerData data = entries.elementAt(currentEntry);
+        return data.batteryVoltage3;
+    }
+
     public void displayUserData(CCSDSPacket packet) {
         ByteBuffer buffer = packet.getUserDataBuffer();
         buffer.position(16);

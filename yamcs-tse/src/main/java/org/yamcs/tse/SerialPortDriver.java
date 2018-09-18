@@ -110,7 +110,11 @@ public class SerialPortDriver extends InstrumentDriver {
 
         // Timed out. Return whatever we have.
         String response = responseBuilder.parsePartialResponse();
-        throw new TimeoutException(response != null ? "unterminated response: " + response : null);
+        if (getResponseTermination() == null) {
+            return response;
+        } else {
+            throw new TimeoutException(response != null ? "unterminated response: " + response : null);
+        }
     }
 
     @Override
