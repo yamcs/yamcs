@@ -109,11 +109,16 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
             link.disable();
         }
 
-        // "stream" should probably be migrated to the args map of a specific link.
-        // Supporting it now for compatibility reasons with the old config.
         Stream s = null;
         if (linkConfig.containsKey("stream")) {
+            log.warn("DEPRECATION ALERT: Define 'stream' under 'args'.");
             String streamName = YConfiguration.getString(linkConfig, "stream");
+            s = ydb.getStream(streamName);
+            if (s == null) {
+                throw new ConfigurationException("Cannot find stream '" + streamName + "'");
+            }
+        } else if (args != null && args.containsKey("stream")) {
+            String streamName = YConfiguration.getString(args, "stream");
             s = ydb.getStream(streamName);
             if (s == null) {
                 throw new ConfigurationException("Cannot find stream '" + streamName + "'");
@@ -181,6 +186,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
             if (m.containsKey("args")) {
                 args = m.get("args");
             } else if (m.containsKey("spec")) {
+                log.warn("DEPRECATION ALERT: Use 'args' instead of 'spec' on TM Link configuration");
                 args = m.get("spec");
             }
             String name = "tm" + count;
@@ -242,6 +248,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
             if (m.containsKey("args")) {
                 args = m.get("args");
             } else if (m.containsKey("spec")) {
+                log.warn("DEPRECATION ALERT: Use 'args' instead of 'spec' on TM Link configuration");
                 args = m.get("spec");
             }
 
@@ -314,6 +321,7 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
             } else if (m.containsKey("config")) {
                 args = m.get("config");
             } else if (m.containsKey("spec")) {
+                log.warn("DEPRECATION ALERT: Use 'args' instead of 'spec' on TM Link configuration");
                 args = m.get("spec");
             }
             String streamName = YConfiguration.getString(m, "stream");

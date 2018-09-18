@@ -26,20 +26,20 @@ services:
 dataLinks:
   - name: tm_realtime
     class: org.yamcs.tctm.TcpTmDataLink
-    stream: tm_realtime
     args:
+      stream: tm_realtime
       host: localhost
       port: 10015
   - name: tm_dump
     class: org.yamcs.tctm.TcpTmDataLink
-    stream: tm_dump
     args:
+      stream: tm_dump
       host: localhost
       port: 10115
   - name: tc_sim
     class: org.yamcs.tctm.TcpTcDataLink
-    stream: tc_sim
     args:
+      stream: tc_sim
       host: localhost
       port: 10025
   - name: TSE

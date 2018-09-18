@@ -12,18 +12,16 @@ services:
       type: "realtime"
   - class: org.yamcs.archive.CommandHistoryRecorder
 
-tmDataLinks:
+dataLinks:
   - class: org.yamcs.AbstractIntegrationTest$PacketProvider
-    spec: /storage/yamcs-incoming/eyops/tm
-    stream: tm_realtime
-
-parameterDataLinks:
+    args:
+      stream: tm_realtime
   - class: org.yamcs.AbstractIntegrationTest$ParameterProvider
-    stream: pp_realtime
-
-tcDataLinks:
+    args:
+      stream: pp_realtime
   - class: org.yamcs.ComVerifIntegrationTest$MyTcDataLink
-    stream: tc_realtime
+    args:
+      stream: tc_realtime
 
 mdb: refmdb
 

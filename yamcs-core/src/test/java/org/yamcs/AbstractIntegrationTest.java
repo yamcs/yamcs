@@ -260,7 +260,7 @@ public abstract class AbstractIntegrationTest {
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
         TmSink tmSink;
 
-        public PacketProvider(String yinstance, String name, String spec) {
+        public PacketProvider(String yinstance, String name, Map<String, Object> args) {
             instance = this;
         }
 

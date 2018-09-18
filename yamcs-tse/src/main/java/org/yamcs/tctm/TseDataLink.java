@@ -57,7 +57,6 @@ public class TseDataLink extends AbstractService implements Link {
     private final Logger log;
 
     private volatile boolean disabled = false;
-    private volatile int inCount = 0;
     private volatile int outCount = 0;
 
     private XtceDb xtcedb;
@@ -85,7 +84,7 @@ public class TseDataLink extends AbstractService implements Link {
         host = YConfiguration.getString(args, "host");
         port = YConfiguration.getInt(args, "port");
 
-        String tcStreamName = YConfiguration.getString(args, "stream", "tc_tse");
+        String tcStreamName = YConfiguration.getString(args, "tcStream", "tc_tse");
         Stream tcStream = ydb.getStream(tcStreamName);
         if (tcStream == null) {
             throw new ConfigurationException("Cannot find stream '" + tcStreamName + "'");
@@ -102,7 +101,7 @@ public class TseDataLink extends AbstractService implements Link {
             }
         });
 
-        String ppStreamName = YConfiguration.getString(args, "stream", "pp_tse");
+        String ppStreamName = YConfiguration.getString(args, "ppStream", "pp_tse");
         ppStream = ydb.getStream(ppStreamName);
         if (ppStream == null) {
             throw new ConfigurationException("Cannot find stream '" + ppStreamName + "'");
@@ -143,6 +142,7 @@ public class TseDataLink extends AbstractService implements Link {
 
         TseCommand command = msgb.build();
         channel.writeAndFlush(command);
+        outCount++;
     }
 
     @Override
@@ -182,7 +182,7 @@ public class TseDataLink extends AbstractService implements Link {
 
     @Override
     public long getDataInCount() {
-        return inCount;
+        return ppStream.getDataCount();
     }
 
     @Override

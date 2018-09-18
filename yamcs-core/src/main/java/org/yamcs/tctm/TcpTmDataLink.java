@@ -54,6 +54,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
         initPreprocessor(instance, null);
     }
 
+    @Deprecated
     public TcpTmDataLink(String instance, String name, String spec) throws ConfigurationException {
         this(instance, name, YConfiguration.getConfiguration("tcp").getMap(spec));
     }
