@@ -13,13 +13,16 @@ services:
   - class: org.yamcs.archive.CommandHistoryRecorder 
 
 dataLinks:
-  - class: org.yamcs.AbstractIntegrationTest$PacketProvider
+  - name: tm_realtime
+    class: org.yamcs.AbstractIntegrationTest$PacketProvider
     args:
       stream: tm_realtime
-  - class: org.yamcs.AbstractIntegrationTest$ParameterProvider
+  - name: pp_realtime
+    class: org.yamcs.AbstractIntegrationTest$ParameterProvider
     args:
       stream: pp_realtime
-  - class: org.yamcs.ComVerifIntegrationTest$MyTcDataLink
+  - name: tc_realtime
+    class: org.yamcs.ComVerifIntegrationTest$MyTcDataLink
     args:
       stream: tc_realtime
  

@@ -106,7 +106,6 @@ public class YamcsServerInstance {
             @Override
             public void stopping(State from) {
                 state = InstanceState.STOPPING;
-                System.out.println("stopping " + stateListeners.size());
                 stateListeners.forEach(l -> l.stopping());
             }
 
@@ -184,8 +183,8 @@ public class YamcsServerInstance {
         guavaService.awaitRunning();
     }
 
-    public void startAsync() {
-        guavaService.startAsync();
+    public Service startAsync() {
+        return guavaService.startAsync();
     }
 
     /**
@@ -199,8 +198,8 @@ public class YamcsServerInstance {
         guavaService.awaitTerminated();
     }
 
-    public void stopAsync() {
-        guavaService.stopAsync();
+    public Service stopAsync() {
+        return guavaService.stopAsync();
     }
 
     public void awaitTerminated() {

@@ -338,7 +338,7 @@ public abstract class AbstractIntegrationTest {
         static volatile ParameterProvider instance;
         XtceDb xtcedb;
 
-        public ParameterProvider(String yamcsInstance, String name) {
+        public ParameterProvider(String yamcsInstance, String name, Map<String, Object> args) {
             instance = this;
             xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         }
