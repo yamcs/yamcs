@@ -234,13 +234,9 @@ export class InstanceClient {
     return await response.json() as ClientInfo;
   }
 
-  async getClientUpdates(allInstances = false): Promise<ClientSubscriptionResponse> {
+  async getClientUpdates(): Promise<ClientSubscriptionResponse> {
     this.prepareWebSocketClient();
-    if (allInstances) {
-      return this.webSocketClient.getClientUpdates();
-    } else {
-      return this.webSocketClient.getClientUpdates(this.instance);
-    }
+    return this.webSocketClient.getClientUpdates(this.instance);
   }
 
   async getServices(): Promise<Service[]> {

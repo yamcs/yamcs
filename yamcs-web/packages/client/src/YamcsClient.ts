@@ -3,8 +3,8 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { BucketsWrapper, InstancesWrapper, ServicesWrapper } from './types/internal';
-import { AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
+import { BucketsWrapper, ClientsWrapper, InstancesWrapper, ServicesWrapper } from './types/internal';
+import { AuthInfo, Bucket, ClientInfo, ClientSubscriptionResponse, CreateBucketRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 export default class YamcsClient implements HttpHandler {
@@ -174,6 +174,24 @@ export default class YamcsClient implements HttpHandler {
       body,
       method: 'PATCH',
     });
+  }
+
+  async getClients() {
+    const url = `${this.apiUrl}/clients`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as ClientsWrapper;
+    return wrapper.client || [];
+  }
+
+  async getClient(id: number) {
+    const url = `${this.apiUrl}/clients/${id}`;
+    const response = await this.doFetch(url);
+    return await response.json() as ClientInfo;
+  }
+
+  async getClientUpdates(): Promise<ClientSubscriptionResponse> {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getClientUpdates();
   }
 
   async editClient(clientId: number, options: EditClientRequest) {
