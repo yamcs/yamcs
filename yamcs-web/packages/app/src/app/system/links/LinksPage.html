@@ -15,8 +15,8 @@
         <td mat-cell *matCellDef="let link">{{ link.name }}</td>
       </ng-container>
 
-      <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Type</th>
+      <ng-container matColumnDef="className">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Class</th>
         <td mat-cell *matCellDef="let link">{{ link.type }}</td>
       </ng-container>
 
@@ -41,9 +41,9 @@
         </td>
       </ng-container>
 
-      <ng-container matColumnDef="spec">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 250px">Spec</th>
-        <td mat-cell *matCellDef="let link">{{ link.spec }}</td>
+      <ng-container matColumnDef="args">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 250px">Args</th>
+        <td mat-cell *matCellDef="let link"><span [innerHTML]="link.spec | printJson"></span></td>
       </ng-container>
 
       <ng-container matColumnDef="in">

@@ -20,6 +20,7 @@ import { DateTimePipe } from './pipes/DateTimePipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
+import { PrintJsonPipe } from './pipes/PrintJsonPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
 import { ActionLink } from './template/ActionLink';
@@ -113,6 +114,7 @@ const pipes = [
   FilenamePipe,
   FormatBytesPipe,
   OperatorPipe,
+  PrintJsonPipe,
   UnitsPipe,
   ValuePipe,
 ];

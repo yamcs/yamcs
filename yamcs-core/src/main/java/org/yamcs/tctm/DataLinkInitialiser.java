@@ -33,6 +33,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.google.common.util.concurrent.Service;
+import com.google.gson.Gson;
 
 /**
  * Service that initialises all the data links
@@ -169,8 +170,8 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
         }
 
         linksByName.put(name, link);
-        ManagementService.getInstance().registerLink(yamcsInstance, name,
-                args != null ? args.toString() : "", link);
+        String json = (args != null) ? new Gson().toJson(args) : "";
+        ManagementService.getInstance().registerLink(yamcsInstance, name, json, link);
     }
 
     private void createTmDataLinks(List<?> links) throws IOException {
@@ -230,7 +231,8 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
             });
 
             linksByName.put(name, link);
-            mgrsrv.registerLink(yamcsInstance, name, args != null ? args.toString() : "", link);
+            String json = (args != null) ? new Gson().toJson(args) : "";
+            mgrsrv.registerLink(yamcsInstance, name, json, link);
             count++;
         }
     }
@@ -296,8 +298,8 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
 
             tcuplinker.setCommandHistoryPublisher(new StreamCommandHistoryPublisher(yamcsInstance));
             linksByName.put(name, tcuplinker);
-            ManagementService.getInstance().registerLink(yamcsInstance, name,
-                    args != null ? args.toString() : "", tcuplinker);
+            String json = (args != null) ? new Gson().toJson(args) : "";
+            ManagementService.getInstance().registerLink(yamcsInstance, name, json, tcuplinker);
             count++;
         }
     }
@@ -348,8 +350,8 @@ public class DataLinkInitialiser extends AbstractService implements YamcsService
 
             link.setParameterSink(new MyPpListener(stream));
 
-            ManagementService.getInstance().registerLink(yamcsInstance, linkName,
-                    args != null ? args.toString() : "", link);
+            String json = (args != null) ? new Gson().toJson(args) : "";
+            ManagementService.getInstance().registerLink(yamcsInstance, linkName, json, link);
             linksByName.put(linkName, link);
             count++;
         }
