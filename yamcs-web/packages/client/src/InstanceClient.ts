@@ -9,7 +9,7 @@ import YamcsClient from './YamcsClient';
 export class InstanceClient {
 
   public connected$: Observable<boolean>;
-  private webSocketClient: WebSocketClient;
+  private webSocketClient?: WebSocketClient;
 
   constructor(
     readonly instance: string,
@@ -18,12 +18,12 @@ export class InstanceClient {
 
   async getTimeUpdates(): Promise<TimeSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getTimeUpdates();
+    return this.webSocketClient!.getTimeUpdates();
   }
 
   async getInstanceUpdates(): Promise<InstanceSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getInstanceUpdates();
+    return this.webSocketClient!.getInstanceUpdates();
   }
 
   async getEvents(options: GetEventsOptions = {}) {
@@ -50,7 +50,7 @@ export class InstanceClient {
 
   async getEventUpdates(): Promise<EventSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getEventUpdates();
+    return this.webSocketClient!.getEventUpdates();
   }
 
   async createEvent(options: CreateEventRequest) {
@@ -105,12 +105,12 @@ export class InstanceClient {
    */
   async getConnectionInfoUpdates(): Promise<ConnectionInfoSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getConnectionInfoUpdates();
+    return this.webSocketClient!.getConnectionInfoUpdates();
   }
 
   async getLinkUpdates(): Promise<LinkSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getLinkUpdates(this.instance);
+    return this.webSocketClient!.getLinkUpdates(this.instance);
   }
 
   async enableLink(name: string) {
@@ -148,12 +148,12 @@ export class InstanceClient {
 
   async getProcessorUpdates(): Promise<ProcessorSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getProcessorUpdates()
+    return this.webSocketClient!.getProcessorUpdates()
   }
 
   async getProcessorStatistics(): Promise<StatisticsSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getProcessorStatistics(this.instance);
+    return this.webSocketClient!.getProcessorStatistics(this.instance);
   }
 
   async issueCommand(processorName: string, qualifiedName: string, options?: IssueCommandOptions): Promise<IssueCommandResponse> {
@@ -194,7 +194,7 @@ export class InstanceClient {
 
   async getCommandQueueUpdates(processorName?: string): Promise<CommandQueueSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getCommandQueueUpdates(this.instance, processorName);
+    return this.webSocketClient!.getCommandQueueUpdates(this.instance, processorName);
   }
 
   async editCommandQueue(processorName: string, queueName: string, options: EditCommandQueueOptions) {
@@ -209,7 +209,7 @@ export class InstanceClient {
 
   async getCommandQueueEventUpdates(): Promise<CommandQueueEventSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getCommandQueueEventUpdates(this.instance);
+    return this.webSocketClient!.getCommandQueueEventUpdates(this.instance);
   }
 
   async editCommandQueueEntry(processorName: string, queueName: string, uuid: string, options: EditCommandQueueEntryOptions) {
@@ -234,9 +234,13 @@ export class InstanceClient {
     return await response.json() as ClientInfo;
   }
 
-  async getClientUpdates(): Promise<ClientSubscriptionResponse> {
+  async getClientUpdates(anyInstance = false): Promise<ClientSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getClientUpdates(this.instance);
+    if (anyInstance) {
+      return this.webSocketClient!.getClientUpdates();
+    } else {
+      return this.webSocketClient!.getClientUpdates(this.instance);
+    }
   }
 
   async getServices(): Promise<Service[]> {
@@ -288,7 +292,7 @@ export class InstanceClient {
 
   async getAlarmUpdates(): Promise<AlarmSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getAlarmUpdates();
+    return this.webSocketClient!.getAlarmUpdates();
   }
 
   async getAlarmsForParameter(qualifiedName: string, options: GetAlarmsOptions = {}) {
@@ -414,7 +418,7 @@ export class InstanceClient {
 
   async getParameterValueUpdates(options: ParameterSubscriptionRequest): Promise<ParameterSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getParameterValueUpdates(options);
+    return this.webSocketClient!.getParameterValueUpdates(options);
   }
 
   async setParameterValue(processorName: string, qualifiedName: string, value: Value) {
@@ -534,6 +538,7 @@ export class InstanceClient {
   closeConnection() {
     if (this.webSocketClient) {
       this.webSocketClient.close();
+      this.webSocketClient = undefined;
     }
   }
 

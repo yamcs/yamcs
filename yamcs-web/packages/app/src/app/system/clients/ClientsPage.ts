@@ -29,7 +29,10 @@ export class ClientsPage implements AfterViewInit, OnDestroy {
 
   constructor(private yamcs: YamcsService, title: Title) {
     title.setTitle('Clients - Yamcs');
-    this.yamcs.yamcsClient.getClientUpdates().then(response => {
+
+    // Do this subscription via the instance-specific websocket connection,
+    // so that we don't need a second connection.
+    this.yamcs.getInstanceClient()!.getClientUpdates(true /* any instance */).then(response => {
       this.clientSubscription = response.client$.subscribe(evt => {
         this.processClientEvent(evt);
       });
@@ -38,7 +41,6 @@ export class ClientsPage implements AfterViewInit, OnDestroy {
     this.dataSource.filterPredicate = (client, filter) => {
       const currentInstance = this.yamcs.getInstance().name;
       const v = filter === 'all' || client.instance === currentInstance;
-      console.log('err', v);
       return v;
     };
   }
@@ -59,7 +61,6 @@ export class ClientsPage implements AfterViewInit, OnDestroy {
   }
 
   private processClientEvent(evt: ClientInfo) {
-    console.log('process', evt.id, evt.state);
     switch (evt.state) {
       case undefined:
       case 'CONNECTED':

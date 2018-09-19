@@ -19,7 +19,7 @@ export default class YamcsClient implements HttpHandler {
   private interceptor: HttpInterceptor;
 
   public connected$: Observable<boolean>;
-  private webSocketClient: WebSocketClient;
+  private webSocketClient?: WebSocketClient;
 
   createInstanceClient(instance: string) {
     return new InstanceClient(instance, this);
@@ -27,7 +27,7 @@ export default class YamcsClient implements HttpHandler {
 
   async getInstanceUpdates(): Promise<InstanceSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getInstanceUpdates();
+    return this.webSocketClient!.getInstanceUpdates();
   }
 
   /**
@@ -191,7 +191,7 @@ export default class YamcsClient implements HttpHandler {
 
   async getClientUpdates(): Promise<ClientSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getClientUpdates();
+    return this.webSocketClient!.getClientUpdates();
   }
 
   async editClient(clientId: number, options: EditClientRequest) {
@@ -314,6 +314,7 @@ export default class YamcsClient implements HttpHandler {
   closeConnection() {
     if (this.webSocketClient) {
       this.webSocketClient.close();
+      this.webSocketClient = undefined;
     }
   }
 
