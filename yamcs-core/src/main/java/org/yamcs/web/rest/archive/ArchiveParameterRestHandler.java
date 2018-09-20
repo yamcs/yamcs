@@ -6,7 +6,9 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
@@ -15,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
+import org.yamcs.archive.ParameterRecorder;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -28,6 +31,7 @@ import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterIdValueList;
 import org.yamcs.parameterarchive.ParameterRequest;
+import org.yamcs.protobuf.Archive.ParameterGroupInfo;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
@@ -50,6 +54,11 @@ import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
+
+import com.google.common.collect.BiMap;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -65,6 +74,26 @@ public class ArchiveParameterRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
     private ArchiveParameterReplayRestHandler aprh = new ArchiveParameterReplayRestHandler();
     private OldArchiveParameterRestHandler oldaprh = new OldArchiveParameterRestHandler();
+
+    @Route(path = "/api/archive/:instance/parameter-groups", method = "GET")
+    public void listGroups(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+
+        ParameterGroupInfo.Builder responseb = ParameterGroupInfo.newBuilder();
+        TableDefinition tableDefinition = ydb.getTable(ParameterRecorder.TABLE_NAME);
+        BiMap<String, Short> enumValues = tableDefinition.getEnumValues("group");
+        if (enumValues != null) {
+            List<String> unsortedGroups = new ArrayList<>();
+            for (Entry<String, Short> entry : enumValues.entrySet()) {
+                unsortedGroups.add(entry.getKey());
+            }
+            Collections.sort(unsortedGroups);
+            System.out.println("returning " + unsortedGroups);
+            responseb.addAllGroup(unsortedGroups);
+        }
+        completeOK(req, responseb.build());
+    }
 
     /**
      * A series is a list of samples that are determined in one-pass while processing a stream result. Final API

@@ -70,6 +70,10 @@ message EventSourceInfo {
   repeated string source = 1;
 }
 
+message ParameterGroupInfo {
+  repeated string group = 1;
+}
+
 message IndexResponse {
   repeated IndexGroup group = 1;
   optional string continuationToken = 2;

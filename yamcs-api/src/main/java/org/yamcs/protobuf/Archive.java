@@ -10203,6 +10203,570 @@ public final class Archive {
 
   }
 
+  public interface ParameterGroupInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.archive.ParameterGroupInfo)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated string group = 1;</code>
+     */
+    java.util.List<java.lang.String>
+        getGroupList();
+    /**
+     * <code>repeated string group = 1;</code>
+     */
+    int getGroupCount();
+    /**
+     * <code>repeated string group = 1;</code>
+     */
+    java.lang.String getGroup(int index);
+    /**
+     * <code>repeated string group = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getGroupBytes(int index);
+  }
+  /**
+   * Protobuf type {@code yamcs.protobuf.archive.ParameterGroupInfo}
+   */
+  public  static final class ParameterGroupInfo extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.archive.ParameterGroupInfo)
+      ParameterGroupInfoOrBuilder {
+    // Use ParameterGroupInfo.newBuilder() to construct.
+    private ParameterGroupInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ParameterGroupInfo() {
+      group_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ParameterGroupInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                group_ = new com.google.protobuf.LazyStringArrayList();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              group_.add(bs);
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          group_ = group_.getUnmodifiableView();
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Archive.internal_static_yamcs_protobuf_archive_ParameterGroupInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Archive.internal_static_yamcs_protobuf_archive_ParameterGroupInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Archive.ParameterGroupInfo.class, org.yamcs.protobuf.Archive.ParameterGroupInfo.Builder.class);
+    }
+
+    public static final int GROUP_FIELD_NUMBER = 1;
+    private com.google.protobuf.LazyStringList group_;
+    /**
+     * <code>repeated string group = 1;</code>
+     */
+    public com.google.protobuf.ProtocolStringList
+        getGroupList() {
+      return group_;
+    }
+    /**
+     * <code>repeated string group = 1;</code>
+     */
+    public int getGroupCount() {
+      return group_.size();
+    }
+    /**
+     * <code>repeated string group = 1;</code>
+     */
+    public java.lang.String getGroup(int index) {
+      return group_.get(index);
+    }
+    /**
+     * <code>repeated string group = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getGroupBytes(int index) {
+      return group_.getByteString(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < group_.size(); i++) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, group_.getRaw(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < group_.size(); i++) {
+          dataSize += computeStringSizeNoTag(group_.getRaw(i));
+        }
+        size += dataSize;
+        size += 1 * getGroupList().size();
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Archive.ParameterGroupInfo)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Archive.ParameterGroupInfo other = (org.yamcs.protobuf.Archive.ParameterGroupInfo) obj;
+
+      boolean result = true;
+      result = result && getGroupList()
+          .equals(other.getGroupList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getGroupCount() > 0) {
+        hash = (37 * hash) + GROUP_FIELD_NUMBER;
+        hash = (53 * hash) + getGroupList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Archive.ParameterGroupInfo prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code yamcs.protobuf.archive.ParameterGroupInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.archive.ParameterGroupInfo)
+        org.yamcs.protobuf.Archive.ParameterGroupInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Archive.internal_static_yamcs_protobuf_archive_ParameterGroupInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Archive.internal_static_yamcs_protobuf_archive_ParameterGroupInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Archive.ParameterGroupInfo.class, org.yamcs.protobuf.Archive.ParameterGroupInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Archive.ParameterGroupInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        group_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Archive.internal_static_yamcs_protobuf_archive_ParameterGroupInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Archive.ParameterGroupInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Archive.ParameterGroupInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Archive.ParameterGroupInfo build() {
+        org.yamcs.protobuf.Archive.ParameterGroupInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Archive.ParameterGroupInfo buildPartial() {
+        org.yamcs.protobuf.Archive.ParameterGroupInfo result = new org.yamcs.protobuf.Archive.ParameterGroupInfo(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          group_ = group_.getUnmodifiableView();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.group_ = group_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Archive.ParameterGroupInfo) {
+          return mergeFrom((org.yamcs.protobuf.Archive.ParameterGroupInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Archive.ParameterGroupInfo other) {
+        if (other == org.yamcs.protobuf.Archive.ParameterGroupInfo.getDefaultInstance()) return this;
+        if (!other.group_.isEmpty()) {
+          if (group_.isEmpty()) {
+            group_ = other.group_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureGroupIsMutable();
+            group_.addAll(other.group_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Archive.ParameterGroupInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Archive.ParameterGroupInfo) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private com.google.protobuf.LazyStringList group_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      private void ensureGroupIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          group_ = new com.google.protobuf.LazyStringArrayList(group_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated string group = 1;</code>
+       */
+      public com.google.protobuf.ProtocolStringList
+          getGroupList() {
+        return group_.getUnmodifiableView();
+      }
+      /**
+       * <code>repeated string group = 1;</code>
+       */
+      public int getGroupCount() {
+        return group_.size();
+      }
+      /**
+       * <code>repeated string group = 1;</code>
+       */
+      public java.lang.String getGroup(int index) {
+        return group_.get(index);
+      }
+      /**
+       * <code>repeated string group = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getGroupBytes(int index) {
+        return group_.getByteString(index);
+      }
+      /**
+       * <code>repeated string group = 1;</code>
+       */
+      public Builder setGroup(
+          int index, java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureGroupIsMutable();
+        group_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string group = 1;</code>
+       */
+      public Builder addGroup(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureGroupIsMutable();
+        group_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string group = 1;</code>
+       */
+      public Builder addAllGroup(
+          java.lang.Iterable<java.lang.String> values) {
+        ensureGroupIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, group_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string group = 1;</code>
+       */
+      public Builder clearGroup() {
+        group_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated string group = 1;</code>
+       */
+      public Builder addGroupBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureGroupIsMutable();
+        group_.add(value);
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.archive.ParameterGroupInfo)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.archive.ParameterGroupInfo)
+    private static final org.yamcs.protobuf.Archive.ParameterGroupInfo DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Archive.ParameterGroupInfo();
+    }
+
+    public static org.yamcs.protobuf.Archive.ParameterGroupInfo getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ParameterGroupInfo>
+        PARSER = new com.google.protobuf.AbstractParser<ParameterGroupInfo>() {
+      public ParameterGroupInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ParameterGroupInfo(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ParameterGroupInfo> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ParameterGroupInfo> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Archive.ParameterGroupInfo getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface IndexResponseOrBuilder extends
       // @@protoc_insertion_point(interface_extends:yamcs.protobuf.archive.IndexResponse)
       com.google.protobuf.MessageOrBuilder {
@@ -13492,6 +14056,11 @@ public final class Archive {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_protobuf_archive_EventSourceInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_archive_ParameterGroupInfo_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_archive_ParameterGroupInfo_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_protobuf_archive_IndexResponse_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -13551,15 +14120,16 @@ public final class Archive {
       "\022\014\n\004name\030\001 \001(\t\0222\n\006column\030\002 \003(\0132\".yamcs.p" +
       "rotobuf.archive.ColumnInfo\022\016\n\006script\030\003 \001",
       "(\t\022\021\n\tdataCount\030\004 \001(\003\"!\n\017EventSourceInfo" +
-      "\022\016\n\006source\030\001 \003(\t\"]\n\rIndexResponse\0221\n\005gro" +
-      "up\030\001 \003(\0132\".yamcs.protobuf.archive.IndexG" +
-      "roup\022\031\n\021continuationToken\030\002 \001(\t\"j\n\nIndex" +
-      "Group\022)\n\002id\030\001 \001(\0132\035.yamcs.protobuf.Named" +
-      "ObjectId\0221\n\005entry\030\002 \003(\0132\".yamcs.protobuf" +
-      ".archive.IndexEntry\"8\n\nIndexEntry\022\r\n\005sta" +
-      "rt\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\r\n\005count\030\003 \001(\005\"&\n" +
-      "\026GetPacketNamesResponse\022\014\n\004name\030\001 \003(\tB\024\n" +
-      "\022org.yamcs.protobuf"
+      "\022\016\n\006source\030\001 \003(\t\"#\n\022ParameterGroupInfo\022\r" +
+      "\n\005group\030\001 \003(\t\"]\n\rIndexResponse\0221\n\005group\030" +
+      "\001 \003(\0132\".yamcs.protobuf.archive.IndexGrou" +
+      "p\022\031\n\021continuationToken\030\002 \001(\t\"j\n\nIndexGro" +
+      "up\022)\n\002id\030\001 \001(\0132\035.yamcs.protobuf.NamedObj" +
+      "ectId\0221\n\005entry\030\002 \003(\0132\".yamcs.protobuf.ar" +
+      "chive.IndexEntry\"8\n\nIndexEntry\022\r\n\005start\030" +
+      "\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\r\n\005count\030\003 \001(\005\"&\n\026Ge" +
+      "tPacketNamesResponse\022\014\n\004name\030\001 \003(\tB\024\n\022or",
+      "g.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -13634,26 +14204,32 @@ public final class Archive {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_archive_EventSourceInfo_descriptor,
         new java.lang.String[] { "Source", });
-    internal_static_yamcs_protobuf_archive_IndexResponse_descriptor =
+    internal_static_yamcs_protobuf_archive_ParameterGroupInfo_descriptor =
       getDescriptor().getMessageTypes().get(9);
+    internal_static_yamcs_protobuf_archive_ParameterGroupInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_archive_ParameterGroupInfo_descriptor,
+        new java.lang.String[] { "Group", });
+    internal_static_yamcs_protobuf_archive_IndexResponse_descriptor =
+      getDescriptor().getMessageTypes().get(10);
     internal_static_yamcs_protobuf_archive_IndexResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_archive_IndexResponse_descriptor,
         new java.lang.String[] { "Group", "ContinuationToken", });
     internal_static_yamcs_protobuf_archive_IndexGroup_descriptor =
-      getDescriptor().getMessageTypes().get(10);
+      getDescriptor().getMessageTypes().get(11);
     internal_static_yamcs_protobuf_archive_IndexGroup_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_archive_IndexGroup_descriptor,
         new java.lang.String[] { "Id", "Entry", });
     internal_static_yamcs_protobuf_archive_IndexEntry_descriptor =
-      getDescriptor().getMessageTypes().get(11);
+      getDescriptor().getMessageTypes().get(12);
     internal_static_yamcs_protobuf_archive_IndexEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_archive_IndexEntry_descriptor,
         new java.lang.String[] { "Start", "Stop", "Count", });
     internal_static_yamcs_protobuf_archive_GetPacketNamesResponse_descriptor =
-      getDescriptor().getMessageTypes().get(12);
+      getDescriptor().getMessageTypes().get(13);
     internal_static_yamcs_protobuf_archive_GetPacketNamesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_archive_GetPacketNamesResponse_descriptor,
