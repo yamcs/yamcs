@@ -1,6 +1,6 @@
 syntax="proto2";
 
-package yamcs;
+package yamcs.protobuf;
 option java_package = "org.yamcs.protobuf";
 
 message StringMessage {

@@ -1,8 +1,8 @@
 syntax = "proto2";
 
-package table;
+package yamcs.protobuf.table;
 
-import "web.proto";
+import "yamcs/protobuf/web/web.proto";
 /**
 *  This is low level table encoding used in table dump/load functionality.
 */

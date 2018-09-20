@@ -1,9 +1,9 @@
 syntax="proto2";
 
-package mdb;
+package yamcs.protobuf.mdb;
 option java_package = "org.yamcs.protobuf";
 
-import "yamcs.proto";
+import "yamcs/protobuf/yamcs.proto";
 
 message MissionDatabase {
   optional string configName = 1; //this is the config section in mdb.yaml
@@ -141,7 +141,7 @@ message ParameterInfo {
   optional string qualifiedName = 2;
   optional string shortDescription = 3;
   optional string longDescription = 4;
-  repeated yamcs.NamedObjectId alias = 5;
+  repeated NamedObjectId alias = 5;
   optional ParameterTypeInfo type = 6;
   optional DataSourceType dataSource = 7;
   optional UsedByInfo usedBy = 8;
@@ -207,7 +207,7 @@ message CommandInfo {
   optional string qualifiedName = 2;
   optional string shortDescription = 3;
   optional string longDescription = 4;
-  repeated yamcs.NamedObjectId alias = 5;
+  repeated NamedObjectId alias = 5;
   optional CommandInfo baseCommand = 6;
   optional bool abstract = 7;
   repeated ArgumentInfo argument = 8;
@@ -253,7 +253,7 @@ message CommandContainerInfo {
   optional string qualifiedName = 2;
   optional string shortDescription = 3;
   optional string longDescription = 4;
-  repeated yamcs.NamedObjectId alias = 5;
+  repeated NamedObjectId alias = 5;
   optional int32 sizeInBits = 6;
   optional CommandContainerInfo baseContainer = 7;
   repeated SequenceEntryInfo entry = 8;
@@ -264,7 +264,7 @@ message ContainerInfo {
   optional string qualifiedName = 2;
   optional string shortDescription = 3;
   optional string longDescription = 4;
-  repeated yamcs.NamedObjectId alias = 5;
+  repeated NamedObjectId alias = 5;
   optional int64 maxInterval = 6;
   optional int32 sizeInBits = 7;
   optional ContainerInfo baseContainer = 8;
@@ -294,7 +294,7 @@ message AlgorithmInfo {
   optional string qualifiedName = 2;
   optional string shortDescription = 3;
   optional string longDescription = 4;
-  repeated yamcs.NamedObjectId alias = 5;
+  repeated NamedObjectId alias = 5;
   optional Scope scope = 6;
   optional string language = 7;
   optional string text = 8;
@@ -317,31 +317,31 @@ message ListParameterTypesResponse {
 }
 
 message BulkGetParameterInfoRequest {
-  repeated yamcs.NamedObjectId id = 1;
+  repeated NamedObjectId id = 1;
 }
 
 message BulkGetParameterInfoResponse {
   message GetParameterInfoResponse {
-    optional yamcs.NamedObjectId id = 1;
-    optional mdb.ParameterInfo parameter = 2;
+    optional NamedObjectId id = 1;
+    optional ParameterInfo parameter = 2;
   }
   repeated GetParameterInfoResponse response = 1;
 }
 
 message ListContainersResponse {
-  repeated mdb.ContainerInfo container = 1;
+  repeated ContainerInfo container = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListCommandsResponse {
-  repeated mdb.CommandInfo command = 1;
+  repeated CommandInfo command = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }
 
 message ListAlgorithmsResponse {
-  repeated mdb.AlgorithmInfo algorithm = 1;
+  repeated AlgorithmInfo algorithm = 1;
   optional string continuationToken = 2;
   optional int32 totalSize = 3;
 }

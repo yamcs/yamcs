@@ -1,10 +1,10 @@
 syntax="proto2";
 
-package commanding;
+package yamcs.protobuf.commanding;
 option java_package = "org.yamcs.protobuf";
 
-import "yamcs.proto";
-import "mdb.proto";
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
 
 
 message CommandId {
@@ -74,7 +74,7 @@ message CommandSignificance {
 
 message CommandHistoryAttribute {
   optional string name = 1;
-  optional yamcs.Value value = 2;
+  optional Value value = 2;
   optional int64 time = 3;
 }
 

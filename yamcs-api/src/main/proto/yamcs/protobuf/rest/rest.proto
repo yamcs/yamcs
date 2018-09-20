@@ -1,14 +1,14 @@
 syntax = "proto2";
 
-package parameters;
+package yamcs.protobuf.rest;
 option java_package = "org.yamcs.protobuf";
 
-import "yamcs.proto";
-import "archive.proto";
-import "pvalue.proto";
-import "alarms.proto";
-import "commanding.proto";
-import "yamcsManagement.proto";
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/archive/archive.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/alarms/alarms.proto";
+import "yamcs/protobuf/commanding/commanding.proto";
+import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 
 message GetApiOverviewResponse {
   message RouteInfo {
@@ -29,7 +29,7 @@ message GetApiOverviewResponse {
 }
 
 message BulkGetParameterValueRequest {
-  repeated yamcs.NamedObjectId id = 1;
+  repeated NamedObjectId id = 1;
   optional bool fromCache = 2;
   optional uint64 timeout = 3; //if not fromCache, wait this time (in milliseconds) to receive the parameter
 }
@@ -40,8 +40,8 @@ message BulkGetParameterValueResponse {
 
 message BulkSetParameterValueRequest {
   message SetParameterValueRequest {
-    optional yamcs.NamedObjectId id = 1;
-    optional yamcs.Value value = 2;
+    optional NamedObjectId id = 1;
+    optional Value value = 2;
   }
   repeated SetParameterValueRequest request = 1;
 }
@@ -49,7 +49,7 @@ message BulkSetParameterValueRequest {
 message BulkDownloadParameterValueRequest {
   optional string start = 1;
   optional string stop = 2;
-  repeated yamcs.NamedObjectId id = 3;
+  repeated NamedObjectId id = 3;
   optional string namespace = 4; // Namespace used to display parameter names in e.g. csv header. Only used when no parameter ids were specified.
 }
 
@@ -163,7 +163,7 @@ message ListInstancesResponse {
 }
 
 message ListTagsResponse {
-  repeated yamcs.ArchiveTag tag = 1;
+  repeated ArchiveTag tag = 1;
 }
 
 message CreateTagRequest {
@@ -200,11 +200,11 @@ message ListStreamsResponse {
 }
 
 message ListEventsResponse {
-  repeated yamcs.Event event = 1;
+  repeated Event event = 1;
 }
 
 message ListPacketsResponse {
-  repeated yamcs.TmPacketData packet = 1;
+  repeated TmPacketData packet = 1;
 }
 
 message ListServiceInfoResponse {

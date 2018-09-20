@@ -1,10 +1,10 @@
 syntax="proto2";
 
-package yamcsManagement;
+package yamcs.protobuf.yamcsManagement;
 option java_package = "org.yamcs.protobuf";
 
-import "mdb.proto";
-import "yamcs.proto";
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
 
 /*service states coming from guava (numbers have to correspond)*/
 enum ServiceState {
@@ -49,8 +49,8 @@ message ProcessorInfo {
   optional bool hasAlarms = 6;
   optional bool hasCommanding = 7;
   optional ServiceState state = 8;
-  optional yamcs.ReplayRequest replayRequest = 9; //in case of replay
-  optional yamcs.ReplayStatus.ReplayState replayState = 10; //in case of replay
+  optional ReplayRequest replayRequest = 9; //in case of replay
+  optional ReplayStatus.ReplayState replayState = 10; //in case of replay
   repeated ServiceInfo service = 16;
   optional bool persistent = 17;
   optional string time = 18;
@@ -130,7 +130,7 @@ message ProcessorRequest {
   optional string instance = 2; //yamcs instance
   optional string name = 3; //processor name
   optional int64 seekTime = 4; //for SEEK
-  optional yamcs.ReplaySpeed replaySpeed = 5; //for CHANGE_SPEED
+  optional ReplaySpeed replaySpeed = 5; //for CHANGE_SPEED
 }
 
 message LinkInfo {

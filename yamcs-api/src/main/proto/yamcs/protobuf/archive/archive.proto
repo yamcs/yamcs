@@ -1,13 +1,13 @@
 syntax="proto2";
 
-package archive;
+package yamcs.protobuf.archive;
 option java_package = "org.yamcs.protobuf";
 
-import "yamcs.proto";
+import "yamcs/protobuf/yamcs.proto";
 
 message ColumnData {
   optional string name = 1;
-  optional yamcs.Value value = 2;
+  optional Value value = 2;
 }
 
 message StreamData {
@@ -72,10 +72,11 @@ message EventSourceInfo {
 
 message IndexResponse {
   repeated IndexGroup group = 1;
+  optional string continuationToken = 2;
 }
 
 message IndexGroup {
-  optional yamcs.NamedObjectId id = 1;
+  optional NamedObjectId id = 1;
   repeated IndexEntry entry = 2;
 }
 

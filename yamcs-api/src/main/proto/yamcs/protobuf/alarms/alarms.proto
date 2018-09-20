@@ -1,10 +1,10 @@
 syntax="proto2";
 
-package alarms;
+package yamcs.protobuf.alarms;
 option java_package = "org.yamcs.protobuf";
 
-import "mdb.proto";
-import "pvalue.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
 
 message AcknowledgeInfo {
   optional string acknowledgedBy = 1;

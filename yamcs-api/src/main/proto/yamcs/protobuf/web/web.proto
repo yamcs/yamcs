@@ -1,14 +1,14 @@
 syntax="proto2";
 
-package web;
+package yamcs.protobuf.web;
 option java_package = "org.yamcs.protobuf";
 
-import "yamcs.proto";
-import "archive.proto";
-import "commanding.proto";
-import "pvalue.proto";
-import "alarms.proto";
-import "yamcsManagement.proto";
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/archive/archive.proto";
+import "yamcs/protobuf/commanding/commanding.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/alarms/alarms.proto";
+import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
 
 message WebSocketClientMessage {
   optional uint32 protocolVersion = 1;
@@ -44,20 +44,20 @@ message WebSocketServerMessage {
   // Could use protobuf3 Any-type some day.
   message WebSocketSubscriptionData {
     optional uint32 sequenceNumber = 1;
-    optional yamcs.ProtoDataType type = 2;
+    optional ProtoDataType type = 2;
     optional pvalue.ParameterData parameterData = 3;
     optional commanding.CommandHistoryEntry command = 4;
     optional yamcsManagement.ProcessorInfo processorInfo = 5;
     optional yamcsManagement.ClientInfo clientInfo = 6;
     optional yamcsManagement.Statistics statistics = 7;
-    optional yamcs.Event event = 8;
+    optional Event event = 8;
     optional archive.StreamData streamData = 9;
     optional alarms.AlarmData alarmData = 10;
-    optional yamcs.TimeInfo timeInfo = 11;
+    optional TimeInfo timeInfo = 11;
     optional yamcsManagement.LinkEvent linkEvent = 12;
     optional commanding.CommandQueueInfo commandQueueInfo = 13;
     optional commanding.CommandQueueEvent commandQueueEvent = 14;
-    optional yamcs.TmPacketData tmPacket = 15;
+    optional TmPacketData tmPacket = 15;
     optional ConnectionInfo connectionInfo = 16;
     
     optional WebSocketExtensionData extensionData = 100;
@@ -100,7 +100,7 @@ message ManagementSubscriptionRequest {
  * Used for parameter subscription and unsubscription.
  */
 message ParameterSubscriptionRequest {
-  repeated yamcs.NamedObjectId id = 1;
+  repeated NamedObjectId id = 1;
   //if set to true, an error message will be sent back if any parameter from the list above is invalid
   // by default is false
   optional bool abortOnInvalid = 2;
@@ -128,12 +128,12 @@ message ParameterSubscriptionRequest {
  *
  */
 message ParameterSubscriptionResponse {
-  repeated yamcs.NamedObjectId invalid = 2;
+  repeated NamedObjectId invalid = 2;
   optional int32 subscriptionId = 3;
 }
 
 message TimeSubscriptionResponse {
-  optional yamcs.TimeInfo timeInfo = 1;
+  optional TimeInfo timeInfo = 1;
 }
 
 message ProcessorSubscriptionResponse {

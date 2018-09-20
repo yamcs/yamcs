@@ -1,10 +1,10 @@
 syntax="proto2";
 
-package pvalue;
+package yamcs.protobuf.pvalue;
 option java_package = "org.yamcs.protobuf";
 
-import "yamcs.proto";
-import "mdb.proto";
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
 
 //this can also be called validity status
 enum AcquisitionStatus {
@@ -32,9 +32,9 @@ enum RangeCondition {
 // the difference between this and the com.spaceapplications.yamcs.ParameterValue is that
 // this one contains a a parameter id (assigned at subscription time) instead of a Parameter (xtce def of a parameter)
 message ParameterValue {
-  optional yamcs.NamedObjectId id = 1;
-  optional yamcs.Value rawValue = 2;
-  optional yamcs.Value engValue = 3;
+  optional NamedObjectId id = 1;
+  optional Value rawValue = 2;
+  optional Value engValue = 3;
   optional int64 acquisitionTime = 4;
   optional int64 generationTime = 5;
   optional AcquisitionStatus acquisitionStatus = 6;
@@ -97,7 +97,7 @@ message Ranges {
    message Range {
         optional string timeStart = 1;
         optional string timeStop = 2;
-        optional yamcs.Value engValue = 3;
+        optional Value engValue = 3;
         optional int32 count = 4;
    }
    repeated Range range = 1;
