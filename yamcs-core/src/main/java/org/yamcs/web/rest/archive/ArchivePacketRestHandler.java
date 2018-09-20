@@ -90,18 +90,23 @@ public class ArchivePacketRestHandler extends RestHandler {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
 
-        int limit = req.getQueryParameterAsInt("limit", 100);
         int mergeTime = req.getQueryParameterAsInt("mergeTime", 2000);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
         requestb.setMergeTime(mergeTime);
+
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
         }
         if (ir.hasStop()) {
             requestb.setStop(ir.getStop());
+        }
+        String next = req.getQueryParameter("next", null);
+        if (next != null) {
+            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
+            requestb.setStart(pageToken.time);
         }
 
         if (req.hasQueryParameter("name")) {
@@ -120,31 +125,36 @@ public class ArchivePacketRestHandler extends RestHandler {
             Map<NamedObjectId, IndexGroup.Builder> groupBuilders = new HashMap<>();
             indexServer.submitIndexRequest(requestb.build(), new IndexRequestListener() {
 
-                int count = 0;
+                int batchCount = 0;
+                long last;
 
                 @Override
                 public void processData(IndexResult indexResult) {
-                    if (count < limit) {
+                    if (batchCount == 0) {
                         for (ArchiveRecord rec : indexResult.getRecordsList()) {
-                            if (count < limit) {
-                                IndexGroup.Builder groupb = groupBuilders.get(rec.getId());
-                                if (groupb == null) {
-                                    groupb = IndexGroup.newBuilder().setId(rec.getId());
-                                    groupBuilders.put(rec.getId(), groupb);
-                                }
-                                groupb.addEntry(IndexEntry.newBuilder()
-                                        .setStart(TimeEncoding.toString(rec.getFirst()))
-                                        .setStop(TimeEncoding.toString(rec.getLast()))
-                                        .setCount(rec.getNum()));
-                                count++;
+                            IndexGroup.Builder groupb = groupBuilders.get(rec.getId());
+                            if (groupb == null) {
+                                groupb = IndexGroup.newBuilder().setId(rec.getId());
+                                groupBuilders.put(rec.getId(), groupb);
                             }
+                            groupb.addEntry(IndexEntry.newBuilder()
+                                    .setStart(TimeEncoding.toString(rec.getFirst()))
+                                    .setStop(TimeEncoding.toString(rec.getLast()))
+                                    .setCount(rec.getNum()));
+                            last = Math.max(last, rec.getLast());
                         }
                     }
+
+                    batchCount++;
                 }
 
                 @Override
                 public void finished(boolean success) {
                     if (success) {
+                        if (batchCount > 1) {
+                            TimeSortedPageToken token = new TimeSortedPageToken(last);
+                            responseb.setContinuationToken(token.encodeAsString());
+                        }
                         List<IndexGroup.Builder> sortedGroups = new ArrayList<>(groupBuilders.values());
                         Collections.sort(sortedGroups, (g1, g2) -> {
                             return g1.getId().getName().compareTo(g2.getId().getName());
