@@ -69,6 +69,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
         long pos = req.getQueryParameterAsLong("pos", 0);
         int limit = req.getQueryParameterAsInt("limit", 100);
+        boolean desc = req.asksDescending(true);
         String severity = req.getQueryParameter("severity", "INFO").toUpperCase();
 
         Set<String> sourceSet = new HashSet<>();
@@ -76,6 +77,12 @@ public class ArchiveEventRestHandler extends RestHandler {
             for (String name : names.split(",")) {
                 sourceSet.add(name);
             }
+        }
+
+        PacketPageToken nextToken = null;
+        if (req.hasQueryParameter("next")) {
+            String next = req.getQueryParameter("next");
+            nextToken = PacketPageToken.decode(next);
         }
 
         SqlBuilder sqlb = new SqlBuilder(EventRecorder.TABLE_NAME);
@@ -110,10 +117,20 @@ public class ArchiveEventRestHandler extends RestHandler {
         if (req.hasQueryParameter("q")) {
             sqlb.where("body.message like ?", "%" + req.getQueryParameter("q") + "%");
         }
+        if (nextToken != null) {
+            // TODO this currently ignores the source column (also part of the key)
+            // Requires string comparison in StreamSQL, and an even more complicated query condition...
+            if (desc) {
+                sqlb.where("(gentime < ? or (gentime = ? and seqNum < ?))",
+                        nextToken.gentime, nextToken.gentime, nextToken.seqNum);
+            } else {
+                sqlb.where("(gentime > ? or (gentime = ? and seqNum > ?))",
+                        nextToken.gentime, nextToken.gentime, nextToken.seqNum);
+            }
+        }
 
-        sqlb.descend(req.asksDescending(true));
+        sqlb.descend(desc);
         sqlb.limit(pos, limit);
-        String sql = sqlb.toString();
 
         if (req.asksFor(MediaType.CSV)) {
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
@@ -125,14 +142,14 @@ public class ArchiveEventRestHandler extends RestHandler {
                 throw new InternalServerErrorException(e);
             }
 
-            RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new StreamSubscriber() {
+            RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
                     try {
                         w.writeRecord(ArchiveHelper.tupleToCSVEvent(tuple, getExtensionRegistry()));
                     } catch (IOException e) {
                         // TODO maybe support passing up as rest exception using custom listeners
-                        log.error("Could not write csv record ", e);
+                        log.error("Could not write CSV record ", e);
                     }
                 }
 
@@ -144,22 +161,35 @@ public class ArchiveEventRestHandler extends RestHandler {
             });
 
         } else {
+            sqlb.limit(pos, limit + 1); // one more to detect hasMore
+
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-            RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new StreamSubscriber() {
+            RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
+
+                Event last;
+                int count;
 
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
-                    Event incoming = (Event) tuple.getColumn("body");
-                    Event event = getExtensionRegistry().getExtendedEvent(incoming);
+                    if (++count <= limit) {
+                        Event incoming = (Event) tuple.getColumn("body");
+                        Event event = getExtensionRegistry().getExtendedEvent(incoming);
 
-                    Event.Builder eventb = Event.newBuilder(event);
-                    eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
-                    eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
-                    responseb.addEvent(eventb.build());
+                        Event.Builder eventb = Event.newBuilder(event);
+                        eventb.setGenerationTimeUTC(TimeEncoding.toString(eventb.getGenerationTime()));
+                        eventb.setReceptionTimeUTC(TimeEncoding.toString(eventb.getReceptionTime()));
+                        responseb.addEvent(eventb.build());
+                        last = event;
+                    }
                 }
 
                 @Override
                 public void streamClosed(Stream stream) {
+                    if (count > limit) {
+                        EventPageToken token = new EventPageToken(last.getGenerationTime(), last.getSource(),
+                                last.getSeqNumber());
+                        responseb.setContinuationToken(token.encodeAsString());
+                    }
                     completeOK(req, responseb.build());
                 }
             });

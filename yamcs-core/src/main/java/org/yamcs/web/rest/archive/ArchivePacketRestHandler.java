@@ -113,6 +113,9 @@ public class ArchivePacketRestHandler extends RestHandler {
         if (req.hasRouteParam("gentime")) {
             sqlb.where("gentime = ?", req.getDateRouteParam("gentime"));
         }
+        if (!nameSet.isEmpty()) {
+            sqlb.whereColIn("pname", nameSet);
+        }
         if (nextToken != null) {
             if (desc) {
                 sqlb.where("(gentime < ? or (gentime = ? and seqNum < ?))",
@@ -122,15 +125,11 @@ public class ArchivePacketRestHandler extends RestHandler {
                         nextToken.gentime, nextToken.gentime, nextToken.seqNum);
             }
         }
-        if (!nameSet.isEmpty()) {
-            sqlb.whereColIn("pname", nameSet);
-        }
 
         sqlb.descend(desc);
+        sqlb.limit(pos, limit);
 
         if (req.asksFor(MediaType.OCTET_STREAM)) {
-            sqlb.limit(pos, limit);
-
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(),
                     new StreamSubscriber() {

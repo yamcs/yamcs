@@ -31084,6 +31084,20 @@ public final class Rest {
      */
     org.yamcs.protobuf.Yamcs.EventOrBuilder getEventOrBuilder(
         int index);
+
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    boolean hasContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    java.lang.String getContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getContinuationTokenBytes();
   }
   /**
    * Protobuf type {@code yamcs.protobuf.rest.ListEventsResponse}
@@ -31098,6 +31112,7 @@ public final class Rest {
     }
     private ListEventsResponse() {
       event_ = java.util.Collections.emptyList();
+      continuationToken_ = "";
     }
 
     @java.lang.Override
@@ -31137,6 +31152,12 @@ public final class Rest {
                   input.readMessage(org.yamcs.protobuf.Yamcs.Event.PARSER, extensionRegistry));
               break;
             }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              continuationToken_ = bs;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -31164,6 +31185,7 @@ public final class Rest {
               org.yamcs.protobuf.Rest.ListEventsResponse.class, org.yamcs.protobuf.Rest.ListEventsResponse.Builder.class);
     }
 
+    private int bitField0_;
     public static final int EVENT_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Yamcs.Event> event_;
     /**
@@ -31199,6 +31221,48 @@ public final class Rest {
       return event_.get(index);
     }
 
+    public static final int CONTINUATIONTOKEN_FIELD_NUMBER = 2;
+    private volatile java.lang.Object continuationToken_;
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public boolean hasContinuationToken() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public java.lang.String getContinuationToken() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          continuationToken_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getContinuationTokenBytes() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        continuationToken_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -31220,6 +31284,9 @@ public final class Rest {
       for (int i = 0; i < event_.size(); i++) {
         output.writeMessage(1, event_.get(i));
       }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -31231,6 +31298,9 @@ public final class Rest {
       for (int i = 0; i < event_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, event_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -31251,6 +31321,11 @@ public final class Rest {
       boolean result = true;
       result = result && getEventList()
           .equals(other.getEventList());
+      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (hasContinuationToken()) {
+        result = result && getContinuationToken()
+            .equals(other.getContinuationToken());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -31265,6 +31340,10 @@ public final class Rest {
       if (getEventCount() > 0) {
         hash = (37 * hash) + EVENT_FIELD_NUMBER;
         hash = (53 * hash) + getEventList().hashCode();
+      }
+      if (hasContinuationToken()) {
+        hash = (37 * hash) + CONTINUATIONTOKEN_FIELD_NUMBER;
+        hash = (53 * hash) + getContinuationToken().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -31391,6 +31470,8 @@ public final class Rest {
         } else {
           eventBuilder_.clear();
         }
+        continuationToken_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -31414,6 +31495,7 @@ public final class Rest {
       public org.yamcs.protobuf.Rest.ListEventsResponse buildPartial() {
         org.yamcs.protobuf.Rest.ListEventsResponse result = new org.yamcs.protobuf.Rest.ListEventsResponse(this);
         int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
         if (eventBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
             event_ = java.util.Collections.unmodifiableList(event_);
@@ -31423,6 +31505,11 @@ public final class Rest {
         } else {
           result.event_ = eventBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.continuationToken_ = continuationToken_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -31489,6 +31576,11 @@ public final class Rest {
               eventBuilder_.addAllMessages(other.event_);
             }
           }
+        }
+        if (other.hasContinuationToken()) {
+          bitField0_ |= 0x00000002;
+          continuationToken_ = other.continuationToken_;
+          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -31761,6 +31853,82 @@ public final class Rest {
           event_ = null;
         }
         return eventBuilder_;
+      }
+
+      private java.lang.Object continuationToken_ = "";
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public boolean hasContinuationToken() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public java.lang.String getContinuationToken() {
+        java.lang.Object ref = continuationToken_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            continuationToken_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getContinuationTokenBytes() {
+        java.lang.Object ref = continuationToken_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          continuationToken_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationToken(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder clearContinuationToken() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        continuationToken_ = getDefaultInstance().getContinuationToken();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationTokenBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -39617,28 +39785,28 @@ public final class Rest {
       "ablesResponse\0220\n\005table\030\001 \003(\0132!.yamcs.pro" +
       "tobuf.archive.TableInfo\"I\n\023ListStreamsRe" +
       "sponse\0222\n\006stream\030\001 \003(\0132\".yamcs.protobuf." +
-      "archive.StreamInfo\":\n\022ListEventsResponse" +
-      "\022$\n\005event\030\001 \003(\0132\025.yamcs.protobuf.Event\"^",
-      "\n\023ListPacketsResponse\022,\n\006packet\030\001 \003(\0132\034." +
-      "yamcs.protobuf.TmPacketData\022\031\n\021continuat" +
-      "ionToken\030\002 \001(\t\"W\n\027ListServiceInfoRespons" +
-      "e\022<\n\007service\030\001 \003(\0132+.yamcs.protobuf.yamc" +
-      "sManagement.ServiceInfo\"#\n\022EditServiceRe" +
-      "quest\022\r\n\005state\030\001 \001(\t\"V\n\023BulkGetIndexRequ" +
-      "est\022\r\n\005start\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\016\n\006filt" +
-      "er\030\003 \003(\t\022\022\n\npacketname\030\004 \003(\t\"#\n\023CreateBu" +
-      "cketRequest\022\014\n\004name\030\001 \001(\t\"<\n\nBucketInfo\022" +
-      "\014\n\004name\030\001 \001(\t\022\014\n\004size\030\002 \001(\004\022\022\n\nnumObject",
-      "s\030\003 \001(\r\"\253\001\n\nObjectInfo\022\014\n\004name\030\001 \001(\t\022\017\n\007" +
-      "created\030\002 \001(\t\022\014\n\004size\030\003 \001(\004\022?\n\010metadata\030" +
-      "\004 \003(\0132-.yamcs.protobuf.rest.ObjectInfo.M" +
-      "etadataEntry\032/\n\rMetadataEntry\022\013\n\003key\030\001 \001" +
-      "(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"F\n\023ListBucketsResp" +
-      "onse\022/\n\006bucket\030\001 \003(\0132\037.yamcs.protobuf.re" +
-      "st.BucketInfo\"V\n\023ListObjectsResponse\022\016\n\006" +
-      "prefix\030\001 \003(\t\022/\n\006object\030\002 \003(\0132\037.yamcs.pro" +
-      "tobuf.rest.ObjectInfoB\024\n\022org.yamcs.proto" +
-      "buf"
+      "archive.StreamInfo\"U\n\022ListEventsResponse" +
+      "\022$\n\005event\030\001 \003(\0132\025.yamcs.protobuf.Event\022\031",
+      "\n\021continuationToken\030\002 \001(\t\"^\n\023ListPackets" +
+      "Response\022,\n\006packet\030\001 \003(\0132\034.yamcs.protobu" +
+      "f.TmPacketData\022\031\n\021continuationToken\030\002 \001(" +
+      "\t\"W\n\027ListServiceInfoResponse\022<\n\007service\030" +
+      "\001 \003(\0132+.yamcs.protobuf.yamcsManagement.S" +
+      "erviceInfo\"#\n\022EditServiceRequest\022\r\n\005stat" +
+      "e\030\001 \001(\t\"V\n\023BulkGetIndexRequest\022\r\n\005start\030" +
+      "\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\016\n\006filter\030\003 \003(\t\022\022\n\np" +
+      "acketname\030\004 \003(\t\"#\n\023CreateBucketRequest\022\014" +
+      "\n\004name\030\001 \001(\t\"<\n\nBucketInfo\022\014\n\004name\030\001 \001(\t",
+      "\022\014\n\004size\030\002 \001(\004\022\022\n\nnumObjects\030\003 \001(\r\"\253\001\n\nO" +
+      "bjectInfo\022\014\n\004name\030\001 \001(\t\022\017\n\007created\030\002 \001(\t" +
+      "\022\014\n\004size\030\003 \001(\004\022?\n\010metadata\030\004 \003(\0132-.yamcs" +
+      ".protobuf.rest.ObjectInfo.MetadataEntry\032" +
+      "/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002" +
+      " \001(\t:\0028\001\"F\n\023ListBucketsResponse\022/\n\006bucke" +
+      "t\030\001 \003(\0132\037.yamcs.protobuf.rest.BucketInfo" +
+      "\"V\n\023ListObjectsResponse\022\016\n\006prefix\030\001 \003(\t\022" +
+      "/\n\006object\030\002 \003(\0132\037.yamcs.protobuf.rest.Ob" +
+      "jectInfoB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -39879,7 +40047,7 @@ public final class Rest {
     internal_static_yamcs_protobuf_rest_ListEventsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListEventsResponse_descriptor,
-        new java.lang.String[] { "Event", });
+        new java.lang.String[] { "Event", "ContinuationToken", });
     internal_static_yamcs_protobuf_rest_ListPacketsResponse_descriptor =
       getDescriptor().getMessageTypes().get(32);
     internal_static_yamcs_protobuf_rest_ListPacketsResponse_fieldAccessorTable = new
