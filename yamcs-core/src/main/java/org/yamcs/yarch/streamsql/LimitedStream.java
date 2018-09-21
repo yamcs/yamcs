@@ -41,14 +41,12 @@ public class LimitedStream extends Stream implements StreamSubscriber {
     public void onTuple(Stream stream, Tuple tuple) {
         long inputDataCount = stream.getDataCount();
         if (inputDataCount < offset + 1) {
-            System.out.println("ignoring a record");
             return;
         }
 
         if (inputDataCount <= limit) {
             emitTuple(tuple);
         } else {
-            System.out.println("limit of " + limit + " reached. closing stream");
             input.close();
         }
     }

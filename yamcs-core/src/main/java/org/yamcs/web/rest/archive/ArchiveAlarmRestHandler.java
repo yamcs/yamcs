@@ -1,6 +1,5 @@
 package org.yamcs.web.rest.archive;
 
-
 import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.protobuf.Alarms.AlarmData;
 import org.yamcs.protobuf.Rest.ListAlarmsResponse;
@@ -8,7 +7,6 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
@@ -16,6 +14,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 
 public class ArchiveAlarmRestHandler extends RestHandler {
@@ -34,7 +33,7 @@ public class ArchiveAlarmRestHandler extends RestHandler {
         if (ir.hasInterval()) {
             sqlb.where(ir.asSqlCondition("triggerTime"));
         }
-        
+
         if (req.hasRouteParam("parameter")) {
             XtceDb mdb = XtceDbFactory.getInstance(instance);
             Parameter p = verifyParameter(req, mdb, req.getRouteParam("parameter"));
@@ -45,11 +44,12 @@ public class ArchiveAlarmRestHandler extends RestHandler {
          * }
          */
         sqlb.descend(req.asksDescending(true));
+        sqlb.limit(pos, limit);
         ListAlarmsResponse.Builder responseb = ListAlarmsResponse.newBuilder();
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
             @Override
-            public void processTuple(Stream stream, Tuple tuple) {
+            public void onTuple(Stream stream, Tuple tuple) {
                 AlarmData alarm = ArchiveHelper.tupleToAlarmData(tuple);
                 responseb.addAlarm(alarm);
             }

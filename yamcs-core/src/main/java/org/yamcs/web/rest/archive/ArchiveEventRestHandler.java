@@ -36,11 +36,11 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
@@ -112,6 +112,7 @@ public class ArchiveEventRestHandler extends RestHandler {
         }
 
         sqlb.descend(req.asksDescending(true));
+        sqlb.limit(pos, limit);
         String sql = sqlb.toString();
 
         if (req.asksFor(MediaType.CSV)) {
@@ -124,9 +125,9 @@ public class ArchiveEventRestHandler extends RestHandler {
                 throw new InternalServerErrorException(e);
             }
 
-            RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
+            RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new StreamSubscriber() {
                 @Override
-                public void processTuple(Stream stream, Tuple tuple) {
+                public void onTuple(Stream stream, Tuple tuple) {
                     try {
                         w.writeRecord(ArchiveHelper.tupleToCSVEvent(tuple, getExtensionRegistry()));
                     } catch (IOException e) {
@@ -144,10 +145,10 @@ public class ArchiveEventRestHandler extends RestHandler {
 
         } else {
             ListEventsResponse.Builder responseb = ListEventsResponse.newBuilder();
-            RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
+            RestStreams.stream(instance, sql, sqlb.getQueryArguments(), new StreamSubscriber() {
 
                 @Override
-                public void processTuple(Stream stream, Tuple tuple) {
+                public void onTuple(Stream stream, Tuple tuple) {
                     Event incoming = (Event) tuple.getColumn("body");
                     Event event = getExtensionRegistry().getExtendedEvent(incoming);
 

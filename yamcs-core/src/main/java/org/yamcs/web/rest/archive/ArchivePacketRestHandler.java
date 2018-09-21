@@ -23,7 +23,6 @@ import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
@@ -31,6 +30,7 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
@@ -130,11 +130,14 @@ public class ArchivePacketRestHandler extends RestHandler {
         sqlb.descend(desc);
 
         if (req.asksFor(MediaType.OCTET_STREAM)) {
+            sqlb.limit(pos, limit);
+
             ByteBuf buf = req.getChannelHandlerContext().alloc().buffer();
             RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(),
-                    new RestStreamSubscriber(pos, limit) {
+                    new StreamSubscriber() {
+
                         @Override
-                        public void processTuple(Stream stream, Tuple tuple) {
+                        public void onTuple(Stream stream, Tuple tuple) {
                             TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                             buf.writeBytes(pdata.getPacket().toByteArray());
                         }
@@ -145,15 +148,17 @@ public class ArchivePacketRestHandler extends RestHandler {
                         }
                     });
         } else {
+            sqlb.limit(pos, limit + 1); // one more to detect hasMore
+
             ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
             RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(),
-                    new RestStreamSubscriber(pos, limit + 1 /* one more to detect hasMore */) {
+                    new StreamSubscriber() {
 
                         TmPacketData last;
                         int count;
 
                         @Override
-                        public void processTuple(Stream stream, Tuple tuple) {
+                        public void onTuple(Stream stream, Tuple tuple) {
                             if (++count <= limit) {
                                 TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                                 responseb.addPacket(pdata);
@@ -181,12 +186,13 @@ public class ArchivePacketRestHandler extends RestHandler {
         int seqNum = req.getIntegerRouteParam("seqnum");
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME)
-                .where("gentime = ?", gentime).where("seqNum = ?", seqNum);
+                .where("gentime = ?", gentime)
+                .where("seqNum = ?", seqNum);
 
         List<TmPacketData> packets = new ArrayList<>();
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(0, 2) {
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
             @Override
-            public void processTuple(Stream stream, Tuple tuple) {
+            public void onTuple(Stream stream, Tuple tuple) {
                 TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
                 if (hasObjectPrivilege(req, ObjectPrivilegeType.ReadPacket, pdata.getId().getName())) {
                     packets.add(pdata);
@@ -204,7 +210,6 @@ public class ArchivePacketRestHandler extends RestHandler {
                 } else {
                     completeOK(req, packets.get(0));
                 }
-
             }
         });
     }
