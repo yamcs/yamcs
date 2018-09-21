@@ -16,8 +16,13 @@ import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 /**
- * A source of tuples. Can be: - a reference to an existing stream objectName - a reference to a table objectName - a
- * stream expression
+ * A source of tuples. Can be:
+ * 
+ * <ul>
+ * <li>a reference to an existing stream objectName
+ * <li>a reference to a table objectName
+ * <li>a stream expression
+ * </ul>
  * 
  * @author nm
  *

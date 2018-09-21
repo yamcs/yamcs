@@ -128,6 +128,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_IS:"IS">
 |   <K_KEY:"KEY">
 |   <K_LIKE:"LIKE">
+|   <K_LIMIT:"LIMIT">
 |   <K_MERGE:"MERGE">
 |   <K_MOD:"MOD">
 |   <K_NOT:"NOT">
@@ -816,12 +817,16 @@ void Argument() throws StreamSqlException: {
 SelectExpression SelectStatement() throws StreamSqlException: {
     SelectExpression expression;
     boolean ascending;
+    BigDecimal offset = null;
+    BigDecimal limit = null;
 } {
     expression=Select()
-    [ ascending=OrderClause() {expression.setAscending(ascending);} ]
-    {
-	return expression;
-    }
+    [ ascending=OrderClause() { expression.setAscending(ascending); } ]
+    [ 
+        <K_LIMIT>
+        [LOOKAHEAD(2) offset=NumericConstant() "," ]
+        limit=NumericConstant() { expression.setLimit(offset, limit); }
+    ] { return expression; }
 }
 
 SelectExpression Select() throws StreamSqlException:

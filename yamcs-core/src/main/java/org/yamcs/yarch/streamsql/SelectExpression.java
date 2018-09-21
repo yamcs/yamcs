@@ -1,5 +1,6 @@
 package org.yamcs.yarch.streamsql;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.WindowProcessor;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 /**
@@ -53,6 +55,8 @@ public class SelectExpression implements StreamExpression {
     boolean ascending = true; // only for table-selects
     boolean follow = true; // only for table-selects
     private boolean selectStar; // in case of select *
+    BigDecimal offset;
+    BigDecimal limit;
 
     public void setSelectList(List<SelectItem> selectList) {
         this.selectList = selectList;
@@ -78,6 +82,11 @@ public class SelectExpression implements StreamExpression {
     public void setFollow(boolean follow) {
         this.follow = follow;
         tupleSourceExpression.setFollow(follow);
+    }
+
+    public void setLimit(BigDecimal offset, BigDecimal limit) {
+        this.offset = offset;
+        this.limit = limit;
     }
 
     @Override
@@ -255,12 +264,17 @@ public class SelectExpression implements StreamExpression {
             windowProc = WindowProcessor.getInstance(windowSpec, aggInputDef, caggList, aggOutputDef);
         }
 
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(c.getDbName());
         if (cWhereClause != null || caggInputList != null || windowProc != null || cselectList != null) {
-            stream = new SelectStream(YarchDatabase.getInstance(c.getDbName()), stream, cWhereClause,
+            stream = new SelectStream(ydb, stream, cWhereClause,
                     caggInputList, windowProc,
                     cselectList, outputDef, minOutputDef);
         }
 
-        return stream;
+        if (limit != null || offset != null) {
+            return new LimitedStream(ydb, stream, offset, limit, stream.getDefinition());
+        } else {
+            return stream;
+        }
     }
 }
