@@ -565,22 +565,35 @@ Expression Expression() throws StreamSqlException: {
     Expression expr;
     Expression retExpr;
 } {
-    expr=AndExpression() {retExpr=expr;}
-    ["OR" expr=AndExpression() {retExpr=new OrExpression(retExpr,expr);} ]
-    {
-	return retExpr;
-    }
+    (
+        expr=AndExpression() {retExpr=expr;}
+        ["OR" expr=AndExpression() {retExpr=new OrExpression(retExpr,expr);} ]
+    )
+    { return retExpr; }
 }
 
 Expression AndExpression() throws StreamSqlException: {
     Expression expr;
     ArrayList<Expression> list=new ArrayList<Expression>();
 } {
-    expr=UnaryLogicalExpression() {list.add(expr);}
-    ( "AND" expr=UnaryLogicalExpression() {list.add(expr);})*
+    (
+        (
+            expr=UnaryLogicalExpression()
+            |
+            "(" expr=Expression() ")"
+        ) { list.add(expr); }
+        (
+            "AND"
+            (
+                expr=UnaryLogicalExpression()
+                |
+                "(" expr=Expression() ")"
+            ) { list.add(expr); }
+        )*
+    )
     {
-    if(list.size()==1) return list.get(0);
-    else return new AndExpression(list);
+        if(list.size()==1) return list.get(0);
+        else return new AndExpression(list);
     }
 }
 
