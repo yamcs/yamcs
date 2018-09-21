@@ -205,6 +205,7 @@ message ListEventsResponse {
 
 message ListPacketsResponse {
   repeated TmPacketData packet = 1;
+  optional string continuationToken = 2;
 }
 
 message ListServiceInfoResponse {
