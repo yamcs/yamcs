@@ -39,7 +39,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import com.google.common.collect.BiMap;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class ArchivePacketRestHandler extends RestHandler {
 
@@ -202,11 +201,10 @@ public class ArchivePacketRestHandler extends RestHandler {
             @Override
             public void streamClosed(Stream stream) {
                 if (packets.isEmpty()) {
-                    sendRestError(req, HttpResponseStatus.NOT_FOUND,
+                    completeWithError(req,
                             new NotFoundException(req, "No packet for id (" + gentime + ", " + seqNum + ")"));
                 } else if (packets.size() > 1) {
-                    sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                            new InternalServerErrorException("Too many results"));
+                    completeWithError(req, new InternalServerErrorException("Too many results"));
                 } else {
                     completeOK(req, packets.get(0));
                 }
