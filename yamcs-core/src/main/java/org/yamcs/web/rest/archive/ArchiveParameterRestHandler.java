@@ -32,9 +32,10 @@ import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterIdValueList;
 import org.yamcs.parameterarchive.ParameterRequest;
 import org.yamcs.protobuf.Archive.ParameterGroupInfo;
-import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
+import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.IntArray;
@@ -253,6 +254,16 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
         boolean ascending = !req.asksDescending(true);
 
+        String next = req.getQueryParameter("next", null);
+        if (next != null) {
+            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
+            if (ascending) {
+                start = pageToken.time + 1;
+            } else {
+                stop = pageToken.time - 1;
+            }
+        }
+
         ParameterArchiveV2 parchive = getParameterArchive(instance);
         ParameterIdDb piddb = parchive.getParameterIdDb();
         IntArray pidArray = new IntArray();
@@ -260,14 +271,14 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
         ParameterId[] pids = piddb.get(p.getQualifiedName());
 
-        BitSet retriveRawValues = new BitSet();
+        BitSet retrieveRawValues = new BitSet();
         if (pids != null) {
             ParameterGroupIdDb pgidDb = parchive.getParameterGroupIdDb();
             for (ParameterId pid : pids) {
                 int[] pgids = pgidDb.getAllGroups(pid.pid);
                 for (int pgid : pgids) {
                     if (pid.getRawType() != null) {
-                        retriveRawValues.set(pidArray.size());
+                        retrieveRawValues.set(pidArray.size());
                     }
                     pidArray.add(pid.pid);
                     pgidArray.add(pgid);
@@ -284,7 +295,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         String[] pnames = new String[pidArray.size()];
         Arrays.fill(pnames, p.getQualifiedName());
         MultipleParameterValueRequest mpvr = new MultipleParameterValueRequest(start, stop, pnames, pidArray.toArray(),
-                pgidArray.toArray(), retriveRawValues, ascending);
+                pgidArray.toArray(), retrieveRawValues, ascending);
         // do not use set limit because the data can be filtered down (e.g. noRepeat) and the limit applies the final
         // filtered data not to the input
         // one day the parameter archive will be smarter and do the filtering inside
@@ -323,12 +334,19 @@ public class ArchiveParameterRestHandler extends RestHandler {
             }
             completeOK(req, MediaType.CSV, buf);
         } else {
-            ParameterData.Builder resultb = ParameterData.newBuilder();
+            ListParameterValuesResponse.Builder resultb = ListParameterValuesResponse.newBuilder();
+            final int fLimit = limit + 1; // one extra to detect continuation token
             try {
-                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit, req) {
+                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, fLimit, req) {
                     @Override
                     public void onParameterData(ParameterValueWithId pvwid) {
-                        resultb.addParameter(pvwid.toGbpParameterValue());
+                        if (resultb.getParameterCount() < fLimit - 1) {
+                            resultb.addParameter(pvwid.toGbpParameterValue());
+                        } else {
+                            Pvalue.ParameterValue last = resultb.getParameter(resultb.getParameterCount() - 1);
+                            TimeSortedPageToken token = new TimeSortedPageToken(last.getGenerationTime());
+                            resultb.setContinuationToken(token.encodeAsString());
+                        }
                     }
 
                     @Override
@@ -379,10 +397,8 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 long start = (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) ? mpvr.getStart() - 1
                         : lastParameterTime.getLong();
                 sendFromCache(p, id, pcache, true, start, mpvr.getStop(), replayListener);
-            } else if (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) { // no data retrieved from archive,
-                                                                                      // but
-                // maybe there is still something in the
-                // cache to send
+            } else if (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) {
+                // no data retrieved from archive, but maybe there is still something in the cache to send
                 sendFromCache(p, id, pcache, false, mpvr.getStart(), mpvr.getStop(), replayListener);
             }
         }

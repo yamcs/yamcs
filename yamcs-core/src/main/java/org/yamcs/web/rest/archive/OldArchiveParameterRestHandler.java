@@ -27,8 +27,8 @@ import org.yamcs.oldparchive.SingleParameterValueRequest;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
-import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
+import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -335,7 +335,7 @@ public class OldArchiveParameterRestHandler extends RestHandler {
             }
             completeOK(req, MediaType.CSV, buf);
         } else {
-            ParameterData.Builder resultb = ParameterData.newBuilder();
+            ListParameterValuesResponse.Builder resultb = ListParameterValuesResponse.newBuilder();
             try {
                 RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit, req) {
                     @Override

@@ -213,6 +213,11 @@ message ListServiceInfoResponse {
   repeated yamcsManagement.ServiceInfo service = 1;
 }
 
+message ListParameterValuesResponse {
+  repeated pvalue.ParameterValue parameter = 1;
+  optional string continuationToken = 2;
+}
+
 message EditServiceRequest {
   optional string state = 1;
 }
