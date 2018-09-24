@@ -1,13 +1,12 @@
 import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatSnackBar } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Instance } from '@yamcs/client';
-import { Event, Range, Timeline } from '@yamcs/timeline';
+import { Event, Range, Timeline, TimelineOptions } from '@yamcs/timeline';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { TimelineOptions } from '../../../../../timeline/dist/types/options';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DateTimePipe } from '../../shared/pipes/DateTimePipe';
@@ -50,6 +49,7 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
     private overlay: Overlay,
     private dialog: MatDialog,
     private dateTimePipe: DateTimePipe,
+    private snackBar: MatSnackBar,
   ) {
     title.setTitle('TM Archive - Yamcs');
     this.instance = yamcs.getInstance();
@@ -211,8 +211,8 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
             // draggable: true,
             interactive: true,
             interactiveSidebar: false,
+            wrap: false,
             style: {
-              wrap: false,
               marginTop: 8,
               marginBottom: 8,
             },
@@ -270,12 +270,30 @@ export class ArchivePage implements AfterViewInit, OnDestroy {
   replayRange() {
     const currentRange = this.rangeSelection$.value;
     if (currentRange) {
-      this.dialog.open(StartReplayDialog, {
+      const dialogRef = this.dialog.open(StartReplayDialog, {
         width: '400px',
         data: {
           start: currentRange.start,
           stop: currentRange.stop,
         },
+      });
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.snackBar.open(`Initializing replay ${result.name}...`, undefined, {
+            horizontalPosition: 'end',
+          });
+          this.yamcs.getInstanceClient()!.createProcessor(result).then(() => {
+            this.snackBar.open(`Joined replay ${result.name}`, undefined, {
+              duration: 3000,
+              horizontalPosition: 'end',
+            });
+          }).catch(err => {
+            this.snackBar.open(`Failed to initialize replay`, undefined, {
+              duration: 3000,
+              horizontalPosition: 'end',
+            });
+          });
+        }
       });
     }
   }

@@ -20,15 +20,16 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import com.google.common.util.concurrent.AbstractService;
 
 /**
- * Loads multiple TmPacketSource and inject all the packets into a defined stream
+ * Loads multiple {@link TmPacketDataLink} and injects all the packets into a defined stream.
+ * 
+ * 
  * @author nm
  *
  */
 public class TmDataLinkInitialiser extends AbstractService {
-    final static public String KEY_tmProviders = "tmProviders";
     final static public String KEY_tmDataLinks = "tmDataLinks";
     
-    private Map<String, TmPacketDataLink> tmproviders=new HashMap<>();
+    private Map<String, TmPacketDataLink> tmlinks=new HashMap<>();
     final String yamcsInstance;
     final static public String GENTIME_COLUMN = "gentime";
     final static public String SEQNUM_COLUMN = "seqNum";
@@ -50,7 +51,7 @@ public class TmDataLinkInitialiser extends AbstractService {
         
         YConfiguration c = YConfiguration.getConfiguration("yamcs."+yamcsInstance);
         
-        List providers = c.containsKey(KEY_tmDataLinks)?c.getList(KEY_tmDataLinks):c.getList(KEY_tmProviders);
+        List<?> providers = c.getList(KEY_tmDataLinks);
         int count=1;
         ManagementService mgrsrv =  ManagementService.getInstance();
         for(Object o:providers) {
@@ -69,7 +70,7 @@ public class TmDataLinkInitialiser extends AbstractService {
             if(m.containsKey("name")) {
                 name = m.get("name").toString();
             }
-            if(tmproviders.containsKey(name)) {
+            if(tmlinks.containsKey(name)) {
                 throw new ConfigurationException("Instance "+yamcsInstance+": there is already a TM Link by name '"+name+"'");
             }
             boolean enabledAtStartup=true;
@@ -107,7 +108,7 @@ public class TmDataLinkInitialiser extends AbstractService {
                 }
             });
         
-            tmproviders.put(name, prov);
+            tmlinks.put(name, prov);
             mgrsrv.registerLink(yamcsInstance, name, streamName, args!=null?args.toString():"",  prov);
             count++;
         }
@@ -116,7 +117,7 @@ public class TmDataLinkInitialiser extends AbstractService {
     
     @Override
     protected void doStart() {
-        for(TmPacketDataLink prov:tmproviders.values()) {
+        for(TmPacketDataLink prov:tmlinks.values()) {
             prov.startAsync();
         }
         notifyStarted();
@@ -125,7 +126,7 @@ public class TmDataLinkInitialiser extends AbstractService {
     @Override
     protected void doStop() {
         ManagementService mgrsrv =  ManagementService.getInstance();
-        for(Map.Entry<String, TmPacketDataLink> me: tmproviders.entrySet()) {
+        for(Map.Entry<String, TmPacketDataLink> me: tmlinks.entrySet()) {
             mgrsrv.unregisterLink(yamcsInstance, me.getKey());
             me.getValue().stopAsync();
         }

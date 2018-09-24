@@ -70,6 +70,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsException;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.YamcsConnector;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.ConnectionListener;
 import org.yamcs.api.ws.WebSocketClientCallback;
@@ -82,11 +83,8 @@ import org.yamcs.protobuf.YamcsManagement.YamcsInstance;
 import org.yamcs.tctm.IssPacketPreprocessor;
 import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.ui.PrefsObject;
-import org.yamcs.ui.YamcsConnector;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.web.websocket.CommandQueueResource;
-import org.yamcs.web.websocket.PacketResource;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.DataEncoding;
@@ -142,7 +140,6 @@ public class PacketViewer extends JFrame implements ActionListener,
     // used for decoding full packets
     XtceTmProcessor tmProcessor;
 
-    boolean authenticationEnabled = false;
     String streamName;
     private String defaultNamespace;
     PacketPreprocessor packetPreprocessor;
@@ -152,12 +149,11 @@ public class PacketViewer extends JFrame implements ActionListener,
 
         uiPrefs = Preferences.userNodeForPackage(PacketViewer.class);
 
-        YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
-        if (config.containsKey("authenticationEnabled")) {
-            authenticationEnabled = config.getBoolean("authenticationEnabled");
-        }
-        if (config.containsKey("defaultNamespace")) {
-            defaultNamespace = config.getString("defaultNamespace");
+        if (YConfiguration.isDefined("yamcs-ui")) {
+            YConfiguration config = YConfiguration.getConfiguration("yamcs-ui");
+            if (config.containsKey("defaultNamespace")) {
+                defaultNamespace = config.getString("defaultNamespace");
+            }
         }
 
         packetPreprocessor = new IssPacketPreprocessor(null);
@@ -462,7 +458,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             }
         } else if (cmd.equals("connect-yamcs")) {
             if (connectDialog == null) {
-                connectDialog = new ConnectDialog(this, authenticationEnabled, true, true, true);
+                connectDialog = new ConnectDialog(this, true, true, true);
             }
             int ret = connectDialog.showDialog();
             if (ret == ConnectDialog.APPROVE_OPTION) {
@@ -598,7 +594,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                         buf = ByteBuffer.allocate(16);
                         long gentime = TimeEncoding.INVALID_INSTANT;
                         int seqcount = -1;
-                        if ((fourb[0] & 0xe8) == 0x08) {// CCSDS packet
+                        if (true || (fourb[0] & 0xe8) == 0x08) {// CCSDS packet
                             buf.put(fourb, 0, 4);
                             if ((r = reader.read(buf.array(), 4, 12)) != 12) {
                                 throw new ShortReadException(16, r, offset);
@@ -642,7 +638,8 @@ public class PacketViewer extends JFrame implements ActionListener,
                                 i++;
                             }
                             if ((r = reader.read(buf.array())) != 16) {
-                                throw new ShortReadException(16, r, offset);
+                                // throw new ShortReadException(16, r, offset);
+                                break;
                             }
                         }
                         len = CcsdsPacket.getCccsdsPacketLength(buf) + 7;
@@ -654,7 +651,8 @@ public class PacketViewer extends JFrame implements ActionListener,
                         System.arraycopy(buf.array(), 0, bufn, 0, 16);
                         r = reader.read(bufn, 16, len - 16);
                         if (r != len - 16) {
-                            throw new ShortReadException(len - 16, r, offset);
+                            // throw new ShortReadException(len - 16, r, offset);
+                            break;
                         }
 
                         TmPacketData.Builder packetb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(bufn))
@@ -703,6 +701,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
             @Override
             protected void done() {
+                System.out.println("lastFile : " + lastFile);
                 if (progress != null) {
                     if (progress.isCanceled()) {
                         clearWindow();
@@ -851,7 +850,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                     // add new leaf to the structure tree
                     // parameters become leaves, and sequence containers become nodes recursively
 
-                    getTreeNode(value.getParameterEntry().getSequenceContainer()).add(new TreeEntry(value));
+                    getTreeNode(value.getSequenceEntry().getSequenceContainer()).add(new TreeEntry(value));
 
                     // add new row for parameter table
 
@@ -972,8 +971,7 @@ public class PacketViewer extends JFrame implements ActionListener,
                 }
 
             }
-            WebSocketRequest wsr = new WebSocketRequest(PacketResource.RESOURCE_NAME,
-                    CommandQueueResource.OP_subscribe + " " + streamName);
+            WebSocketRequest wsr = new WebSocketRequest("packets", "subscribe " + streamName);
             yconnector.performSubscription(wsr, this, e -> {
                 showError("Error subscribing to " + streamName + ": " + e.getMessage());
             });

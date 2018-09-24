@@ -41,6 +41,8 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public final int pkt5Length = headerLength + pFixedBinary1.length + pPrependedSizeBinary1.length;
     public final int pkt6Length = headerLength + 5;
     
+    
+    
     public final int pkt2Length = 8;
     public final int pkt1_ListLength = pkt1Length;
     public final int pkt1_AndLength = pkt1Length;
@@ -216,7 +218,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
     public byte[] generate_PKT1_11() {
         ByteBuffer bb = ByteBuffer.allocate(pkt1_11Length);
-        fill_PKT1_11(bb);
+        fill_PKT1(bb, 11);
+        bb.position(pkt1Length);
+        bb.putInt(pIntegerPara1_11_1);
         sendToTmProcessor(bb);
         return bb.array();
     }
@@ -241,14 +245,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         sendToTmProcessor(bb);
         return bb.array();
     }
-    
-    public byte[] generate_PKT6() {
-        ByteBuffer bb = ByteBuffer.allocate(pkt6Length);
-        fill_PKT6(bb);
-        sendToTmProcessor(bb);
-        return bb.array();
-    }
-
     private void fill_PKT5(ByteBuffer bb) {
         fill_CcsdsHeader(bb, 995, 5);
         bb.position(headerLength);
@@ -256,6 +252,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.put(pPrependedSizeBinary1);
     }
 
+    
+    public byte[] generate_PKT6() {
+        ByteBuffer bb = ByteBuffer.allocate(pkt6Length);
+        fill_PKT6(bb);
+        sendToTmProcessor(bb);
+        return bb.array();
+    }
+        
     public ByteBuffer generate_PKT2() {
         ByteBuffer bb = ByteBuffer.allocate(pkt2Length);
         fill_PKT2(bb);
@@ -394,6 +398,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.put(10, t.fineTime);
         // packetId(32 bits)
         bb.putInt(12, packetId);
+        bb.position(headerLength);
     }
 
     private void fill_PKT1(ByteBuffer bb, int packetType) {
@@ -497,7 +502,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.putInt(pTimePara_sec6_1);
         bb.put(pTimePara_sec6_2);
     }
-
+    
     private void fill_PKT2(ByteBuffer bb) {
         bb.position(4);
         bb.putShort((short) (pIntegerPara2_1 & 0xFFFF));
@@ -552,12 +557,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.putFloat(pFloatPara1_10_3);
     }
 
-    private void fill_PKT1_11(ByteBuffer bb) {
-        fill_PKT1(bb, 11);
-        int offset = pkt1Length;
-        bb.position(offset);
-        bb.putInt(pIntegerPara1_11_1);
-    }
 
     private void fill_PKT1_12(ByteBuffer bb) {
         fill_PKT1(bb, 12);
@@ -586,6 +585,52 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.put((byte) 12); // block_para4 = 12
         bb.put((byte) 13); // block_para3 = 13
         bb.put((byte) 14); // block_para4 = 14
+    }
+
+    //######################### PKT7
+    public final int pkt7Length = headerLength + 7;
+    public byte paggr1_member1 = 2;
+    public short paggr1_member2 = 30;;
+    public float paggr1_member3 =2.72f;
+    public byte[] generate_PKT7() {
+        ByteBuffer bb = ByteBuffer.allocate(pkt7Length);
+        fill_CcsdsHeader(bb, 995, 7);
+        bb.put(paggr1_member1);
+        bb.putShort(paggr1_member2);
+        bb.putFloat(paggr1_member3);
+
+        sendToTmProcessor(bb);
+        return bb.array();
+    }
+
+    //########################### PKT8
+    public final int para_pkt8_count = 150;
+    public final int pkt8Length = headerLength + 1 + 7*para_pkt8_count;
+    public byte[] generate_PKT8() {
+        ByteBuffer bb = ByteBuffer.allocate(pkt8Length);
+        fill_CcsdsHeader(bb, 995, 8);
+        bb.position(headerLength);
+        bb.put((byte)para_pkt8_count);
+        for(int i=0; i< para_pkt8_count; i++) {
+            bb.put((byte)i);
+            bb.putShort((short)(i*2));
+            bb.putFloat(i/2.0f);
+        }
+
+        sendToTmProcessor(bb);
+        return bb.array();
+    }
+
+    //########################### PKT9
+    public final int pkt9Length = headerLength + 6;
+    public byte[] generate_PKT9(short obId, int v) {
+        ByteBuffer bb = ByteBuffer.allocate(pkt8Length);
+        fill_CcsdsHeader(bb, 995, 9);
+        bb.putShort(obId);
+        bb.putInt(v);
+        
+        sendToTmProcessor(bb);
+        return bb.array();
     }
 
     private void putFixedStringParam(ByteBuffer bb, String value, int bits) {

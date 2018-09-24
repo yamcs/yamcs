@@ -1,10 +1,10 @@
 import { Action } from '../Action';
+import { EventChangedEvent, EventEvent } from '../events';
 import Point from '../Point';
 import RenderContext from '../RenderContext';
-import Timeline from '../Timeline';
-import { EventChangedEvent, EventEvent } from '../events';
 import { ClipPath, Ellipse, G, Line, Path, Rect, Set, Text, Title } from '../tags';
-import { isAfter, isBefore, toDate } from '../utils';
+import Timeline from '../Timeline';
+import { generateId, isAfter, isBefore, toDate } from '../utils';
 import Band, { BandOptions } from './Band';
 
 /**
@@ -219,13 +219,13 @@ export default class EventBand extends Band {
           }
 
           textOutside = false;
-          if (this.opts.wrap && availableTitleWidth < fm.width) {
+          if (this.opts.wrap !== false && availableTitleWidth < fm.width) {
             renderStopX += fm.width + this.style.eventLeftMargin;
             textOutside = true;
           }
         }
 
-        const id = Timeline.nextId();
+        const id = generateId();
         if (this.opts.interactive) {
           this.timeline.registerActionTarget('click', id);
           this.timeline.registerActionTarget('contextmenu', id);
@@ -461,13 +461,14 @@ export default class EventBand extends Band {
       }));
     }
 
+    if (event.userObject.tooltip) {
+      eventG.addChild(new Title({}, event.userObject.tooltip));
+    }
+
     let title = event.userObject.title;
     if (title) {
       if (event.drawInfo!.offscreenStart) {
         title = '◀' + title;
-      }
-      if (event.userObject.tooltip) {
-        eventG.addChild(new Title({}, event.userObject.tooltip));
       }
       const fm = this.timeline.getFontMetrics(title, this.style.textSize);
       const titleFitsInBox = fm.width <= event.drawInfo!.availableTitleWidth;
@@ -497,7 +498,7 @@ export default class EventBand extends Band {
         }, title));
       } else if (this.opts.wrap || titleFitsInBox) { // Render text inside box
         // A clipPath for the text, with same dimensions as background
-        const pathId = Timeline.nextId();
+        const pathId = generateId();
         eventG.addChild(new ClipPath({ id: pathId }).addChild(
           new Rect({
             x: rectX,

@@ -1,10 +1,10 @@
 import { Action } from '../Action';
-import RenderContext from '../RenderContext';
-import Timeline from '../Timeline';
 import Band, { BandOptions } from '../core/Band';
 import { EventEvent } from '../events';
+import RenderContext from '../RenderContext';
 import { Ellipse, G, Line, Rect, Set, Text, Title } from '../tags';
-import { isAfter, isBefore, toDate } from '../utils';
+import Timeline from '../Timeline';
+import { generateId, isAfter, isBefore, toDate } from '../utils';
 
 const leftTextMargin = 20;
 
@@ -153,7 +153,7 @@ export default class AttitudeBand extends Band {
       for (const event of line) {
         const start = toDate(event.start);
         const stop = toDate(event.stop);
-        const id = Timeline.nextId();
+        const id = generateId();
 
         const bgRect = new Rect({
           id,

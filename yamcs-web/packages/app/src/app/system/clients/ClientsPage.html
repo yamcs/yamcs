@@ -2,6 +2,12 @@
   <app-system-toolbar>Clients</app-system-toolbar>
 
   <div class="panel-content">
+
+    <mat-button-toggle-group name="fontStyle" style="margin-bottom: 24px">
+      <mat-button-toggle value="current" selected>Current instance</mat-button-toggle>
+      <mat-button-toggle value="all">All instances</mat-button-toggle>
+    </mat-button-toggle-group>
+
     <table mat-table
            [dataSource]="dataSource"
            class="ya-data-table"

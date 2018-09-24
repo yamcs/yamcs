@@ -6,21 +6,14 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
 
 
-@RunWith(Parameterized.class)
 public class EnumTest extends YarchTestCase {
     int n=10;
     
-    @Parameter
-    public String seconf; 
-
     
     private void populate(String tblname) throws Exception {
-        ydb.execute("create table "+tblname+"(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName)) "+seconf);
+        ydb.execute("create table "+tblname+"(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName))");
         ydb.execute("create stream "+tblname+"_in(gentime timestamp, packetName enum, packet binary)");
         ydb.execute("insert into "+tblname+" select * from "+tblname+"_in");
 

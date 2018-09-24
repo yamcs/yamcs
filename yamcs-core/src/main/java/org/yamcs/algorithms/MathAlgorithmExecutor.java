@@ -8,6 +8,7 @@ import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.util.LocatedException;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
@@ -15,6 +16,7 @@ import org.yamcs.xtce.MathAlgorithm;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.MathOperationCalibratorFactory;
+import org.yamcs.xtceproc.ParameterTypeUtils;
 
 /**
  * Executes XTCE math algorithms {@link MathAlgorithm}
@@ -27,19 +29,16 @@ import org.yamcs.xtceproc.MathOperationCalibratorFactory;
 public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
     final Parameter outParam;
     final double[] input;
-    final List<InputParameter> inputList;
     final MathOperationEvaluator evaluator;
 
     public MathAlgorithmExecutor(Algorithm algorithmDef, AlgorithmExecutionContext execCtx, MathAlgorithm algorithm) {
         super(algorithmDef, execCtx);
         OutputParameter op = algorithmDef.getOutputList().get(0);
         outParam = op.getParameter();
-        inputList = algorithmDef.getInputList();
-        input = new double[inputList.size()];
+        input = new double[algorithmDef.getInputList().size()];
         evaluator = getEvaluator(algorithm);
     }
 
-   
 
     @Override
     public List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
@@ -47,18 +46,20 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
         pv.setAcquisitionTime(acqTime);
         pv.setGenerationTime(genTime);
         double value = evaluator.evaluate(input);
-        ScriptAlgorithmExecutor.setEngValue(outParam.getParameterType(), pv, Double.valueOf(value));
-
+        Value engValue = ParameterTypeUtils.getEngValue(outParam.getParameterType(), Double.valueOf(value));
+        if(engValue==null) {
+            execCtx.getProcessorData().getEventProducer()
+            .sendWarning(getAlgorithm().getName(), "Cannot convert raw value from algorithm output "
+                    + "'"+value+"' into "+outParam.getParameterType());
+            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
+        } else {
+            pv.setEngineeringValue(engValue);
+        }
         return Arrays.asList(pv);
     }
 
     @Override
-    protected void updateInput(InputParameter inputParameter, ParameterValue newValue) {
-        final int idx = inputList.indexOf(inputParameter);
-        if (idx == -1) {
-            log.warn("Received value for input parameter {} that is not in the list", inputParameter);
-            return;
-        }
+    protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue) {
         Value v = inputParameter.getParameterInstance().useCalibratedValue() ? newValue.getEngValue()
                 : newValue.getRawValue();
 

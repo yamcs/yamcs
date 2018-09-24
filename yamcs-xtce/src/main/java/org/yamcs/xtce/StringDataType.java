@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.protobuf.Yamcs.Value.Type;
+
 public class StringDataType extends BaseDataType {
     private static final long serialVersionUID = 2L;
 
@@ -15,11 +17,11 @@ public class StringDataType extends BaseDataType {
      * Initial value - used as default value for arguments
      */
     String initialValue;
-    StringDataType(String name) {
+    protected StringDataType(String name) {
         super(name);
     }
     
-    StringDataType(StringDataType t) {
+    protected StringDataType(StringDataType t) {
         super(t);
         this.sizeRangeInCharacters = t.sizeRangeInCharacters;
         this.initialValue = t.initialValue;
@@ -50,4 +52,17 @@ public class StringDataType extends BaseDataType {
     public Object parseString(String stringValue) {       
         return stringValue;
     }
+
+    @Override
+    public Type getValueType() {
+        return Type.STRING;
+    }
+    
+
+    @Override
+    public String getTypeAsString() {
+        return "string";
+    }
+    
+
 }

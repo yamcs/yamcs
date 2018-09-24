@@ -1,0 +1,20 @@
+<table yaSimpleTable class="display-navigator mat-typography" *ngIf="folder">
+  <tr *ngIf="folder.location"
+      class="no-select"
+      (click)="selectParent()">
+    <td class="icon" width="1"><mat-icon class="icon12">folder</mat-icon></td>
+    <td>..</td>
+  </tr>
+  <tr *ngFor="let prefix of folder.prefixes"
+      class="no-select"
+      (click)="selectPrefix(prefix)">
+    <td class="icon" width="1"><mat-icon class="icon12">folder</mat-icon></td>
+    <td style="white-space: nowrap">{{ prefix | filename }}</td>
+  </tr>
+  <tr *ngFor="let object of folder.objects"
+      class="no-select"
+      (click)="selectObject(object)">
+    <td class="icon" width="1"><mat-icon class="icon12">bookmark_border</mat-icon></td>
+    <td style="white-space: nowrap">{{ object.name | filename }}</td>
+  </tr>
+</table>

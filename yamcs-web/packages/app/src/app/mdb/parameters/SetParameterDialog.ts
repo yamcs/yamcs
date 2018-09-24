@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Parameter, Value } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -36,6 +36,11 @@ export class SetParameterDialog {
           value: [null, Validators.pattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)]
         });
         break;
+      case 'enumeration':
+        this.form = formBuilder.group({
+          value: [null, Validators.required]
+        });
+        break;
       default:
         throw new Error(`Unexpected type ${this.parameter.type!.engType}`);
     }
@@ -53,6 +58,9 @@ export class SetParameterDialog {
         break;
       case 'double':
         value = { type: 'DOUBLE', doubleValue: userValue };
+        break;
+      case 'enumeration':
+        value = { type: 'STRING', stringValue: userValue };
         break;
       case 'integer':
         value = { type: 'SINT32', sint32Value: userValue };

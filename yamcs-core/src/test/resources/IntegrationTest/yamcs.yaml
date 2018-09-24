@@ -3,11 +3,3 @@ instances:
 
 incomingDir: /tmp/yamcs-incoming
 dataDir: /tmp/yamcs-IntegrationTest-data
-
-webConfig: 
-    webRoot: "/tmp/yamcs-web"
-    port: 9190
-
-
-artemisConfigFile: artemis-secure.xml
-

@@ -18,10 +18,6 @@ public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements P
         super(t);
     }
 
-    @Override
-    public String getTypeAsString() {
-        return "time";
-    }
 
     @Override
     public List<UnitType> getUnitSet() {
@@ -47,5 +43,9 @@ public class AbsoluteTimeParameterType extends AbsoluteTimeDataType implements P
         return "AbsoluteTimeParameterType name:" + name
                 + ((getReferenceTime() != null) ? ", referenceTime:" + getReferenceTime() : "");
 
+    }
+    @Override
+    public ParameterType copy() {
+        return new AbsoluteTimeParameterType(this);
     }
 }

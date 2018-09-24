@@ -1,14 +1,14 @@
-import { Component, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { MatDialog } from '@angular/material';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Instance, Parameter, ParameterValue } from '@yamcs/client';
-import { YamcsService } from '../../core/services/YamcsService';
-import { BehaviorSubject ,  Subscription } from 'rxjs';
-import { Title } from '@angular/platform-browser';
-import { ValuePipe } from '../../shared/pipes/ValuePipe';
-import { UnitsPipe } from '../../shared/pipes/UnitsPipe';
-import { SetParameterDialog } from './SetParameterDialog';
-import { MatDialog } from '@angular/material';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
+import { YamcsService } from '../../core/services/YamcsService';
+import { UnitsPipe } from '../../shared/pipes/UnitsPipe';
+import { ValuePipe } from '../../shared/pipes/ValuePipe';
+import { SetParameterDialog } from './SetParameterDialog';
 
 @Component({
   templateUrl: './ParameterPage.html',
@@ -86,10 +86,21 @@ export class ParameterPage implements OnDestroy {
     }
   }
 
+  isWritable() {
+    const parameter = this.parameter$.value;
+    if (parameter) {
+      return parameter.dataSource === 'LOCAL'
+        || parameter.dataSource === 'EXTERNAL1'
+        || parameter.dataSource === 'EXTERNAL2'
+        || parameter.dataSource === 'EXTERNAL3';
+    }
+    return false;
+  }
+
   maySetParameter() {
     const parameter = this.parameter$.value;
     if (parameter) {
-      return this.authService.hasSetParameterPrivilege(parameter.qualifiedName);
+      return this.authService.getUser()!.hasObjectPrivilege('WriteParameter', parameter.qualifiedName);
     }
     return false;
   }

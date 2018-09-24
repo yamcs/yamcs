@@ -1,0 +1,22 @@
+<div #wrapper class="wrapper">
+  <mat-sidenav-container>
+    <mat-sidenav mode="side" [opened]="showNavigator$ | async">
+      <app-display-navigator [folder]="currentFolder$ | async"
+                             (prefixChange)="prefixChange($event)"
+                             (select)="openDisplay($event.name, true)">
+      </app-display-navigator>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <div #scrollPane class="scrollpane">
+        <ng-template app-frame-host></ng-template>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+
+  <div class="collapse-sidebar">
+    <button mat-icon-button (click)="toggleNavigator()">
+      <mat-icon [class.opened]="showNavigator$ | async">last_page</mat-icon>
+    </button>
+  </div>
+</div>

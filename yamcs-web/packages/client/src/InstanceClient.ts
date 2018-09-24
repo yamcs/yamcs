@@ -1,10 +1,10 @@
 import { Observable } from 'rxjs';
+import { AlarmsWrapper, AlgorithmsWrapper, BucketsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
+import { Algorithm, Command, Container, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, SpaceSystem } from './types/mdb';
+import { Alarm, AlarmSubscriptionResponse, BatchDownloadParameterValuesOptions, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
+import { Bucket, ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, CreateBucketRequest, EditCommandQueueEntryOptions, EditCommandQueueOptions, InstanceSubscriptionResponse, Link, LinkSubscriptionResponse, ListObjectsOptions, ListObjectsResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 import YamcsClient from './YamcsClient';
-import { AlarmsWrapper, AlgorithmsWrapper, ClientsWrapper, CommandHistoryEntryWrapper, CommandQueuesWrapper, CommandsWrapper, ContainersWrapper, EventsWrapper, IndexResult, LinksWrapper, PacketNameWrapper, ParametersWrapper, ProcessorsWrapper, RangesWrapper, RecordsWrapper, SamplesWrapper, ServicesWrapper, SourcesWrapper, SpaceSystemsWrapper, StreamsWrapper, TablesWrapper } from './types/internal';
-import { Algorithm, Command, Container, GetAlgorithmsOptions, GetCommandsOptions, GetContainersOptions, GetParametersOptions, NamedObjectId, Parameter, SpaceSystem } from './types/mdb';
-import { Alarm, AlarmSubscriptionResponse, CommandHistoryEntry, CreateEventRequest, CreateProcessorRequest, DisplayFolder, DownloadEventsOptions, DownloadPacketsOptions, DownloadParameterValuesOptions, EditReplayProcessorRequest, Event, EventSubscriptionResponse, GetAlarmsOptions, GetCommandHistoryOptions, GetEventsOptions, GetPacketIndexOptions, GetParameterRangesOptions, GetParameterSamplesOptions, GetParameterValuesOptions, IndexGroup, IssueCommandOptions, IssueCommandResponse, ParameterData, ParameterSubscriptionRequest, ParameterSubscriptionResponse, ParameterValue, Range, Sample, TimeSubscriptionResponse, Value } from './types/monitoring';
-import { ClientInfo, ClientSubscriptionResponse, CommandQueue, CommandQueueEventSubscriptionResponse, CommandQueueSubscriptionResponse, ConnectionInfoSubscriptionResponse, EditCommandQueueEntryOptions, EditCommandQueueOptions, Link, LinkSubscriptionResponse, Processor, ProcessorSubscriptionResponse, Record, Service, StatisticsSubscriptionResponse, Stream, Table } from './types/system';
 
 export class InstanceClient {
 
@@ -19,6 +19,11 @@ export class InstanceClient {
   async getTimeUpdates(): Promise<TimeSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getTimeUpdates();
+  }
+
+  async getInstanceUpdates(): Promise<InstanceSubscriptionResponse> {
+    this.prepareWebSocketClient();
+    return this.webSocketClient.getInstanceUpdates();
   }
 
   async getEvents(options: GetEventsOptions = {}) {
@@ -50,7 +55,7 @@ export class InstanceClient {
 
   async createEvent(options: CreateEventRequest) {
     const body = JSON.stringify(options);
-    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/archive/${this.instance}/events2`, {
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/archive/${this.instance}/events`, {
       body,
       method: 'POST',
     });
@@ -229,9 +234,13 @@ export class InstanceClient {
     return await response.json() as ClientInfo;
   }
 
-  async getClientUpdates(): Promise<ClientSubscriptionResponse> {
+  async getClientUpdates(allInstances = false): Promise<ClientSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getClientUpdates(this.instance);
+    if (allInstances) {
+      return this.webSocketClient.getClientUpdates();
+    } else {
+      return this.webSocketClient.getClientUpdates(this.instance);
+    }
   }
 
   async getServices(): Promise<Service[]> {
@@ -241,11 +250,17 @@ export class InstanceClient {
     return wrapper.service || [];
   }
 
+  async getService(name: string): Promise<Service> {
+    const url = `${this.yamcs.apiUrl}/services/${this.instance}/${name}`;
+    const response = await this.yamcs.doFetch(url);
+    return await response.json() as Service;
+  }
+
   async startService(name: string) {
     const body = JSON.stringify({
       state: 'running'
     })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}`, {
       body,
       method: 'PATCH',
     });
@@ -255,7 +270,7 @@ export class InstanceClient {
     const body = JSON.stringify({
       state: 'stopped'
     })
-    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/service/${name}`, {
+    return this.yamcs.doFetch(`${this.yamcs.apiUrl}/services/${this.instance}/${name}`, {
       body,
       method: 'PATCH',
     });
@@ -396,6 +411,11 @@ export class InstanceClient {
     return url + this.queryString(options);
   }
 
+  getBatchParameterValuesDownloadURL(options: BatchDownloadParameterValuesOptions = {}) {
+    const url = `${this.yamcs.apiUrl}/archive/${this.instance}/downloads/parameters`;
+    return url + this.queryString(options);
+  }
+
   async getParameterValueUpdates(options: ParameterSubscriptionRequest): Promise<ParameterSubscriptionResponse> {
     this.prepareWebSocketClient();
     return this.webSocketClient.getParameterValueUpdates(options);
@@ -462,19 +482,57 @@ export class InstanceClient {
     return await response.json() as Algorithm;
   }
 
-  async getDisplayInfo() {
-    const url = `${this.yamcs.apiUrl}/displays/${this.instance}`;
-    const response = await this.yamcs.doFetch(url);
-    return await response.json() as DisplayFolder;
+  async createBucket(options: CreateBucketRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${this.instance}`, {
+      body,
+      method: 'POST',
+    });
+    return await response.json() as Event;
   }
 
-  /**
-   * Returns a string representation of the display definition file
-   */
-  async getDisplay(path: string) {
-    const url = `${this.yamcs.staticUrl}/${this.instance}/displays${path}`;
-    const response = await this.yamcs.doFetch(url);
-    return await response.text();
+  async getBuckets(): Promise<Bucket[]> {
+    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/buckets/${this.instance}`);
+    const wrapper = await response.json() as BucketsWrapper;
+    return wrapper.bucket || [];
+  }
+
+  async deleteBucket(name: string) {
+    const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${name}`;
+    return await this.yamcs.doFetch(url, {
+      method: 'DELETE',
+    });
+  }
+
+  async listObjects(bucket: string, options: ListObjectsOptions = {}): Promise<ListObjectsResponse> {
+    const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}`;
+    const response = await this.yamcs.doFetch(url + this.queryString(options));
+    return await response.json() as ListObjectsResponse;
+  }
+
+  async getObject(bucket: string, name: string) {
+    return await this.yamcs.doFetch(this.getObjectURL(bucket, name));
+  }
+
+  getObjectURL(bucket: string, name: string) {
+    return `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}/${name}`;
+  }
+
+  async uploadObject(bucket: string, name: string, value: Blob) {
+    const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}`;
+    const formData = new FormData();
+    formData.set(name, value, name);
+    return await this.yamcs.doFetch(url, {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async deleteObject(bucket: string, name: string) {
+    const url = `${this.yamcs.apiUrl}/buckets/${this.instance}/${bucket}/${name}`;
+    return await this.yamcs.doFetch(url, {
+      method: 'DELETE',
+    });
   }
 
   closeConnection() {

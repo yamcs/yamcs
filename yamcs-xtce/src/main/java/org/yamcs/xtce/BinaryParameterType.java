@@ -1,7 +1,5 @@
 package org.yamcs.xtce;
 
-import java.util.Set;
-
 public class BinaryParameterType extends BinaryDataType implements ParameterType {
     private static final long serialVersionUID = 200805131551L;
     
@@ -22,5 +20,9 @@ public class BinaryParameterType extends BinaryDataType implements ParameterType
     @Override
     public String getTypeAsString() {
         return "binary";
+    }
+    @Override
+    public ParameterType copy() {
+        return new BinaryParameterType(this);
     }
 }

@@ -1,0 +1,32 @@
+mat-toolbar {
+  border-bottom: 1px solid #d3d3d3;
+  background-color: #fff;
+  box-sizing: content-box;
+  color: rgba(0, 0, 0, .654);
+}
+
+.spin {
+  -webkit-animation: vs-spin 2s infinite linear;
+  animation: vs-spin 2s infinite linear;
+}
+
+@-webkit-keyframes vs-spin {
+  0% {
+    -webkit-transform: rotate(0deg) scaleX(-1);
+    transform: rotate(0deg) scaleX(-1);
+  }
+  100% {
+    -webkit-transform: rotate(359deg) scaleX(-1);
+    transform: rotate(359deg) scaleX(-1);
+  }
+}
+@keyframes vs-spin {
+  0% {
+    -webkit-transform: rotate(0deg) scaleX(-1);
+    transform: rotate(0deg) scaleX(-1);
+  }
+  100% {
+    -webkit-transform: rotate(359deg) scaleX(-1);
+    transform: rotate(359deg) scaleX(-1);
+  }
+}

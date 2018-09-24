@@ -10,6 +10,7 @@ import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentType;
+import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.OperatorType;
 import org.yamcs.xtce.Parameter;
@@ -94,7 +95,7 @@ public class MetaCommandProcessor {
                 Value argTypeInitialValue = null;
                 if(!argAssignment.containsKey(a.getName())) {
                     argInitialValue = a.getInitialValue();
-                    argTypeInitialValue = ArgumentTypeProcessor.getInitialValue(a.getArgumentType());
+                    argTypeInitialValue = DataTypeProcessor.getInitialValue((BaseDataType)a.getArgumentType());
                     if(argInitialValue == null && argTypeInitialValue == null) {
                         throw new ErrorInCommand("No value provided for argument "+a.getName()+" (and the argument has no default value either)");
                     }
@@ -148,7 +149,7 @@ public class MetaCommandProcessor {
                        Parameter param = c.getParameter();
                        if(param!=null) {
                            try {
-                               Value v = ParameterTypeProcessor.parseString(param.getParameterType(), c.getStringValue());
+                               Value v = ParameterTypeUtils.parseString(param.getParameterType(), c.getStringValue());
                                params.put(param, v);
                            } catch (IllegalArgumentException e) {
                                throw new ErrorInCommand("Cannot parse '"+c.getStringValue()+"' as value for parameter "+param.getQualifiedName());

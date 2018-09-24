@@ -1,0 +1,40 @@
+<div class="panel-content" *ngIf="model$ | async as model">
+  <ng-container *ngIf="model.parameters.length; else empty">
+    <app-multiple-parameter-table
+          *ngIf="!model.scroll"
+          [model]="model"
+          [buffer]="buffer"
+          [paused]="paused$ | async"
+          [showActions]="showActions$ | async"
+          [selection]="selection"
+          [instance]="instance"
+          (moveUp)="moveUp($event)"
+          (moveDown)="moveDown($event)">
+    </app-multiple-parameter-table>
+
+    <app-scrolling-parameter-table
+          *ngIf="model.scroll"
+          [model]="model"
+          [buffer]="buffer"
+          [paused]="paused$ | async"
+          [showActions]="showActions$ | async"
+          [instance]="instance"
+          (moveLeft)="moveUp($event)"
+          (moveRight)="moveDown($event)"
+          (removeColumn)="removeParameter($event)"
+          (bufferSize)="setBufferSize($event)">
+    </app-scrolling-parameter-table>
+  </ng-container>
+
+  <ng-template #empty>
+    <app-empty-message>
+      <div style="text-align: left">
+        <p>
+          This file is empty.
+          <br>Start by
+          <a class="ya-link" style="cursor: pointer" (click)="showAddParameterDialog()">adding a parameter</a>.
+        </p>
+      </div>
+    </app-empty-message>
+  </ng-template>
+</div>

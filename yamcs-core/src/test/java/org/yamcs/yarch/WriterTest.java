@@ -7,22 +7,15 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
 import org.yamcs.utils.TimeEncoding;
 
-@RunWith(Parameterized.class)
 public class WriterTest extends YarchTestCase {
     int n = 10;
-
-    @Parameter
-    public String seconf;
 
     @Test
     public void TestUpsert() throws Exception {
         ydb.execute("create table tbl_upsert"
-                + "(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName)) " + seconf);
+                + "(gentime timestamp, packetName enum, packet binary, primary key(gentime,packetName))");
         ydb.execute("create stream tbl_upsert_in(gentime timestamp, packetName enum, packet binary)");
         ydb.execute("upsert into tbl_upsert select * from tbl_upsert_in");
 
@@ -64,7 +57,7 @@ public class WriterTest extends YarchTestCase {
     public void TestUpsertAppend() throws Exception {
         long t = TimeEncoding.parse("2017-11-17T13:48:33.323");
         ydb.execute("create table tbl_upsert_append "
-                + "(gentime timestamp, name string, seq int, primary key(gentime,name, seq)) " + seconf);
+                + "(gentime timestamp, name string, seq int, primary key(gentime,name, seq))");
         ydb.execute("create stream tbl_upsert_append_in(gentime timestamp)");
         ydb.execute("upsert_append into tbl_upsert_append select * from tbl_upsert_append_in");
 

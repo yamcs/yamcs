@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
@@ -112,6 +114,8 @@ public class XtceLoader implements SpaceSystemLoader {
             return xtceReader.readXmlDocument(xtceFileName);
         } catch (FileNotFoundException e) {
             throw new ConfigurationException("XTCE file not found: " + xtceFileName);
+        } catch (XMLStreamException e) {
+            throw new DatabaseLoadException("Cannot parse file: '"+xtceFileName+": "+e.toString(), e);
         } catch (Exception e) {
             throw new DatabaseLoadException(e);
         }

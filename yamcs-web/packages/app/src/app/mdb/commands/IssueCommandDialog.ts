@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Argument, ArgumentAssignment, Command } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -15,7 +15,6 @@ export class IssueCommandDialog {
 
   constructor(
     private dialogRef: MatDialogRef<IssueCommandDialog>,
-    formBuilder: FormBuilder,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {

@@ -1,5 +1,48 @@
-Version 4.4.3 released 
+Version 4.6.3 released 28-August-2018
+- limit the number of parameters that can be stored in one segment of the
+parameter arhchive to avoid OOM errors
+- various small bugfixes
+
+
+Version 4.6.2 released 18-July-2018
+- better cleanup before instance restart
+- store CCSDS TM Index also in the tablespace (rahter than in a separate
+rocksdb database)
+
+
+Version 4.6.1 released 18-July-2018
+- added support for XTCE IndirectParameterRefEntry
+- added EXTERNAL data sources to better support writable parameters not
+managed by yamcs
+
+
+Version 4.6.0 released 11-July-2018
+- introduced aggregate and array data types (not yet fully working with the
+parameter archive)
+- introduced a V7 spreadsheet loader that makes a distinction between
+parameters/arguments and their data types 
+- added support for MIL-STD-1750A floating point encoding (32 and 48 bits)
+- added a ECSS/PUS packet preprocessor 
+- added a CCSDS Unsegmented Time Code decoder
+- config: Deprecate webConfig in favour of args under HttpServer
+- archive: Add File System-based bucket implementation
+- web: Add file browser for quickly accessing displays in standalone mode
+- web: Add full-screen support for both displays and layouts
+- web: Add parameter table viewer
+- web: Fix top instance switcher
+
+
+Version 4.5.0 released 26-Jun-2018
 - added a simple object storage API (buckets)
+- security improvements - it is possible now to stack multiple AuthModules to
+provide authentication/authorization from diferent sources.
+- added a Kerberos/Spnego authModule
+- Introduced YamcsService as a required interface for global and instance services
+- Show contextual calibrators in web interface
+- Added various CLI commands (for buckets, processors, clients)
+- General clean-up of Yaml configuration files to match closer to the upcoming
+Server manual
+- added a last value cache that is present all the time.
 
 Version 4.4.2 released 23-May-2018
 - yamcs-web: support multiple series plots

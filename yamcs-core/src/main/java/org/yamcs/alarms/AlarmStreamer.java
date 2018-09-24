@@ -3,7 +3,6 @@ package org.yamcs.alarms;
 import java.util.ArrayList;
 
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.security.Privilege;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -68,16 +67,7 @@ public class AlarmStreamer implements AlarmListener {
 
     @Override
     public void notifyParameterValueUpdate(ActiveAlarm activeAlarm) {
-        TupleDefinition tdef = AlarmServer.ALARM_TUPLE_DEFINITION.copy();
-        ArrayList<Object> al = getTupleKey(activeAlarm, AlarmEvent.UPDATED);
-
-        tdef.addColumn("updatedPV", PARAMETER_DATA_TYPE);
-        NamedObjectId id = NamedObjectId.newBuilder()
-                .setName(activeAlarm.currentValue.getParameter().getQualifiedName()).build();
-        al.add(activeAlarm.currentValue.toGpb(id));
-
-        Tuple t = new Tuple(tdef, al);
-        stream.emitTuple(t);
+        //do not send parameter updates
     }
 
     @Override
@@ -87,8 +77,8 @@ public class AlarmStreamer implements AlarmListener {
 
         tdef.addColumn("acknowledgedBy", DataType.STRING);
         String username = activeAlarm.usernameThatAcknowledged;
-        if (username == null) {
-            username = (activeAlarm.autoAcknowledge) ? "autoAcknowledged" : Privilege.getInstance().getDefaultUser();
+        if (activeAlarm.autoAcknowledge) {
+            username = "autoAcknowledged";
         }
         al.add(username);
 

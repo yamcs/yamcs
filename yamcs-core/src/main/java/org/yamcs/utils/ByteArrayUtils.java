@@ -114,6 +114,16 @@ public class ByteArrayUtils {
                 
         return a;
     }
+    public static long decodeLong(byte[] a, int offset) {
+        return ((a[offset]   & 0xFFl) <<56) +
+                ((a[offset+1] & 0xFFl) <<48) +
+                ((a[offset+2] & 0xFFl) <<40 ) +
+                ((a[offset+3] & 0xFFl) <<32 ) +
+                ((a[offset+4] & 0xFFl) <<24 ) +
+                ((a[offset+5] & 0xFFl) <<16 ) +
+                ((a[offset+6] & 0xFFl) <<8 ) +
+                ((a[offset+7] & 0xFFl)     );
+    }
     
     public static int decodeInt(byte[] a, int offset) {
         return ((a[offset]   & 0xFF) <<24) +

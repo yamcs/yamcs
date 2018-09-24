@@ -24,18 +24,6 @@ export interface Value {
   booleanValue?: boolean;
 }
 
-export interface DisplayFolder {
-  name: string;
-  path: string;
-  folder?: DisplayFolder[];
-  file?: DisplayFile[];
-}
-
-export interface DisplayFile {
-  name: string;
-  path: string;
-}
-
 export type EventSeverity =
   'INFO' | 'WARNING' | 'ERROR' |
   'WATCH' | 'DISTRESS' | 'CRITICAL' | 'SEVERE'
@@ -113,7 +101,6 @@ export interface TimeSubscriptionResponse {
 
 export interface ManagementSubscriptionRequest {
   clientInfo?: boolean;
-  processorInfo?: boolean;
   processorStatistics?: boolean;
 }
 
@@ -272,6 +259,14 @@ export interface DownloadParameterValuesOptions {
   start?: string;
   stop?: string;
   norepeat?: boolean;
+  format?: 'csv';
+  order?: 'asc' | 'desc';
+}
+
+export interface BatchDownloadParameterValuesOptions {
+  parameters?: string | string[];
+  start?: string;
+  stop?: string;
   format?: 'csv';
   order?: 'asc' | 'desc';
 }

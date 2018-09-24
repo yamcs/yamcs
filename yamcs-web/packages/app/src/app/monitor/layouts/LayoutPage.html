@@ -1,8 +1,8 @@
-<app-monitor-page>
+<app-monitor-page *ngIf="layoutState$ | async as layoutState">
   <app-monitor-toolbar>
     <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
       <mat-icon>arrow_back</mat-icon>
-    </a> {{ layout?.name }}
+    </a> {{ layoutName }}
 
     &nbsp;&nbsp;&nbsp;
     <button mat-button
@@ -13,34 +13,23 @@
       SAVE
     </button>
 
-    <button mat-button
-            color="primary"
-            (click)="renameLayout()"
-            disabled>
-      <mat-icon>edit</mat-icon>
-      RENAME
-    </button>
-
-    <button mat-button
-            color="primary"
-            (click)="removeLayout()">
-      <mat-icon>delete_forever</mat-icon>
-      DELETE
-    </button>
-
     <mat-menu #arrangeMenu="matMenu" overlapTrigger="false">
-      <button mat-menu-item (click)="layoutComponent.tileFrames()">Tile Displays</button>
-      <button mat-menu-item (click)="layoutComponent.cascadeFrames()">Cascade Displays</button>
+      <button mat-menu-item (click)="layout.tileFrames()">Tile Displays</button>
+      <button mat-menu-item (click)="layout.cascadeFrames()">Cascade Displays</button>
     </mat-menu>
     <button mat-button [matMenuTriggerFor]="arrangeMenu" color="primary">
       ARRANGE
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
+    <button mat-button color="primary" (click)="goFullscreen()">
+      <mat-icon>fullscreen</mat-icon>
+      FULL SCREEN
+    </button>
   </app-monitor-toolbar>
 
-  <app-layout-component #layoutComponent
-                        [startWithOpenedNavigator]="false"
-                        [layoutState]="layout"
-                        (stateChange)="onStateChange($event)">
-  </app-layout-component>
+  <app-layout #layout
+              [startWithOpenedNavigator]="true"
+              [layoutState]="layoutState"
+              (stateChange)="onStateChange($event)">
+  </app-layout>
 </app-monitor-page>

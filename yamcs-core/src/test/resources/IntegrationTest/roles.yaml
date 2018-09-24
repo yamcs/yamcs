@@ -1,0 +1,25 @@
+Role1:
+  ReadParameter: [".*IntegerPara.*"]
+  WriteParameter: []
+  ReadPacket: ["PP_.*", ".*"]
+  Command: [".*INT_ARG_TC.*"]
+  System: ["ControlProcessor", "ControlCommandQueue", "Command", "GetMissionDatabase", "ControlArchiving", "WriteEvents"]
+
+Operator:
+  ReadParameter: [".*"]
+  WriteParameter: []
+  ReadPacket: ["PP_.*", ".*"]
+  Command: [".*"]
+  InsertCommandQueue: ["ops"]
+  System: ["ControlProcessor", "ModifyCommandHistory", "ControlCommandQueue", "Command", "GetMissionDatabase", 
+"ControlArchiving", "WriteEvents"]
+
+Administrator:
+  ReadParameter: [".*"]
+  WriteParameter: [".*"]
+  ReadPacket: [".*"]
+  Command: [".*"]
+  System: ["ControlProcessor", "ModifyCommandHistory", "ControlCommandQueue", "Command", "GetMissionDatabase", 
+"ControlArchiving", "ControlServices", "ReadTables", "WriteTables",  "WriteEvents"]
+
+EmptyRole:

@@ -141,19 +141,14 @@ public class ServerConnection {
             }
         }
 
-        if (simulator.getSimWindow() != null) {
-            simulator.getSimWindow().setServerStatus(id, ServerConnection.ConnectionStatus.CONNECTING);
-        }
         try {
             tcServerSocket = new ServerSocket(tcPort);
             tcSocket = tcServerSocket.accept();
             tcInputStream = new DataInputStream(tcSocket.getInputStream());
             tcConnected = true;
-            logMessage("Connected TC: " + tcSocket.getInetAddress() + ":" + tcSocket.getPort());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        updateGui();
     }
 
     private void connectLos() {
@@ -167,18 +162,14 @@ public class ServerConnection {
             }
         }
 
-        if (simulator.getSimWindow() != null)
-            simulator.getSimWindow().setServerStatus(id, ServerConnection.ConnectionStatus.CONNECTING);
         try {
             log.info("Waiting for LOS connection from server {}", id);
             losServerSocket = new ServerSocket(losPort);
             losSocket = losServerSocket.accept();
             losConnected = true;
-            logMessage("Connected TM DUMP: " + losSocket.getInetAddress() + ":" + losSocket.getPort());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        updateGui();
     }
 
     private void connectTm() {
@@ -193,31 +184,16 @@ public class ServerConnection {
             }
         }
 
-        if (simulator.getSimWindow() != null)
-            simulator.getSimWindow().setServerStatus(id, ServerConnection.ConnectionStatus.CONNECTING);
         try {
             log.info("Waiting for TM connection from server {}", id);
             tmServerSocket = new ServerSocket(tmPort);
             tmSocket = tmServerSocket.accept();
             tmConnected = true;
-            logMessage("Connected TM: " + tmSocket.getInetAddress() + ":"  + tmSocket.getPort());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        updateGui();
     }
 
-    private void updateGui() {
-        if (simulator.getSimWindow() != null)
-        if (tcConnected && tmConnected & losConnected) {
-            simulator.getSimWindow().setServerStatus(id, ServerConnection.ConnectionStatus.CONNECTED);
-        }
-    }
-    private void logMessage(String message) {
-        log.info(message);
-        if (simulator.getSimWindow() != null)
-            simulator.getSimWindow().addLog(id, message + "\n");
-    }
 
     public boolean isTcConnected() {
         return tcConnected;

@@ -1,11 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "lerna": "lerna",
-    "bootstrap": "lerna bootstrap",
-    "clean": "lerna clean",
-    "build": "lerna run build",
-    "watch": "lerna run --parallel watch"
+    "build": "wsrun build --stages",
+    "watch": "wsrun watch --parallel"
   },
   "workspaces": {
     "packages": [
@@ -16,6 +13,6 @@
     ]
   },
   "devDependencies": {
-    "lerna": "^2.9.1"
+    "wsrun": "^2.2.1"
   }
 }

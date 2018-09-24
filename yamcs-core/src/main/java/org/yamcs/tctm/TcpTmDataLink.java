@@ -23,7 +23,6 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
 
-
 public class TcpTmDataLink extends AbstractTmDataLink {
     protected volatile long packetcount = 0;
     protected Socket tmSocket;
@@ -44,7 +43,6 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     String packetInputStreamClassName;
     Object packetInputStreamArgs;
     PacketInputStream packetInputStream;
-    
 
     protected TcpTmDataLink(String instance, String name) {// dummy constructor needed by subclass constructors
         this.yamcsInstance = instance;
@@ -62,7 +60,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
 
     public TcpTmDataLink(String instance, String name, Map<String, Object> args) throws ConfigurationException {
         this(instance, name);
-        if(args.containsKey("tmHost")) { //this is when the config is specified in tcp.yaml
+        if (args.containsKey("tmHost")) { // this is when the config is specified in tcp.yaml
             host = YConfiguration.getString(args, "tmHost");
             port = YConfiguration.getInt(args, "tmPort");
         } else {
@@ -75,8 +73,6 @@ public class TcpTmDataLink extends AbstractTmDataLink {
 
         initPreprocessor(instance, args);
     }
-
-   
 
     protected void openSocket() throws IOException {
         InetAddress address = InetAddress.getByName(host);
@@ -134,9 +130,10 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                 }
                 byte[] packet = packetInputStream.readPacket();
                 packetcount++;
-                pwt =  packetPreprocessor.process(packet);
-                if(pwt!=null) 
+                pwt = packetPreprocessor.process(packet);
+                if (pwt != null) {
                     break;
+                }
             } catch (EOFException e) {
                 log.warn("Tm Connection closed");
                 tmSocket = null;
@@ -230,8 +227,8 @@ public class TcpTmDataLink extends AbstractTmDataLink {
         this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
         if (sysParamCollector != null) {
             sysParamCollector.registerProducer(this);
-            spLinkStatus = sysParamCollector.getNamespace()+"/"+name+"/linkStatus";
-            spDataCount = sysParamCollector.getNamespace()+"/"+name+"/dataCount";
+            spLinkStatus = sysParamCollector.getNamespace() + "/" + name + "/linkStatus";
+            spDataCount = sysParamCollector.getNamespace() + "/" + name + "/dataCount";
 
         } else {
             log.info("System variables collector not defined for instance {} ", yamcsInstance);

@@ -1,7 +1,12 @@
 package org.yamcs.web.rest.mdb;
 
-import org.yamcs.protobuf.Rest.ListSpaceSystemInfoResponse;
-import org.yamcs.protobuf.YamcsManagement.SpaceSystemInfo;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.yamcs.protobuf.Mdb.ListSpaceSystemsResponse;
+import org.yamcs.protobuf.Mdb.SpaceSystemInfo;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
@@ -27,7 +32,7 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
     }
 
     private void getSpaceSystemInfo(RestRequest req) throws HttpException {
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayGetMissionDatabase);
+        checkSystemPrivilege(req, SystemPrivilege.GetMissionDatabase);
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
 
@@ -50,7 +55,7 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
 
         boolean recurse = req.getQueryParameterAsBoolean("recurse", false);
 
-        ListSpaceSystemInfoResponse.Builder responseb = ListSpaceSystemInfoResponse.newBuilder();
+        List<SpaceSystem> matchedSpaceSystems = new ArrayList<>();
         if (req.hasQueryParameter("namespace")) {
             String namespace = req.getQueryParameter("namespace");
 
@@ -61,7 +66,7 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
 
                 String alias = spaceSystem.getAlias(namespace);
                 if (alias != null || (recurse && spaceSystem.getQualifiedName().startsWith(namespace))) {
-                    responseb.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, spaceSystem));
+                    matchedSpaceSystems.add(spaceSystem);
                 }
             }
         } else { // List all
@@ -69,10 +74,40 @@ public class MDBSpaceSystemRestHandler extends RestHandler {
                 if (matcher != null && !matcher.matches(spaceSystem)) {
                     continue;
                 }
-                responseb.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, spaceSystem));
+                matchedSpaceSystems.add(spaceSystem);
             }
         }
 
+        Collections.sort(matchedSpaceSystems, (p1, p2) -> {
+            return p1.getQualifiedName().compareTo(p2.getQualifiedName());
+        });
+
+        int totalSize = matchedSpaceSystems.size();
+
+        String next = req.getQueryParameter("next", null);
+        int limit = req.getQueryParameterAsInt("limit", 100);
+        if (next != null) {
+            NamedObjectPageToken pageToken = NamedObjectPageToken.decode(next);
+            matchedSpaceSystems = matchedSpaceSystems.stream().filter(p -> {
+                return p.getQualifiedName().compareTo(pageToken.name) > 0;
+            }).collect(Collectors.toList());
+        }
+
+        NamedObjectPageToken continuationToken = null;
+        if (limit < matchedSpaceSystems.size()) {
+            matchedSpaceSystems = matchedSpaceSystems.subList(0, limit);
+            SpaceSystem lastSpaceSystem = matchedSpaceSystems.get(limit - 1);
+            continuationToken = new NamedObjectPageToken(lastSpaceSystem.getQualifiedName());
+        }
+
+        ListSpaceSystemsResponse.Builder responseb = ListSpaceSystemsResponse.newBuilder();
+        responseb.setTotalSize(totalSize);
+        for (SpaceSystem s : matchedSpaceSystems) {
+            responseb.addSpaceSystem(XtceToGpbAssembler.toSpaceSystemInfo(req, s));
+        }
+        if (continuationToken != null) {
+            responseb.setContinuationToken(continuationToken.encodeAsString());
+        }
         completeOK(req, responseb.build());
     }
 }

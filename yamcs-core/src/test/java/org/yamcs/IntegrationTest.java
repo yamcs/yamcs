@@ -43,19 +43,16 @@ import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Web.ParameterSubscriptionRequest;
 import org.yamcs.protobuf.Web.ParameterSubscriptionResponse;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.protobuf.Yamcs;
+import org.yamcs.protobuf.Yamcs.AggregateValue;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TimeInfo;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
-import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.RouteHandler;
-import org.yamcs.web.websocket.ManagementResource;
 
 import com.google.gson.JsonStreamParser;
 import com.google.protobuf.Message;
@@ -254,6 +251,31 @@ public class IntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testRestArrayAggregateParameterGet() throws Exception {
+        packetGenerator.generate_PKT8();
+
+        ParameterSubscriptionRequest subscrList = getSubscription("/REFMDB/SUBSYS1/array_para1");
+        BulkGetParameterValueRequest req = BulkGetParameterValueRequest.newBuilder().setFromCache(true)
+                .addAllId(subscrList.getIdList())
+                .build();
+
+        String response = restClient.doRequest("/processors/IntegrationTest/realtime/parameters/mget",
+                HttpMethod.GET, toJson(req)).get();
+        BulkGetParameterValueResponse pvals = fromJson(response, BulkGetParameterValueResponse.newBuilder())
+                .build();
+        assertEquals(1, pvals.getValueCount());
+        ParameterValue pv = pvals.getValue(0);
+        Value v = pv.getEngValue();
+        assertEquals(Value.Type.ARRAY, v.getType());
+
+        Value v1 = v.getArrayValue(10);
+        assertEquals(Value.Type.AGGREGATE, v1.getType());
+        AggregateValue av = v1.getAggregateValue();
+        assertEquals("member1", av.getName(0));
+        assertEquals(5.0, av.getValue(2).getFloatValue(), 1e-5);
+    }
+
+    @Test
     public void testRestParameterSetInvalidParam() throws Exception {
         BulkSetParameterValueRequest.Builder bulkb = BulkSetParameterValueRequest.newBuilder();
         SetParameterValueRequest.Builder requestb = SetParameterValueRequest.newBuilder();
@@ -266,9 +288,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
                     toJson(bulkb.build())).get();
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getMessage().contains("Cannot find a local(software)"));
+            assertTrue(e.getCause() instanceof YamcsApiException);
         }
-
     }
 
     @Test
@@ -284,7 +305,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
                     toJson(bulkb.build())).get();
             fail("Should have thrown an exception");
         } catch (ExecutionException e) {
-            assertTrue(e.getMessage().contains("Cannot assign"));
+            assertTrue(e.getCause() instanceof YamcsApiException);
         }
     }
 
@@ -493,20 +514,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
         return r;
     }
 
-    @Test
-    public void testWsManagement() throws Exception {
-        ClientInfo cinfo = getClientInfo();
-        assertEquals("IntegrationTest", cinfo.getInstance());
-        assertEquals("realtime", cinfo.getProcessorName());
-        assertEquals("it-junit", cinfo.getApplicationName());
-
-        ProcessorInfo pinfo = getProcessorInfo();
-        assertEquals("IntegrationTest", pinfo.getInstance());
-        assertEquals("realtime", pinfo.getName());
-        assertEquals("realtime", pinfo.getType());
-        assertEquals("system", pinfo.getCreator());
-    }
-
     /*
      * private ValidateCommandRequest getValidateCommand(String cmdName, int seq, String... args) { NamedObjectId cmdId
      * = NamedObjectId.newBuilder().setName(cmdName).build();
@@ -518,14 +525,6 @@ public class IntegrationTest extends AbstractIntegrationTest {
      * 
      * return ValidateCommandRequest.newBuilder().addCommand(cmdb.build()).build(); }
      */
-
-    private ProcessorInfo getProcessorInfo() throws InterruptedException {
-        WebSocketRequest wsr = new WebSocketRequest("management", ManagementResource.OP_getProcessorInfo);
-        wsClient.sendRequest(wsr);
-        ProcessorInfo pinfo = wsListener.processorInfoList.poll(5, TimeUnit.SECONDS);
-        assertNotNull(pinfo);
-        return pinfo;
-    }
 
     // Keeping it D-R-Y. Could be refactored into httpClient to make writing short tests easier
     private <T extends Message> String doRealtimeRequest(String path, HttpMethod method, T msg) throws Exception {
@@ -570,81 +569,43 @@ public class IntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testChangeReplaySpeed() throws Exception {
-
-        // generate some data
-        for (int i = 0; i < 100; i++) {
-            packetGenerator.generate_PKT1_1();
-        }
-
-        // sget client info
-        ClientInfo ci = getClientInfo();
-        String config = "{\n"
-                + "  \"utcStart\": \"" + TimeEncoding.toString(0) + "\", \n"
-                + "  \"utcStop\": \"" + TimeEncoding.toString(TimeEncoding.MAX_INSTANT) + "\", \n"
-                + "  \"parameterRequest\": {\n"
-                + "   \"nameFilter\": [{\"name\":\"/REFMDB/SUBSYS1/IntegerPara1_1_6\"}]\n"
-                + "}\n"
-                + "}";
-        // Create replay
-        Rest.CreateProcessorRequest cpr = Rest.CreateProcessorRequest.newBuilder()
-                .setName("replay_test")
-                .setType("Archive")
-                .setConfig(config)
-                .setPersistent(true)
-                .addClientId(ci.getId()).build();
-        String resp1 = restClient.doRequest("/processors/IntegrationTest", HttpMethod.POST, toJson(cpr)).get();
-
-        assertEquals(resp1, "");
-
-        // Check speed is 1.0
-        ProcessorInfo pi1 = getProcessorInfo();
-        Yamcs.ReplaySpeed speed1 = pi1.getReplayRequest().getSpeed();
-        assertEquals(1.0f, speed1.getParam(), 1e-6);
-
-        // Set replay speed to 2.0
-        Rest.EditProcessorRequest epr = Rest.EditProcessorRequest.newBuilder()
-                .setSpeed("2x").build();
-        String resp2 = restClient.doRequest("/processors/IntegrationTest/replay_test", HttpMethod.POST, toJson(epr))
-                .get();
-        assertEquals(resp2, "");
-
-        // Check speed is 2.0
-        ProcessorInfo pi2 = getProcessorInfo();
-        Yamcs.ReplaySpeed speed2 = pi2.getReplayRequest().getSpeed();
-        assertEquals(speed2.getParam(), 2.0f, 1e-6);
-        restClient.doRequest("/processors/IntegrationTest/replay_test", HttpMethod.DELETE).get();
-        Thread.sleep(2000);
-    }
-
-    @Test
     public void testServicesStopStart() throws Exception {
-        String service = "org.yamcs.archive.CommandHistoryRecorder";
+        String serviceClass = "org.yamcs.archive.CommandHistoryRecorder";
 
         String resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
         ListServiceInfoResponse r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
         assertEquals(9, r.getServiceList().size());
 
-        ServiceInfo servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst()
+        ServiceInfo servInfo = r.getServiceList().stream()
+                .filter(si -> serviceClass.equals(si.getClassName()))
+                .findFirst()
                 .orElse(null);
         assertEquals(ServiceState.RUNNING, servInfo.getState());
 
-        resp = restClient.doRequest("/services/IntegrationTest/" + service + "?state=STOPPED", HttpMethod.PATCH, "")
+        resp = restClient
+                .doRequest("/services/IntegrationTest/" + serviceClass + "?state=STOPPED", HttpMethod.PATCH, "")
                 .get();
         assertEquals("", resp);
 
         resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
         r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst().orElse(null);
+        servInfo = r.getServiceList().stream()
+                .filter(si -> serviceClass.equals(si.getClassName()))
+                .findFirst()
+                .orElse(null);
         assertEquals(ServiceState.TERMINATED, servInfo.getState());
 
-        resp = restClient.doRequest("/services/IntegrationTest/" + service + "?state=running", HttpMethod.PATCH, "")
+        resp = restClient
+                .doRequest("/services/IntegrationTest/" + serviceClass + "?state=running", HttpMethod.PATCH, "")
                 .get();
         assertEquals("", resp);
 
         resp = restClient.doRequest("/services/IntegrationTest", HttpMethod.GET, "").get();
         r = fromJson(resp, ListServiceInfoResponse.newBuilder()).build();
-        servInfo = r.getServiceList().stream().filter(si -> service.equals(si.getName())).findFirst().orElse(null);
+        servInfo = r.getServiceList().stream()
+                .filter(si -> serviceClass.equals(si.getClassName()))
+                .findFirst()
+                .orElse(null);
         assertEquals(ServiceState.RUNNING, servInfo.getState());
     }
 
@@ -684,8 +645,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         File file2 = File.createTempFile("test2_", null, dir);
         FileOutputStream file2Out = new FileOutputStream(file2);
 
-        httpClient.doBulkReceiveRequest("http://localhost:9190/_static/" + file1.getName(), HttpMethod.GET, null,
-                adminToken, data -> {
+        httpClient.doBulkReceiveRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null,
+                adminUsername, adminPassword, data -> {
                     try {
                         file2Out.write(data);
                     } catch (IOException e) {
@@ -702,8 +663,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
         httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified()));
         YamcsApiException e1 = null;
         try {
-            httpClient.doAsyncRequest("http://localhost:9190/_static/" + file1.getName(), HttpMethod.GET, null,
-                    adminToken, httpHeaders).get();
+            httpClient.doAsyncRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null,
+                    adminUsername, adminPassword, httpHeaders).get();
         } catch (ExecutionException e) {
             e1 = (YamcsApiException) e.getCause();
         }
@@ -712,8 +673,8 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         httpHeaders = new DefaultHttpHeaders();
         httpHeaders.add(HttpHeaderNames.IF_MODIFIED_SINCE, dateFormatter.format(file1.lastModified() - 1000));
-        byte[] b1 = httpClient.doAsyncRequest("http://localhost:9190/_static/" + file1.getName(), HttpMethod.GET, null,
-                adminToken, httpHeaders).get();
+        byte[] b1 = httpClient.doAsyncRequest("http://localhost:9190/static/" + file1.getName(), HttpMethod.GET, null,
+                adminUsername, adminPassword, httpHeaders).get();
         assertEquals(file1.length(), b1.length);
 
         file1.delete();

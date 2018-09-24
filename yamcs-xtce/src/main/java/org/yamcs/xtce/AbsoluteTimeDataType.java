@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -16,17 +18,17 @@ import org.yamcs.utils.TimeEncoding;
  * @author nm
  *
  */
-public class AbsoluteTimeDataType extends BaseTimeDataType {
+public abstract class AbsoluteTimeDataType extends BaseTimeDataType {
     private static final long serialVersionUID = 1;
 
     /**
      * Used mainly for command arguments to specify the default value
      */
-    String initialValue;
+    long initialValue;
 
     ReferenceTime referenceTime;
 
-    AbsoluteTimeDataType(String name){
+    protected AbsoluteTimeDataType(String name){
         super(name);
     }
     
@@ -44,16 +46,29 @@ public class AbsoluteTimeDataType extends BaseTimeDataType {
         return referenceTime;
     }
     
+    /**
+     * sets the initial value in UTC ISO 8860 string 
+     */
     public void setInitialValue(String initialValue) {
-        this.initialValue = initialValue;
+        this.initialValue = TimeEncoding.parse(initialValue);
     }
 
-    public String getInitialValue() {
+    public Long getInitialValue() {
         return initialValue;
     }
 
     @Override
     public Object parseString(String stringValue) {
         return TimeEncoding.parse(stringValue);
+    }
+
+    @Override
+    public Type getValueType() {
+        return Value.Type.TIMESTAMP;
+    }
+
+    @Override
+    public String getTypeAsString() {
+        return "time";
     }
 }

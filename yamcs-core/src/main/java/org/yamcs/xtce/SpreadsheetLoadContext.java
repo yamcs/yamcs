@@ -9,9 +9,9 @@ package org.yamcs.xtce;
  * 
  */
 public class SpreadsheetLoadContext {
-    String file;
-    String sheet;
-    int row;
+    public String file;
+    public String sheet;
+    public int row;
     
     public SpreadsheetLoadContext(String file, String sheet, int row) {
        this.file = file;

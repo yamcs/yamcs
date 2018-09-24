@@ -31,7 +31,7 @@ public class TagsTest extends YarchTestCase {
         tags = new ArrayList<ArchiveTag>(n + 4);
         String path = "/tmp/test_rdbtags";
         FileUtils.deleteRecursively(new File(path).toPath());
-        Tablespace tablespace = new Tablespace("tagstest", (byte) 0);
+        Tablespace tablespace = new Tablespace("tagstest");
         tablespace.setCustomDataDir(path);
         tablespace.loadDb(false);
         tagDb = new RdbTagDb("tagstest", tablespace);

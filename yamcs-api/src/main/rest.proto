@@ -6,7 +6,6 @@ option java_package = "org.yamcs.protobuf";
 import "yamcs.proto";
 import "archive.proto";
 import "pvalue.proto";
-import "mdb.proto";
 import "alarms.proto";
 import "commanding.proto";
 import "yamcsManagement.proto";
@@ -27,22 +26,6 @@ message GetApiOverviewResponse {
   optional string defaultYamcsInstance = 3;
   repeated RouteInfo route = 4;
   repeated PluginInfo plugin = 5;
-}
-
-message ListParameterInfoResponse {
-  repeated mdb.ParameterInfo parameter = 1;
-}
-
-message BulkGetParameterInfoRequest {
-  repeated yamcs.NamedObjectId id = 1;
-}
-
-message BulkGetParameterInfoResponse {
-  message GetParameterInfoResponse {
-    optional yamcs.NamedObjectId id = 1;
-    optional mdb.ParameterInfo parameter = 2;
-  }
-  repeated GetParameterInfoResponse response = 1;
 }
 
 message BulkGetParameterValueRequest {
@@ -68,22 +51,6 @@ message BulkDownloadParameterValueRequest {
   optional string stop = 2;
   repeated yamcs.NamedObjectId id = 3;
   optional string namespace = 4; // Namespace used to display parameter names in e.g. csv header. Only used when no parameter ids were specified.
-}
-
-message ListSpaceSystemInfoResponse {
-  repeated yamcsManagement.SpaceSystemInfo spaceSystem = 1;
-}
-
-message ListContainerInfoResponse {
-  repeated mdb.ContainerInfo container = 1;
-}
-
-message ListCommandInfoResponse {
-  repeated mdb.CommandInfo command = 1;
-}
-
-message ListAlgorithmInfoResponse {
-  repeated mdb.AlgorithmInfo algorithm = 1;
 }
 
 message ListLinkInfoResponse {
@@ -160,23 +127,13 @@ message CreateEventRequest {
   optional string message = 2;
   optional string severity = 3;
   optional string time = 4;
+  optional string source = 5;
+  optional int32 sequenceNumber = 6;
 }
 
 message CreateProcessorRequest {
   optional string name = 1;
-
-  //fields 2-10 only work for creating replay processors and are deprecated
-  // instead use the config below with the type = Archive (as defined in the processor.yaml)
-  optional string start = 2 [deprecated = true];
-  optional string stop = 3 [deprecated = true];
-  optional bool loop = 4 [deprecated = true];
-  optional string speed = 5 [deprecated = true];
   repeated int32 clientId = 6;
-  repeated string paraname = 7 [deprecated = true];
-  repeated string ppgroup = 8 [deprecated = true];
-  repeated string packetname = 9 [deprecated = true];
-  optional bool cmdhist = 10 [deprecated = true];
-
   optional bool persistent = 11;
   optional string type = 12;
   optional string config = 13;
@@ -265,19 +222,6 @@ message BulkGetIndexRequest {
   repeated string packetname = 4;
 }
 
-message DisplayFolder {
-  optional string name = 1;
-  optional string path = 2;
-  repeated DisplayFolder folder = 3;
-  repeated DisplayFile file = 4;
-}
-
-message DisplayFile {
-  optional string name = 1;
-  optional string path = 2;
-  optional string url = 3;
-}
-
 message CreateBucketRequest {
   optional string name = 1;
 }
@@ -300,7 +244,6 @@ message ListBucketsResponse {
 
 
 message ListObjectsResponse {
-   repeated string prefix = 1;
-   repeated ObjectInfo object = 2;
+  repeated string prefix = 1;
+  repeated ObjectInfo object = 2;
 }
-

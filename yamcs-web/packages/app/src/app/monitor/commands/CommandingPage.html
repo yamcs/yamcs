@@ -1,0 +1,105 @@
+<app-monitor-page>
+  <app-monitor-toolbar>Commanding</app-monitor-toolbar>
+
+  <div class="detail">
+    <ng-container *ngIf="selectedEntry$ | async as selectedEntry; else noSelection">
+      <app-detail-toolbar>
+        Command Detail
+      </app-detail-toolbar>
+      <div style="padding: 0 16px">
+        <h6>Source</h6>
+        <div class="block">
+          {{ getCommandString(selectedEntry) || '-' }}
+        </div>
+
+        <h6>Binary</h6>
+        <div class="block">
+          <app-hex [base64String]="getCommandBinary(selectedEntry)"></app-hex>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #noSelection>
+      <app-detail-toolbar>
+        Select a command
+      </app-detail-toolbar>
+    </ng-template>
+  </div>
+
+  <div class="table-wrapper">
+    <div class="panel-content">
+      <table mat-table
+             *ngIf="!dataSource.isEmpty(); else empty"
+             [dataSource]="dataSource"
+             class="ya-data-table"
+             style="width: 100%"
+             matSort
+             matSortActive="generationTimeUTC"
+             matSortDirection="desc"
+             matSortDisableClear>
+
+        <ng-container matColumnDef="completion">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 32px"></th>
+          <td mat-cell *matCellDef="let entry">
+            <ng-container *ngIf="isCompleted(entry)">
+              <mat-icon style="color: green" matTooltip="Completed">
+                check_circle
+              </mat-icon>
+            </ng-container>
+            <ng-container *ngIf="isFailed(entry)">
+              <mat-icon style="color: red" [matTooltip]="getFailedReason(entry)">
+                highlight_off
+              </mat-icon>
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="generationTimeUTC">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Time</th>
+          <td mat-cell *matCellDef="let entry">
+            {{ entry.generationTimeUTC | datetime }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="command">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Command</th>
+          <td mat-cell *matCellDef="let entry">
+            {{ getCommandString(entry) || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="source">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 300px">Src</th>
+          <td mat-cell *matCellDef="let entry">
+            {{ getUsername(entry) }}<span *ngIf="entry.commandId.origin">@{{ entry.commandId.origin }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="sourceID">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 70px">Src.ID</th>
+          <td mat-cell *matCellDef="let entry">
+            {{ entry.commandId.sequenceNumber || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="sequenceNumber">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header matTooltip="Final Sequence Count" style="width: 70px">Seq.ID</th>
+          <td mat-cell *matCellDef="let entry">
+            {{ getFinalSequenceCount(entry) || '-' }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                 (click)="selectEntry(row)"
+                 [class.selected]="false">
+        </tr>
+      </table>
+
+      <ng-template #empty>
+        <app-empty-message *ngIf="!(dataSource.loading$ | async)">
+          No entries in command history.
+        </app-empty-message>
+      </ng-template>
+    </div>
+  </div>
+</app-monitor-page>

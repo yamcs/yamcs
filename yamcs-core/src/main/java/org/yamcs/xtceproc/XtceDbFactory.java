@@ -13,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,21 +26,26 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.YObjectLoader;
-import org.yamcs.xtce.NameReference;
+import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Container;
+import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.DatabaseLoadException;
+import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
-import org.yamcs.xtce.NameReference.Type;
 import org.yamcs.xtce.NonStandardData;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.SpaceSystemLoader;
 import org.yamcs.xtce.SystemParameter;
 import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.UnresolvedParameterReference;
+import org.yamcs.xtce.util.NameReference.Type;
 
 public class XtceDbFactory {
 
@@ -211,37 +217,27 @@ public class XtceDbFactory {
         while (it.hasNext()) {
             NameReference nr = it.next();
 
-            NameDescription nd = findReference(rootSs, nr, ss);
-            if (nd == null && nr.getType() == Type.PARAMETER
+            ResolvedReference rr = findReference(rootSs, nr, ss);
+            if (rr == null && nr.getType() == Type.PARAMETER
                     && nr.getReference().startsWith(XtceDb.YAMCS_SPACESYSTEM_NAME)) {
                 // Special case for system parameters: they are created on the fly
-                String fqname = nr.getReference();
-                SystemParameter sp = SystemParameter.getForFullyQualifiedName(fqname);
-
-                String ssname = sp.getSubsystemName();
-                String[] a = ssname.split("/");
-                SpaceSystem ss1 = rootSs;
-                for (String name : a) {
-                    if (name.isEmpty()) {
-                        continue;
-                    }
-                    SpaceSystem ss2 = ss1.getSubsystem(name);
-                    if (ss2 == null) {
-                        ss2 = new SpaceSystem(name);
-                        ss1.addSpaceSystem(ss2);
-                    }
-                    ss1 = ss2;
-                }
-                ss1.addParameter(sp);
-                nd = sp;
+                SystemParameter sp = createSystemParameter(rootSs, nr);
+                rr = new ResolvedReference(sp);
             }
-            if (nd == null) { // look for aliases up the hierarchy
-                nd = findAliasReference(rootSs, nr, ss);
+            if (rr == null) { // look for aliases up the hierarchy
+                rr = findAliasReference(rootSs, nr, ss);
             }
-            if (nd == null) {
+            if (rr == null) {
                 throw new DatabaseLoadException("Cannot resolve reference SpaceSystem: " + ss.getName() + " " + nr);
             }
-            if (nr.resolved(nd)) {
+            boolean resolved;
+            
+            if (nr instanceof UnresolvedParameterReference) {
+                resolved = ((UnresolvedParameterReference) nr).resolved(rr.nd, rr.aggregateMemberPath);
+            } else {
+                resolved = nr.resolved(rr.nd);
+            }
+            if (resolved) {
                 n++;
                 it.remove();
             }
@@ -257,6 +253,29 @@ public class XtceDbFactory {
         return n;
     }
 
+    static SystemParameter createSystemParameter(SpaceSystem rootSs, NameReference nr) {
+        String fqname = nr.getReference();
+        SystemParameter sp = SystemParameter.getForFullyQualifiedName(fqname);
+
+        String ssname = sp.getSubsystemName();
+        String[] a = ssname.split("/");
+        SpaceSystem ss1 = rootSs;
+        for (String name : a) {
+            if (name.isEmpty()) {
+                continue;
+            }
+            SpaceSystem ss2 = ss1.getSubsystem(name);
+            if (ss2 == null) {
+                ss2 = new SpaceSystem(name);
+                ss1.addSpaceSystem(ss2);
+            }
+            ss1 = ss2;
+        }
+        ss1.addParameter(sp);
+
+        return sp;
+    }
+
     /**
      * find the reference nr mentioned in the space system ss by looking either in root (if absolute reference)
      * or in the parent hierarchy if relative reference
@@ -266,7 +285,7 @@ public class XtceDbFactory {
      * @param ss
      * @return
      */
-    static NameDescription findReference(SpaceSystem rootSs, NameReference nr, SpaceSystem ss) {
+    static ResolvedReference findReference(SpaceSystem rootSs, NameReference nr, SpaceSystem ss) {
         String ref = nr.getReference();
         boolean absolute = false;
         SpaceSystem startSs = null;
@@ -283,16 +302,16 @@ public class XtceDbFactory {
             return findReference(startSs, nr);
         } else {
             // go up until the root
-            NameDescription nd = null;
+            ResolvedReference rr = null;
             startSs = ss;
             while (true) {
-                nd = findReference(startSs, nr);
-                if ((nd != null) || (startSs == rootSs)) {
+                rr = findReference(startSs, nr);
+                if ((rr != null) || (startSs == rootSs)) {
                     break;
                 }
                 startSs = startSs.getParent();
             }
-            return nd;
+            return rr;
         }
     }
 
@@ -304,9 +323,9 @@ public class XtceDbFactory {
      * @param ss
      * @return
      */
-    static NameDescription findAliasReference(SpaceSystem rootSs, NameReference nr, SpaceSystem startSs) {
+    static ResolvedReference findAliasReference(SpaceSystem rootSs, NameReference nr, SpaceSystem startSs) {
         // go up until the root
-        NameDescription nd = null;
+        ResolvedReference nd = null;
         SpaceSystem ss = startSs;
         while (true) {
             nd = findAliasReference(ss, nr);
@@ -325,7 +344,7 @@ public class XtceDbFactory {
      * @param nr
      * @return
      */
-    private static NameDescription findReference(SpaceSystem startSs, NameReference nr) {
+    private static ResolvedReference findReference(SpaceSystem startSs, NameReference nr) {
         String[] path = nr.getReference().split("/");
         SpaceSystem ss = startSs;
         for (int i = 0; i < path.length - 1; i++) {
@@ -343,39 +362,91 @@ public class XtceDbFactory {
                 break;
             }
 
-            ss = ss.getSubsystem(path[i]);
+            SpaceSystem ss1 = ss.getSubsystem(path[i]);
 
-            if (ss == null) {
+            if ((ss1 == null) && nr.getType() == Type.PARAMETER) {
+                // check if it's an aggregate
+                Parameter p = ss.getParameter(path[i]);
+                if (p != null && p.getParameterType() instanceof AggregateParameterType) {
+                   
+                    PathElement[] aggregateMemberPath = getAggregateMemberPath(
+                            Arrays.copyOfRange(path, i + 1, path.length));
+                    if (checkReferenceToAggregateMember(p, aggregateMemberPath)) {
+                        return new ResolvedReference(p, aggregateMemberPath);
+                    }
+                }
                 break;
             }
+
+            if (ss1 == null) {
+                break;
+            }
+            ss = ss1;
         }
         if (ss == null) {
             return null;
         }
 
         String name = path[path.length - 1];
+        NameDescription nd = null;
         switch (nr.getType()) {
         case PARAMETER:
-            return ss.getParameter(name);
+            return getSimpleReference(ss.getParameter(name));
         case PARAMETER_TYPE:
-            return (NameDescription) ss.getParameterType(name);
+            return getSimpleReference((NameDescription) ss.getParameterType(name));
         case SEQUENCE_CONTAINER:
-            return ss.getSequenceContainer(name);
+            return getSimpleReference(ss.getSequenceContainer(name));
         case COMMAND_CONTAINER:
             Container c = ss.getCommandContainer(name);
             if (c == null) {
                 c = ss.getSequenceContainer(name);
             }
-            return c;
+            return getSimpleReference(c);
         case META_COMMAND:
-            return ss.getMetaCommand(name);
+            return getSimpleReference(ss.getMetaCommand(name));
         case ALGORITHM:
-            return ss.getAlgorithm(name);
+            return getSimpleReference(ss.getAlgorithm(name));
         case ARGUMENT_TYPE:
-            return (NameDescription) ss.getArgumentType(name);
+            return getSimpleReference((NameDescription) ss.getArgumentType(name));
         }
         // shouldn't arrive here
         return null;
+    }
+
+    private static ResolvedReference getSimpleReference(NameDescription nd) {
+        if(nd == null) {
+            return null;
+        } else {
+            return new ResolvedReference(nd);
+        }
+    }
+
+    private static PathElement[] getAggregateMemberPath(String[] path) {
+        PathElement[] pea = new PathElement[path.length];
+        for (int i = 0; i < path.length; i++) {
+            pea[i] = PathElement.fromString(path[i]);
+        }
+        return pea;
+    }
+
+    private static boolean checkReferenceToAggregateMember(Parameter p, PathElement[] path) {
+        AggregateParameterType apt = (AggregateParameterType) p.getParameterType();
+        for (int i = 0; i < path.length; i++) {
+            Member m = apt.getMember(path[i].getName());
+            if (m == null) {
+                return false;
+            }
+            if (i == path.length - 1) {
+                return true;
+            }
+            DataType ptype = m.getType();
+            if (ptype instanceof AggregateParameterType) {
+                apt = (AggregateParameterType) apt;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 
     /**
@@ -388,7 +459,7 @@ public class XtceDbFactory {
      * @param nr
      * @return
      */
-    private static NameDescription findAliasReference(SpaceSystem ss, NameReference nr) {
+    private static ResolvedReference findAliasReference(SpaceSystem ss, NameReference nr) {
 
         String alias = nr.getReference();
         List<? extends NameDescription> l;
@@ -411,11 +482,12 @@ public class XtceDbFactory {
         } else if (l.size() > 1) {
             log.warn("When looking for aliases '{}' found multiple matches: ", nr, l);
         }
-        return l.get(0);
+        return new ResolvedReference(l.get(0));
     }
 
     @SuppressWarnings({ "unchecked" })
-    private static LoaderTree getLoaderTree(Map<String, Object> m) throws ConfigurationException, DatabaseLoadException {
+    private static LoaderTree getLoaderTree(Map<String, Object> m)
+            throws ConfigurationException, DatabaseLoadException {
         String type = YConfiguration.getString(m, "type");
         Object args = null;
         if (m.containsKey("args")) {
@@ -434,7 +506,7 @@ public class XtceDbFactory {
         }
         try {
             l = YObjectLoader.loadObject(type, args);
-        } catch (DatabaseLoadException|ConfigurationException e) {
+        } catch (DatabaseLoadException | ConfigurationException e) {
             throw e;
         } catch (Exception e) {
             log.warn(e.toString());
@@ -556,7 +628,7 @@ public class XtceDbFactory {
     public static synchronized XtceDb getInstanceByConfig(String yamcsInstance, String config) {
         Map<String, XtceDb> dbConfigs = instance2DbConfigs.computeIfAbsent(yamcsInstance, k -> new HashMap<>());
 
-        return dbConfigs.computeIfAbsent(config, k-> createInstanceByConfig(config));
+        return dbConfigs.computeIfAbsent(config, k -> createInstanceByConfig(config));
     }
 
     /**
@@ -688,6 +760,27 @@ public class XtceDbFactory {
             SpaceSystem rootSs = new SpaceSystem("");
             rootSs.setParent(rootSs);
             return rootSs;
+        }
+    }
+
+    static class ResolvedReference {
+        final NameDescription nd;
+        final PathElement[] aggregateMemberPath;
+
+        public ResolvedReference(NameDescription nd, PathElement[] aggregateMemberPath) {
+            if(nd == null) {
+                throw new NullPointerException("nd cannot be null");
+            }
+            this.nd = nd;
+            this.aggregateMemberPath = aggregateMemberPath;
+        }
+
+        public ResolvedReference(NameDescription nd) {
+            if(nd == null) {
+                throw new NullPointerException("nd cannot be null");
+            }
+            this.nd = nd;
+            this.aggregateMemberPath = null;
         }
 
     }

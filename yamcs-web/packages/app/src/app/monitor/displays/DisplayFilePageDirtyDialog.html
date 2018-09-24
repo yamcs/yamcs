@@ -1,0 +1,13 @@
+<mat-dialog-content class="mat-typography">
+  <p>You have unsaved changes on the current page. Do you want to discard them?</p>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-button
+          (click)="confirmDiscard()"
+          color="primary">
+    DISCARD
+  </button>
+</mat-dialog-actions>

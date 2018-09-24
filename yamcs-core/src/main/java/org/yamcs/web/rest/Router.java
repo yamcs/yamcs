@@ -9,9 +9,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -22,12 +22,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.YamcsServerInstance;
 import org.yamcs.YamcsVersion;
 import org.yamcs.parameterarchive.ParameterArchiveMaintenanceRestHandler;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.PluginInfo;
 import org.yamcs.protobuf.Rest.GetApiOverviewResponse.RouteInfo;
-import org.yamcs.security.AuthenticationToken;
+import org.yamcs.security.User;
 import org.yamcs.spi.Plugin;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.HttpRequestHandler;
@@ -49,6 +50,7 @@ import org.yamcs.web.rest.mdb.MDBAlgorithmRestHandler;
 import org.yamcs.web.rest.mdb.MDBCommandRestHandler;
 import org.yamcs.web.rest.mdb.MDBContainerRestHandler;
 import org.yamcs.web.rest.mdb.MDBParameterRestHandler;
+import org.yamcs.web.rest.mdb.MDBParameterTypeRestHandler;
 import org.yamcs.web.rest.mdb.MDBRestHandler;
 import org.yamcs.web.rest.mdb.MDBSpaceSystemRestHandler;
 import org.yamcs.web.rest.processor.ProcessorCommandQueueRestHandler;
@@ -65,7 +67,6 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -90,8 +91,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     private static final Logger log = LoggerFactory.getLogger(Router.class);
 
     // Order, because patterns are matched top-down in insertion order
-    private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> defaultRoutes = new LinkedHashMap<>();
-    private LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> dynamicRoutes = new LinkedHashMap<>();
+    private List<RouteElement> defaultRoutes = new ArrayList<>();
+    private List<RouteElement> dynamicRoutes = new ArrayList<>();
 
     private boolean logSlowRequests = true;
     int SLOW_REQUEST_TIME = 20;// seconds; requests that execute more than this are logged
@@ -100,10 +101,11 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     public static final AttributeKey<RouteMatch> CTX_ROUTE_MATCH = AttributeKey.valueOf("routeMatch");
     private static final FullHttpResponse CONTINUE = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
             HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER);
+    private final ExecutorService offThreadExecutor;
 
-    public Router() {
+    public Router(ExecutorService executor) {
+        this.offThreadExecutor = executor;
         registerRouteHandler(null, new ClientRestHandler());
-        registerRouteHandler(null, new DisplayRestHandler());
         registerRouteHandler(null, new InstanceRestHandler());
         registerRouteHandler(null, new LinkRestHandler());
         registerRouteHandler(null, new UserRestHandler());
@@ -120,6 +122,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new ArchiveStreamRestHandler());
         registerRouteHandler(null, new ArchiveTableRestHandler());
         registerRouteHandler(null, new ArchiveTagRestHandler());
+        registerRouteHandler(null, new BucketRestHandler());
         registerRouteHandler(null, new RocksDbMaintenanceRestHandler());
 
         registerRouteHandler(null, new ProcessorRestHandler());
@@ -130,12 +133,12 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new MDBRestHandler());
         registerRouteHandler(null, new MDBSpaceSystemRestHandler());
         registerRouteHandler(null, new MDBParameterRestHandler());
+        registerRouteHandler(null, new MDBParameterTypeRestHandler());
         registerRouteHandler(null, new MDBContainerRestHandler());
         registerRouteHandler(null, new MDBCommandRestHandler());
         registerRouteHandler(null, new MDBAlgorithmRestHandler());
 
         registerRouteHandler(null, new OverviewRouteHandler());
-        registerRouteHandler(null, new BucketRestHandler());
     }
 
     // Using method handles for better invoke performance
@@ -157,7 +160,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                         for (String m : ann.method()) {
                             HttpMethod httpMethod = HttpMethod.valueOf(m);
                             routeConfigs.add(new RouteConfig(routeHandler, ann.path(), ann.priority(), ann.dataLoad(),
-                                    ann.maxBodySize(), httpMethod, handle));
+                                    ann.offThread(), ann.maxBodySize(), httpMethod, handle));
                         }
                     }
                 }
@@ -173,7 +176,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         // 3. Actual path contents (should not matter too much)
         Collections.sort(routeConfigs);
 
-        LinkedHashMap<Pattern, Map<HttpMethod, RouteConfig>> targetRoutes;
+        List<RouteElement> targetRoutes;
         targetRoutes = (yamcsInstance == null) ? defaultRoutes : dynamicRoutes;
 
         for (RouteConfig routeConfig : routeConfigs) {
@@ -187,10 +190,23 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
                 routeString = routeString.replace(":instance", yamcsInstance);
             }
             Pattern pattern = toPattern(routeString);
-            targetRoutes.putIfAbsent(pattern, new LinkedHashMap<>());
-            Map<HttpMethod, RouteConfig> configByMethod = targetRoutes.get(pattern);
+            Map<HttpMethod, RouteConfig> configByMethod = createAndGet(targetRoutes, pattern).configByMethod;
+            if (routeHandler.getClass().getName().contains("EuroSim")) {
+                System.out.println("putting " + routeConfig.httpMethod + " " + routeConfig);
+            }
             configByMethod.put(routeConfig.httpMethod, routeConfig);
         }
+    }
+
+    private RouteElement createAndGet(List<RouteElement> routes, Pattern pattern) {
+        for (RouteElement re : routes) {
+            if (re.pattern.pattern().equals(pattern.pattern())) {
+                return re;
+            }
+        }
+        RouteElement re = new RouteElement(pattern);
+        routes.add(re);
+        return re;
     }
 
     /**
@@ -248,21 +264,29 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        AuthenticationToken token = ctx.channel().attr(HttpRequestHandler.CTX_AUTH_TOKEN).get();
+        User user = ctx.channel().attr(HttpRequestHandler.CTX_USER).get();
         RouteMatch match = ctx.channel().attr(CTX_ROUTE_MATCH).get();
         QueryStringDecoder qsDecoder = new QueryStringDecoder(req.uri());
-        RestRequest restReq = new RestRequest(ctx, req, qsDecoder, token);
+        RestRequest restReq = new RestRequest(ctx, req, qsDecoder, user);
         restReq.setRouteMatch(match);
         log.debug("R{}: Handling REST Request {} {}", restReq.getRequestId(), req.method(), req.uri());
-        dispatch(restReq, match);
+        if (match.routeConfig.offThread) {
+            restReq.getRequestContent().retain();
+            offThreadExecutor.execute(() -> {
+                dispatch(restReq, match);
+                restReq.getRequestContent().release();
+            });
+        } else {
+            dispatch(restReq, match);
+        }
     }
 
     public RouteMatch matchURI(HttpMethod method, String uri) throws MethodNotAllowedException {
         Set<HttpMethod> allowedMethods = null;
-        for (Entry<Pattern, Map<HttpMethod, RouteConfig>> entry : defaultRoutes.entrySet()) {
-            Matcher matcher = entry.getKey().matcher(uri);
+        for (RouteElement re : defaultRoutes) {
+            Matcher matcher = re.pattern.matcher(uri);
             if (matcher.matches()) {
-                Map<HttpMethod, RouteConfig> byMethod = entry.getValue();
+                Map<HttpMethod, RouteConfig> byMethod = re.configByMethod;
                 if (byMethod.containsKey(method)) {
                     return new RouteMatch(matcher, byMethod.get(method));
                 } else {
@@ -274,10 +298,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             }
         }
 
-        for (Entry<Pattern, Map<HttpMethod, RouteConfig>> entry : dynamicRoutes.entrySet()) {
-            Matcher matcher = entry.getKey().matcher(uri);
+        for (RouteElement re : dynamicRoutes) {
+            Matcher matcher = re.pattern.matcher(uri);
             if (matcher.matches()) {
-                Map<HttpMethod, RouteConfig> byMethod = entry.getValue();
+                Map<HttpMethod, RouteConfig> byMethod = re.configByMethod;
                 if (byMethod.containsKey(method)) {
                     return new RouteMatch(matcher, byMethod.get(method));
                 } else {
@@ -297,10 +321,14 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     protected void dispatch(RestRequest req, RouteMatch match) {
-        ScheduledFuture<?> x = timer.schedule(() -> {
-            log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(),
-                    req.getHttpRequest().uri());
-        }, 2, TimeUnit.SECONDS);
+        boolean offThread = match.routeConfig.offThread;
+        ScheduledFuture<?> twoSecWarn = null;
+        if (!offThread) {
+            twoSecWarn = timer.schedule(() -> {
+                log.error("R{} blocking the netty thread for 2 seconds. uri: {}", req.getRequestId(),
+                        req.getHttpRequest().uri());
+            }, 2, TimeUnit.SECONDS);
+        }
 
         // the handlers will send themselves the response unless they throw an exception, case which is handled in the
         // catch below.
@@ -320,16 +348,19 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             req.getCompletableFuture().completeExceptionally(t);
             handleException(req, t);
         }
-        x.cancel(true);
+        if (twoSecWarn != null) {
+            twoSecWarn.cancel(true);
+        }
 
         CompletableFuture<Void> cf = req.getCompletableFuture();
         if (logSlowRequests) {
+            int numSec = offThread ? 120 : 20;
             timer.schedule(() -> {
                 if (!cf.isDone()) {
                     log.warn("R{} executing for more than 20 seconds. uri: {}", req.getRequestId(),
                             req.getHttpRequest().uri());
                 }
-            }, 20, TimeUnit.SECONDS);
+            }, numSec, TimeUnit.SECONDS);
         }
     }
 
@@ -390,9 +421,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         final MethodHandle handle;
         final boolean dataLoad;
         final int maxBodySize;
+        final boolean offThread;
 
         RouteConfig(RouteHandler routeHandler, String originalPath, boolean priority, boolean dataLoad,
-                int maxBodySize, HttpMethod httpMethod, MethodHandle handle) {
+                boolean offThread, int maxBodySize, HttpMethod httpMethod, MethodHandle handle) {
             this.routeHandler = routeHandler;
             this.originalPath = originalPath;
             this.priority = priority;
@@ -400,8 +432,9 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             this.handle = handle;
             this.dataLoad = dataLoad;
             this.maxBodySize = maxBodySize;
+            this.offThread = offThread;
         }
-       
+
         @Override
         public int compareTo(RouteConfig o) {
             int priorityCompare = Boolean.compare(priority, o.priority);
@@ -420,11 +453,10 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         public boolean isDataLoad() {
             return dataLoad;
         }
-        
+
         public int maxBodySize() {
             return maxBodySize;
         }
-
     }
 
     /**
@@ -445,6 +477,18 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
 
         public String getRouteParam(String name) {
             return regexMatch.group(name);
+        }
+    }
+
+    /**
+     * stores the matching patterns together with the config per HttpMethod
+     */
+    public static final class RouteElement {
+        final Pattern pattern;
+        final Map<HttpMethod, RouteConfig> configByMethod = new LinkedHashMap<>();
+
+        RouteElement(Pattern p) {
+            this.pattern = p;
         }
     }
 
@@ -478,22 +522,23 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             // Property to be interpreted at client's leisure.
             // Concept of defaultInstance could be moved into YamcsServer
             // at some point, but there's for now unsufficient support.
-            // (would need websocket adjmustments, which are now
+            // (would need websocket adjustments, which are now
             // instance-specific).
             YConfiguration yconf = YConfiguration.getConfiguration("yamcs");
             if (yconf.containsKey("defaultInstance")) {
                 responseb.setDefaultYamcsInstance(yconf.getString("defaultInstance"));
             } else {
-                Set<String> instances = YamcsServer.getYamcsInstanceNames();
+                Set<YamcsServerInstance> instances = YamcsServer.getInstances();
                 if (!instances.isEmpty()) {
-                    responseb.setDefaultYamcsInstance(instances.iterator().next());
+                    YamcsServerInstance anyInstance = instances.iterator().next();
+                    responseb.setDefaultYamcsInstance(anyInstance.getName());
                 }
             }
 
             // Aggregate to unique urls, and keep insertion order
             Map<String, RouteInfo.Builder> builders = new LinkedHashMap<>();
-            for (Map<HttpMethod, RouteConfig> map : defaultRoutes.values()) {
-                map.values().forEach(v -> {
+            for (RouteElement re : defaultRoutes) {
+                re.configByMethod.values().forEach(v -> {
                     RouteInfo.Builder builder = builders.get(v.originalPath);
                     if (builder == null) {
                         builder = RouteInfo.newBuilder();

@@ -10,30 +10,36 @@ import org.yamcs.xtce.Parameter;
 
 public class ValueProcessor {
     ContainerProcessingContext pcontext;
-    Logger log=LoggerFactory.getLogger(this.getClass().getName());
+    Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
     public ValueProcessor(ContainerProcessingContext pcontext) {
-        this.pcontext=pcontext;
+        this.pcontext = pcontext;
     }
 
-    public long getValue(IntegerValue iv) {
-        if(iv instanceof FixedIntegerValue) {
+    /**
+     * Returns the value as found from the context (or the fixed value) or null if the value could not be determined
+     * 
+     * @param iv
+     * @return
+     */
+    public Long getValue(IntegerValue iv) {
+        if (iv instanceof FixedIntegerValue) {
             return ((FixedIntegerValue) iv).getValue();
-        } else if(iv instanceof DynamicIntegerValue) {
-            return getDynamicIntegerValue((DynamicIntegerValue)iv);
+        } else if (iv instanceof DynamicIntegerValue) {
+            return getDynamicIntegerValue((DynamicIntegerValue) iv);
         }
 
-        throw new UnsupportedOperationException("values of type "+iv+" not implemented");
+        throw new UnsupportedOperationException("values of type " + iv + " not implemented");
     }
 
-    private long getDynamicIntegerValue(DynamicIntegerValue div) {
+    private Long getDynamicIntegerValue(DynamicIntegerValue div) {
         Parameter pref = div.getParameterInstnaceRef().getParameter();
-        for(ParameterValue pv:pcontext.result.params) {
-            if(pv.getParameter()==pref) {
-                return pv.getEngValue().getUint32Value();
+        for (ParameterValue pv : pcontext.result.params) {
+            if (pv.getParameter() == pref) {
+                return (long)pv.getEngValue().getUint32Value();
             }
         }
         log.warn("Could not find the parameter in the list of extracted parameters, parameter: {}", pref);
-        return 0;
+        return null;
     }
 }

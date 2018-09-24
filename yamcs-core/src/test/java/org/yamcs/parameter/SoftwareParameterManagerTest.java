@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -16,10 +16,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YConfiguration;
-import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -35,7 +34,7 @@ public class SoftwareParameterManagerTest {
     
     @Test
     public void test() throws Exception {
-	SoftwareParameterManager spm = new SoftwareParameterManager("test");
+        LocalParameterManager spm = new LocalParameterManager("test");
 	XtceDb xtceDb = XtceDbFactory.createInstanceByConfig("refmdb");
 	MyParamConsumer consumer = new MyParamConsumer();
 	
@@ -50,18 +49,16 @@ public class SoftwareParameterManagerTest {
 	assertNotNull(p2);
 	
 	spm.startProviding(p1);
-	NamedObjectId p1id = NamedObjectId.newBuilder().setName(p1.getQualifiedName()).build();
-	NamedObjectId p2id = NamedObjectId.newBuilder().setName(p2.getQualifiedName()).build();
 	
-	Value p1v = ValueHelper.newValue(3);
-	Value p2v = ValueHelper.newValue(2.72);
+	Value p1v = ValueUtility.getUint32Value(3);
+	Value p2v = ValueUtility.getDoubleValue(2.72);
 	
-	org.yamcs.protobuf.Pvalue.ParameterValue pv1 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setId(p1id).setEngValue(p1v).build();
-	org.yamcs.protobuf.Pvalue.ParameterValue pv2 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder().setId(p2id).setEngValue(p2v).build();
+	ParameterValue pv1 = new ParameterValue(p1);   
+	pv1.setEngineeringValue(p1v);
+	ParameterValue pv2 = new ParameterValue(p2);
+	pv2.setEngineeringValue(p2v);
 	
-	List<org.yamcs.protobuf.Pvalue.ParameterValue> pvList = new ArrayList<org.yamcs.protobuf.Pvalue.ParameterValue>();
-	pvList.add(pv1);
-	pvList.add(pv2);
+	List<ParameterValue> pvList = Arrays.asList(pv1, pv2);
 	
 	spm.updateParameters(pvList);
 	Collection<ParameterValue> pvs = consumer.received.poll(5,  TimeUnit.SECONDS);

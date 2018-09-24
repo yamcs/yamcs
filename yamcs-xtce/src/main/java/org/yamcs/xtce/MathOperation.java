@@ -34,7 +34,7 @@ public class MathOperation implements Serializable {
         public Element() {
             this.type = ElementType.ThisParameterOperand;
         }
-
+       
         public Element(ParameterInstanceRef pref) {
             this.type = ElementType.ParameterInstanceRefOperand;
             this.pref = pref;
@@ -43,6 +43,10 @@ public class MathOperation implements Serializable {
         public Element(MathOperator op) {
             this.type = ElementType.Operator;
             this.operator = op;
+        }
+
+        public Element(ElementType type) {
+            this.type = type;
         }
 
         public ElementType getType() {
@@ -69,6 +73,10 @@ public class MathOperation implements Serializable {
                 return Double.toString(value);
             }
             return "";
+        }
+
+        public void setParameterInstance(ParameterInstanceRef pref) {
+            this.pref = pref;
         }
     }
     

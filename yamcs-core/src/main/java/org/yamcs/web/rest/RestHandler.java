@@ -9,6 +9,7 @@ import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.alarms.AlarmServer;
@@ -16,11 +17,8 @@ import org.yamcs.api.MediaType;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.Web.RestExceptionMessage;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkInfo;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.web.BadRequestException;
@@ -34,6 +32,7 @@ import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.XtceDb;
@@ -94,7 +93,7 @@ public abstract class RestHandler extends RouteHandler {
         restRequest.addTransferredSize(txSize);
         completeRequest(restRequest, httpResponse);
     }
-    
+
     private static void completeRequest(RestRequest restRequest, HttpResponse httpResponse) {
         ChannelFuture cf = HttpRequestHandler.sendResponse(restRequest.getChannelHandlerContext(),
                 restRequest.getHttpRequest(), httpResponse, true);
@@ -165,13 +164,15 @@ public abstract class RestHandler extends RouteHandler {
         }
         return exceptionb;
     }
-    protected static String verifyInstance(RestRequest req, String instance, boolean allowGlobal) throws NotFoundException {
-        if(allowGlobal && GLOBAL_INSTANCE.equals(instance)) {
+
+    protected static String verifyInstance(RestRequest req, String instance, boolean allowGlobal)
+            throws NotFoundException {
+        if (allowGlobal && GLOBAL_INSTANCE.equals(instance)) {
             return instance;
         }
         return verifyInstance(req, instance);
     }
-    
+
     protected static String verifyInstance(RestRequest req, String instance) throws NotFoundException {
         if (!YamcsServer.hasInstance(instance)) {
             throw new NotFoundException(req, "No instance named '" + instance + "'");
@@ -188,12 +189,12 @@ public abstract class RestHandler extends RouteHandler {
         return linkInfo;
     }
 
-    protected static ClientInfo verifyClient(RestRequest req, int clientId) throws NotFoundException {
-        ClientInfo ci = ManagementService.getInstance().getClientInfo(clientId);
-        if (ci == null) {
+    protected static ConnectedClient verifyClient(RestRequest req, int clientId) throws NotFoundException {
+        ConnectedClient client = ManagementService.getInstance().getClient(clientId);
+        if (client == null) {
             throw new NotFoundException(req, "No such client");
         } else {
-            return ci;
+            return client;
         }
     }
 
@@ -252,16 +253,16 @@ public abstract class RestHandler extends RouteHandler {
     }
 
     protected static NamedObjectId verifyParameterId(RestRequest req, XtceDb mdb, String pathName)
-            throws NotFoundException {
+            throws HttpException {
         return verifyParameterWithId(req, mdb, pathName).getRequestedId();
     }
 
-    protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws NotFoundException {
+    protected static Parameter verifyParameter(RestRequest req, XtceDb mdb, String pathName) throws HttpException {
         return verifyParameterWithId(req, mdb, pathName).getItem();
     }
 
     protected static NameDescriptionWithId<Parameter> verifyParameterWithId(RestRequest req, XtceDb mdb,
-            String pathName) throws NotFoundException {
+            String pathName) throws HttpException {
         int lastSlash = pathName.lastIndexOf('/');
         if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
             throw new NotFoundException(req, "No such parameter (missing namespace?)");
@@ -279,10 +280,8 @@ public abstract class RestHandler extends RouteHandler {
             p = mdb.getParameter(id);
         }
 
-        if (p != null && !authorised(req, PrivilegeType.TM_PARAMETER, p.getQualifiedName())) {
-            log.warn("Parameter {} found, but withheld due to insufficient privileges. Returning 404 instead",
-                    StringConverter.idToString(id));
-            p = null;
+        if (p != null && !hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+            throw new ForbiddenException("Unsufficient privileges to access parameter " + p.getQualifiedName());
         }
 
         if (p == null) {
@@ -296,7 +295,7 @@ public abstract class RestHandler extends RouteHandler {
             throws NotFoundException {
         Stream stream = ydb.getStream(streamName);
 
-        if (stream != null && !authorised(req, PrivilegeType.STREAM, streamName)) {
+        if (stream != null && !hasObjectPrivilege(req, ObjectPrivilegeType.Stream, streamName)) {
             log.warn("Stream {} found, but withheld due to insufficient privileges. Returning 404 instead",
                     streamName);
             stream = null;
@@ -371,6 +370,33 @@ public abstract class RestHandler extends RouteHandler {
         throw new NotFoundException(req, "No such algorithm");
     }
 
+    protected static ParameterType verifyParameterType(RestRequest req, XtceDb mdb, String pathName)
+            throws NotFoundException {
+        int lastSlash = pathName.lastIndexOf('/');
+        if (lastSlash == -1 || lastSlash == pathName.length() - 1) {
+            throw new NotFoundException(req, "No such parameter type (missing namespace?)");
+        }
+
+        String namespace = pathName.substring(0, lastSlash);
+        String name = pathName.substring(lastSlash + 1);
+
+        // First try with a prefixed slash (should be the common case)
+        NamedObjectId id = NamedObjectId.newBuilder().setNamespace("/" + namespace).setName(name).build();
+        ParameterType type = mdb.getParameterType(id);
+        if (type != null) {
+            return type;
+        }
+
+        // Maybe some non-xtce namespace like MDB:OPS Name
+        id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+        type = mdb.getParameterType(id);
+        if (type != null) {
+            return type;
+        }
+
+        throw new NotFoundException(req, "No such parameter type");
+    }
+
     protected static SequenceContainer verifyContainer(RestRequest req, XtceDb mdb, String pathName)
             throws NotFoundException {
         int lastSlash = pathName.lastIndexOf('/');
@@ -409,10 +435,6 @@ public abstract class RestHandler extends RouteHandler {
         }
     }
 
-    protected static boolean authorised(RestRequest req, PrivilegeType type, String privilege) {
-        return Privilege.getInstance().hasPrivilege1(req.getAuthToken(), type, privilege);
-    }
-
     protected static class NameDescriptionWithId<T extends NameDescription> {
         final private T item;
         private final NamedObjectId requestedId;
@@ -437,35 +459,31 @@ public abstract class RestHandler extends RouteHandler {
                 .addListener(l -> req.getCompletableFuture().complete(null));
     }
 
-    protected static void checkSystemPrivilege(RestRequest req, SystemPrivilege priv) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), priv)) {
-            throw new ForbiddenException("Need " + priv + " privilege for this operation");
+    protected static void checkSystemPrivilege(RestRequest req, SystemPrivilege privilege) throws ForbiddenException {
+        if (!req.getUser().hasSystemPrivilege(privilege)) {
+            throw new ForbiddenException("No system privilege '" + privilege + "'");
         }
     }
 
-    protected void verifyAuthorization(AuthenticationToken authToken, SystemPrivilege p) throws ForbiddenException {
-        if (!Privilege.getInstance().hasPrivilege1(authToken, p)) {
-            throw new ForbiddenException("Need " + p + " privilege for this operation");
-        }
-    }
-
-    protected static void verifyAuthorization(AuthenticationToken authToken, PrivilegeType type,
-            Collection<String> names) throws ForbiddenException {
-        for (String n : names) {
-            if (!Privilege.getInstance().hasPrivilege1(authToken, type, n)) {
-                throw new ForbiddenException("No " + type + " authorization for '" + n + "'");
-            }
-            ;
-        }
-    };
-
-    protected static void verifyAuthorization(AuthenticationToken authToken, PrivilegeType type, String... names)
+    protected static void checkObjectPrivileges(RestRequest req, ObjectPrivilegeType type, Collection<String> objects)
             throws ForbiddenException {
-        for (String n : names) {
-            if (!Privilege.getInstance().hasPrivilege1(authToken, type, n)) {
-                throw new ForbiddenException("No " + type + " authorization for '" + n + "'");
+        checkObjectPrivileges(req, type, objects.toArray(new String[objects.size()]));
+    }
+
+    protected static void checkObjectPrivileges(RestRequest req, ObjectPrivilegeType type, String... objects)
+            throws ForbiddenException {
+        for (String object : objects) {
+            if (!req.getUser().hasObjectPrivilege(type, object)) {
+                throw new ForbiddenException("No " + type + " authorization for '" + object + "'");
             }
-            ;
         }
-    };
+    }
+
+    protected static boolean hasSystemPrivilege(RestRequest req, SystemPrivilege privilege) {
+        return req.getUser().hasSystemPrivilege(privilege);
+    }
+
+    protected static boolean hasObjectPrivilege(RestRequest req, ObjectPrivilegeType type, String privilege) {
+        return req.getUser().hasObjectPrivilege(type, privilege);
+    }
 }

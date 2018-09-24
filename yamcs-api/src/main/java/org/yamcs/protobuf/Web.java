@@ -4224,18 +4224,6 @@ public final class Web {
             return false;
           }
         }
-        if (hasClientInfo()) {
-          if (!getClientInfo().isInitialized()) {
-            memoizedIsInitialized = 0;
-            return false;
-          }
-        }
-        if (hasStatistics()) {
-          if (!getStatistics().isInitialized()) {
-            memoizedIsInitialized = 0;
-            return false;
-          }
-        }
         if (hasEvent()) {
           if (!getEvent().isInitialized()) {
             memoizedIsInitialized = 0;
@@ -4250,12 +4238,6 @@ public final class Web {
         }
         if (hasAlarmData()) {
           if (!getAlarmData().isInitialized()) {
-            memoizedIsInitialized = 0;
-            return false;
-          }
-        }
-        if (hasLinkEvent()) {
-          if (!getLinkEvent().isInitialized()) {
             memoizedIsInitialized = 0;
             return false;
           }
@@ -5094,16 +5076,6 @@ public final class Web {
               return false;
             }
           }
-          if (hasClientInfo()) {
-            if (!getClientInfo().isInitialized()) {
-              return false;
-            }
-          }
-          if (hasStatistics()) {
-            if (!getStatistics().isInitialized()) {
-              return false;
-            }
-          }
           if (hasEvent()) {
             if (!getEvent().isInitialized()) {
               return false;
@@ -5116,11 +5088,6 @@ public final class Web {
           }
           if (hasAlarmData()) {
             if (!getAlarmData().isInitialized()) {
-              return false;
-            }
-          }
-          if (hasLinkEvent()) {
-            if (!getLinkEvent().isInitialized()) {
               return false;
             }
           }
@@ -10403,15 +10370,6 @@ public final class Web {
     boolean getClientInfo();
 
     /**
-     * <code>optional bool processorInfo = 2;</code>
-     */
-    boolean hasProcessorInfo();
-    /**
-     * <code>optional bool processorInfo = 2;</code>
-     */
-    boolean getProcessorInfo();
-
-    /**
      * <code>optional bool processorStatistics = 3;</code>
      */
     boolean hasProcessorStatistics();
@@ -10433,7 +10391,6 @@ public final class Web {
     }
     private ManagementSubscriptionRequest() {
       clientInfo_ = false;
-      processorInfo_ = false;
       processorStatistics_ = false;
     }
 
@@ -10470,13 +10427,8 @@ public final class Web {
               clientInfo_ = input.readBool();
               break;
             }
-            case 16: {
-              bitField0_ |= 0x00000002;
-              processorInfo_ = input.readBool();
-              break;
-            }
             case 24: {
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000002;
               processorStatistics_ = input.readBool();
               break;
             }
@@ -10520,28 +10472,13 @@ public final class Web {
       return clientInfo_;
     }
 
-    public static final int PROCESSORINFO_FIELD_NUMBER = 2;
-    private boolean processorInfo_;
-    /**
-     * <code>optional bool processorInfo = 2;</code>
-     */
-    public boolean hasProcessorInfo() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
-    }
-    /**
-     * <code>optional bool processorInfo = 2;</code>
-     */
-    public boolean getProcessorInfo() {
-      return processorInfo_;
-    }
-
     public static final int PROCESSORSTATISTICS_FIELD_NUMBER = 3;
     private boolean processorStatistics_;
     /**
      * <code>optional bool processorStatistics = 3;</code>
      */
     public boolean hasProcessorStatistics() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
      * <code>optional bool processorStatistics = 3;</code>
@@ -10566,9 +10503,6 @@ public final class Web {
         output.writeBool(1, clientInfo_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        output.writeBool(2, processorInfo_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBool(3, processorStatistics_);
       }
       unknownFields.writeTo(output);
@@ -10584,10 +10518,6 @@ public final class Web {
           .computeBoolSize(1, clientInfo_);
       }
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(2, processorInfo_);
-      }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(3, processorStatistics_);
       }
@@ -10613,11 +10543,6 @@ public final class Web {
         result = result && (getClientInfo()
             == other.getClientInfo());
       }
-      result = result && (hasProcessorInfo() == other.hasProcessorInfo());
-      if (hasProcessorInfo()) {
-        result = result && (getProcessorInfo()
-            == other.getProcessorInfo());
-      }
       result = result && (hasProcessorStatistics() == other.hasProcessorStatistics());
       if (hasProcessorStatistics()) {
         result = result && (getProcessorStatistics()
@@ -10638,11 +10563,6 @@ public final class Web {
         hash = (37 * hash) + CLIENTINFO_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getClientInfo());
-      }
-      if (hasProcessorInfo()) {
-        hash = (37 * hash) + PROCESSORINFO_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-            getProcessorInfo());
       }
       if (hasProcessorStatistics()) {
         hash = (37 * hash) + PROCESSORSTATISTICS_FIELD_NUMBER;
@@ -10769,10 +10689,8 @@ public final class Web {
         super.clear();
         clientInfo_ = false;
         bitField0_ = (bitField0_ & ~0x00000001);
-        processorInfo_ = false;
-        bitField0_ = (bitField0_ & ~0x00000002);
         processorStatistics_ = false;
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -10803,10 +10721,6 @@ public final class Web {
         result.clientInfo_ = clientInfo_;
         if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
           to_bitField0_ |= 0x00000002;
-        }
-        result.processorInfo_ = processorInfo_;
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
         }
         result.processorStatistics_ = processorStatistics_;
         result.bitField0_ = to_bitField0_;
@@ -10853,9 +10767,6 @@ public final class Web {
         if (other == org.yamcs.protobuf.Web.ManagementSubscriptionRequest.getDefaultInstance()) return this;
         if (other.hasClientInfo()) {
           setClientInfo(other.getClientInfo());
-        }
-        if (other.hasProcessorInfo()) {
-          setProcessorInfo(other.getProcessorInfo());
         }
         if (other.hasProcessorStatistics()) {
           setProcessorStatistics(other.getProcessorStatistics());
@@ -10920,44 +10831,12 @@ public final class Web {
         return this;
       }
 
-      private boolean processorInfo_ ;
-      /**
-       * <code>optional bool processorInfo = 2;</code>
-       */
-      public boolean hasProcessorInfo() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
-      }
-      /**
-       * <code>optional bool processorInfo = 2;</code>
-       */
-      public boolean getProcessorInfo() {
-        return processorInfo_;
-      }
-      /**
-       * <code>optional bool processorInfo = 2;</code>
-       */
-      public Builder setProcessorInfo(boolean value) {
-        bitField0_ |= 0x00000002;
-        processorInfo_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool processorInfo = 2;</code>
-       */
-      public Builder clearProcessorInfo() {
-        bitField0_ = (bitField0_ & ~0x00000002);
-        processorInfo_ = false;
-        onChanged();
-        return this;
-      }
-
       private boolean processorStatistics_ ;
       /**
        * <code>optional bool processorStatistics = 3;</code>
        */
       public boolean hasProcessorStatistics() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
        * <code>optional bool processorStatistics = 3;</code>
@@ -10969,7 +10848,7 @@ public final class Web {
        * <code>optional bool processorStatistics = 3;</code>
        */
       public Builder setProcessorStatistics(boolean value) {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
         processorStatistics_ = value;
         onChanged();
         return this;
@@ -10978,7 +10857,7 @@ public final class Web {
        * <code>optional bool processorStatistics = 3;</code>
        */
       public Builder clearProcessorStatistics() {
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         processorStatistics_ = false;
         onChanged();
         return this;
@@ -11145,60 +11024,6 @@ public final class Web {
      * <code>optional int32 subscriptionId = 5;</code>
      */
     int getSubscriptionId();
-
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> 
-        getListList();
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index);
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated int getListCount();
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getListOrBuilderList();
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
-        int index);
   }
   /**
    * <pre>
@@ -11221,7 +11046,6 @@ public final class Web {
       updateOnExpiration_ = false;
       sendFromCache_ = false;
       subscriptionId_ = 0;
-      list_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -11281,15 +11105,6 @@ public final class Web {
               subscriptionId_ = input.readInt32();
               break;
             }
-            case 80002: {
-              if (!((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-                list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>();
-                mutable_bitField0_ |= 0x00000020;
-              }
-              list_.add(
-                  input.readMessage(org.yamcs.protobuf.Yamcs.NamedObjectId.PARSER, extensionRegistry));
-              break;
-            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -11300,9 +11115,6 @@ public final class Web {
       } finally {
         if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           id_ = java.util.Collections.unmodifiableList(id_);
-        }
-        if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
-          list_ = java.util.Collections.unmodifiableList(list_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -11466,71 +11278,6 @@ public final class Web {
       return subscriptionId_;
     }
 
-    public static final int LIST_FIELD_NUMBER = 10000;
-    private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_;
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
-      return list_;
-    }
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-        getListOrBuilderList() {
-      return list_;
-    }
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public int getListCount() {
-      return list_.size();
-    }
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
-      return list_.get(index);
-    }
-    /**
-     * <pre>
-     *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-     * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-     * remove this field when we are sure nobody uses the old method
-     * </pre>
-     *
-     * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
-        int index) {
-      return list_.get(index);
-    }
-
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -11539,12 +11286,6 @@ public final class Web {
 
       for (int i = 0; i < getIdCount(); i++) {
         if (!getId(i).isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
-      for (int i = 0; i < getListCount(); i++) {
-        if (!getList(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -11569,9 +11310,6 @@ public final class Web {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeInt32(5, subscriptionId_);
-      }
-      for (int i = 0; i < list_.size(); i++) {
-        output.writeMessage(10000, list_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -11600,10 +11338,6 @@ public final class Web {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(5, subscriptionId_);
-      }
-      for (int i = 0; i < list_.size(); i++) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(10000, list_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -11644,8 +11378,6 @@ public final class Web {
         result = result && (getSubscriptionId()
             == other.getSubscriptionId());
       }
-      result = result && getListList()
-          .equals(other.getListList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -11679,10 +11411,6 @@ public final class Web {
       if (hasSubscriptionId()) {
         hash = (37 * hash) + SUBSCRIPTIONID_FIELD_NUMBER;
         hash = (53 * hash) + getSubscriptionId();
-      }
-      if (getListCount() > 0) {
-        hash = (37 * hash) + LIST_FIELD_NUMBER;
-        hash = (53 * hash) + getListList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -11803,7 +11531,6 @@ public final class Web {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getIdFieldBuilder();
-          getListFieldBuilder();
         }
       }
       public Builder clear() {
@@ -11822,12 +11549,6 @@ public final class Web {
         bitField0_ = (bitField0_ & ~0x00000008);
         subscriptionId_ = 0;
         bitField0_ = (bitField0_ & ~0x00000010);
-        if (listBuilder_ == null) {
-          list_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000020);
-        } else {
-          listBuilder_.clear();
-        }
         return this;
       }
 
@@ -11877,15 +11598,6 @@ public final class Web {
           to_bitField0_ |= 0x00000008;
         }
         result.subscriptionId_ = subscriptionId_;
-        if (listBuilder_ == null) {
-          if (((bitField0_ & 0x00000020) == 0x00000020)) {
-            list_ = java.util.Collections.unmodifiableList(list_);
-            bitField0_ = (bitField0_ & ~0x00000020);
-          }
-          result.list_ = list_;
-        } else {
-          result.list_ = listBuilder_.build();
-        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -11966,32 +11678,6 @@ public final class Web {
         if (other.hasSubscriptionId()) {
           setSubscriptionId(other.getSubscriptionId());
         }
-        if (listBuilder_ == null) {
-          if (!other.list_.isEmpty()) {
-            if (list_.isEmpty()) {
-              list_ = other.list_;
-              bitField0_ = (bitField0_ & ~0x00000020);
-            } else {
-              ensureListIsMutable();
-              list_.addAll(other.list_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.list_.isEmpty()) {
-            if (listBuilder_.isEmpty()) {
-              listBuilder_.dispose();
-              listBuilder_ = null;
-              list_ = other.list_;
-              bitField0_ = (bitField0_ & ~0x00000020);
-              listBuilder_ = 
-                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getListFieldBuilder() : null;
-            } else {
-              listBuilder_.addAllMessages(other.list_);
-            }
-          }
-        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -12000,11 +11686,6 @@ public final class Web {
       public final boolean isInitialized() {
         for (int i = 0; i < getIdCount(); i++) {
           if (!getId(i).isInitialized()) {
-            return false;
-          }
-        }
-        for (int i = 0; i < getListCount(); i++) {
-          if (!getList(i).isInitialized()) {
             return false;
           }
         }
@@ -12496,354 +12177,6 @@ public final class Web {
         subscriptionId_ = 0;
         onChanged();
         return this;
-      }
-
-      private java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> list_ =
-        java.util.Collections.emptyList();
-      private void ensureListIsMutable() {
-        if (!((bitField0_ & 0x00000020) == 0x00000020)) {
-          list_ = new java.util.ArrayList<org.yamcs.protobuf.Yamcs.NamedObjectId>(list_);
-          bitField0_ |= 0x00000020;
-         }
-      }
-
-      private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> listBuilder_;
-
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId> getListList() {
-        if (listBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(list_);
-        } else {
-          return listBuilder_.getMessageList();
-        }
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public int getListCount() {
-        if (listBuilder_ == null) {
-          return list_.size();
-        } else {
-          return listBuilder_.getCount();
-        }
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId getList(int index) {
-        if (listBuilder_ == null) {
-          return list_.get(index);
-        } else {
-          return listBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setList(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureListIsMutable();
-          list_.set(index, value);
-          onChanged();
-        } else {
-          listBuilder_.setMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setList(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          listBuilder_.setMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addList(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureListIsMutable();
-          list_.add(value);
-          onChanged();
-        } else {
-          listBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addList(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId value) {
-        if (listBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureListIsMutable();
-          list_.add(index, value);
-          onChanged();
-        } else {
-          listBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addList(
-          org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.add(builderForValue.build());
-          onChanged();
-        } else {
-          listBuilder_.addMessage(builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addList(
-          int index, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.add(index, builderForValue.build());
-          onChanged();
-        } else {
-          listBuilder_.addMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder addAllList(
-          java.lang.Iterable<? extends org.yamcs.protobuf.Yamcs.NamedObjectId> values) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, list_);
-          onChanged();
-        } else {
-          listBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearList() {
-        if (listBuilder_ == null) {
-          list_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000020);
-          onChanged();
-        } else {
-          listBuilder_.clear();
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder removeList(int index) {
-        if (listBuilder_ == null) {
-          ensureListIsMutable();
-          list_.remove(index);
-          onChanged();
-        } else {
-          listBuilder_.remove(index);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getListBuilder(
-          int index) {
-        return getListFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getListOrBuilder(
-          int index) {
-        if (listBuilder_ == null) {
-          return list_.get(index);  } else {
-          return listBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.util.List<? extends org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-           getListOrBuilderList() {
-        if (listBuilder_ != null) {
-          return listBuilder_.getMessageOrBuilderList();
-        } else {
-          return java.util.Collections.unmodifiableList(list_);
-        }
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder() {
-        return getListFieldBuilder().addBuilder(
-            org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder addListBuilder(
-          int index) {
-        return getListFieldBuilder().addBuilder(
-            index, org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance());
-      }
-      /**
-       * <pre>
-       *Hack to allow the old subscribe with NamedObjectList to work when json is used.
-       * When protobuf is used, the "id" will work since it uses the same field id (1) with the "list" from NamedObjectList
-       * remove this field when we are sure nobody uses the old method
-       * </pre>
-       *
-       * <code>repeated .yamcs.NamedObjectId list = 10000 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public java.util.List<org.yamcs.protobuf.Yamcs.NamedObjectId.Builder> 
-           getListBuilderList() {
-        return getListFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
-          getListFieldBuilder() {
-        if (listBuilder_ == null) {
-          listBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder>(
-                  list_,
-                  ((bitField0_ & 0x00000020) == 0x00000020),
-                  getParentForChildren(),
-                  isClean());
-          list_ = null;
-        }
-        return listBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -15807,6 +15140,645 @@ public final class Web {
 
   }
 
+  public interface AuthFlowOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.AuthFlow)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <pre>
+     *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+     *optional string state; //the client has to send this to the POST link and then back to Yamcs
+     * </pre>
+     *
+     * <code>optional .web.AuthFlow.Type type = 1;</code>
+     */
+    boolean hasType();
+    /**
+     * <pre>
+     *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+     *optional string state; //the client has to send this to the POST link and then back to Yamcs
+     * </pre>
+     *
+     * <code>optional .web.AuthFlow.Type type = 1;</code>
+     */
+    org.yamcs.protobuf.Web.AuthFlow.Type getType();
+  }
+  /**
+   * Protobuf type {@code web.AuthFlow}
+   */
+  public  static final class AuthFlow extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:web.AuthFlow)
+      AuthFlowOrBuilder {
+    // Use AuthFlow.newBuilder() to construct.
+    private AuthFlow(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private AuthFlow() {
+      type_ = 1;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private AuthFlow(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.Web.AuthFlow.Type value = org.yamcs.protobuf.Web.AuthFlow.Type.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                type_ = rawValue;
+              }
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Web.internal_static_web_AuthFlow_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Web.internal_static_web_AuthFlow_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Web.AuthFlow.class, org.yamcs.protobuf.Web.AuthFlow.Builder.class);
+    }
+
+    /**
+     * Protobuf enum {@code web.AuthFlow.Type}
+     */
+    public enum Type
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <pre>
+       * Login to Yamcs via standard username/password form
+       * </pre>
+       *
+       * <code>PASSWORD = 1;</code>
+       */
+      PASSWORD(1),
+      /**
+       * <pre>
+       * Instruct client to login via an external URL (not yet implemented)
+       * </pre>
+       *
+       * <code>REDIRECT = 2;</code>
+       */
+      REDIRECT(2),
+      /**
+       * <pre>
+       * Login to Yamcs via HTTP Negotiate (/auth/spnego endpoint)
+       * </pre>
+       *
+       * <code>SPNEGO = 3;</code>
+       */
+      SPNEGO(3),
+      ;
+
+      /**
+       * <pre>
+       * Login to Yamcs via standard username/password form
+       * </pre>
+       *
+       * <code>PASSWORD = 1;</code>
+       */
+      public static final int PASSWORD_VALUE = 1;
+      /**
+       * <pre>
+       * Instruct client to login via an external URL (not yet implemented)
+       * </pre>
+       *
+       * <code>REDIRECT = 2;</code>
+       */
+      public static final int REDIRECT_VALUE = 2;
+      /**
+       * <pre>
+       * Login to Yamcs via HTTP Negotiate (/auth/spnego endpoint)
+       * </pre>
+       *
+       * <code>SPNEGO = 3;</code>
+       */
+      public static final int SPNEGO_VALUE = 3;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static Type valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static Type forNumber(int value) {
+        switch (value) {
+          case 1: return PASSWORD;
+          case 2: return REDIRECT;
+          case 3: return SPNEGO;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Type>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          Type> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Type>() {
+              public Type findValueByNumber(int number) {
+                return Type.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Web.AuthFlow.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Type[] VALUES = values();
+
+      public static Type valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private Type(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:web.AuthFlow.Type)
+    }
+
+    private int bitField0_;
+    public static final int TYPE_FIELD_NUMBER = 1;
+    private int type_;
+    /**
+     * <pre>
+     *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+     *optional string state; //the client has to send this to the POST link and then back to Yamcs
+     * </pre>
+     *
+     * <code>optional .web.AuthFlow.Type type = 1;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <pre>
+     *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+     *optional string state; //the client has to send this to the POST link and then back to Yamcs
+     * </pre>
+     *
+     * <code>optional .web.AuthFlow.Type type = 1;</code>
+     */
+    public org.yamcs.protobuf.Web.AuthFlow.Type getType() {
+      org.yamcs.protobuf.Web.AuthFlow.Type result = org.yamcs.protobuf.Web.AuthFlow.Type.valueOf(type_);
+      return result == null ? org.yamcs.protobuf.Web.AuthFlow.Type.PASSWORD : result;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, type_);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, type_);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Web.AuthFlow)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Web.AuthFlow other = (org.yamcs.protobuf.Web.AuthFlow) obj;
+
+      boolean result = true;
+      result = result && (hasType() == other.hasType());
+      if (hasType()) {
+        result = result && type_ == other.type_;
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasType()) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + type_;
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Web.AuthFlow parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Web.AuthFlow prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code web.AuthFlow}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:web.AuthFlow)
+        org.yamcs.protobuf.Web.AuthFlowOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Web.internal_static_web_AuthFlow_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Web.internal_static_web_AuthFlow_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Web.AuthFlow.class, org.yamcs.protobuf.Web.AuthFlow.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Web.AuthFlow.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        type_ = 1;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Web.internal_static_web_AuthFlow_descriptor;
+      }
+
+      public org.yamcs.protobuf.Web.AuthFlow getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Web.AuthFlow.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Web.AuthFlow build() {
+        org.yamcs.protobuf.Web.AuthFlow result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Web.AuthFlow buildPartial() {
+        org.yamcs.protobuf.Web.AuthFlow result = new org.yamcs.protobuf.Web.AuthFlow(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.type_ = type_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Web.AuthFlow) {
+          return mergeFrom((org.yamcs.protobuf.Web.AuthFlow)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Web.AuthFlow other) {
+        if (other == org.yamcs.protobuf.Web.AuthFlow.getDefaultInstance()) return this;
+        if (other.hasType()) {
+          setType(other.getType());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Web.AuthFlow parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Web.AuthFlow) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private int type_ = 1;
+      /**
+       * <pre>
+       *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+       *optional string state; //the client has to send this to the POST link and then back to Yamcs
+       * </pre>
+       *
+       * <code>optional .web.AuthFlow.Type type = 1;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <pre>
+       *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+       *optional string state; //the client has to send this to the POST link and then back to Yamcs
+       * </pre>
+       *
+       * <code>optional .web.AuthFlow.Type type = 1;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlow.Type getType() {
+        org.yamcs.protobuf.Web.AuthFlow.Type result = org.yamcs.protobuf.Web.AuthFlow.Type.valueOf(type_);
+        return result == null ? org.yamcs.protobuf.Web.AuthFlow.Type.PASSWORD : result;
+      }
+      /**
+       * <pre>
+       *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+       *optional string state; //the client has to send this to the POST link and then back to Yamcs
+       * </pre>
+       *
+       * <code>optional .web.AuthFlow.Type type = 1;</code>
+       */
+      public Builder setType(org.yamcs.protobuf.Web.AuthFlow.Type value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        type_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *optional String uri = 2; //in case of POST is just a relative path to yamcs web
+       *optional string state; //the client has to send this to the POST link and then back to Yamcs
+       * </pre>
+       *
+       * <code>optional .web.AuthFlow.Type type = 1;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        type_ = 1;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:web.AuthFlow)
+    }
+
+    // @@protoc_insertion_point(class_scope:web.AuthFlow)
+    private static final org.yamcs.protobuf.Web.AuthFlow DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.AuthFlow();
+    }
+
+    public static org.yamcs.protobuf.Web.AuthFlow getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<AuthFlow>
+        PARSER = new com.google.protobuf.AbstractParser<AuthFlow>() {
+      public AuthFlow parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new AuthFlow(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<AuthFlow> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<AuthFlow> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Web.AuthFlow getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface AuthInfoOrBuilder extends
       // @@protoc_insertion_point(interface_extends:web.AuthInfo)
       com.google.protobuf.MessageOrBuilder {
@@ -15819,6 +15791,30 @@ public final class Web {
      * <code>optional bool requireAuthentication = 1;</code>
      */
     boolean getRequireAuthentication();
+
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Web.AuthFlow> 
+        getFlowList();
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    org.yamcs.protobuf.Web.AuthFlow getFlow(int index);
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    int getFlowCount();
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Web.AuthFlowOrBuilder> 
+        getFlowOrBuilderList();
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    org.yamcs.protobuf.Web.AuthFlowOrBuilder getFlowOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code web.AuthInfo}
@@ -15833,6 +15829,7 @@ public final class Web {
     }
     private AuthInfo() {
       requireAuthentication_ = false;
+      flow_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -15868,6 +15865,15 @@ public final class Web {
               requireAuthentication_ = input.readBool();
               break;
             }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                flow_ = new java.util.ArrayList<org.yamcs.protobuf.Web.AuthFlow>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              flow_.add(
+                  input.readMessage(org.yamcs.protobuf.Web.AuthFlow.PARSER, extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -15876,6 +15882,9 @@ public final class Web {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          flow_ = java.util.Collections.unmodifiableList(flow_);
+        }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
@@ -15908,6 +15917,41 @@ public final class Web {
       return requireAuthentication_;
     }
 
+    public static final int FLOW_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.Web.AuthFlow> flow_;
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Web.AuthFlow> getFlowList() {
+      return flow_;
+    }
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Web.AuthFlowOrBuilder> 
+        getFlowOrBuilderList() {
+      return flow_;
+    }
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    public int getFlowCount() {
+      return flow_.size();
+    }
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    public org.yamcs.protobuf.Web.AuthFlow getFlow(int index) {
+      return flow_.get(index);
+    }
+    /**
+     * <code>repeated .web.AuthFlow flow = 2;</code>
+     */
+    public org.yamcs.protobuf.Web.AuthFlowOrBuilder getFlowOrBuilder(
+        int index) {
+      return flow_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -15923,6 +15967,9 @@ public final class Web {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeBool(1, requireAuthentication_);
       }
+      for (int i = 0; i < flow_.size(); i++) {
+        output.writeMessage(2, flow_.get(i));
+      }
       unknownFields.writeTo(output);
     }
 
@@ -15934,6 +15981,10 @@ public final class Web {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(1, requireAuthentication_);
+      }
+      for (int i = 0; i < flow_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, flow_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -15957,6 +16008,8 @@ public final class Web {
         result = result && (getRequireAuthentication()
             == other.getRequireAuthentication());
       }
+      result = result && getFlowList()
+          .equals(other.getFlowList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -15972,6 +16025,10 @@ public final class Web {
         hash = (37 * hash) + REQUIREAUTHENTICATION_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getRequireAuthentication());
+      }
+      if (getFlowCount() > 0) {
+        hash = (37 * hash) + FLOW_FIELD_NUMBER;
+        hash = (53 * hash) + getFlowList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -16087,12 +16144,19 @@ public final class Web {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getFlowFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
         requireAuthentication_ = false;
         bitField0_ = (bitField0_ & ~0x00000001);
+        if (flowBuilder_ == null) {
+          flow_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          flowBuilder_.clear();
+        }
         return this;
       }
 
@@ -16121,6 +16185,15 @@ public final class Web {
           to_bitField0_ |= 0x00000001;
         }
         result.requireAuthentication_ = requireAuthentication_;
+        if (flowBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            flow_ = java.util.Collections.unmodifiableList(flow_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.flow_ = flow_;
+        } else {
+          result.flow_ = flowBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -16165,6 +16238,32 @@ public final class Web {
         if (other == org.yamcs.protobuf.Web.AuthInfo.getDefaultInstance()) return this;
         if (other.hasRequireAuthentication()) {
           setRequireAuthentication(other.getRequireAuthentication());
+        }
+        if (flowBuilder_ == null) {
+          if (!other.flow_.isEmpty()) {
+            if (flow_.isEmpty()) {
+              flow_ = other.flow_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureFlowIsMutable();
+              flow_.addAll(other.flow_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.flow_.isEmpty()) {
+            if (flowBuilder_.isEmpty()) {
+              flowBuilder_.dispose();
+              flowBuilder_ = null;
+              flow_ = other.flow_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              flowBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getFlowFieldBuilder() : null;
+            } else {
+              flowBuilder_.addAllMessages(other.flow_);
+            }
+          }
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -16225,6 +16324,246 @@ public final class Web {
         onChanged();
         return this;
       }
+
+      private java.util.List<org.yamcs.protobuf.Web.AuthFlow> flow_ =
+        java.util.Collections.emptyList();
+      private void ensureFlowIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          flow_ = new java.util.ArrayList<org.yamcs.protobuf.Web.AuthFlow>(flow_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Web.AuthFlow, org.yamcs.protobuf.Web.AuthFlow.Builder, org.yamcs.protobuf.Web.AuthFlowOrBuilder> flowBuilder_;
+
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Web.AuthFlow> getFlowList() {
+        if (flowBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(flow_);
+        } else {
+          return flowBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public int getFlowCount() {
+        if (flowBuilder_ == null) {
+          return flow_.size();
+        } else {
+          return flowBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlow getFlow(int index) {
+        if (flowBuilder_ == null) {
+          return flow_.get(index);
+        } else {
+          return flowBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder setFlow(
+          int index, org.yamcs.protobuf.Web.AuthFlow value) {
+        if (flowBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFlowIsMutable();
+          flow_.set(index, value);
+          onChanged();
+        } else {
+          flowBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder setFlow(
+          int index, org.yamcs.protobuf.Web.AuthFlow.Builder builderForValue) {
+        if (flowBuilder_ == null) {
+          ensureFlowIsMutable();
+          flow_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          flowBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder addFlow(org.yamcs.protobuf.Web.AuthFlow value) {
+        if (flowBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFlowIsMutable();
+          flow_.add(value);
+          onChanged();
+        } else {
+          flowBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder addFlow(
+          int index, org.yamcs.protobuf.Web.AuthFlow value) {
+        if (flowBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFlowIsMutable();
+          flow_.add(index, value);
+          onChanged();
+        } else {
+          flowBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder addFlow(
+          org.yamcs.protobuf.Web.AuthFlow.Builder builderForValue) {
+        if (flowBuilder_ == null) {
+          ensureFlowIsMutable();
+          flow_.add(builderForValue.build());
+          onChanged();
+        } else {
+          flowBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder addFlow(
+          int index, org.yamcs.protobuf.Web.AuthFlow.Builder builderForValue) {
+        if (flowBuilder_ == null) {
+          ensureFlowIsMutable();
+          flow_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          flowBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder addAllFlow(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Web.AuthFlow> values) {
+        if (flowBuilder_ == null) {
+          ensureFlowIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, flow_);
+          onChanged();
+        } else {
+          flowBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder clearFlow() {
+        if (flowBuilder_ == null) {
+          flow_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          flowBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public Builder removeFlow(int index) {
+        if (flowBuilder_ == null) {
+          ensureFlowIsMutable();
+          flow_.remove(index);
+          onChanged();
+        } else {
+          flowBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlow.Builder getFlowBuilder(
+          int index) {
+        return getFlowFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlowOrBuilder getFlowOrBuilder(
+          int index) {
+        if (flowBuilder_ == null) {
+          return flow_.get(index);  } else {
+          return flowBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Web.AuthFlowOrBuilder> 
+           getFlowOrBuilderList() {
+        if (flowBuilder_ != null) {
+          return flowBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(flow_);
+        }
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlow.Builder addFlowBuilder() {
+        return getFlowFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Web.AuthFlow.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public org.yamcs.protobuf.Web.AuthFlow.Builder addFlowBuilder(
+          int index) {
+        return getFlowFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Web.AuthFlow.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .web.AuthFlow flow = 2;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Web.AuthFlow.Builder> 
+           getFlowBuilderList() {
+        return getFlowFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Web.AuthFlow, org.yamcs.protobuf.Web.AuthFlow.Builder, org.yamcs.protobuf.Web.AuthFlowOrBuilder> 
+          getFlowFieldBuilder() {
+        if (flowBuilder_ == null) {
+          flowBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Web.AuthFlow, org.yamcs.protobuf.Web.AuthFlow.Builder, org.yamcs.protobuf.Web.AuthFlowOrBuilder>(
+                  flow_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          flow_ = null;
+        }
+        return flowBuilder_;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
@@ -16274,8 +16613,8 @@ public final class Web {
 
   }
 
-  public interface AccessTokenResponseOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:web.AccessTokenResponse)
+  public interface TokenResponseOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:web.TokenResponse)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -16324,15 +16663,29 @@ public final class Web {
     int getExpiresIn();
 
     /**
-     * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+     * <code>optional string refresh_token = 4;</code>
+     */
+    boolean hasRefreshToken();
+    /**
+     * <code>optional string refresh_token = 4;</code>
+     */
+    java.lang.String getRefreshToken();
+    /**
+     * <code>optional string refresh_token = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getRefreshTokenBytes();
+
+    /**
+     * <code>optional .yamcsManagement.UserInfo user = 5;</code>
      */
     boolean hasUser();
     /**
-     * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+     * <code>optional .yamcsManagement.UserInfo user = 5;</code>
      */
     org.yamcs.protobuf.YamcsManagement.UserInfo getUser();
     /**
-     * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+     * <code>optional .yamcsManagement.UserInfo user = 5;</code>
      */
     org.yamcs.protobuf.YamcsManagement.UserInfoOrBuilder getUserOrBuilder();
   }
@@ -16341,20 +16694,21 @@ public final class Web {
    * Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework
    * </pre>
    *
-   * Protobuf type {@code web.AccessTokenResponse}
+   * Protobuf type {@code web.TokenResponse}
    */
-  public  static final class AccessTokenResponse extends
+  public  static final class TokenResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:web.AccessTokenResponse)
-      AccessTokenResponseOrBuilder {
-    // Use AccessTokenResponse.newBuilder() to construct.
-    private AccessTokenResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:web.TokenResponse)
+      TokenResponseOrBuilder {
+    // Use TokenResponse.newBuilder() to construct.
+    private TokenResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private AccessTokenResponse() {
+    private TokenResponse() {
       accessToken_ = "";
       tokenType_ = "";
       expiresIn_ = 0;
+      refreshToken_ = "";
     }
 
     @java.lang.Override
@@ -16362,7 +16716,7 @@ public final class Web {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private AccessTokenResponse(
+    private TokenResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -16403,8 +16757,14 @@ public final class Web {
               break;
             }
             case 34: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000008;
+              refreshToken_ = bs;
+              break;
+            }
+            case 42: {
               org.yamcs.protobuf.YamcsManagement.UserInfo.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000008) == 0x00000008)) {
+              if (((bitField0_ & 0x00000010) == 0x00000010)) {
                 subBuilder = user_.toBuilder();
               }
               user_ = input.readMessage(org.yamcs.protobuf.YamcsManagement.UserInfo.PARSER, extensionRegistry);
@@ -16412,7 +16772,7 @@ public final class Web {
                 subBuilder.mergeFrom(user_);
                 user_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000008;
+              bitField0_ |= 0x00000010;
               break;
             }
           }
@@ -16429,14 +16789,14 @@ public final class Web {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.Web.internal_static_web_AccessTokenResponse_descriptor;
+      return org.yamcs.protobuf.Web.internal_static_web_TokenResponse_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.Web.internal_static_web_AccessTokenResponse_fieldAccessorTable
+      return org.yamcs.protobuf.Web.internal_static_web_TokenResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.yamcs.protobuf.Web.AccessTokenResponse.class, org.yamcs.protobuf.Web.AccessTokenResponse.Builder.class);
+              org.yamcs.protobuf.Web.TokenResponse.class, org.yamcs.protobuf.Web.TokenResponse.Builder.class);
     }
 
     private int bitField0_;
@@ -16547,22 +16907,64 @@ public final class Web {
       return expiresIn_;
     }
 
-    public static final int USER_FIELD_NUMBER = 4;
-    private org.yamcs.protobuf.YamcsManagement.UserInfo user_;
+    public static final int REFRESH_TOKEN_FIELD_NUMBER = 4;
+    private volatile java.lang.Object refreshToken_;
     /**
-     * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+     * <code>optional string refresh_token = 4;</code>
      */
-    public boolean hasUser() {
+    public boolean hasRefreshToken() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+     * <code>optional string refresh_token = 4;</code>
+     */
+    public java.lang.String getRefreshToken() {
+      java.lang.Object ref = refreshToken_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          refreshToken_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string refresh_token = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getRefreshTokenBytes() {
+      java.lang.Object ref = refreshToken_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        refreshToken_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int USER_FIELD_NUMBER = 5;
+    private org.yamcs.protobuf.YamcsManagement.UserInfo user_;
+    /**
+     * <code>optional .yamcsManagement.UserInfo user = 5;</code>
+     */
+    public boolean hasUser() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional .yamcsManagement.UserInfo user = 5;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.UserInfo getUser() {
       return user_ == null ? org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance() : user_;
     }
     /**
-     * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+     * <code>optional .yamcsManagement.UserInfo user = 5;</code>
      */
     public org.yamcs.protobuf.YamcsManagement.UserInfoOrBuilder getUserOrBuilder() {
       return user_ == null ? org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance() : user_;
@@ -16574,12 +16976,6 @@ public final class Web {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (hasUser()) {
-        if (!getUser().isInitialized()) {
-          memoizedIsInitialized = 0;
-          return false;
-        }
-      }
       memoizedIsInitialized = 1;
       return true;
     }
@@ -16596,7 +16992,10 @@ public final class Web {
         output.writeInt32(3, expiresIn_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeMessage(4, getUser());
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, refreshToken_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeMessage(5, getUser());
       }
       unknownFields.writeTo(output);
     }
@@ -16617,8 +17016,11 @@ public final class Web {
           .computeInt32Size(3, expiresIn_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, refreshToken_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, getUser());
+          .computeMessageSize(5, getUser());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -16631,10 +17033,10 @@ public final class Web {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.yamcs.protobuf.Web.AccessTokenResponse)) {
+      if (!(obj instanceof org.yamcs.protobuf.Web.TokenResponse)) {
         return super.equals(obj);
       }
-      org.yamcs.protobuf.Web.AccessTokenResponse other = (org.yamcs.protobuf.Web.AccessTokenResponse) obj;
+      org.yamcs.protobuf.Web.TokenResponse other = (org.yamcs.protobuf.Web.TokenResponse) obj;
 
       boolean result = true;
       result = result && (hasAccessToken() == other.hasAccessToken());
@@ -16651,6 +17053,11 @@ public final class Web {
       if (hasExpiresIn()) {
         result = result && (getExpiresIn()
             == other.getExpiresIn());
+      }
+      result = result && (hasRefreshToken() == other.hasRefreshToken());
+      if (hasRefreshToken()) {
+        result = result && getRefreshToken()
+            .equals(other.getRefreshToken());
       }
       result = result && (hasUser() == other.hasUser());
       if (hasUser()) {
@@ -16680,6 +17087,10 @@ public final class Web {
         hash = (37 * hash) + EXPIRES_IN_FIELD_NUMBER;
         hash = (53 * hash) + getExpiresIn();
       }
+      if (hasRefreshToken()) {
+        hash = (37 * hash) + REFRESH_TOKEN_FIELD_NUMBER;
+        hash = (53 * hash) + getRefreshToken().hashCode();
+      }
       if (hasUser()) {
         hash = (37 * hash) + USER_FIELD_NUMBER;
         hash = (53 * hash) + getUser().hashCode();
@@ -16689,58 +17100,58 @@ public final class Web {
       return hash;
     }
 
-    public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(
+    public static org.yamcs.protobuf.Web.TokenResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(
+    public static org.yamcs.protobuf.Web.TokenResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(byte[] data)
+    public static org.yamcs.protobuf.Web.TokenResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(
+    public static org.yamcs.protobuf.Web.TokenResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.Web.TokenResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(
+    public static org.yamcs.protobuf.Web.TokenResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Web.AccessTokenResponse parseDelimitedFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.Web.TokenResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static org.yamcs.protobuf.Web.AccessTokenResponse parseDelimitedFrom(
+    public static org.yamcs.protobuf.Web.TokenResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(
+    public static org.yamcs.protobuf.Web.TokenResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static org.yamcs.protobuf.Web.AccessTokenResponse parseFrom(
+    public static org.yamcs.protobuf.Web.TokenResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -16752,7 +17163,7 @@ public final class Web {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.yamcs.protobuf.Web.AccessTokenResponse prototype) {
+    public static Builder newBuilder(org.yamcs.protobuf.Web.TokenResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -16771,25 +17182,25 @@ public final class Web {
      * Naming conventions for this message follow RFC6749 - OAuth 2.0 Authorization Framework
      * </pre>
      *
-     * Protobuf type {@code web.AccessTokenResponse}
+     * Protobuf type {@code web.TokenResponse}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:web.AccessTokenResponse)
-        org.yamcs.protobuf.Web.AccessTokenResponseOrBuilder {
+        // @@protoc_insertion_point(builder_implements:web.TokenResponse)
+        org.yamcs.protobuf.Web.TokenResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.yamcs.protobuf.Web.internal_static_web_AccessTokenResponse_descriptor;
+        return org.yamcs.protobuf.Web.internal_static_web_TokenResponse_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.Web.internal_static_web_AccessTokenResponse_fieldAccessorTable
+        return org.yamcs.protobuf.Web.internal_static_web_TokenResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.Web.AccessTokenResponse.class, org.yamcs.protobuf.Web.AccessTokenResponse.Builder.class);
+                org.yamcs.protobuf.Web.TokenResponse.class, org.yamcs.protobuf.Web.TokenResponse.Builder.class);
       }
 
-      // Construct using org.yamcs.protobuf.Web.AccessTokenResponse.newBuilder()
+      // Construct using org.yamcs.protobuf.Web.TokenResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -16813,34 +17224,36 @@ public final class Web {
         bitField0_ = (bitField0_ & ~0x00000002);
         expiresIn_ = 0;
         bitField0_ = (bitField0_ & ~0x00000004);
+        refreshToken_ = "";
+        bitField0_ = (bitField0_ & ~0x00000008);
         if (userBuilder_ == null) {
           user_ = null;
         } else {
           userBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.yamcs.protobuf.Web.internal_static_web_AccessTokenResponse_descriptor;
+        return org.yamcs.protobuf.Web.internal_static_web_TokenResponse_descriptor;
       }
 
-      public org.yamcs.protobuf.Web.AccessTokenResponse getDefaultInstanceForType() {
-        return org.yamcs.protobuf.Web.AccessTokenResponse.getDefaultInstance();
+      public org.yamcs.protobuf.Web.TokenResponse getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Web.TokenResponse.getDefaultInstance();
       }
 
-      public org.yamcs.protobuf.Web.AccessTokenResponse build() {
-        org.yamcs.protobuf.Web.AccessTokenResponse result = buildPartial();
+      public org.yamcs.protobuf.Web.TokenResponse build() {
+        org.yamcs.protobuf.Web.TokenResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public org.yamcs.protobuf.Web.AccessTokenResponse buildPartial() {
-        org.yamcs.protobuf.Web.AccessTokenResponse result = new org.yamcs.protobuf.Web.AccessTokenResponse(this);
+      public org.yamcs.protobuf.Web.TokenResponse buildPartial() {
+        org.yamcs.protobuf.Web.TokenResponse result = new org.yamcs.protobuf.Web.TokenResponse(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -16857,6 +17270,10 @@ public final class Web {
         result.expiresIn_ = expiresIn_;
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
+        }
+        result.refreshToken_ = refreshToken_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
         }
         if (userBuilder_ == null) {
           result.user_ = user_;
@@ -16895,16 +17312,16 @@ public final class Web {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.yamcs.protobuf.Web.AccessTokenResponse) {
-          return mergeFrom((org.yamcs.protobuf.Web.AccessTokenResponse)other);
+        if (other instanceof org.yamcs.protobuf.Web.TokenResponse) {
+          return mergeFrom((org.yamcs.protobuf.Web.TokenResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.yamcs.protobuf.Web.AccessTokenResponse other) {
-        if (other == org.yamcs.protobuf.Web.AccessTokenResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.yamcs.protobuf.Web.TokenResponse other) {
+        if (other == org.yamcs.protobuf.Web.TokenResponse.getDefaultInstance()) return this;
         if (other.hasAccessToken()) {
           bitField0_ |= 0x00000001;
           accessToken_ = other.accessToken_;
@@ -16918,6 +17335,11 @@ public final class Web {
         if (other.hasExpiresIn()) {
           setExpiresIn(other.getExpiresIn());
         }
+        if (other.hasRefreshToken()) {
+          bitField0_ |= 0x00000008;
+          refreshToken_ = other.refreshToken_;
+          onChanged();
+        }
         if (other.hasUser()) {
           mergeUser(other.getUser());
         }
@@ -16927,11 +17349,6 @@ public final class Web {
       }
 
       public final boolean isInitialized() {
-        if (hasUser()) {
-          if (!getUser().isInitialized()) {
-            return false;
-          }
-        }
         return true;
       }
 
@@ -16939,11 +17356,11 @@ public final class Web {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.yamcs.protobuf.Web.AccessTokenResponse parsedMessage = null;
+        org.yamcs.protobuf.Web.TokenResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.yamcs.protobuf.Web.AccessTokenResponse) e.getUnfinishedMessage();
+          parsedMessage = (org.yamcs.protobuf.Web.TokenResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -17154,17 +17571,93 @@ public final class Web {
         return this;
       }
 
+      private java.lang.Object refreshToken_ = "";
+      /**
+       * <code>optional string refresh_token = 4;</code>
+       */
+      public boolean hasRefreshToken() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string refresh_token = 4;</code>
+       */
+      public java.lang.String getRefreshToken() {
+        java.lang.Object ref = refreshToken_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            refreshToken_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string refresh_token = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getRefreshTokenBytes() {
+        java.lang.Object ref = refreshToken_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          refreshToken_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string refresh_token = 4;</code>
+       */
+      public Builder setRefreshToken(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        refreshToken_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string refresh_token = 4;</code>
+       */
+      public Builder clearRefreshToken() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        refreshToken_ = getDefaultInstance().getRefreshToken();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string refresh_token = 4;</code>
+       */
+      public Builder setRefreshTokenBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+        refreshToken_ = value;
+        onChanged();
+        return this;
+      }
+
       private org.yamcs.protobuf.YamcsManagement.UserInfo user_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.YamcsManagement.UserInfo, org.yamcs.protobuf.YamcsManagement.UserInfo.Builder, org.yamcs.protobuf.YamcsManagement.UserInfoOrBuilder> userBuilder_;
       /**
-       * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+       * <code>optional .yamcsManagement.UserInfo user = 5;</code>
        */
       public boolean hasUser() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000010) == 0x00000010);
       }
       /**
-       * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+       * <code>optional .yamcsManagement.UserInfo user = 5;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.UserInfo getUser() {
         if (userBuilder_ == null) {
@@ -17174,7 +17667,7 @@ public final class Web {
         }
       }
       /**
-       * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+       * <code>optional .yamcsManagement.UserInfo user = 5;</code>
        */
       public Builder setUser(org.yamcs.protobuf.YamcsManagement.UserInfo value) {
         if (userBuilder_ == null) {
@@ -17186,11 +17679,11 @@ public final class Web {
         } else {
           userBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         return this;
       }
       /**
-       * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+       * <code>optional .yamcsManagement.UserInfo user = 5;</code>
        */
       public Builder setUser(
           org.yamcs.protobuf.YamcsManagement.UserInfo.Builder builderForValue) {
@@ -17200,15 +17693,15 @@ public final class Web {
         } else {
           userBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         return this;
       }
       /**
-       * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+       * <code>optional .yamcsManagement.UserInfo user = 5;</code>
        */
       public Builder mergeUser(org.yamcs.protobuf.YamcsManagement.UserInfo value) {
         if (userBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+          if (((bitField0_ & 0x00000010) == 0x00000010) &&
               user_ != null &&
               user_ != org.yamcs.protobuf.YamcsManagement.UserInfo.getDefaultInstance()) {
             user_ =
@@ -17220,11 +17713,11 @@ public final class Web {
         } else {
           userBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         return this;
       }
       /**
-       * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+       * <code>optional .yamcsManagement.UserInfo user = 5;</code>
        */
       public Builder clearUser() {
         if (userBuilder_ == null) {
@@ -17233,19 +17726,19 @@ public final class Web {
         } else {
           userBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
       /**
-       * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+       * <code>optional .yamcsManagement.UserInfo user = 5;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.UserInfo.Builder getUserBuilder() {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
         onChanged();
         return getUserFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+       * <code>optional .yamcsManagement.UserInfo user = 5;</code>
        */
       public org.yamcs.protobuf.YamcsManagement.UserInfoOrBuilder getUserOrBuilder() {
         if (userBuilder_ != null) {
@@ -17256,7 +17749,7 @@ public final class Web {
         }
       }
       /**
-       * <code>optional .yamcsManagement.UserInfo user = 4;</code>
+       * <code>optional .yamcsManagement.UserInfo user = 5;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.YamcsManagement.UserInfo, org.yamcs.protobuf.YamcsManagement.UserInfo.Builder, org.yamcs.protobuf.YamcsManagement.UserInfoOrBuilder> 
@@ -17282,39 +17775,39 @@ public final class Web {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:web.AccessTokenResponse)
+      // @@protoc_insertion_point(builder_scope:web.TokenResponse)
     }
 
-    // @@protoc_insertion_point(class_scope:web.AccessTokenResponse)
-    private static final org.yamcs.protobuf.Web.AccessTokenResponse DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:web.TokenResponse)
+    private static final org.yamcs.protobuf.Web.TokenResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.AccessTokenResponse();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Web.TokenResponse();
     }
 
-    public static org.yamcs.protobuf.Web.AccessTokenResponse getDefaultInstance() {
+    public static org.yamcs.protobuf.Web.TokenResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @java.lang.Deprecated public static final com.google.protobuf.Parser<AccessTokenResponse>
-        PARSER = new com.google.protobuf.AbstractParser<AccessTokenResponse>() {
-      public AccessTokenResponse parsePartialFrom(
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<TokenResponse>
+        PARSER = new com.google.protobuf.AbstractParser<TokenResponse>() {
+      public TokenResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new AccessTokenResponse(input, extensionRegistry);
+          return new TokenResponse(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<AccessTokenResponse> parser() {
+    public static com.google.protobuf.Parser<TokenResponse> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<AccessTokenResponse> getParserForType() {
+    public com.google.protobuf.Parser<TokenResponse> getParserForType() {
       return PARSER;
     }
 
-    public org.yamcs.protobuf.Web.AccessTokenResponse getDefaultInstanceForType() {
+    public org.yamcs.protobuf.Web.TokenResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -17396,15 +17889,20 @@ public final class Web {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_ConnectionInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_web_AuthFlow_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_web_AuthFlow_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_web_AuthInfo_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_web_AuthInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_web_AccessTokenResponse_descriptor;
+    internal_static_web_TokenResponse_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_web_AccessTokenResponse_fieldAccessorTable;
+      internal_static_web_TokenResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -17459,29 +17957,31 @@ public final class Web {
       "(\t\022\013\n\003msg\030\002 \001(\t*\005\010d\020\311\001\"+\n\027LinkSubscripti" +
       "onRequest\022\020\n\010instance\030\001 \001(\t\"K\n\034Processor" +
       "SubscriptionRequest\022\025\n\rallProcessors\030\001 \001" +
-      "(\010\022\024\n\014allInstances\030\002 \001(\010\"g\n\035ManagementSu" +
-      "bscriptionRequest\022\022\n\nclientInfo\030\001 \001(\010\022\025\n" +
-      "\rprocessorInfo\030\002 \001(\010\022\033\n\023processorStatist" +
-      "ics\030\003 \001(\010\"\314\001\n\034ParameterSubscriptionReque" +
-      "st\022 \n\002id\030\001 \003(\0132\024.yamcs.NamedObjectId\022\026\n\016",
-      "abortOnInvalid\030\002 \001(\010\022\032\n\022updateOnExpirati" +
-      "on\030\003 \001(\010\022\025\n\rsendFromCache\030\004 \001(\010\022\026\n\016subsc" +
-      "riptionId\030\005 \001(\005\022\'\n\004list\030\220N \003(\0132\024.yamcs.N" +
-      "amedObjectIdB\002\030\001\"^\n\035ParameterSubscriptio" +
-      "nResponse\022%\n\007invalid\030\002 \003(\0132\024.yamcs.Named" +
-      "ObjectId\022\026\n\016subscriptionId\030\003 \001(\005\"=\n\030Time" +
-      "SubscriptionResponse\022!\n\010timeInfo\030\001 \001(\0132\017" +
-      ".yamcs.TimeInfo\"R\n\035ProcessorSubscription" +
-      "Response\0221\n\tprocessor\030\001 \001(\0132\036.yamcsManag" +
-      "ement.ProcessorInfo\"\207\001\n\016ConnectionInfo\022\020",
-      "\n\010clientId\030\001 \001(\005\0220\n\010instance\030\002 \001(\0132\036.yam" +
-      "csManagement.YamcsInstance\0221\n\tprocessor\030" +
-      "\003 \001(\0132\036.yamcsManagement.ProcessorInfo\")\n" +
-      "\010AuthInfo\022\035\n\025requireAuthentication\030\001 \001(\010" +
-      "\"|\n\023AccessTokenResponse\022\024\n\014access_token\030" +
-      "\001 \001(\t\022\022\n\ntoken_type\030\002 \001(\t\022\022\n\nexpires_in\030" +
-      "\003 \001(\005\022\'\n\004user\030\004 \001(\0132\031.yamcsManagement.Us" +
-      "erInfoB\024\n\022org.yamcs.protobuf"
+      "(\010\022\024\n\014allInstances\030\002 \001(\010\"P\n\035ManagementSu" +
+      "bscriptionRequest\022\022\n\nclientInfo\030\001 \001(\010\022\033\n" +
+      "\023processorStatistics\030\003 \001(\010\"\243\001\n\034Parameter" +
+      "SubscriptionRequest\022 \n\002id\030\001 \003(\0132\024.yamcs." +
+      "NamedObjectId\022\026\n\016abortOnInvalid\030\002 \001(\010\022\032\n",
+      "\022updateOnExpiration\030\003 \001(\010\022\025\n\rsendFromCac" +
+      "he\030\004 \001(\010\022\026\n\016subscriptionId\030\005 \001(\005\"^\n\035Para" +
+      "meterSubscriptionResponse\022%\n\007invalid\030\002 \003" +
+      "(\0132\024.yamcs.NamedObjectId\022\026\n\016subscription" +
+      "Id\030\003 \001(\005\"=\n\030TimeSubscriptionResponse\022!\n\010" +
+      "timeInfo\030\001 \001(\0132\017.yamcs.TimeInfo\"R\n\035Proce" +
+      "ssorSubscriptionResponse\0221\n\tprocessor\030\001 " +
+      "\001(\0132\036.yamcsManagement.ProcessorInfo\"\207\001\n\016" +
+      "ConnectionInfo\022\020\n\010clientId\030\001 \001(\005\0220\n\010inst" +
+      "ance\030\002 \001(\0132\036.yamcsManagement.YamcsInstan",
+      "ce\0221\n\tprocessor\030\003 \001(\0132\036.yamcsManagement." +
+      "ProcessorInfo\"\\\n\010AuthFlow\022 \n\004type\030\001 \001(\0162" +
+      "\022.web.AuthFlow.Type\".\n\004Type\022\014\n\010PASSWORD\020" +
+      "\001\022\014\n\010REDIRECT\020\002\022\n\n\006SPNEGO\020\003\"F\n\010AuthInfo\022" +
+      "\035\n\025requireAuthentication\030\001 \001(\010\022\033\n\004flow\030\002" +
+      " \003(\0132\r.web.AuthFlow\"\215\001\n\rTokenResponse\022\024\n" +
+      "\014access_token\030\001 \001(\t\022\022\n\ntoken_type\030\002 \001(\t\022" +
+      "\022\n\nexpires_in\030\003 \001(\005\022\025\n\rrefresh_token\030\004 \001" +
+      "(\t\022\'\n\004user\030\005 \001(\0132\031.yamcsManagement.UserI" +
+      "nfoB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -17560,13 +18060,13 @@ public final class Web {
     internal_static_web_ManagementSubscriptionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ManagementSubscriptionRequest_descriptor,
-        new java.lang.String[] { "ClientInfo", "ProcessorInfo", "ProcessorStatistics", });
+        new java.lang.String[] { "ClientInfo", "ProcessorStatistics", });
     internal_static_web_ParameterSubscriptionRequest_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_web_ParameterSubscriptionRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ParameterSubscriptionRequest_descriptor,
-        new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "SubscriptionId", "List", });
+        new java.lang.String[] { "Id", "AbortOnInvalid", "UpdateOnExpiration", "SendFromCache", "SubscriptionId", });
     internal_static_web_ParameterSubscriptionResponse_descriptor =
       getDescriptor().getMessageTypes().get(8);
     internal_static_web_ParameterSubscriptionResponse_fieldAccessorTable = new
@@ -17591,18 +18091,24 @@ public final class Web {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_ConnectionInfo_descriptor,
         new java.lang.String[] { "ClientId", "Instance", "Processor", });
-    internal_static_web_AuthInfo_descriptor =
+    internal_static_web_AuthFlow_descriptor =
       getDescriptor().getMessageTypes().get(12);
+    internal_static_web_AuthFlow_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_web_AuthFlow_descriptor,
+        new java.lang.String[] { "Type", });
+    internal_static_web_AuthInfo_descriptor =
+      getDescriptor().getMessageTypes().get(13);
     internal_static_web_AuthInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_web_AuthInfo_descriptor,
-        new java.lang.String[] { "RequireAuthentication", });
-    internal_static_web_AccessTokenResponse_descriptor =
-      getDescriptor().getMessageTypes().get(13);
-    internal_static_web_AccessTokenResponse_fieldAccessorTable = new
+        new java.lang.String[] { "RequireAuthentication", "Flow", });
+    internal_static_web_TokenResponse_descriptor =
+      getDescriptor().getMessageTypes().get(14);
+    internal_static_web_TokenResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_web_AccessTokenResponse_descriptor,
-        new java.lang.String[] { "AccessToken", "TokenType", "ExpiresIn", "User", });
+        internal_static_web_TokenResponse_descriptor,
+        new java.lang.String[] { "AccessToken", "TokenType", "ExpiresIn", "RefreshToken", "User", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
     org.yamcs.protobuf.Archive.getDescriptor();
     org.yamcs.protobuf.Commanding.getDescriptor();

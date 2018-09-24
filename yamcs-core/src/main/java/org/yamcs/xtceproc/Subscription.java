@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DynamicIntegerValue;
+import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.SequenceContainer;
@@ -121,12 +122,20 @@ public class Subscription {
      */
     public void addParameter(Parameter parameter) {
         List<ParameterEntry> tpips = xtcedb.getParameterEntries(parameter);
-        if (tpips == null) {
-            log.warn("Parameter not part of any container: {}", parameter);
-            return;
+        if (tpips != null) {
+            for (ParameterEntry pe : tpips) {
+                addSequenceEntry(pe);
+            }
         }
-        for (ParameterEntry pe : tpips) {
-            addSequenceEntry(pe);
+        
+        for (String ns : parameter.getAliasSet().getNamespaces()) {
+            Collection<IndirectParameterRefEntry> c = xtcedb.getIndirectParameterRefEntries(ns);
+            if (c != null) {
+                for(IndirectParameterRefEntry ipre: c) {
+                    addParameter(ipre.getParameterRef().getParameter());
+                    addSequenceEntry(ipre);
+                }
+            }
         }
     }
 
@@ -167,19 +176,21 @@ public class Subscription {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Current list of parameter subscribed:\n");
-        for (SequenceContainer sc : container2EntryMap.keySet()) {
+        for (Map.Entry<SequenceContainer,TreeSet<SequenceEntry>> me: container2EntryMap.entrySet()) {
+            SequenceContainer sc = me.getKey();
             sb.append(sc);
             sb.append(" with entries:\n");
-            for (SequenceEntry se : container2EntryMap.get(sc)) {
+            for (SequenceEntry se : me.getValue()) {
                 sb.append("\t").append(se).append("\n");
             }
         }
         sb.append("-----------------------------------\n");
         sb.append("Container inheritance dependency\n");
-        for (SequenceContainer sc : container2InheritingContainerMap.keySet()) {
+        for (Map.Entry<SequenceContainer, HashSet<SequenceContainer>> me: container2InheritingContainerMap.entrySet()) {
+            SequenceContainer sc = me.getKey();
             sb.append(sc.getName());
             sb.append("-->");
-            for (SequenceContainer sc1 : container2InheritingContainerMap.get(sc)) {
+            for (SequenceContainer sc1 : me.getValue()) {
                 sb.append(sc1.getName() + " ");
             }
             sb.append("\n\n");

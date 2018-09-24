@@ -1,7 +1,5 @@
 package org.yamcs.xtce;
 
-import java.util.Set;
-
 public class BooleanParameterType extends BooleanDataType implements ParameterType {
 
     private static final long serialVersionUID = 1L;
@@ -24,9 +22,7 @@ public class BooleanParameterType extends BooleanDataType implements ParameterTy
     }
 
     @Override
-    public String getTypeAsString() {
-        return "boolean";
+    public ParameterType copy() {
+        return new BooleanParameterType(this);
     }
-    
-    
 }

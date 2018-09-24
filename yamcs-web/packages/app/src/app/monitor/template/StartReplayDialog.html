@@ -1,23 +1,26 @@
 <h2 mat-dialog-title>Start replay processor</h2>
 
-<mat-dialog-content>
-  <form [formGroup]="form">
-    <mat-form-field style="width: 100%">
-      <input matInput formControlName="start" placeholder="Start time">
-    </mat-form-field>
-    <mat-form-field style="width: 100%" floatLabel="always">
-      <input matInput formControlName="stop" placeholder="Stop time (optional)">
-    </mat-form-field>
+<mat-dialog-content class="mat-typography">
+  <form [formGroup]="form" class="ya-form">
+    <label>
+      Start time
+      <input type="text" formControlName="start">
+    </label>
+    <label>
+      Stop time (optional)
+      <input type="text" formControlName="stop">
+    </label>
     <br>
-    <mat-form-field style="width: 100%">
-      <input matInput formControlName="name" placeholder="Processor name">
-      <mat-hint>Must be unique. Other users can join your replay via this name</mat-hint>
-    </mat-form-field>
+    <label>
+      Processor name
+      <input type="text" formControlName="name">
+      <span class="hint">Must be unique. Other users can join your replay via this name</span>
+    </label>
   </form>
   <p>&nbsp;</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Cancel</button>
-  <button mat-raised-button (click)="start()" color="primary" [disabled]="!form.valid">Start</button>
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-raised-button (click)="start()" color="primary" [disabled]="!form.valid">START</button>
 </mat-dialog-actions>

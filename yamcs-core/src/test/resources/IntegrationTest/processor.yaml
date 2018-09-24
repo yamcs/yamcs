@@ -22,7 +22,7 @@ realtime:
                   python:
                       - mdb/algolib.py
         - class: org.yamcs.parameter.SystemParametersProvider
-        - class: org.yamcs.parameter.SoftwareParameterManager
+        - class: org.yamcs.parameter.LocalParameterManager
     config:
         #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
         alarm:

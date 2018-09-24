@@ -10,23 +10,19 @@ public class ArgumentEntry extends SequenceEntry {
     private static final long serialVersionUID = 1L;
     private Argument argument;
 
-    public ArgumentEntry(int position, CommandContainer container, int locationInContainerInBits,
-            ReferenceLocationType location, Argument argument) {
-        super(position, container, locationInContainerInBits, location);
+    public ArgumentEntry(int locationInContainerInBits, ReferenceLocationType location, Argument argument) {
+        super(locationInContainerInBits, location);
         this.argument = argument;
     }
 
     /**
-     * Constructor for an unresolved ParameterEntry. The Parameter will come later via setParameter
+     * Constructor for an unresolved ArgumentEntry. The Argument will come later via {@link #setArgument(Argument)}
      * 
-     * @param position
-     * @param container
      * @param locationInContainerInBits
      * @param location
      */
-    public ArgumentEntry(int position, CommandContainer container, int locationInContainerInBits,
-            ReferenceLocationType location) {
-        super(position, container, locationInContainerInBits, location);
+    public ArgumentEntry(int locationInContainerInBits, ReferenceLocationType location) {
+        super(locationInContainerInBits, location);
     }
 
     public ArgumentEntry(Argument arg) {

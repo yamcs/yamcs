@@ -1,56 +1,57 @@
 services:
-    #loads all the tm providers specified in the tmproviders section below. Creates all the necessary streams
-    - org.yamcs.tctm.DataLinkInitialiser
-    - org.yamcs.archive.XtceTmRecorder
-    - org.yamcs.archive.ParameterRecorder
-    - org.yamcs.archive.AlarmRecorder
-    - org.yamcs.archive.EventRecorder
-    - org.yamcs.archive.ReplayServer
-    - org.yamcs.archive.IndexServer
-    - class: org.yamcs.parameter.SystemParametersCollector
-      args:
-        provideJvmVariables: true
-    # create a realtime processor
-    - class: org.yamcs.ProcessorCreatorService
-      args: 
-         name: "realtime"
-         type: "realtime"
-
-    #this one sets up the recording of the command history 
-    - org.yamcs.archive.CommandHistoryRecorder
-    - org.yamcs.alarms.AlarmReporter
-    - class: org.yamcs.parameterarchive.ParameterArchive
-      args:
-         realtimeFiller: 
-             enabled: true
-             flushInterval: 60
+  - class: org.yamcs.tctm.DataLinkInitialiser
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.IndexServer
+  - class: org.yamcs.parameter.SystemParametersCollector
+    args:
+      provideJvmVariables: true
+  - class: org.yamcs.ProcessorCreatorService
+    args: 
+      name: "realtime"
+      type: "realtime" 
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+    args:
+      realtimeFiller: 
+        enabled: true
+        flushInterval: 60
 
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
 
-#config the tm providers started by the TmProviderAdapter
 tmDataLinks:
-    - class: org.yamcs.tctm.TcpTmDataLink
-      name: tm_realtime
-      spec: local
-      stream: tm_realtime
-    - class: org.yamcs.tctm.TcpTmDataLink
-      name: tm_dump
-      spec: localDump
-      stream: tm_dump
+  - class: org.yamcs.tctm.TcpTmDataLink
+    name: tm_realtime
+    stream: tm_realtime
+    args:
+      host: localhost
+      port: 10015
+  - class: org.yamcs.tctm.TcpTmDataLink
+    name: tm_dump
+    stream: tm_dump
+    args:
+      host: localhost
+      port: 10115
 
 #parameterDataLinks:
-#    - class: org.yamcs.simulation.SimulationPpProvider
-#      stream: pp_realtime
-#      args: {simulationDataPath: "etc/gs-simulation.xml"}
+#  - class: org.yamcs.simulation.SimulationPpProvider
+#    stream: pp_realtime
+#    args:
+#      simulationDataPath: etc/gs-simulation.xml
 
 
 # config the tc uplinkers
 tcDataLinks: 
-    - class: org.yamcs.tctm.TcpTcDataLink
-      spec: local
-      stream: tc_realtime
-      name: tc_realtime
+  - class: org.yamcs.tctm.TcpTcDataLink
+    stream: tc_realtime
+    name: tc_realtime
+    args:
+      host: localhost
+      port: 10025
 
 #Specify which MDB configuration to use, references a named section in mdb.yaml 
 mdb: landing

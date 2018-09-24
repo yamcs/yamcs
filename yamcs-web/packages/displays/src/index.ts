@@ -1,5 +1,6 @@
 export { Display } from './Display';
-export { DisplayFrame, Coordinates } from './DisplayFrame';
-export { Layout, LayoutStateListener, LayoutListener } from './Layout';
-export { LayoutState } from './LayoutState';
 export { DisplayCommunicator } from './DisplayCommunicator';
+export { NavigationHandler } from './NavigationHandler';
+export { OpenDisplayCommandOptions } from './OpenDisplayCommandOptions';
+export { OpiDisplay } from './opi/OpiDisplay';
+export { UssDisplay } from './uss/UssDisplay';

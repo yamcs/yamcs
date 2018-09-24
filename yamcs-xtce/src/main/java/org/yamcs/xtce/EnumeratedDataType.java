@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
+
 public class EnumeratedDataType extends BaseDataType {
     private static final long serialVersionUID = 2L;
 
@@ -88,7 +91,10 @@ public class EnumeratedDataType extends BaseDataType {
         enumerationList.add(valEnum);
         enumeration.put(value, valEnum);
     }
-
+    public void addEnumerationValue(ValueEnumeration ve) {
+        enumerationList.add(ve);
+        enumeration.put(ve.value, ve);
+    }
     /**
      * Add range to enumeration list
      */
@@ -120,7 +126,14 @@ public class EnumeratedDataType extends BaseDataType {
     public Object parseString(String stringValue) {
         return stringValue;
     }
+    @Override
+    public Type getValueType() {
+        return Value.Type.STRING;
+    }
     
-   
+    @Override
+    public String getTypeAsString() {
+        return "enumeration";
+    }
 }
 

@@ -1,0 +1,136 @@
+<app-monitor-page>
+  <app-monitor-toolbar>
+    Displays
+
+    &nbsp;&nbsp;&nbsp;
+    <button mat-button
+            *ngIf="mayManageDisplays()"
+            color="primary"
+            (click)="createDisplay()">
+      <mat-icon>add_box</mat-icon>
+      CREATE DISPLAY
+    </button>
+    <button mat-button
+            *ngIf="mayManageDisplays()"
+            color="primary"
+            (click)="deleteSelectedDisplays()"
+            [disabled]="!selection.hasValue()">
+      <mat-icon>delete</mat-icon>
+      DELETE
+    </button>
+  </app-monitor-toolbar>
+
+  <div class="panel-content">
+    <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
+      <div class="breadcrumb" *ngIf="breadcrumb.length">
+        <a class="ya-link"
+          routerLink="/monitor/displays/browse"
+          [queryParams]="{instance: instance.name}">Displays</a>
+        <ng-container *ngFor="let item of breadcrumb; let i = index">
+          &nbsp;&nbsp;/&nbsp;&nbsp;
+          <a *ngIf="i < breadcrumb.length - 1"
+            class="ya-link"
+            [routerLink]="item.route"
+            [queryParams]="{instance: instance.name}">{{ item.name }}</a>
+          <ng-container *ngIf="i === breadcrumb.length - 1">{{ item.name }}</ng-container>
+        </ng-container>
+      </div>
+    </ng-container>
+    <table mat-table
+           *ngIf="dataSource && dataSource.data.length; else empty"
+           [dataSource]="dataSource"
+           class="ya-data-table"
+           style="width: 100%">
+
+      <ng-container cdkColumnDef="select">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
+          <input type="checkbox"
+                 *ngIf="mayManageDisplays()"
+                 (change)="$event ? masterToggle() : null"
+                 [checked]="selection.hasValue() && isAllSelected()">
+        </th>
+        <td mat-cell *cdkCellDef="let row">
+          <input type="checkbox"
+                 *ngIf="mayManageDisplays()"
+                 (click)="$event.stopPropagation()"
+                 (change)="$event ? selection.toggle(row) : null"
+                 [checked]="selection.isSelected(row)">
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="name">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 400px">Name</th>
+        <td mat-cell *cdkCellDef="let item">
+          <ng-container *ngIf="item.folder">
+            <a [routerLink]="'/monitor/displays/browse/' + item.name"
+               [queryParams]="{instance: instance.name}"
+               (click)="$event.stopPropagation()">
+               <mat-icon class="icon12">folder</mat-icon>
+               {{ item.name | filename }}</a>
+          </ng-container>
+          <ng-container *ngIf="!item.folder">
+            <a [routerLink]="'/monitor/displays/files/' + item.name"
+               [queryParams]="{instance: instance.name}"
+               (click)="$event.stopPropagation()">
+                <mat-icon class="icon12">description</mat-icon>
+                {{ item.name | filename }}</a>
+          </ng-container>
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="type">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Type</th>
+        <td mat-cell *cdkCellDef="let item">
+          <ng-container *ngIf="item.folder">Folder</ng-container>
+          <ng-container *ngIf="!item.folder">
+            {{ (item.name | displayType) || '-' }}
+          </ng-container>
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="visibility">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Visibility</th>
+        <td mat-cell *cdkCellDef="let item">
+          Private
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="modified">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Date modified</th>
+        <td mat-cell *cdkCellDef="let item">
+          {{ (item.modified | datetime) || '-' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let item">
+          <ng-container *ngIf="!item.folder">
+            <mat-menu #fileMenu="matMenu" overlapTrigger="false" class="ya-menu">
+              <button mat-menu-item
+                      (click)="renameFile(item)">
+                Rename
+              </button>
+            </mat-menu>
+            <button mat-button
+                    *ngIf="mayManageDisplays()"
+                    [matMenuTriggerFor]="fileMenu"
+                    (click)="$event.stopPropagation()">
+              <mat-icon>more_horiz</mat-icon>
+            </button>
+          </ng-container>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row
+          *cdkRowDef="let row; columns: displayedColumns;"
+          [class.selected]="selection.isSelected(row)"
+          (click)="toggleOne(row)"></tr>
+    </table>
+
+    <ng-template #empty>
+      <app-empty-message>Empty directory.</app-empty-message>
+    </ng-template>
+  </div>
+</app-monitor-page>

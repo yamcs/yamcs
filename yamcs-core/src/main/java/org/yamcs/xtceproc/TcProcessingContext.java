@@ -2,6 +2,7 @@ package org.yamcs.xtceproc;
 
 import java.util.Map;
 
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.Argument;
@@ -20,7 +21,7 @@ public class TcProcessingContext {
     // arguments and their values
     final private Map<Argument, Value> argValues;
     
-    //parameters and their values
+    //context parameters and their values
     final private Map<Parameter, Value> paramValues;
 
     public long generationTime;
@@ -43,6 +44,13 @@ public class TcProcessingContext {
     }
 
     public Value getParameterValue(Parameter param) {
-        return paramValues.get(param);
+        Value v = paramValues.get(param); 
+        if(v == null) {
+            ParameterValue pv = pdata.getLastValueCache().getValue(param);
+            if(pv!=null) {
+                v = pv.getEngValue();
+            }
+        }
+        return v;
     }
 }

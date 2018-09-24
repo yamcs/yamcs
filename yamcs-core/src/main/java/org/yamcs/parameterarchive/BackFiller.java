@@ -49,7 +49,7 @@ public class BackFiller implements StreamSubscriber {
     long t0;
     int runCount;
     ScheduledThreadPoolExecutor executor=new ScheduledThreadPoolExecutor(1);
-    final ParameterArchiveV2 parchive;
+    final ParameterArchive parchive;
     long warmupTime;
     final TimeService timeService;
     static AtomicInteger count = new AtomicInteger();
@@ -61,8 +61,10 @@ public class BackFiller implements StreamSubscriber {
     private List<Stream> subscribedStreams;
     //how often (in seconds) the fillup based on the stream monitoring is started
     long streamUpdateFillFrequency;
-
-    BackFiller(ParameterArchiveV2 parchive, Map<String, Object> config) {
+  
+    private int maxSegmentSize = ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE;
+        
+    BackFiller(ParameterArchive parchive, Map<String, Object> config) {
         this.parchive = parchive;
         if(config!=null) {
             parseConfig(config);
@@ -103,6 +105,8 @@ public class BackFiller implements StreamSubscriber {
     @SuppressWarnings("unchecked")
     private void parseConfig(Map<String, Object> config) {
         warmupTime = 1000L * YConfiguration.getInt(config, "warmupTime", 60);
+        maxSegmentSize = YConfiguration.getInt(config, "maxSegmentSize", ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
+        
         if(config.containsKey("schedule")) {
             List<Object> l = YConfiguration.getList(config, "schedule");
             schedules = new ArrayList<>(l.size());
@@ -153,7 +157,7 @@ public class BackFiller implements StreamSubscriber {
             start = SortedTimeSegment.getSegmentStart(start);
             stop = SortedTimeSegment.getSegmentEnd(stop)+1;
 
-            ArchiveFillerTask aft = new ArchiveFillerTask(parchive);
+            ArchiveFillerTask aft = new ArchiveFillerTask(parchive, maxSegmentSize);
             aft.setCollectionSegmentStart(start);
             String timePeriod = '['+TimeEncoding.toString(start)+"-"+ TimeEncoding.toString(stop)+')';
             log.info("Starting an parameter archive fillup for interval {}", timePeriod );

@@ -1,136 +1,148 @@
 package org.yamcs.algorithms;
 
-
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
 
+/**
+ * Skeleton implementation for algorithms conforming to the XTCE {@link Algorithm} definition.
+ * 
+ * - it collects all the inputs into an inputList and implements the triggering based on the mandatory parameters.
+ * 
+ */
 public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     final protected AlgorithmExecutionContext execCtx;
     final protected Algorithm algorithmDef;
+
     final protected CopyOnWriteArrayList<AlgorithmExecListener> execListeners = new CopyOnWriteArrayList<>();
-    // Keep only unique arguments (for subscription purposes)
-    protected Set<Parameter> requiredParameters = new HashSet<>();
-    protected Set<InputParameter>mandatoryToRun = new HashSet<>();
-    private Map<InputParameter,ParameterValue> inputValues = new HashMap<>();
-    
-    
-    static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmExecutor.class);
-    
+    static protected final Logger log = LoggerFactory.getLogger(AbstractAlgorithmExecutor.class);
+
+    // Collect all the input values here - the indexes match one to one the algorithm def input list
+    final protected List<ParameterValue> inputValues;
+
     public AbstractAlgorithmExecutor(Algorithm algorithmDef, AlgorithmExecutionContext execCtx) {
         this.algorithmDef = algorithmDef;
         this.execCtx = execCtx;
-        for(InputParameter inputParameter:algorithmDef.getInputSet()) {
-            requiredParameters.add(inputParameter.getParameterInstance().getParameter());
-
-            // Default-define all input values to null to prevent ugly runtime errors
-            String scriptName = inputParameter.getInputName();
-            if(scriptName==null) {
-                scriptName = inputParameter.getParameterInstance().getParameter().getName();
-            }
-           
-            if(inputParameter.isMandatory()) {
-                mandatoryToRun.add(inputParameter);
-            }
+        List<InputParameter> l = algorithmDef.getInputList();
+        inputValues = new ArrayList<>(l.size());
+        for (int k = 0; k < l.size(); k++) {
+            inputValues.add(null);
         }
     }
-    
+
     /**
      * update the parameters and return true if the algorithm should run
+     * 
      * @param items
      * @return true if the algorithm should run
      */
     public synchronized boolean updateParameters(List<ParameterValue> items) {
-        ArrayList<ParameterValue> allItems = new ArrayList<>(items);
-        boolean skipRun=false;
+        boolean skipRun = false;
+        List<InputParameter> l = algorithmDef.getInputList();
 
-        // Set algorithm arguments based on incoming values
-        for(InputParameter inputParameter:algorithmDef.getInputSet()) {
+        for (int k = 0; k < l.size(); k++) {
+            InputParameter inputParameter = l.get(k);
             ParameterInstanceRef pInstance = inputParameter.getParameterInstance();
-            for(ParameterValue pval:allItems) {
-                if(pInstance.getParameter().equals(pval.getParameter())) {
-                    if(getLookbackSize(pInstance.getParameter())==0) {
-                        updateInput(inputParameter, pval);
-                        inputValues.put(inputParameter, pval);
+            for (ParameterValue pval : items) {
+                if(pval.getAcquisitionStatus() == AcquisitionStatus.INVALID) {
+                    continue;
+                }
+                if (pInstance.getParameter().equals(pval.getParameter())) {
+                    if (getLookbackSize(pInstance.getParameter()) == 0) {
+                        updateInput(k, inputParameter, pval);
+                        inputValues.set(k, pval);
                     } else {
-                        ParameterValue historicValue=execCtx.getHistoricValue(pInstance);
-                        if(historicValue!=null) {
-                            updateInput(inputParameter, historicValue);
-                            inputValues.put(inputParameter, historicValue);
+                        ParameterValue historicValue = execCtx.getHistoricValue(pInstance);
+                        if (historicValue != null) {
+                            updateInput(k, inputParameter, historicValue);
+                            inputValues.set(k, historicValue);
                         }
                     }
                 }
             }
-            if(!skipRun && inputParameter.isMandatory() && !inputValues.containsKey(inputParameter)) {
-                log.trace("Not running algorithm {} because mandatory input {} is not present", algorithmDef.getName(), inputParameter.getInputName());
+            if (!skipRun && inputParameter.isMandatory() && inputValues.get(k) == null) {
+                log.trace("Not running algorithm {} because mandatory input {} is not present", algorithmDef.getName(),
+                        inputParameter.getInputName());
                 skipRun = true;
             }
         }
 
         // But run it only, if this satisfies an onParameterUpdate trigger
-        boolean triggered=false;
-        for(OnParameterUpdateTrigger trigger:algorithmDef.getTriggerSet().getOnParameterUpdateTriggers()) {
-            if(triggered) {
+        boolean triggered = false;
+        for (OnParameterUpdateTrigger trigger : algorithmDef.getTriggerSet().getOnParameterUpdateTriggers()) {
+            if (triggered) {
                 break;
             }
-            for(ParameterValue pval:allItems) {
-                if(pval.getParameter().equals(trigger.getParameter())) {
-                    triggered=true;
+            for (ParameterValue pval : items) {
+                if (pval.getParameter().equals(trigger.getParameter())) {
+                    triggered = true;
                     break;
                 }
             }
         }
-        boolean shouldRun =(!skipRun && triggered);
+        boolean shouldRun = (!skipRun && triggered);
         return shouldRun;
     }
-   
 
-    abstract protected void updateInput(InputParameter inputParameter, ParameterValue newValue);
-    
-    protected void propagateToListeners(Object returnValue,  List<ParameterValue> outputValues){
-        for(AlgorithmExecListener listener: execListeners) {
+    /**
+     * Called when the given inputParameter receives a value.
+     * idx is the index of the inputParameter in the algorithm definition input list
+     * Note that all values are also collected in the inputList
+     * 
+     * @param inputParameter
+     * @param newValue
+     */
+    protected void updateInput(int idx, InputParameter inputParameter, ParameterValue newValue) {
+    }
+
+    protected void propagateToListeners(Object returnValue, List<ParameterValue> outputValues) {
+        for (AlgorithmExecListener listener : execListeners) {
             listener.algorithmRun(returnValue, outputValues);
         }
     }
+
     @Override
     public void addExecListener(AlgorithmExecListener listener) {
         execListeners.add(listener);
     }
-    
+
     @Override
     public AlgorithmExecutionContext getExecutionContext() {
         return execCtx;
     }
-    
+
     @Override
     public int getLookbackSize(Parameter parameter) {
         // e.g. [ -3, -2, -1, 0 ]
-        int min=0;
-        for(InputParameter p:algorithmDef.getInputSet()) {
-            ParameterInstanceRef pInstance=p.getParameterInstance();
-            if(pInstance.getParameter().equals(parameter) && pInstance.getInstance()<min) {
-                min=p.getParameterInstance().getInstance();
+        int min = 0;
+        for (InputParameter p : algorithmDef.getInputSet()) {
+            ParameterInstanceRef pInstance = p.getParameterInstance();
+            if (pInstance.getParameter().equals(parameter) && pInstance.getInstance() < min) {
+                min = p.getParameterInstance().getInstance();
             }
         }
         return -min;
     }
+
     @Override
     public Set<Parameter> getRequiredParameters() {
-        return requiredParameters;
+        return algorithmDef.getInputList().stream()
+                .map(ip -> ip.getParameterInstance().getParameter())
+                .collect(Collectors.toSet());
     }
+
     @Override
     public Algorithm getAlgorithm() {
         return algorithmDef;

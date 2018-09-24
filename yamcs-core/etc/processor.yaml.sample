@@ -19,10 +19,9 @@ realtime:
                stream: "pp_realtime"
         # implements XTCE algorithms
         - class: org.yamcs.algorithms.AlgorithmManager
-        # implements provider of parameters from sys_var stream (these are collected and sent on this stream by SystemParametersCollector service)
+        # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersCollector service)
         - class: org.yamcs.parameter.SystemParametersProvider
-        # manages software parameters
-        - class: org.yamcs.parameter.SoftwareParameterManager
+        - class: org.yamcs.parameter.LocalParameterManager
     config:
         #Generate events in case of errors when processing telemetry
         generateEvents: true

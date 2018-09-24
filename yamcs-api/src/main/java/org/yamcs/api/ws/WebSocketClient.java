@@ -13,10 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketExceptionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.UsernamePasswordToken;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -59,6 +58,8 @@ public class WebSocketClient {
     YamcsConnectionProperties yprops;
     final boolean useProtobuf = true;
 
+    private ConnectionInfo connectionInfo;
+
     private boolean tcpKeepAlive = false;
 
     // if reconnection is enabled, how often to attempt to reconnect in case of failure
@@ -69,15 +70,6 @@ public class WebSocketClient {
     private Map<Integer, RequestResponsePair> requestResponsePairBySeqId = new ConcurrentHashMap<>();
 
     private int maxFramePayloadLength = 65536;
-
-    // Try old websocket URL when the new one doesn't work. This is useful when using a Yamcs v4+
-    // client against an old Yamcs instance.
-    @Deprecated
-    private boolean enableLegacyURLFallback = false;
-
-    // If true, the old websocket path will be attempted
-    @Deprecated
-    boolean legacyMode = false;
 
     public int getMaxFramePayloadLength() {
         return maxFramePayloadLength;
@@ -121,11 +113,6 @@ public class WebSocketClient {
         this.enableReconnection.set(enableReconnection);
     }
 
-    @Deprecated
-    public void enableLegacyURLFallback(boolean enableLegacyURLFallback) {
-        this.enableLegacyURLFallback = enableLegacyURLFallback;
-    }
-
     public ChannelFuture connect() {
         callback.connecting();
         return createBootstrap();
@@ -149,22 +136,17 @@ public class WebSocketClient {
             header.add(HttpHeaderNames.USER_AGENT, userAgent);
         }
 
-        AuthenticationToken authToken = yprops.getAuthenticationToken();
-        if (authToken != null) {
-            if (authToken instanceof UsernamePasswordToken) {
-                String username = ((UsernamePasswordToken) authToken).getUsername();
-                String password = ((UsernamePasswordToken) authToken).getPasswordS();
-                if (username != null) {
-                    String credentialsClear = username;
-                    if (password != null) {
-                        credentialsClear += ":" + password;
-                    }
-                    String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
-                    String authorization = "Basic " + credentialsB64;
-                    header.add(HttpHeaderNames.AUTHORIZATION, authorization);
+        if (yprops.getUsername() != null) {
+            String username = yprops.getUsername();
+            String password = new String(yprops.getPassword());
+            if (username != null) {
+                String credentialsClear = username;
+                if (password != null) {
+                    credentialsClear += ":" + password;
                 }
-            } else {
-                throw new RuntimeException("authentication token of type " + authToken.getClass() + " not supported");
+                String credentialsB64 = new String(Base64.getEncoder().encode(credentialsClear.getBytes()));
+                String authorization = "Basic " + credentialsB64;
+                header.add(HttpHeaderNames.AUTHORIZATION, authorization);
             }
         }
         String subprotocol = SUBPROTOCOL_JSON;
@@ -173,11 +155,6 @@ public class WebSocketClient {
             subprotocol = SUBPROTOCOL_PROTOBUF;
         }
         URI uri = yprops.webSocketURI();
-        if (legacyMode) {
-            uri = yprops.webSocketURI(true);
-            subprotocol = null;
-        }
-
         WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13,
                 subprotocol, false, header, maxFramePayloadLength);
         WebSocketClientHandler webSocketHandler = new WebSocketClientHandler(handshaker, this, callback);
@@ -270,18 +247,13 @@ public class WebSocketClient {
         return enableReconnection.get();
     }
 
-    @Deprecated
-    boolean isLegacyURLFallbackEnabled() {
-        return enableLegacyURLFallback;
-    }
-
     public boolean isUseProtobuf() {
         return useProtobuf;
     }
 
     public void disconnect() {
         enableReconnection.set(false);
-        log.info("WebSocket Client sending close");
+        log.info("WebSocket client sending close");
         nettyChannel.writeAndFlush(new CloseWebSocketFrame());
 
         // WebSocketClientHandler will close the channel when the server
@@ -319,5 +291,13 @@ public class WebSocketClient {
 
     public boolean isConnected() {
         return nettyChannel.isOpen();
+    }
+
+    public ConnectionInfo getConnectionInfo() {
+        return connectionInfo;
+    }
+
+    void setConnectionInfo(ConnectionInfo connectionInfo) {
+        this.connectionInfo = connectionInfo;
     }
 }

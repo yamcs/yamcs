@@ -7,6 +7,18 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.yamcs.YConfiguration;
+import org.yamcs.xtce.AbsoluteTimeParameterType;
+import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.CommandVerifier;
+import org.yamcs.xtce.FloatDataEncoding;
+import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.InputParameter;
+import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.OutputParameter;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.TimeEpoch;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 public class SpreadsheetLoaderTest {
@@ -18,6 +30,7 @@ public class SpreadsheetLoaderTest {
         XtceDbFactory.reset();
         db = XtceDbFactory.getInstance("refmdb");
     }
+    
     @Test
     public void testParameterAliases() throws Exception {
         Parameter p = db.getParameter("/REFMDB/SUBSYS1/IntegerPara1_1");
@@ -103,5 +116,37 @@ public class SpreadsheetLoaderTest {
         FloatDataEncoding encoding = (FloatDataEncoding) ptype.getEncoding();
         
         assertEquals(1, encoding.getContextCalibratorList().size());
+    }
+
+    @Test
+    public void testAggregates() throws Exception {
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/aggregate_para1");
+        AggregateParameterType ptype = (AggregateParameterType) p.getParameterType();
+        IntegerParameterType mtype = (IntegerParameterType) ptype.getMember("member1").getType();
+        IntegerDataEncoding enc = (IntegerDataEncoding) mtype.getEncoding();
+        assertEquals(8, enc.sizeInBits);
+        
+        FloatParameterType ftype = (FloatParameterType) ptype.getMember("member3").getType();
+        assertEquals(32, ftype.getSizeInBits());
+    }
+    
+    @Test
+    public void testArrays() throws Exception {
+        Parameter p = db.getParameter("/REFMDB/SUBSYS1/array_para1");
+        ArrayParameterType ptype = (ArrayParameterType) p.getParameterType();
+        AggregateParameterType mtype = (AggregateParameterType) ptype.getElementType();
+        IntegerDataType itype = (IntegerDataType) mtype.getMember("member1").getType();
+        IntegerDataEncoding enc = (IntegerDataEncoding) itype.getEncoding();
+        assertEquals(8, enc.sizeInBits);
+    }
+    
+    @Test
+    public void testIndirectRefEntry() throws Exception {
+        SequenceContainer se = db.getSequenceContainer("/REFMDB/SUBSYS1/PKT9");
+        List<SequenceEntry> l = se.getEntryList();
+        assertEquals(2, l.size());
+        IndirectParameterRefEntry ipre = (IndirectParameterRefEntry) l.get(1);
+        assertEquals("OB_ID", ipre.getAliasNameSpace());
+        assertEquals(db.getParameter("/REFMDB/SUBSYS1/pkt9_pid"), ipre.getParameterRef().getParameter());
     }
 }

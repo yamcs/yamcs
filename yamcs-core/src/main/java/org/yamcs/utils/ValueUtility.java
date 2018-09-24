@@ -1,11 +1,14 @@
 package org.yamcs.utils;
 
+import org.yamcs.protobuf.Yamcs.Value.Builder;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 
 import java.util.Arrays;
 import java.util.function.DoubleConsumer;
 import java.util.function.LongConsumer;
 
+import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.BinaryValue;
 import org.yamcs.parameter.BooleanValue;
 import org.yamcs.parameter.DoubleValue;
@@ -276,9 +279,31 @@ public class ValueUtility {
             return b.setUint32Value(v.getUint32Value()).build();
         case UINT64:
             return b.setUint64Value(v.getUint64Value()).build();
+        case AGGREGATE:
+            return b.setAggregateValue(toGbp((AggregateValue) v)).build();
+        case ARRAY:
+            fillInArray(b, (ArrayValue) v);
+            return b.build();
         default:
             throw new IllegalArgumentException("Unexpected type " + v.getType());
         }
+    }
+    private static void fillInArray(Builder b, ArrayValue av) {
+        int n = av.flatLength();
+        for(int i = 0; i<n; i++) {
+            b.addArrayValue(toGbp(av.getElementValue(i)));
+        }
+    }
+
+    public static org.yamcs.protobuf.Yamcs.AggregateValue toGbp(AggregateValue v) {
+        int n = v.numMembers();
+        org.yamcs.protobuf.Yamcs.AggregateValue.Builder b = org.yamcs.protobuf.Yamcs.AggregateValue.newBuilder();
+        for(int i = 0; i<n; i++) {
+            b.addName(v.getMemberName(i));
+            b.addValue(toGbp(v.getMemberValue(i)));
+        }
+        
+        return b.build();
     }
 
     public static Value fromGpb(org.yamcs.protobuf.Yamcs.Value v) {

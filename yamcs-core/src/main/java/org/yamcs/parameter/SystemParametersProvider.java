@@ -92,7 +92,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
             if(sv==null) {
                 sv = (SystemParameter) xtceDb.getParameter(name);
                 if(sv==null) {
-                    sv = createParameterForName(name);
+                    sv = xtceDb.createSystemParameter(name);
                 }
             } 
             pv.setParameter(sv);
@@ -104,17 +104,6 @@ public class SystemParametersProvider extends AbstractService implements StreamS
     @Override
     public void streamClosed(Stream s) {
         notifyStopped();
-    }
-
-
-    private synchronized SystemParameter createParameterForName(String fqname) {
-        SystemParameter sv = variables.get(fqname);
-        if(sv==null) {
-            log.debug("Creating {}", fqname);
-            sv = SystemParameter.getForFullyQualifiedName(fqname);
-            xtceDb.addParameter(sv, true);
-        }
-        return sv;
     }
    
     /**
@@ -155,7 +144,7 @@ public class SystemParametersProvider extends AbstractService implements StreamS
         if(sv==null) {
             sv = (SystemParameter) xtceDb.getParameter(fqname);
             if(sv==null) {
-                sv = createParameterForName(fqname);
+                sv = xtceDb.createSystemParameter(fqname);
             }
         }
         return sv;

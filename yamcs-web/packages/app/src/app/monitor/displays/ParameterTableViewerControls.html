@@ -1,0 +1,71 @@
+<ng-container *ngIf="initialized$ | async">
+  <ng-container *ngIf="viewer.model$ | async as model">
+    <button mat-button
+            *ngIf="mayManageDisplays()"
+            color="primary"
+            [disabled]="!(viewer.hasUnsavedChanges$ | async)"
+            (click)="save()">
+      <mat-icon>save</mat-icon>
+      SAVE
+    </button>
+
+    <button mat-button
+            *ngIf="!(viewer.paused$ | async)"
+            color="primary"
+            (click)="viewer.pause()"
+            matTooltip="Pause value updates">
+      <mat-icon>pause</mat-icon>
+      PAUSE
+    </button>
+
+    <button mat-button
+            *ngIf="viewer.paused$ | async"
+            color="primary"
+            (click)="viewer.unpause()"
+            matTooltip="Unpause value updates">
+      <mat-icon>play_arrow</mat-icon>
+      UNPAUSE
+    </button>
+
+    <button mat-button
+            color="primary"
+            (click)="addParameter()">
+      <mat-icon>playlist_add</mat-icon>
+      ADD
+    </button>
+
+    <button mat-button
+            *ngIf="!model.scroll"
+            color="primary"
+            (click)="viewer.delete()"
+            [disabled]="viewer.selection.isEmpty()">
+      <mat-icon>delete</mat-icon>
+      DELETE
+    </button>
+
+    <button mat-button color="primary"
+            *ngIf="!model.scroll"
+            (click)="viewer.enableScrollView()">
+      <mat-icon style="transform: rotate(90deg)">view_headline</mat-icon>
+      SCROLL VIEW
+    </button>
+
+    <button mat-button color="primary"
+            *ngIf="model.scroll"
+            (click)="viewer.enableStandardView()">
+      <mat-icon>view_headline</mat-icon>
+      STANDARD VIEW
+    </button>
+
+    <mat-menu #moreMenu="matMenu" overlapTrigger="false">
+      <button mat-menu-item
+              [disabled]="!model.parameters.length"
+              (click)="exportArchiveData()">
+        Export archive data...
+      </button>
+    </mat-menu>
+    <button mat-button [matMenuTriggerFor]="moreMenu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </ng-container>
+</ng-container>

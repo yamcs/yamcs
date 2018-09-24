@@ -1,25 +1,45 @@
 package org.yamcs.xtce;
 
-public enum DataSource {
 /**
- * XTCE: 
- * A telemetered Parameter is one that will have values in telemetry. 
- * A derived Parameter is one that is calculated, usually by an Algorithm. 
- * A constant Parameter is  one that is used as a constant in the system (e.g. a vehicle id). 
- * A local Parameter is one that is used purely on the ground (e.g. a ground command counter).
+ * The data source is associated to a {@link Parameter} and specifies the source of the values for that parameter.
  * 
- * 
- * Usage in Yamcs: 
- *  TELEMETERD - used for data acquired from outside
- *  DERIVED - are those set by algorithm manager
- *  LOCAL - are software parameters that can be set by user
- *  SYSTEM - parameters giving internal yamcs state -created on the fly (do not have to be defined in the database)
- *  CONSTANT - not used (yet)
- *  COMMAND and COMMAND_HISTORY - are special parameters created on the fly and instantiated in the context of command verifiers
- *  
- *  all the other are telemetered
- * 
+ * @author nm
+ *
  */
-    TELEMETERED, DERIVED, CONSTANT, LOCAL, 
-    SYSTEM, COMMAND, COMMAND_HISTORY;
+public enum DataSource {
+    /**
+     * used for data acquired from outside, parameters of this type cannot be changed
+     */
+    TELEMETERED,
+    /**
+     * parameters set by the algorithm manager
+     */
+    DERIVED,
+    /**
+     * constants in the XtceDb - cannot be changed
+     */
+    CONSTANT,
+    /**
+     * software parameters maintained by Yamcs and that can be set by client
+     */
+    LOCAL,
+    /**
+     * parameters giving internal yamcs state -created on the fly
+     */
+    SYSTEM,
+    /**
+     * special parameters created on the fly and instantiated in the context of command verifiers
+     */
+    COMMAND,
+    /**
+     * special parameters created on the fly and instantiated in the context of command verifiers
+     */
+    COMMAND_HISTORY,
+    /**
+     * external parameters are like local parameters (can be set by the client) but maintained outside Yamcs.
+     * These are project specific and require a <code>SoftwareParameterManager</code> to be defined in the Yamcs
+     * processor configuration.
+     * 
+     */
+    EXTERNAL1, EXTERNAL2, EXTERNAL3;
 }

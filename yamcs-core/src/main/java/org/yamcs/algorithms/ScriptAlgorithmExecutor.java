@@ -15,52 +15,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.EventProducer;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SInt32Value;
-import org.yamcs.parameter.SInt64Value;
-import org.yamcs.parameter.UInt32Value;
-import org.yamcs.parameter.UInt64Value;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.xtce.BooleanDataEncoding;
-import org.yamcs.xtce.BooleanParameterType;
+import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
-import org.yamcs.xtce.FloatDataEncoding;
-import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.InputParameter;
-import org.yamcs.xtce.IntegerDataEncoding;
-import org.yamcs.xtce.IntegerDataEncoding.Encoding;
-import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.StringDataEncoding;
-import org.yamcs.xtce.StringParameterType;
+import org.yamcs.xtceproc.DataEncodingDecoder;
 import org.yamcs.xtceproc.ParameterTypeProcessor;
+import org.yamcs.xtceproc.ParameterTypeUtils;
 
 import com.google.protobuf.ByteString;
 
 /**
- * Represents the execution context of one algorithm. An AlgorithmEngine is reused upon each update of one or more of
+ * Represents the execution context of one algorithm. An AlgorithmExecutor is reused upon each update of one or more of
  * its InputParameters.
  * <p>
  * This class will create and compile on-the-fly ValueBinding implementations for every unique combination of raw and
- * eng types. The reason for this is to get the mapping correct from Java to JavaScript. Rhino (the default JavaScript
- * engine for JDK &le; 7) will map java Float, Integer, etc towards javascript Object, instead of Number. As a result,
- * in javascript, using the plus operator on two supposed numbers would do a string concatenation instead of an
- * addition.
- * <p>
- * Rather than changing the Rhino configuration (which would require drastic tampering of the maven-compiler-plugin in
- * order to lift Sun's Access Restrictions on these internal classes), we generate classes with primitive raw/eng values
- * when needed.
+ * eng types. 
  */
 public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     static final Logger log = LoggerFactory.getLogger(ScriptAlgorithmExecutor.class);
 
     final Invocable invocable;
+    //stores both the function inputs and outputs
+    //the position of the inputs corresponds to the position of AlgorithmDef input respectively output List   
     final Object[] functionArgs;
-    final Map<Object, Integer> argumentPosition = new HashMap<>();
+  
+    final int numInputs;
+    final int numOutputs;
 
     // Each ValueBinding class represent a unique raw/eng type combination (== key)
     private static Map<String, Class<ValueBinding>> valueBindingClasses = Collections
@@ -69,32 +56,29 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     final String functionName;
     final EventProducer eventProducer;
     
-    public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, Invocable invocable,  String functionName, AlgorithmExecutionContext execCtx, EventProducer eventProducer) {
+    public ScriptAlgorithmExecutor(CustomAlgorithm algorithmDef, Invocable invocable,  String functionName, AlgorithmExecutionContext execCtx) {
         super(algorithmDef, execCtx);
         this.parameterTypeProcessor = new ParameterTypeProcessor(execCtx.getProcessorData());
         this.functionName = functionName;
         this.invocable = invocable;
-        this.eventProducer = eventProducer;
+        this.eventProducer = execCtx.getProcessorData().getEventProducer();
         
-        functionArgs = new Object[algorithmDef.getInputSet().size() + algorithmDef.getOutputSet().size()];
-        int position = 0;
-        for (InputParameter inputParameter : algorithmDef.getInputSet()) {
-            argumentPosition.put(inputParameter, position++);
-        }
+        numInputs = algorithmDef.getInputList().size();
+        List<OutputParameter> outputList = algorithmDef.getOutputList();
+        numOutputs = outputList.size();
+        functionArgs = new Object[numInputs+numOutputs];
+
         // Set empty output bindings so that algorithms can write their attributes
-        for (OutputParameter outputParameter : algorithmDef.getOutputSet()) {
-            OutputValueBinding valueBinding = new OutputValueBinding();
-            functionArgs[position] = valueBinding;
-            argumentPosition.put(outputParameter, position++);
+        for (int k = 0; k<numOutputs; k++) {
+            functionArgs[numInputs+k] = new OutputValueBinding();;
         }
     }
 
     @Override
-    protected void updateInput(InputParameter inputParameter, ParameterValue newValue) {
+    protected void updateInput(int position, InputParameter inputParameter, ParameterValue newValue) {
         if(log.isTraceEnabled()) {
-            log.trace("Algo {} updating input {} with value {}", algorithmDef.getName(), ScriptAlgorithmManager.getArgName(inputParameter), newValue);
+            log.trace("Algo {} updating input {} with value {}", algorithmDef.getName(), ScriptAlgorithmExecutorFactory.getArgName(inputParameter), newValue);
         }
-        int position = argumentPosition.get(inputParameter);
         ValueBinding valueBinding = (ValueBinding) functionArgs[position];
         // First time for an inputParameter, it will create a ValueBinding object.
         // Further calls will just update that object
@@ -113,28 +97,15 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
     @Override
     public synchronized List<ParameterValue> runAlgorithm(long acqTime, long genTime) {
         if(log.isTraceEnabled()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Running algorithm ").append(algorithmDef.getName())
-            .append("( ");
-            int pos = 0;
-            for(InputParameter p: algorithmDef.getInputList()) {
-                if(pos!=0) {
-                    sb.append(", ");
-                }
-                sb.append(ScriptAlgorithmManager.getArgName(p)).append(": ")
-                .append(String.valueOf(functionArgs[pos]));
-                pos++;
-            }
-            sb.append(")");
-
-            log.trace(sb.toString());
+            log.trace(getRunningTraceString());
         }
         try {
             Object returnValue = invocable.invokeFunction(functionName, functionArgs);
             List<ParameterValue> outputValues = new ArrayList<>();
-            for (OutputParameter outputParameter : algorithmDef.getOutputSet()) {
-                int pos = argumentPosition.get(outputParameter);
-                OutputValueBinding res = (OutputValueBinding) functionArgs[pos];
+            List<OutputParameter> outputList = algorithmDef.getOutputList();
+            for (int k = 0; k<numOutputs; k++) {
+                OutputParameter outputParameter = outputList.get(k);
+                OutputValueBinding res = (OutputValueBinding) functionArgs[numInputs+k];
                 if (res.updated && res.value != null) {
                     ParameterValue pv = convertScriptOutputToParameterValue(outputParameter.getParameter(), res);
                     pv.setAcquisitionTime(acqTime);
@@ -147,154 +118,60 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             return outputValues;
         } catch (ScriptException | NoSuchMethodException e) {
             log.warn("Error while executing algorithm: " + e.getMessage(), e);
-            eventProducer.sendWarning(EventProducer.TYPE_ALGO_RUN, "Error while executing algorithm: "+e.getMessage());
+            eventProducer.sendWarning("Error while executing algorithm: "+e.getMessage());
             return Collections.emptyList();
         }
     }
 
+    
+    private String getRunningTraceString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Running algorithm ").append(algorithmDef.getName())
+        .append("( ");
+        int pos = 0;
+        for(InputParameter p: algorithmDef.getInputList()) {
+            if(pos!=0) {
+                sb.append(", ");
+            }
+            sb.append(ScriptAlgorithmExecutorFactory.getArgName(p)).append(": ")
+            .append(String.valueOf(functionArgs[pos]));
+            pos++;
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+    
     private ParameterValue convertScriptOutputToParameterValue(Parameter parameter, OutputValueBinding binding) {
         ParameterValue pval = new ParameterValue(parameter);
         ParameterType ptype = parameter.getParameterType();
+        DataEncoding de = null; 
 
-        DataEncoding de = ptype.getEncoding();
+        if(ptype instanceof BaseDataType) {
+            de = ((BaseDataType) ptype).getEncoding();
+        }
         if (de != null) {
-            setRawValue(ptype.getEncoding(), pval, binding.value);
-            parameterTypeProcessor.calibrate(pval);
+            Value v = DataEncodingDecoder.getRawValue(de, binding.value);
+            if(v==null) {
+                eventProducer.sendWarning(getAlgorithm().getName(), "Cannot convert raw value from algorithm output "
+                        + "'"+binding.value+"' of type "+binding.value.getClass()+" into "+de);
+                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            } else {
+                pval.setRawValue(v);
+                parameterTypeProcessor.calibrate(pval);
+            }
         } else {
-            setEngValue(ptype, pval, binding.value);
+            Value v = ParameterTypeUtils.getEngValue(ptype, binding.value);
+            if(v==null) {
+                eventProducer.sendWarning(getAlgorithm().getName(), "Cannot convert eng value from algorithm output "
+                        + "'"+binding.value+"' of type "+binding.value.getClass()+" into "+ptype);
+                pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            } else {
+                pval.setEngineeringValue(v);
+            }
         }
         return pval;
     }
 
-    static void setEngValue(ParameterType ptype, ParameterValue pval, Object outputValue) {
-        if (ptype instanceof IntegerParameterType) {
-            setEngIntegerValue((IntegerParameterType) ptype, pval, outputValue);
-        } else if (ptype instanceof FloatParameterType) {
-            setEngFloatValue((FloatParameterType) ptype, pval, outputValue);
-        } else if (ptype instanceof StringParameterType) {
-            if (outputValue instanceof String) {
-                pval.setStringValue((String) outputValue);
-            } else {
-                log.error("Could not set string value of parameter {}. Algorithm returned wrong type: {}",
-                        pval.getParameter().getName(), outputValue.getClass());
-            }
-        } else if (ptype instanceof BooleanParameterType) {
-            if (outputValue instanceof Boolean) {
-                pval.setBooleanValue((Boolean) outputValue);
-            } else {
-                log.error("Could not set boolean value of parameter {}. Algorithm returned wrong type: {}",
-                        pval.getParameter().getName(), outputValue.getClass());
-            }
-        } else {
-            log.error("ParameterType {} not implemented as a return type for algorithms", ptype);
-            pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
-        }
-    }
-
-    void setRawValue(DataEncoding de, ParameterValue pval, Object outputValue) {
-        if (de instanceof IntegerDataEncoding) {
-            setRawIntegerValue((IntegerDataEncoding) de, pval, outputValue);
-        } else if (de instanceof FloatDataEncoding) {
-            setRawFloatValue((FloatDataEncoding) de, pval, outputValue);
-        } else if (de instanceof StringDataEncoding) {
-            pval.setRawValue(outputValue.toString());
-        } else if (de instanceof BooleanDataEncoding) {
-            if (outputValue instanceof Boolean) {
-                pval.setRawValue((Boolean) outputValue);
-            } else {
-                log.error("Could not set boolean value of parameter {}. Algorithm returned wrong type: {}",
-                        pval.getParameter().getName(), outputValue.getClass());
-            }
-        } else {
-            log.error("DataEncoding {} not implemented as a raw return type for algorithms", de);
-            throw new IllegalArgumentException(
-                    "DataEncoding " + de + " not implemented as a raw return type for algorithms");
-        }
-    }
-
-    private void setRawIntegerValue(IntegerDataEncoding ide, ParameterValue pv, Object outputValue) {
-        long longValue;
-        if (outputValue instanceof Number) {
-            longValue = ((Number) outputValue).longValue();
-        } else {
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
-            log.warn("Unexpected script return type for " + pv.getParameter().getName()
-                    + ". Was expecting a number, but got: " + outputValue.getClass());
-            return;
-        }
-        if (ide.getSizeInBits() <= 32) {
-            if (ide.getEncoding() == Encoding.UNSIGNED) {
-                pv.setRawUnsignedInteger((int) longValue);
-            } else {
-                pv.setRawSignedInteger((int) longValue);
-            }
-        } else {
-            if (ide.getEncoding() == Encoding.UNSIGNED) {
-                pv.setRawUnsignedLong(longValue);
-            } else {
-                pv.setRawSignedLong(longValue);
-            }
-        }
-    }
-
-    static void setEngIntegerValue(IntegerParameterType ptype, ParameterValue pv, Object outputValue) {
-        long longValue;
-        if (outputValue instanceof Number) {
-            longValue = ((Number) outputValue).longValue();
-        } else {
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
-            log.warn("Unexpected script return type for " + pv.getParameter().getName()
-                    + ". Was expecting a number, but got: " + outputValue.getClass());
-            return;
-        }
-        if (ptype.getSizeInBits() <= 32) {
-            if (ptype.isSigned()) {
-                pv.setEngValue(new SInt32Value((int) longValue));
-            } else {
-                pv.setEngValue(new UInt32Value((int) longValue));
-            }
-        } else {
-            if (ptype.isSigned()) {
-                pv.setEngValue(new SInt64Value(longValue));
-            } else {
-                pv.setEngValue(new UInt64Value(longValue));
-            }
-        }
-    }
-
-    private void setRawFloatValue(FloatDataEncoding fde, ParameterValue pv, Object outputValue) {
-        double doubleValue;
-        if (outputValue instanceof Number) {
-            doubleValue = ((Number) outputValue).doubleValue();
-        } else {
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
-            log.warn("Unexpected script return type for {}. Was expecting a number, but got: {}",
-                    pv.getParameter().getName(), outputValue.getClass());
-            return;
-        }
-        if (fde.getSizeInBits() <= 32) {
-            pv.setRawFloatValue((float) doubleValue);
-        } else {
-            pv.setRawDoubleValue(doubleValue);
-        }
-    }
-
-    static private void setEngFloatValue(FloatParameterType ptype, ParameterValue pv, Object outputValue) {
-        double doubleValue;
-        if (outputValue instanceof Number) {
-            doubleValue = ((Number) outputValue).doubleValue();
-        } else {
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
-            log.warn("Unexpected script return type for {}. Was expecting a number, but got: {}",
-                    pv.getParameter().getName(), outputValue.getClass());
-            return;
-        }
-        if (ptype.getSizeInBits() <= 32) {
-            pv.setFloatValue((float) doubleValue);
-        } else {
-            pv.setDoubleValue(doubleValue);
-        }
-    }
 
   
     private static ValueBinding toValueBinding(ParameterValue pval) {

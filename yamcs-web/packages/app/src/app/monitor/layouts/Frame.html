@@ -1,0 +1,19 @@
+<div #container class="container" style="left: 0; top: 0">
+  <div #titlebar
+       class="titlebar"
+       (mousedown)="onTitlebarMouseDown($event)">
+    <span class="title mat-typography">{{ display?.title || (id | filename) }}</span>
+  </div>
+  <div #frameActions class="frame-actions">
+    <span (click)="closeFrame()">x</span>
+  </div>
+  <div class="frame-content-wrapper" [class.scrollable]="!(zoomToFit$ | async)">
+    <div #frameContent
+        (click)="onFrameContentClick($event)"
+        style="line-height: 0">
+      <ng-template app-viewer-host></ng-template>
+    </div>
+  </div>
+  <div class="resize-handle"
+       (mousedown)="onResizeHandleMouseDown($event)"></div>
+</div>

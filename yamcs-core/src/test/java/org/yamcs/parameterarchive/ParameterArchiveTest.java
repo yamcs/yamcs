@@ -1,7 +1,11 @@
 package org.yamcs.parameterarchive;
 
-import static org.junit.Assert.*;
-import static org.yamcs.parameterarchive.TestUtils.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.yamcs.parameterarchive.TestUtils.checkEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,13 +24,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.rocksdb.RocksDBException;
-import org.yamcs.parameter.ParameterStatus;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.YamcsServer;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.Value;
+import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.parameter.Value;
-import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.FileUtils;
@@ -51,7 +54,7 @@ public class ParameterArchiveTest {
 
     static MockupTimeService timeService;
     static Parameter p1, p2, p3, p4, p5;
-    ParameterArchiveV2 parchive;
+    ParameterArchive parchive;
     ParameterIdDb pidMap;
     ParameterGroupIdDb pgidMap;
 
@@ -76,21 +79,23 @@ public class ParameterArchiveTest {
 
     @Before
     public void openDb() throws Exception {
-        java.util.logging.Logger.getLogger("org.yamcs").setLevel(java.util.logging.Level.ALL);
         String dbroot = YarchDatabase.getInstance(instance).getRoot();
         FileUtils.deleteRecursively(dbroot);
         FileUtils.deleteRecursively(dbroot + ".rdb");
         FileUtils.deleteRecursively(dbroot + ".tbs");
         RdbStorageEngine rse = RdbStorageEngine.getInstance();
+        if (rse.getTablespace(instance) != null) {
+            rse.dropTablespace(instance);
+        }
         rse.createTablespace(instance);
         Map<String, Object> conf = new HashMap<>();
 
         if (partitioningSchema != null) {
             conf.put("partitioningSchema", partitioningSchema);
         }
-        parchive = new ParameterArchiveV2(instance, conf);
+        parchive = new ParameterArchive(instance, conf);
         pidMap = parchive.getParameterIdDb();
-        ParameterGroupIdDb pgidMap = parchive.getParameterGroupIdDb();
+        pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);
         assertNotNull(pgidMap);
     }
@@ -108,7 +113,7 @@ public class ParameterArchiveTest {
 
         // close and reopen the archive to check that the parameter is still there
 
-        parchive = new ParameterArchiveV2(instance);
+        parchive = new ParameterArchive(instance);
         pidMap = parchive.getParameterIdDb();
         pgidMap = parchive.getParameterGroupIdDb();
         assertNotNull(pidMap);
@@ -124,10 +129,10 @@ public class ParameterArchiveTest {
 
         ParameterValue pv1_0 = getParameterValue(p1, 100, "blala100", 100);
 
-        int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
+        int p1id = pidMap.createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
                 pv1_0.getRawValue().getType());
 
-        int pg1id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id });
+        int pg1id = pgidMap.createAndGet(new int[] { p1id });
         PGSegment pgSegment1 = new PGSegment(pg1id, 0, new SortedIntArray(new int[] { p1id }));
 
         pgSegment1.addRecord(100, Arrays.asList(pv1_0));
@@ -270,8 +275,10 @@ public class ParameterArchiveTest {
             boolean retriveParamStatus) throws Exception {
         // ascending request on empty data
         SingleValueConsumer c = new SingleValueConsumer();
-        ParameterRequest spvr = new ParameterRequest(start, stop, ascending, retrieveEngValues, retrieveRawValues, retriveParamStatus);
-        SingleParameterArchiveRetrieval spdr = new SingleParameterArchiveRetrieval(parchive, parameterId, new int[] {parameterGroupId}, spvr);
+        ParameterRequest spvr = new ParameterRequest(start, stop, ascending, retrieveEngValues, retrieveRawValues,
+                retriveParamStatus);
+        SingleParameterArchiveRetrieval spdr = new SingleParameterArchiveRetrieval(parchive, parameterId,
+                new int[] { parameterGroupId }, spvr);
         spdr.retrieve(c);
         return c.list;
     }
@@ -434,7 +441,8 @@ public class ParameterArchiveTest {
             boolean retrieveStatus) throws RocksDBException, DecodingException, IOException {
         ParameterRequest spvr = new ParameterRequest(start, stop, ascending, retrieveEng, retrieveRaw, retrieveStatus);
 
-        SingleParameterArchiveRetrieval spdr = new SingleParameterArchiveRetrieval(parchive, parameterId, parameterGroupIds, spvr);
+        SingleParameterArchiveRetrieval spdr = new SingleParameterArchiveRetrieval(parchive, parameterId,
+                parameterGroupIds, spvr);
         SingleValueConsumer svc = new SingleValueConsumer();
         spdr.retrieve(svc);
         return svc.list;
@@ -583,33 +591,31 @@ public class ParameterArchiveTest {
         checkEquals(l7a.get(1), t2, pv1_3, pv2_1);
 
     }
-    
-    
+
     @Test
     public void testExpireMillis() throws Exception {
         long t = TimeEncoding.parse("2018-03-19T10:35:00");
-        ParameterValue pv1_0 = getParameterValue(p1, t, "blala"+t, (int)t);
+        ParameterValue pv1_0 = getParameterValue(p1, t, "blala" + t, (int) t);
         pv1_0.setExpireMillis(1234);
 
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
                 pv1_0.getRawValue().getType());
 
         int pg1id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id });
-        PGSegment pgSegment1 = new PGSegment(pg1id, SortedTimeSegment.getSegmentId(t), new SortedIntArray(new int[] { p1id }));
-       
-        
+        PGSegment pgSegment1 = new PGSegment(pg1id, SortedTimeSegment.getSegmentId(t),
+                new SortedIntArray(new int[] { p1id }));
+
         pgSegment1.addRecord(t, Arrays.asList(pv1_0));
-        
+
         pgSegment1.consolidate();
         parchive.writeToArchive(pgSegment1);
-        
-        
+
         // ascending request on empty data
-        List<ParameterValueArray> l0a = retrieveSingleParamSingleGroup(t, t+1, p1id, pg1id, true);
+        List<ParameterValueArray> l0a = retrieveSingleParamSingleGroup(t, t + 1, p1id, pg1id, true);
         Pvalue.ParameterStatus pstatus = l0a.get(0).paramStatus[0];
         assertTrue(pstatus.hasExpireMillis());
         assertEquals(1234, pstatus.getExpireMillis());
-        
+
     }
 
     List<ParameterIdValueList> retrieveMultipleParameters(long start, long stop, int[] parameterIds,

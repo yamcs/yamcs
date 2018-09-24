@@ -1,7 +1,7 @@
 _yamcs ()
 {
     local cur prev
-    local subcommands="archive backup confcheck parchive tables rocksdb xtcedb"
+    local subcommands="clients config instances links processors services storage tables"
 
     COMPREPLY=()
     _get_comp_words_by_ref cur prev

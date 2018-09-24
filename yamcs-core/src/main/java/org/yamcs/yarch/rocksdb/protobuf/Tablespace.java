@@ -957,7 +957,7 @@ public final class Tablespace {
 
     /**
      * <pre>
-     *bucketName
+     *bucketProperties
      * </pre>
      *
      * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -965,7 +965,7 @@ public final class Tablespace {
     boolean hasBucketProperties();
     /**
      * <pre>
-     *bucketName
+     *bucketProperties
      * </pre>
      *
      * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -973,7 +973,7 @@ public final class Tablespace {
     org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties getBucketProperties();
     /**
      * <pre>
-     *bucketName
+     *bucketProperties
      * </pre>
      *
      * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -1207,12 +1207,21 @@ public final class Tablespace {
       /**
        * <pre>
        *used to store bucket and user objects
-       * relevant information: instanceName, bucketName
+       * relevant information: instanceName, bucketProperties
        * </pre>
        *
        * <code>BUCKET = 8;</code>
        */
       BUCKET(8),
+      /**
+       * <pre>
+       *used to store CCSDS TM index
+       *relevant information: instanceName
+       * </pre>
+       *
+       * <code>CCSDS_TM_INDEX = 9;</code>
+       */
+      CCSDS_TM_INDEX(9),
       ;
 
       /**
@@ -1275,12 +1284,21 @@ public final class Tablespace {
       /**
        * <pre>
        *used to store bucket and user objects
-       * relevant information: instanceName, bucketName
+       * relevant information: instanceName, bucketProperties
        * </pre>
        *
        * <code>BUCKET = 8;</code>
        */
       public static final int BUCKET_VALUE = 8;
+      /**
+       * <pre>
+       *used to store CCSDS TM index
+       *relevant information: instanceName
+       * </pre>
+       *
+       * <code>CCSDS_TM_INDEX = 9;</code>
+       */
+      public static final int CCSDS_TM_INDEX_VALUE = 9;
 
 
       public final int getNumber() {
@@ -1304,6 +1322,7 @@ public final class Tablespace {
           case 6: return PARCHIVE_PINFO;
           case 7: return TAGDB;
           case 8: return BUCKET;
+          case 9: return CCSDS_TM_INDEX;
           default: return null;
         }
       }
@@ -1748,7 +1767,7 @@ public final class Tablespace {
     private org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties bucketProperties_;
     /**
      * <pre>
-     *bucketName
+     *bucketProperties
      * </pre>
      *
      * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -1758,7 +1777,7 @@ public final class Tablespace {
     }
     /**
      * <pre>
-     *bucketName
+     *bucketProperties
      * </pre>
      *
      * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -1768,7 +1787,7 @@ public final class Tablespace {
     }
     /**
      * <pre>
-     *bucketName
+     *bucketProperties
      * </pre>
      *
      * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -3191,7 +3210,7 @@ public final class Tablespace {
           org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketProperties.Builder, org.yamcs.yarch.rocksdb.protobuf.Tablespace.BucketPropertiesOrBuilder> bucketPropertiesBuilder_;
       /**
        * <pre>
-       *bucketName
+       *bucketProperties
        * </pre>
        *
        * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -3201,7 +3220,7 @@ public final class Tablespace {
       }
       /**
        * <pre>
-       *bucketName
+       *bucketProperties
        * </pre>
        *
        * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -3215,7 +3234,7 @@ public final class Tablespace {
       }
       /**
        * <pre>
-       *bucketName
+       *bucketProperties
        * </pre>
        *
        * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -3235,7 +3254,7 @@ public final class Tablespace {
       }
       /**
        * <pre>
-       *bucketName
+       *bucketProperties
        * </pre>
        *
        * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -3253,7 +3272,7 @@ public final class Tablespace {
       }
       /**
        * <pre>
-       *bucketName
+       *bucketProperties
        * </pre>
        *
        * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -3277,7 +3296,7 @@ public final class Tablespace {
       }
       /**
        * <pre>
-       *bucketName
+       *bucketProperties
        * </pre>
        *
        * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -3294,7 +3313,7 @@ public final class Tablespace {
       }
       /**
        * <pre>
-       *bucketName
+       *bucketProperties
        * </pre>
        *
        * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -3306,7 +3325,7 @@ public final class Tablespace {
       }
       /**
        * <pre>
-       *bucketName
+       *bucketProperties
        * </pre>
        *
        * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -3321,7 +3340,7 @@ public final class Tablespace {
       }
       /**
        * <pre>
-       *bucketName
+       *bucketProperties
        * </pre>
        *
        * <code>optional .BucketProperties bucketProperties = 11;</code>
@@ -5826,7 +5845,7 @@ public final class Tablespace {
     java.lang.String[] descriptorData = {
       "\n\020tablespace.proto\"X\n\022TimeBasedPartition" +
       "\022\024\n\014partitionDir\030\001 \001(\t\022\026\n\016partitionStart" +
-      "\030\002 \001(\003\022\024\n\014partitionEnd\030\003 \001(\003\"\306\003\n\020Tablesp" +
+      "\030\002 \001(\003\022\024\n\014partitionEnd\030\003 \001(\003\"\333\003\n\020Tablesp" +
       "aceRecord\022\020\n\010tbsIndex\030\001 \001(\r\022$\n\004type\030\002 \001(" +
       "\0162\026.TablespaceRecord.Type\022\024\n\014instanceNam" +
       "e\030\003 \001(\t\022\021\n\ttableName\030\004 \001(\t\022\033\n\023histogramC" +
@@ -5834,20 +5853,20 @@ public final class Tablespace {
       "&\n\tpartition\030\007 \001(\0132\023.TimeBasedPartition\022" +
       "\024\n\014parameterFqn\030\010 \001(\t\022\025\n\rparameterType\030\t" +
       " \001(\r\022\032\n\022partitioningSchema\030\n \001(\t\022+\n\020buck",
-      "etProperties\030\013 \001(\0132\021.BucketProperties\"~\n" +
-      "\004Type\022\023\n\017TABLE_PARTITION\020\001\022\r\n\tHISTOGRAM\020" +
-      "\002\022\024\n\020PARCHIVE_PGID2PG\020\004\022\021\n\rPARCHIVE_DATA" +
-      "\020\005\022\022\n\016PARCHIVE_PINFO\020\006\022\t\n\005TAGDB\020\007\022\n\n\006BUC" +
-      "KET\020\010\"{\n\020BucketProperties\022\014\n\004name\030\001 \001(\t\022" +
-      "\017\n\007created\030\002 \001(\003\022\025\n\rmaxNumObjects\030\003 \001(\005\022" +
-      "\017\n\007maxSize\030\004 \001(\004\022\022\n\nnumObjects\030\005 \001(\005\022\014\n\004" +
-      "size\030\006 \001(\004\"\312\001\n\020ObjectProperties\022\014\n\004name\030" +
-      "\001 \001(\t\022\020\n\010objectId\030\002 \001(\r\022\023\n\013contentType\030\003" +
-      " \001(\t\022\017\n\007created\030\004 \001(\003\022\014\n\004size\030\005 \001(\004\0221\n\010m",
-      "etadata\030\006 \003(\0132\037.ObjectProperties.Metadat" +
-      "aEntry\032/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005" +
-      "value\030\002 \001(\t:\0028\001B\"\n org.yamcs.yarch.rocks" +
-      "db.protobuf"
+      "etProperties\030\013 \001(\0132\021.BucketProperties\"\222\001" +
+      "\n\004Type\022\023\n\017TABLE_PARTITION\020\001\022\r\n\tHISTOGRAM" +
+      "\020\002\022\024\n\020PARCHIVE_PGID2PG\020\004\022\021\n\rPARCHIVE_DAT" +
+      "A\020\005\022\022\n\016PARCHIVE_PINFO\020\006\022\t\n\005TAGDB\020\007\022\n\n\006BU" +
+      "CKET\020\010\022\022\n\016CCSDS_TM_INDEX\020\t\"{\n\020BucketProp" +
+      "erties\022\014\n\004name\030\001 \001(\t\022\017\n\007created\030\002 \001(\003\022\025\n" +
+      "\rmaxNumObjects\030\003 \001(\005\022\017\n\007maxSize\030\004 \001(\004\022\022\n" +
+      "\nnumObjects\030\005 \001(\005\022\014\n\004size\030\006 \001(\004\"\312\001\n\020Obje" +
+      "ctProperties\022\014\n\004name\030\001 \001(\t\022\020\n\010objectId\030\002" +
+      " \001(\r\022\023\n\013contentType\030\003 \001(\t\022\017\n\007created\030\004 \001",
+      "(\003\022\014\n\004size\030\005 \001(\004\0221\n\010metadata\030\006 \003(\0132\037.Obj" +
+      "ectProperties.MetadataEntry\032/\n\rMetadataE" +
+      "ntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\"\n " +
+      "org.yamcs.yarch.rocksdb.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {

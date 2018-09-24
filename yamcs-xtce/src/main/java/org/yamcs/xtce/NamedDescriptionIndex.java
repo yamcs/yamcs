@@ -9,9 +9,9 @@ import java.util.Map;
 import org.yamcs.xtce.xml.XtceAliasSet;
 
 /**
- * Keeps a list of parameters with corresponding indexes to be able to retrieve them in any namespace.
+ * Keeps a list of {@link NameDescription} objects with corresponding indexes to be able to retrieve them in any namespace.
  * 
- * Currently the name is case sensitive while aliases are not. Is this the correct behavior???
+ * Note that the names are case sensitive while aliases are not. 
  * 
  * @author nm
  *

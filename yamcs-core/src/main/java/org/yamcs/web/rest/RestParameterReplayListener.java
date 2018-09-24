@@ -9,41 +9,33 @@ import org.yamcs.parameter.Value;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.InternalServerErrorException;
 
-
 /**
- * Filters the replay of parameters. Extracted in an abstract class because it's
- * used in multiple places
+ * Filters the replay of parameters. Extracted in an abstract class because it's used in multiple places
  */
 public abstract class RestParameterReplayListener extends RestReplayListener {
     private boolean noRepeat;
     private Value lastValue;
     final protected RestRequest req;
-    /**
-     * 
-     */
+
     public RestParameterReplayListener(RestRequest req) {
         super();
         this.req = req;
     }
-    /**
-     * 
-     * @param pos
-     * @param limit
-     */
+
     public RestParameterReplayListener(long pos, int limit, RestRequest req) {
         super(pos, limit);
         this.req = req;
     }
-    
+
     public void setNoRepeat(boolean noRepeat) {
         this.noRepeat = noRepeat;
     }
-    
+
     @Override
     public List<ParameterValueWithId> filter(List<ParameterValueWithId> params) {
         if (noRepeat) {
             List<ParameterValueWithId> plist = new ArrayList<>();
-            
+
             for (ParameterValueWithId pvalid : params) {
                 ParameterValue pval = pvalid.getParameterValue();
                 if (!ValueUtility.equals(lastValue, pval.getEngValue())) {
@@ -56,7 +48,7 @@ public abstract class RestParameterReplayListener extends RestReplayListener {
             return params;
         }
     }
-    
+
     @Override
     public ParameterValueWithId filter(ParameterValueWithId pvwid) {
         if (noRepeat) {
@@ -70,9 +62,10 @@ public abstract class RestParameterReplayListener extends RestReplayListener {
         } else {
             return pvwid;
         }
-    }  
+    }
 
-    public void replayFailed(Throwable t){
+    @Override
+    public void replayFailed(Throwable t) {
         RestHandler.completeWithError(req, new InternalServerErrorException(t));
     }
 }

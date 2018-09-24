@@ -4,12 +4,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import org.yamcs.Processor;
+import org.yamcs.api.EventProducer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.ProcessorData;
 
 /**
@@ -110,5 +111,13 @@ public class AlgorithmExecutionContext {
 
     public ProcessorData getProcessorData() {
         return procData;
+    }
+
+    public XtceDb getXtceDb() {
+        return procData.getXtceDb();
+    }
+
+    public EventProducer getEventProducer() {
+        return procData.getEventProducer();
     }
 }

@@ -25,8 +25,6 @@ public class YarchDatabase {
     static YConfiguration config;
 
     private static Map<String, StorageEngine> storageEngines = new HashMap<>();
-    public static final String OLD_RDB_ENGINE_OLD_NAME = "rocksdb";
-    public static final String OLD_RDB_ENGINE_NAME = "oldrocksdb";
     public static final String RDB_ENGINE_NAME = "rocksdb2";
     private static final String DEFAULT_STORAGE_ENGINE = RDB_ENGINE_NAME;
     private static final String defaultStorageEngineName;
@@ -41,7 +39,7 @@ public class YarchDatabase {
         if (config.containsKey("storageEngines")) {
             se = config.getList("storageEngines");
         } else {
-            se = Arrays.asList(RDB_ENGINE_NAME, OLD_RDB_ENGINE_OLD_NAME);
+            se = Arrays.asList(RDB_ENGINE_NAME);
         }
         if (config.containsKey("defaultStorageEngine")) {
             defaultStorageEngineName = config.getString("defaultStorageEngine");
@@ -56,10 +54,6 @@ public class YarchDatabase {
             for (String s : se) {
                 if (RDB_ENGINE_NAME.equalsIgnoreCase(s)) {
                     storageEngines.put(RDB_ENGINE_NAME, RdbStorageEngine.getInstance());
-                } else if (OLD_RDB_ENGINE_OLD_NAME.equalsIgnoreCase(s) || OLD_RDB_ENGINE_NAME.equalsIgnoreCase(s)) {
-                    storageEngines.put(OLD_RDB_ENGINE_OLD_NAME,
-                            org.yamcs.yarch.oldrocksdb.RdbStorageEngine.getInstance());
-                    storageEngines.put(OLD_RDB_ENGINE_NAME, org.yamcs.yarch.oldrocksdb.RdbStorageEngine.getInstance());
                 } else {
                     throw new ConfigurationException("Unknown storage engine '" + se + "'");
                 }

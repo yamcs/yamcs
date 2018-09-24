@@ -1,10 +1,10 @@
 import { Action } from '../Action';
-import RenderContext from '../RenderContext';
-import Timeline from '../Timeline';
 import Band, { BandOptions } from '../core/Band';
 import { EventEvent } from '../events';
+import RenderContext from '../RenderContext';
 import { G, Line, Rect, Set, Title } from '../tags';
-import { isAfter, isBefore, toDate } from '../utils';
+import Timeline from '../Timeline';
+import { generateId, isAfter, isBefore, toDate } from '../utils';
 
 export interface DayNightBandOptions extends BandOptions {
   hatchUncovered?: boolean;
@@ -73,7 +73,7 @@ export default class DayNightBand extends Band {
       const event = this.events[idx];
       const start = toDate(event.start);
       const stop = toDate(event.stop);
-      const id = Timeline.nextId();
+      const id = generateId();
 
       if (isBefore(start, this.timeline.loadStop) && isAfter(stop, this.timeline.loadStart)) {
         const bgRect = new Rect({

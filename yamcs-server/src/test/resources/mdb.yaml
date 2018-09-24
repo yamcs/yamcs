@@ -1,0 +1,7 @@
+refmdb:
+    # Configuration of the active loaders
+    # Valid loaders are: sheet, xtce or fully qualified name of the class
+    - type: "sheet"
+      args: 
+           file: "../yamcs-core/mdb/refmdb.xls"
+           enableAliasReferences: false

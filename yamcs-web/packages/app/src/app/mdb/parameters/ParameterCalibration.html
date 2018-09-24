@@ -1,10 +1,10 @@
-<table yaDataTable *ngIf="parameter.type?.dataEncoding?.defaultCalibrator as defaultCalibrator; else noCalibrator">
+<table yaDataTable *ngIf="parameter.type?.dataEncoding?.defaultCalibrator || parameter.type?.dataEncoding?.contextCalibrator; else noCalibrator">
   <tr>
-    <th width="100">Calibrator</th>
+    <th width="200">Calibrator</th>
     <th width="100">Type</th>
     <th width="200">Definition</th>
   </tr>
-  <tr>
+  <tr *ngIf="parameter.type?.dataEncoding?.defaultCalibrator as defaultCalibrator">
     <td>default</td>
     <td>{{ defaultCalibrator.type }}</td>
     <td [ngSwitch]="defaultCalibrator.type">
@@ -20,7 +20,30 @@
       <span *ngSwitchDefault>-</span>
     </td>
   </tr>
+  <ng-container *ngIf="parameter.type?.dataEncoding?.contextCalibrator as contextCalibrators">
+    <tr *ngFor="let contextCalibrator of contextCalibrators">
+      <td>
+        <ng-container *ngFor="let comparison of contextCalibrator.comparison">
+          <a [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
+             [queryParams]="{instance: instance.name}">{{ comparison.parameter.qualifiedName }}</a>
+          {{ comparison.operator | operator }}
+          {{ comparison.value }}
+        </ng-container>
+      </td>
+      <td>{{ contextCalibrator.calibrator.type }}</td>
+      <td [ngSwitch]="contextCalibrator.calibrator.type">
+        <span *ngSwitchCase="'Polynomial'"
+              [innerHTML]="contextCalibrator.calibrator.polynomialCalibrator.coefficient | polynomial">
+        </span>
+        <span *ngSwitchCase="'Spline'">
+          {{ contextCalibrator.calibrator.splineCalibrator.point.length }} points
+        </span>
+        <span *ngSwitchCase="'Java Expression'">
+          {{ contextCalibrator.calibrator.javaExpressionCalibrator.formula }}
+        </span>
+        <span *ngSwitchDefault>-</span>
+      </td>
+    </tr>
+  </ng-container>
 </table>
-<ng-template #noCalibrator>
-  This parameter does not have a calibrator.
-</ng-template>
+<ng-template #noCalibrator>None</ng-template>

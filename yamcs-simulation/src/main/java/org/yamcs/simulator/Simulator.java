@@ -2,13 +2,19 @@ package org.yamcs.simulator;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.LogManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.simulator.ui.SimWindow;
+import org.yamcs.YConfiguration;
+import org.yamcs.utils.YObjectLoader;
 
 public abstract class Simulator extends Thread {
 
@@ -25,7 +31,6 @@ public abstract class Simulator extends Thread {
     private boolean isLos = false;
     private LosStore losStore;
 
-    private SimWindow simWindow;
 
     private static final Logger log = LoggerFactory.getLogger(Simulator.class);
 
@@ -54,7 +59,7 @@ public abstract class Simulator extends Thread {
         Random r = new Random();
         int packetNum = simConfig.getPerfTestNumPackets();
         int packetSize = simConfig.getPerfTestPacketSize();
-        long interval = simConfig.getPerfTestPacketInterval();
+        long interval = simConfig.getPerfTestPacketSize();
         log.info("Starting performance data sending thread with {} packets of {} size spaced at {} ms intervals",  
                 packetNum, packetSize, interval);
         while (true) {
@@ -198,14 +203,6 @@ public abstract class Simulator extends Thread {
         return packet;
     }
 
-    public SimWindow getSimWindow() {
-        return simWindow;
-    }
-
-    public void setSimWindow(SimWindow simWindow) {
-        this.simWindow = simWindow;
-    }
-
     public void startTriggeringLos() {
         losStore.startTriggeringLos();
     }
@@ -230,5 +227,50 @@ public abstract class Simulator extends Thread {
 
         return ackPacket;
 
+    }
+    
+    public static void main(String[] args) throws IOException {
+        configureLogging();
+
+        SimulationConfiguration simConfig = SimulationConfiguration.loadFromFile();
+
+        YConfiguration yconf = YConfiguration.getConfiguration("simulator");
+        Simulator simulator;
+        Map<String, Object> m = yconf.getMap("simulator");
+        try {
+            simulator = YObjectLoader.loadObject(m, simConfig);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        System.out.println("----------------------------");
+        System.out.println("Yamcs Demo Simulator");
+        System.out.println("  Model: " + simulator.getClass().getName());
+        System.out.println("----------------------------");
+
+        simulator.start();
+
+        if (yconf.containsKey("telnet")) {
+            int port = yconf.getInt("telnet", "port");
+            TelnetServer telnetServer = new TelnetServer(simulator);
+            telnetServer.setPort(port);
+            telnetServer.startAsync();
+        }
+
+        // start alternating los and aos
+        if (simConfig.isLOSEnabled()) {
+            simulator.startTriggeringLos();
+        }
+    }
+
+    private static void configureLogging() {
+        try {
+            LogManager logManager = LogManager.getLogManager();
+            try (InputStream in = Simulator.class.getResourceAsStream("/simulator-logging.properties")) {
+                logManager.readConfiguration(in);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to set up logging configuration: " + e.getMessage());
+        }
     }
 }

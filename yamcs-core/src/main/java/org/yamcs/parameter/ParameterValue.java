@@ -13,21 +13,20 @@ import org.yamcs.utils.DoubleRange;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.SequenceEntry;
 
-/** 
+/**
  * Holds the value of a parameter
  *
  */
 public class ParameterValue {
 
-    //the definition of the parameter may be null if we do not have a reference to an XtceDB object 
+    // the definition of the parameter may be null if we do not have a reference to an XtceDB object
     // this could happen if the ParameterValue is extracted from the ParameterArchive
     private Parameter def;
     private final String paramFqn;
 
-
-    ParameterEntry entry;
+    SequenceEntry entry;
     int absoluteBitOffset, bitSize;
 
     private Value rawValue;
@@ -35,23 +34,26 @@ public class ParameterValue {
     private long acquisitionTime = TimeEncoding.INVALID_INSTANT;
     private long generationTime;
 
-    //use this singleton as a default status 
+    // use this singleton as a default status
     ParameterStatus status = ParameterStatus.NOMINAL;
 
     /**
      * Creates a parameter value for a parameter which has critical or warning range associated
-     * @param def the parameter definition
+     * 
+     * @param def
+     *            the parameter definition
      */
     public ParameterValue(Parameter def) {
         this.def = def;
         paramFqn = def.getQualifiedName();
     }
+
     public ParameterValue(String fqn) {
         this.def = null;
         this.paramFqn = fqn;
     }
 
-    //copy constructor - copies all the fields in a shallow mode
+    // copy constructor - copies all the fields in a shallow mode
     public ParameterValue(ParameterValue pv) {
         this.def = pv.def;
         this.paramFqn = pv.paramFqn;
@@ -63,7 +65,7 @@ public class ParameterValue {
         this.acquisitionTime = pv.acquisitionTime;
         this.generationTime = pv.generationTime;
     }
-    
+
     public int getAbsoluteBitOffset() {
         return absoluteBitOffset;
     }
@@ -80,20 +82,20 @@ public class ParameterValue {
         this.bitSize = bitSize;
     }
 
-    public void setParameterEntry(ParameterEntry entry) {
+    public void setSequenceEntry(SequenceEntry entry) {
         this.entry = entry;
     }
 
-    public ParameterEntry getParameterEntry() {
+    public SequenceEntry getSequenceEntry() {
         return entry;
     }
 
     public void setAcquisitionTime(long instant) {
-        acquisitionTime=instant;
+        acquisitionTime = instant;
     }
 
     public void setGenerationTime(long instant) {
-        generationTime=instant;
+        generationTime = instant;
     }
 
     public Value getEngValue() {
@@ -107,8 +109,10 @@ public class ParameterValue {
     public void setParameter(Parameter p) {
         this.def = p;
     }
+
     /**
      * Retrieve the parameter definition for this parameter value
+     * 
      * @return parameter definition
      */
     public Parameter getParameter() {
@@ -123,13 +127,12 @@ public class ParameterValue {
         return generationTime;
     }
 
-
     public long getAcquisitionTime() {
         return acquisitionTime;
     }
 
     public void setRawValue(Value rv) {
-        this.rawValue=rv;
+        this.rawValue = rv;
     }
 
     public void setRawValue(byte[] b) {
@@ -221,13 +224,13 @@ public class ParameterValue {
         this.engValue = engValue;
     }
 
-    
     // *********** parameter status
     private void changeNominalStatus() {
-        if(status == ParameterStatus.NOMINAL) {
+        if (status == ParameterStatus.NOMINAL) {
             status = new ParameterStatus();
         }
     }
+
     public void setWatchRange(DoubleRange range) {
         changeNominalStatus();
         status.setWatchRange(range);
@@ -243,7 +246,6 @@ public class ParameterValue {
         status.setDistressRange(range);
     }
 
-  
     public void setCriticalRange(DoubleRange range) {
         changeNominalStatus();
         status.setCriticalRange(range);
@@ -270,32 +272,39 @@ public class ParameterValue {
     }
 
     public void setProcessingStatus(boolean p) {
-        if(status.getProcessingStatus()!=p) {
+        if (status.getProcessingStatus() != p) {
             changeNominalStatus();
         }
         status.setProcessingStatus(p);
     }
+
     public void setAcquisitionStatus(AcquisitionStatus a) {
-        if(status.getAcquisitionStatus()!=a) {
-            changeNominalStatus(); 
+        if (status.getAcquisitionStatus() != a) {
+            changeNominalStatus();
         }
         status.setAcquisitionStatus(a);
     }
+
     public DoubleRange getDistressRange() {
         return status.getDistressRange();
     }
+
     public DoubleRange getWatchRange() {
         return status.getWatchRange();
     }
+
     public DoubleRange getCriticalRange() {
         return status.getCriticalRange();
     }
+
     public DoubleRange getWarningRange() {
         return status.getWarningRange();
     }
+
     public DoubleRange getSevereRange() {
         return status.getSevereRange();
     }
+
     public MonitoringResult getMonitoringResult() {
         return status.getMonitoringResult();
     }
@@ -311,6 +320,7 @@ public class ParameterValue {
     public boolean getProcessingStatus() {
         return status.getProcessingStatus();
     }
+
     public MonitoringResult getDeltaMonitoringResult() {
         return status.getDeltaMonitoringResult();
     }
@@ -318,54 +328,53 @@ public class ParameterValue {
     public ParameterStatus getStatus() {
         return status;
     }
+
     public void setStatus(ParameterStatus parameterStatus) {
         this.status = parameterStatus;
     }
+
     /**
-     * Convert a PV to a ProtobufPV 
+     * Convert a PV to a ProtobufPV
      * 
-     * @param id - the parameter identifier
-     * @param withUtc - if true - set the UTC string times
+     * @param id
+     *            - the parameter identifier
+     * @param withUtc
+     *            - if true - set the UTC string times
      * @return the created ProtobufPV
      */
-    public org.yamcs.protobuf.Pvalue.ParameterValue toProtobufParameterValue(Optional<NamedObjectId> id, boolean withUtc) {
-        
-        org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb=org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
-                .setAcquisitionStatus(getAcquisitionStatus())               
+    public org.yamcs.protobuf.Pvalue.ParameterValue toProtobufParameterValue(Optional<NamedObjectId> id,
+            boolean withUtc) {
+
+        org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
+                .setAcquisitionStatus(getAcquisitionStatus())
                 .setGenerationTime(getGenerationTime())
                 .setProcessingStatus(getProcessingStatus());
-        if(id.isPresent()) {
+        if (id.isPresent()) {
             gpvb.setId(id.get());
         }
-        
-        if(acquisitionTime!=TimeEncoding.INVALID_INSTANT) {
+
+        if (acquisitionTime != TimeEncoding.INVALID_INSTANT) {
             gpvb.setAcquisitionTime(acquisitionTime);
-            if(withUtc) {
+            if (withUtc) {
                 gpvb.setAcquisitionTimeUTC(TimeEncoding.toString(getAcquisitionTime()));
             }
         }
-        if(engValue!=null) {
+        if (engValue != null) {
             gpvb.setEngValue(ValueUtility.toGbp(engValue));
         }
-        if(getMonitoringResult()!=null) {
+        if (getMonitoringResult() != null) {
             gpvb.setMonitoringResult(getMonitoringResult());
         }
-        if(getRangeCondition()!=null) {
+        if (getRangeCondition() != null) {
             gpvb.setRangeCondition(getRangeCondition());
         }
-        if(withUtc) {
+        if (withUtc) {
             gpvb.setGenerationTimeUTC(TimeEncoding.toString(getGenerationTime()));
         }
 
         long expireMillis = status.getExpireMills();
-        if(expireMillis>=0) {
+        if (expireMillis >= 0) {
             gpvb.setExpireMillis(expireMillis);
-            
-            //to remove in the future
-            gpvb.setExpirationTime(acquisitionTime+expireMillis);
-            if(withUtc) {
-                gpvb.setExpirationTimeUTC(TimeEncoding.toString(acquisitionTime+expireMillis));
-            }
         }
 
         if (getWatchRange() != null) {
@@ -380,28 +389,28 @@ public class ParameterValue {
         if (getCriticalRange() != null) {
             gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.CRITICAL, getCriticalRange()));
         }
-        if (getSevereRange()!=null) {
+        if (getSevereRange() != null) {
             gpvb.addAlarmRange(toGpbAlarmRange(AlarmLevelType.SEVERE, getSevereRange()));
         }
 
-      
-        if(rawValue!=null) {
+        if (rawValue != null) {
             gpvb.setRawValue(ValueUtility.toGbp(rawValue));
         }
         return gpvb.build();
     }
-    
+
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
         Optional<NamedObjectId> optionalId = Optional.ofNullable(id);
         return toProtobufParameterValue(optionalId, true);
     }
-    
+
     public static AlarmRange toGpbAlarmRange(AlarmLevelType gpbLevel, DoubleRange floatRange) {
         AlarmRange.Builder rangeb = AlarmRange.newBuilder();
         rangeb.setLevel(gpbLevel);
         double min = floatRange.getMin();
-        if (Double.isFinite(min)) { //floatRange represents the IN_LIMIT range, that's why we invert the inclusive and exclusive
-            if(floatRange.isMinInclusive()) {
+        if (Double.isFinite(min)) { // floatRange represents the IN_LIMIT range, that's why we invert the inclusive and
+                                    // exclusive
+            if (floatRange.isMinInclusive()) {
                 rangeb.setMinInclusive(min);
             } else {
                 rangeb.setMinExclusive(min);
@@ -409,66 +418,66 @@ public class ParameterValue {
         }
         double max = floatRange.getMax();
         if (Double.isFinite(max)) {
-            if(floatRange.isMaxInclusive()) {
+            if (floatRange.isMaxInclusive()) {
                 rangeb.setMaxInclusive(max);
             } else {
-                rangeb.setMaxExclusive(max);                
+                rangeb.setMaxExclusive(max);
             }
         }
         return rangeb.build();
     }
+
     public static ParameterValue fromGpb(String fqn, org.yamcs.protobuf.Pvalue.ParameterValue gpv) {
         ParameterValue pv = new ParameterValue(fqn);
         copyTo(gpv, pv);
         return pv;
     }
-    
+
     public static ParameterValue fromGpb(Parameter pdef, org.yamcs.protobuf.Pvalue.ParameterValue gpv) {
         ParameterValue pv = new ParameterValue(pdef);
         copyTo(gpv, pv);
         return pv;
     }
-    
+
     private static void copyTo(org.yamcs.protobuf.Pvalue.ParameterValue gpv, ParameterValue pv) {
         pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
-        if(gpv.hasEngValue()) {
+        if (gpv.hasEngValue()) {
             pv.setEngineeringValue(ValueUtility.fromGpb(gpv.getEngValue()));
         }
 
-        if(gpv.hasAcquisitionTime()) {
+        if (gpv.hasAcquisitionTime()) {
             pv.setAcquisitionTime(gpv.getAcquisitionTime());
         }
 
-        if(gpv.hasExpireMillis()) {
+        if (gpv.hasExpireMillis()) {
             pv.setExpireMillis(gpv.getExpireMillis());
         }
 
-        if(gpv.hasGenerationTime()) {
+        if (gpv.hasGenerationTime()) {
             pv.setGenerationTime(gpv.getGenerationTime());
         }
-        if(gpv.hasMonitoringResult())
+        if (gpv.hasMonitoringResult()) {
             pv.setMonitoringResult(gpv.getMonitoringResult());
+        }
 
-        if(gpv.hasRangeCondition())
+        if (gpv.hasRangeCondition()) {
             pv.setRangeCondition(gpv.getRangeCondition());
+        }
 
-        if(gpv.hasProcessingStatus()) {
+        if (gpv.hasProcessingStatus()) {
             pv.setProcessingStatus(gpv.getProcessingStatus());
         }
 
-        if(gpv.hasRawValue()) {
+        if (gpv.hasRawValue()) {
             pv.setRawValue(ValueUtility.fromGpb(gpv.getRawValue()));
         }
     }
 
-    
-
-
     public void addAlarmRanges(List<AlarmRange> alarmRangeList) {
-        for(AlarmRange ar: alarmRangeList) {
-            switch(ar.getLevel()){
+        for (AlarmRange ar : alarmRangeList) {
+            switch (ar.getLevel()) {
             case WATCH:
-                setWatchRange(fromGbpAlarmRange(ar)); 
+                setWatchRange(fromGbpAlarmRange(ar));
                 break;
             case WARNING:
                 setWarningRange(fromGbpAlarmRange(ar));
@@ -482,36 +491,36 @@ public class ParameterValue {
             case SEVERE:
                 setSevereRange(fromGbpAlarmRange(ar));
                 break;
-            case NORMAL: //never used
+            case NORMAL: // never used
             }
-        } 
+        }
     }
 
     public boolean hasAcquisitionTime() {
         return acquisitionTime != TimeEncoding.INVALID_INSTANT;
     }
-    
+
     public boolean hasExpirationTime() {
-        return status.getExpireMills()>=0;
+        return status.getExpireMills() >= 0;
     }
-    
+
     private DoubleRange fromGbpAlarmRange(AlarmRange ar) {
         double min = Double.NEGATIVE_INFINITY;
         double max = Double.POSITIVE_INFINITY;
         boolean minInclusive = false;
         boolean maxInclusive = false;
-        
-        if(ar.hasMinInclusive()) {
+
+        if (ar.hasMinInclusive()) {
             min = ar.getMinInclusive();
             minInclusive = true;
-        } else if(ar.hasMinExclusive()) {
+        } else if (ar.hasMinExclusive()) {
             min = ar.getMinExclusive();
         }
-        
-        if(ar.hasMaxInclusive()) {
+
+        if (ar.hasMaxInclusive()) {
             max = ar.getMaxInclusive();
             maxInclusive = true;
-        } else if(ar.hasMaxExclusive()) {
+        } else if (ar.hasMaxExclusive()) {
             max = ar.getMaxExclusive();
         }
         return new DoubleRange(min, max, minInclusive, maxInclusive);
@@ -521,28 +530,27 @@ public class ParameterValue {
      * Verifies if the parameter value is expired at a given timestamp. Returns false if the expireMillis is not set.
      * 
      * @param now
-     * @return true if the parameter is expired at the timestamp now. 
+     * @return true if the parameter is expired at the timestamp now.
      */
     public boolean isExpired(long now) {
         long expireMillis = status.getExpireMills();
-        return (expireMillis>0) && (acquisitionTime+expireMillis<now);
+        return (expireMillis > 0) && (acquisitionTime + expireMillis < now);
     }
-    
-    
+
     @Override
     public String toString() {
-        StringBuilder sb=new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.append("name: ");
-        if(def!=null) {
+        if (def != null) {
             sb.append(def.getName());
         } else {
             sb.append(paramFqn);
         }
         sb.append(" genTime: {").append(TimeEncoding.toString(generationTime)).append("}");
-        if(rawValue!=null) {
+        if (rawValue != null) {
             sb.append(" rawValue: {").append(rawValue.toString()).append("}");
         }
-        if(engValue!=null) {
+        if (engValue != null) {
             sb.append(" engValue: {").append(engValue.toString()).append("}");
         }
         return sb.toString();

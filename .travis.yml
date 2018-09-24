@@ -3,7 +3,7 @@ jdk: oraclejdk8
 sudo: false
 
 addons:
-  sonarqube:
+  sonarcloud:
     token:
       secure: "BZHKofLWAebdg6XL7aHcJlRJ8YIjYfJdk8vlltNb9TuhRTrdFJ+bjOCMFN8iiPtg2uDNdbj13B2/TVbTwixeanrTz7zNTFo+I37kRuxtMV3qZZB7dBgjceu/xTRBX1XCNXhHpyoblBZcQntaKlLm5qnASs78GRUJr8YNFNZsTjE="
 

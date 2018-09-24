@@ -97,15 +97,16 @@ public class MetaCommandContainerProcessor {
         Argument arg = argEntry.getArgument();
         Value argValue = pcontext.getArgumentValue(arg);
         if (argValue == null) {
-            throw new IllegalStateException("No value for argument " + arg);
+            throw new IllegalStateException("No value for argument " + arg.getName());
         }
 
         ArgumentType atype = arg.getArgumentType();
-        Value rawValue = argumentTypeProcessor.decalibrate(atype, argValue);
         DataEncoding encoding = ((BaseDataType) atype).getEncoding();
         if(encoding==null) {
             throw new CommandEncodingException("No encoding available for type '"+atype.getName()+"' used for argument '"+arg.getName()+"'");
         }
+        Value rawValue = argumentTypeProcessor.decalibrate(atype, argValue);
+        
         pcontext.deEncoder.encodeRaw(encoding, rawValue);
 
     }
@@ -114,8 +115,9 @@ public class MetaCommandContainerProcessor {
         Parameter para = paraEntry.getParameter();
         Value paraValue = pcontext.getParameterValue(para);
         if (paraValue == null) {
-            paraValue = ParameterTypeProcessor.getDefaultValue(para.getParameterType());
+            throw new CommandEncodingException("No value found for parameter '"+para.getName()+"'");
         }
+     
         Value rawValue = paraValue; // TBD if this is correct
         ParameterType ptype = para.getParameterType();
         DataEncoding encoding = ((BaseDataType) ptype).getEncoding();

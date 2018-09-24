@@ -22,7 +22,6 @@ import org.yamcs.parameterarchive.ConsumerAbortException;
 import org.yamcs.parameterarchive.MultiParameterDataRetrieval;
 import org.yamcs.parameterarchive.MultipleParameterValueRequest;
 import org.yamcs.parameterarchive.ParameterArchive;
-import org.yamcs.parameterarchive.ParameterArchiveV2;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
@@ -64,7 +63,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
     private static final String DEFAULT_PROCESSOR = "realtime";
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
     private ArchiveParameterReplayRestHandler aprh = new ArchiveParameterReplayRestHandler();
-    private OldArchiveParameterRestHandler oldaprh = new OldArchiveParameterRestHandler();
 
     /**
      * A series is a list of samples that are determined in one-pass while processing a stream result. Final API
@@ -83,10 +81,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        if (isOldParameterArchive(instance)) {
-            oldaprh.getParameterSamples(req);
-            return;
-        }
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
@@ -109,7 +103,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         int sampleCount = req.getQueryParameterAsInt("count", 500);
 
         RestDownsampler sampler = new RestDownsampler(start, stop, sampleCount);
-        ParameterArchiveV2 parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(instance);
         ParameterCache pcache = getParameterCache(instance, req);
 
         ParameterRequest pr = new ParameterRequest(start, stop, true, true, false, false);
@@ -141,10 +135,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
     @Route(path = "/api/archive/:instance/parameters/:name*/ranges")
     public void getParameterRanges(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        if (isOldParameterArchive(instance)) {
-            throw new BadRequestException("Ranges not supported for the old parameter archive");
-        }
-
+       
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
@@ -155,7 +146,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         long minGap = req.getQueryParameterAsLong("minGap", 0);
         long maxGap = req.getQueryParameterAsLong("maxGap", Long.MAX_VALUE);
 
-        ParameterArchiveV2 parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(instance);
         ParameterCache pcache = getParameterCache(instance, req);
 
         ParameterRanger ranger = new ParameterRanger(minGap, maxGap);
@@ -177,21 +168,13 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, ranges.build());
     }
 
-    private boolean isOldParameterArchive(String instance) throws BadRequestException {
-        ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
-
-        if (parameterArchive == null) {
-            throw new BadRequestException("ParameterArchive not configured for this instance");
-        }
-        return parameterArchive.getParchive() instanceof org.yamcs.oldparchive.ParameterArchive;
-    }
-
-    private static ParameterArchiveV2 getParameterArchive(String instance) throws BadRequestException {
+    
+    private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
         ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
         if (parameterArchive == null) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-        return (ParameterArchiveV2) parameterArchive.getParchive();
+        return parameterArchive;
     }
 
     @Route(path = "/api/archive/:instance/parameters/:name*")
@@ -202,10 +185,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        if (isOldParameterArchive(instance)) {
-            oldaprh.listParameterHistory(req);
-            return;
-        }
+        
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         NameDescriptionWithId<Parameter> requestedParamWithId = verifyParameterWithId(req, mdb,
@@ -224,7 +204,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
         boolean ascending = !req.asksDescending(true);
 
-        ParameterArchiveV2 parchive = getParameterArchive(instance);
+        ParameterArchive parchive = getParameterArchive(instance);
         ParameterIdDb piddb = parchive.getParameterIdDb();
         IntArray pidArray = new IntArray();
         IntArray pgidArray = new IntArray();
@@ -318,7 +298,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
     }
 
-    private void retrieveParameterData(ParameterArchiveV2 parchive, ParameterCache pcache, Parameter p,
+    private void retrieveParameterData(ParameterArchive parchive, ParameterCache pcache, Parameter p,
             NamedObjectId id,
             MultipleParameterValueRequest mpvr, RestParameterReplayListener replayListener)
             throws RocksDBException, DecodingException, IOException {

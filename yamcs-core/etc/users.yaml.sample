@@ -1,0 +1,19 @@
+admin:
+  password: password
+  superuser: true
+
+monitoring:
+  password: password
+  roles: [ Monitoring ]
+
+operator:
+  password: password
+  roles: [ Operator ]
+
+spell:
+  password: spell
+  roles: [ SPELL ]
+
+supervisor:
+  password: password
+  roles: [ Supervisor ]

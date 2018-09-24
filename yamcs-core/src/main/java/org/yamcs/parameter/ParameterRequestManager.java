@@ -15,11 +15,11 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.DVParameterConsumer;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
-import org.yamcs.parameter.ParameterValue;
 import org.yamcs.Processor;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.LoggingUtils;
+import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtceproc.AlarmChecker;
 import org.yamcs.xtceproc.XtceTmProcessor;
@@ -29,10 +29,8 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * Keeps track of which parameters are part of which subscriptions.
  * 
- * There are two types of subscriptions:
- * - subscribe all
- * - subscribe to a set
- * Both types have an unique id associated but different methods work with them
+ * There are two types of subscriptions: - subscribe all - subscribe to a set Both types have an unique id associated
+ * but different methods work with them
  * 
  */
 public class ParameterRequestManager extends AbstractService implements ParameterListener {
@@ -44,7 +42,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     private Map<Integer, ParameterConsumer> request2ParameterConsumerMap = new ConcurrentHashMap<>();
 
     // these are the consumers that may update the list of parameters
-    // they are delivered with priority such that in onde update cycle the algorithms (or derived values) are also
+    // they are delivered with priority such that in one update cycle the algorithms (or derived values) are also
     // computed
     private Map<Integer, DVParameterConsumer> request2DVParameterConsumerMap = new HashMap<>();
 
@@ -61,19 +59,20 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     private boolean cacheAll = false;
 
     AlarmServer alarmServer;
-    SoftwareParameterManager spm;
+    Map<DataSource, SoftwareParameterManagerIf> spm = new HashMap<>();
     ParameterCache parameterCache;
     ParameterCacheConfig cacheConfig;
+    LastValueCache lastValueCache;
 
     /**
-     * Creates a new ParameterRequestManager, configured to listen to the
-     * specified XtceTmProcessor.
+     * Creates a new ParameterRequestManager, configured to listen to the specified XtceTmProcessor.
      */
     public ParameterRequestManager(Processor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
         this.yproc = yproc;
         log = LoggingUtils.getLogger(this.getClass(), yproc);
         cacheConfig = yproc.getPameterCacheConfig();
         cacheAll = cacheConfig.cacheAll;
+        this.lastValueCache = yproc.getLastValueCache();
 
         tmProcessor.setParameterListener(this);
         addParameterProvider(tmProcessor);
@@ -97,17 +96,13 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             log.debug("Adding parameter provider: {}", parameterProvider.getClass());
             parameterProvider.setParameterListener(this);
             parameterProviders.put(parameterProvider.getClass(), parameterProvider);
-            if (parameterProvider instanceof SoftwareParameterManager) {
-                spm = (SoftwareParameterManager) parameterProvider;
-            }
         }
     }
 
     /**
-     * This is called after all the parameter providers have been added but before the start.
-     * We subscribe to all parameters if cacheAll is enabled
-     * this way we give the opportunity to the ReplayService to find out what is required to retrieve from the
-     * ReplayServer
+     * This is called after all the parameter providers have been added but before the start. We subscribe to all
+     * parameters if cacheAll is enabled this way we give the opportunity to the ReplayService to find out what is
+     * required to retrieve from the ReplayServer
      */
     public void init() {
         if (cacheAll) {
@@ -156,12 +151,11 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     public int addRequest(final List<Parameter> paraList, final ParameterConsumer tpc) {
-        
+
         final int id = lastSubscriptionId.incrementAndGet();
         log.debug("new request with subscriptionId {} with {} items", id, paraList.size());
         subscribeToProviders(paraList);
-        
-        
+
         for (int i = 0; i < paraList.size(); i++) {
             log.trace("adding to subscriptionID: {} item:{} ", id, paraList.get(i).getQualifiedName());
             addItemToRequest(id, paraList.get(i));
@@ -179,7 +173,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @return
      */
     public int addRequest(final Parameter para, final ParameterConsumer tpc) {
-        
+
         final int id = lastSubscriptionId.incrementAndGet();
         log.debug("new request with subscriptionId {} for parameter: {}", id, para.getQualifiedName());
         subscribeToProviders(para);
@@ -199,7 +193,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     public int addRequest(List<Parameter> paraList, DVParameterConsumer dvtpc) {
         int id = lastSubscriptionId.incrementAndGet();
         log.debug("new request with subscriptionId {} for itemList={}", id, paraList);
-        
+
         subscribeToProviders(paraList);
         for (int i = 0; i < paraList.size(); i++) {
             log.trace("adding to subscriptionID:{} item:{}", id, paraList.get(i));
@@ -251,11 +245,11 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * 
      * @param subscriptionId
      * @param paraList
-     *            - list of parameters that are added to the subscription
-     * @throws InvalidIdentification
+     *            list of parameters that are added to the subscription
      * @throws InvalidRequestIdentification
      */
-    public void addItemsToRequest(final int subscriptionId, final List<Parameter> paraList) throws InvalidRequestIdentification {
+    public void addItemsToRequest(final int subscriptionId, final List<Parameter> paraList)
+            throws InvalidRequestIdentification {
         log.debug("adding to subscriptionID {}: {} items ", subscriptionId, paraList.size());
         final ParameterConsumer consumer = request2ParameterConsumerMap.get(subscriptionId);
         if ((consumer == null) && !request2DVParameterConsumerMap.containsKey(subscriptionId)) {
@@ -275,15 +269,14 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * 
      * @param subscriptionID
      * @param param
-     * @throws InvalidIdentification
      */
     public void removeItemsFromRequest(int subscriptionID, Parameter param) {
         removeItemFromRequest(subscriptionID, param);
     }
 
     /**
-     * Removes a list of parameters from a request.
-     * Any parameter specified that is not in the subscription will be ignored.
+     * Removes a list of parameters from a request. Any parameter specified that is not in the subscription will be
+     * ignored.
      * 
      * @param subscriptionID
      * @param paraList
@@ -295,9 +288,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Adds a new item to an existing request. There is no check if the item is already there,
-     * so there can be duplicates (observed in the CGS CIS).
-     * This call also works with a new id
+     * Adds a new item to an existing request. There is no check if the item is already there, so there can be
+     * duplicates (observed in the CGS CIS). This call also works with a new id
      * 
      * @param id
      * @param para
@@ -338,15 +330,14 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * Removes all the items from this subscription and returns them into an
-     * List. The result is usually used in the TelemetryImpl to move this
-     * subscription to a different ParameterRequestManager
+     * Removes all the items from this subscription and returns them into an List. The result is usually used in the
+     * TelemetryImpl to move this subscription to a different ParameterRequestManager
      */
     public List<Parameter> removeRequest(int subscriptionId) {
         log.debug("removing request for subscriptionId {}", subscriptionId);
         // It's a bit annoying that we have to loop through all the parameters to find the ones that
         // are relevant for this request. We could keep track of an additional map.
-        ArrayList<Parameter> result = new ArrayList<Parameter>();
+        ArrayList<Parameter> result = new ArrayList<>();
         // loop through all the parameter definitions
         // find all the subscriptions with the requested subscriptionId and add their corresponding
         // itemId to the list.
@@ -372,25 +363,25 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     private void subscribeToProviders(Parameter param) throws NoProviderException {
-        if(cacheAll) {
+        if (cacheAll) {
             return;
         }
         boolean providerFound = false;
-        
+
         for (ParameterProvider provider : parameterProviders.values()) {
             if (provider.canProvide(param)) {
                 providerFound = true;
                 provider.startProviding(param);
             }
         }
-        if(!providerFound) {
+        if (!providerFound) {
             throw new NoProviderException("No provider found for " + param);
         }
 
     }
 
     private void subscribeToProviders(List<Parameter> itemList) {
-        if(cacheAll) {
+        if (cacheAll) {
             return;
         }
         for (int i = 0; i < itemList.size(); i++) {
@@ -427,6 +418,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     @Override
     public void update(Collection<ParameterValue> params) {
         log.trace("ParamRequestManager.updateItems with {} parameters", params.size());
+
+        lastValueCache.update(params);
         // maps subscription id to a list of (value,id) to be delivered for that subscription
         HashMap<Integer, ArrayList<ParameterValue>> delivery = new HashMap<>();
 
@@ -438,8 +431,10 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         for (Map.Entry<Integer, DVParameterConsumer> entry : request2DVParameterConsumerMap.entrySet()) {
             Integer subscriptionId = entry.getKey();
             if (delivery.containsKey(subscriptionId)) {
-                updateDelivery(delivery,
-                        entry.getValue().updateParameters(subscriptionId, delivery.get(subscriptionId)));
+                List<ParameterValue> pvList = entry.getValue().updateParameters(subscriptionId,
+                        delivery.get(subscriptionId));
+                lastValueCache.update(pvList);
+                updateDelivery(delivery, pvList);
             }
         }
 
@@ -488,7 +483,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             for (int s : cowal.getArray()) {
                 ArrayList<ParameterValue> al = delivery.get(s);
                 if (al == null) {
-                    al = new ArrayList<ParameterValue>();
+                    al = new ArrayList<>();
                     delivery.put(s, al);
                 }
                 al.add(pv);
@@ -500,7 +495,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             ArrayList<ParameterValue> al = delivery.get(id);
 
             if (al == null) {
-                al = new ArrayList<ParameterValue>();
+                al = new ArrayList<>();
                 delivery.put(id, al);
             }
 
@@ -509,11 +504,6 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             }
         }
         if (alarmChecker != null) {
-            // update the alarmChecker and check for alarms
-            ArrayList<ParameterValue> pvlist = delivery.get(alarmChecker.getSubscriptionId());
-            if (pvlist != null) {
-                alarmChecker.updateParameters(pvlist);
-            }
             try {
                 alarmChecker.performAlarmChecking(params);
             } catch (Exception e) {
@@ -528,10 +518,10 @@ public class ParameterRequestManager extends AbstractService implements Paramete
 
     /**
      * 
-     * @return the SoftwareParameterManager or null if not configured
+     * @return the SoftwareParameterManager associated to the DataSource or null if not configured
      */
-    public SoftwareParameterManager getSoftwareParameterManager() {
-        return spm;
+    public SoftwareParameterManagerIf getSoftwareParameterManager(DataSource ds) {
+        return spm.get(ds);
     }
 
     @SuppressWarnings("unchecked")
@@ -567,8 +557,21 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         return parameterCache != null;
     }
 
+    /**
+     * Returns the last known value for each parameter.
+     * 
+     * @param plist
+     * @return
+     */
     public List<ParameterValue> getValuesFromCache(List<Parameter> plist) {
-        return parameterCache.getValues(plist);
+        List<ParameterValue> al = new ArrayList<>(plist.size());
+        for (Parameter p : plist) {
+            ParameterValue pv = lastValueCache.getValue(p);
+            if (pv != null) {
+                al.add(pv);
+            }
+        }
+        return al;
     }
 
     /**
@@ -578,13 +581,14 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * @return
      */
     public ParameterValue getLastValueFromCache(Parameter param) {
-        return parameterCache.getLastValue(param);
+        return lastValueCache.getValue(param);
     }
 
     /**
      * Get all the values from cache for a specific parameters
      * 
-     * The parameter are returned in descending order (newest parameter is returned first)
+     * The parameter are returned in descending order (newest parameter is returned first). Note that you can only all
+     * this function if the {@link #hasParameterCache()} returns true.
      * 
      * @param param
      * @return
@@ -615,5 +619,23 @@ public class ParameterRequestManager extends AbstractService implements Paramete
             alarmServer.stopAsync();
         }
         notifyStopped();
+    }
+
+    public LastValueCache getLastValueCache() {
+        return lastValueCache;
+    }
+
+    /**
+     * Register a {@link SoftwareParameterManagerIf} for the given {@link DataSource}.
+     * Throws an {@link IllegalStateException} if there is already registered a parameter manager for this data source.
+     * 
+     * @param ds
+     * @param swParameterManager
+     */
+    public void addSoftwareParameterManager(DataSource ds, SoftwareParameterManagerIf swParameterManager) {
+        if(spm.containsKey(ds)) {
+            throw new IllegalStateException("There is already a soft parameter manager for "+ds);
+        }
+        spm.put(ds, swParameterManager);
     }
 }

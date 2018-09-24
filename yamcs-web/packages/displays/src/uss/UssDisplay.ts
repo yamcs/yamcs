@@ -1,7 +1,7 @@
 import { NamedObjectId, ParameterValue } from '@yamcs/client';
 import { Display } from '../Display';
 import { DisplayCommunicator } from '../DisplayCommunicator';
-import { DisplayFrame } from '../DisplayFrame';
+import { NavigationHandler } from '../NavigationHandler';
 import { Defs, Pattern, Rect, Svg, Tag } from '../tags';
 import { Color } from './Color';
 import { ParameterSample } from './ParameterSample';
@@ -12,13 +12,12 @@ import { Compound } from './widgets/Compound';
 import { ExternalImage } from './widgets/ExternalImage';
 import { Field } from './widgets/Field';
 import { Label } from './widgets/Label';
-import { LineGraph } from './widgets/LineGraph';
 import { LinearTickMeter } from './widgets/LinearTickMeter';
+import { LineGraph } from './widgets/LineGraph';
 import { NavigationButton } from './widgets/NavigationButton';
 import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
 import { Symbol } from './widgets/Symbol';
-
 
 export class UssDisplay implements Display {
 
@@ -37,12 +36,12 @@ export class UssDisplay implements Display {
   styleSet: StyleSet;
 
   constructor(
-    readonly frame: DisplayFrame,
+    readonly navigationHandler: NavigationHandler,
     private targetEl: HTMLDivElement,
     readonly displayCommunicator: DisplayCommunicator,
   ) {
     this.container = document.createElement('div');
-    this.container.setAttribute('style', 'position: relative');
+    this.container.setAttribute('style', 'position: relative; line-height: 0');
     this.targetEl.appendChild(this.container);
 
     // Invisible SVG used to measure font metrics before drawing
@@ -72,8 +71,8 @@ export class UssDisplay implements Display {
     }
 
     return Promise.all([
-      this.displayCommunicator.retrieveXMLDisplayResource(id),
-      this.displayCommunicator.retrieveXML('mcs_dqistyle.xml'),
+      this.displayCommunicator.getXMLObject('displays', id),
+      this.displayCommunicator.getXMLObject('uss', 'mcs_dqistyle.xml'),
     ]).then(results => {
       this.styleSet = new StyleSet(results[1]);
       const displayEl = results[0].getElementsByTagName('Display')[0];
@@ -160,7 +159,7 @@ export class UssDisplay implements Display {
     svg.addChild(style);
   }
 
-  drawElements(parent: Tag, elementNodes: Node[]) {
+  drawElements(parent: Tag, elementNodes: Element[]) {
     for (let i = 0; i < elementNodes.length; i++) {
       const node = elementNodes[i];
       if (node.attributes.getNamedItem('reference')) {
@@ -188,11 +187,11 @@ export class UssDisplay implements Display {
     }
   }
 
-  createWidget(node: Node) {
+  createWidget(node: Element) {
     return this.createWidgetByName(node, node.nodeName);
   }
 
-  private createWidgetByName(node: Node, widgetName: string): AbstractWidget | undefined {
+  private createWidgetByName(node: Element, widgetName: string): AbstractWidget | undefined {
     switch (widgetName) {
       case 'Compound':
         return new Compound(node, this);

@@ -272,7 +272,7 @@ limitations under the License.
 							</xtce:ContextAlarm>
 						</xtce:ContextAlarmList>
 					</xtce:FloatParameterType>
-					<xtce:FloatParameterType name="Battery_Current_Type" sizeInBits="32" shortDescription="This parameter describes the measured current draw">
+					<xtce:FloatParameterType name="Battery_Current_Type" sizeInBits="32" shortDescription="This parameter describes the measured current draw" initialValue="0.2">
 						<xtce:LongDescription>The battery on BogusSAT is a modeled by a typical flooded lead acid car battery.</xtce:LongDescription>
 						<xtce:UnitSet>
 							<xtce:Unit description="Current">Amperes</xtce:Unit>
@@ -1287,11 +1287,12 @@ limitations under the License.
 						<xtce:UnitSet/>
 						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="64" changeThreshold="0.000001"/>
 					</xtce:FloatParameterType>
-					<!--Skipped because Yamcs does not support  MILSTD_1750A encoding
+					<!--Skipped because Yamcs does not support  MILSTD_1750A encoding on 16 bits
 					<xtce:FloatParameterType name="Basic_MilFloat16_Type" sizeInBits="32" shortDescription="This is a float32 parameter with a milstd float16 encoding">
 						<xtce:UnitSet/>
 						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="MILSTD_1750A" sizeInBits="16" changeThreshold="0.001"/>
-					</xtce:FloatParameterType>					
+					</xtce:FloatParameterType>
+					-->					
 					<xtce:FloatParameterType name="Basic_MilFloat32_Type" sizeInBits="32" shortDescription="This is a float32 parameter with a milstd float32 encoding">
 						<xtce:UnitSet/>
 						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="MILSTD_1750A" sizeInBits="32" changeThreshold="0.001"/>
@@ -1300,7 +1301,7 @@ limitations under the License.
 						<xtce:UnitSet/>
 						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="MILSTD_1750A" sizeInBits="48" changeThreshold="0.001"/>
 					</xtce:FloatParameterType>
-					 -->
+					 
 					<xtce:IntegerParameterType name="Basic_uint32_Type" signed="false" sizeInBits="32" shortDescription="Generic unsigned 32 bit number">
 						<xtce:UnitSet/>
 						<xtce:IntegerDataEncoding bitOrder="mostSignificantBitFirst" encoding="unsigned" sizeInBits="32" changeThreshold="1"/>
@@ -1365,6 +1366,7 @@ limitations under the License.
 							<xtce:SystemName>CPU</xtce:SystemName>
 						</xtce:ParameterProperties>
 					</xtce:Parameter>
+					 -->
 					<xtce:Parameter name="Basic_MilFloat32" parameterTypeRef="Basic_MilFloat32_Type">
 						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
 							<xtce:SystemName>CPU</xtce:SystemName>
@@ -1375,7 +1377,7 @@ limitations under the License.
 							<xtce:SystemName>CPU</xtce:SystemName>
 						</xtce:ParameterProperties>
 					</xtce:Parameter>
-					 -->
+					
 					<xtce:Parameter name="Basic_uint32" parameterTypeRef="Basic_uint32_Type">
 						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
 							<xtce:SystemName>CPU</xtce:SystemName>

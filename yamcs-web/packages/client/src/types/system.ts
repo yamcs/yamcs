@@ -3,12 +3,18 @@ import { CommandQueueEntry, Value } from './monitoring';
 
 export interface AuthInfo {
   requireAuthentication: boolean;
+  flow: AuthFlow[];
 }
 
-export interface AccessTokenResponse {
+export interface AuthFlow {
+  type: 'PASSWORD' | 'REDIRECT' | 'SPNEGO';
+}
+
+export interface TokenResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
+  refresh_token: string;
   user: UserInfo;
 }
 
@@ -33,9 +39,17 @@ export type ServiceState = 'NEW'
   | 'TERMINATED'
   | 'FAILED';
 
+export type InstanceState = 'OFFLINE'
+  | 'INITIALIZING'
+  | 'INITIALIZED'
+  | 'STARTING'
+  | 'RUNNING'
+  | 'STOPPING'
+  | 'FAILED';
+
 export interface Instance {
   name: string;
-  state: ServiceState;
+  state: InstanceState;
   processor: Processor[];
 }
 
@@ -50,14 +64,17 @@ export interface ConnectionInfoSubscriptionResponse {
   connectionInfo$: Observable<ConnectionInfo>;
 }
 
+export interface InstanceSubscriptionResponse {
+  instance$: Observable<Instance>;
+}
+
 export interface ClientInfo {
-  instance: string;
   id: number;
+  instance: string;
   username: string;
   applicationName: string;
   processorName: string;
   state: 'CONNECTED' | 'DISCONNECTED';
-  currentClient: boolean;
   loginTimeUTC: string;
 }
 
@@ -73,14 +90,15 @@ export interface ClientSubscriptionResponse {
 export interface UserInfo {
   login: string;
   clientInfo: ClientInfo[];
-  roles: string[];
-  tmParaPrivileges: string[];
-  tmParaSetPrivileges: string[];
-  tmPacketPrivileges: string[];
-  tcPrivileges: string[];
-  systemPrivileges: string[];
-  streamPrivileges: string[];
-  cmdHistoryPrivileges: string[];
+  superuser: boolean;
+
+  systemPrivilege: string[];
+  objectPrivilege: ObjectPrivilege[];
+}
+
+export interface ObjectPrivilege {
+  type: string;
+  object: string[];
 }
 
 export interface Service {
@@ -225,6 +243,10 @@ export interface CommandQueueSubscriptionResponse {
   commandQueue$: Observable<CommandQueue>;
 }
 
+export interface EditInstanceOptions {
+  state: 'stopped' | 'restarted';
+}
+
 export interface EditCommandQueueOptions {
   state: 'enabled' | 'disabled' | 'blocked';
 }
@@ -240,4 +262,31 @@ export interface CommandQueueEventSubscriptionResponse {
 
 export interface EditCommandQueueEntryOptions {
   state: 'released' | 'rejected';
+}
+
+export interface Bucket {
+  name: string;
+  size: number;
+  numObjects: number;
+}
+
+export interface ListObjectsResponse {
+  prefix: string[];
+  object: ObjectInfo[];
+}
+
+export interface ObjectInfo {
+  name: string;
+  created: string;
+  size: number;
+  metadata: { [key: string]: string };
+}
+
+export interface CreateBucketRequest {
+  name: string;
+}
+
+export interface ListObjectsOptions {
+  prefix?: string;
+  delimiter?: string;
 }

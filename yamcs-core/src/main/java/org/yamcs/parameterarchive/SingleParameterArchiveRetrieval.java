@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.MultiParameterDataRetrieval.PartitionIteratorComparator;
-import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
+import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.DatabaseCorruptionException;
 
@@ -20,13 +20,13 @@ import static org.yamcs.parameterarchive.SortedTimeSegment.getSegmentStart;
 
 public class SingleParameterArchiveRetrieval {
     final private ParameterRequest spvr;
-    final private ParameterArchiveV2 parchive;
+    final private ParameterArchive parchive;
     private final Logger log = LoggerFactory.getLogger(SingleParameterArchiveRetrieval.class);
     final ParameterId[] pids;
     
     final int[] parameterGroupIds; 
     
-    public SingleParameterArchiveRetrieval(ParameterArchiveV2 parchive, String parameterFqn, ParameterRequest spvr) {
+    public SingleParameterArchiveRetrieval(ParameterArchive parchive, String parameterFqn, ParameterRequest spvr) {
         this.spvr = spvr;
         this.parchive = parchive;
 
@@ -38,7 +38,7 @@ public class SingleParameterArchiveRetrieval {
     }
 
     
-    SingleParameterArchiveRetrieval(ParameterArchiveV2 parchive, int parameterId, ParameterRequest spvr) {
+    SingleParameterArchiveRetrieval(ParameterArchive parchive, int parameterId, ParameterRequest spvr) {
         this.spvr = spvr;
         this.parchive = parchive;
         ParameterId pid = parchive.getParameterIdDb().getParameterId(parameterId);
@@ -46,7 +46,7 @@ public class SingleParameterArchiveRetrieval {
         this.parameterGroupIds = null;
     }
     
-    SingleParameterArchiveRetrieval(ParameterArchiveV2 parchive, int parameterId, int[] parameterGroupIds, ParameterRequest spvr) {
+    SingleParameterArchiveRetrieval(ParameterArchive parchive, int parameterId, int[] parameterGroupIds, ParameterRequest spvr) {
         this.spvr = spvr;
         this.parchive = parchive;
         ParameterId pid1 = parchive.getParameterIdDb().getParameterId(parameterId);

@@ -12,7 +12,6 @@ import org.yamcs.protobuf.Web.ConnectionInfo;
 import org.yamcs.protobuf.Web.WebSocketExtensionData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.MessageType;
-import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketReplyData;
 import org.yamcs.protobuf.Web.WebSocketServerMessage.WebSocketSubscriptionData;
 import org.yamcs.protobuf.Yamcs.Event;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;

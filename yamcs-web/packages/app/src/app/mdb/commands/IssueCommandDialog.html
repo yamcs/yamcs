@@ -1,19 +1,27 @@
 <h2 mat-dialog-title>Issue command</h2>
 
-<mat-dialog-content>
-  <form [formGroup]="form">
+<mat-dialog-content class="mat-typography">
+  <form [formGroup]="form" class="ya-form">
     <ng-container *ngFor="let argument of arguments">
       <ng-container [ngSwitch]="argument.type?.engType">
 
-        <mat-form-field *ngSwitchCase="'enumeration'" style="width: 100%">
-          <mat-select [formControlName]="argument.name" [placeholder]="argument.name">
-            <mat-option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.value">{{ enumValue.label }}</mat-option>
-          </mat-select>
-        </mat-form-field>
+        <label *ngSwitchCase="'enumeration'">
+          {{ argument.name }}
+          <select [formControlName]="argument.name">
+            <option *ngFor="let enumValue of argument.type.enumValue" [value]="enumValue.label">{{ enumValue.label }}</option>
+          </select>
+        </label>
 
-        <mat-form-field *ngSwitchDefault style="width: 100%">
-          <input matInput [formControlName]="argument.name" [placeholder]="argument.name">
-        </mat-form-field>
+        <label *ngSwitchCase="'boolean'">
+          {{ argument.name }}<br>
+          <input type="radio" [formControlName]="argument.name" value="true"> true
+          <input type="radio" [formControlName]="argument.name" value="false"> false
+        </label>
+
+        <label *ngSwitchDefault>
+          {{ argument.name }}
+          <input type="text" [formControlName]="argument.name">
+        </label>
 
       </ng-container>
     </ng-container>
@@ -22,6 +30,6 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Cancel</button>
-  <button mat-raised-button (click)="issue()" color="primary" [disabled]="!form.valid">Issue</button>
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-raised-button (click)="issue()" color="primary" [disabled]="!form.valid">ISSUE</button>
 </mat-dialog-actions>

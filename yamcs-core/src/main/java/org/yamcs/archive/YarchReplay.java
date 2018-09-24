@@ -187,6 +187,11 @@ public class YarchReplay implements StreamSubscriber {
         if (handlers.size() > 1) {
             sb.append(" USING gentime");
         }
+        
+        if (handlers.size() > 1 && currentRequest.hasReverse() && currentRequest.getReverse()) {
+            sb.append(" ORDER DESC");
+        }
+
         ReplaySpeed rs;
         if (currentRequest.hasSpeed()) {
             rs = currentRequest.getSpeed();
@@ -203,10 +208,7 @@ public class YarchReplay implements StreamSubscriber {
         case REALTIME:
             sb.append(" SPEED ORIGINAL gentime," + (long) rs.getParam());
         }
-        if (handlers.size() > 1 && currentRequest.hasReverse() && currentRequest.getReverse()) {
-            sb.append(" ORDER DESC");
-        }
-
+      
         String query = sb.toString();
         log.debug("running query {}", query);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);

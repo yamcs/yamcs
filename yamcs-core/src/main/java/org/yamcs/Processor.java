@@ -23,6 +23,7 @@ import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
 import org.yamcs.commanding.CommandReleaser;
 import org.yamcs.commanding.CommandingManager;
 import org.yamcs.container.ContainerRequestManager;
+import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.parameter.ParameterRequestManager;
@@ -108,7 +109,7 @@ public class Processor extends AbstractService {
 
     ProcessorData processorData;
     @GuardedBy("this")
-    HashSet<ProcessorClient> connectedClients = new HashSet<>();
+    HashSet<ConnectedClient> connectedClients = new HashSet<>();
     List<ServiceWithConfig> serviceList;
 
     public Processor(String yamcsInstance, String name, String type, String creator) throws ProcessorException {
@@ -469,7 +470,7 @@ public class Processor extends AbstractService {
      * @return the processor with the given name
      * @throws ProcessorException
      */
-    public static Processor connect(String yamcsInstance, String name, ProcessorClient s) throws ProcessorException {
+    public static Processor connect(String yamcsInstance, String name, ConnectedClient s) throws ProcessorException {
         Processor ds = instances.get(key(yamcsInstance, name));
         if (ds == null) {
             throw new ProcessorException("There is no processor named '" + name + "'");
@@ -481,7 +482,7 @@ public class Processor extends AbstractService {
     /**
      * Increase with one the number of connected clients
      */
-    public synchronized void connect(ProcessorClient s) throws ProcessorException {
+    public synchronized void connect(ConnectedClient s) throws ProcessorException {
         log.debug("Processor {} has one more user: {}", name, s);
         if (quitting) {
             throw new ProcessorException("This processor has been closed");
@@ -493,7 +494,7 @@ public class Processor extends AbstractService {
      * Disconnects a client from this processor. If the processor has no more clients, quit.
      *
      */
-    public void disconnect(ProcessorClient s) {
+    public void disconnect(ConnectedClient s) {
         if (quitting) {
             return;
         }
@@ -522,7 +523,7 @@ public class Processor extends AbstractService {
                 processors.add(processor);
             }
         }
-        return instances.values();
+        return processors;
     }
 
     /**
@@ -568,7 +569,7 @@ public class Processor extends AbstractService {
         // and now a CLOSED event
         listeners.forEach(l -> l.processorClosed(this));
         synchronized (this) {
-            for (ProcessorClient s : connectedClients) {
+            for (ConnectedClient s : connectedClients) {
                 s.processorQuit();
             }
         }
@@ -724,5 +725,9 @@ public class Processor extends AbstractService {
      */
     public ProcessorData getProcessorData() {
         return processorData;
+    }
+
+    public LastValueCache getLastValueCache() {
+        return processorData.getLastValueCache();
     }
 }

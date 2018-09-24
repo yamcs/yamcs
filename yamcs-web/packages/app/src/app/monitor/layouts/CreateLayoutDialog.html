@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Create layout</h2>
+
+<mat-dialog-content class="mat-typography ya-form">
+  <label>
+    Layout name
+    <input type="text" [formControl]="name">
+  </label>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-button (click)="save()" color="primary">SAVE</button>
+</mat-dialog-actions>

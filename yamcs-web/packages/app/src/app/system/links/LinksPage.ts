@@ -1,12 +1,12 @@
-import { Component, ChangeDetectionStrategy, AfterViewInit, ViewChild, OnDestroy } from '@angular/core';
-
-import { Link, LinkEvent } from '@yamcs/client';
-
-import { YamcsService } from '../../core/services/YamcsService';
-import { MatTableDataSource, MatSort } from '@angular/material';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import { MatSort, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
+import { Link, LinkEvent } from '@yamcs/client';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
+import { YamcsService } from '../../core/services/YamcsService';
+
+
 
 @Component({
   templateUrl: './LinksPage.html',
@@ -69,7 +69,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
   }
 
   mayControlLinks() {
-    return this.authService.hasSystemPrivilege('MayControlLinks');
+    return this.authService.getUser()!.hasSystemPrivilege('ControlLinks');
   }
 
   private processLinkEvent(evt: LinkEvent) {

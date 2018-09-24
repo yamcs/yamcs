@@ -29,8 +29,6 @@ import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.ParameterValueWithId;
-import org.yamcs.parameter.ParameterWithIdConsumer;
 import org.yamcs.parameter.ParameterWithIdRequestHelper;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
@@ -48,8 +46,7 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.security.InvalidAuthenticationToken;
-import org.yamcs.security.SystemToken;
+import org.yamcs.security.SecurityStore;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -68,7 +65,7 @@ import com.google.protobuf.util.JsonFormat;
  * 
  */
 public class ReplayService extends AbstractService
-implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHistoryProvider {
+        implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHistoryProvider {
     static final long timeout = 10000;
 
     EndAction endAction;
@@ -91,23 +88,25 @@ implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHi
     ReplayRequest.Builder rawDataRequest;
     CommandHistoryRequestManager commandHistoryRequestManager;
 
-    //this can be set in the config (in processor.yaml) to exclude certain paramter groups from replay
+    // this can be set in the config (in processor.yaml) to exclude certain paramter groups from replay
     List<String> excludeParameterGroups = null;
 
     public ReplayService(String instance) throws ConfigurationException {
         this.yamcsInstance = instance;
         xtceDb = XtceDbFactory.getInstance(instance);
     }
+
     /**
      *
      * @param instance
-     * @param args - the argument passed in the processor.yaml
+     * @param args
+     *            - the argument passed in the processor.yaml
      * @throws ConfigurationException
      */
     public ReplayService(String instance, Map<String, Object> args) throws ConfigurationException {
         this.yamcsInstance = instance;
         xtceDb = XtceDbFactory.getInstance(instance);
-        if(args.containsKey("excludeParameterGroups")) {
+        if (args.containsKey("excludeParameterGroups")) {
             excludeParameterGroups = YConfiguration.getList(args, "excludeParameterGroups");
         }
     }
@@ -230,7 +229,7 @@ implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHi
             rawDataRequest = originalReplayRequest.toBuilder().clearParameterRequest();
         }
 
-        if(!replayAll) {
+        if (!replayAll) {
             addPacketsRequiredForParams();
         }
 
@@ -240,13 +239,13 @@ implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHi
         for (Parameter p : subscribedParameters) {
             pprecordings.add(p.getRecordingGroup());
         }
-        if (pprecordings.isEmpty() && excludeParameterGroups==null ) {
-            log.debug("No aadditional pp group added or removed to/from the subscription");
+        if (pprecordings.isEmpty() && excludeParameterGroups == null) {
+            log.debug("No additional pp group added or removed to/from the subscription");
         } else {
             PpReplayRequest ppreq = originalReplayRequest.getPpRequest();
             PpReplayRequest.Builder pprr = ppreq.toBuilder();
             pprr.addAllGroupNameFilter(pprecordings);
-            if(excludeParameterGroups!=null) {
+            if (excludeParameterGroups != null) {
                 pprr.addAllGroupNameExclude(excludeParameterGroups);
             }
             rawDataRequest.setPpRequest(pprr.build());
@@ -268,16 +267,13 @@ implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHi
             return;
         }
         ParameterWithIdRequestHelper pidrm = new ParameterWithIdRequestHelper(parameterRequestManager,
-                new ParameterWithIdConsumer() {
-            @Override
-            public void update(int subscriptionId, List<ParameterValueWithId> params) {
-                // ignore data, we create this subscription just to get the list of
-                // dependent containers and PPs
-            }
-        });
+                (subscriptionId, params) -> {
+                    // ignore data, we create this subscription just to get the list of
+                    // dependent containers and PPs
+                });
         int subscriptionId;
         try {
-            subscriptionId = pidrm.addRequest(plist, new SystemToken());
+            subscriptionId = pidrm.addRequest(plist, SecurityStore.getInstance().getSystemUser());
         } catch (InvalidIdentification e) {
             NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
             throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
@@ -303,8 +299,7 @@ implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHi
         }
         pidrm.removeRequest(subscriptionId);
     }
-    
-    
+
     private void createReplay() throws ProcessorException {
         ReplayServer replayServer = YamcsServer.getService(yamcsInstance, ReplayServer.class);
         if (replayServer == null) {
@@ -315,8 +310,6 @@ implements ReplayListener, ArchiveTmPacketProvider, ParameterProvider, CommandHi
         } catch (YamcsException e) {
             log.error("Exception creating the replay", e);
             throw new ProcessorException("Exception creating the replay: " + e.getMessage(), e);
-        } catch (InvalidAuthenticationToken e) { // should never come here
-            throw new IllegalStateException(e);
         }
     }
 

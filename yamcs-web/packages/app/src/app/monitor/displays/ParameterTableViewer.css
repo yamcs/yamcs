@@ -1,0 +1,8 @@
+td, th {
+  padding-right: 20px !important;
+  line-height: 20px;
+}
+
+.paused td {
+  font-style: italic;
+}

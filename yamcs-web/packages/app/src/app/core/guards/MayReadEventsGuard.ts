@@ -1,5 +1,5 @@
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivateChild, Router } from '@angular/router';
 import { Injectable } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthService } from '../services/AuthService';
 
 @Injectable()
@@ -9,17 +9,8 @@ export class MayReadEventsGuard implements CanActivate, CanActivateChild {
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    if (!this.authService.authRequired$.value) {
+    if (this.authService.getUser()!.hasSystemPrivilege('ReadEvents')) {
       return true;
-    }
-    const userInfo = this.authService.getUserInfo();
-    if (userInfo) {
-      const systemPrivileges = userInfo.systemPrivileges || [];
-      for (const expression of systemPrivileges) {
-        if ('MayReadEvents'.match(expression)) {
-          return true;
-        }
-      }
     }
 
     this.router.navigate(['/403'], { queryParams: { page: state.url } });

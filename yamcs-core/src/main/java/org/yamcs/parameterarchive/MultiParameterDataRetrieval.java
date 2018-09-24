@@ -15,21 +15,21 @@ import org.rocksdb.RocksIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameterarchive.ParameterArchiveV2.Partition;
+import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.TimeEncoding;
 import static org.yamcs.parameterarchive.SortedTimeSegment.getSegmentStart;
 
 public class MultiParameterDataRetrieval {
-    final ParameterArchiveV2 parchive;
+    final ParameterArchive parchive;
     final MultipleParameterValueRequest mpvr;
 
     SegmentEncoderDecoder vsEncoder = new SegmentEncoderDecoder();
     private final Logger log = LoggerFactory.getLogger(MultiParameterDataRetrieval.class);
     private int count;
 
-    public MultiParameterDataRetrieval(ParameterArchiveV2 parchive, MultipleParameterValueRequest mpvr) {
+    public MultiParameterDataRetrieval(ParameterArchive parchive, MultipleParameterValueRequest mpvr) {
         this.parchive = parchive;
         this.mpvr = mpvr;
     }

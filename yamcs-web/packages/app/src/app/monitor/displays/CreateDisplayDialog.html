@@ -1,0 +1,40 @@
+<h2 mat-dialog-title>Create display</h2>
+
+<mat-dialog-content class="mat-typography">
+  <form *ngIf="page === 1" [formGroup]="typeForm" class="ya-form">
+    <label>
+      Type
+      <select formControlName="type">
+        <option value="par">Parameter Table</option>
+      </select>
+    </label>
+  </form>
+
+  <form *ngIf="page === 2" [formGroup]="filenameForm" class="ya-form">
+    <label [class.invalid]="filenameForm.get('name')?.invalid">
+      Name
+      <input #filename type="text" formControlName="name">
+      <span class="error-message"
+            *ngIf="filenameForm.get('name')?.invalid">File name must end with <code>.par</code></span>
+    </label>
+    <br>
+    <label>
+      Path
+      <input type="text" formControlName="path">
+    </label>
+  </form>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <button mat-raised-button
+          *ngIf="page === 1"
+          (click)="selectType()"
+          [disabled]="!typeForm.valid">NEXT »</button>
+  <button mat-raised-button
+          *ngIf="page === 2"
+          (click)="save()"
+          color="primary"
+          [disabled]="!filenameForm.valid">SAVE</button>
+</mat-dialog-actions>

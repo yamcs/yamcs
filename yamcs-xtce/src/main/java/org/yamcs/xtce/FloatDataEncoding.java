@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * For common encodings of floating point data
+ * For common encodings of floating point data.
+ * 
+ * Unlike XTCE we support encoding floats as strings  - this is done by providing a separate {@link StringDataEncoding} 
  * @author nm
  *
  */
@@ -15,13 +17,15 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
     private static final long serialVersionUID = 3L;
 
     public enum Encoding {
-        IEEE754_1985, STRING
-    }; // DIFFERS_FROM_XTCE
+        IEEE754_1985, 
+        MILSTD_1750A,
+        STRING// DIFFERS_FROM_XTCE 
+    }; 
 
     Calibrator defaultCalibrator = null;
     private List<ContextCalibrator> contextCalibratorList = null;
     
-    private Encoding encoding;
+    private final Encoding encoding;
 
     StringDataEncoding stringEncoding = null;
 
@@ -31,12 +35,25 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
      * @param sizeInBits
      */
     public FloatDataEncoding(int sizeInBits) {
-        this(sizeInBits, ByteOrder.BIG_ENDIAN);
+        this(sizeInBits, ByteOrder.BIG_ENDIAN, Encoding.IEEE754_1985);
     }
 
-    public FloatDataEncoding(int sizeInBits, ByteOrder byteOrder) {
+    public FloatDataEncoding(int sizeInBits, ByteOrder byteOrder, Encoding encoding) {
         super(sizeInBits, byteOrder);
-        setEncoding(Encoding.IEEE754_1985);
+        validateEncodingSizeInBits(encoding, sizeInBits);
+        this.encoding = encoding;
+    }
+
+    private static void validateEncodingSizeInBits(Encoding encoding, int sizeInBits) {
+        if(encoding==Encoding.IEEE754_1985 ) {
+            if(sizeInBits!=32 && sizeInBits!=64) {
+                throw new IllegalArgumentException("For IEEE754_1985 encoding sizeInBits has to be 32 or 64");
+            }
+        } else if(encoding==Encoding.MILSTD_1750A) {
+            if(sizeInBits!=32 && sizeInBits!=48) {
+                throw new IllegalArgumentException("For MILSTD_1750A encoding sizeInBits has to be 32 or 48");
+            }
+        }
     }
 
     /**
@@ -47,8 +64,12 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
      */
     public FloatDataEncoding(StringDataEncoding sde) {
         super(sde.getSizeInBits());
-        setEncoding(Encoding.STRING);
+        this.encoding = Encoding.STRING;
         stringEncoding = sde;
+    }
+
+    public FloatDataEncoding(int sizeInBits, Encoding encoding) {
+        this(sizeInBits, ByteOrder.BIG_ENDIAN, encoding);
     }
 
     public Encoding getEncoding() {
@@ -71,6 +92,7 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
     public String toString() {
         switch (getEncoding()) {
         case IEEE754_1985:
+        case MILSTD_1750A:
             return "FloatDataEncoding(sizeInBits=" + sizeInBits + ""
                     + (defaultCalibrator == null ? "" : (", defaultCalibrator:" + defaultCalibrator))
                     + ")";
@@ -88,6 +110,7 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
     public Object parseString(String stringValue) {
         switch (getEncoding()) {
         case IEEE754_1985:
+        case MILSTD_1750A:
             if (sizeInBits == 32) {
                 return Float.parseFloat(stringValue);
             } else {
@@ -100,9 +123,6 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
         }
     }
 
-    public void setEncoding(Encoding encoding) {
-        this.encoding = encoding;
-    }
 
     public List<ContextCalibrator> getContextCalibratorList() {
         return contextCalibratorList;

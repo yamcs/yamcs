@@ -1,6 +1,7 @@
 package org.yamcs.web.rest.archive;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
@@ -26,8 +28,8 @@ import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.security.Privilege;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
+import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
@@ -40,6 +42,9 @@ import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
@@ -60,12 +65,17 @@ public class ArchivePacketRestHandler extends RestHandler {
 
         GetPacketNamesResponse.Builder responseb = GetPacketNamesResponse.newBuilder();
         TableDefinition tableDefinition = ydb.getTable(XtceTmRecorder.TABLE_NAME);
+        if (tableDefinition == null) {
+            completeOK(req, responseb.build());
+            return;
+        }
+
         BiMap<String, Short> enumValues = tableDefinition.getEnumValues(XtceTmRecorder.PNAME_COLUMN);
         if (enumValues != null) {
             List<String> unsortedPackets = new ArrayList<>();
             for (Entry<String, Short> entry : enumValues.entrySet()) {
                 String packetName = entry.getKey();
-                if (Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PACKET, packetName)) {
+                if (hasObjectPrivilege(req, ObjectPrivilegeType.ReadPacket, packetName)) {
                     unsortedPackets.add(packetName);
                 }
             }
@@ -166,9 +176,9 @@ public class ArchivePacketRestHandler extends RestHandler {
             }
         }
         if (!nameSet.isEmpty()) {
-            verifyAuthorization(req.getAuthToken(), PrivilegeType.TM_PACKET, nameSet);
-        } else if (Privilege.getInstance().isEnabled()) {
-            nameSet.addAll(Privilege.getInstance().getTmPacketNames(instance, req.getAuthToken()));
+            checkObjectPrivileges(req, ObjectPrivilegeType.ReadPacket, nameSet);
+        } else {
+            nameSet.addAll(getTmPacketNames(instance, req.getUser()));
         }
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
@@ -232,7 +242,7 @@ public class ArchivePacketRestHandler extends RestHandler {
             @Override
             public void processTuple(Stream stream, Tuple tuple) {
                 TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
-                if (authorised(req, PrivilegeType.TM_PACKET, pdata.getId().getName())) {
+                if (hasObjectPrivilege(req, ObjectPrivilegeType.ReadPacket, pdata.getId().getName())) {
                     packets.add(pdata);
                 }
             }
@@ -261,5 +271,20 @@ public class ArchivePacketRestHandler extends RestHandler {
         } else {
             return indexServer;
         }
+    }
+
+    /**
+     * Get packet names this user has appropriate privileges for.
+     */
+    public Collection<String> getTmPacketNames(String yamcsInstance, User user)
+            throws ConfigurationException {
+        XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
+        ArrayList<String> tl = new ArrayList<>();
+        for (SequenceContainer sc : xtcedb.getSequenceContainers()) {
+            if (user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, sc.getQualifiedName())) {
+                tl.add(sc.getQualifiedName());
+            }
+        }
+        return tl;
     }
 }

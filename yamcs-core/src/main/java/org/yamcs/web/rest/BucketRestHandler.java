@@ -14,8 +14,9 @@ import org.yamcs.protobuf.Rest.CreateBucketRequest;
 import org.yamcs.protobuf.Rest.ListBucketsResponse;
 import org.yamcs.protobuf.Rest.ListObjectsResponse;
 import org.yamcs.protobuf.Rest.ObjectInfo;
-import org.yamcs.security.Privilege;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.ForbiddenException;
@@ -52,36 +53,37 @@ public class BucketRestHandler extends RestHandler {
     static final int MAX_METADATA_SIZE = 16 * 1024;
 
     static final Pattern BUCKET_NAME_REGEXP = Pattern.compile("\\w+");
-    static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[\\w\\-\\./]+");
+    static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[ \\w\\s\\-\\./]+");
 
     @Route(path = "/api/buckets/:instance", method = "GET")
     public void listBuckets(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayReadBucket)) {
-            throw new ForbiddenException("No privilege for this operation");
-        }
+        checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
+
         BucketDatabase bdb = getBucketDb(req);
-        List<BucketProperties> l = bdb.listBuckets();
-        ListBucketsResponse.Builder lbr = ListBucketsResponse.newBuilder();
-        for (BucketProperties bp : l) {
-            lbr.addBucket(BucketInfo.newBuilder().setName(bp.getName()).setSize(bp.getSize())
-                    .setNumObjects(bp.getNumObjects()).build());
+        try {
+            List<BucketProperties> l = bdb.listBuckets();
+            ListBucketsResponse.Builder lbr = ListBucketsResponse.newBuilder();
+            for (BucketProperties bp : l) {
+                lbr.addBucket(BucketInfo.newBuilder().setName(bp.getName()).setSize(bp.getSize())
+                        .setNumObjects(bp.getNumObjects()).build());
+            }
+            completeOK(req, lbr.build());
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Failed to resolve buckets", e);
         }
-        completeOK(req, lbr.build());
     }
 
     @Route(path = "/api/buckets/:instance", method = { "POST" })
     public void createBucket(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayCreateBucket)) {
-            throw new ForbiddenException("No privilege for this operation");
-        }
+        checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
+
         CreateBucketRequest crb = req.bodyAsMessage(CreateBucketRequest.newBuilder()).build();
         verifyBucketName(crb.getName());
         BucketDatabase bdb = getBucketDb(req);
-        if (bdb.getBucket(crb.getName()) != null) {
-            throw new BadRequestException("A bucket with the name '" + crb.getName() + "' already exist");
-        }
-
         try {
+            if (bdb.getBucket(crb.getName()) != null) {
+                throw new BadRequestException("A bucket with the name '" + crb.getName() + "' already exist");
+            }
             bdb.createBucket(crb.getName());
         } catch (IOException e) {
             log.error("Error when creating bucket", e);
@@ -92,9 +94,8 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "DELETE" })
     public void deleteBucket(RestRequest req) throws HttpException {
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), SystemPrivilege.MayCreateBucket)) {
-            throw new ForbiddenException("No privilege for this operation");
-        }
+        checkSystemPrivilege(req, SystemPrivilege.ManageAnyBucket);
+
         BucketDatabase bdb = getBucketDb(req);
         Bucket b = verifyAndGetBucket(req);
         try {
@@ -109,7 +110,7 @@ public class BucketRestHandler extends RestHandler {
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "POST" }, maxBodySize = MAX_BODY_SIZE)
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "POST" }, maxBodySize = MAX_BODY_SIZE)
     public void uploadObject(RestRequest req) throws HttpException {
-        checkPrivileges(req, SystemPrivilege.MayWriteToBucket);
+        checkManageBucketPrivilege(req);
         String contentType = req.getHeader(HttpHeaderNames.CONTENT_TYPE);
 
         if (contentType.startsWith("multipart/form-data")) {
@@ -197,7 +198,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName", method = { "GET" })
     public void listObjects(RestRequest req) throws HttpException {
-        checkPrivileges(req, SystemPrivilege.MayReadBucket);
+        checkReadBucketPrivilege(req);
         Bucket b = verifyAndGetBucket(req);
         try {
             String delimiter = req.getQueryParameter("delimiter");
@@ -243,7 +244,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "GET" })
     public void getObject(RestRequest req) throws HttpException {
-        checkPrivileges(req, SystemPrivilege.MayReadBucket);
+        checkReadBucketPrivilege(req);
 
         String objName = req.getRouteParam(OBJECT_NAME_PARAM);
         Bucket b = verifyAndGetBucket(req);
@@ -263,7 +264,7 @@ public class BucketRestHandler extends RestHandler {
 
     @Route(path = "/api/buckets/:instance/:bucketName/:objectName*", method = { "DELETE" })
     public void deleteObject(RestRequest req) throws HttpException {
-        checkPrivileges(req, SystemPrivilege.MayWriteToBucket);
+        checkManageBucketPrivilege(req);
 
         String objName = req.getRouteParam(OBJECT_NAME_PARAM);
         Bucket b = verifyAndGetBucket(req);
@@ -280,20 +281,35 @@ public class BucketRestHandler extends RestHandler {
         }
     }
 
-    private void checkPrivileges(RestRequest req, SystemPrivilege priv) throws HttpException {
+    private void checkReadBucketPrivilege(RestRequest req) throws HttpException {
         String bucketName = req.getRouteParam(BUCKET_NAME_PARAM);
-        if (bucketName.equals(getUserBucketName(req.getUsername()))) {
+        if (bucketName.equals(getUserBucketName(req.getUser()))) {
             return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
                     // anyway)
         }
 
-        if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), priv)) {
-            throw new ForbiddenException("No privilege for this operation");
+        if (!req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ReadBucket, bucketName)
+                && !req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
+                && !req.getUser().hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)) {
+            throw new ForbiddenException("Insufficient privileges to read bucket '" + bucketName + "'");
         }
     }
 
-    private static String getUserBucketName(String username) {
-        return "user." + username;
+    private void checkManageBucketPrivilege(RestRequest req) throws HttpException {
+        String bucketName = req.getRouteParam(BUCKET_NAME_PARAM);
+        if (bucketName.equals(getUserBucketName(req.getUser()))) {
+            return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
+                    // anyway)
+        }
+
+        if (!req.getUser().hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
+                && !req.getUser().hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)) {
+            throw new ForbiddenException("Insufficient privileges to manage bucket '" + bucketName + "'");
+        }
+    }
+
+    private static String getUserBucketName(User user) {
+        return "user." + user.getUsername();
     }
 
     static private BucketDatabase getBucketDb(RestRequest req) throws HttpException {
@@ -306,30 +322,37 @@ public class BucketRestHandler extends RestHandler {
             }
             return bdb;
         } catch (YarchException e) {
-            log.error("Error getting bucket database", e);
-            throw new InternalServerErrorException("Bucket database not available");
+            throw new InternalServerErrorException("Bucket database not available", e);
         }
     }
 
     static Bucket verifyAndGetBucket(RestRequest req) throws HttpException {
         BucketDatabase bdb = getBucketDb(req);
         String bucketName = req.getRouteParam("bucketName");
-
-        Bucket bucket = bdb.getBucket(bucketName);
-        if (bucket == null) {
-            if (bucketName.equals(getUserBucketName(req.getUsername()))) {
-                try {
-                    bucket = bdb.createBucket(bucketName);
-                } catch (IOException e) {
-                    log.error("Error creating user bucket", e);
-                    throw new InternalServerErrorException("Error creating user bucket");
+        try {
+            Bucket bucket = bdb.getBucket(bucketName);
+            if (bucket == null) {
+                if (bucketName.equals(getUserBucketName(req.getUser()))) {
+                    try {
+                        bucket = bdb.createBucket(bucketName);
+                    } catch (IOException e) {
+                        throw new InternalServerErrorException("Error creating user bucket", e);
+                    }
+                } else if (bucketName.equals("displays")) {
+                    try {
+                        bucket = bdb.createBucket(bucketName);
+                    } catch (IOException e) {
+                        throw new InternalServerErrorException("Error creating displays bucket", e);
+                    }
+                } else {
+                    throw new NotFoundException(req);
                 }
-            } else {
-                throw new NotFoundException(req);
             }
-        }
 
-        return bucket;
+            return bucket;
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Error while resolving bucket", e);
+        }
     }
 
     static private void verifyBucketName(String bucketName) throws BadRequestException {

@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -19,10 +20,12 @@ import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 
 class ArchiveFillerTask implements ParameterConsumer {
-    final ParameterArchiveV2 parameterArchive;
+    final ParameterArchive parameterArchive;
     final private Logger log;
     
     long numParams = 0;
+    static int DEFAULT_MAX_SEGMENT_SIZE = 65535;
+   
     
   //segment start -> ParameterGroup_id -> PGSegment
     protected TreeMap<Long, Map<Integer, PGSegment>> pgSegments = new TreeMap<>();
@@ -33,12 +36,14 @@ class ArchiveFillerTask implements ParameterConsumer {
     protected long collectionSegmentStart;
     
     long threshold = 60000;
-
-    public ArchiveFillerTask(ParameterArchiveV2 parameterArchive) {
+    int maxSegmentSize;
+    
+    public ArchiveFillerTask(ParameterArchive parameterArchive, int maxSegmentSize) {
         this.parameterArchive = parameterArchive;
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
         log = LoggingUtils.getLogger(this.getClass(), parameterArchive.getYamcsInstance());
+        this.maxSegmentSize = maxSegmentSize;
     }
     
 
@@ -66,7 +71,10 @@ class ArchiveFillerTask implements ParameterConsumer {
                 log.warn("No qualified name for parameter value {}, ignoring", pv);
                 continue;
             }
-            
+            if(pv.getEngValue() instanceof AggregateValue) {
+              //  log.warn("{}: aggregate values not supported, ignoring", pv.getParameterQualifiedNamed());
+                continue;
+            }
             SortedParameterList l = m.get(t);
             if(l==null) {
                 l = new SortedParameterList();
@@ -98,7 +106,7 @@ class ArchiveFillerTask implements ParameterConsumer {
             }
             PGSegment pgs = m.get(parameterGroupId);
             if(pgs==null) {
-                pgs = new PGSegment(parameterGroupId, segmentId, pvList.parameterIdArray);
+                pgs = new PGSegment(parameterGroupId, segmentId, pvList.parameterIdArray, maxSegmentSize);
                 m.put(parameterGroupId, pgs);
             }
 
@@ -111,7 +119,7 @@ class ArchiveFillerTask implements ParameterConsumer {
     }
 
     void flush() {
-        log.info("Starting a consolidation process, number of intervals: {}", pgSegments.size());
+        log.debug("Starting a consolidation process, number of intervals: {}", pgSegments.size());
         for(Map.Entry<Long, Map<Integer, PGSegment>> entry: pgSegments.entrySet()) {
             consolidateAndWriteToArchive(entry.getKey(), entry.getValue().values());
         }

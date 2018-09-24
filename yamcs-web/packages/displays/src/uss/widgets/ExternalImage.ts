@@ -1,7 +1,7 @@
-import { AbstractWidget } from './AbstractWidget';
-import * as utils from '../utils';
 import { Image } from '../../tags';
 import { DataSourceBinding } from '../DataSourceBinding';
+import * as utils from '../utils';
+import { AbstractWidget } from './AbstractWidget';
 
 export class ExternalImage extends AbstractWidget {
 
@@ -15,7 +15,7 @@ export class ExternalImage extends AbstractWidget {
       height: this.height,
       class: 'external-image',
       'data-name': this.name,
-      'xlink:href': `/_static/${pathname}`
+      'xlink:href': `/static/${pathname}`
     });
   }
 

@@ -191,51 +191,53 @@ public interface StreamSqlParserConstants {
   /** RegularExpression Id. */
   int K_TIMESTAMP = 94;
   /** RegularExpression Id. */
-  int K_TUPLES = 95;
+  int K_PARAMETER_VALUE = 95;
   /** RegularExpression Id. */
-  int K_UNIQUE = 96;
+  int K_TUPLES = 96;
   /** RegularExpression Id. */
-  int K_UPDATE = 97;
+  int K_UNIQUE = 97;
   /** RegularExpression Id. */
-  int K_UPSERT = 98;
+  int K_UPDATE = 98;
   /** RegularExpression Id. */
-  int K_UPSERT_APPEND = 99;
+  int K_UPSERT = 99;
   /** RegularExpression Id. */
-  int K_USE = 100;
+  int K_UPSERT_APPEND = 100;
   /** RegularExpression Id. */
-  int K_USING = 101;
+  int K_USE = 101;
   /** RegularExpression Id. */
-  int K_VALUE = 102;
+  int K_USING = 102;
   /** RegularExpression Id. */
-  int K_WHEN = 103;
+  int K_VALUE = 103;
   /** RegularExpression Id. */
-  int K_WHERE = 104;
+  int K_WHEN = 104;
   /** RegularExpression Id. */
-  int S_INTEGER = 105;
+  int K_WHERE = 105;
   /** RegularExpression Id. */
-  int S_FLOAT = 106;
+  int S_INTEGER = 106;
   /** RegularExpression Id. */
-  int EXPONENT = 107;
+  int S_FLOAT = 107;
   /** RegularExpression Id. */
-  int DIGIT = 108;
+  int EXPONENT = 108;
   /** RegularExpression Id. */
-  int SIGN = 109;
+  int DIGIT = 109;
   /** RegularExpression Id. */
-  int S_STRING = 110;
+  int SIGN = 110;
   /** RegularExpression Id. */
-  int LINE_COMMENT = 111;
+  int S_STRING = 111;
   /** RegularExpression Id. */
-  int MULTI_LINE_COMMENT = 112;
+  int LINE_COMMENT = 112;
   /** RegularExpression Id. */
-  int S_IDENTIFIER = 113;
+  int MULTI_LINE_COMMENT = 113;
   /** RegularExpression Id. */
-  int LETTER = 114;
+  int S_IDENTIFIER = 114;
   /** RegularExpression Id. */
-  int SPECIAL_CHARS = 115;
+  int LETTER = 115;
   /** RegularExpression Id. */
-  int S_DOUBLE_QUOTED_IDENTIFIER = 116;
+  int SPECIAL_CHARS = 116;
   /** RegularExpression Id. */
-  int S_QMARK = 117;
+  int S_DOUBLE_QUOTED_IDENTIFIER = 117;
+  /** RegularExpression Id. */
+  int S_QMARK = 118;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -337,6 +339,7 @@ public interface StreamSqlParserConstants {
     "\"TIME\"",
     "\"TIME_AND_VALUE\"",
     "\"TIMESTAMP\"",
+    "\"PARAMETER_VALUE\"",
     "\"TUPLES\"",
     "\"UNIQUE\"",
     "\"UPDATE\"",

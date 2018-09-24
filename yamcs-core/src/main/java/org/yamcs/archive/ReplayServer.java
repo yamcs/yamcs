@@ -6,12 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
-import org.yamcs.protobuf.Yamcs.CommandHistoryReplayRequest;
-import org.yamcs.protobuf.Yamcs.EventReplayRequest;
-import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
-import org.yamcs.protobuf.Yamcs.PpReplayRequest;
+import org.yamcs.YamcsService;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.security.InvalidAuthenticationToken;
 import org.yamcs.xtceproc.XtceDbFactory;
 
 import com.google.common.util.concurrent.AbstractService;
@@ -25,7 +21,7 @@ import com.google.common.util.concurrent.AbstractService;
  * @author nm
  *
  */
-public class ReplayServer extends AbstractService {
+public class ReplayServer extends AbstractService implements YamcsService {
     static Logger log = LoggerFactory.getLogger(ReplayServer.class);
 
     final int MAX_REPLAYS = 200;
@@ -44,19 +40,14 @@ public class ReplayServer extends AbstractService {
     /**
      * create a new packet replay object
      * 
-     * @param replayRequest
-     * @param replayListener
-     * @param authToken
      * @return a replay object
-     * @throws YamcsException
-     * @throws InvalidAuthenticationToken
      */
     public YarchReplay createReplay(ReplayRequest replayRequest, ReplayListener replayListener)
-            throws YamcsException, InvalidAuthenticationToken {
+            throws YamcsException {
         if (replayCount.get() >= MAX_REPLAYS) {
             throw new YamcsException("maximum number of replays reached");
         }
-      
+
         try {
             YarchReplay yr = new YarchReplay(this, replayRequest, replayListener, XtceDbFactory.getInstance(instance));
             replayCount.incrementAndGet();

@@ -38,7 +38,7 @@ export abstract class AbstractWidget {
   readonly styleSet: StyleSet;
 
   constructor(
-    protected node: Node,
+    protected node: Element,
     protected display: UssDisplay) {
 
     this.sequenceNumber = widgetSequence++;
@@ -69,7 +69,7 @@ export abstract class AbstractWidget {
     // NOP
   }
 
-  private parseDataBinding(node: Node) {
+  private parseDataBinding(node: Element) {
     let ds = utils.findChild(node, 'DataSource');
     if (ds.attributes.getNamedItem('reference')) {
       ds = utils.getReferencedElement(ds);
@@ -108,7 +108,7 @@ export abstract class AbstractWidget {
 
   protected abstract registerBinding(binding: DataSourceBinding): void;
 
-  private parseNames(node: Node) {
+  private parseNames(node: Element) {
     let opsName;
     let pathName;
     let sid;

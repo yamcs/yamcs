@@ -7,17 +7,14 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
-import org.yamcs.security.AuthenticationPendingException;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
-import org.yamcs.utils.ExceptionUtil;
+import org.yamcs.security.SecurityStore;
+import org.yamcs.security.User;
 import org.yamcs.web.rest.Router;
 import org.yamcs.web.websocket.WebSocketFrameHandler;
 
@@ -73,13 +70,13 @@ import io.netty.util.ReferenceCountUtil;
  */
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
-    private static final String STATIC_PATH = "_static";
     private static final String API_PATH = "api";
     private static final String AUTH_PATH = "auth";
+    private static final String STATIC_PATH = "static";
 
     public static final AttributeKey<ChunkedTransferStats> CTX_CHUNK_STATS = AttributeKey
             .valueOf("chunkedTransferStats");
-    public static final AttributeKey<AuthenticationToken> CTX_AUTH_TOKEN = AttributeKey.valueOf("authToken");
+    public static final AttributeKey<User> CTX_USER = AttributeKey.valueOf("user");
 
     private static final Logger log = LoggerFactory.getLogger(HttpRequestHandler.class);
 
@@ -95,16 +92,21 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public static final String HANDLER_NAME_COMPRESSOR = "hndl_compressor";
     public static final String HANDLER_NAME_CHUNKED_WRITER = "hndl_chunked_writer";
 
+    private static HttpAuthorizationChecker authChecker = new HttpAuthorizationChecker();
     static {
         HttpUtil.setContentLength(BAD_REQUEST, 0);
     }
     public static final byte[] NEWLINE_BYTES = "\r\n".getBytes();
 
-    WebConfig webConfig;
+    WebSocketConfig wsConfig;
 
-    public HttpRequestHandler(Router apiRouter, WebConfig webConfig) {
+    public HttpRequestHandler(Router apiRouter, WebSocketConfig wsConfig) {
         this.apiRouter = apiRouter;
-        this.webConfig = webConfig;
+        this.wsConfig = wsConfig;
+    }
+
+    public static HttpAuthorizationChecker getAuthorizationChecker() {
+        return authChecker;
     }
 
     @Override
@@ -149,45 +151,25 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         } catch (IOException e) {
             log.warn("Exception while handling http request", e);
             sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-        } catch (UnauthorizedException e) {
-            sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED, e.getMessage());
-        } catch (AuthenticationPendingException e) {
-            // Ignore
+        } catch (HttpException e) {
+            sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
         }
     }
 
-    private void verifyAuthenticationToken(ChannelHandlerContext ctx, HttpRequest req)
-            throws AuthenticationPendingException, UnauthorizedException {
-        Privilege priv = Privilege.getInstance();
-        if (priv.isEnabled()) {
-            CompletableFuture<AuthenticationToken> cf = priv.authenticateHttp(ctx, req);
-            try {
-                // TODO: make this non-blocking
-                // but pay attention that as soon as we return the method to netty,
-                // it will immediately call the pipeline with the next http message (for example with an
-                // EmptyLastHttpContent)
-                // and those have to be queued somehow while the authentication is being performed
-                // One can use this to make sure no data is read from the client while the authentication is going on:
-                // ctx.channel().config().setAutoRead(false);
-                // cf.whenComplete((...) -> {ctx.channel().config().setAutoRead(true)})
-                // however this doesn't prevent the EmptyLastHttpContent to come through
-                // because that one is generated from the first GET request in case no body or small body is present
-
-                AuthenticationToken authToken = cf.get(5000, TimeUnit.MILLISECONDS);
-                ctx.channel().attr(CTX_AUTH_TOKEN).set(authToken);
-            } catch (Exception e) {
-                Throwable t = ExceptionUtil.unwind(e);
-                if (t instanceof AuthenticationPendingException) {
-                    throw (AuthenticationPendingException) t;
-                } else {
-                    throw new UnauthorizedException(t.getMessage());
-                }
-            }
+    private void verifyAuthentication(ChannelHandlerContext ctx, HttpRequest req)
+            throws HttpException {
+        SecurityStore security = SecurityStore.getInstance();
+        if (security.isEnabled()) {
+            User user = authChecker.verifyAuth(ctx, req);
+            ctx.channel().attr(CTX_USER).set(user);
+        } else {
+            User user = security.getUnauthenticatedUser();
+            ctx.channel().attr(CTX_USER).set(user);
         }
     }
 
     private void handleRequest(ChannelHandlerContext ctx, HttpRequest req)
-            throws AuthenticationPendingException, IOException, UnauthorizedException {
+            throws IOException, HttpException {
         cleanPipeline(ctx.pipeline());
 
         // Decode URI, to correctly ignore query strings in path handling
@@ -195,7 +177,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         String[] path = qsDecoder.path().split("/", 3); // path starts with / so path[0] is always empty
         switch (path[1]) {
         case STATIC_PATH:
-            if (path.length == 2) { // do not accept "/_static/" (i.e. directory listing) requests
+            if (path.length == 2) { // do not accept "/static/" (i.e. directory listing) requests
                 sendPlainTextError(ctx, req, FORBIDDEN);
                 return;
             }
@@ -209,36 +191,22 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             contentExpected = true;
             return;
         case API_PATH:
-            verifyAuthenticationToken(ctx, req);
+            verifyAuthentication(ctx, req);
             contentExpected = apiRouter.scheduleExecution(ctx, req, qsDecoder);
             return;
         case WebSocketFrameHandler.WEBSOCKET_PATH:
-            verifyAuthenticationToken(ctx, req);
-            if (path.length == 2) { // An instance should be specified
-                sendPlainTextError(ctx, req, FORBIDDEN);
-                return;
-            }
-            if (YamcsServer.hasInstance(path[2])) {
+            verifyAuthentication(ctx, req);
+            if (path.length == 2) { // No instance specified
+                prepareChannelForWebSocketUpgrade(ctx, req, null);
+            } else if (YamcsServer.hasInstance(path[2])) {
                 prepareChannelForWebSocketUpgrade(ctx, req, path[2]);
             } else {
                 sendPlainTextError(ctx, req, NOT_FOUND);
             }
             return;
         default:
-            if (path.length >= 3 && WebSocketFrameHandler.WEBSOCKET_PATH.equals(path[2])) {
-                verifyAuthenticationToken(ctx, req);
-                if (YamcsServer.hasInstance(path[1])) {
-                    log.warn(String.format("Deprecated url request for /%s/%s. Migrate to /%s/%s instead.",
-                            path[1], path[2], path[2], path[1]));
-                    prepareChannelForWebSocketUpgrade(ctx, req, path[1]);
-                } else {
-                    sendPlainTextError(ctx, req, NOT_FOUND);
-                }
-            } else {
-                // Everything else is handled by angular's router
-                // (enables deep linking in html5 mode)
-                fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
-            }
+            // Everything else is handled client-side by the Angular router (HTML5 deep-linking)
+            fileRequestHandler.handleStaticFileRequest(ctx, req, "index.html");
         }
     }
 
@@ -256,12 +224,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         String webSocketPath = req.uri();
         String subprotocols = "json, protobuf";
         ctx.pipeline().addLast(new WebSocketServerProtocolHandler(webSocketPath, subprotocols, false,
-                webConfig.getWebSocketMaxFrameLength()));
+                wsConfig.getMaxFrameLength()));
 
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);
-        originalRequestInfo.setAuthenticationToken(ctx.channel().attr(CTX_AUTH_TOKEN).get());
-        ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo));
+        originalRequestInfo.setUser(ctx.channel().attr(CTX_USER).get());
+        ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo,
+                wsConfig.getConnectionCloseNumDroppedMsg(), wsConfig.getWriteBufferWaterMark()));
 
         // Effectively trigger websocket-handler (will attempt handshake)
         ctx.fireChannelRead(req);
@@ -273,7 +242,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    public ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
+    public static ChannelFuture sendRedirect(ChannelHandlerContext ctx, HttpRequest req, String newUri) {
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.FOUND);
         response.headers().set(HttpHeaderNames.LOCATION, newUri);
         log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(),
@@ -362,8 +331,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Sends base HTTP response indicating the use of chunked transfer encoding
-     * NM 11-May-2018: We do not put the ChunckedWriteHandler on the pipeline because the input is already chunked.
+     * Sends base HTTP response indicating the use of chunked transfer encoding NM 11-May-2018: We do not put the
+     * ChunckedWriteHandler on the pipeline because the input is already chunked.
      * 
      */
     public static ChannelFuture startChunkedTransfer(ChannelHandlerContext ctx, HttpRequest req, MediaType contentType,

@@ -96,6 +96,7 @@ public class ObjectSegment<E> extends BaseSegment {
         if(valuemap.containsKey(se)) {
             valueId = valuemap.get(se);
             se = unique.get(valueId); //release the old se object to garbage
+            e = objectList.get(enumValues.indexOf(valueId));//release the old e object to garbage
         } else {
             valueId = unique.size();
             valuemap.put(se, valueId);
@@ -119,6 +120,7 @@ public class ObjectSegment<E> extends BaseSegment {
         if(valuemap.containsKey(se)) {
             valueId = valuemap.get(se);
             se = unique.get(valueId); //release the old se object to garbage
+            e = objectList.get(enumValues.indexOf(valueId));//release the old e object to garbage
         } else {
             valueId = unique.size();
             valuemap.put(se, valueId);

@@ -31,11 +31,20 @@ export interface Parameter extends NameDescription {
   | 'COMMAND_HISTORY'
   | 'CONSTANT'
   | 'DERIVED'
+  | 'EXTERNAL1'
+  | 'EXTERNAL2'
+  | 'EXTERNAL3'
   | 'LOCAL'
   | 'SYSTEM'
   | 'TELEMETERED';
 
   type?: ParameterType;
+  usedBy?: UsedByInfo;
+}
+
+export interface UsedByInfo {
+  algorithm?: Algorithm[];
+  container?: Container[];
 }
 
 export interface UnitInfo {
@@ -81,6 +90,7 @@ export interface DataEncoding {
   sizeInBits: number;
   encoding: string;
   defaultCalibrator: Calibrator;
+  contextCalibrator: Calibrator[];
 }
 
 export interface Calibrator {
@@ -229,7 +239,7 @@ export interface FixedValue {
   sizeInBits: number;
 }
 
-export class RepeatInfo {
+export interface RepeatInfo {
   fixedCount: number;
   dynamicCount: Parameter;
   bitsBetween: number;
@@ -240,6 +250,7 @@ export interface GetParametersOptions {
   recurse?: boolean;
   type?: string;
   q?: string;
+  pos?: number;
   limit?: number;
 }
 

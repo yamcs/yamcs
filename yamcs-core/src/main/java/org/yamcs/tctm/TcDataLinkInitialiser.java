@@ -26,7 +26,7 @@ import com.google.common.util.concurrent.AbstractService;
 import org.yamcs.api.YamcsApiException;
 
 /**
- * Sends commands from the yarch stream to a {@link org.yamcs.tctm.TcUplinker }
+ * Sends commands from the yarch stream to a {@link org.yamcs.tctm.TcDataLink}
  *
  */
 public class TcDataLinkInitialiser extends AbstractService {

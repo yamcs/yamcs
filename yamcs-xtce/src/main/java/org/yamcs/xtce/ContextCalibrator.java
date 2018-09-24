@@ -10,6 +10,7 @@ import java.io.Serializable;
  *
  */
 public class ContextCalibrator implements Serializable {
+    
     private static final long serialVersionUID = 1L;
     private Calibrator calibrator;
     private MatchCriteria context;
@@ -31,5 +32,8 @@ public class ContextCalibrator implements Serializable {
     public void setContext(MatchCriteria context) {
         this.context = context;
     }
-    
+    @Override
+    public String toString() {
+        return "ContextCalibrator [ context:" + context +", calibrator:" + calibrator  + "]";
+    }
 }

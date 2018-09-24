@@ -53,24 +53,28 @@
 
       <ng-container matColumnDef="dataCount">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Data Count</th>
-        <td mat-cell *matCellDef="let link" style="text-align: right">
+        <td mat-cell *matCellDef="let link" style="text-align: center">
           {{ link.dataCount | number }}
         </td>
       </ng-container>
 
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let link" style="text-align: right">
-          <button mat-stroked-button
-                  (click)="enableLink(link.name)"
-                  *ngIf="mayControlLinks() && link.status === 'DISABLED'">
-            Enable
-          </button>
-          <button mat-stroked-button
-                  class="alert"
-                  (click)="disableLink(link.name)"
-                  *ngIf="mayControlLinks() && link.status !== 'DISABLED'">
-            Disable
+        <td mat-cell *matCellDef="let link">
+          <mat-menu #linkMenu="matMenu" overlapTrigger="false" class="ya-menu">
+            <button mat-menu-item
+                    (click)="enableLink(link.name)"
+                    [disabled]="link.status !== 'DISABLED'">
+              Enable link
+            </button>
+            <button mat-menu-item
+                    (click)="disableLink(link.name)"
+                    [disabled]="link.status === 'DISABLED'">
+              Disable link
+            </button>
+          </mat-menu>
+          <button mat-button [matMenuTriggerFor]="linkMenu" *ngIf="mayControlLinks()">
+            <mat-icon>more_horiz</mat-icon>
           </button>
         </td>
       </ng-container>

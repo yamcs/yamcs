@@ -1,7 +1,9 @@
 package org.yamcs.xtce;
 
-public class FloatDataType extends NumericDataType {
-    private static final long serialVersionUID = 200706061220L;
+import org.yamcs.protobuf.Yamcs.Value.Type;
+
+public abstract class FloatDataType extends NumericDataType {
+    private static final long serialVersionUID = 1L;
     /**
      * XTCE: The Valid Range bounds the universe of possible values this Parameter may have. For Telemetry the valid range is always 
      * applied before calibration, regardless of the value of validRangeAppliesToCalibrated. For commanding, 
@@ -18,7 +20,7 @@ public class FloatDataType extends NumericDataType {
 
     int sizeInBits = 32;
     
-    FloatDataType(String name) {
+    protected FloatDataType(String name) {
         super(name);
     }
     
@@ -50,6 +52,7 @@ public class FloatDataType extends NumericDataType {
     public FloatValidRange getValidRange() {
         return validRange;
     }
+    
     @Override
     public Object parseString(String stringValue) {
         if(sizeInBits==32) {
@@ -58,5 +61,19 @@ public class FloatDataType extends NumericDataType {
             return Double.parseDouble(stringValue);
         }
     }
+
+    @Override
+    public void setInitialValue(String initialValue) {
+        this.initialValue = Double.parseDouble(initialValue);
+    }
+
+    @Override
+    public Type getValueType() {
+        return (sizeInBits<=32)?Type.FLOAT:Type.DOUBLE;
+    }
     
+    @Override
+    public String getTypeAsString() {
+        return "float";
+    }
 }

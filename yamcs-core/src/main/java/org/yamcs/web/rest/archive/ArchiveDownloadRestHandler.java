@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.CommandHistoryRecorder;
 import org.yamcs.archive.EventRecorder;
@@ -24,12 +25,13 @@ import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.security.Privilege;
-import org.yamcs.security.PrivilegeType;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.web.BadRequestException;
+import org.yamcs.web.GpbExtensionRegistry;
 import org.yamcs.web.HttpException;
+import org.yamcs.web.HttpServer;
 import org.yamcs.web.rest.ParameterReplayToChunkedCSVEncoder;
 import org.yamcs.web.rest.ParameterReplayToChunkedProtobufEncoder;
 import org.yamcs.web.rest.RestHandler;
@@ -63,6 +65,8 @@ import io.netty.buffer.ByteBufOutputStream;
  */
 public class ArchiveDownloadRestHandler extends RestHandler {
 
+    private GpbExtensionRegistry gpbExtensionRegistry;
+
     @Route(path = "/api/archive/:instance/downloads/parameters", method = { "GET", "POST" })
     public void downloadParameters(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
@@ -70,14 +74,31 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         ReplayRequest.Builder rr = ReplayRequest.newBuilder().setEndAction(EndAction.QUIT);
         rr.setSpeed(ReplaySpeed.newBuilder().setType(ReplaySpeedType.AFAP));
 
+        List<NamedObjectId> ids = new ArrayList<>();
+        XtceDb mdb = XtceDbFactory.getInstance(instance);
+        String namespace = null;
+
         // First try from body
-        BulkDownloadParameterValueRequest request = req.bodyAsMessage(BulkDownloadParameterValueRequest.newBuilder())
-                .build();
-        if (request.hasStart()) {
-            rr.setStart(RestRequest.parseTime(request.getStart()));
-        }
-        if (request.hasStop()) {
-            rr.setStop(RestRequest.parseTime(request.getStop()));
+        if (req.hasBody()) {
+            BulkDownloadParameterValueRequest request = req
+                    .bodyAsMessage(BulkDownloadParameterValueRequest.newBuilder()).build();
+            if (request.hasStart()) {
+                rr.setStart(RestRequest.parseTime(request.getStart()));
+            }
+            if (request.hasStop()) {
+                rr.setStop(RestRequest.parseTime(request.getStop()));
+            }
+            for (NamedObjectId id : request.getIdList()) {
+                Parameter p = mdb.getParameter(id);
+                if (p == null) {
+                    throw new BadRequestException("Invalid parameter name specified " + id);
+                }
+                checkObjectPrivileges(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+                ids.add(id);
+            }
+            if (request.hasNamespace()) {
+                namespace = request.getNamespace();
+            }
         }
 
         // Next, try query param (potentially overriding previous)
@@ -88,30 +109,37 @@ public class ArchiveDownloadRestHandler extends RestHandler {
         if (ir.hasStop()) {
             rr.setStop(req.getQueryParameterAsDate("stop"));
         }
-
-        XtceDb mdb = XtceDbFactory.getInstance(instance);
-        List<NamedObjectId> ids = new ArrayList<>();
-        for (NamedObjectId id : request.getIdList()) {
-            Parameter p = mdb.getParameter(id);
-            if (p == null) {
-                throw new BadRequestException("Invalid parameter name specified " + id);
-            }
-            if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
-                    p.getQualifiedName())) {
-                throw new BadRequestException("Insufficient privileges for parameter " + p.getQualifiedName());
-            }
-            ids.add(id);
+        if (req.hasQueryParameter("namespace")) {
+            namespace = req.getQueryParameter("namespace");
         }
+        if (req.hasQueryParameter("parameters")) {
+            for (String para : req.getQueryParameterList("parameters")) {
+                for (String name : para.split(",")) {
+                    NamedObjectId id;
+                    if (namespace == null) {
+                        id = NamedObjectId.newBuilder().setName(name).build();
+                    } else {
+                        id = NamedObjectId.newBuilder().setNamespace(namespace).setName(name).build();
+                    }
+                    Parameter p = mdb.getParameter(id);
+                    if (p == null) {
+                        throw new BadRequestException("Invalid parameter name specified " + id);
+                    }
+                    checkObjectPrivileges(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+                    ids.add(id);
+                }
+            }
+        }
+
         if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
-                if (!Privilege.getInstance().hasPrivilege1(req.getAuthToken(), PrivilegeType.TM_PARAMETER,
-                        p.getQualifiedName())) {
+                if (!hasObjectPrivilege(req, ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
                     continue;
                 }
-                if (request.hasNamespace()) {
-                    String alias = p.getAlias(request.getNamespace());
+                if (namespace != null) {
+                    String alias = p.getAlias(namespace);
                     if (alias != null) {
-                        ids.add(NamedObjectId.newBuilder().setNamespace(request.getNamespace()).setName(alias).build());
+                        ids.add(NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build());
                     }
                 } else {
                     ids.add(NamedObjectId.newBuilder().setName(p.getQualifiedName()).build());
@@ -140,10 +168,10 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, ids, addRaw, addMonitoring,
                     filename);
-            RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
+            RestReplays.replay(instance, req.getUser(), rr.build(), l);
         } else {
             RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req, filename);
-            RestReplays.replay(instance, req.getAuthToken(), rr.build(), l);
+            RestReplays.replay(instance, req.getUser(), rr.build(), l);
         }
     }
 
@@ -153,9 +181,8 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         NamedObjectId requestedId = verifyParameterId(req, mdb, req.getRouteParam("name"));
-        Parameter p = mdb.getParameter(requestedId);
 
-        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, p, false);
+        ReplayRequest rr = ArchiveHelper.toParameterReplayRequest(req, requestedId, false);
         boolean noRepeat = req.getQueryParameterAsBoolean("norepeat", false);
 
         String filename = requestedId.getName();
@@ -180,11 +207,12 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             RestParameterReplayListener l = new ParameterReplayToChunkedCSVEncoder(req, idList, addRaw, addMonitoring,
                     filename);
             l.setNoRepeat(noRepeat);
-            RestReplays.replay(instance, req.getAuthToken(), rr, l);
+            System.out.println("will do replay " + rr);
+            RestReplays.replay(instance, req.getUser(), rr, l);
         } else {
             RestParameterReplayListener l = new ParameterReplayToChunkedProtobufEncoder(req, filename);
             l.setNoRepeat(noRepeat);
-            RestReplays.replay(instance, req.getAuthToken(), rr, l);
+            RestReplays.replay(instance, req.getUser(), rr, l);
         }
     }
 
@@ -199,7 +227,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         }
 
-        verifyAuthorization(req.getAuthToken(), PrivilegeType.TM_PACKET, nameSet);
+        checkObjectPrivileges(req, ObjectPrivilegeType.ReadPacket, nameSet);
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -244,7 +272,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
             }
         }
 
-        verifyAuthorization(req.getAuthToken(), PrivilegeType.CMD_HISTORY, nameSet);
+        checkObjectPrivileges(req, ObjectPrivilegeType.CommandHistory, nameSet);
 
         SqlBuilder sqlb = new SqlBuilder(CommandHistoryRecorder.TABLE_NAME);
         IntervalResult ir = req.scanForInterval();
@@ -270,7 +298,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     public void downloadTableData(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadTables);
+        checkSystemPrivilege(req, SystemPrivilege.ReadTables);
 
         TableDefinition table = verifyTable(req, ydb, req.getRouteParam("name"));
 
@@ -316,7 +344,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
     public void downloadEvents(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         ArchiveEventRestHandler.verifyEventArchiveSupport(instance);
-        verifyAuthorization(req.getAuthToken(), SystemPrivilege.MayReadEvents);
+        checkSystemPrivilege(req, SystemPrivilege.ReadEvents);
 
         Set<String> sourceSet = new HashSet<>();
         for (String names : req.getQueryParameterList("source", Collections.emptyList())) {
@@ -376,12 +404,12 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
             @Override
             public String[] getCSVHeader() {
-                return ArchiveHelper.EVENT_CSV_HEADER;
+                return ArchiveHelper.getEventCSVHeader(getExtensionRegistry());
             }
 
             @Override
             public void processTuple(Tuple tuple, CsvWriter csvWriter) throws IOException {
-                String[] record = ArchiveHelper.tupleToCSVEvent(tuple);
+                String[] record = ArchiveHelper.tupleToCSVEvent(tuple, getExtensionRegistry());
                 csvWriter.writeRecord(record);
             }
         });
@@ -393,8 +421,16 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
             @Override
             public Event mapTuple(Tuple tuple) {
-                return ArchiveHelper.tupleToEvent(tuple);
+                return ArchiveHelper.tupleToEvent(tuple, getExtensionRegistry());
             }
         });
+    }
+
+    private GpbExtensionRegistry getExtensionRegistry() {
+        if (gpbExtensionRegistry == null) {
+            HttpServer httpServer = YamcsServer.getGlobalService(HttpServer.class);
+            gpbExtensionRegistry = httpServer.getGpbExtensionRegistry();
+        }
+        return gpbExtensionRegistry;
     }
 }

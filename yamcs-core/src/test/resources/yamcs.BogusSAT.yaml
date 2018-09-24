@@ -1,8 +1,5 @@
-#all services that are started for this instance instance
 services:
-    - org.yamcs.YarchChannel
-
-
+  - class: org.yamcs.YarchChannel
 
 mdb: BogusSAT
 

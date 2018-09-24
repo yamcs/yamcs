@@ -6,6 +6,14 @@ refmdb:
            file: "mdb/refmdb.xls"
            enableAliasReferences: false
       
+
+refmdb-v6:
+    # Configuration of the active loaders
+    # Valid loaders are: sheet, xtce or fully qualified name of the class
+    - type: "sheet"
+      args: 
+           file: "mdb/refmdb-v6.xls"
+           enableAliasReferences: false
       
       
 ccsds-green-book:
@@ -18,3 +26,9 @@ BogusSAT:
     - type: xtce
       args:
           file: "src/test/resources/xtce/BogusSAT-1.xml"          
+
+BogusSAT2:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/BogusSAT-2.xml"          
+          

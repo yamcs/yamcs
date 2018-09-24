@@ -15,6 +15,9 @@ public class InputParameter implements Serializable {
     //if this input parameter is not set, the algorithm will not trigger
     private boolean mandatory = false;
     
+    public InputParameter() {
+        
+    }
     public InputParameter(ParameterInstanceRef parameterInstance) {
         this.parameterInstance = parameterInstance;
     }

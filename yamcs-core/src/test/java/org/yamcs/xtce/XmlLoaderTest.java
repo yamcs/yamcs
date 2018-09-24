@@ -8,6 +8,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 
 import org.junit.Test;
+import org.yamcs.xtce.FloatDataEncoding.Encoding;
 import org.yamcs.xtce.StringDataEncoding.SizeType;
 import org.yamcs.xtceproc.CalibratorProc;
 import org.yamcs.xtceproc.MathOperationCalibratorFactory;
@@ -89,6 +90,22 @@ public class XmlLoaderTest {
         assertEquals(10000, ris.getMaxInterval());
         assertEquals(100, ris.getMinInterval());
         
+        Parameter p1 = busElectronics.getParameter("Battery_Current");
+        FloatParameterType fpt1 = (FloatParameterType)p1.getParameterType();
+        assertEquals(0.2, fpt1.getInitialValue(), 1e-5);
+        
+        
+        Parameter p2 =  payload1.getParameter("Basic_MilFloat32");
+        FloatParameterType fpt2 = (FloatParameterType)p2.getParameterType();
+        FloatDataEncoding fde2 = (FloatDataEncoding)fpt2.getEncoding();
+        assertEquals(Encoding.MILSTD_1750A, fde2.getEncoding());
+        assertEquals(32, fde2.getSizeInBits());
+        
+        Parameter p3 =  payload1.getParameter("Basic_MilFloat48");
+        FloatParameterType fpt3 = (FloatParameterType)p3.getParameterType();
+        FloatDataEncoding fde3 = (FloatDataEncoding)fpt3.getEncoding();
+        assertEquals(Encoding.MILSTD_1750A, fde2.getEncoding());
+        assertEquals(48, fde3.getSizeInBits());
         
         
         MetaCommand mc = payload1.getMetaCommand("Adjust_Payload_1_Config");
@@ -127,6 +144,9 @@ public class XmlLoaderTest {
         assertEquals(SizeType.FIXED, sencoding.getSizeType());
         assertEquals(128, bencoding.getSizeInBits());
         
+        
+       
+       
     }
     
     
@@ -170,5 +190,4 @@ public class XmlLoaderTest {
         assertEquals(expectedResult, cproc.calibrate(value), 1E-10);
         
     }
-
 }

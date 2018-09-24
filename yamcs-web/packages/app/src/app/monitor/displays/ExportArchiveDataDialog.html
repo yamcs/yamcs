@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>Export archive data</h2>
+
+<mat-dialog-content class="mat-typography ya-form">
+  <label>
+    Start
+    <input type="text" [formControl]="start">
+  </label>
+  <label>
+    Stop
+    <input type="text" [formControl]="stop">
+  </label>
+  <p>&nbsp;</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>CANCEL</button>
+  <a mat-button [href]="downloadURL$ | async" color="primary" [disabled]="!start.valid || !stop.valid">
+    <span (click)="closeDialog()">
+      START DOWNLOAD
+    </span>
+  </a>
+</mat-dialog-actions>

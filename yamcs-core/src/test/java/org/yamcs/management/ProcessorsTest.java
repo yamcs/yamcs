@@ -14,29 +14,27 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.ConnectedClient;
 import org.yamcs.Processor;
-import org.yamcs.ProcessorClient;
-import org.yamcs.ProcessorException;
 import org.yamcs.TmPacketProvider;
 import org.yamcs.TmProcessor;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.api.ProcessorControlClient;
+import org.yamcs.api.ProcessorListener;
 import org.yamcs.api.YamcsApiException;
 import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.api.YamcsConnectionProperties;
+import org.yamcs.api.YamcsConnector;
 import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.ui.ProcessorControlClient;
-import org.yamcs.ui.ProcessorListener;
-import org.yamcs.ui.YamcsConnector;
+import org.yamcs.security.User;
 
 import com.google.common.util.concurrent.AbstractService;
 
@@ -85,39 +83,44 @@ public class ProcessorsTest {
 
         client1.createProcessor("yproctest1", "yproc1", "dummy", null, true, new int[] {}).get();
 
-        MyYProcClient client = new MyYProcClient();
-        Processor yproc1 = Processor.getInstance("yproctest1", "yproc1");
-        assertNotNull(yproc1);
+        ConnectedClient client = new ConnectedClient(new User("random-test-user"), "random-app-name");
+        Processor processor1 = Processor.getInstance("yproctest1", "yproc1");
+        assertNotNull(processor1);
 
-        yproc1.connect(client);
-        client.proc = yproc1;
+        processor1.connect(client);
+        client.setProcessor(processor1);
 
-        int myClientId = ManagementService.getInstance().registerClient("yproctest1", "yproc1", client);
+        ManagementService.getInstance().registerClient(client);
 
-        assertNotNull(ManagementService.getInstance().getClientInfo(myClientId));
+        int clientId = client.getId();
+        assertNotNull(ManagementService.getInstance().getClient(clientId));
 
-        client1.createProcessor("yproctest1", "yproc2", "dummy", null, false, new int[] { myClientId }).get();
+        client1.createProcessor("yproctest1", "yproc2", "dummy", null, false, new int[] { clientId }).get();
 
-        assertNotNull(ManagementService.getInstance().getClientInfo(myClientId));
+        assertNotNull(ManagementService.getInstance().getClient(clientId));
 
         // this one should trigger the closing of non permanent yproc2 because no more client connected
-        CompletableFuture<Void> f1 = client1.connectToProcessor("yproctest1", "yproc1", new int[] { myClientId });
+        CompletableFuture<Void> f1 = client1.connectToProcessor("yproctest1", "yproc1",
+                new int[] { clientId });
         f1.get();
 
-        ManagementService.getInstance().unregisterClient(myClientId);
+        ManagementService.getInstance().unregisterClient(clientId);
 
-        yproc1.quit();
-        assertNull(ManagementService.getInstance().getClientInfo(myClientId));
+        processor1.quit();
+        assertNull(ManagementService.getInstance().getClient(clientId));
 
         yconnector.disconnect();
 
         Thread.sleep(3000);// to allow for events to come
 
-        /*
-         * for(ProcessorInfo pi: ml.yprocUpdated) {
-         * System.out.println("\t"+pi.getInstance()+"/"+pi.getName()+" state: "+pi.getState()+" replayState: "+pi.
-         * getReplayState()); }
-         */
+        /*for (Entry<String, List<ProcessorInfo>> entries : ml.procUpdated.entrySet()) {
+            System.out.println(entries.getKey());
+            System.out.println("----------------");
+            for (ProcessorInfo pi : entries.getValue()) {
+                System.out.println("\t" + pi.getInstance() + "/" + pi.getName() + " state: " + pi.getState()
+                        + " replayState: " + pi.getReplayState());
+            }
+        }*/
 
         List<ProcessorInfo> l = ml.procUpdated.get("realtime");
         assertEquals(1, l.size());
@@ -137,14 +140,14 @@ public class ProcessorsTest {
 
         assertEquals(4, ml.clientUpdatedList.size());
         // first one is from the ProcessorControlClient
-        assertCEquals("yproctest1", "realtime", myClientId - 1, "admin", "ProcessorTest-randname1",
+        assertCEquals("yproctest1", "realtime", clientId - 1, "admin", "ProcessorTest-randname1",
                 ml.clientUpdatedList.get(0));
 
-        assertCEquals("yproctest1", "yproc1", myClientId, "random-test-user", "random-app-name",
+        assertCEquals("yproctest1", "yproc1", clientId, "random-test-user", "random-app-name",
                 ml.clientUpdatedList.get(1));
-        assertCEquals("yproctest1", "yproc2", myClientId, "random-test-user", "random-app-name",
+        assertCEquals("yproctest1", "yproc2", clientId, "random-test-user", "random-app-name",
                 ml.clientUpdatedList.get(2));
-        assertCEquals("yproctest1", "yproc1", myClientId, "random-test-user", "random-app-name",
+        assertCEquals("yproctest1", "yproc1", clientId, "random-test-user", "random-app-name",
                 ml.clientUpdatedList.get(3));
 
         assertEquals(2, ml.procClosedList.size());
@@ -202,8 +205,9 @@ public class ProcessorsTest {
 
         @Override
         public void processorClosed(ProcessorInfo ci) {
-            if (instance.equals(ci.getInstance()))
+            if (instance.equals(ci.getInstance())) {
                 procClosedList.add(ci);
+            }
         }
 
         @Override
@@ -224,37 +228,6 @@ public class ProcessorsTest {
         public void updateStatistics(Statistics s) {
             // TODO Auto-generated method stub
 
-        }
-    }
-
-    static class MyYProcClient implements ProcessorClient {
-        Processor proc;
-
-        @Override
-        public void switchProcessor(Processor c) throws ProcessorException {
-            c.connect(this);
-            proc = c;
-        }
-
-        @Override
-        public void processorQuit() {
-            // TODO Auto-generated method stub
-
-        }
-
-        @Override
-        public String getUsername() {
-            return "random-test-user";
-        }
-
-        @Override
-        public String getApplicationName() {
-            return "random-app-name";
-        }
-
-        @Override
-        public Processor getProcessor() {
-            return proc;
         }
     }
 

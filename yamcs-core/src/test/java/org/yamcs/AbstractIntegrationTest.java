@@ -6,6 +6,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +21,6 @@ import org.yamcs.api.YamcsConnectionProperties;
 import org.yamcs.api.rest.RestClient;
 import org.yamcs.api.ws.WebSocketClient;
 import org.yamcs.api.ws.WebSocketClientCallback;
-import org.yamcs.api.ws.WebSocketRequest;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Alarms.AlarmData;
@@ -39,8 +40,7 @@ import org.yamcs.protobuf.YamcsManagement.ClientInfo;
 import org.yamcs.protobuf.YamcsManagement.LinkEvent;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
-import org.yamcs.security.Privilege;
-import org.yamcs.security.UsernamePasswordToken;
+import org.yamcs.security.SecurityStore;
 import org.yamcs.tctm.ParameterDataLink;
 import org.yamcs.tctm.ParameterSink;
 import org.yamcs.tctm.TmPacketDataLink;
@@ -49,7 +49,6 @@ import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.web.HttpServer;
-import org.yamcs.web.websocket.ManagementResource;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -66,7 +65,9 @@ public abstract class AbstractIntegrationTest {
     MyWsListener wsListener;
     WebSocketClient wsClient;
     RestClient restClient;
-    protected UsernamePasswordToken adminToken = new UsernamePasswordToken("admin", "rootpassword");
+
+    protected String adminUsername = "admin";
+    protected char[] adminPassword = "rootpassword".toCharArray();
     RefMdbPacketGenerator packetGenerator;
     static {
         // LoggingUtils.enableLogging();
@@ -80,8 +81,8 @@ public abstract class AbstractIntegrationTest {
     @Before
     public void before() throws InterruptedException {
 
-        if (Privilege.getInstance().isEnabled()) {
-            ycp.setAuthenticationToken(adminToken);
+        if (SecurityStore.getInstance().isEnabled()) {
+            ycp.setCredentials(adminUsername, adminPassword);
         }
 
         packetProvider = PacketProvider.instance;
@@ -103,21 +104,16 @@ public abstract class AbstractIntegrationTest {
         packetGenerator.setGenerationTime(TimeEncoding.INVALID_INSTANT);
     }
 
-    protected ClientInfo getClientInfo() throws InterruptedException {
-        WebSocketRequest wsr = new WebSocketRequest("management", ManagementResource.OP_getClientInfo);
-        wsClient.sendRequest(wsr);
-        ClientInfo cinfo = wsListener.clientInfoList.poll(5, TimeUnit.SECONDS);
-        assertNotNull(cinfo);
-        return cinfo;
-    }
-
     private static void setupYamcs() throws Exception {
         File dataDir = new File("/tmp/yamcs-IntegrationTest-data");
 
         FileUtils.deleteRecursively(dataDir.toPath());
 
         YConfiguration.setup("IntegrationTest");
-        new HttpServer().startServer();
+        Map<String, Object> options = new HashMap<>();
+        options.put("webRoot", "/tmp/yamcs-web");
+        options.put("port", 9190);
+        new HttpServer(options).startServer();
         // artemisServer = ArtemisServer.setupArtemis();
         // ArtemisManagement.setupYamcsServerControl();
         YamcsServer.setupYamcsServer();
@@ -170,20 +166,19 @@ public abstract class AbstractIntegrationTest {
         return builder;
     }
 
-    
     void generatePkt13AndPps(String utcStart, int numPackets) {
         long t0 = TimeEncoding.parse(utcStart);
         for (int i = 0; i < numPackets; i++) {
             packetGenerator.setGenerationTime(t0 + 1000 * i);
             packetGenerator.generate_PKT1_1();
             packetGenerator.generate_PKT1_3();
-            
+
             // parameters are 10ms later than packets to make sure that we have a predictable order during replay
             parameterProvider.setGenerationTime(t0 + 1000 * i + 10);
             parameterProvider.generateParameters(i);
         }
     }
-    
+
     static class MyWsListener implements WebSocketClientCallback {
         Semaphore onConnect = new Semaphore(0);
         Semaphore onDisconnect = new Semaphore(0);
@@ -213,7 +208,6 @@ public abstract class AbstractIntegrationTest {
         public void disconnected() {
             onDisconnect.release();
         }
-
 
         @Override
         public void onMessage(WebSocketSubscriptionData data) {
@@ -429,7 +423,6 @@ public abstract class AbstractIntegrationTest {
 
             seqNum++;
         }
-        
-        
+
     }
 }

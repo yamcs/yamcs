@@ -170,6 +170,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_TIME:"TIME">
 |   <K_TIME_AND_VALUE:"TIME_AND_VALUE">
 |   <K_TIMESTAMP:"TIMESTAMP">
+|   <K_PARAMETER_VALUE:"PARAMETER_VALUE">
 |   <K_TUPLES:"TUPLES">
 |   <K_UNIQUE:"UNIQUE">
 |   <K_UPDATE:"UPDATE">
@@ -222,6 +223,7 @@ DataType BasicDataTypeDefinition():
     |  "SHORT" {return DataType.SHORT;}
     |  "DOUBLE" {return DataType.DOUBLE;}
     |  "TIMESTAMP" {return DataType.TIMESTAMP;}
+    |  "PARAMETER_VALUE" {return DataType.PARAMETER_VALUE;}
     |  "STRING"  {return DataType.STRING;}
     |  "ENUM"  {return DataType.ENUM;}
     |  "BINARY"  {return DataType.BINARY;}

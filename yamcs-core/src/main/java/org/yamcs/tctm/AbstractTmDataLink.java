@@ -55,16 +55,4 @@ public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
         return null;
     }
 
-    @Override
-    public void setTmSink(TmSink tmSink) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    protected void run() throws Exception {
-        // TODO Auto-generated method stub
-        
-    }
-
 }

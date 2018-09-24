@@ -4,90 +4,43 @@
 <div class="panel-content mat-typography" *ngIf="user$ | async as user">
   <dl class="dl-horizontal no-lead">
     <dt>Login</dt>
-    <dd>{{ user.login }}</dd>
+    <dd>{{ user.getUsername() }}</dd>
 
-    <dt>Roles</dt>
+    <ng-container *ngIf="user.isSuperuser()">
+      <dt>Attributes</dt>
+      <dd>
+        <mat-icon class="icon12" style="color: gold">flash_on</mat-icon> superuser
+      </dd>
+    </ng-container>
+  </dl>
+
+  <mat-divider></mat-divider>
+
+  <dl class="dl-horizontal" *ngIf="user.isSuperuser() || user.getSystemPrivileges().length">
+    <dt>System Privileges</dt>
     <dd>
-      <ng-container *ngIf="user.roles; else dash">
-        <ng-container *ngFor="let role of user.roles">
-          {{ role }}
-        </ng-container>
-      </ng-container>
+      <ng-container *ngIf="user.isSuperuser()">All privileges implied</ng-container>
+      <table *ngIf="!user.isSuperuser()" yaDataTable>
+      <tr *ngFor="let privilege of user.getSystemPrivileges()">
+          <td>{{ privilege }}</td>
+        </tr>
+      </table>
     </dd>
   </dl>
 
   <mat-divider></mat-divider>
 
   <dl class="dl-horizontal">
-    <dt>Privileges</dt>
+    <dt>Object Privileges</dt>
     <dd>
-      <table yaDataTable>
-        <tr>
-          <th class="lcolumn">tmParaPrivileges</th>
+      <ng-container *ngIf="user.isSuperuser()">All privileges implied</ng-container>
+      <table *ngIf="!user.isSuperuser() && user.getObjectPrivileges().length" yaDataTable>
+        <tr *ngFor="let p of user.getObjectPrivileges()">
+          <th class="lcolumn">{{ p.type }}</th>
           <td>
-            <ng-container *ngIf="user.tmParaPrivileges; else dash">
-              <ng-container *ngFor="let privilege of user.tmParaPrivileges">
-                {{ privilege }}<br>
-              </ng-container>
-            </ng-container>
-          </td>
-        </tr>
-        <tr>
-          <th class="lcolumn">tmParaSetPrivileges</th>
-          <td>
-            <ng-container *ngIf="user.tmParaSetPrivileges; else dash">
-              <ng-container *ngFor="let privilege of user.tmParaSetPrivileges">
-                {{ privilege }}<br>
-              </ng-container>
-            </ng-container>
-          </td>
-        </tr>
-        <tr>
-          <th class="lcolumn">tmPacketPrivileges</th>
-          <td>
-            <ng-container *ngIf="user.tmPacketPrivileges; else dash">
-              <ng-container *ngFor="let privilege of user.tmPacketPrivileges">
-                {{ privilege }}<br>
-              </ng-container>
-            </ng-container>
-          </td>
-        </tr>
-        <tr>
-          <th class="lcolumn">tcPrivileges</th>
-          <td>
-            <ng-container *ngIf="user.tcPrivileges; else dash">
-              <ng-container *ngFor="let privilege of user.tcPrivileges">
-                {{ privilege }}<br>
-              </ng-container>
-            </ng-container>
-          </td>
-        </tr>
-        <tr>
-          <th class="lcolumn">systemPrivileges</th>
-          <td>
-            <ng-container *ngIf="user.systemPrivileges; else dash">
-              <ng-container *ngFor="let privilege of user.systemPrivileges">
-                {{ privilege }}<br>
-              </ng-container>
-            </ng-container>
-          </td>
-        </tr>
-        <tr>
-          <th class="lcolumn">streamPrivileges</th>
-          <td>
-            <ng-container *ngIf="user.streamPrivileges; else dash">
-              <ng-container *ngFor="let privilege of user.streamPrivileges">
-                {{ privilege }}<br>
-              </ng-container>
-            </ng-container>
-          </td>
-        </tr>
-        <tr>
-          <th class="lcolumn">cmdHistoryPrivileges</th>
-          <td>
-            <ng-container *ngIf="user.cmdHistoryPrivileges; else dash">
-              <ng-container *ngFor="let privilege of user.cmdHistoryPrivileges">
-                {{ privilege }}<br>
+            <ng-container *ngIf="p.object; else dash">
+              <ng-container *ngFor="let object of p.object">
+                {{ object }}<br>
               </ng-container>
             </ng-container>
           </td>

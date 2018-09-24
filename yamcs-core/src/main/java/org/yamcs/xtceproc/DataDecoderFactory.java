@@ -14,12 +14,12 @@ public class DataDecoderFactory {
 
     public static DataDecoder get(Algorithm a) {
         if(!(a instanceof CustomAlgorithm)) {
-            throw new IllegalArgumentException("Unsupported algorithm: '"+a+"'. Only Java custom algorithms supported");
+            throw new XtceProcessingException("Unsupported algorithm: '"+a+"'. Only Java custom algorithms supported");
         }
         CustomAlgorithm ca = (CustomAlgorithm)a;
 
         if(!"java".equals(ca.getLanguage().toLowerCase())) {
-            throw new IllegalArgumentException("Unsupported language for Data Decoder: '"+ca.getLanguage()+"'. Only Java supported");
+            throw new XtceProcessingException("Unsupported language for Data Decoder: '"+ca.getLanguage()+"'. Only Java supported");
         }
 
         return loadJavaDecoder(ca, null);
@@ -30,7 +30,7 @@ public class DataDecoderFactory {
         Pattern p = Pattern.compile("([\\w\\$\\.]+)(\\(.*\\))?", Pattern.DOTALL);
         Matcher m = p.matcher(alg.getAlgorithmText());
         if(!m.matches()) {
-            throw new IllegalArgumentException("Cannot parse algorithm text '"+alg.getAlgorithmText()+"'");
+            throw new XtceProcessingException("Cannot parse algorithm text '"+alg.getAlgorithmText()+"'");
         }
         String className = m.group(1);
 

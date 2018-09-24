@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.alarms.AlarmReporter;
 import org.yamcs.alarms.AlarmServer;
+import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterRequestManager;
-import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.RangeCondition;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -44,13 +44,12 @@ public class AlarmChecker {
     ParameterRequestManager prm;
     Logger log = LoggerFactory.getLogger(this.getClass());
 
-    // keep the last values of parameters that are needed to check alarms (for alarms that are enabled/disabled based on
-    // some other parameters)
-    ParameterValueList lastValues = new ParameterValueList();
-
+    LastValueCache lastValueCache;
+    
     public AlarmChecker(ParameterRequestManager prm, int subscriptionId) {
         this.subscriptionId = subscriptionId;
         this.prm = prm;
+        this.lastValueCache = prm.getLastValueCache();
     }
 
     /**
@@ -69,26 +68,13 @@ public class AlarmChecker {
         }
     }
 
-    /**
-     * Update the list of parameters used for alarm checking
-     * 
-     * @param pvals
-     */
-    public void updateParameters(Collection<ParameterValue> pvals) {
-        synchronized (lastValues) {
-            for (ParameterValue pv : pvals) {
-                lastValues.removeFirst(pv.getParameter());
-                lastValues.add(pv);
-            }
-        }
-    }
 
     /**
      * Updates the supplied ParameterValues with monitoring (out of limits)
      * information.
      */
     public void performAlarmChecking(Collection<ParameterValue> pvals) {
-        CriteriaEvaluator criteriaEvaluator = new CriteriaEvaluatorImpl(lastValues);
+        CriteriaEvaluator criteriaEvaluator = new CriteriaEvaluatorImpl(null, lastValueCache);
         for (ParameterValue pval : pvals) {
             if (pval.getParameter().getParameterType() != null && pval.getParameter().getParameterType().hasAlarm()) {
                 performAlarmChecking(pval, criteriaEvaluator);

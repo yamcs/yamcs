@@ -9,8 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.api.MediaType;
-import org.yamcs.security.AuthenticationToken;
-import org.yamcs.security.Privilege;
+import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.web.BadRequestException;
@@ -40,7 +39,7 @@ public class RestRequest {
     private ChannelHandlerContext channelHandlerContext;
     private FullHttpRequest httpRequest;
     private QueryStringDecoder qsDecoder;
-    private AuthenticationToken token;
+    private User user;
     private RouteMatch routeMatch;
 
     CompletableFuture<Void> cf = new CompletableFuture<>();
@@ -49,10 +48,10 @@ public class RestRequest {
     long txSize = 0;
 
     public RestRequest(ChannelHandlerContext channelHandlerContext, FullHttpRequest httpRequest,
-            QueryStringDecoder qsDecoder, AuthenticationToken token) {
+            QueryStringDecoder qsDecoder, User user) {
         this.channelHandlerContext = channelHandlerContext;
         this.httpRequest = httpRequest;
-        this.token = token;
+        this.user = user;
         this.qsDecoder = qsDecoder;
         this.requestId = counter.incrementAndGet();
     }
@@ -154,16 +153,8 @@ public class RestRequest {
         }
     }
 
-    /**
-     * Returns the username of the authenticated user. Or {@link Privilege#getDefaultUser()} if the user is not
-     * authenticated.
-     */
-    public String getUsername() {
-        return Privilege.getInstance().getUsername(token);
-    }
-
-    public AuthenticationToken getAuthToken() {
-        return token;
+    public User getUser() {
+        return user;
     }
 
     public boolean hasQueryParameter(String name) {
@@ -277,7 +268,7 @@ public class RestRequest {
         return channelHandlerContext;
     }
 
-    public HttpRequest getHttpRequest() {
+    public FullHttpRequest getHttpRequest() {
         return httpRequest;
     }
 
@@ -318,6 +309,7 @@ public class RestRequest {
     public InputStream bodyAsInputStream() {
         return new ByteBufInputStream(httpRequest.content());
     }
+
     public ByteBuf bodyAsBuf() {
         return httpRequest.content();
     }
@@ -483,5 +475,13 @@ public class RestRequest {
             }
             return buf.toString();
         }
+    }
+    
+    /**
+     * returns the body of the http request
+     * 
+     */
+    public ByteBuf getRequestContent() {
+        return httpRequest.content();
     }
 }

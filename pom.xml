@@ -7,27 +7,27 @@
   <name>Yamcs</name>
   <description>Yet Another Mission Control System</description>
 
-  <version>4.4.3-SNAPSHOT</version>
+  <version>4.6.4-SNAPSHOT</version>
 
   <url>https://github.com/yamcs/yamcs.git</url>
   
   <licenses>
     <license>
       <name>GNU Affero General Public License (AGPL)</name>
-      <url>http://www.gnu.org/licenses/agpl-3.0.html</url>
+      <url>https://www.gnu.org/licenses/agpl-3.0.html</url>
     </license>
   </licenses>  
   
   <scm>
     <connection>scm:git:git@github.com:yamcs/yamcs.git</connection>
     <developerConnection>scm:git:git@github.com:yamcs/yamcs.git</developerConnection>
-    <url>http://github.com/yamcs/yamcs</url>
+    <url>https://github.com/yamcs/yamcs</url>
     <tag>HEAD</tag>
   </scm>
 
   <organization>
     <name>Space Applications Services</name>
-    <url>http://www.spaceapplications.com</url>
+    <url>https://www.spaceapplications.com</url>
   </organization>
 
   <developers>
@@ -102,6 +102,25 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.4.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.0.1</version>
+          <configuration>
+            <additionalOptions>
+              <additionalOption>-Xdoclint:none</additionalOption>
+              <additionalOption>-Xdoclint:html</additionalOption>
+              <additionalOption>-Xdoclint:reference</additionalOption>
+              <!-- the 'syntax' group is too strict with @param and @throws -->
+              <!-- additionalOption>-Xdoclint:syntax</additionalOption-->
+            </additionalOptions>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>3.0.0</version>
@@ -133,15 +152,23 @@
         <version>4.12</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>com.beust</groupId>
+        <artifactId>jcommander</artifactId>
+        <version>1.48</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <modules>
-    <module>yamcs-core</module>
     <module>yamcs-api</module>
-    <module>yamcs-xtce</module>
     <module>yamcs-artemis</module>
+    <module>yamcs-client</module>
+    <module>yamcs-core</module>
+    <module>yamcs-server</module>
     <module>yamcs-simulation</module>
+    <module>yamcs-tse</module>
+    <module>yamcs-xtce</module>
   </modules>
 
   <distributionManagement>
@@ -194,7 +221,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.9.1</version>
             <executions>
               <execution>
                 <id>attach-javadocs</id>

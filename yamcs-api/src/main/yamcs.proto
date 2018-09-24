@@ -28,6 +28,8 @@ message Value {
     UINT64 = 7;
     SINT64 = 8;
     BOOLEAN = 9;
+    AGGREGATE = 10;
+    ARRAY = 11;
   }
   required Type type = 1;
   optional float floatValue = 2;
@@ -40,6 +42,15 @@ message Value {
   optional uint64 uint64Value = 9;
   optional sint64 sint64Value = 10;
   optional bool booleanValue = 11;
+  optional AggregateValue aggregateValue = 12;
+  repeated Value arrayValue = 13;
+}
+
+//an aggregate value is an ordered list of (member name, member value)
+//we use two arrays in order to be able to send just the values (since the names will not change)
+message AggregateValue {
+   repeated string name = 1;
+   repeated Value value = 2;
 }
 
 //this is used by external clients to identify a parameter or a container (e.g. when subscribing to it)
@@ -178,6 +189,7 @@ enum ProtoDataType {
   COMMAND_QUEUE_INFO = 17;
   COMMAND_QUEUE_EVENT = 18;
   CONNECTION_INFO = 19;
+  INSTANCE = 20;
   
   EXTENSION_DATA = 100;
 }

@@ -6,6 +6,8 @@ import java.util.List;
 
 /**
  * Abstract algorithm - just defines the inputs, outputs and triggers
+ * 
+ * Note: the XTCE names the inputs and outputs "Sets". However we use them as lists not  
  * @author nm
  *
  */
@@ -13,8 +15,8 @@ public abstract class Algorithm extends NameDescription {
     private static final long serialVersionUID = 6L;
     
     private TriggerSetType triggerSet;
-    private List<InputParameter> inputSet = new ArrayList<>();
-    private List<OutputParameter> outputSet = new ArrayList<>();
+    private List<InputParameter> inputList = new ArrayList<>();
+    private List<OutputParameter> outputList = new ArrayList<>();
     
     //commandVerification algorithms can only be run in the context of a command verifier
     public enum Scope {GLOBAL, COMMAND_VERIFICATION, CONTAINER_PROCESSING};
@@ -34,11 +36,11 @@ public abstract class Algorithm extends NameDescription {
     }
     
     public void addInput(InputParameter inputParameter) {
-        inputSet.add(inputParameter);
+        inputList.add(inputParameter);
     }
     
     public void addOutput(OutputParameter outputParameter) {
-        outputSet.add(outputParameter);
+        outputList.add(outputParameter);
     }
     
     /**
@@ -46,42 +48,48 @@ public abstract class Algorithm extends NameDescription {
      * @return ordered list of input parameters
      */
     public List<InputParameter> getInputSet() {
-        return inputSet;
+        return inputList;
     }
     /**
      * Returns the list of input parameters
      * @return
      */
     public List<InputParameter> getInputList() {
-        return inputSet;
+        return inputList;
     }
     /**
      * same as {@link getOutputList}, although it's a list this method calls it Set due to XTCE terminology. 
      * @return
      */
     public List<OutputParameter> getOutputSet() {
-        return outputSet;
+        return outputList;
     }
     /**
      * 
      * @return ordered list of output parameters
      */
     public List<OutputParameter> getOutputList() {
-        return outputSet;
+        return outputList;
     }
     
     public void setOutputSet(List<OutputParameter> outputSet) {
-        this.outputSet = outputSet;
+        this.outputList = outputSet;
+    }
+    public void setOutputList(List<OutputParameter> outputList) {
+        this.outputList = outputList;
     }
     
     public void setInputSet(List<InputParameter> inputSet) {
-        this.inputSet = inputSet;
+        setInputList(inputSet);
     }
-
+    
+    public void setInputList(List<InputParameter> inputList) {
+        this.inputList = inputList;
+    }
     
     
     public boolean canProvide(Parameter parameter) {
-        for(OutputParameter p:outputSet) {
+        for(OutputParameter p:outputList) {
             if(p.getParameter()==parameter) {
                 return true;
             }
@@ -98,10 +106,10 @@ public abstract class Algorithm extends NameDescription {
             out.print(", aliases: "+getAliasSet());
         }
         out.println();
-        for(InputParameter p:inputSet) {
+        for(InputParameter p:inputList) {
             out.println("\t\tInputParameter "+p);
         }
-        for(OutputParameter p:outputSet) {
+        for(OutputParameter p:outputList) {
             out.println("\t\tOutputParameter "+p);
         }
         out.println("\t\tTriggers "+triggerSet);

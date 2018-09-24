@@ -1,9 +1,10 @@
 import { Action } from '../Action';
+import { SidebarEvent } from '../events';
 import Plugin, { PluginOptions } from '../Plugin';
 import RenderContext, { RenderSection } from '../RenderContext';
-import Timeline from '../Timeline';
-import { SidebarEvent } from '../events';
 import { Defs, G, Rect, Set, Svg, Tag, Text } from '../tags';
+import Timeline from '../Timeline';
+import { generateId } from '../utils';
 
 export interface BandOptions extends PluginOptions {
   id: string;
@@ -105,7 +106,7 @@ export default abstract class Band extends Plugin {
   }
 
   renderSidebar(ctx: RenderContext): Tag {
-    this.sidebarId = Timeline.nextId();
+    this.sidebarId = generateId();
     const bg = new Rect({
       id: this.sidebarId,
       x: ctx.x,

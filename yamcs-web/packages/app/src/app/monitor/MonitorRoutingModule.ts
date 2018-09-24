@@ -5,7 +5,11 @@ import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { AlarmsPage } from './alarms/AlarmsPage';
 import { ArchivePage } from './archive/ArchivePage';
-import { CommandsPage } from './commands/CommandsPage';
+import { CommandingPage } from './commands/CommandingPage';
+import { DisplayFilePage } from './displays/DisplayFilePage';
+import { DisplayFilePageDirtyGuard } from './displays/DisplayFilePageDirtyGuard';
+import { DisplayFolderPage } from './displays/DisplayFolderPage';
+import { DisplayPage } from './displays/DisplayPage';
 import { DisplaysPage } from './displays/DisplaysPage';
 import { EventsPage } from './events/EventsPage';
 import { ExtensionPage } from './ext/ExtensionPage';
@@ -26,7 +30,7 @@ const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'displays',
+        redirectTo: 'displays/browse',
       },
       {
         path: 'alarms',
@@ -37,12 +41,34 @@ const routes: Routes = [
         component: ArchivePage,
       },
       {
-        path: 'commands',
-        component: CommandsPage,
+        path: 'commanding',
+        component: CommandingPage,
       },
       {
         path: 'displays',
+        pathMatch: 'full',
+        redirectTo: 'displays/browse'
+      },
+      {
+        path: 'displays/browse',
         component: DisplaysPage,
+        children: [
+          {
+            path: '**',
+            component: DisplayFolderPage,
+          }
+        ]
+      },
+      {
+        path: 'displays/files',
+        component: DisplayPage,
+        children: [
+          {
+            path: '**',
+            component: DisplayFilePage,
+            canDeactivate: [DisplayFilePageDirtyGuard],
+          }
+        ]
       },
       {
         path: 'events',
@@ -69,14 +95,20 @@ const routes: Routes = [
 @NgModule({
   imports: [ RouterModule.forChild(routes) ],
   exports: [ RouterModule ],
+  providers: [
+    DisplayFilePageDirtyGuard,
+  ]
 })
 export class MonitorRoutingModule { }
 
 export const routingComponents = [
   AlarmsPage,
   ArchivePage,
-  CommandsPage,
+  CommandingPage,
   DisplaysPage,
+  DisplayFilePage,
+  DisplayFolderPage,
+  DisplayPage,
   EventsPage,
   ExtensionPage,
   LayoutsPage,
