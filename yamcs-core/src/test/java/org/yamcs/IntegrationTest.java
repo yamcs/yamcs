@@ -583,7 +583,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(ServiceState.RUNNING, servInfo.getState());
 
         resp = restClient
-                .doRequest("/services/IntegrationTest/" + serviceClass + "?state=STOPPED", HttpMethod.PATCH, "")
+                .doRequest("/services/IntegrationTest/" + servInfo.getName() + "?state=STOPPED", HttpMethod.PATCH, "")
                 .get();
         assertEquals("", resp);
 
@@ -596,7 +596,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(ServiceState.TERMINATED, servInfo.getState());
 
         resp = restClient
-                .doRequest("/services/IntegrationTest/" + serviceClass + "?state=running", HttpMethod.PATCH, "")
+                .doRequest("/services/IntegrationTest/" + servInfo.getName() + "?state=running", HttpMethod.PATCH, "")
                 .get();
         assertEquals("", resp);
 

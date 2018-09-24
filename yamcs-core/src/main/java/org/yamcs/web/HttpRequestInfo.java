@@ -17,6 +17,7 @@ public class HttpRequestInfo {
 
     // optional
     private String yamcsInstance;
+    private String processor;
     private User user;
 
     public HttpRequestInfo(HttpRequest req) {
@@ -43,6 +44,14 @@ public class HttpRequestInfo {
 
     public String getYamcsInstance() {
         return yamcsInstance;
+    }
+
+    public void setProcessor(String processor) {
+        this.processor = processor;
+    }
+
+    public String getProcessor() {
+        return processor;
     }
 
     public void setUser(User user) {

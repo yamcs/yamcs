@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
@@ -13,19 +14,18 @@ import org.yamcs.YamcsServer;
 import org.yamcs.archive.TagDb;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
-import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.Partition;
 import org.yamcs.yarch.StorageEngine;
+import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.TableWriter.InsertMode;
-import org.yamcs.yarch.rocksdb.RdbHistogramIterator;
-import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
+import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
+import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 
 /**
  * Storage Engine based on RocksDB. Data is stored in multiple {@link Tablespace}
@@ -36,7 +36,7 @@ public class RdbStorageEngine implements StorageEngine {
     Map<String, Tablespace> tablespaces = new HashMap<>();
     Map<String, RdbTagDb> tagDbs = new HashMap<>();
     Map<String, RdbBucketDatabase> bucketDbs = new HashMap<>();
-    
+
     // number of bytes taken by the tbsIndex (prefix for all keys)
     public static final int TBS_INDEX_SIZE = 4;
 
@@ -62,7 +62,7 @@ public class RdbStorageEngine implements StorageEngine {
                 String fn = f.getName();
                 if (fn.endsWith(".rdb")) {
                     try {
-                        String name = fn.substring(0, fn.length()-4);
+                        String name = fn.substring(0, fn.length() - 4);
                         Tablespace tablespace = new Tablespace(name);
                         tablespace.loadDb(readOnly);
                         tablespaces.put(tablespace.getName(), tablespace);
@@ -121,13 +121,14 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     @Override
-    public AbstractStream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tbl, boolean ascending,
+    public Stream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tbl, boolean ascending,
             boolean follow) {
         if (!partitionManagers.containsKey(tbl)) {
             throw new IllegalStateException("Do not have a partition manager for this table");
         }
 
-        return new RdbTableReaderStream(getTablespace(ydb, tbl), ydb, tbl, partitionManagers.get(tbl), ascending, follow);
+        return new RdbTableReaderStream(getTablespace(ydb, tbl), ydb, tbl, partitionManagers.get(tbl), ascending,
+                follow);
     }
 
     @Override
@@ -147,12 +148,12 @@ public class RdbStorageEngine implements StorageEngine {
     @Override
     public synchronized TagDb getTagDb(YarchDatabaseInstance ydb) throws YarchException {
         RdbTagDb rdbTagDb = tagDbs.get(ydb.getName());
-        if(rdbTagDb==null) {
+        if (rdbTagDb == null) {
             try {
                 rdbTagDb = new RdbTagDb(ydb.getName(), getTablespace(ydb));
                 tagDbs.put(ydb.getName(), rdbTagDb);
             } catch (RocksDBException e) {
-                throw new YarchException("Cannot create tag db",e);
+                throw new YarchException("Cannot create tag db", e);
             }
         }
         return rdbTagDb;
@@ -160,6 +161,7 @@ public class RdbStorageEngine implements StorageEngine {
 
     /**
      * Create and/or get the tablespace for the yarch database instance.
+     * 
      * @param ydb
      * @return
      */
@@ -171,8 +173,9 @@ public class RdbStorageEngine implements StorageEngine {
             createTablespace(tablespaceName);
         }
         return tablespaces.get(tablespaceName);
-        
+
     }
+
     private synchronized Tablespace getTablespace(YarchDatabaseInstance ydb, TableDefinition tbl) {
         String tablespaceName = tbl.getTablespaceName();
         if (tablespaceName == null) {
@@ -184,7 +187,7 @@ public class RdbStorageEngine implements StorageEngine {
             return tablespaces.get(tablespaceName);
         }
     }
-    
+
     public Map<String, Tablespace> getTablespaces() {
         return tablespaces;
     }
@@ -205,8 +208,8 @@ public class RdbStorageEngine implements StorageEngine {
     }
 
     /**
-     * set to ignore version incompatibility - only used from the version
-     * upgrading functions to allow loading old tables.
+     * set to ignore version incompatibility - only used from the version upgrading functions to allow loading old
+     * tables.
      * 
      * @param b
      */
@@ -237,16 +240,17 @@ public class RdbStorageEngine implements StorageEngine {
             throw new YarchException(e);
         }
     }
-    
+
+    @Override
     public synchronized BucketDatabase getBucketDatabase(YarchDatabaseInstance ydb) throws YarchException {
         String tablespaceName = ydb.getTablespaceName();
         String yamcsInstance = ydb.getYamcsInstance();
         RdbBucketDatabase bdb = bucketDbs.get(tablespaceName);
-        if(bdb == null) {
+        if (bdb == null) {
             try {
                 bdb = new RdbBucketDatabase(yamcsInstance, getTablespace(ydb));
             } catch (RocksDBException | IOException e) {
-               throw new YarchException("Cannot create bucket database", e);
+                throw new YarchException("Cannot create bucket database", e);
             }
             bucketDbs.put(tablespaceName, bdb);
         }
@@ -274,9 +278,9 @@ public class RdbStorageEngine implements StorageEngine {
         }
         tablespace.close();
     }
-    
+
     public synchronized void shutdown() {
-        for(Tablespace t: tablespaces.values()) {
+        for (Tablespace t : tablespaces.values()) {
             t.close();
         }
         partitionManagers.clear();

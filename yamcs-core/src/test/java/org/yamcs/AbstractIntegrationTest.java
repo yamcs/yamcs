@@ -260,7 +260,7 @@ public abstract class AbstractIntegrationTest {
         RefMdbPacketGenerator mdbPacketGenerator = new RefMdbPacketGenerator();
         TmSink tmSink;
 
-        public PacketProvider(String yinstance, String name, String spec) {
+        public PacketProvider(String yinstance, String name, Map<String, Object> args) {
             instance = this;
         }
 
@@ -289,7 +289,12 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public long getDataCount() {
+        public long getDataInCount() {
+            return 0;
+        }
+
+        @Override
+        public long getDataOutCount() {
             return 0;
         }
 
@@ -333,7 +338,7 @@ public abstract class AbstractIntegrationTest {
         static volatile ParameterProvider instance;
         XtceDb xtcedb;
 
-        public ParameterProvider(String yamcsInstance, String name) {
+        public ParameterProvider(String yamcsInstance, String name, Map<String, Object> args) {
             instance = this;
             xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         }
@@ -362,7 +367,12 @@ public abstract class AbstractIntegrationTest {
         }
 
         @Override
-        public long getDataCount() {
+        public long getDataInCount() {
+            return 0;
+        }
+
+        @Override
+        public long getDataOutCount() {
             return seqNum * 3;
         }
 

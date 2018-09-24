@@ -39,8 +39,8 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
     }
 
     /**
-     * Constructs a packet provider that sends packets from a file at the indicated speed.
-     * If the parameter loop is set to true, then jump back at the beginning of the file once the end has been reached.
+     * Constructs a packet provider that sends packets from a file at the indicated speed. If the parameter loop is set
+     * to true, then jump back at the beginning of the file once the end has been reached.
      * 
      * @param fileName
      * @param delayBetweenPackets
@@ -156,7 +156,12 @@ public class FileTmPacketProvider extends AbstractExecutionThreadService impleme
     }
 
     @Override
-    public long getDataCount() {
+    public long getDataInCount() {
         return tmCount;
+    }
+
+    @Override
+    public long getDataOutCount() {
+        return 0;
     }
 }

@@ -9,4 +9,3 @@ monitoring:
 operator:
   password: password
   roles: [ Operator ]
-

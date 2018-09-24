@@ -27,8 +27,8 @@ import org.yamcs.oldparchive.SingleParameterValueRequest;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
-import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
+import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
@@ -224,12 +224,12 @@ public class OldArchiveParameterRestHandler extends RestHandler {
     }
 
     private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
-        org.yamcs.parameterarchive.ParameterArchive parameterArchive = YamcsServer.getService(instance,
+        List<org.yamcs.parameterarchive.ParameterArchive> services = YamcsServer.getServices(instance,
                 org.yamcs.parameterarchive.ParameterArchive.class);
-        if (parameterArchive == null) {
+        if (services.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-        return (ParameterArchive) parameterArchive.getParchive();
+        return (ParameterArchive) services.get(0).getParchive();
     }
 
     /** copied from guava */
@@ -335,7 +335,7 @@ public class OldArchiveParameterRestHandler extends RestHandler {
             }
             completeOK(req, MediaType.CSV, buf);
         } else {
-            ParameterData.Builder resultb = ParameterData.newBuilder();
+            ListParameterValuesResponse.Builder resultb = ListParameterValuesResponse.newBuilder();
             try {
                 RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit, req) {
                     @Override

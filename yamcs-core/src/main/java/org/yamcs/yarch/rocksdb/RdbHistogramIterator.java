@@ -1,11 +1,15 @@
 package org.yamcs.yarch.rocksdb;
 
+import static org.yamcs.yarch.HistogramSegment.segmentStart;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
+
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.yamcs.utils.ByteArrayUtils;
@@ -17,9 +21,6 @@ import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import static org.yamcs.yarch.HistogramSegment.segmentStart;
-
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 
 /**
  * 
@@ -127,13 +128,14 @@ public class RdbHistogramIterator implements HistogramIterator {
                 break;
             }
             bb = ByteBuffer.wrap(segmentIterator.key());
-            long g = bb.getLong();
-            if (g != sstart) {
+            long g = bb.getLong(RdbStorageEngine.TBS_INDEX_SIZE);
+            if (g != sstart && !records.isEmpty()) {
                 break;
             }
         }
     }
 
+    @Override
     public void close() {
         if (rdb != null) {
             if (segmentIterator != null) {
@@ -159,7 +161,7 @@ public class RdbHistogramIterator implements HistogramIterator {
 
             long stop = sstart * HistogramSegment.GROUPING_FACTOR + vbb.getInt();
             int num = vbb.getShort();
-            if ((interval.hasStart()) && (stop < interval.getStart())) {
+            if ((interval.hasStart()) && (stop <= interval.getStart())) {
                 continue;
             }
             if ((interval.hasEnd()) && (start > interval.getEnd())) {

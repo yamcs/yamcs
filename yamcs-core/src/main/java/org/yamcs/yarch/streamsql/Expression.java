@@ -59,9 +59,9 @@ public abstract class Expression {
     }
 
     public void collectAggregates(List<AggregateExpression> list) {
-        if (isAggregate())
+        if (isAggregate()) {
             list.add((AggregateExpression) this);
-        else if (children != null) {
+        } else if (children != null) {
             for (Expression c : children) {
                 if (c.hasAggregates || c.isAggregate()) {
                     c.collectAggregates(list);
@@ -139,8 +139,9 @@ public abstract class Expression {
         source.append("\t}\n");
 
         source.append("\tpublic Object getValue(Tuple tuple) {\n");
-        if (!isConstant())
+        if (!isConstant()) {
             fillCode_AllInputDefVars(source);
+        }
         fillCode_getValueBody(source);
 
         // source.append("Value colid=t.getColumn(\"id\");\n");

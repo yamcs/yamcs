@@ -10,6 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.ContainerExtractionResult;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
@@ -17,7 +18,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsService;
 import org.yamcs.api.YamcsApiException;
-import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.xtce.SequenceContainer;
@@ -50,7 +50,7 @@ public class XtceTmRecorder extends AbstractService implements YamcsService {
     protected Logger log;
 
     String yamcsInstance;
-    final Tuple END_MARK = new Tuple(TmDataLinkInitialiser.TM_TUPLE_DEFINITION,
+    final Tuple END_MARK = new Tuple(StandardTupleDefinitions.TM,
             new Object[] { null, null, null, null });
 
     static public String REALTIME_TM_STREAM_NAME = "tm_realtime";
@@ -63,10 +63,10 @@ public class XtceTmRecorder extends AbstractService implements YamcsService {
 
     static public final TupleDefinition RECORDED_TM_TUPLE_DEFINITION = new TupleDefinition();
     static {
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.GENTIME_COLUMN, DataType.TIMESTAMP);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.SEQNUM_COLUMN, DataType.INT);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.RECTIME_COLUMN, DataType.TIMESTAMP);
-        RECORDED_TM_TUPLE_DEFINITION.addColumn(TmDataLinkInitialiser.PACKET_COLUMN, DataType.BINARY);
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN, DataType.TIMESTAMP);
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN, DataType.INT);
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN, DataType.TIMESTAMP);
+        RECORDED_TM_TUPLE_DEFINITION.addColumn(StandardTupleDefinitions.TM_PACKET_COLUMN, DataType.BINARY);
         RECORDED_TM_TUPLE_DEFINITION.addColumn(PNAME_COLUMN, DataType.ENUM); // container name (XTCE qualified name)
     }
 

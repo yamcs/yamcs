@@ -26,7 +26,9 @@ import static org.yamcs.tctm.pus.Constants.*;
 /**
  * Implementation for ECSS PUS (ECSS-E-ST-70-41C) packets.
  * 
- * The header structure is as follows
+ * The header structure is:
+ *
+ * <pre>
  * Primary header (specified by CCSDS 133.0-B-1)
  * 
  * packet version number (3 bits)
@@ -46,6 +48,7 @@ import static org.yamcs.tctm.pus.Constants.*;
  * destination ID (16 bits)
  * time (absolute time) variable
  * spare optional
+ * </pre>
  * 
  * In this class we are interested in the time and the sequence count.
  *

@@ -6,7 +6,9 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import org.rocksdb.RocksDBException;
@@ -15,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
+import org.yamcs.archive.ParameterRecorder;
 import org.yamcs.parameter.ParameterCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -28,9 +31,11 @@ import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterIdValueList;
 import org.yamcs.parameterarchive.ParameterRequest;
-import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Archive.ParameterGroupInfo;
+import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
+import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.IntArray;
@@ -50,6 +55,11 @@ import org.yamcs.web.rest.archive.RestDownsampler.Sample;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
+
+import com.google.common.collect.BiMap;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -65,6 +75,26 @@ public class ArchiveParameterRestHandler extends RestHandler {
     private static final Logger log = LoggerFactory.getLogger(ArchiveParameterRestHandler.class);
     private ArchiveParameterReplayRestHandler aprh = new ArchiveParameterReplayRestHandler();
     private OldArchiveParameterRestHandler oldaprh = new OldArchiveParameterRestHandler();
+
+    @Route(path = "/api/archive/:instance/parameter-groups", method = "GET")
+    public void listGroups(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+
+        ParameterGroupInfo.Builder responseb = ParameterGroupInfo.newBuilder();
+        TableDefinition tableDefinition = ydb.getTable(ParameterRecorder.TABLE_NAME);
+        BiMap<String, Short> enumValues = tableDefinition.getEnumValues("group");
+        if (enumValues != null) {
+            List<String> unsortedGroups = new ArrayList<>();
+            for (Entry<String, Short> entry : enumValues.entrySet()) {
+                unsortedGroups.add(entry.getKey());
+            }
+            Collections.sort(unsortedGroups);
+            System.out.println("returning " + unsortedGroups);
+            responseb.addAllGroup(unsortedGroups);
+        }
+        completeOK(req, responseb.build());
+    }
 
     /**
      * A series is a list of samples that are determined in one-pass while processing a stream result. Final API
@@ -178,20 +208,20 @@ public class ArchiveParameterRestHandler extends RestHandler {
     }
 
     private boolean isOldParameterArchive(String instance) throws BadRequestException {
-        ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
-
-        if (parameterArchive == null) {
+        List<ParameterArchive> services = YamcsServer.getServices(instance, ParameterArchive.class);
+        if (services.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
+        ParameterArchive parameterArchive = services.get(0);
         return parameterArchive.getParchive() instanceof org.yamcs.oldparchive.ParameterArchive;
     }
 
     private static ParameterArchiveV2 getParameterArchive(String instance) throws BadRequestException {
-        ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
-        if (parameterArchive == null) {
+        List<ParameterArchive> services = YamcsServer.getServices(instance, ParameterArchive.class);
+        if (services.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-        return (ParameterArchiveV2) parameterArchive.getParchive();
+        return (ParameterArchiveV2) services.get(0).getParchive();
     }
 
     @Route(path = "/api/archive/:instance/parameters/:name*")
@@ -224,6 +254,16 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
         boolean ascending = !req.asksDescending(true);
 
+        String next = req.getQueryParameter("next", null);
+        if (next != null) {
+            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
+            if (ascending) {
+                start = pageToken.time + 1;
+            } else {
+                stop = pageToken.time - 1;
+            }
+        }
+
         ParameterArchiveV2 parchive = getParameterArchive(instance);
         ParameterIdDb piddb = parchive.getParameterIdDb();
         IntArray pidArray = new IntArray();
@@ -231,14 +271,14 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
         ParameterId[] pids = piddb.get(p.getQualifiedName());
 
-        BitSet retriveRawValues = new BitSet();
+        BitSet retrieveRawValues = new BitSet();
         if (pids != null) {
             ParameterGroupIdDb pgidDb = parchive.getParameterGroupIdDb();
             for (ParameterId pid : pids) {
                 int[] pgids = pgidDb.getAllGroups(pid.pid);
                 for (int pgid : pgids) {
                     if (pid.getRawType() != null) {
-                        retriveRawValues.set(pidArray.size());
+                        retrieveRawValues.set(pidArray.size());
                     }
                     pidArray.add(pid.pid);
                     pgidArray.add(pgid);
@@ -255,7 +295,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         String[] pnames = new String[pidArray.size()];
         Arrays.fill(pnames, p.getQualifiedName());
         MultipleParameterValueRequest mpvr = new MultipleParameterValueRequest(start, stop, pnames, pidArray.toArray(),
-                pgidArray.toArray(), retriveRawValues, ascending);
+                pgidArray.toArray(), retrieveRawValues, ascending);
         // do not use set limit because the data can be filtered down (e.g. noRepeat) and the limit applies the final
         // filtered data not to the input
         // one day the parameter archive will be smarter and do the filtering inside
@@ -294,12 +334,19 @@ public class ArchiveParameterRestHandler extends RestHandler {
             }
             completeOK(req, MediaType.CSV, buf);
         } else {
-            ParameterData.Builder resultb = ParameterData.newBuilder();
+            ListParameterValuesResponse.Builder resultb = ListParameterValuesResponse.newBuilder();
+            final int fLimit = limit + 1; // one extra to detect continuation token
             try {
-                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, limit, req) {
+                RestParameterReplayListener replayListener = new RestParameterReplayListener(0, fLimit, req) {
                     @Override
                     public void onParameterData(ParameterValueWithId pvwid) {
-                        resultb.addParameter(pvwid.toGbpParameterValue());
+                        if (resultb.getParameterCount() < fLimit - 1) {
+                            resultb.addParameter(pvwid.toGbpParameterValue());
+                        } else {
+                            Pvalue.ParameterValue last = resultb.getParameter(resultb.getParameterCount() - 1);
+                            TimeSortedPageToken token = new TimeSortedPageToken(last.getGenerationTime());
+                            resultb.setContinuationToken(token.encodeAsString());
+                        }
                     }
 
                     @Override
@@ -350,10 +397,8 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 long start = (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) ? mpvr.getStart() - 1
                         : lastParameterTime.getLong();
                 sendFromCache(p, id, pcache, true, start, mpvr.getStop(), replayListener);
-            } else if (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) { // no data retrieved from archive,
-                                                                                      // but
-                // maybe there is still something in the
-                // cache to send
+            } else if (lastParameterTime.getLong() == TimeEncoding.INVALID_INSTANT) {
+                // no data retrieved from archive, but maybe there is still something in the cache to send
                 sendFromCache(p, id, pcache, false, mpvr.getStart(), mpvr.getStop(), replayListener);
             }
         }

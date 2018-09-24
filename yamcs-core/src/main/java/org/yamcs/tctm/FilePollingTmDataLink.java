@@ -142,7 +142,12 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
     }
 
     @Override
-    public long getDataCount() {
+    public long getDataInCount() {
         return tmCount;
+    }
+
+    @Override
+    public long getDataOutCount() {
+        return 0;
     }
 }

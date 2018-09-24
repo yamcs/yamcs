@@ -1,0 +1,33 @@
+syntax="proto2";
+
+package yamcs.protobuf.alarms;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs/protobuf/mdb/mdb.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
+
+message AcknowledgeInfo {
+  optional string acknowledgedBy = 1;
+  optional string acknowledgeMessage = 2;
+  optional int64 acknowledgeTime = 3;
+  optional string acknowledgeTimeUTC = 4;
+}
+
+message AlarmData {
+  enum Type {
+    ACTIVE = 1;  // Initial active alarms at the moment of request
+    TRIGGERED = 2;  // Whenever a new alarm triggers
+    SEVERITY_INCREASED = 3;  // Whenever an alarm jumps severity
+    PVAL_UPDATED = 4;  // Whenever a pval is updated (even if that pval is not a violation by itself)
+    ACKNOWLEDGED = 5;  // Whenever somebody acknowledged an alarm (it could be that it is still OOL)
+    CLEARED = 6; // When the alarm was really cleared by the server (acknowledged && not OOL)
+  }
+  optional uint32 seqNum = 1;
+  optional Type type = 2;
+  optional pvalue.ParameterValue triggerValue = 3;
+  optional pvalue.ParameterValue mostSevereValue = 4;
+  optional pvalue.ParameterValue currentValue = 5;
+  optional uint32 violations = 6;
+  optional AcknowledgeInfo acknowledgeInfo = 7;
+  optional mdb.ParameterInfo parameter = 8;
+}

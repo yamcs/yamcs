@@ -1,0 +1,20 @@
+<mat-icon *ngIf="service.state === 'STARTING'"
+          style="color: lightgreen"
+          [matTooltip]="service.state">
+  check_circle
+</mat-icon>
+<mat-icon *ngIf="service.state === 'RUNNING'"
+          class="success"
+          [matTooltip]="service.state">
+  check_circle
+</mat-icon>
+<mat-icon *ngIf="service.state === 'STOPPING' || service.state === 'FAILED'"
+          class="alert"
+          [matTooltip]="service.state">
+  highlight_off
+</mat-icon>
+<mat-icon *ngIf="service.state === 'TERMINATED'"
+          class="down"
+          [matTooltip]="service.state">
+  lens
+</mat-icon>

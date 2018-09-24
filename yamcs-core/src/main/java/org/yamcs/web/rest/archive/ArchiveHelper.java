@@ -135,6 +135,7 @@ public final class ArchiveHelper {
     final static StreamInfo toStreamInfo(Stream stream) {
         StreamInfo.Builder infob = StreamInfo.newBuilder();
         infob.setName(stream.getName());
+        infob.setDataCount(stream.getDataCount());
         infob.setScript("create stream " + stream.getName() + stream.getDefinition().getStringDefinition());
         for (ColumnDefinition cdef : stream.getDefinition().getColumnDefinitions()) {
             infob.addColumn(toColumnInfo(cdef, null));

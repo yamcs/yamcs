@@ -54,6 +54,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
         initPreprocessor(instance, null);
     }
 
+    @Deprecated
     public TcpTmDataLink(String instance, String name, String spec) throws ConfigurationException {
         this(instance, name, YConfiguration.getConfiguration("tcp").getMap(spec));
     }
@@ -219,8 +220,13 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     }
 
     @Override
-    public long getDataCount() {
+    public long getDataInCount() {
         return packetcount;
+    }
+
+    @Override
+    public long getDataOutCount() {
+        return 0;
     }
 
     protected void setupSysVariables() {
@@ -239,7 +245,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     public Collection<ParameterValue> getSystemParameters() {
         long time = timeService.getMissionTime();
         ParameterValue linkStatus = SystemParametersCollector.getPV(spLinkStatus, time, getLinkStatus().name());
-        ParameterValue dataCount = SystemParametersCollector.getPV(spDataCount, time, getDataCount());
+        ParameterValue dataCount = SystemParametersCollector.getPV(spDataCount, time, getDataInCount());
         return Arrays.asList(linkStatus, dataCount);
     }
 }

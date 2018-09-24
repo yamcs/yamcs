@@ -3,9 +3,9 @@ package org.yamcs.archive;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsService;
 import org.yamcs.cmdhistory.StreamCommandHistoryPublisher;
-import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TupleDefinition;
@@ -37,7 +37,7 @@ public class CommandHistoryRecorder extends AbstractService implements YamcsServ
     protected void doStart() {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
-        String keycols = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.getStringDefinition1();
+        String keycols = StandardTupleDefinitions.TC.getStringDefinition1();
         try {
             if (ydb.getTable("cmdhist") == null) {
                 String q = "create table cmdhist (" + keycols

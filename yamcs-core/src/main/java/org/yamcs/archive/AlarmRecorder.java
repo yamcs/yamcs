@@ -1,10 +1,9 @@
 package org.yamcs.archive;
 
-import static org.yamcs.alarms.AlarmServer.ALARM_TUPLE_DEFINITION;
-
 import java.util.List;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
@@ -27,7 +26,7 @@ public class AlarmRecorder extends AbstractService implements YamcsService {
     public AlarmRecorder(String yamcsInstance) throws ConfigurationException, StreamSqlException, ParseException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
 
-        String cols = ALARM_TUPLE_DEFINITION.getStringDefinition1();
+        String cols = StandardTupleDefinitions.ALARM.getStringDefinition1();
         if (ydb.getTable(TABLE_NAME) == null) {
             String query = "create table " + TABLE_NAME + "(" + cols
                     + ", primary key(triggerTime, parameter, seqNum)) table_format=compressed";

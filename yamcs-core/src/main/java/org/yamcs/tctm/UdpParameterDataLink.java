@@ -13,12 +13,10 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
-
 /**
- * Receives PP data via UDP. 
+ * Receives PP data via UDP.
  * 
- * The UDP packets are protobuf encoded ParameterData.
- * We don't use any checksum, assume it's done by UDP.
+ * The UDP packets are protobuf encoded ParameterData. We don't use any checksum, assume it's done by UDP.
  * 
  * @author nm
  *
@@ -26,27 +24,29 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 public class UdpParameterDataLink extends AbstractExecutionThreadService implements ParameterDataLink {
     private volatile int validDatagramCount = 0;
     private volatile int invalidDatagramCount = 0;
-    private volatile boolean disabled=false;
+    private volatile boolean disabled = false;
 
     private DatagramSocket udpSocket;
-    private String group="239.192.0.1";
-    private int port=31002;
+    private int port = 31002;
 
-    ParameterSink ppListener;
+    ParameterSink parameterSink;
 
-    private Logger log=LoggerFactory.getLogger(this.getClass().getName());
-    int MAX_LENGTH=10*1024;
+    private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    int MAX_LENGTH = 10 * 1024;
 
     DatagramPacket datagram = new DatagramPacket(new byte[MAX_LENGTH], MAX_LENGTH);
 
     /**
      * Creates a new UDP data link
-     * @param instance 
-     * @param name 
-     * @param config 
-     * @throws ConfigurationException if port is not defined in the config 
+     * 
+     * @param instance
+     * @param name
+     * @param config
+     * @throws ConfigurationException
+     *             if port is not defined in the config
      */
-    public UdpParameterDataLink(String instance, String name, Map<String, Object> config) throws ConfigurationException  {
+    public UdpParameterDataLink(String instance, String name, Map<String, Object> config)
+            throws ConfigurationException {
         port = YConfiguration.getInt(config, "port");
     }
 
@@ -55,25 +55,26 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
         udpSocket = new DatagramSocket(port);
     }
 
-
     @Override
     public void run() {
-        while(isRunning()) {
+        while (isRunning()) {
             ParameterData pd = getNextData();
-            if(pd!=null) {
-                ppListener.updateParams(pd.getGenerationTime(),  pd.getGroup(), pd.getSeqNum(), pd.getParameterList());
+            if (pd != null) {
+                parameterSink.updateParams(pd.getGenerationTime(), pd.getGroup(), pd.getSeqNum(),
+                        pd.getParameterList());
             }
         }
     }
+
     /**
      * 
-     * Called to retrieve the next packet.
-     * It blocks in readinng on the UDP socket  
+     * Called to retrieve the next packet. It blocks in reading on the UDP socket.
+     * 
      * @return anything that looks as a valid packet, just the size is taken into account to decide if it's valid or not
      */
     public ParameterData getNextData() {
-     
-        while(isRunning() && disabled) {
+
+        while (isRunning() && disabled) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -84,32 +85,33 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
 
         try {
             udpSocket.receive(datagram);
-            ParameterData.Builder pdb = ParameterData.newBuilder().mergeFrom(datagram.getData(), datagram.getOffset(), datagram.getLength());
+            ParameterData.Builder pdb = ParameterData.newBuilder().mergeFrom(datagram.getData(), datagram.getOffset(),
+                    datagram.getLength());
             validDatagramCount++;
             return pdb.build();
         } catch (IOException e) {
             log.warn("exception when receiving parameter data: {}'", e.getMessage());
             invalidDatagramCount++;
         }
-        
+
         return null;
     }
 
     @Override
     public Status getLinkStatus() {
-        return disabled?Status.DISABLED:Status.OK;
+        return disabled ? Status.DISABLED : Status.OK;
     }
 
     /**
-     * returns statistics with the number of datagram received and the number of invalid datagrams
+     * Returns statistics with the number of datagrams received and the number of invalid datagrams
      */
     @Override
     public String getDetailedStatus() {
-        if(disabled) {
+        if (disabled) {
             return "DISABLED";
         } else {
-            return String.format("OK (%s:%d)\nValid datagrams received: %d\nInvalid datagrams received: %d",
-                    group, port, validDatagramCount, invalidDatagramCount);
+            return String.format("OK (%s)\nValid datagrams received: %d\nInvalid datagrams received: %d",
+                    port, validDatagramCount, invalidDatagramCount);
         }
     }
 
@@ -118,7 +120,7 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
      */
     @Override
     public void disable() {
-        disabled=true;
+        disabled = true;
     }
 
     /**
@@ -126,7 +128,7 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
      */
     @Override
     public void enable() {
-        disabled=false;
+        disabled = false;
     }
 
     @Override
@@ -134,14 +136,18 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
         return disabled;
     }
 
-
     @Override
-    public long getDataCount() {
+    public long getDataInCount() {
         return validDatagramCount;
     }
 
     @Override
-    public void setParameterSink(ParameterSink ppListener) {
-        this.ppListener = ppListener;
+    public long getDataOutCount() {
+        return 0;
+    }
+
+    @Override
+    public void setParameterSink(ParameterSink parameterSink) {
+        this.parameterSink = parameterSink;
     }
 }

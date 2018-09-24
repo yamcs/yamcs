@@ -3,7 +3,7 @@ Version: @@VERSION@@
 Release: @@RELEASE@@
 
 Group: MCS
-Summary: Configures Yamcs for simulation
+Summary: Example of how Yamcs can be configured, with simulated data.
 
 Vendor: Space Applications Services
 Packager: Yamcs Team <yamcs@spaceapplications.com>
@@ -23,8 +23,6 @@ cd %{name}-%{version}-%{release}
 
 mkdir -p %{buildroot}/%{prefix}/lib
 cp yamcs-simulation/target/yamcs*.jar %{buildroot}/%{prefix}/lib
-
-cp -r yamcs-simulation/test_data %{buildroot}/%{prefix}/simulation_test_data
 
 cp -r yamcs-simulation/bin %{buildroot}/%{prefix}
 cp -r yamcs-simulation/mdb %{buildroot}/%{prefix}
@@ -51,8 +49,6 @@ rm %{buildroot}/%{prefix}/etc/roles.yaml
 
 %config %{prefix}/mdb/*
 %config %{prefix}/etc/*
-
-%config %{prefix}/simulation_test_data
 
 %dir %attr(700,yamcs,yamcs) /storage/yamcs-data
 %dir %attr(700,yamcs,yamcs) /storage/yamcs-incoming

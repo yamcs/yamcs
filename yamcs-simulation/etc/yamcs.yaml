@@ -7,9 +7,12 @@ services:
   - class: org.yamcs.server.ProcessRunner
     args:
       command: bin/simulator.sh
-  - class: org.yamcs.server.ProcessRunner
+  - class: org.yamcs.tse.TseCommander
     args:
-      command: bin/tse-commander.sh
+      tctm:
+        port: 8135
+      telnet:
+        port: 8023
 
 #instances (or domains). One yarch database will be created for each of them 
 # instance specific properties go into the file yamcs.{instance}.yaml

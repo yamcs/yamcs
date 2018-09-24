@@ -1,5 +1,15 @@
 <app-monitor-page>
-  <app-monitor-toolbar>Alarms</app-monitor-toolbar>
+  <app-monitor-toolbar>
+    Alarms
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <button mat-button
+            color="primary"
+            (click)="acknowledgeSelectedAlarms()"
+            [disabled]="true || !selection.hasValue()">
+      <mat-icon>thumb_up</mat-icon>
+      ACKNOWLEDGE
+    </button>
+  </app-monitor-toolbar>
 
   <div class="detail">
     <ng-container *ngIf="selectedAlarm$ | async as selectedAlarm; else noSelection">
@@ -7,7 +17,7 @@
         Alarm Detail
       </app-detail-toolbar>
       <div style="padding: 0 16px">
-        <app-alarm-detail [alarm]="selectedAlarm"></app-alarm-detail>
+        <app-alarm-detail [alarm]="selectedAlarm" [instance]="instance"></app-alarm-detail>
       </div>
     </ng-container>
     <ng-template #noSelection>
@@ -29,6 +39,20 @@
              matSortActive="parameter"
              matSortDirection="asc"
              matSortDisableClear>
+
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
+            <input type="checkbox" (change)="$event ? masterToggle() : null"
+                          [disabled]="true"
+                          [checked]="selection.hasValue() && isAllSelected()">
+          </th>
+          <td mat-cell *cdkCellDef="let row">
+            <input type="checkbox" (click)="$event.stopPropagation()"
+                          [disabled]="true"
+                          (change)="$event ? selection.toggle(row) : null"
+                          [checked]="selection.isSelected(row)">
+          </td>
+        </ng-container>
 
         <ng-container matColumnDef="parameter">
           <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Parameter</th>
@@ -98,7 +122,8 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"
                  (click)="selectAlarm(row)"
-                 [class.selected]="row.parameter.qualifiedName === (selectedAlarm$ | async)?.parameter.qualifiedName">
+                 [class.selected]="row.parameter.qualifiedName === (selectedAlarm$ | async)?.parameter.qualifiedName"
+                 (click)="toggleOne(row)">
         </tr>
       </table>
 

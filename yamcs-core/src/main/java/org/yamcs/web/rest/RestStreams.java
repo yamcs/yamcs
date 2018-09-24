@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.web.HttpException;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ParseException;
@@ -18,11 +19,11 @@ public class RestStreams {
     private static AtomicInteger streamCounter = new AtomicInteger();
     private static final Logger log = LoggerFactory.getLogger(RestStreams.class);
 
-    public static void stream(String instance, String selectSql, RestStreamSubscriber s) throws HttpException {
+    public static void stream(String instance, String selectSql, StreamSubscriber s) throws HttpException {
         stream(instance, selectSql, Collections.emptyList(), s);
     }
 
-    public static void stream(String instance, String selectSql, List<Object> args, RestStreamSubscriber s)
+    public static void stream(String instance, String selectSql, List<Object> args, StreamSubscriber s)
             throws HttpException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 

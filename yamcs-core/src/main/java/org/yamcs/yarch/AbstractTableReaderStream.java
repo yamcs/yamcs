@@ -17,14 +17,13 @@ import com.google.common.collect.BiMap;
 import com.google.common.primitives.UnsignedBytes;
 
 /**
- * Implements skeleton for table streamer that uses PartitionManager to handle
- * partitioning.
+ * Implements skeleton for table streamer that uses PartitionManager to handle partitioning.
  * 
  * 
  * @author nm
  *
  */
-public abstract class AbstractTableReaderStream extends AbstractStream implements Runnable, DbReaderStream {
+public abstract class AbstractTableReaderStream extends Stream implements Runnable, DbReaderStream {
     protected TableDefinition tableDefinition;
     private IndexFilter rangeIndexFilter; // if not null, the replay should run
                                           // in this range
@@ -98,8 +97,8 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
     }
 
     /**
-     * Runs the partitions sending data only that conform with the start and end
-     * filters. returns true if the stop condition is met
+     * Runs the partitions sending data only that conform with the start and end filters. returns true if the stop
+     * condition is met
      * 
      * All the partitions are from the same time interval
      */
@@ -126,16 +125,18 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
         boolean emit = true;
         if (rangeStart != null) { // check if we have reached the start
             int c = compare(key, rangeStart);
-            if (c > 0)
+            if (c > 0) {
                 emit = true;
-            else if ((c == 0) && (!strictStart))
+            } else if ((c == 0) && (!strictStart)) {
                 emit = true;
-            else
+            } else {
                 emit = false;
+            }
         }
         lastEmitted = dataToTuple(key, value);
-        if (emit)
+        if (emit) {
             emitTuple(lastEmitted);
+        }
         return emit;
     }
 
@@ -150,8 +151,9 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
             } catch (IllegalArgumentException e) {
                 throw new StreamSqlException(ErrCode.ERROR, e.getMessage());
             }
-            if (rangeIndexFilter == null)
+            if (rangeIndexFilter == null) {
                 rangeIndexFilter = new IndexFilter();
+            }
             // TODO FIX to allow multiple ranges
             switch (relOp) {
             case GREATER:
@@ -181,7 +183,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
         } else if ((relOp == RelOp.EQUAL) && tableDefinition.hasPartitioning()) {
             PartitioningSpec pspec = tableDefinition.getPartitioningSpec();
             if (cexpr.getName().equals(pspec.valueColumn)) {
-                Set<Object> values = new HashSet<Object>();
+                Set<Object> values = new HashSet<>();
                 values.add(value);
                 values = transformEnums(values);
                 if (partitionValueFilter == null) {
@@ -207,7 +209,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
         if (cd.getType() == DataType.ENUM) {
             BiMap<String, Short> enumValues = tableDefinition.getEnumValues(pspec.valueColumn);
 
-            Set<Object> v1 = new HashSet<Object>();
+            Set<Object> v1 = new HashSet<>();
             if (enumValues != null) { // else there is no value in the table yet
                 for (Object o : values) {
                     Object o1 = enumValues.get(o);
@@ -233,18 +235,20 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
      */
     @Override
     public boolean addInFilter(ColumnExpression cexpr, boolean negation, Set<Object> values) throws StreamSqlException {
-        if (!tableDefinition.hasPartitioning())
+        if (!tableDefinition.hasPartitioning()) {
             return false;
+        }
         PartitioningSpec pspec = tableDefinition.getPartitioningSpec();
 
-        if ((pspec.valueColumn == null) || (!pspec.valueColumn.equals(cexpr.getName())))
+        if ((pspec.valueColumn == null) || (!pspec.valueColumn.equals(cexpr.getName()))) {
             return false;
-        
+        }
+
         values = transformEnums(values);
         if (partitionValueFilter == null) {
-            if(negation) {
+            if (negation) {
                 ColumnDefinition cd = tableDefinition.getColumnDefinition(pspec.valueColumn);
-                if (cd.getType() != DataType.ENUM) { //we don't know all the possible values so we cannot exclude
+                if (cd.getType() != DataType.ENUM) { // we don't know all the possible values so we cannot exclude
                     return false;
                 }
                 BiMap<String, Short> enumValues = tableDefinition.getEnumValues(pspec.valueColumn);
@@ -254,7 +258,7 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
                 partitionValueFilter = values;
             }
         } else {
-            if(negation) {
+            if (negation) {
                 partitionValueFilter.removeAll(values);
             } else {
                 partitionValueFilter.retainAll(values);
@@ -278,8 +282,9 @@ public abstract class AbstractTableReaderStream extends AbstractStream implement
     protected int compare(byte[] a1, byte[] a2) {
         for (int i = 0; i < a1.length && i < a2.length; i++) {
             int d = (a1[i] & 0xFF) - (a2[i] & 0xFF);
-            if (d != 0)
+            if (d != 0) {
                 return d;
+            }
         }
         return 0;
     }

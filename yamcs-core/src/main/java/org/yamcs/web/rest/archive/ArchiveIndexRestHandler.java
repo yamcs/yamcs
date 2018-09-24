@@ -1,19 +1,18 @@
 package org.yamcs.web.rest.archive;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
 import org.yamcs.YamcsServer;
-import org.yamcs.api.MediaType;
 import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.archive.IndexServer;
-import org.yamcs.protobuf.Rest.BulkGetIndexRequest;
+import org.yamcs.protobuf.Archive.IndexEntry;
+import org.yamcs.protobuf.Archive.IndexGroup;
+import org.yamcs.protobuf.Archive.IndexResponse;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
@@ -21,43 +20,27 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
 import org.yamcs.web.HttpException;
-import org.yamcs.web.HttpRequestHandler;
-import org.yamcs.web.HttpRequestHandler.ChunkedTransferStats;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
 import org.yamcs.web.rest.Route;
 
-import com.google.protobuf.util.JsonFormat;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.handler.codec.http.LastHttpContent;
-
-/**
- * Serves archive indexes through a web api.
- *
- * <p>
- * These responses use chunked encoding with an unspecified content length, which enables us to send large dumps without
- * needing to determine a content length on the server.
- */
 public class ArchiveIndexRestHandler extends RestHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(ArchiveIndexRestHandler.class);
-
-    /**
-     * indexes a combination of multiple indexes. If nothing is specified, sends all available
-     */
-    @Route(path = "/api/archive/:instance/indexes", method = "GET")
-    public void downloadIndexes(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/command-index", method = "GET")
+    public void listCommandIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
 
+        int mergeTime = req.getQueryParameterAsInt("mergeTime", 2000);
+
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
+        requestb.setMergeTime(mergeTime);
+
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
@@ -65,72 +48,84 @@ public class ArchiveIndexRestHandler extends RestHandler {
         if (ir.hasStop()) {
             requestb.setStop(ir.getStop());
         }
+        String next = req.getQueryParameter("next", null);
+        if (next != null) {
+            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
+            requestb.setStart(pageToken.time);
+        }
 
-        if (req.hasQueryParameter("packetname")) {
-            for (String names : req.getQueryParameterList("packetname")) {
+        if (req.hasQueryParameter("name")) {
+            for (String names : req.getQueryParameterList("name")) {
                 for (String name : names.split(",")) {
-                    requestb.addTmPacket(NamedObjectId.newBuilder().setName(name.trim()));
+                    requestb.addCmdName(NamedObjectId.newBuilder().setName(name.trim()));
                 }
             }
-        }
-
-        Set<String> filter = new HashSet<>();
-        if (req.hasQueryParameter("filter")) {
-            for (String names : req.getQueryParameterList("filter")) {
-                for (String name : names.split(",")) {
-                    filter.add(name.toLowerCase().trim());
-                }
-            }
-        }
-
-        if (req.hasBody()) {
-            BulkGetIndexRequest bgir = req.bodyAsMessage(BulkGetIndexRequest.newBuilder()).build();
-            if (bgir.hasStart()) {
-                requestb.setStart(TimeEncoding.parse(bgir.getStart()));
-            }
-            if (bgir.hasStop()) {
-                requestb.setStop(TimeEncoding.parse(bgir.getStop()));
-            }
-            filter.addAll(bgir.getFilterList());
-            for (String name : bgir.getPacketnameList()) {
-                requestb.addTmPacket(NamedObjectId.newBuilder().setName(name));
-            }
-        }
-
-        if (filter.isEmpty() && requestb.getTmPacketCount() == 0) {
-            requestb.setSendAllTm(true);
-            requestb.setSendAllPp(true);
-            requestb.setSendAllCmd(true);
-            requestb.setSendAllEvent(true);
-            requestb.setSendCompletenessIndex(true);
         } else {
-            requestb.setSendAllTm(filter.contains("tm") && requestb.getTmPacketCount() == 0);
-            requestb.setSendAllPp(filter.contains("pp"));
-            requestb.setSendAllCmd(filter.contains("commands"));
-            requestb.setSendAllEvent(filter.contains("events"));
-            requestb.setSendCompletenessIndex(filter.contains("completeness"));
+            requestb.setSendAllCmd(true);
         }
 
-        try {
-            indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, false));
-        } catch (YamcsException e) {
-            throw new InternalServerErrorException(e);
-        }
+        handleOneIndexResult(req, indexServer, requestb.build());
     }
 
-    @Route(path = "/api/archive/:instance/indexes/packets", method = "GET")
-    public void downloadPacketIndex(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/event-index", method = "GET")
+    public void listEventIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
 
+        int mergeTime = req.getQueryParameterAsInt("mergeTime", 2000);
+
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
+        requestb.setMergeTime(mergeTime);
+
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
         }
         if (ir.hasStop()) {
             requestb.setStop(ir.getStop());
+        }
+        String next = req.getQueryParameter("next", null);
+        if (next != null) {
+            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
+            requestb.setStart(pageToken.time);
+        }
+
+        if (req.hasQueryParameter("source")) {
+            for (String sources : req.getQueryParameterList("source")) {
+                for (String source : sources.split(",")) {
+                    requestb.addEventSource(NamedObjectId.newBuilder().setName(source.trim()));
+                }
+            }
+        } else {
+            requestb.setSendAllEvent(true);
+        }
+
+        handleOneIndexResult(req, indexServer, requestb.build());
+    }
+
+    @Route(path = "/api/archive/:instance/packet-index", method = "GET")
+    public void listPacketIndex(RestRequest req) throws HttpException {
+        String instance = verifyInstance(req, req.getRouteParam("instance"));
+        IndexServer indexServer = verifyIndexServer(req, instance);
+
+        int mergeTime = req.getQueryParameterAsInt("mergeTime", 2000);
+
+        IndexRequest.Builder requestb = IndexRequest.newBuilder();
+        requestb.setInstance(instance);
+        requestb.setMergeTime(mergeTime);
+
+        IntervalResult ir = req.scanForInterval();
+        if (ir.hasStart()) {
+            requestb.setStart(ir.getStart());
+        }
+        if (ir.hasStop()) {
+            requestb.setStop(ir.getStop());
+        }
+        String next = req.getQueryParameter("next", null);
+        if (next != null) {
+            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
+            requestb.setStart(pageToken.time);
         }
 
         if (req.hasQueryParameter("name")) {
@@ -139,25 +134,24 @@ public class ArchiveIndexRestHandler extends RestHandler {
                     requestb.addTmPacket(NamedObjectId.newBuilder().setName(name.trim()));
                 }
             }
-        }
-        if (requestb.getTmPacketCount() == 0) {
+        } else {
             requestb.setSendAllTm(true);
         }
 
-        try {
-            indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
-        } catch (YamcsException e) {
-            throw new InternalServerErrorException(e);
-        }
+        handleOneIndexResult(req, indexServer, requestb.build());
     }
 
-    @Route(path = "/api/archive/:instance/indexes/pp", method = "GET")
-    public void downloadPpIndex(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/parameter-index", method = "GET")
+    public void listParameterIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
 
+        int mergeTime = req.getQueryParameterAsInt("mergeTime", 20000);
+
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
+        requestb.setMergeTime(mergeTime);
+
         IntervalResult ir = req.scanForInterval();
         if (ir.hasStart()) {
             requestb.setStart(ir.getStart());
@@ -165,194 +159,117 @@ public class ArchiveIndexRestHandler extends RestHandler {
         if (ir.hasStop()) {
             requestb.setStop(ir.getStop());
         }
-        requestb.setSendAllPp(true);
-
-        try {
-            indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
-        } catch (YamcsException e) {
-            throw new InternalServerErrorException(e);
+        String next = req.getQueryParameter("next", null);
+        if (next != null) {
+            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
+            requestb.setStart(pageToken.time);
         }
+
+        if (req.hasQueryParameter("group")) {
+            for (String groups : req.getQueryParameterList("group")) {
+                for (String group : groups.split(",")) {
+                    requestb.addPpGroup(NamedObjectId.newBuilder().setName(group.trim()));
+                }
+            }
+        } else {
+            requestb.setSendAllPp(true);
+        }
+
+        handleOneIndexResult(req, indexServer, requestb.build());
     }
 
-    @Route(path = "/api/archive/:instance/indexes/commands", method = "GET")
-    public void downloadCommandHistoryIndex(RestRequest req) throws HttpException {
+    @Route(path = "/api/archive/:instance/completeness-index", method = "GET")
+    public void listCompletenessIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        IntervalResult ir = req.scanForInterval();
-        if (ir.hasStart()) {
-            requestb.setStart(ir.getStart());
-        }
-        if (ir.hasStop()) {
-            requestb.setStop(ir.getStop());
-        }
-        requestb.setSendAllCmd(true);
-
-        try {
-            indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
-        } catch (YamcsException e) {
-            throw new InternalServerErrorException(e);
-        }
-    }
-
-    @Route(path = "/api/archive/:instance/indexes/events", method = "GET")
-    public void downloadEventIndex(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        IndexServer indexServer = verifyIndexServer(req, instance);
-
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        IntervalResult ir = req.scanForInterval();
-        if (ir.hasStart()) {
-            requestb.setStart(ir.getStart());
-        }
-        if (ir.hasStop()) {
-            requestb.setStop(ir.getStop());
-        }
-        requestb.setSendAllEvent(true);
-
-        try {
-            indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
-        } catch (YamcsException e) {
-            throw new InternalServerErrorException(e);
-        }
-    }
-
-    @Route(path = "/api/archive/:instance/indexes/completeness", method = "GET")
-    public void downloadCompletenessIndex(RestRequest req) throws HttpException {
-        String instance = verifyInstance(req, req.getRouteParam("instance"));
-        IndexServer indexServer = verifyIndexServer(req, instance);
-
-        IndexRequest.Builder requestb = IndexRequest.newBuilder();
-        requestb.setInstance(instance);
-        IntervalResult ir = req.scanForInterval();
-        if (ir.hasStart()) {
-            requestb.setStart(ir.getStart());
-        }
-        if (ir.hasStop()) {
-            requestb.setStop(ir.getStop());
-        }
         requestb.setSendCompletenessIndex(true);
+        requestb.setInstance(instance);
 
-        try {
-            indexServer.submitIndexRequest(requestb.build(), new ChunkedIndexResultProtobufEncoder(req, true));
-        } catch (YamcsException e) {
-            throw new InternalServerErrorException(e);
+        IntervalResult ir = req.scanForInterval();
+        if (ir.hasStart()) {
+            requestb.setStart(ir.getStart());
         }
-    }
-
-    private static class ChunkedIndexResultProtobufEncoder implements IndexRequestListener {
-
-        private static final Logger log = LoggerFactory.getLogger(ChunkedIndexResultProtobufEncoder.class);
-        private static final int CHUNK_TRESHOLD = 8096;
-
-        private final RestRequest req;
-        private final MediaType contentType;
-        private final boolean unpack;
-
-        private ByteBuf buf;
-        private ByteBufOutputStream bufOut;
-        private ChannelFuture lastChannelFuture;
-        private ChunkedTransferStats stats;
-
-        private boolean first;
-
-        // If unpack, the result will be a stream of Archive Records, otherwise IndexResult
-        public ChunkedIndexResultProtobufEncoder(RestRequest req, boolean unpack) {
-            this.req = req;
-            this.unpack = unpack;
-            contentType = req.deriveTargetContentType();
-            resetBuffer();
-            first = true;
+        if (ir.hasStop()) {
+            requestb.setStop(ir.getStop());
+        }
+        String next = req.getQueryParameter("next", null);
+        if (next != null) {
+            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
+            requestb.setStart(pageToken.time);
         }
 
-        private void resetBuffer() {
-            buf = req.getChannelHandlerContext().alloc().buffer();
-            bufOut = new ByteBufOutputStream(buf);
-        }
-
-        @Override
-        public void processData(IndexResult indexResult) {
-            if (first) {
-                lastChannelFuture = HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(),
-                        req.getHttpRequest(), contentType, null);
-                stats = req.getChannelHandlerContext().channel().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
-                first = false;
-            }
-            try {
-                if (unpack) {
-                    for (ArchiveRecord rec : indexResult.getRecordsList()) {
-                        bufferArchiveRecord(rec);
-                    }
-                } else {
-                    bufferIndexResult(indexResult);
-                }
-                if (buf.readableBytes() >= CHUNK_TRESHOLD) {
-                    bufOut.close();
-                    writeChunk();
-                    resetBuffer();
-                }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        }
-
-        private void bufferArchiveRecord(ArchiveRecord msg) throws IOException {
-            if (MediaType.PROTOBUF.equals(contentType)) {
-                msg.writeDelimitedTo(bufOut);
-            } else {
-                String json = JsonFormat.printer().print(msg);
-                bufOut.write(json.getBytes(StandardCharsets.UTF_8));
-            }
-        }
-
-        private void bufferIndexResult(IndexResult msg) throws IOException {
-            if (MediaType.PROTOBUF.equals(contentType)) {
-                msg.writeDelimitedTo(bufOut);
-            } else {
-                String json = JsonFormat.printer().print(msg);
-                bufOut.write(json.getBytes(StandardCharsets.UTF_8));
-            }
-        }
-
-        @Override
-        public void finished(boolean success) {
-            if (first) { // empty result
-                RestHandler.completeOK(req);
-            } else {
-                try {
-                    bufOut.close();
-                    if (buf.readableBytes() > 0) {
-                        writeChunk();
-                    }
-                    req.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                            .addListener(ChannelFutureListener.CLOSE)
-                            .addListener(l -> req.getCompletableFuture().complete(null));
-                } catch (IOException e) {
-                    log.error("Could not write final chunk of data", e);
-                    req.getChannelHandlerContext().close();
-                }
-            }
-        }
-
-        private void writeChunk() throws IOException {
-            int txSize = buf.readableBytes();
-            req.addTransferredSize(txSize);
-            stats.totalBytes += buf.readableBytes();
-            stats.chunkCount++;
-            lastChannelFuture = HttpRequestHandler.writeChunk(req.getChannelHandlerContext(), buf);
-        }
+        handleOneIndexResult(req, indexServer, requestb.build());
     }
 
     private IndexServer verifyIndexServer(RestRequest req, String instance) throws HttpException {
         verifyInstance(req, instance);
-        IndexServer indexServer = YamcsServer.getService(instance, IndexServer.class);
-        if (indexServer == null) {
+        List<IndexServer> services = YamcsServer.getServices(instance, IndexServer.class);
+        if (services.isEmpty()) {
             throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
         } else {
-            return indexServer;
+            return services.get(0);
+        }
+    }
+
+    /**
+     * Submits an index request but returns only the first batch of results combined with a pagination token if the user
+     * whishes to retrieve the next batch.
+     * 
+     * The batch size is determined by the IndexServer and is set to 500 (shared between all requested groups).
+     */
+    private void handleOneIndexResult(RestRequest req, IndexServer indexServer, IndexRequest request)
+            throws HttpException {
+        try {
+            IndexResponse.Builder responseb = IndexResponse.newBuilder();
+            Map<NamedObjectId, IndexGroup.Builder> groupBuilders = new HashMap<>();
+            indexServer.submitIndexRequest(request, new IndexRequestListener() {
+
+                int batchCount = 0;
+                long last;
+
+                @Override
+                public void processData(IndexResult indexResult) {
+                    if (batchCount == 0) {
+                        for (ArchiveRecord rec : indexResult.getRecordsList()) {
+                            IndexGroup.Builder groupb = groupBuilders.get(rec.getId());
+                            if (groupb == null) {
+                                groupb = IndexGroup.newBuilder().setId(rec.getId());
+                                groupBuilders.put(rec.getId(), groupb);
+                            }
+                            groupb.addEntry(IndexEntry.newBuilder()
+                                    .setStart(TimeEncoding.toString(rec.getFirst()))
+                                    .setStop(TimeEncoding.toString(rec.getLast()))
+                                    .setCount(rec.getNum()));
+                            last = Math.max(last, rec.getLast());
+                        }
+                    }
+
+                    batchCount++;
+                }
+
+                @Override
+                public void finished(boolean success) {
+                    if (success) {
+                        if (batchCount > 1) {
+                            TimeSortedPageToken token = new TimeSortedPageToken(last);
+                            responseb.setContinuationToken(token.encodeAsString());
+                        }
+                        List<IndexGroup.Builder> sortedGroups = new ArrayList<>(groupBuilders.values());
+                        Collections.sort(sortedGroups, (g1, g2) -> {
+                            return g1.getId().getName().compareTo(g2.getId().getName());
+                        });
+                        sortedGroups.forEach(groupb -> responseb.addGroup(groupb));
+                        completeOK(req, responseb.build());
+                    } else {
+                        sendRestError(req, HttpResponseStatus.INTERNAL_SERVER_ERROR,
+                                new InternalServerErrorException("Too many results"));
+                    }
+                }
+            });
+        } catch (YamcsException e) {
+            throw new InternalServerErrorException("Too many results", e);
         }
     }
 }

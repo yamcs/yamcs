@@ -33,7 +33,11 @@ public abstract class ValueBinding {
             acquisitionTime = cal.getTime();
         }
         acquisitionTimeMs = newValue.getAcquisitionTime();
-        generationTime = TimeEncoding.toCalendar(newValue.getGenerationTime()).getTime();
+
+        if (newValue.hasGenerationTime()) {
+            Calendar cal = TimeEncoding.toCalendar(newValue.getGenerationTime());
+            generationTime = cal.getTime();
+        }
         generationTimeMs = newValue.getGenerationTime();
     }
 }

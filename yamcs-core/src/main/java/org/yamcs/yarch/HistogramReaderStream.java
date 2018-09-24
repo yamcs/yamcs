@@ -18,41 +18,43 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
  * @author nm
  *
  */
-public class HistogramReaderStream extends AbstractStream implements Runnable, DbReaderStream {
-    //this is the table and the column on which we run the histogram
+public class HistogramReaderStream extends Stream implements Runnable, DbReaderStream {
+    // this is the table and the column on which we run the histogram
     final private ColumnSerializer<?> histoColumnSerializer;
     HistogramIterator iter;
     final TableDefinition tblDef;
     final String histoColumnName;
-    //filter conditions
+    // filter conditions
     TimeInterval interval = new TimeInterval();
 
-    long mergeTime=2000;
+    long mergeTime = 2000;
 
-    static AtomicInteger count=new AtomicInteger(0);
-    volatile boolean quit=false;
+    static AtomicInteger count = new AtomicInteger(0);
+    volatile boolean quit = false;
     private ColumnDefinition histoColumnDefinition;
 
-    public HistogramReaderStream(YarchDatabaseInstance ydb, TableDefinition tblDef, String histoColumnName, TupleDefinition tupleDef) throws YarchException {
-        super(ydb, tblDef.getName()+"_histo_"+count.getAndIncrement(), tupleDef);
+    public HistogramReaderStream(YarchDatabaseInstance ydb, TableDefinition tblDef, String histoColumnName,
+            TupleDefinition tupleDef) throws YarchException {
+        super(ydb, tblDef.getName() + "_histo_" + count.getAndIncrement(), tupleDef);
         this.histoColumnSerializer = tblDef.getColumnSerializer(histoColumnName);
         this.histoColumnDefinition = tblDef.getColumnDefinition(histoColumnName);
         this.tblDef = tblDef;
         this.histoColumnName = histoColumnName;
     }
 
-    @Override 
+    @Override
     public void start() {
-        (new Thread(this, "HistogramReader["+getName()+"]")).start();
+        (new Thread(this, "HistogramReader[" + getName() + "]")).start();
     }
 
     @Override
     public void run() {
-        if(log.isDebugEnabled()) {
-            log.debug("starting a histogram stream for interval {}, mergeTime: {})", interval.toStringEncoded(), mergeTime);
+        if (log.isDebugEnabled()) {
+            log.debug("starting a histogram stream for interval {}, mergeTime: {})", interval.toStringEncoded(),
+                    mergeTime);
         }
         try {
-            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(ydb, tblDef,histoColumnName, interval, mergeTime);
+            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(ydb, tblDef, histoColumnName, interval, mergeTime);
             HistogramRecord r;
             while (!quit && iter.hasNext()) {
                 r = iter.next();
@@ -69,22 +71,22 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
 
     private void emit(HistogramRecord r) throws IOException {
         Object cvalue = histoColumnSerializer.fromByteArray(r.columnv, histoColumnDefinition);
-        Tuple t = new Tuple(getDefinition(), new Object[]{cvalue, r.start, r.stop, r.num});
+        Tuple t = new Tuple(getDefinition(), new Object[] { cvalue, r.start, r.stop, r.num });
         emitTuple(t);
     }
 
     /* puts conditions on the first or last. doesn't work properly yet TODO*/
     @Override
     public boolean addRelOpFilter(ColumnExpression cexpr, RelOp relOp, Object value) throws StreamSqlException {
-        String cname=cexpr.getName();
-        if("first".equals(cname) || "last".equals(cname)) {
+        String cname = cexpr.getName();
+        if ("first".equals(cname) || "last".equals(cname)) {
             long time;
             try {
-                time= (Long) DataType.castAs(DataType.TIMESTAMP, value);
-            } catch (IllegalArgumentException e){
+                time = (Long) DataType.castAs(DataType.TIMESTAMP, value);
+            } catch (IllegalArgumentException e) {
                 throw new StreamSqlException(ErrCode.ERROR, e.getMessage());
             }
-            switch(relOp) {
+            switch (relOp) {
             case GREATER:
             case GREATER_OR_EQUAL:
                 interval.setStart(time);
@@ -98,7 +100,7 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
                 interval.setEnd(time);
                 return true;
             case NOT_EQUAL:
-                //TODO - two ranges have to be created
+                // TODO - two ranges have to be created
             }
         }
         return false;
@@ -113,12 +115,12 @@ public class HistogramReaderStream extends AbstractStream implements Runnable, D
     }
 
     public void setMergeTime(long mergeTime) {
-        this.mergeTime=mergeTime;
+        this.mergeTime = mergeTime;
     }
-    
+
     @Override
     public void doClose() {
         iter.close();
-        quit=true;
+        quit = true;
     }
 }

@@ -26,7 +26,8 @@ import org.yamcs.protobuf.Yamcs.PpReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
-import org.yamcs.tctm.TmDataLinkInitialiser;
+import org.yamcs.tctm.DataLinkInitialiser;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
@@ -251,7 +252,7 @@ public class BackFiller implements StreamSubscriber {
 
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
-        long gentime = (Long) tuple.getColumn(TmDataLinkInitialiser.GENTIME_COLUMN);
+        long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
         long t0 = SortedTimeSegment.getSegmentStart(gentime);
         synchronized(streamUpdates) {
             streamUpdates.add(t0);

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class OutputStream extends AbstractStream implements StreamSubscriber {
+public class OutputStream extends Stream implements StreamSubscriber {
     ServerSocket serverSocket;
     Socket socket;
     Stream subscribedStream;
@@ -28,10 +28,12 @@ public class OutputStream extends AbstractStream implements StreamSubscriber {
         return serverSocket.getLocalPort();
     }
 
+    @Override
     public void onTuple(Stream s, Tuple t) {
         try {
-            if (socket == null)
+            if (socket == null) {
                 socket = serverSocket.accept();
+            }
             dos = new java.io.DataOutputStream(socket.getOutputStream()); // TODO endinaness
         } catch (IOException e) {
             e.printStackTrace();
@@ -49,9 +51,9 @@ public class OutputStream extends AbstractStream implements StreamSubscriber {
     }
 
     /**
-     * Called when the subcribed stream is closed
-     * we close this stream also.
+     * Called when the subcribed stream is closed we close this stream also.
      */
+    @Override
     public void streamClosed(Stream stream) {
         close();
     }
@@ -64,12 +66,13 @@ public class OutputStream extends AbstractStream implements StreamSubscriber {
         } catch (IOException e) {
             log.error("got exception when closing the output stream socket: ", e);
         }
-        if (socket != null)
+        if (socket != null) {
             try {
                 socket.close();
             } catch (IOException e) {
                 log.warn("got exception when closing the output stream socket:", e);
             }
+        }
     }
 
     @Override

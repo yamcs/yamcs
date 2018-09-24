@@ -4703,9 +4703,10 @@ public final class Tablespace {
                 mutable_bitField0_ |= 0x00000020;
               }
               com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-              metadata = input.readMessage(
+              metadata__ = input.readMessage(
                   MetadataDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-              metadata_.getMutableMap().put(metadata.getKey(), metadata.getValue());
+              metadata_.getMutableMap().put(
+                  metadata__.getKey(), metadata__.getValue());
               break;
             }
           }
@@ -4976,15 +4977,12 @@ public final class Tablespace {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeUInt64(5, size_);
       }
-      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
-           : internalGetMetadata().getMap().entrySet()) {
-        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-        metadata = MetadataDefaultEntryHolder.defaultEntry.newBuilderForType()
-            .setKey(entry.getKey())
-            .setValue(entry.getValue())
-            .build();
-        output.writeMessage(6, metadata);
-      }
+      com.google.protobuf.GeneratedMessageV3
+        .serializeStringMapTo(
+          output,
+          internalGetMetadata(),
+          MetadataDefaultEntryHolder.defaultEntry,
+          6);
       unknownFields.writeTo(output);
     }
 
@@ -5014,12 +5012,12 @@ public final class Tablespace {
       for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
            : internalGetMetadata().getMap().entrySet()) {
         com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
-        metadata = MetadataDefaultEntryHolder.defaultEntry.newBuilderForType()
+        metadata__ = MetadataDefaultEntryHolder.defaultEntry.newBuilderForType()
             .setKey(entry.getKey())
             .setValue(entry.getValue())
             .build();
         size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(6, metadata);
+            .computeMessageSize(6, metadata__);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;

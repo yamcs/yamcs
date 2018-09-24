@@ -1,14 +1,14 @@
 package org.yamcs.cmdhistory;
 
-import org.yamcs.tctm.TcDataLinkInitialiser;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.protobuf.Commanding.CommandId;
 
 /**
  * Injects the command history updates in the command history stream
@@ -31,7 +31,7 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
 
     @Override
     public void publish(CommandId cmdId, String key, String value) {
-        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td = StandardTupleDefinitions.TC.copy();
         td.addColumn(key, DataType.STRING);
 
         Tuple t = new Tuple(td, new Object[] {
@@ -46,7 +46,7 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
 
     @Override
     public void publish(CommandId cmdId, String key, long instant) {
-        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td = StandardTupleDefinitions.TC.copy();
         td.addColumn(key, DataType.TIMESTAMP);
 
         Tuple t = new Tuple(td, new Object[] {
@@ -65,7 +65,7 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
     }
 
     public void publish(CommandId cmdId, String key, DataType dt, Object value) {
-        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td = StandardTupleDefinitions.TC.copy();
         td.addColumn(key, dt);
 
         Tuple t = new Tuple(td, new Object[] {
@@ -80,9 +80,9 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
 
     @Override
     public void publishWithTime(CommandId cmdId, String key, long time, String value) {
-        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
-        td.addColumn(key+"_Status", DataType.STRING);
-        td.addColumn(key+"_Time", DataType.TIMESTAMP);
+        TupleDefinition td = StandardTupleDefinitions.TC.copy();
+        td.addColumn(key + "_Status", DataType.STRING);
+        td.addColumn(key + "_Time", DataType.TIMESTAMP);
 
         Tuple t = new Tuple(td, new Object[] {
                 cmdId.getGenerationTime(),

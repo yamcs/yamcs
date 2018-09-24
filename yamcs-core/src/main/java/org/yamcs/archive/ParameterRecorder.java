@@ -1,7 +1,7 @@
 package org.yamcs.archive;
 
-import static org.yamcs.tctm.ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP;
-import static org.yamcs.tctm.ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION;
+import static org.yamcs.StandardTupleDefinitions.PARAMETER;
+import static org.yamcs.StandardTupleDefinitions.PARAMETER_COL_GROUP;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,6 @@ import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsService;
-import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -50,10 +49,10 @@ public class ParameterRecorder extends AbstractService implements YamcsService {
         this.yamcsInstance = yamcsInstance;
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
-            String cols = PARAMETER_TUPLE_DEFINITION.getStringDefinition1();
+            String cols = PARAMETER.getStringDefinition1();
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + cols + ", primary key(gentime, seqNum)) histogram("
-                        + PARAMETER_TUPLE_COL_GROUP + ") partition by time_and_value(gentime"
+                        + PARAMETER_COL_GROUP + ") partition by time_and_value(gentime"
                         + XtceTmRecorder.getTimePartitioningSchemaSql() + ",group) table_format=compressed";
                 ydb.execute(query);
             }

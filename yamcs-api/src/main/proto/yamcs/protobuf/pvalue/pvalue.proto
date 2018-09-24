@@ -1,0 +1,104 @@
+syntax="proto2";
+
+package yamcs.protobuf.pvalue;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
+
+//this can also be called validity status
+enum AcquisitionStatus {
+  ACQUIRED = 0; //OK!
+  NOT_RECEIVED = 1; //no value received so far
+  INVALID = 2; //some value has been received but is invalid
+  EXPIRED = 3; //the parameter is coming from a packet which has not since updated although it should have been
+}
+
+enum MonitoringResult {
+  DISABLED = 0;
+  IN_LIMITS = 1;
+  WATCH = 7;
+  WARNING = 10;
+  DISTRESS = 13;
+  CRITICAL = 16;
+  SEVERE = 19;
+}
+
+enum RangeCondition {
+  LOW = 0;
+  HIGH = 1;
+}
+
+// the difference between this and the com.spaceapplications.yamcs.ParameterValue is that
+// this one contains a a parameter id (assigned at subscription time) instead of a Parameter (xtce def of a parameter)
+message ParameterValue {
+  optional NamedObjectId id = 1;
+  optional Value rawValue = 2;
+  optional Value engValue = 3;
+  optional int64 acquisitionTime = 4;
+  optional int64 generationTime = 5;
+  optional AcquisitionStatus acquisitionStatus = 6;
+  optional bool processingStatus = 7;
+  optional MonitoringResult monitoringResult = 8;
+  optional RangeCondition rangeCondition = 9;
+
+  //to be used as alternative to the ones above for clients that do not understand internal yamcs time encoding
+  optional string acquisitionTimeUTC = 11;
+  optional string generationTimeUTC = 12;
+
+  // context-dependent ranges
+  repeated mdb.AlarmRange alarmRange = 25;
+
+  //how long (in milliseconds) this parameter value is valid
+  //Note that there is an option when subscribing to parameters to get updated when the parameter values expire 
+  optional int64 expireMillis = 26;
+}
+
+
+// used in the ParameterArchive to store the status flags associated to one parameter value
+message ParameterStatus {
+  optional AcquisitionStatus acquisitionStatus = 1;
+  optional MonitoringResult monitoringResult = 2;
+  optional RangeCondition rangeCondition = 3;
+  // context-dependent ranges
+  repeated mdb.AlarmRange alarmRange = 4;
+
+  //when the value expires
+  optional int64 expireMillis = 5;
+}
+
+message ParameterData {
+  repeated ParameterValue parameter = 1;
+
+  // the next three fields are used by the recorder as unique key to store parameters in "rows"
+  // and also by the components that provide parameters from external sources
+  // the time should roughly correspond to the parameter time but can be rounded for better efficiency
+  optional string group = 2;
+  optional int64  generationTime = 3;
+  optional int32 seqNum = 4;
+
+  //this is used when parameter data is delivered as result of subscriptions
+  optional int32 subscriptionId = 5;
+}
+
+message TimeSeries {
+  message Sample {
+    optional string time = 1;
+    optional double avg = 2;
+    optional double min = 3;
+    optional double max = 4;
+    optional int32 n = 5;
+  }
+
+  repeated Sample sample = 1;
+}
+
+message Ranges {
+   message Range {
+        optional string timeStart = 1;
+        optional string timeStop = 2;
+        optional Value engValue = 3;
+        optional int32 count = 4;
+   }
+   repeated Range range = 1;
+}

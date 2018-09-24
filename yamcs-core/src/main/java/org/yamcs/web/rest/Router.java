@@ -39,6 +39,7 @@ import org.yamcs.web.rest.archive.ArchiveAlarmRestHandler;
 import org.yamcs.web.rest.archive.ArchiveCommandRestHandler;
 import org.yamcs.web.rest.archive.ArchiveDownloadRestHandler;
 import org.yamcs.web.rest.archive.ArchiveEventRestHandler;
+import org.yamcs.web.rest.archive.ArchiveIndexDownloadsRestHandler;
 import org.yamcs.web.rest.archive.ArchiveIndexRestHandler;
 import org.yamcs.web.rest.archive.ArchivePacketRestHandler;
 import org.yamcs.web.rest.archive.ArchiveParameterRestHandler;
@@ -115,6 +116,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new ArchiveCommandRestHandler());
         registerRouteHandler(null, new ArchiveDownloadRestHandler());
         registerRouteHandler(null, new ArchiveEventRestHandler());
+        registerRouteHandler(null, new ArchiveIndexDownloadsRestHandler());
         registerRouteHandler(null, new ArchiveIndexRestHandler());
         registerRouteHandler(null, new ArchivePacketRestHandler());
         registerRouteHandler(null, new ParameterArchiveMaintenanceRestHandler());
@@ -191,9 +193,6 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
             }
             Pattern pattern = toPattern(routeString);
             Map<HttpMethod, RouteConfig> configByMethod = createAndGet(targetRoutes, pattern).configByMethod;
-            if (routeHandler.getClass().getName().contains("EuroSim")) {
-                System.out.println("putting " + routeConfig.httpMethod + " " + routeConfig);
-            }
             configByMethod.put(routeConfig.httpMethod, routeConfig);
         }
     }

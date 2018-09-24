@@ -6,3 +6,7 @@
   bottom: 0;
   overflow: auto;
 }
+
+.tab-content-wrapper.noscroll {
+  overflow: hidden;
+}
