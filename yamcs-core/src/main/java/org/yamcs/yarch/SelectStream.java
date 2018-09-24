@@ -7,20 +7,21 @@ import java.util.List;
  * @see org.yamcs.yarch.streamsql.SelectExpression
  *
  */
-public class SelectStream extends AbstractStream implements StreamSubscriber {
+public class SelectStream extends Stream implements StreamSubscriber {
     CompiledExpression whereExp;
-    AbstractStream input;
+    Stream input;
     final private List<CompiledExpression> aggInputList;
     final private List<CompiledExpression> selectList;
     final private WindowProcessor windowProc;
     final private boolean hasStars;
-    
-    //used as a marker for the * in "select a,*,b from..." expressions
-    final static public CompiledExpression STAR=new CompiledExpression() {
+
+    // used as a marker for the * in "select a,*,b from..." expressions
+    final static public CompiledExpression STAR = new CompiledExpression() {
         @Override
         public Object getValue(Tuple tuple) {
             return null;
         }
+
         @Override
         public ColumnDefinition getDefinition() {
             return null;
@@ -31,42 +32,49 @@ public class SelectStream extends AbstractStream implements StreamSubscriber {
      * 
      * @param ydb
      * @param input
-     * @param cWhereClause if null, then no where filtering
-     * @param wp if null, then no windowProcessing (aggInputList is also null in this case)
+     * @param cWhereClause
+     *            if null, then no where filtering
+     * @param wp
+     *            if null, then no windowProcessing (aggInputList is also null in this case)
      * @param cselectList
-     * @param outputDef //output definition containing the expanded stars
-     * @param minOutputDef //output definition where stars are not included
+     * @param outputDef
+     *            //output definition containing the expanded stars
+     * @param minOutputDef
+     *            //output definition where stars are not included
      */
-    public SelectStream(YarchDatabaseInstance ydb, AbstractStream input, CompiledExpression cWhereClause, List<CompiledExpression> caggInputList, WindowProcessor wp,
+    public SelectStream(YarchDatabaseInstance ydb, Stream input, CompiledExpression cWhereClause,
+            List<CompiledExpression> caggInputList, WindowProcessor wp,
             List<CompiledExpression> cselectList, TupleDefinition outputDef, TupleDefinition minOutputDef) {
 
-        super(ydb, input.getName()+"_select", outputDef);
-        this.input=input;
+        super(ydb, input.getName() + "_select", outputDef);
+        this.input = input;
         input.addSubscriber(this);
-        
-        this.aggInputList=caggInputList;
-        this.whereExp=cWhereClause;
-        this.windowProc=wp;
-        this.selectList=cselectList;
-        boolean hs=false;
-        if(selectList!=null) {
-            for(CompiledExpression ce:selectList) {
-                if(ce==STAR) {
-                    hs=true;
+
+        this.aggInputList = caggInputList;
+        this.whereExp = cWhereClause;
+        this.windowProc = wp;
+        this.selectList = cselectList;
+        boolean hs = false;
+        if (selectList != null) {
+            for (CompiledExpression ce : selectList) {
+                if (ce == STAR) {
+                    hs = true;
                     break;
                 }
             }
         }
-        hasStars=hs;
+        hasStars = hs;
     }
 
     @Override
     public void onTuple(Stream stream, Tuple t) {
-        if(whereExp!=null) {
-            Boolean v=(Boolean)whereExp.getValue(t);
-            if(!v) return;
+        if (whereExp != null) {
+            Boolean v = (Boolean) whereExp.getValue(t);
+            if (!v) {
+                return;
+            }
         }
-        if(windowProc!=null) {
+        if (windowProc != null) {
             processWindow(t);
         } else {
             processSelectList(t);
@@ -74,29 +82,29 @@ public class SelectStream extends AbstractStream implements StreamSubscriber {
     }
 
     private void processWindow(Tuple tuple) {
-        if(aggInputList!=null) {
-            Object[] v=new Object[aggInputList.size()];
-            for(int i=0;i<v.length;i++) {
-                v[i]=aggInputList.get(i).getValue(tuple);
+        if (aggInputList != null) {
+            Object[] v = new Object[aggInputList.size()];
+            for (int i = 0; i < v.length; i++) {
+                v[i] = aggInputList.get(i).getValue(tuple);
             }
-            tuple=new Tuple(windowProc.aggInputDef,v);
+            tuple = new Tuple(windowProc.aggInputDef, v);
         }
-        for(Tuple t:windowProc.newData(tuple)) {
+        for (Tuple t : windowProc.newData(tuple)) {
             processSelectList(t);
         }
 
     }
 
     private void processSelectList(Tuple tuple) {
-        if(selectList==null) {
+        if (selectList == null) {
             emitTuple(tuple);
             return;
         }
-        ArrayList<Object> v=new ArrayList<Object>();
-        TupleDefinition tdef=new TupleDefinition();
-        for(CompiledExpression ce:selectList) {
-            if(ce==STAR) {
-                for(int i=0;i<tuple.size();i++) {
+        ArrayList<Object> v = new ArrayList<>();
+        TupleDefinition tdef = new TupleDefinition();
+        for (CompiledExpression ce : selectList) {
+            if (ce == STAR) {
+                for (int i = 0; i < tuple.size(); i++) {
                     tdef.addColumn(tuple.getColumnDefinition(i));
                     v.add(tuple.getColumn(i));
                 }
@@ -105,7 +113,7 @@ public class SelectStream extends AbstractStream implements StreamSubscriber {
                 v.add(ce.getValue(tuple));
             }
         }
-        tuple=new Tuple(tdef, v);
+        tuple = new Tuple(tdef, v);
         emitTuple(tuple);
     }
 
@@ -116,12 +124,14 @@ public class SelectStream extends AbstractStream implements StreamSubscriber {
 
     @Override
     public void start() {
-        if(input.state==SETUP) input.start();
-        state=RUNNING;
+        if (input.state == SETUP) {
+            input.start();
+        }
+        state = RUNNING;
     }
 
     @Override
     protected void doClose() {
-        input.close(); //TODO replace with removeSubscriber
+        input.close(); // TODO replace with removeSubscriber
     }
 }

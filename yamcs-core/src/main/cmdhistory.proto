@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+option java_package = "org.yamcs.cmdhistory.protobuf";
+
+import "yamcs.proto";
+
+message AssignmentInfo {
+  repeated Assignment assignment = 1;
+}
+
+message Assignment {
+  optional string name = 1;
+  optional yamcs.Value value = 2;
+}

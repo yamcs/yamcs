@@ -8,12 +8,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
 import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
-import org.yamcs.tctm.ParameterDataLinkInitialiser;
-import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
@@ -40,9 +39,11 @@ class IndexRequestProcessor implements Runnable {
     IndexRequestListener indexRequestListener;
 
     // these maps contains the names with which the records will be sent to the client
-    Map<String, NamedObjectId> tmpackets = null;
+    Map<String, NamedObjectId> tmpackets;
+    Map<String, NamedObjectId> eventSources;
+    Map<String, NamedObjectId> commands;
+    Map<String, NamedObjectId> ppGroups;
 
-    boolean sendParams;
     boolean sendTms;
 
     IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, IndexRequestListener l) {
@@ -78,9 +79,25 @@ class IndexRequestProcessor implements Runnable {
             }
         }
 
-        // pp groups do not support namespaces yet
+        if (req.getEventSourceCount() > 0) {
+            eventSources = new HashMap<>();
+            for (NamedObjectId id : req.getEventSourceList()) {
+                eventSources.put(id.getName(), id);
+            }
+        }
+
+        if (req.getCmdNameCount() > 0) {
+            commands = new HashMap<>();
+            for (NamedObjectId id : req.getCmdNameList()) {
+                commands.put(id.getName(), id);
+            }
+        }
+
         if (req.getSendAllPp() || req.getPpGroupCount() > 0) {
-            sendParams = true; // TODO: fix; currently always send all
+            ppGroups = new HashMap<>();
+            for (NamedObjectId id : req.getPpGroupList()) {
+                ppGroups.put(id.getName(), id);
+            }
         }
     }
 
@@ -92,22 +109,37 @@ class IndexRequestProcessor implements Runnable {
                 int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
                 ok = sendHistogramData(XtceTmRecorder.TABLE_NAME, XtceTmRecorder.PNAME_COLUMN, mergeTime, tmpackets);
             }
-            if (ok && sendParams) {
+
+            if (ok && req.getSendAllPp()) {
                 // use 20 sec for the PP to avoid millions of records
                 int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 20000);
                 ok = sendHistogramData(ParameterRecorder.TABLE_NAME,
-                        ParameterDataLinkInitialiser.PARAMETER_TUPLE_COL_GROUP, mergeTime, null);
+                        StandardTupleDefinitions.PARAMETER_COL_GROUP, mergeTime, null);
+            } else if (ok && req.getPpGroupCount() > 0) {
+                // use 20 sec for the PP to avoid millions of records
+                int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 20000);
+                ok = sendHistogramData(ParameterRecorder.TABLE_NAME,
+                        StandardTupleDefinitions.PARAMETER_COL_GROUP, mergeTime, ppGroups);
             }
 
-            if (req.getSendAllCmd()) {
+            if (ok && req.getSendAllCmd()) {
                 int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
                 ok = sendHistogramData(CommandHistoryRecorder.TABLE_NAME,
-                        TcDataLinkInitialiser.CMDHIST_TUPLE_COL_CMDNAME, mergeTime, null);
+                        StandardTupleDefinitions.CMDHIST_TUPLE_COL_CMDNAME, mergeTime, null);
+            } else if (ok && commands != null) {
+                int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
+                ok = sendHistogramData(CommandHistoryRecorder.TABLE_NAME,
+                        StandardTupleDefinitions.CMDHIST_TUPLE_COL_CMDNAME, mergeTime, commands);
             }
-            if (req.getSendAllEvent()) {
+
+            if (ok && req.getSendAllEvent()) {
                 int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
                 ok = sendHistogramData(EventRecorder.TABLE_NAME, "source", mergeTime, null);
+            } else if (ok && eventSources != null) {
+                int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
+                ok = sendHistogramData(EventRecorder.TABLE_NAME, "source", mergeTime, eventSources);
             }
+
             if (ok && req.getSendCompletenessIndex()) {
                 ok = sendCompletenessIndex();
             }

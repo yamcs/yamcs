@@ -76,7 +76,7 @@ public class LinkTable extends JTable {
             final LinkInfo info = linkTable.linkTableModel.getLinkInfo(modelRow);
             setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
             setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
-            if (info != null && modelColumn == 4) {
+            if (info != null && modelColumn == 3) {
                 setHorizontalAlignment(SwingConstants.CENTER);
                 setFont(statusFont);
                 setBorder(isSelected ? statusBorderSelected : statusBorder);
@@ -85,7 +85,8 @@ public class LinkTable extends JTable {
                     setBackground(UiColors.DISABLED_FAINT_BG);
                     setForeground(UiColors.DISABLED_FAINT_FG);
                 } else if ("OK".equals(info.getStatus())) {
-                    if (linkTable.linkTableModel.isDataCountIncreasing(modelRow)) {
+                    if (linkTable.linkTableModel.isDataInCountIncreasing(modelRow)
+                            || linkTable.linkTableModel.isDataOutCountIncreasing(modelRow)) {
                         setBackground(UiColors.GOOD_BRIGHT_BG);
                         setForeground(UiColors.GOOD_BRIGHT_FG);
                     } else {
@@ -96,7 +97,7 @@ public class LinkTable extends JTable {
                     setBackground(UiColors.ERROR_FAINT_BG);
                     setForeground(UiColors.ERROR_FAINT_FG);
                 }
-            } else if (modelColumn == 5) { // Data count
+            } else if (modelColumn == 4 || modelColumn == 5) { // Data count
                 setHorizontalAlignment(SwingConstants.RIGHT);
             } else {
                 setHorizontalAlignment(SwingConstants.LEFT);

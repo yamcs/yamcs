@@ -23,47 +23,54 @@ services:
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
 
-tmDataLinks:
-  - class: org.yamcs.tctm.TcpTmDataLink
-    name: tm_realtime
-    stream: tm_realtime
+dataLinks:
+  - name: tm_realtime
+    class: org.yamcs.tctm.TcpTmDataLink
     args:
+      stream: tm_realtime
       host: localhost
       port: 10015
-  - class: org.yamcs.tctm.TcpTmDataLink
-    name: tm_dump
-    stream: tm_dump
+  - name: tm_dump
+    class: org.yamcs.tctm.TcpTmDataLink
     args:
+      stream: tm_dump
       host: localhost
       port: 10115
-
-#parameterDataLinks:
-#  - class: org.yamcs.simulation.SimulationPpProvider
-#    stream: pp_realtime
-#    args:
-#      simulationDataPath: etc/gs-simulation.xml
-
-
-# config the tc uplinkers
-tcDataLinks: 
-  - class: org.yamcs.tctm.TcpTcDataLink
-    stream: tc_realtime
-    name: tc_realtime
+  - name: tc_sim
+    class: org.yamcs.tctm.TcpTcDataLink
     args:
+      stream: tc_sim
       host: localhost
       port: 10025
+  - name: TSE
+    class: org.yamcs.tctm.TseDataLink
+    args:
+      host: localhost
+      port: 8135
 
-#Specify which MDB configuration to use, references a named section in mdb.yaml 
-mdb: landing
-
+mdb:
+  # Configuration of the active loaders
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: "sheet"
+    spec: "mdb/simulator-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/landing.xls"
+      - type: "sheet"
+        spec: "mdb/GS-tmtc.xls"
+  - type: "org.yamcs.xtce.TseLoader"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/tse/simulator.xls"
 
 #Configuration for streams created at server startup
 streamConfig:
-  tm: 
+  tm:
     - name: "tm_realtime"
     - name: "tm_dump"
-  cmdHist: ["cmdhist_realtime",  "cmdhist_dump"]
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]
-  param: ["pp_realtime", "sys_param"]
+  param: ["pp_realtime", "pp_tse", "sys_param"]
   alarm: ["alarms_realtime"]
   tc: ["tc_realtime"]
+  sqlFile: "etc/tc_streams.sql"

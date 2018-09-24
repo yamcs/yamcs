@@ -83,10 +83,16 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         }
 
         String yamcsInstance = originalRequestInfo.getYamcsInstance();
+        String processorName = originalRequestInfo.getProcessor();
         User user = originalRequestInfo.getUser();
         if (yamcsInstance != null) {
-            Processor firstProcessor = Processor.getFirstProcessor(yamcsInstance);
-            wsClient = new ConnectedWebSocketClient(user, applicationName, firstProcessor, this);
+            Processor processor;
+            if (processorName == null) {
+                processor = Processor.getFirstProcessor(yamcsInstance);
+            } else {
+                processor = Processor.getInstance(yamcsInstance, processorName);
+            }
+            wsClient = new ConnectedWebSocketClient(user, applicationName, processor, this);
         } else {
             wsClient = new ConnectedWebSocketClient(user, applicationName, null, this);
         }

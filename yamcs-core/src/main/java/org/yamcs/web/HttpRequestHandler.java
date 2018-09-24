@@ -197,11 +197,18 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         case WebSocketFrameHandler.WEBSOCKET_PATH:
             verifyAuthentication(ctx, req);
             if (path.length == 2) { // No instance specified
-                prepareChannelForWebSocketUpgrade(ctx, req, null);
-            } else if (YamcsServer.hasInstance(path[2])) {
-                prepareChannelForWebSocketUpgrade(ctx, req, path[2]);
+                prepareChannelForWebSocketUpgrade(ctx, req, null, null);
             } else {
-                sendPlainTextError(ctx, req, NOT_FOUND);
+                path = path[2].split("/", 2);
+                if (YamcsServer.hasInstance(path[0])) {
+                    if (path.length == 1) {
+                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], null);
+                    } else {
+                        prepareChannelForWebSocketUpgrade(ctx, req, path[0], path[1]);
+                    }
+                } else {
+                    sendPlainTextError(ctx, req, NOT_FOUND);
+                }
             }
             return;
         default:
@@ -216,7 +223,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
      * @param ctx
      *            context for this channel handler
      */
-    private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance) {
+    private void prepareChannelForWebSocketUpgrade(ChannelHandlerContext ctx, HttpRequest req, String yamcsInstance,
+            String processor) {
         contentExpected = true;
         ctx.pipeline().addLast(new HttpObjectAggregator(65536));
 
@@ -228,6 +236,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
         HttpRequestInfo originalRequestInfo = new HttpRequestInfo(req);
         originalRequestInfo.setYamcsInstance(yamcsInstance);
+        originalRequestInfo.setProcessor(processor);
         originalRequestInfo.setUser(ctx.channel().attr(CTX_USER).get());
         ctx.pipeline().addLast(new WebSocketFrameHandler(originalRequestInfo,
                 wsConfig.getConnectionCloseNumDroppedMsg(), wsConfig.getWriteBufferWaterMark()));

@@ -1,0 +1,166 @@
+syntax="proto2";
+
+package yamcs.protobuf.yamcsManagement;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/mdb/mdb.proto";
+
+/*service states coming from guava (numbers have to correspond)*/
+enum ServiceState {
+  NEW = 0;
+  STARTING = 1;
+  RUNNING = 2;
+  STOPPING = 3;
+  TERMINATED = 4;
+  FAILED = 5;
+}
+
+message YamcsInstances {
+  repeated YamcsInstance instance = 1;
+}
+
+message YamcsInstance {
+  enum InstanceState {
+    OFFLINE = 0;
+    INITIALIZING = 1;
+    INITIALIZED = 2;
+    STARTING = 3;
+    RUNNING = 4;
+    STOPPING = 5;
+    FAILED = 6;
+  }
+  optional string name = 1;
+  optional mdb.MissionDatabase missionDatabase = 3;
+  repeated ProcessorInfo processor = 4;
+  optional InstanceState state = 11;
+  //in case the state=FAILED, this field will indicate the cause of the failure
+  // the missionDatabase and other fields may not be filled when this happens
+  optional string failureCause = 9;
+  optional string missionTime = 10;
+}
+
+message ProcessorInfo {
+  optional string instance = 1; //yamcs instance
+  optional string name = 2;
+  optional string type = 3;
+  optional string spec = 4;
+  optional string creator = 5;
+  optional bool hasAlarms = 6;
+  optional bool hasCommanding = 7;
+  optional ServiceState state = 8;
+  optional ReplayRequest replayRequest = 9; //in case of replay
+  optional ReplayStatus.ReplayState replayState = 10; //in case of replay
+  repeated ServiceInfo service = 16;
+  optional bool persistent = 17;
+  optional string time = 18;
+  optional bool replay = 19;
+}
+
+message ClientInfo {
+  enum ClientState {
+    CONNECTED = 0;
+    DISCONNECTED = 1;
+  }
+  optional int32 id = 2;
+  optional string username = 3;
+  optional string applicationName = 4;
+
+  optional string instance = 1;  
+  optional string processorName = 5;
+  
+  optional ClientState state = 6;
+  optional int64 loginTime = 8;
+  optional string loginTimeUTC = 9;
+}
+
+message ObjectPrivilegeInfo {
+  optional string type = 1;
+  repeated string object = 2;
+}
+
+message UserInfo {
+  optional string login = 1;
+  repeated ClientInfo clientInfo = 2;
+  repeated string systemPrivilege = 11;
+  repeated ObjectPrivilegeInfo objectPrivilege = 12;
+  optional bool superuser = 13;
+}
+
+message TmStatistics {
+  optional string packetName = 1;
+  optional int64 receivedPackets = 2;
+  optional int64 lastReceived = 3;
+  optional string lastReceivedUTC = 8;
+  optional int64 lastPacketTime = 4;
+  optional string lastPacketTimeUTC = 7;
+  optional int32 subscribedParameterCount = 6;
+}
+
+message Statistics {
+  optional string instance = 1;
+  optional string yProcessorName = 2;
+  repeated TmStatistics tmstats = 3;
+  optional int64 lastUpdated = 4; //java local time of the last update
+  optional string lastUpdatedUTC = 5; // String representation in ISO8601 format
+}
+
+message ProcessorManagementRequest {
+  enum Operation {
+    CREATE_PROCESSOR = 0;
+    CONNECT_TO_PROCESSOR = 1;
+  }
+  optional Operation operation = 1;
+  optional string instance = 2; //yamcs instance
+  optional string name = 3; //processor name
+  optional string type = 4; //only for CREATE
+  optional string config = 5; //only for CREATE - used to be called spec
+  repeated int32 clientId = 6; //for CREATE and CONNECT
+  optional bool persistent = 7[default=false]; //only for CREATE
+}
+
+message ProcessorRequest {
+  enum Operation {
+    PAUSE = 2;
+    RESUME = 3;
+    SEEK = 4;
+    CHANGE_SPEED = 5;
+  }
+  optional Operation operation = 1;
+  optional string instance = 2; //yamcs instance
+  optional string name = 3; //processor name
+  optional int64 seekTime = 4; //for SEEK
+  optional ReplaySpeed replaySpeed = 5; //for CHANGE_SPEED
+}
+
+message LinkInfo {
+  optional string instance = 1;
+  optional string name = 2;
+  optional string type = 3;
+  optional string spec = 4;
+  optional string stream = 5 [deprecated=true];
+  optional bool disabled = 6;
+  optional string status = 7;
+  optional int64 dataCount = 8 [deprecated=true];
+  optional int64 dataInCount = 10;
+  optional int64 dataOutCount = 11;
+  optional string detailedStatus = 9;
+}
+
+message LinkEvent {
+  enum Type {
+    REGISTERED = 1;
+    UNREGISTERED = 2;
+    UPDATED = 3;
+  }
+  optional Type type = 1;
+  optional LinkInfo linkInfo = 2;
+}
+
+message ServiceInfo {
+  optional string instance = 1;
+  optional string name = 2;
+  optional ServiceState state = 3;
+  optional string className = 4;
+  optional string processor = 5;
+}

@@ -3,6 +3,12 @@
   z-index: 50;
 }
 
+.timestamp-wrapper {
+  position: absolute;
+  z-index: 50;
+  bottom: 4px;
+}
+
 .graph-container {
   overflow: hidden;
 }

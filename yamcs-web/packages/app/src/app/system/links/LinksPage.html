@@ -15,8 +15,8 @@
         <td mat-cell *matCellDef="let link">{{ link.name }}</td>
       </ng-container>
 
-      <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Type</th>
+      <ng-container matColumnDef="className">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 200px">Class</th>
         <td mat-cell *matCellDef="let link">{{ link.type }}</td>
       </ng-container>
 
@@ -41,20 +41,22 @@
         </td>
       </ng-container>
 
-      <ng-container matColumnDef="spec">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 250px">Spec</th>
-        <td mat-cell *matCellDef="let link">{{ link.spec }}</td>
+      <ng-container matColumnDef="args">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 250px">Args</th>
+        <td mat-cell *matCellDef="let link"><span [innerHTML]="link.spec | printJson"></span></td>
       </ng-container>
 
-      <ng-container matColumnDef="stream">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 150px">Stream</th>
-        <td mat-cell *matCellDef="let link">{{ link.stream }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="dataCount">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Data Count</th>
+      <ng-container matColumnDef="in">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="text-align: center">In</th>
         <td mat-cell *matCellDef="let link" style="text-align: center">
-          {{ link.dataCount | number }}
+          {{ link.dataInCount | number }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="out">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header style="text-align: center">Out</th>
+        <td mat-cell *matCellDef="let link" style="text-align: center">
+          {{ link.dataOutCount | number }}
         </td>
       </ng-container>
 

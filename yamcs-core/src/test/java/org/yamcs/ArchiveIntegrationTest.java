@@ -27,6 +27,7 @@ import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest.CreateProcessorRequest;
 import org.yamcs.protobuf.Rest.EditClientRequest;
+import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
 import org.yamcs.protobuf.Table.Cell;
 import org.yamcs.protobuf.Table.ColumnInfo;
 import org.yamcs.protobuf.Table.Row;
@@ -246,7 +247,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
                 "/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=true&limit=3",
                 HttpMethod.GET, "").get();
 
-        ParameterData pdata = fromJson(respDl, ParameterData.newBuilder()).build();
+        ListParameterValuesResponse pdata = fromJson(respDl, ListParameterValuesResponse.newBuilder()).build();
         assertEquals(1, pdata.getParameterCount());
         ParameterValue pv = pdata.getParameter(0);
         assertEquals(995, pv.getEngValue().getUint32Value());
@@ -254,7 +255,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         respDl = restClient.doRequest(
                 "/archive/IntegrationTest/parameters/REFMDB/ccsds-apid?start=2015-02-02T10:10:00&norepeat=false&limit=3",
                 HttpMethod.GET, "").get();
-        pdata = fromJson(respDl, ParameterData.newBuilder()).build();
+        pdata = fromJson(respDl, ListParameterValuesResponse.newBuilder()).build();
         assertEquals(3, pdata.getParameterCount());
     }
 

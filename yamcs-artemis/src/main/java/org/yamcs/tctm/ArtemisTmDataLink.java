@@ -93,8 +93,13 @@ public class ArtemisTmDataLink extends AbstractService implements TmPacketDataLi
     }
 
     @Override
-    public long getDataCount() {
+    public long getDataInCount() {
         return packetcount;
+    }
+
+    @Override
+    public long getDataOutCount() {
+        return 0;
     }
 
     @Override

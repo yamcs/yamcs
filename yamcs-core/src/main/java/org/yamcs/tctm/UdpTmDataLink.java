@@ -11,13 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.tctm.TmSink;
-
 import org.yamcs.utils.TimeEncoding;
 
 /**
- * Receives telemetry packets via UDP.
- * One UDP datagram = one TM packet.
+ * Receives telemetry packets via UDP. One UDP datagram = one TM packet.
  * 
  * Keeps simple statistics about the number of datagram received and the number of too short datagrams
  * 
@@ -83,14 +80,13 @@ public class UdpTmDataLink extends AbstractTmDataLink {
 
     /**
      * 
-     * Called to retrieve the next packet.
-     * It blocks in readining on the multicast socket
+     * Called to retrieve the next packet. It blocks in readining on the multicast socket
      * 
      * @return anything that looks as a valid packet, just the size is taken into account to decide if it's valid or not
      */
     public PacketWithTime getNextPacket() {
         ByteBuffer packet = null;
-        
+
         long rectime = TimeEncoding.INVALID_INSTANT;
         while (isRunning()) {
             try {
@@ -176,7 +172,12 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     }
 
     @Override
-    public long getDataCount() {
+    public long getDataInCount() {
         return validDatagramCount;
+    }
+
+    @Override
+    public long getDataOutCount() {
+        return 0;
     }
 }

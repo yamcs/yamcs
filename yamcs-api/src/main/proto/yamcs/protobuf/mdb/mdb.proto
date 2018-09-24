@@ -1,0 +1,367 @@
+syntax="proto2";
+
+package yamcs.protobuf.mdb;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs/protobuf/yamcs.proto";
+
+message MissionDatabase {
+  optional string configName = 1; //this is the config section in mdb.yaml
+  optional string name = 2; //XTCE root SpaceSystem name
+  optional string version = 3; //XTCE root SpaceSystem header version
+  repeated SpaceSystemInfo spaceSystem = 4;
+}
+
+message HistoryInfo {
+  optional string version = 1;
+  optional string date = 2;
+  optional string message = 3;
+  optional string author = 4;
+}
+
+enum DataSourceType {
+  TELEMETERED = 0;
+  DERIVED = 1;
+  CONSTANT = 2;
+  LOCAL = 3;
+  SYSTEM = 4;
+  COMMAND = 5;
+  COMMAND_HISTORY = 6;
+  EXTERNAL1 = 7;
+  EXTERNAL2 = 8;
+  EXTERNAL3 = 9;
+}
+
+enum AlarmLevelType {
+  NORMAL = 0;
+  WATCH = 1;
+  WARNING =  2;
+  DISTRESS = 3;
+  CRITICAL = 4;
+  SEVERE = 5;
+}
+
+message UnitInfo {
+  optional string unit = 1;
+}
+
+message AlarmRange {
+  optional AlarmLevelType level = 1;
+  optional double minInclusive = 2;
+  optional double maxInclusive = 3;
+  optional double minExclusive = 4;
+  optional double maxExclusive = 5;
+}
+
+message EnumerationAlarm {
+  optional AlarmLevelType level = 1;
+//  optional int64 value = 2; //removed because it is not part of XTCE and it doesn't work with ranges
+  optional string label = 3;
+}
+
+message AlarmInfo {
+  optional int32 minViolations = 1;
+  repeated AlarmRange staticAlarmRange = 2;
+  repeated EnumerationAlarm enumerationAlarm = 3;
+}
+
+message DataEncodingInfo {
+  enum Type {
+    BINARY = 0;
+    BOOLEAN = 1;
+    FLOAT = 2;
+    INTEGER = 3;
+    STRING = 4;
+  }
+  optional Type type = 1;
+  optional bool littleEndian = 2;
+  optional int32 sizeInBits = 3;
+  optional string encoding = 4;
+  optional CalibratorInfo defaultCalibrator = 6;
+  repeated ContextCalibratorInfo contextCalibrator = 7;
+}
+
+message ContextCalibratorInfo {
+  repeated ComparisonInfo comparison = 1;
+  optional CalibratorInfo calibrator = 2;
+}
+
+message CalibratorInfo {
+  optional string type = 1;
+  optional PolynomialCalibratorInfo polynomialCalibrator = 2;
+  optional SplineCalibratorInfo splineCalibrator = 3;
+  optional JavaExpressionCalibratorInfo javaExpressionCalibrator = 4;
+}
+
+message PolynomialCalibratorInfo {
+  repeated double coefficient = 1;
+}
+
+message SplineCalibratorInfo {
+  message SplinePointInfo {
+    optional double raw = 1;
+    optional double calibrated = 2;
+  }
+  repeated SplinePointInfo point = 1;
+}
+
+message JavaExpressionCalibratorInfo {
+  optional string formula = 1;
+}
+
+message EnumValue {
+  optional int64 value = 1;
+  optional string label = 2;
+}
+
+message ParameterTypeInfo {
+  optional string engType = 1;
+  optional DataEncodingInfo dataEncoding = 2;
+  repeated UnitInfo unitSet = 3;
+  optional AlarmInfo defaultAlarm = 4;
+  repeated EnumValue enumValue = 5;
+  optional AbsoluteTimeInfo absoluteTimeInfo = 6;
+}
+
+message AbsoluteTimeInfo {
+  optional string initialValue = 1;
+  optional double scale = 2;
+  optional double offset = 3;
+  optional ParameterInfo offsetFrom = 4;
+  optional string epoch = 5;
+}
+
+message UsedByInfo {
+  repeated AlgorithmInfo algorithm = 1;
+  repeated ContainerInfo container = 2;
+}
+
+message ParameterInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional ParameterTypeInfo type = 6;
+  optional DataSourceType dataSource = 7;
+  optional UsedByInfo usedBy = 8;
+}
+
+message ArgumentTypeInfo {
+    optional string engType = 1;
+    optional DataEncodingInfo dataEncoding = 2;
+    repeated UnitInfo unitSet = 3;
+    repeated EnumValue enumValue = 5;
+    optional double rangeMin = 6;
+    optional double rangeMax = 7;
+}
+
+message ArgumentInfo {
+    optional string name = 1;
+    optional string description = 2;
+    //optional string type = 3;
+    optional string initialValue = 4;
+    // repeated UnitInfo unitSet = 5;
+    optional ArgumentTypeInfo type = 6;
+}
+
+message ArgumentAssignmentInfo {
+  optional string name = 1;
+  optional string value = 2;
+}
+
+message SignificanceInfo {
+  enum SignificanceLevelType {
+    NONE = 1;
+    WATCH = 2;
+    WARNING = 3;
+    DISTRESS = 4;
+    CRITICAL = 5;
+    SEVERE = 6;
+  }
+  optional SignificanceLevelType consequenceLevel = 1;
+  optional string reasonForWarning = 2;
+}
+
+message ComparisonInfo {
+  enum OperatorType {
+    EQUAL_TO = 1;
+    NOT_EQUAL_TO = 2;
+    GREATER_THAN = 3;
+    GREATER_THAN_OR_EQUAL_TO = 4;
+    SMALLER_THAN = 5;
+    SMALLER_THAN_OR_EQUAL_TO = 6;
+  }
+  optional ParameterInfo parameter = 1;
+  optional OperatorType operator = 2;
+  optional string value = 3;
+}
+
+message TransmissionConstraintInfo {
+  repeated ComparisonInfo comparison = 1;
+  optional int64 timeout = 2;
+}
+
+message CommandInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional CommandInfo baseCommand = 6;
+  optional bool abstract = 7;
+  repeated ArgumentInfo argument = 8;
+  repeated ArgumentAssignmentInfo argumentAssignment = 9;
+  optional SignificanceInfo significance = 10;
+  repeated TransmissionConstraintInfo constraint = 11;
+  optional CommandContainerInfo commandContainer = 13;
+}
+
+message RepeatInfo {
+  optional int64 fixedCount = 1;
+  optional ParameterInfo dynamicCount = 2;
+  optional int32 bitsBetween = 3;
+}
+
+message SequenceEntryInfo {
+  enum ReferenceLocationType {
+    CONTAINER_START = 1;
+    PREVIOUS_ENTRY = 2;
+  }
+  optional int32 locationInBits = 1;
+  optional ReferenceLocationType referenceLocation = 2;
+
+  // For use in sequence containers
+  optional ContainerInfo container = 3;
+  optional ParameterInfo parameter = 4;
+
+  // For use in command containers
+  optional ArgumentInfo argument = 6;
+  optional FixedValueInfo fixedValue = 7;
+
+  optional RepeatInfo repeat = 5;
+}
+
+message FixedValueInfo {
+  optional string name = 1;
+  optional string hexValue = 2;
+  optional int32 sizeInBits = 3;
+}
+
+message CommandContainerInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional int32 sizeInBits = 6;
+  optional CommandContainerInfo baseContainer = 7;
+  repeated SequenceEntryInfo entry = 8;
+}
+
+message ContainerInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional int64 maxInterval = 6;
+  optional int32 sizeInBits = 7;
+  optional ContainerInfo baseContainer = 8;
+  repeated ComparisonInfo restrictionCriteria = 9;
+  repeated SequenceEntryInfo entry = 10;
+  optional UsedByInfo usedBy = 11;
+}
+
+message InputParameterInfo {
+  optional ParameterInfo parameter = 1;
+  optional string inputName = 2;
+  optional int32 parameterInstance = 3;
+  optional bool mandatory = 4;
+}
+
+message OutputParameterInfo {
+  optional ParameterInfo parameter = 1;
+  optional string outputName = 2;
+}
+
+message AlgorithmInfo {
+  enum Scope {
+    GLOBAL = 0;
+    COMMAND_VERIFICATION = 1;
+  }
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  repeated NamedObjectId alias = 5;
+  optional Scope scope = 6;
+  optional string language = 7;
+  optional string text = 8;
+  repeated InputParameterInfo inputParameter = 9;
+  repeated OutputParameterInfo outputParameter = 10;
+  repeated ParameterInfo onParameterUpdate = 11;
+  repeated int64 onPeriodicRate = 12;
+}
+
+message ListParametersResponse {
+  repeated ParameterInfo parameter = 1;
+  optional string continuationToken = 2;
+  optional int32 totalSize = 3;
+}
+
+message ListParameterTypesResponse {
+  repeated ParameterTypeInfo type = 1;
+  optional string continuationToken = 2;
+  optional int32 totalSize = 3;
+}
+
+message BulkGetParameterInfoRequest {
+  repeated NamedObjectId id = 1;
+}
+
+message BulkGetParameterInfoResponse {
+  message GetParameterInfoResponse {
+    optional NamedObjectId id = 1;
+    optional ParameterInfo parameter = 2;
+  }
+  repeated GetParameterInfoResponse response = 1;
+}
+
+message ListContainersResponse {
+  repeated ContainerInfo container = 1;
+  optional string continuationToken = 2;
+  optional int32 totalSize = 3;
+}
+
+message ListCommandsResponse {
+  repeated CommandInfo command = 1;
+  optional string continuationToken = 2;
+  optional int32 totalSize = 3;
+}
+
+message ListAlgorithmsResponse {
+  repeated AlgorithmInfo algorithm = 1;
+  optional string continuationToken = 2;
+  optional int32 totalSize = 3;
+}
+
+message ListSpaceSystemsResponse {
+  repeated SpaceSystemInfo spaceSystem = 1;
+  optional string continuationToken = 2;
+  optional int32 totalSize = 3;
+}
+
+message SpaceSystemInfo {
+  optional string name = 1;
+  optional string qualifiedName = 2;
+  optional string shortDescription = 3;
+  optional string longDescription = 4;
+  optional string version = 5;
+  optional int32 parameterCount = 6;
+  optional int32 containerCount = 7;
+  optional int32 commandCount = 8;
+  optional int32 algorithmCount = 9;
+  repeated HistoryInfo history = 14;
+  repeated SpaceSystemInfo sub = 15;
+}

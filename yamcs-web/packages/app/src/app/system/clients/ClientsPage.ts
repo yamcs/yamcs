@@ -1,11 +1,11 @@
-import { Component, ChangeDetectionStrategy, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
-
-import { ClientInfo } from '@yamcs/client';
-
-import { YamcsService } from '../../core/services/YamcsService';
-import { MatTableDataSource, MatSort } from '@angular/material';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import { MatButtonToggleGroup, MatSort, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
+import { ClientInfo } from '@yamcs/client';
 import { Subscription } from 'rxjs';
+import { YamcsService } from '../../core/services/YamcsService';
+
+
 
 @Component({
   templateUrl: './ClientsPage.html',
@@ -16,31 +16,42 @@ export class ClientsPage implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  displayedColumns = ['id', 'username', 'applicationName', 'processorName', 'loginTime'];
+  displayedColumns = ['id', 'username', 'applicationName', 'instance', 'processorName', 'loginTime'];
 
   dataSource = new MatTableDataSource<ClientInfo>();
 
   clientSubscription: Subscription;
 
+  @ViewChild(MatButtonToggleGroup)
+  group: MatButtonToggleGroup;
+
   private clientsById: { [key: string]: ClientInfo } = {};
 
-  constructor(yamcs: YamcsService, title: Title) {
+  constructor(private yamcs: YamcsService, title: Title) {
     title.setTitle('Clients - Yamcs');
-    yamcs.getInstanceClient()!.getClients().then(clients => {
-      for (const client of clients) {
-        this.processClientEvent(client);
-      }
-    });
 
-    yamcs.getInstanceClient()!.getClientUpdates().then(response => {
+    // Do this subscription via the instance-specific websocket connection,
+    // so that we don't need a second connection.
+    this.yamcs.getInstanceClient()!.getClientUpdates(true /* any instance */).then(response => {
       this.clientSubscription = response.client$.subscribe(evt => {
         this.processClientEvent(evt);
       });
     });
+
+    this.dataSource.filterPredicate = (client, filter) => {
+      const currentInstance = this.yamcs.getInstance().name;
+      const v = filter === 'all' || client.instance === currentInstance;
+      return v;
+    };
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
+    this.dataSource.filter = 'current';
+  }
+
+  applyFilter() {
+    this.dataSource.filter = this.group.value;
   }
 
   ngOnDestroy() {

@@ -11,6 +11,7 @@ import org.yamcs.web.HttpRequestHandler;
 import org.yamcs.web.HttpRequestHandler.ChunkedTransferStats;
 import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 
 import io.netty.buffer.ByteBuf;
@@ -22,7 +23,7 @@ import io.netty.channel.Channel;
  * one chunk, this will cause a chunk to be written out. Could maybe be replaced by using built-in netty functionality,
  * but would need to investigate.
  */
-public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscriber {
+public abstract class StreamToChunkedTransferEncoder implements StreamSubscriber {
 
     private static final Logger log = LoggerFactory.getLogger(StreamToChunkedTransferEncoder.class);
     private static final int CHUNK_TRESHOLD = 8096;
@@ -61,7 +62,7 @@ public abstract class StreamToChunkedTransferEncoder extends RestStreamSubscribe
     }
 
     @Override
-    public void processTuple(Stream stream, Tuple tuple) {
+    public void onTuple(Stream stream, Tuple tuple) {
         if (failed) {
             log.warn("R{}: Already failed. Ignoring tuple", req.getRequestId());
             return;

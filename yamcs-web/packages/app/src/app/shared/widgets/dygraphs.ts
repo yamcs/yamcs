@@ -45,6 +45,11 @@ export type DyLegendSeries = {
   yHTML: string;
 };
 
+export type TimestampTrackerData = {
+  timestamp: Date;
+  canvasx: number;
+};
+
 /**
  * A range of data (which does not overlap with any other guideline)
  */

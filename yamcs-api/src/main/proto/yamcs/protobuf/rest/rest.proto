@@ -1,0 +1,256 @@
+syntax = "proto2";
+
+package yamcs.protobuf.rest;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs/protobuf/yamcs.proto";
+import "yamcs/protobuf/archive/archive.proto";
+import "yamcs/protobuf/pvalue/pvalue.proto";
+import "yamcs/protobuf/alarms/alarms.proto";
+import "yamcs/protobuf/commanding/commanding.proto";
+import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
+
+message GetApiOverviewResponse {
+  message RouteInfo {
+    optional string url = 1;
+    repeated string method = 2;
+  }
+  message PluginInfo {
+    optional string name = 1;
+    optional string description = 2;
+    optional string version = 3;
+    optional string vendor = 4;
+  }
+  optional string yamcsVersion = 1;
+  optional string serverId = 2;
+  optional string defaultYamcsInstance = 3;
+  repeated RouteInfo route = 4;
+  repeated PluginInfo plugin = 5;
+}
+
+message BulkGetParameterValueRequest {
+  repeated NamedObjectId id = 1;
+  optional bool fromCache = 2;
+  optional uint64 timeout = 3; //if not fromCache, wait this time (in milliseconds) to receive the parameter
+}
+
+message BulkGetParameterValueResponse {
+  repeated pvalue.ParameterValue value = 1;
+}
+
+message BulkSetParameterValueRequest {
+  message SetParameterValueRequest {
+    optional NamedObjectId id = 1;
+    optional Value value = 2;
+  }
+  repeated SetParameterValueRequest request = 1;
+}
+
+message BulkDownloadParameterValueRequest {
+  optional string start = 1;
+  optional string stop = 2;
+  repeated NamedObjectId id = 3;
+  optional string namespace = 4; // Namespace used to display parameter names in e.g. csv header. Only used when no parameter ids were specified.
+}
+
+message ListLinkInfoResponse {
+  repeated yamcsManagement.LinkInfo link = 1;
+}
+
+message ListCommandsResponse {
+  repeated commanding.CommandHistoryEntry entry = 1;
+}
+
+message EditLinkRequest {
+  optional string state = 1;
+}
+
+message EditCommandQueueRequest {
+  optional string state = 1;
+}
+
+message ListClientsResponse {
+  repeated yamcsManagement.ClientInfo client = 1;
+}
+
+message EditClientRequest {
+  optional string instance = 1;
+  optional string processor = 2;
+}
+
+message ListProcessorsResponse {
+  repeated yamcsManagement.ProcessorInfo processor = 1;
+}
+
+message ListCommandQueuesResponse {
+  repeated commanding.CommandQueueInfo queue = 1;
+}
+
+message ListCommandQueueEntries {
+  repeated commanding.CommandQueueEntry entry = 1;
+}
+
+message EditCommandQueueEntryRequest {
+  optional string state = 1;
+}
+
+message IssueCommandRequest {
+  message Assignment {
+    optional string name = 1;
+    optional string value = 2;
+  }
+  repeated Assignment assignment = 1;
+  optional string origin = 2;
+  optional int32 sequenceNumber = 3;
+  optional bool dryRun = 4;
+  optional string comment = 5;
+}
+
+message IssueCommandResponse {
+  optional commanding.CommandQueueEntry commandQueueEntry = 1;
+  optional string source = 2;
+  optional string hex = 3;
+  optional bytes binary = 4;
+}
+
+message UpdateCommandHistoryRequest {
+    message KeyValue {
+        required string key = 1;
+        required string value = 2;
+    }
+    required commanding.CommandId cmdId = 1;
+    repeated KeyValue historyEntry = 2;
+}
+
+message CreateEventRequest {
+  optional string type = 1;
+  optional string message = 2;
+  optional string severity = 3;
+  optional string time = 4;
+  optional string source = 5;
+  optional int32 sequenceNumber = 6;
+}
+
+message CreateProcessorRequest {
+  optional string name = 1;
+  repeated int32 clientId = 6;
+  optional bool persistent = 11;
+  optional string type = 12;
+  optional string config = 13;
+}
+
+message EditProcessorRequest {
+  optional string state = 1;
+  optional string seek = 2;
+  optional string speed = 3;
+}
+
+message StreamSubscribeRequest {
+  optional string stream = 1;
+  //repeated ColumnValue limit = 2; // Multiple limits are AND-ed together
+}
+
+message SetSimulationTimeRequest {
+  //one of the two have to be specified
+  optional int64 time0 = 1;
+  optional string time0UTC = 2;
+  optional int64 simElapsedTime = 3;
+  optional double simSpeed = 4;
+}
+
+message ListInstancesResponse {
+  repeated yamcsManagement.YamcsInstance instance = 1;
+}
+
+message ListTagsResponse {
+  repeated ArchiveTag tag = 1;
+}
+
+message CreateTagRequest {
+  optional string name = 1;
+  optional string start = 2;
+  optional string stop = 3;
+  optional string description = 4;
+  optional string color = 5;
+}
+
+message EditTagRequest {
+  optional string name = 1;
+  optional string start = 2;
+  optional string stop = 3;
+  optional string description = 4;
+  optional string color = 5;
+}
+
+message ListAlarmsResponse {
+  repeated alarms.AlarmData alarm = 1;
+}
+
+message EditAlarmRequest {
+  optional string state = 1;
+  optional string comment = 2;
+}
+
+message ListTablesResponse {
+  repeated archive.TableInfo table = 1;
+}
+
+message ListStreamsResponse {
+  repeated archive.StreamInfo stream = 1;
+}
+
+message ListEventsResponse {
+  repeated Event event = 1;
+  optional string continuationToken = 2;
+}
+
+message ListPacketsResponse {
+  repeated TmPacketData packet = 1;
+  optional string continuationToken = 2;
+}
+
+message ListServiceInfoResponse {
+  repeated yamcsManagement.ServiceInfo service = 1;
+}
+
+message ListParameterValuesResponse {
+  repeated pvalue.ParameterValue parameter = 1;
+  optional string continuationToken = 2;
+}
+
+message EditServiceRequest {
+  optional string state = 1;
+}
+
+message BulkGetIndexRequest {
+  optional string start = 1;
+  optional string stop = 2;
+  repeated string filter = 3;
+  repeated string packetname = 4;
+}
+
+message CreateBucketRequest {
+  optional string name = 1;
+}
+
+message BucketInfo {
+  optional string name = 1;
+  optional uint64 size  = 2; //total size in bytes of all objects in the bucket (metadata is not counted)
+  optional uint32 numObjects  = 3; //number of objects in the bucket
+}
+message ObjectInfo {
+  optional string name = 1;
+  optional string created  = 2; //time in UTC format
+  optional uint64 size  = 3; //size in bytes
+  map<string, string> metadata = 4;
+}
+
+message ListBucketsResponse {
+  repeated BucketInfo bucket = 1;
+}
+
+
+message ListObjectsResponse {
+  repeated string prefix = 1;
+  repeated ObjectInfo object = 2;
+}

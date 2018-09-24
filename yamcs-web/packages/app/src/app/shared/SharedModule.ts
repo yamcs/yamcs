@@ -20,6 +20,7 @@ import { DateTimePipe } from './pipes/DateTimePipe';
 import { FilenamePipe } from './pipes/FilenamePipe';
 import { FormatBytesPipe } from './pipes/FormatBytesPipe';
 import { OperatorPipe } from './pipes/OperatorPipe';
+import { PrintJsonPipe } from './pipes/PrintJsonPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
 import { ActionLink } from './template/ActionLink';
@@ -42,6 +43,7 @@ import { Hex } from './widgets/Hex';
 import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
+import { TimestampTracker } from './widgets/TimestampTracker';
 
 const materialModules = [
   OverlayModule,
@@ -103,6 +105,7 @@ const sharedComponents = [
   Select,
   TabDetailIcon,
   TextAction,
+  TimestampTracker,
   ToolbarActions,
 ];
 
@@ -111,6 +114,7 @@ const pipes = [
   FilenamePipe,
   FormatBytesPipe,
   OperatorPipe,
+  PrintJsonPipe,
   UnitsPipe,
   ValuePipe,
 ];

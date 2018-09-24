@@ -32,7 +32,7 @@ public class ParameterValue {
     private Value rawValue;
     private Value engValue;
     private long acquisitionTime = TimeEncoding.INVALID_INSTANT;
-    private long generationTime;
+    private long generationTime = TimeEncoding.INVALID_INSTANT;
 
     // use this singleton as a default status
     ParameterStatus status = ParameterStatus.NOMINAL;
@@ -498,6 +498,10 @@ public class ParameterValue {
 
     public boolean hasAcquisitionTime() {
         return acquisitionTime != TimeEncoding.INVALID_INSTANT;
+    }
+
+    public boolean hasGenerationTime() {
+        return generationTime != TimeEncoding.INVALID_INSTANT;
     }
 
     public boolean hasExpirationTime() {

@@ -1,55 +1,137 @@
 package org.yamcs.yarch;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.slf4j.Logger;
+import org.yamcs.utils.LoggingUtils;
 
 /**
  * Streams are means to transport tuples.
  *
  */
-public interface Stream {
+public abstract class Stream {
 
-    //states
-    public final static int SETUP = 0;
-    public final static int RUNNING = 1;
-    public final static int QUITTING = 2;
+    // states
+    public static final int SETUP = 0;
+    public static final int RUNNING = 1;
+    public static final int QUITTING = 2;
+
+    protected String name;
+    protected TupleDefinition outputDefinition;
+    final protected Collection<StreamSubscriber> subscribers = new ConcurrentLinkedQueue<>();
+
+    protected volatile int state = SETUP;
+
+    protected Logger log;
+
+    protected YarchDatabaseInstance ydb;
+    private volatile AtomicLong dataCount = new AtomicLong();
+    private volatile AtomicInteger subscriberCount = new AtomicInteger();
+    private ExceptionHandler handler;
+
+    protected Stream(YarchDatabaseInstance ydb, String name, TupleDefinition definition) {
+        this.name = name;
+        this.outputDefinition = definition;
+        this.ydb = ydb;
+        log = LoggingUtils.getLogger(getClass(), ydb.getName(), this);
+    }
 
     /**
      * Start emitting tuples.
      */
     public abstract void start();
 
-    public abstract TupleDefinition getDefinition();
+    public TupleDefinition getDefinition() {
+        return outputDefinition;
+    }
 
-    public abstract void emitTuple(Tuple t);
+    public void emitTuple(Tuple tuple) {
+        dataCount.incrementAndGet();
+        for (StreamSubscriber s : subscribers) {
+            try {
+                s.onTuple(this, tuple);
+            } catch (Exception e) {
+                if (handler != null) {
+                    handler.handle(tuple, s, e);
+                } else {
+                    log.warn("Exception received when emitting tuple to subscriber " + s + ": {}", e);
+                    throw e;
+                }
+            }
+        }
+    }
 
-    public abstract String getName();
+    public String getName() {
+        return name;
+    }
 
-    public abstract void setName(String streamName);
+    public void setName(String streamName) {
+        this.name = streamName;
+    }
 
-    public abstract void addSubscriber(StreamSubscriber s);
+    public void addSubscriber(StreamSubscriber s) {
+        subscribers.add(s);
+        subscriberCount.incrementAndGet();
+    }
 
-    public abstract void removeSubscriber(StreamSubscriber s);
+    public void removeSubscriber(StreamSubscriber s) {
+        subscribers.remove(s);
+        subscriberCount.decrementAndGet();
+    }
 
-    public abstract ColumnDefinition getColumnDefinition(String colName);
+    public ColumnDefinition getColumnDefinition(String colName) {
+        return outputDefinition.getColumn(colName);
+    }
 
     /**
-     * Closes the stream by:
-     *  send the streamClosed signal to all subscribed clients
+     * Closes the stream by: send the streamClosed signal to all subscribed clients
      */
-    public abstract void close();
+    public final void close() {
+        if (state == QUITTING) {
+            return;
+        }
+        state = QUITTING;
 
-    public abstract int getState();
+        ydb.removeStream(name);
+        log.debug("Closed stream {} num emitted tuples: {}", name, getDataCount());
+        doClose();
+        for (StreamSubscriber s : subscribers) {
+            s.streamClosed(this);
+        }
+    }
 
-    public abstract long getNumEmittedTuples();
+    protected abstract void doClose();
 
-    public abstract int getSubscriberCount();
+    public int getState() {
+        return state;
+    }
 
-    public abstract Collection<StreamSubscriber> getSubscribers();
-    
-    public void exceptionHandler(ExceptionHandler h);
+    public long getDataCount() {
+        return dataCount.get();
+    }
+
+    public int getSubscriberCount() {
+        return subscriberCount.get();
+    }
+
+    public Collection<StreamSubscriber> getSubscribers() {
+        return Collections.unmodifiableCollection(subscribers);
+    }
+
+    public void exceptionHandler(ExceptionHandler h) {
+        this.handler = h;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 
     public static interface ExceptionHandler {
         public void handle(Tuple tuple, StreamSubscriber s, Throwable t);
     }
-
 }

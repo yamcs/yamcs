@@ -11,9 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.api.MediaType;
 import org.yamcs.parameter.ParameterValueWithId;
-import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
+import org.yamcs.protobuf.Rest.ListParameterValuesResponse;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
@@ -152,7 +152,7 @@ public class ArchiveParameterReplayRestHandler extends RestHandler {
             }
 
         } else {
-            ParameterData.Builder resultb = ParameterData.newBuilder();
+            ListParameterValuesResponse.Builder resultb = ListParameterValuesResponse.newBuilder();
             RestParameterReplayListener replayListener = new RestParameterReplayListener(pos, limit, req) {
                 @Override
                 public void onParameterData(List<ParameterValueWithId> params) {
