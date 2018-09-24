@@ -72,7 +72,7 @@ public class ManagementService implements ProcessorListener {
     Set<CommandQueueListener> commandQueueListeners = new CopyOnWriteArraySet<>();
     Set<TableStreamListener> tableStreamListeners = new CopyOnWriteArraySet<>();
 
-    Map<Processor, Statistics> yprocs = new ConcurrentHashMap<>();
+    Map<Processor, Statistics> processors = new ConcurrentHashMap<>();
 
     // we use this one because ConcurrentHashMap does not support null values
     static final Statistics STATS_NULL = Statistics.newBuilder().setInstance("null").setYProcessorName("null").build();
@@ -101,13 +101,16 @@ public class ManagementService implements ProcessorListener {
         managementListeners.forEach(l -> l.serviceUnregistered(instance, serviceName));
     }
 
-    public void registerLink(String instance, String linkName, String streamName, String spec, Link link) {
+    public void registerLink(String instance, String linkName, String spec, Link link) {
         LinkInfo.Builder linkb = LinkInfo.newBuilder().setInstance(instance)
-                .setName(linkName).setStream(streamName)
+                .setName(linkName)
                 .setDisabled(link.isDisabled())
                 .setStatus(link.getLinkStatus().name())
-                .setType(link.getClass().getSimpleName()).setSpec(spec)
-                .setDataCount(link.getDataCount());
+                .setType(link.getClass().getName())
+                .setSpec(spec)
+                .setDataInCount(link.getDataInCount())
+                .setDataOutCount(link.getDataOutCount())
+                .setDataCount(link.getDataInCount() + link.getDataOutCount());
         if (link.getDetailedStatus() != null) {
             linkb.setDetailedStatus(link.getDetailedStatus());
         }
@@ -403,13 +406,13 @@ public class ManagementService implements ProcessorListener {
 
     private void updateStatistics() {
         try {
-            for (Entry<Processor, Statistics> entry : yprocs.entrySet()) {
+            for (Entry<Processor, Statistics> entry : processors.entrySet()) {
                 Processor yproc = entry.getKey();
                 Statistics stats = entry.getValue();
                 ProcessingStatistics ps = yproc.getTmProcessor().getStatistics();
                 if ((stats == STATS_NULL) || (ps.getLastUpdated() > stats.getLastUpdated())) {
                     stats = ManagementGpbHelper.buildStats(yproc);
-                    yprocs.put(yproc, stats);
+                    processors.put(yproc, stats);
                 }
                 if (stats != STATS_NULL) {
                     for (ManagementListener l : managementListeners) {
@@ -436,14 +439,14 @@ public class ManagementService implements ProcessorListener {
     public void processorAdded(Processor processor) {
         ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorAdded(pi));
-        yprocs.put(processor, STATS_NULL);
+        processors.put(processor, STATS_NULL);
     }
 
     @Override
     public void processorClosed(Processor processor) {
         ProcessorInfo pi = ManagementGpbHelper.toProcessorInfo(processor);
         managementListeners.forEach(l -> l.processorClosed(pi));
-        yprocs.remove(processor);
+        processors.remove(processor);
     }
 
     @Override
@@ -549,12 +552,17 @@ public class ManagementService implements ProcessorListener {
         boolean hasChanged() {
             if (!linkInfo.getStatus().equals(link.getLinkStatus().name())
                     || linkInfo.getDisabled() != link.isDisabled()
-                    || linkInfo.getDataCount() != link.getDataCount()
+                    || linkInfo.getDataInCount() != link.getDataInCount()
+                    || linkInfo.getDataOutCount() != link.getDataOutCount()
                     || !linkInfo.getDetailedStatus().equals(link.getDetailedStatus())) {
 
-                linkInfo = LinkInfo.newBuilder(linkInfo).setDisabled(link.isDisabled())
-                        .setStatus(link.getLinkStatus().name()).setDetailedStatus(link.getDetailedStatus())
-                        .setDataCount(link.getDataCount()).build();
+                linkInfo = LinkInfo.newBuilder(linkInfo)
+                        .setDisabled(link.isDisabled())
+                        .setStatus(link.getLinkStatus().name())
+                        .setDetailedStatus(link.getDetailedStatus())
+                        .setDataInCount(link.getDataInCount())
+                        .setDataOutCount(link.getDataOutCount())
+                        .setDataCount(link.getDataInCount() + link.getDataOutCount()).build();
                 return true;
             } else {
                 return false;

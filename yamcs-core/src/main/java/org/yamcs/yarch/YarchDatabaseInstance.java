@@ -47,7 +47,7 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class YarchDatabaseInstance {
     Map<String, TableDefinition> tables;
-    transient Map<String, AbstractStream> streams;
+    transient Map<String, Stream> streams;
     static Logger log = LoggerFactory.getLogger(YarchDatabaseInstance.class.getName());
     static YConfiguration config;
     String tablespaceName;
@@ -283,7 +283,7 @@ public class YarchDatabaseInstance {
      * @param stream
      * @throws YarchException
      */
-    public void addStream(AbstractStream stream) throws YarchException {
+    public void addStream(Stream stream) throws YarchException {
         if (tables.containsKey(stream.getName())) {
             throw new YarchException("A table named '" + stream.getName() + "' already exists");
         }
@@ -310,7 +310,7 @@ public class YarchDatabaseInstance {
         return false;
     }
 
-    public AbstractStream getStream(String name) {
+    public Stream getStream(String name) {
         return streams.get(name);
     }
 
@@ -341,7 +341,7 @@ public class YarchDatabaseInstance {
         return YarchDatabase.getStorageEngine(tbldef.getStorageEngineName());
     }
 
-    public Collection<AbstractStream> getStreams() {
+    public Collection<Stream> getStreams() {
         return streams.values();
     }
 

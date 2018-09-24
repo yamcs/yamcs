@@ -1,0 +1,40 @@
+<table mat-table [dataSource]="dataSource" class="ya-data-table" matSort matSortActive="name" matSortDirection="asc"
+  matSortDisableClear>
+
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Name</th>
+    <td mat-cell *matCellDef="let service">{{ service.name }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="className">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 350px">Class</th>
+    <td mat-cell *matCellDef="let service">{{ service.className }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="state">
+    <th mat-header-cell *matHeaderCellDef style="width: 32px"></th>
+    <td mat-cell *matCellDef="let service">
+      <app-service-state [service]="service"></app-service-state>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell *matCellDef="let service">
+      <mat-menu #serviceMenu="matMenu" overlapTrigger="false" class="ya-menu">
+        <button mat-menu-item (click)="startService.emit(service.name)" [disabled]="service.state !== 'TERMINATED'">
+          Start service
+        </button>
+        <button mat-menu-item (click)="stopService.emit(service.name)" [disabled]="service.state !== 'RUNNING'">
+          Stop service
+        </button>
+      </mat-menu>
+      <button mat-button [matMenuTriggerFor]="serviceMenu">
+        <mat-icon>more_horiz</mat-icon>
+      </button>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>

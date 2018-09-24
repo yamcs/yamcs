@@ -33,7 +33,6 @@ import org.yamcs.web.InternalServerErrorException;
 import org.yamcs.web.NotFoundException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
-import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.Router.RouteMatch;
@@ -44,6 +43,7 @@ import org.yamcs.yarch.ColumnSerializerFactory;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.DataType._type;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
@@ -120,13 +120,14 @@ public class ArchiveTableRestHandler extends RestHandler {
             }
         }
         sqlb.descend(req.asksDescending(true));
+        sqlb.limit(pos, limit);
 
         String sql = sqlb.toString();
         TableData.Builder responseb = TableData.newBuilder();
-        RestStreams.stream(instance, sql, args, new RestStreamSubscriber(pos, limit) {
+        RestStreams.stream(instance, sql, args, new StreamSubscriber() {
 
             @Override
-            public void processTuple(Stream stream, Tuple tuple) {
+            public void onTuple(Stream stream, Tuple tuple) {
                 TableRecord.Builder rec = TableRecord.newBuilder();
                 rec.addAllColumn(ArchiveHelper.toColumnDataList(tuple));
                 responseb.addRecord(rec); // TODO estimate byte size

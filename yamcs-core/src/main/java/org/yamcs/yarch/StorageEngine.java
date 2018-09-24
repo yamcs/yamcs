@@ -1,21 +1,21 @@
 package org.yamcs.yarch;
 
-import java.util.Iterator;
-
 import org.yamcs.archive.TagDb;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.TableWriter.InsertMode;
 
 public interface StorageEngine {
     /**
-     *  Create a new table based on definition.
+     * Create a new table based on definition.
+     * 
      * @param def
-     * @throws YarchException 
+     * @throws YarchException
      */
     public void createTable(YarchDatabaseInstance ydb, TableDefinition def) throws YarchException;
 
     /**
      * Drop the table (removing all files)
+     * 
      * @param tbldef
      * @throws YarchException
      */
@@ -23,6 +23,7 @@ public interface StorageEngine {
 
     /**
      * Loads a table from the disk - called at startup.
+     * 
      * @param tbl
      * @throws YarchException
      */
@@ -37,19 +38,22 @@ public interface StorageEngine {
      * @return
      * @throws YarchException
      */
-    public TableWriter newTableWriter(YarchDatabaseInstance ydb, TableDefinition tbl, InsertMode insertMode) throws YarchException;
+    public TableWriter newTableWriter(YarchDatabaseInstance ydb, TableDefinition tbl, InsertMode insertMode)
+            throws YarchException;
 
     /**
      * 
      * Creates a new table reader
+     * 
      * @param tbl
      */
-    public AbstractStream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tbl, boolean ascending, boolean follow);
-
+    public Stream newTableReaderStream(YarchDatabaseInstance ydb, TableDefinition tbl, boolean ascending,
+            boolean follow);
 
     public TagDb getTagDb(YarchDatabaseInstance ydb) throws YarchException;
 
-    public HistogramIterator getHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef, String columnName, TimeInterval interval, long mergeTime) throws YarchException;
+    public HistogramIterator getHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef, String columnName,
+            TimeInterval interval, long mergeTime) throws YarchException;
 
     public BucketDatabase getBucketDatabase(YarchDatabaseInstance yarchDatabaseInstance) throws YarchException;
 }

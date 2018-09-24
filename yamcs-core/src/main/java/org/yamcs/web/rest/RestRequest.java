@@ -424,8 +424,10 @@ public class RestRequest {
     }
 
     public static class IntervalResult {
-        private final long start;
-        private final long stop;
+        private long start;
+        private long stop;
+        private boolean inclusiveStart = true;
+        private boolean inclusiveStop = false;
 
         IntervalResult(RestRequest req) throws BadRequestException {
             start = req.getQueryParameterAsDate("start", TimeEncoding.INVALID_INSTANT);
@@ -452,6 +454,16 @@ public class RestRequest {
             return stop;
         }
 
+        public void setStart(long start, boolean inclusive) {
+            this.start = start;
+            this.inclusiveStart = inclusive;
+        }
+
+        public void setStop(long stop, boolean inclusive) {
+            this.stop = stop;
+            this.inclusiveStop = inclusive;
+        }
+
         public TimeInterval asTimeInterval() {
             TimeInterval intv = new TimeInterval();
             if (hasStart()) {
@@ -466,17 +478,23 @@ public class RestRequest {
         public String asSqlCondition(String col) {
             StringBuilder buf = new StringBuilder();
             if (start != TimeEncoding.INVALID_INSTANT) {
-                buf.append(col).append(" >= ").append(start);
+                buf.append(col);
+                buf.append(inclusiveStart ? " >= " : " > ");
+                buf.append(start);
                 if (stop != TimeEncoding.INVALID_INSTANT) {
-                    buf.append(" and ").append(col).append(" < ").append(stop);
+                    buf.append(" and ").append(col);
+                    buf.append(inclusiveStop ? " <= " : " < ");
+                    buf.append(stop);
                 }
             } else {
-                buf.append(col).append(" < ").append(stop);
+                buf.append(col);
+                buf.append(inclusiveStop ? " <= " : " < ");
+                buf.append(stop);
             }
             return buf.toString();
         }
     }
-    
+
     /**
      * returns the body of the http request
      * 

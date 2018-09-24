@@ -7,7 +7,6 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.Route;
-import org.yamcs.yarch.AbstractStream;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -20,7 +19,7 @@ public class ArchiveStreamRestHandler extends RestHandler {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
-        for (AbstractStream stream : ydb.getStreams()) {
+        for (Stream stream : ydb.getStreams()) {
             if (!hasObjectPrivilege(req, ObjectPrivilegeType.Stream, stream.getName())) {
                 continue;
             }

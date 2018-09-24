@@ -13,13 +13,9 @@ while [ -h "$PRG" ]; do
   fi
 done
 
-# Get standard environment variables
 PRGDIR=`dirname "$PRG"`
 YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
-# set classpath
 . "$YAMCS_HOME"/bin/setclasspath.sh
 
-# run the program
-exec "$_RUNJAVA" -classpath "$CLASSPATH" \
-	org.yamcs.simulation.ui.PpSimulationGui "$@"
+exec "$_RUNJAVA" org.yamcs.simulation.ui.PpSimulationGui "$@"

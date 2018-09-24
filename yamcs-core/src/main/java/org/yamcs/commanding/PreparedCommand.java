@@ -1,21 +1,26 @@
 package org.yamcs.commanding;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.cmdhistory.protobuf.Cmdhistory.Assignment;
+import org.yamcs.cmdhistory.protobuf.Cmdhistory.AssignmentInfo;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.ValueHelper;
 import org.yamcs.protobuf.Yamcs.Value.Type;
-import org.yamcs.parameter.Value;
-import org.yamcs.tctm.TcDataLinkInitialiser;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
@@ -52,6 +57,7 @@ public class PreparedCommand {
     public final static String CNAME_BINARY = "binary";
     public final static String CNAME_CMDNAME = "cmdName";
     public final static String CNAME_SOURCE = "source";
+    public final static String CNAME_ASSIGNMENTS = "assignments";
 
     public PreparedCommand(CommandId id) {
         this.id = id;
@@ -87,15 +93,17 @@ public class PreparedCommand {
     public String getStringAttribute(String attrname) {
         CommandHistoryAttribute a = getAttribute(attrname);
         Value v = ValueUtility.fromGpb(a.getValue());
-        if ((a != null) && (v.getType() == Type.STRING))
+        if ((a != null) && (v.getType() == Type.STRING)) {
             return v.getStringValue();
+        }
         return null;
     }
 
     public CommandHistoryAttribute getAttribute(String name) {
         for (CommandHistoryAttribute a : attributes) {
-            if (name.equals(a.getName()))
+            if (name.equals(a.getName())) {
                 return a;
+            }
         }
         return null;
     }
@@ -114,10 +122,9 @@ public class PreparedCommand {
                 .setCommandName((String) t.getColumn(CNAME_CMDNAME)).build();
         return cmdId;
     }
-    
-    
+
     public Tuple toTuple() {
-        TupleDefinition td = TcDataLinkInitialiser.TC_TUPLE_DEFINITION.copy();
+        TupleDefinition td = StandardTupleDefinitions.TC.copy();
         ArrayList<Object> al = new ArrayList<>();
         al.add(id.getGenerationTime());
         al.add(id.getOrigin());
@@ -133,8 +140,20 @@ public class PreparedCommand {
             td.addColumn(a.getName(), ValueUtility.getYarchType(a.getValue().getType()));
             al.add(ValueUtility.getYarchValue(a.getValue()));
         }
-        Tuple t = new Tuple(td, al.toArray());
-        return t;
+
+        AssignmentInfo.Builder assignmentb = AssignmentInfo.newBuilder();
+        if (getArgAssignment() != null) {
+            for (Entry<Argument, Value> entry : getArgAssignment().entrySet()) {
+                assignmentb.addAssignment(Assignment.newBuilder()
+                        .setName(entry.getKey().getName())
+                        .setValue(ValueUtility.toGbp(entry.getValue()))
+                        .build());
+            }
+        }
+        td.addColumn(CNAME_ASSIGNMENTS, DataType.protobuf("org.yamcs.cmdhistory.protobuf.Cmdhistory$AssignmentInfo"));
+        al.add(assignmentb.build());
+
+        return new Tuple(td, al.toArray());
     }
 
     public void setBinary(byte[] b) {
@@ -143,8 +162,9 @@ public class PreparedCommand {
 
     public String getUsername() {
         CommandHistoryAttribute cha = getAttribute(CNAME_USERNAME);
-        if (cha == null)
+        if (cha == null) {
             return null;
+        }
 
         return cha.getValue().getStringValue();
     }
@@ -153,22 +173,41 @@ public class PreparedCommand {
         return attributes;
     }
 
-    public static PreparedCommand fromTuple(Tuple t) {
+    public static PreparedCommand fromTuple(Tuple t, XtceDb xtcedb) {
         CommandId cmdId = getCommandId(t);
         PreparedCommand pc = new PreparedCommand(cmdId);
+        pc.setMetaCommand(xtcedb.getMetaCommand(cmdId.getCommandName()));
         for (int i = 0; i < t.size(); i++) {
             ColumnDefinition cd = t.getColumnDefinition(i);
             String name = cd.getName();
-            Value v = ValueUtility.getColumnValue(cd, t.getColumn(i));
-            if (CNAME_GENTIME.equals(name) || CNAME_ORIGIN.equals(name) || CNAME_SEQNUM.equals(name))
+            if (CNAME_GENTIME.equals(name) || CNAME_ORIGIN.equals(name) || CNAME_SEQNUM.equals(name)
+                    || CNAME_ASSIGNMENTS.equals(name)) {
                 continue;
+            }
+            Value v = ValueUtility.getColumnValue(cd, t.getColumn(i));
             CommandHistoryAttribute a = CommandHistoryAttribute.newBuilder().setName(name)
                     .setValue(ValueUtility.toGbp(v)).build();
             pc.attributes.add(a);
         }
         pc.setBinary((byte[]) t.getColumn(CNAME_BINARY));
 
+        AssignmentInfo assignments = (AssignmentInfo) t.getColumn(CNAME_ASSIGNMENTS);
+        pc.argAssignment = new HashMap<>();
+        for (Assignment assignment : assignments.getAssignmentList()) {
+            Argument arg = findArgument(pc.getMetaCommand(), assignment.getName());
+            Value v = ValueUtility.fromGpb(assignment.getValue());
+            pc.argAssignment.put(arg, v);
+        }
+
         return pc;
+    }
+
+    private static Argument findArgument(MetaCommand mc, String name) {
+        Argument arg = mc.getArgument(name);
+        if (arg == null && mc.getBaseMetaCommand() != null) {
+            arg = findArgument(mc.getBaseMetaCommand(), name);
+        }
+        return arg;
     }
 
     public static PreparedCommand fromCommandHistoryEntry(CommandHistoryEntry che) {
@@ -190,8 +229,9 @@ public class PreparedCommand {
         int i;
         for (i = 0; i < attributes.size(); i++) {
             CommandHistoryAttribute a = attributes.get(i);
-            if (name.equals(a.getName()))
+            if (name.equals(a.getName())) {
                 break;
+            }
         }
         CommandHistoryAttribute a = CommandHistoryAttribute.newBuilder().setName(name)
                 .setValue(ValueHelper.newValue(value)).build();
@@ -251,8 +291,9 @@ public class PreparedCommand {
     public Map<Argument, Value> getArgAssignment() {
         return argAssignment;
     }
-    
-    public String toString () {
-        return "PreparedCommand("+uuid+", "+StringConverter.toString(id)+")";
+
+    @Override
+    public String toString() {
+        return "PreparedCommand(" + uuid + ", " + StringConverter.toString(id) + ")";
     }
 }

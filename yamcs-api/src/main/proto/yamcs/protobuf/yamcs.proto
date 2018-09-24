@@ -1,0 +1,314 @@
+syntax="proto2";
+
+package yamcs.protobuf;
+option java_package = "org.yamcs.protobuf";
+
+message StringMessage {
+  required string message = 1;
+}
+
+message Instant {
+  required int64 instant = 1;
+}
+
+message MessagingAddress {
+  required string address = 1;
+}
+
+//union type for storing a value
+message Value {
+  enum Type {
+    FLOAT = 0;
+    DOUBLE = 1;
+    UINT32 = 2;
+    SINT32 = 3;
+    BINARY = 4;
+    STRING = 5;
+    TIMESTAMP = 6;
+    UINT64 = 7;
+    SINT64 = 8;
+    BOOLEAN = 9;
+    AGGREGATE = 10;
+    ARRAY = 11;
+  }
+  required Type type = 1;
+  optional float floatValue = 2;
+  optional double doubleValue = 3;
+  optional sint32 sint32Value = 4;
+  optional uint32 uint32Value = 5;
+  optional bytes binaryValue = 6;
+  optional string stringValue = 7;
+  optional int64 timestampValue = 8;
+  optional uint64 uint64Value = 9;
+  optional sint64 sint64Value = 10;
+  optional bool booleanValue = 11;
+  optional AggregateValue aggregateValue = 12;
+  repeated Value arrayValue = 13;
+}
+
+//an aggregate value is an ordered list of (member name, member value)
+//we use two arrays in order to be able to send just the values (since the names will not change)
+message AggregateValue {
+   repeated string name = 1;
+   repeated Value value = 2;
+}
+
+//this is used by external clients to identify a parameter or a container (e.g. when subscribing to it)
+// if namespace is set, then the corresponding alias is looked up
+message NamedObjectId {
+  required string name = 1;
+  optional string namespace = 2;
+}
+
+message NamedObjectList {
+  repeated NamedObjectId list = 1;
+}
+
+//requesting index (histogram) information about tm packets, pp groups and commands
+message IndexRequest {
+  required string instance = 1;
+  optional int64 start = 2;
+  optional int64 stop = 3;
+
+  //alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323 (no timezone!)
+  optional string utcStart = 14;
+  optional string utcStop = 15;
+
+  //namespace to use when sending all tm, pp or cmd (when using a filter, the namespace specified in the filter will be used)
+  //if not specified, the fully qualified canonical names will be sent
+  optional string defaultNamespace = 4;
+
+  //if sendAllTm is true, then all tm packets are sent, otherwise those in the tmPacket list (which can be empty)
+  optional bool sendAllTm = 5[default=false];
+  repeated NamedObjectId tmPacket = 6;
+
+  //if sendAllPp is true, then all PP groups are sent, otherwise those in the ppGroup list (which can be empty)
+  optional bool sendAllPp = 7[default=false];
+  repeated NamedObjectId ppGroup = 8;
+
+  optional bool sendCompletenessIndex = 9[default=false];
+
+  //if sendAllCmd is true, then all command names  are sent, otherwise those in the cmdName list (which can be empty)
+  optional bool sendAllCmd = 10 [default=false];
+  repeated NamedObjectId cmdName = 11;
+
+  //if sendAllEvent is true, then all events are sent, otherwise those in the eventSource list (which can be empty)
+  optional bool sendAllEvent = 12 [default=false];
+  repeated NamedObjectId eventSource = 13;
+  
+  optional uint32 mergeTime = 16;
+}
+
+//contains histogram data
+message ArchiveRecord {
+  required NamedObjectId id = 1;
+  required int64 first = 2;
+  required int64 last = 3;
+  required int32 num = 4;
+  optional string info = 5;
+}
+
+message IndexResult {
+  required string instance = 1;
+  repeated ArchiveRecord records = 2;
+  //type can be histogram or completenss
+  optional string type = 3;
+  //if type=histogram, the tableName is the table for which the histogram is sent
+  optional string tableName = 4;
+}
+
+message TagRequest {
+  required string instance = 1;
+  optional int64 start = 2;
+  optional int64 stop = 3;
+}
+
+message ArchiveTag {
+  optional int32 id = 1;
+  required string name = 2;
+  optional int64 start = 3;
+  optional int64 stop = 4;
+  optional string description = 5;
+  optional string color = 6;
+}
+
+message TagResult {
+  required string instance = 1;
+  repeated ArchiveTag tag = 2;
+}
+
+//insert (if no oldTag) or update tag
+message UpsertTagRequest {
+  optional ArchiveTag oldTag = 1;
+  required ArchiveTag newTag = 2;
+}
+message DeleteTagRequest {
+  required ArchiveTag tag = 3;
+}
+
+/************************ Replays ****************/
+enum EndAction {
+  LOOP = 1;
+  QUIT = 2;
+  STOP = 3;
+}
+
+message ReplaySpeed {
+  enum ReplaySpeedType {
+    AFAP = 1;
+    FIXED_DELAY = 2;
+    REALTIME = 3;
+  }
+  required ReplaySpeedType type = 1;
+  optional float param = 2;
+}
+
+//Integers from this enum are sent as values of the $Protocol.DATA_TYPE_HEADER_NAME to the artemis messages containing subscription data
+// the same ids are also part of for websocket subscriptions
+enum ProtoDataType {
+  //error in replay
+  DT_ERROR = 1;
+
+  //the replay status has changed (e.g.  stopped or closed) the body contains a ReplayStatus
+  STATE_CHANGE = 2;
+
+  TM_PACKET = 3;
+  PP = 4;
+  EVENT = 5;
+  ARCHIVE_INDEX = 6;
+  ARCHIVE_TAG = 7;
+  PARAMETER = 8;
+  CMD_HISTORY = 9;
+  PROCESSOR_INFO = 10;
+  CLIENT_INFO = 11;
+  PROCESSING_STATISTICS = 12;
+  STREAM_DATA = 13;
+  ALARM_DATA = 14;
+  TIME_INFO = 15;
+  LINK_EVENT = 16;
+  COMMAND_QUEUE_INFO = 17;
+  COMMAND_QUEUE_EVENT = 18;
+  CONNECTION_INFO = 19;
+  INSTANCE = 20;
+  
+  EXTENSION_DATA = 100;
+}
+
+//used to replay (concurrently) TM packets, parameters and events
+message ReplayRequest {
+  //time specification
+  optional int64 start = 1;
+  optional int64 stop = 2;
+
+  //alternative time specification: ISO 8061 time of shape 2012-11-03T07:36:33.323Z (UTC only)
+  optional string utcStart = 13;
+  optional string utcStop = 14;
+
+  //what should happen at the end of the replay
+  optional EndAction endAction = 3[default=QUIT];
+
+  //how fast the replay should go
+  optional ReplaySpeed speed = 4;
+
+  // Reverse the direction of the replay
+  optional bool reverse = 15;
+  
+  optional ParameterReplayRequest parameterRequest = 8;
+
+  // By default all Packets, Events, CommandHistory are part of the replay
+  // Unless one or more of the below requests are specified.
+  optional PacketReplayRequest packetRequest = 9;
+  optional EventReplayRequest eventRequest = 10;
+  optional CommandHistoryReplayRequest commandHistoryRequest = 11;
+  optional PpReplayRequest ppRequest = 12;
+}
+
+message ParameterReplayRequest {
+  repeated NamedObjectId nameFilter = 1; // At least 1 filter is required
+  optional bool sendRaw = 2[default=false];
+  optional bool performMonitoring = 3[default=false]; //i.e. out of limit checking
+}
+
+message PacketReplayRequest {
+  // No filter, means all packets for which privileges exist, are sent
+  repeated NamedObjectId nameFilter = 1;
+}
+
+message EventReplayRequest {
+}
+
+message CommandHistoryReplayRequest {
+  // No filter, means all command history entries are sent
+  repeated NamedObjectId nameFilter = 1;
+}
+
+//Request to replay parameters - they can be filtered by the parameter group
+message PpReplayRequest {
+  // No filter, means all pp groups are sent
+  repeated string groupNameFilter = 1;
+  // exclude the parameters from these groups
+  //   this takes precedence over the filter above (i.e. if a group is part of both, it will be excluded)
+  repeated string groupNameExclude = 2;
+}
+
+message ReplayStatus {
+  enum ReplayState {
+    INITIALIZATION = 0; // just at the beginning or when the replay request (start, stop or packet selection) changes
+    RUNNING = 1;
+    STOPPED = 2; //the replay has reached the end with the endaction stop
+    ERROR = 3;   //the replay stopped due to an error.
+    PAUSED = 4;
+    CLOSED = 5; //the replay is finished and closed
+  }
+  required ReplayState state = 1;
+  optional ReplayRequest request = 2; //this is send only when answering getReplayStatus
+  optional string errorMessage = 3; //in case state is ERROR
+}
+
+message TmPacketData {
+  required int64 receptionTime = 1;
+  required bytes packet = 2;
+  optional int64 generationTime = 3;
+  optional int32 sequenceNumber = 4;
+  optional NamedObjectId id = 5;
+  optional string generationTimeUTC = 6;
+  optional string receptionTimeUTC = 7;
+}
+
+message TimeInfo {
+  optional int64 currentTime = 1;
+  optional string currentTimeUTC = 2;
+}
+
+message Event {
+  enum EventSeverity {
+    INFO = 0;
+    WARNING = 1;
+    ERROR = 2;
+    //the levels below are compatible with XTCE
+    // we left the 4 out since it could be used 
+    // for warning if we ever decide to get rid of the old ones
+    WATCH = 3;
+    DISTRESS = 5;
+    CRITICAL = 6;
+    SEVERE = 7;
+  }
+  required string source = 1;
+  required int64 generationTime = 2;
+  required int64 receptionTime = 3;
+  required int32 seqNumber = 4;
+  optional string type = 5;
+  required string message = 6;
+  optional EventSeverity severity = 7[default=INFO];
+
+  optional string generationTimeUTC = 8;
+  optional string receptionTimeUTC = 9;
+  
+  optional string createdBy = 10; // Set by API when event was posted by a user
+
+  extensions 100 to 10000;
+}
+
+message ProcessorTypeInfo {
+  repeated string type = 1;
+}

@@ -1,0 +1,15 @@
+syntax="proto2";
+
+option java_package = "org.yamcs.protobuf";
+
+package yamcs.protobuf.tse;
+
+import "yamcs/protobuf/yamcs.proto";
+
+message TseCommand {
+  optional string instrument = 1;
+  optional string command = 2;
+  optional string response = 3;
+  map<string, Value> argumentMapping = 4;
+  map<string, string> parameterMapping = 5;
+}

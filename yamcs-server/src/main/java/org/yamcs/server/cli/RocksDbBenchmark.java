@@ -1,13 +1,12 @@
 package org.yamcs.server.cli;
 
-
 import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.archive.XtceTmRecorder;
-import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.PartitioningSpec;
@@ -15,11 +14,11 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
+import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-import org.yamcs.yarch.TableWriter.InsertMode;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
 import com.beust.jcommander.Parameter;
@@ -43,10 +42,10 @@ class RocksDbBenchmark extends Command {
 
     @Parameter(names = "--duration", description = "The duration in hours of the simulated data. By default it's 24 hours", required = false)
     int durationHours = 24;
-    
+
     @Parameter(names = "--baseTime", description = "Start inserting data with this time. By default it's 2017-01-01T00:00:00", required = false)
-    String baseTime ="2017-01-01T00:00:00";
-    
+    String baseTime = "2017-01-01T00:00:00";
+
     // frequencies in 100ms
     private long freq[] = { 1, 10, 100, 600, 36000 };
 
@@ -55,7 +54,6 @@ class RocksDbBenchmark extends Command {
     private String tableName = "tm";
 
     private YarchDatabaseInstance ydb;
-
 
     public RocksDbBenchmark(RocksDbCli rocksDbCli) {
         super("bench", rocksDbCli);
@@ -83,10 +81,11 @@ class RocksDbBenchmark extends Command {
         YarchDatabase.setHome(dbDir);
         this.ydb = YarchDatabase.getInstance("rocksbench");
         TableDefinition tblDef = ydb.getTable(tableName);
-        if(tblDef==null) {
+        if (tblDef == null) {
             TupleDefinition tdef = XtceTmRecorder.RECORDED_TM_TUPLE_DEFINITION;
-            tblDef = new TableDefinition(tableName, tdef, 
-                    Arrays.asList(TmDataLinkInitialiser.GENTIME_COLUMN, TmDataLinkInitialiser.SEQNUM_COLUMN));
+            tblDef = new TableDefinition(tableName, tdef,
+                    Arrays.asList(StandardTupleDefinitions.TM_GENTIME_COLUMN,
+                            StandardTupleDefinitions.TM_SEQNUM_COLUMN));
             tblDef.setHistogramColumns(Arrays.asList(XtceTmRecorder.PNAME_COLUMN));
 
             PartitioningSpec pspec = PartitioningSpec.valueSpec(XtceTmRecorder.PNAME_COLUMN);
@@ -97,21 +96,22 @@ class RocksDbBenchmark extends Command {
 
             ydb.createTable(tblDef);
         } else {
-            console.println("Table "+tableName+" already exists!. Old data will not be overwritten.");
+            console.println("Table " + tableName + " already exists!. Old data will not be overwritten.");
         }
-        populate(tblDef, durationHours*36000);
-        
+        populate(tblDef, durationHours * 36000);
+
         console.println("*********************** reading data ********************");
-        
+
         read(tableName, null, -1);
 
-        for(int j=0; j<freq.length; j++) {
-            if(count[j]==0) 
+        for (int j = 0; j < freq.length; j++) {
+            if (count[j] == 0) {
                 continue;
-            read(tableName, "/rocksbench/packet_"+j+"_0", freq[j]);   
+            }
+            read(tableName, "/rocksbench/packet_" + j + "_0", freq[j]);
         }
 
-        read(tableName, null, -1); 
+        read(tableName, null, -1);
     }
 
     void populate(TableDefinition tblDef, long duration100ms) throws Exception {
@@ -119,7 +119,7 @@ class RocksDbBenchmark extends Command {
         TableWriter tw = rse.newTableWriter(ydb, tblDef, InsertMode.INSERT);
 
         long baseTime = TimeEncoding.parse("2017-01-01T00:00:00");
-        console.println("writing "+durationHours+" hours of data starting with "+TimeEncoding.toString(baseTime));
+        console.println("writing " + durationHours + " hours of data starting with " + TimeEncoding.toString(baseTime));
         ThreadLocalRandom r = ThreadLocalRandom.current();
         byte[] b = new byte[256];
         int numPackets = 0;
@@ -133,31 +133,35 @@ class RocksDbBenchmark extends Command {
                     for (int k = 0; k < count[j]; k++) {
                         r.nextBytes(b);
                         numPackets++;
-                        
+
                         Tuple t;
-                        int seqNum = (int)i;
+                        int seqNum = (int) i;
                         genTime = baseTime + i * 100L + j;
-                        long recTime =  TimeEncoding.getWallclockTime();
-                        t = new Tuple(tdef, new Object[] {  genTime, seqNum, recTime, b, "/rocksbench/packet_"+j+"_" + k});
+                        long recTime = TimeEncoding.getWallclockTime();
+                        t = new Tuple(tdef,
+                                new Object[] { genTime, seqNum, recTime, b, "/rocksbench/packet_" + j + "_" + k });
                         tw.onTuple(null, t);
-                        if(numPackets%1000000 ==0) {
-                            console.println(String.format("%3dM packets written; %d%% completed", numPackets/1000000, i*100/duration100ms));
+                        if (numPackets % 1000000 == 0) {
+                            console.println(String.format("%3dM packets written; %d%% completed", numPackets / 1000000,
+                                    i * 100 / duration100ms));
                         }
                     }
                 }
             }
         }
-        console.println("write finished; last packet time: "+TimeEncoding.toString(genTime)+"; total numPackets: " + numPackets);
+        console.println("write finished; last packet time: " + TimeEncoding.toString(genTime) + "; total numPackets: "
+                + numPackets);
         long t1 = System.currentTimeMillis();
-        long d = t1-t0;
-        console.println("time to populate " + (d / 1000.0) + " seconds; speed: "+(numPackets*1000l/d) +" packets/sec");
+        long d = t1 - t0;
+        console.println(
+                "time to populate " + (d / 1000.0) + " seconds; speed: " + (numPackets * 1000l / d) + " packets/sec");
     }
 
     void read(String tblName, String packetName, long rate100ms) throws Exception {
         long t0 = System.currentTimeMillis();
-        String q = "create stream s as select * from "+tblName;
-        if(packetName!=null) {
-            q =  q +" where pname='"+packetName+"'";
+        String q = "create stream s as select * from " + tblName;
+        if (packetName != null) {
+            q = q + " where pname='" + packetName + "'";
         }
         ydb.execute(q);
         Stream s = ydb.getStream("s");
@@ -165,11 +169,12 @@ class RocksDbBenchmark extends Command {
         Semaphore semaphore = new Semaphore(0);
         AtomicInteger count = new AtomicInteger();
         s.addSubscriber(new StreamSubscriber() {
-            int c =0;
+            int c = 0;
+
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
-                if(packetName!=null) {
-                    if(!packetName.equals(tuple.getColumn("pname"))) {
+                if (packetName != null) {
+                    if (!packetName.equals(tuple.getColumn("pname"))) {
                         throw new RuntimeException("invalid tuple received");
                     }
                 }
@@ -183,16 +188,18 @@ class RocksDbBenchmark extends Command {
             }
         });
         s.start();
-        semaphore.acquire(); 
+        semaphore.acquire();
 
         long t1 = System.currentTimeMillis();
-        long d = t1-t0;
-        long speed = 1000*count.get()/d;
-        if(packetName ==null) {
-            console.println(String.format("time to read all %d packets: %.3f seconds, speed: %d packets/second", count.get(), d/1000.0, speed));
+        long d = t1 - t0;
+        long speed = 1000 * count.get() / d;
+        if (packetName == null) {
+            console.println(String.format("time to read all %d packets: %.3f seconds, speed: %d packets/second",
+                    count.get(), d / 1000.0, speed));
         } else {
-            console.println(String.format("time to read %8d %s (pkt rate: %.2f sec) packets: %.3f seconds, speed: %d packets/second",
-                    count.get(), packetName, rate100ms/10.0, d/1000.0, speed));
+            console.println(String.format(
+                    "time to read %8d %s (pkt rate: %.2f sec) packets: %.3f seconds, speed: %d packets/second",
+                    count.get(), packetName, rate100ms / 10.0, d / 1000.0, speed));
         }
     }
 }

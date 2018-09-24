@@ -71,7 +71,6 @@ if [ $YSS_CONFIGURATION -eq "1" ]; then
     ln -fs $YAMCS_HOME/yamcs-simulation/target/*.jar $TARGET/lib
     cp -an $YAMCS_HOME/yamcs-simulation/etc/* $TARGET/etc
     ln -fs $YAMCS_HOME/yamcs-simulation/mdb/* $TARGET/mdb
-    ln -fs $YAMCS_HOME/yamcs-simulation/test_data $TARGET/
 fi
 
 if [ -f make-live-devel-local.sh ]; then

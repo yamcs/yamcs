@@ -1,32 +1,26 @@
 package org.yamcs.yarch;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
-import org.yamcs.yarch.AbstractStream;
-import org.yamcs.yarch.DataType;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
-import org.yamcs.yarch.Tuple;
-import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
-
-import static org.junit.Assert.*;
 
 public class StreamSelect1Test extends YarchTestCase {
     StreamSqlResult res;
     final int n = 200;
 
     public void createFeeder1() throws YarchException {
-        AbstractStream s;
+        Stream s;
         final TupleDefinition tpdef = new TupleDefinition();
         tpdef.addColumn("x", DataType.INT);
         tpdef.addColumn("y", DataType.STRING);
 
-        s = (new AbstractStream(ydb, "stream_in", tpdef) {
+        s = (new Stream(ydb, "stream_in", tpdef) {
             @Override
             public void start() {
                 for (int i = 0; i < n; i++) {
@@ -111,7 +105,7 @@ public class StreamSelect1Test extends YarchTestCase {
         assertTrue(finished.tryAcquire(5, TimeUnit.SECONDS));
         assertEquals(89, counter.get());
     }
-    
+
     @Test
     public void testArgCols() throws Exception {
         createFeeder1();

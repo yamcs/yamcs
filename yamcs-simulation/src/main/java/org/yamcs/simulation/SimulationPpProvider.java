@@ -103,7 +103,12 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     }
 
     @Override
-    public long getDataCount() {
+    public long getDataInCount() {
+        return 0;
+    }
+
+    @Override
+    public long getDataOutCount() {
         return datacount;
     }
 
@@ -205,8 +210,9 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
         // repeat the sequence as specified
         while (loopSequence || repeatCount++ < maxRepeat) {
 
-            if (stop())
+            if (stop()) {
                 break;
+            }
 
             // process step offset
             int stepOffset = ps.getStepOffset() == null ? 0 : ps.getStepOffset();
@@ -215,8 +221,9 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
 
             // initialize step count for this sequence
             List<ParameterSequence.Parameter> parameters = ps.getParameter();
-            if (parameters.size() == 0)
+            if (parameters.size() == 0) {
                 return;
+            }
             int lastSequenceStep = parameters.get(parameters.size() - 1)
                     .getAquisitionStep();
 
@@ -225,8 +232,9 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
             // process each step of the sequence
             for (int sequenceStep = 0; sequenceStep <= lastSequenceStep; sequenceStep++) {
 
-                if (stop())
+                if (stop()) {
                     break;
+                }
 
                 ParameterSequence.Parameter currentParameter = parameters
                         .get(currentParameterIndex);
@@ -237,16 +245,17 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
                     processVoidStep(1);
                 } else {
                     // there is at least 1 parameter to send at this step
-                    List<ParameterSequence.Parameter> stepParameters = new ArrayList<ParameterSequence.Parameter>();
+                    List<ParameterSequence.Parameter> stepParameters = new ArrayList<>();
                     while (currentParameter.getAquisitionStep() == sequenceStep) {
                         stepParameters.add(currentParameter);
                         currentParameterIndex++;
                         // add next parameter if available
-                        if (currentParameterIndex < parameters.size())
+                        if (currentParameterIndex < parameters.size()) {
                             currentParameter = parameters
                                     .get(currentParameterIndex);
-                        else
+                        } else {
                             break;
+                        }
                     }
                     processParameters(stepParameters);
                     stepParameters.clear();
@@ -257,8 +266,7 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
     }
 
     /**
-     * Used when no parameters need to be inserted at a given step of the
-     * simulation scenario
+     * Used when no parameters need to be inserted at a given step of the simulation scenario
      * 
      * @param nbSteps
      */
@@ -280,11 +288,12 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
 
         String groupName = "simulation";
 
-        List<ParameterValue> pvs = new LinkedList<ParameterValue>();
+        List<ParameterValue> pvs = new LinkedList<>();
         for (ParameterSequence.Parameter sParameter : stepParameters) {
 
-            if (stop())
+            if (stop()) {
                 break;
+            }
 
             // compute value
             Value engValue = getValue(sParameter.getValueType(), sParameter.getValue());
@@ -306,8 +315,9 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
                     sParameter.getParaName(), generationTime, acquisitionTime,
                     engValue, rawValue, monitoringResult);
 
-            if (pv != null)
+            if (pv != null) {
                 pvs.add(pv);
+            }
         }
 
         datacount += stepParameters.size();
@@ -316,8 +326,9 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
         long nextStepDate = simulationRealStartTime.getTime() + simulationStepLengthMs * simutationStep;
         long delayBeforeNextStep = nextStepDate - new Date().getTime();
         try {
-            if (delayBeforeNextStep > 0)
+            if (delayBeforeNextStep > 0) {
                 Thread.sleep(delayBeforeNextStep);
+            }
         } catch (Exception e) {
             log.error("", e);
         }
@@ -384,10 +395,12 @@ public class SimulationPpProvider extends AbstractExecutionThreadService impleme
                 MonitoringResult mr = MonitoringResult
                         .valueOf(monitoringResult);
                 pv.setMonitoringResult(mr);
-            } else
+            } else {
                 pv.setMonitoringResult(MonitoringResult.DISABLED);
-            if (rangeCondition != null)
+            }
+            if (rangeCondition != null) {
                 pv.setRangeCondition(RangeCondition.valueOf(rangeCondition));
+            }
         } catch (Exception e) {
             log.error("Unable to set the specified monitoring result (\""
                     + monitoringResult

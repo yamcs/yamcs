@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -75,13 +76,13 @@ public class YamcsServer {
     }
 
     /**
-     * Creates services either server-wide (if instance is null) or instance-specific. The services are not yet started.
-     * This must be done in a second step, so that components can ask YamcsServer for other service instantiations.
+     * Creates services at global (if instance is null) or instance level. The services are not yet started. This must
+     * be done in a second step, so that components can ask YamcsServer for other service instantiations.
      *
      * @param services
      *            list of service configuration; each of them is a string (=classname) or a map
      * @param instance
-     *            if null, then start a server-wide service, otherwise an instance-specific service
+     *            if null, then start a global service, otherwise an instance service
      * @throws IOException
      * @throws ConfigurationException
      */
@@ -115,7 +116,7 @@ public class YamcsServer {
                         "There is already a service named '" + name + "'");
             }
 
-            staticlog.info("Loading {} service {}", (instance == null) ? "server-wide" : instance, servclass);
+            staticlog.info("Loading {} service {}", (instance == null) ? "global" : instance, servclass);
             ServiceWithConfig swc;
             try {
                 swc = createService(instance, servclass, name, args);
@@ -386,8 +387,7 @@ public class YamcsServer {
 
         synchronized (globalServiceList) {
             for (ServiceWithConfig swc : globalServiceList) {
-                Service s = swc.service;
-                if (s.getClass().getName().equals(serviceName)) {
+                if (swc.getName().equals(serviceName)) {
                     return swc;
                 }
             }
@@ -395,12 +395,12 @@ public class YamcsServer {
         return null;
     }
 
-    public static <T extends Service> T getService(String yamcsInstance, Class<T> serviceClass) {
+    public static <T extends Service> List<T> getServices(String yamcsInstance, Class<T> serviceClass) {
         YamcsServerInstance ys = YamcsServer.getInstance(yamcsInstance);
         if (ys == null) {
-            return null;
+            return Collections.emptyList();
         }
-        return ys.getService(serviceClass);
+        return ys.getServices(serviceClass);
     }
 
     public static void setMockupTimeService(TimeService timeService) {
@@ -413,8 +413,16 @@ public class YamcsServer {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends YamcsService> T getGlobalService(Class<T> serviceClass) {
-        return (T) getGlobalService(serviceClass.getName());
+    public static <T extends YamcsService> List<T> getGlobalServices(Class<T> serviceClass) {
+        List<T> services = new ArrayList<>();
+        if (globalServiceList != null) {
+            for (ServiceWithConfig swc : globalServiceList) {
+                if (swc.getServiceClass().equals(serviceClass.getName())) {
+                    services.add((T) swc.service);
+                }
+            }
+        }
+        return services;
     }
 
     static ServiceWithConfig createService(String instance, String serviceClass, String serviceName, Object args)

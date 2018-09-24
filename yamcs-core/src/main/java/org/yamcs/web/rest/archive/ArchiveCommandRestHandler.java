@@ -9,7 +9,6 @@ import org.yamcs.web.HttpException;
 import org.yamcs.web.rest.RestHandler;
 import org.yamcs.web.rest.RestRequest;
 import org.yamcs.web.rest.RestRequest.IntervalResult;
-import org.yamcs.web.rest.RestStreamSubscriber;
 import org.yamcs.web.rest.RestStreams;
 import org.yamcs.web.rest.Route;
 import org.yamcs.web.rest.SqlBuilder;
@@ -17,6 +16,7 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -49,12 +49,13 @@ public class ArchiveCommandRestHandler extends RestHandler {
             sqlb.where("cmdName = ?", cmd.getQualifiedName());
         }
         sqlb.descend(req.asksDescending(true));
+        sqlb.limit(pos, limit);
 
         ListCommandsResponse.Builder responseb = ListCommandsResponse.newBuilder();
-        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new RestStreamSubscriber(pos, limit) {
+        RestStreams.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
             @Override
-            public void processTuple(Stream stream, Tuple tuple) {
+            public void onTuple(Stream stream, Tuple tuple) {
                 CommandHistoryEntry che = GPBHelper.tupleToCommandHistoryEntry(tuple);
                 responseb.addEntry(che);
             }

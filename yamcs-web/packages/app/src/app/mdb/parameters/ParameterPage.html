@@ -43,7 +43,7 @@
     </a>
   </nav>
 
-  <div class="tab-content-wrapper">
+  <div class="tab-content-wrapper" [class.noscroll]="rlb.isActive">
     <router-outlet></router-outlet>
   </div>
 </app-mdb-page>

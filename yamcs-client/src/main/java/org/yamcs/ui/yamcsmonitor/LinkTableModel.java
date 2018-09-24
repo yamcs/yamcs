@@ -13,11 +13,12 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 @SuppressWarnings("serial")
 public class LinkTableModel extends AbstractTableModel {
 
-    private static final String[] columnNames = { "Name", "Type", "Spec", "Stream", "Status", "Data Count" };
+    private static final String[] columnNames = { "Name", "Type", "Spec", "Status", "In", "Out" };
 
     private ArrayList<LinkInfo> links = new ArrayList<>();
-    private ArrayList<Long> lastDataCountIncrease = new ArrayList<>();
-    private ArrayList<ScheduledFuture<?>> schduledFutures = new ArrayList<>();
+    private ArrayList<Long> lastDataInCountIncrease = new ArrayList<>();
+    private ArrayList<Long> lastDataOutCountIncrease = new ArrayList<>();
+    private ArrayList<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
 
     ScheduledThreadPoolExecutor timer;
 
@@ -30,8 +31,12 @@ public class LinkTableModel extends AbstractTableModel {
         for (int i = 0; i < links.size(); ++i) {
             LinkInfo li = links.get(i);
             if (li.getName().equals(uli.getName())) {
-                if (uli.getDataCount() > li.getDataCount()) {
-                    lastDataCountIncrease.set(i, System.currentTimeMillis());
+                if (uli.getDataInCount() > li.getDataInCount()) {
+                    lastDataInCountIncrease.set(i, System.currentTimeMillis());
+                    scheduleFireTableRowsUpdated(i);
+                }
+                if (uli.getDataOutCount() > li.getDataOutCount()) {
+                    lastDataOutCountIncrease.set(i, System.currentTimeMillis());
                     scheduleFireTableRowsUpdated(i);
                 }
                 links.set(i, uli);
@@ -42,8 +47,9 @@ public class LinkTableModel extends AbstractTableModel {
         }
         if (!found) {
             links.add(uli);
-            lastDataCountIncrease.add(0L);
-            schduledFutures.add(null);
+            lastDataInCountIncrease.add(0L);
+            lastDataOutCountIncrease.add(0L);
+            scheduledFutures.add(null);
             fireTableRowsInserted(links.size() - 1, links.size() - 1);
         }
     }
@@ -55,17 +61,21 @@ public class LinkTableModel extends AbstractTableModel {
      * @param row
      */
     private void scheduleFireTableRowsUpdated(final int row) {
-        ScheduledFuture<?> future = schduledFutures.get(row);
+        ScheduledFuture<?> future = scheduledFutures.get(row);
         if (future != null) {
             future.cancel(false);
         }
         future = timer.schedule(() -> SwingUtilities.invokeLater(() -> fireTableRowsUpdated(row, row)), 2,
                 TimeUnit.SECONDS);
-        schduledFutures.set(row, future);
+        scheduledFutures.set(row, future);
     }
 
-    public boolean isDataCountIncreasing(int index) {
-        return (System.currentTimeMillis() - lastDataCountIncrease.get(index)) < 1500;
+    public boolean isDataInCountIncreasing(int index) {
+        return (System.currentTimeMillis() - lastDataInCountIncrease.get(index)) < 1500;
+    }
+
+    public boolean isDataOutCountIncreasing(int index) {
+        return (System.currentTimeMillis() - lastDataOutCountIncrease.get(index)) < 1500;
     }
 
     public LinkInfo getLinkInfo(int index) {
@@ -110,13 +120,13 @@ public class LinkTableModel extends AbstractTableModel {
             o = li.getSpec();
             break;
         case 3:
-            o = li.getStream();
-            break;
-        case 4:
             o = li.getStatus();
             break;
+        case 4:
+            o = li.getDataInCount();
+            break;
         case 5:
-            o = li.getDataCount();
+            o = li.getDataOutCount();
             break;
         }
         return o;

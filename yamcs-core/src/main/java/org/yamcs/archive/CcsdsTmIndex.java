@@ -12,12 +12,12 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.slf4j.Logger;
 import org.yamcs.NotThreadSafe;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.ThreadSafe;
 import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -133,12 +133,12 @@ public class CcsdsTmIndex implements TmIndex {
         RocksIterator it = tablespace.getRdb().newIterator();
         try {
             it.seek(Record.key(tbsIndex, apid, instant, seq));
-           
+
             // go to the right till we find a record bigger than the packet
             int cright, cleft;
             Record rright, rleft;
             while (true) {
-                assert(it.isValid());
+                assert (it.isValid());
                 rright = new Record(it.key(), it.value());
                 cright = compare(apid, instant, seq, rright);
                 if (cright == 0) { // duplicate packet
@@ -439,7 +439,7 @@ public class CcsdsTmIndex implements TmIndex {
         }
 
         public void close() {
-            if(rangeIt!=null) {
+            if (rangeIt != null) {
                 rangeIt.close();
             }
         }
@@ -477,7 +477,7 @@ public class CcsdsTmIndex implements TmIndex {
             return cf;
         }
 
-        String timeColumnName = TmDataLinkInitialiser.GENTIME_COLUMN;
+        String timeColumnName = StandardTupleDefinitions.TM_GENTIME_COLUMN;
         String streamName = "histo_rebuild_" + streamCounter.incrementAndGet();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         try {

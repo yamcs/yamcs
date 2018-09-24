@@ -8,6 +8,12 @@
   </app-parameter-legend>
 </div>
 
+<div class="timestamp-wrapper">
+  <app-timestamp-tracker [legendData]="legendData$ | async"
+                         [timestampData]="timestampTrackerData$ | async">
+  </app-timestamp-tracker>
+</div>
+
 <div #graphContainer
       class="graph-container"
       [style.height]="height"

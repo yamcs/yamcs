@@ -3,8 +3,8 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { BucketsWrapper, InstancesWrapper, ServicesWrapper } from './types/internal';
-import { AuthInfo, Bucket, CreateBucketRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
+import { BucketsWrapper, ClientsWrapper, InstancesWrapper, ServicesWrapper } from './types/internal';
+import { AuthInfo, Bucket, ClientInfo, ClientSubscriptionResponse, CreateBucketRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 export default class YamcsClient implements HttpHandler {
@@ -19,7 +19,7 @@ export default class YamcsClient implements HttpHandler {
   private interceptor: HttpInterceptor;
 
   public connected$: Observable<boolean>;
-  private webSocketClient: WebSocketClient;
+  private webSocketClient?: WebSocketClient;
 
   createInstanceClient(instance: string) {
     return new InstanceClient(instance, this);
@@ -27,7 +27,7 @@ export default class YamcsClient implements HttpHandler {
 
   async getInstanceUpdates(): Promise<InstanceSubscriptionResponse> {
     this.prepareWebSocketClient();
-    return this.webSocketClient.getInstanceUpdates();
+    return this.webSocketClient!.getInstanceUpdates();
   }
 
   /**
@@ -176,6 +176,24 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
+  async getClients() {
+    const url = `${this.apiUrl}/clients`;
+    const response = await this.doFetch(url);
+    const wrapper = await response.json() as ClientsWrapper;
+    return wrapper.client || [];
+  }
+
+  async getClient(id: number) {
+    const url = `${this.apiUrl}/clients/${id}`;
+    const response = await this.doFetch(url);
+    return await response.json() as ClientInfo;
+  }
+
+  async getClientUpdates(): Promise<ClientSubscriptionResponse> {
+    this.prepareWebSocketClient();
+    return this.webSocketClient!.getClientUpdates();
+  }
+
   async editClient(clientId: number, options: EditClientRequest) {
     const body = JSON.stringify(options);
     const url = `${this.apiUrl}/clients/${clientId}`;
@@ -296,6 +314,7 @@ export default class YamcsClient implements HttpHandler {
   closeConnection() {
     if (this.webSocketClient) {
       this.webSocketClient.close();
+      this.webSocketClient = undefined;
     }
   }
 

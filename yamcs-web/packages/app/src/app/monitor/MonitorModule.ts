@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { MdbModule } from '../mdb/MdbModule';
 import { SharedModule } from '../shared/SharedModule';
+import { AcknowledgeAlarmDialog } from './alarms/AcknowledgeAlarmDialog';
 import { AlarmDetail } from './alarms/AlarmDetail';
 import { DownloadDumpDialog } from './archive/DownloadDumpDialog';
 import { JumpToDialog } from './archive/JumpToDialog';
@@ -37,6 +38,7 @@ import { MonitorToolbar } from './template/MonitorToolbar';
 import { StartReplayDialog } from './template/StartReplayDialog';
 
 const dialogComponents = [
+  AcknowledgeAlarmDialog,
   CreateDisplayDialog,
   CreateEventDialog,
   CreateLayoutDialog,

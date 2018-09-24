@@ -11,10 +11,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsService;
-import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ValueUtility;
@@ -156,7 +156,7 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
             return;
         }
 
-        TupleDefinition tdef = ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION.copy();
+        TupleDefinition tdef = StandardTupleDefinitions.PARAMETER.copy();
         List<Object> cols = new ArrayList<>(4 + params.size());
         cols.add(gentime);
         cols.add(namespace);

@@ -1,0 +1,95 @@
+syntax="proto2";
+
+package yamcs.protobuf.archive;
+option java_package = "org.yamcs.protobuf";
+
+import "yamcs/protobuf/yamcs.proto";
+
+message ColumnData {
+  optional string name = 1;
+  optional Value value = 2;
+}
+
+message StreamData {
+  optional string stream = 1;
+  repeated ColumnData column = 2;
+}
+
+message TableData {
+  message TableRecord {
+    repeated ColumnData column = 1;
+  }
+  repeated TableRecord record = 1;
+}
+
+message ColumnInfo {
+  optional string name = 1;
+  optional string type = 2;
+  repeated EnumValue enumValue = 3;
+}
+
+message EnumValue {
+  optional int32 value = 1;
+  optional string label = 2;
+}
+
+message TableInfo {
+  optional string name = 1;
+  repeated ColumnInfo keyColumn = 2;
+  repeated ColumnInfo valueColumn = 3;
+  optional string script = 4;
+  repeated string histogramColumn = 5;
+  optional string storageEngine = 6;
+  optional int32 formatVersion = 7;
+  optional string tablespace = 8;
+  optional bool compressed = 9;
+  optional PartitioningInfo partitioningInfo = 10;
+}
+
+message PartitioningInfo {
+  enum PartitioningType {
+    TIME = 1;
+    VALUE = 2;
+    TIME_AND_VALUE = 3;
+  }
+  optional PartitioningType type = 1;
+  optional string timeColumn = 2;
+  optional string timePartitionSchema = 3;
+  optional string valueColumn = 4;
+  optional string valueColumnType = 5;
+}
+
+message StreamInfo {
+  optional string name = 1;
+  repeated ColumnInfo column = 2;
+  optional string script = 3;
+  optional int64 dataCount = 4;
+}
+
+message EventSourceInfo {
+  repeated string source = 1;
+}
+
+message ParameterGroupInfo {
+  repeated string group = 1;
+}
+
+message IndexResponse {
+  repeated IndexGroup group = 1;
+  optional string continuationToken = 2;
+}
+
+message IndexGroup {
+  optional NamedObjectId id = 1;
+  repeated IndexEntry entry = 2;
+}
+
+message IndexEntry {
+  optional string start = 1;
+  optional string stop = 2;
+  optional int32 count = 3;
+}
+
+message GetPacketNamesResponse {
+  repeated string name = 1;
+}

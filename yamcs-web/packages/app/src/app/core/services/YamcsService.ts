@@ -26,6 +26,7 @@ export class YamcsService {
    * Prepares a (new) instance.
    */
   selectInstance(instanceId: string) {
+    this.yamcsClient.closeConnection();
     return new Promise<Instance>((resolve, reject) => {
       const currentConnectionInfo = this.connectionInfo$.value;
       if (currentConnectionInfo) {

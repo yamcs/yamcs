@@ -7,17 +7,16 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
-import org.yamcs.tctm.ParameterDataLinkInitialiser;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.Tuple;
 
 /**
- * Replays parameters from tables recorded by the
- * {@link org.yamcs.archive.ParameterRecorder}
+ * Replays parameters from tables recorded by the {@link org.yamcs.archive.ParameterRecorder}
  * 
  * @author nm
  *
@@ -29,7 +28,7 @@ public class ParameterReplayHandler implements ReplayHandler {
     ReplayRequest request;
     static final Logger log = LoggerFactory.getLogger(ParameterReplayHandler.class);
     boolean emptyReplay;
-    
+
     public ParameterReplayHandler(XtceDb xtceDb) {
         this.xtceDb = xtceDb;
     }
@@ -39,13 +38,13 @@ public class ParameterReplayHandler implements ReplayHandler {
         this.request = newRequest;
         includeGroups.clear();
         excludeGroups.clear();
-        
+
         includeGroups.addAll(newRequest.getPpRequest().getGroupNameFilterList());
         excludeGroups.addAll(newRequest.getPpRequest().getGroupNameExcludeList());
         emptyReplay = false;
-        if(!includeGroups.isEmpty() && !excludeGroups.isEmpty()) {
+        if (!includeGroups.isEmpty() && !excludeGroups.isEmpty()) {
             includeGroups.removeAll(excludeGroups);
-            if(includeGroups.isEmpty()) {
+            if (includeGroups.isEmpty()) {
                 log.info("No group remaining after removing the exclusion, this is an empty replay");
                 emptyReplay = true;
             }
@@ -65,7 +64,7 @@ public class ParameterReplayHandler implements ReplayHandler {
      */
     @Override
     public String getSelectCmd() {
-        if(emptyReplay) {
+        if (emptyReplay) {
             return null;
         }
         StringBuilder sb = new StringBuilder();
@@ -76,19 +75,21 @@ public class ParameterReplayHandler implements ReplayHandler {
             for (String g : includeGroups) {
                 if (first) {
                     first = false;
-                } else
+                } else {
                     sb.append(", ");
+                }
                 sb.append("'").append(g).append("'");
             }
             sb.append(")");
             XtceTmReplayHandler.appendTimeClause(sb, request, false);
-        } else  if (!excludeGroups.isEmpty()) {
+        } else if (!excludeGroups.isEmpty()) {
             sb.append("WHERE group not in(");
             for (String g : excludeGroups) {
                 if (first) {
                     first = false;
-                } else
+                } else {
                     sb.append(", ");
+                }
                 sb.append("'").append(g).append("'");
             }
             sb.append(")");
@@ -110,7 +111,7 @@ public class ParameterReplayHandler implements ReplayHandler {
         // the first column is the ProtoDataType.PP (from the select above),
         // then are the fixed ones from PP_TUPLE_DEFINITION
         List<ParameterValue> pvlist = new ArrayList<>();
-        for (int i = ParameterDataLinkInitialiser.PARAMETER_TUPLE_DEFINITION.size() + 1; i < t.size(); i++) {
+        for (int i = StandardTupleDefinitions.PARAMETER.size() + 1; i < t.size(); i++) {
             String colName = t.getColumnDefinition(i).getName();
             Object o = t.getColumn(i);
             ParameterValue pv;
@@ -125,7 +126,7 @@ public class ParameterReplayHandler implements ReplayHandler {
             }
             Parameter p = xtceDb.getParameter(pv.getParameterQualifiedNamed());
             if (p == null) {
-                if(XtceDb.isSystemParameter(pv.getParameterQualifiedNamed())) {
+                if (XtceDb.isSystemParameter(pv.getParameterQualifiedNamed())) {
                     p = xtceDb.createSystemParameter(pv.getParameterQualifiedNamed());
                 } else {
                     log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedNamed());

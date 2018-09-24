@@ -2,9 +2,9 @@ package org.yamcs.web.websocket;
 
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
+import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.protobuf.Yamcs.TmPacketData;
-import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -96,10 +96,10 @@ public class PacketResource implements WebSocketResource {
             streamSubscriber = new StreamSubscriber() {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
-                    byte[] pktData = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
-                    long genTime = (Long) tuple.getColumn(TmDataLinkInitialiser.GENTIME_COLUMN);
-                    long receptionTime = (Long) tuple.getColumn(TmDataLinkInitialiser.RECTIME_COLUMN);
-                    int seqNumber = (Integer) tuple.getColumn(TmDataLinkInitialiser.SEQNUM_COLUMN);
+                    byte[] pktData = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
+                    long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
+                    long receptionTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
+                    int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN);
                     TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
                             .setGenerationTime(genTime)
                             .setReceptionTime(receptionTime)

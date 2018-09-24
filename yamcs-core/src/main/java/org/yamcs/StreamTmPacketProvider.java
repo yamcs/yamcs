@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.yamcs.ConfigurationException;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.tctm.TmDataLinkInitialiser;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
@@ -34,19 +32,19 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
     volatile boolean disabled = false;
     volatile long lastPacketTime;
 
-    List<StreamReader> readers = new ArrayList<StreamReader>();
+    List<StreamReader> readers = new ArrayList<>();
 
     public StreamTmPacketProvider(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         XtceDb xtcedb = XtceDbFactory.getInstance(yamcsInstance);
 
-        if (!config.containsKey("streams"))
+        if (!config.containsKey("streams")) {
             throw new ConfigurationException("Cannot find key 'streams' in StreamTmPacketProvider");
+        }
 
         StreamConfig streamConfig = StreamConfig.getInstance(yamcsInstance);
 
-        List<String> streams = (List<String>) config.get("streams");
-
+        List<String> streams = YConfiguration.getList(config, "streams");
         for (String streamName : streams) {
             StreamConfigEntry sce = streamConfig.getEntry(StandardStreamType.tm, streamName);
             SequenceContainer rootContainer;
@@ -54,8 +52,9 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
                 rootContainer = sce.getRootContainer();
             } else {
                 rootContainer = xtcedb.getRootSequenceContainer();
-                if (rootContainer == null)
+                if (rootContainer == null) {
                     throw new ConfigurationException("XtceDb does not have a root sequence container");
+                }
             }
             Stream s = ydb.getStream(streamName);
             if (s == null) {
@@ -104,10 +103,10 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
 
         @Override
         public void onTuple(Stream s, Tuple tuple) {
-            long rectime = (Long) tuple.getColumn(TmDataLinkInitialiser.RECTIME_COLUMN);
-            long gentime = (Long) tuple.getColumn(TmDataLinkInitialiser.GENTIME_COLUMN);
-            int seqCount = (Integer) tuple.getColumn(TmDataLinkInitialiser.SEQNUM_COLUMN);
-            byte[] packet = (byte[]) tuple.getColumn(TmDataLinkInitialiser.PACKET_COLUMN);
+            long rectime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
+            long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
+            int seqCount = (Integer) tuple.getColumn(StandardTupleDefinitions.TM_SEQNUM_COLUMN);
+            byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
             PacketWithTime pwrt = new PacketWithTime(rectime, gentime, seqCount, packet);
             lastPacketTime = gentime;
             tmProcessor.processPacket(pwrt);
