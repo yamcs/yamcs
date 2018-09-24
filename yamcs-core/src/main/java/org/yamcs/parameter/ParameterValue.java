@@ -500,6 +500,10 @@ public class ParameterValue {
         return acquisitionTime != TimeEncoding.INVALID_INSTANT;
     }
 
+    public boolean hasGenerationTime() {
+        return generationTime != TimeEncoding.INVALID_INSTANT;
+    }
+
     public boolean hasExpirationTime() {
         return status.getExpireMills() >= 0;
     }
