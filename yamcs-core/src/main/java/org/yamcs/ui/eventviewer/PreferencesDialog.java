@@ -10,6 +10,8 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
@@ -22,7 +24,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -380,7 +381,12 @@ public class PreferencesDialog extends JDialog implements ActionListener {
         this.setContentPane(getJContentPane());
         this.setTitle("Preferences");
         
-        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE) ;
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                eventViewer.getFilteringRulesTable().doNotifyAllObservers();
+            }
+        });
     }
 
     /**
