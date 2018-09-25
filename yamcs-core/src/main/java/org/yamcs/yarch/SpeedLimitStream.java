@@ -1,6 +1,7 @@
 package org.yamcs.yarch;
 
 public class SpeedLimitStream extends Stream implements StreamSubscriber {
+
     Stream input;
     volatile SpeedSpec speedSpec;
     private long ltst = -1; // time when the last tuple has been sent
@@ -49,7 +50,7 @@ public class SpeedLimitStream extends Stream implements StreamSubscriber {
                 }
                 ltt = time;
                 break;
-            case STEP_BY_STEP: // TODO
+            case STEP_BY_STEP: // TODO ? Currently implemented at YarchReplay level
                 break;
             }
             if (waitTime > 0) {
@@ -73,7 +74,6 @@ public class SpeedLimitStream extends Stream implements StreamSubscriber {
 
     public void setSpeedSpec(SpeedSpec speedSpec) {
         this.speedSpec = speedSpec;
-
     }
 
     @Override
