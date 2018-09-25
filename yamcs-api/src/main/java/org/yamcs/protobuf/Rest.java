@@ -8735,6 +8735,20 @@ public final class Rest {
      */
     org.yamcs.protobuf.Commanding.CommandHistoryEntryOrBuilder getEntryOrBuilder(
         int index);
+
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    boolean hasContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    java.lang.String getContinuationToken();
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getContinuationTokenBytes();
   }
   /**
    * Protobuf type {@code yamcs.protobuf.rest.ListCommandsResponse}
@@ -8749,6 +8763,7 @@ public final class Rest {
     }
     private ListCommandsResponse() {
       entry_ = java.util.Collections.emptyList();
+      continuationToken_ = "";
     }
 
     @java.lang.Override
@@ -8788,6 +8803,12 @@ public final class Rest {
                   input.readMessage(org.yamcs.protobuf.Commanding.CommandHistoryEntry.PARSER, extensionRegistry));
               break;
             }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              continuationToken_ = bs;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -8815,6 +8836,7 @@ public final class Rest {
               org.yamcs.protobuf.Rest.ListCommandsResponse.class, org.yamcs.protobuf.Rest.ListCommandsResponse.Builder.class);
     }
 
+    private int bitField0_;
     public static final int ENTRY_FIELD_NUMBER = 1;
     private java.util.List<org.yamcs.protobuf.Commanding.CommandHistoryEntry> entry_;
     /**
@@ -8850,6 +8872,48 @@ public final class Rest {
       return entry_.get(index);
     }
 
+    public static final int CONTINUATIONTOKEN_FIELD_NUMBER = 2;
+    private volatile java.lang.Object continuationToken_;
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public boolean hasContinuationToken() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public java.lang.String getContinuationToken() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          continuationToken_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string continuationToken = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getContinuationTokenBytes() {
+      java.lang.Object ref = continuationToken_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        continuationToken_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -8871,6 +8935,9 @@ public final class Rest {
       for (int i = 0; i < entry_.size(); i++) {
         output.writeMessage(1, entry_.get(i));
       }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, continuationToken_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -8882,6 +8949,9 @@ public final class Rest {
       for (int i = 0; i < entry_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, entry_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, continuationToken_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -8902,6 +8972,11 @@ public final class Rest {
       boolean result = true;
       result = result && getEntryList()
           .equals(other.getEntryList());
+      result = result && (hasContinuationToken() == other.hasContinuationToken());
+      if (hasContinuationToken()) {
+        result = result && getContinuationToken()
+            .equals(other.getContinuationToken());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -8916,6 +8991,10 @@ public final class Rest {
       if (getEntryCount() > 0) {
         hash = (37 * hash) + ENTRY_FIELD_NUMBER;
         hash = (53 * hash) + getEntryList().hashCode();
+      }
+      if (hasContinuationToken()) {
+        hash = (37 * hash) + CONTINUATIONTOKEN_FIELD_NUMBER;
+        hash = (53 * hash) + getContinuationToken().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -9042,6 +9121,8 @@ public final class Rest {
         } else {
           entryBuilder_.clear();
         }
+        continuationToken_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -9065,6 +9146,7 @@ public final class Rest {
       public org.yamcs.protobuf.Rest.ListCommandsResponse buildPartial() {
         org.yamcs.protobuf.Rest.ListCommandsResponse result = new org.yamcs.protobuf.Rest.ListCommandsResponse(this);
         int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
         if (entryBuilder_ == null) {
           if (((bitField0_ & 0x00000001) == 0x00000001)) {
             entry_ = java.util.Collections.unmodifiableList(entry_);
@@ -9074,6 +9156,11 @@ public final class Rest {
         } else {
           result.entry_ = entryBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.continuationToken_ = continuationToken_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -9140,6 +9227,11 @@ public final class Rest {
               entryBuilder_.addAllMessages(other.entry_);
             }
           }
+        }
+        if (other.hasContinuationToken()) {
+          bitField0_ |= 0x00000002;
+          continuationToken_ = other.continuationToken_;
+          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -9412,6 +9504,82 @@ public final class Rest {
           entry_ = null;
         }
         return entryBuilder_;
+      }
+
+      private java.lang.Object continuationToken_ = "";
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public boolean hasContinuationToken() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public java.lang.String getContinuationToken() {
+        java.lang.Object ref = continuationToken_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            continuationToken_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getContinuationTokenBytes() {
+        java.lang.Object ref = continuationToken_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          continuationToken_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationToken(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder clearContinuationToken() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        continuationToken_ = getDefaultInstance().getContinuationToken();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string continuationToken = 2;</code>
+       */
+      public Builder setContinuationTokenBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        continuationToken_ = value;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -40656,87 +40824,88 @@ public final class Rest {
       "\003(\0132\035.yamcs.protobuf.NamedObjectId\022\021\n\tna",
       "mespace\030\004 \001(\t\"N\n\024ListLinkInfoResponse\0226\n" +
       "\004link\030\001 \003(\0132(.yamcs.protobuf.yamcsManage" +
-      "ment.LinkInfo\"U\n\024ListCommandsResponse\022=\n" +
+      "ment.LinkInfo\"p\n\024ListCommandsResponse\022=\n" +
       "\005entry\030\001 \003(\0132..yamcs.protobuf.commanding" +
-      ".CommandHistoryEntry\" \n\017EditLinkRequest\022" +
-      "\r\n\005state\030\001 \001(\t\"(\n\027EditCommandQueueReques" +
-      "t\022\r\n\005state\030\001 \001(\t\"Q\n\023ListClientsResponse\022" +
-      ":\n\006client\030\001 \003(\0132*.yamcs.protobuf.yamcsMa" +
-      "nagement.ClientInfo\"8\n\021EditClientRequest" +
-      "\022\020\n\010instance\030\001 \001(\t\022\021\n\tprocessor\030\002 \001(\t\"Z\n",
-      "\026ListProcessorsResponse\022@\n\tprocessor\030\001 \003" +
-      "(\0132-.yamcs.protobuf.yamcsManagement.Proc" +
-      "essorInfo\"W\n\031ListCommandQueuesResponse\022:" +
-      "\n\005queue\030\001 \003(\0132+.yamcs.protobuf.commandin" +
-      "g.CommandQueueInfo\"V\n\027ListCommandQueueEn" +
-      "tries\022;\n\005entry\030\001 \003(\0132,.yamcs.protobuf.co" +
-      "mmanding.CommandQueueEntry\"-\n\034EditComman" +
-      "dQueueEntryRequest\022\r\n\005state\030\001 \001(\t\"\322\001\n\023Is" +
-      "sueCommandRequest\022G\n\nassignment\030\001 \003(\01323." +
-      "yamcs.protobuf.rest.IssueCommandRequest.",
-      "Assignment\022\016\n\006origin\030\002 \001(\t\022\026\n\016sequenceNu" +
-      "mber\030\003 \001(\005\022\016\n\006dryRun\030\004 \001(\010\022\017\n\007comment\030\005 " +
-      "\001(\t\032)\n\nAssignment\022\014\n\004name\030\001 \001(\t\022\r\n\005value" +
-      "\030\002 \001(\t\"\214\001\n\024IssueCommandResponse\022G\n\021comma" +
-      "ndQueueEntry\030\001 \001(\0132,.yamcs.protobuf.comm" +
-      "anding.CommandQueueEntry\022\016\n\006source\030\002 \001(\t" +
-      "\022\013\n\003hex\030\003 \001(\t\022\016\n\006binary\030\004 \001(\014\"\313\001\n\033Update" +
-      "CommandHistoryRequest\0223\n\005cmdId\030\001 \002(\0132$.y" +
-      "amcs.protobuf.commanding.CommandId\022O\n\014hi" +
-      "storyEntry\030\002 \003(\01329.yamcs.protobuf.rest.U",
-      "pdateCommandHistoryRequest.KeyValue\032&\n\010K" +
-      "eyValue\022\013\n\003key\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"{\n\022C" +
-      "reateEventRequest\022\014\n\004type\030\001 \001(\t\022\017\n\007messa" +
-      "ge\030\002 \001(\t\022\020\n\010severity\030\003 \001(\t\022\014\n\004time\030\004 \001(\t" +
-      "\022\016\n\006source\030\005 \001(\t\022\026\n\016sequenceNumber\030\006 \001(\005" +
-      "\"j\n\026CreateProcessorRequest\022\014\n\004name\030\001 \001(\t" +
-      "\022\020\n\010clientId\030\006 \003(\005\022\022\n\npersistent\030\013 \001(\010\022\014" +
-      "\n\004type\030\014 \001(\t\022\016\n\006config\030\r \001(\t\"B\n\024EditProc" +
-      "essorRequest\022\r\n\005state\030\001 \001(\t\022\014\n\004seek\030\002 \001(" +
-      "\t\022\r\n\005speed\030\003 \001(\t\"(\n\026StreamSubscribeReque",
-      "st\022\016\n\006stream\030\001 \001(\t\"e\n\030SetSimulationTimeR" +
-      "equest\022\r\n\005time0\030\001 \001(\003\022\020\n\010time0UTC\030\002 \001(\t\022" +
-      "\026\n\016simElapsedTime\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(" +
-      "\001\"X\n\025ListInstancesResponse\022?\n\010instance\030\001" +
-      " \003(\0132-.yamcs.protobuf.yamcsManagement.Ya" +
-      "mcsInstance\";\n\020ListTagsResponse\022\'\n\003tag\030\001" +
-      " \003(\0132\032.yamcs.protobuf.ArchiveTag\"a\n\020Crea" +
-      "teTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(" +
-      "\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005" +
-      "color\030\005 \001(\t\"_\n\016EditTagRequest\022\014\n\004name\030\001 ",
-      "\001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013desc" +
-      "ription\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"E\n\022ListAlar" +
-      "msResponse\022/\n\005alarm\030\001 \003(\0132 .yamcs.protob" +
-      "uf.alarms.AlarmData\"2\n\020EditAlarmRequest\022" +
-      "\r\n\005state\030\001 \001(\t\022\017\n\007comment\030\002 \001(\t\"F\n\022ListT" +
-      "ablesResponse\0220\n\005table\030\001 \003(\0132!.yamcs.pro" +
-      "tobuf.archive.TableInfo\"I\n\023ListStreamsRe" +
-      "sponse\0222\n\006stream\030\001 \003(\0132\".yamcs.protobuf." +
-      "archive.StreamInfo\"U\n\022ListEventsResponse" +
-      "\022$\n\005event\030\001 \003(\0132\025.yamcs.protobuf.Event\022\031",
-      "\n\021continuationToken\030\002 \001(\t\"^\n\023ListPackets" +
-      "Response\022,\n\006packet\030\001 \003(\0132\034.yamcs.protobu" +
-      "f.TmPacketData\022\031\n\021continuationToken\030\002 \001(" +
-      "\t\"W\n\027ListServiceInfoResponse\022<\n\007service\030" +
-      "\001 \003(\0132+.yamcs.protobuf.yamcsManagement.S" +
-      "erviceInfo\"r\n\033ListParameterValuesRespons" +
-      "e\0228\n\tparameter\030\001 \003(\0132%.yamcs.protobuf.pv" +
-      "alue.ParameterValue\022\031\n\021continuationToken" +
-      "\030\002 \001(\t\"#\n\022EditServiceRequest\022\r\n\005state\030\001 " +
-      "\001(\t\"V\n\023BulkGetIndexRequest\022\r\n\005start\030\001 \001(",
-      "\t\022\014\n\004stop\030\002 \001(\t\022\016\n\006filter\030\003 \003(\t\022\022\n\npacke" +
-      "tname\030\004 \003(\t\"#\n\023CreateBucketRequest\022\014\n\004na" +
-      "me\030\001 \001(\t\"<\n\nBucketInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004" +
-      "size\030\002 \001(\004\022\022\n\nnumObjects\030\003 \001(\r\"\253\001\n\nObjec" +
-      "tInfo\022\014\n\004name\030\001 \001(\t\022\017\n\007created\030\002 \001(\t\022\014\n\004" +
-      "size\030\003 \001(\004\022?\n\010metadata\030\004 \003(\0132-.yamcs.pro" +
-      "tobuf.rest.ObjectInfo.MetadataEntry\032/\n\rM" +
-      "etadataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t" +
-      ":\0028\001\"F\n\023ListBucketsResponse\022/\n\006bucket\030\001 " +
-      "\003(\0132\037.yamcs.protobuf.rest.BucketInfo\"V\n\023",
-      "ListObjectsResponse\022\016\n\006prefix\030\001 \003(\t\022/\n\006o" +
-      "bject\030\002 \003(\0132\037.yamcs.protobuf.rest.Object" +
-      "InfoB\024\n\022org.yamcs.protobuf"
+      ".CommandHistoryEntry\022\031\n\021continuationToke" +
+      "n\030\002 \001(\t\" \n\017EditLinkRequest\022\r\n\005state\030\001 \001(" +
+      "\t\"(\n\027EditCommandQueueRequest\022\r\n\005state\030\001 " +
+      "\001(\t\"Q\n\023ListClientsResponse\022:\n\006client\030\001 \003" +
+      "(\0132*.yamcs.protobuf.yamcsManagement.Clie" +
+      "ntInfo\"8\n\021EditClientRequest\022\020\n\010instance\030",
+      "\001 \001(\t\022\021\n\tprocessor\030\002 \001(\t\"Z\n\026ListProcesso" +
+      "rsResponse\022@\n\tprocessor\030\001 \003(\0132-.yamcs.pr" +
+      "otobuf.yamcsManagement.ProcessorInfo\"W\n\031" +
+      "ListCommandQueuesResponse\022:\n\005queue\030\001 \003(\013" +
+      "2+.yamcs.protobuf.commanding.CommandQueu" +
+      "eInfo\"V\n\027ListCommandQueueEntries\022;\n\005entr" +
+      "y\030\001 \003(\0132,.yamcs.protobuf.commanding.Comm" +
+      "andQueueEntry\"-\n\034EditCommandQueueEntryRe" +
+      "quest\022\r\n\005state\030\001 \001(\t\"\322\001\n\023IssueCommandReq" +
+      "uest\022G\n\nassignment\030\001 \003(\01323.yamcs.protobu",
+      "f.rest.IssueCommandRequest.Assignment\022\016\n" +
+      "\006origin\030\002 \001(\t\022\026\n\016sequenceNumber\030\003 \001(\005\022\016\n" +
+      "\006dryRun\030\004 \001(\010\022\017\n\007comment\030\005 \001(\t\032)\n\nAssign" +
+      "ment\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"\214\001\n\024Is" +
+      "sueCommandResponse\022G\n\021commandQueueEntry\030" +
+      "\001 \001(\0132,.yamcs.protobuf.commanding.Comman" +
+      "dQueueEntry\022\016\n\006source\030\002 \001(\t\022\013\n\003hex\030\003 \001(\t" +
+      "\022\016\n\006binary\030\004 \001(\014\"\313\001\n\033UpdateCommandHistor" +
+      "yRequest\0223\n\005cmdId\030\001 \002(\0132$.yamcs.protobuf" +
+      ".commanding.CommandId\022O\n\014historyEntry\030\002 ",
+      "\003(\01329.yamcs.protobuf.rest.UpdateCommandH" +
+      "istoryRequest.KeyValue\032&\n\010KeyValue\022\013\n\003ke" +
+      "y\030\001 \002(\t\022\r\n\005value\030\002 \002(\t\"{\n\022CreateEventReq" +
+      "uest\022\014\n\004type\030\001 \001(\t\022\017\n\007message\030\002 \001(\t\022\020\n\010s" +
+      "everity\030\003 \001(\t\022\014\n\004time\030\004 \001(\t\022\016\n\006source\030\005 " +
+      "\001(\t\022\026\n\016sequenceNumber\030\006 \001(\005\"j\n\026CreatePro" +
+      "cessorRequest\022\014\n\004name\030\001 \001(\t\022\020\n\010clientId\030" +
+      "\006 \003(\005\022\022\n\npersistent\030\013 \001(\010\022\014\n\004type\030\014 \001(\t\022" +
+      "\016\n\006config\030\r \001(\t\"B\n\024EditProcessorRequest\022" +
+      "\r\n\005state\030\001 \001(\t\022\014\n\004seek\030\002 \001(\t\022\r\n\005speed\030\003 ",
+      "\001(\t\"(\n\026StreamSubscribeRequest\022\016\n\006stream\030" +
+      "\001 \001(\t\"e\n\030SetSimulationTimeRequest\022\r\n\005tim" +
+      "e0\030\001 \001(\003\022\020\n\010time0UTC\030\002 \001(\t\022\026\n\016simElapsed" +
+      "Time\030\003 \001(\003\022\020\n\010simSpeed\030\004 \001(\001\"X\n\025ListInst" +
+      "ancesResponse\022?\n\010instance\030\001 \003(\0132-.yamcs." +
+      "protobuf.yamcsManagement.YamcsInstance\";" +
+      "\n\020ListTagsResponse\022\'\n\003tag\030\001 \003(\0132\032.yamcs." +
+      "protobuf.ArchiveTag\"a\n\020CreateTagRequest\022" +
+      "\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001" +
+      "(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"_",
+      "\n\016EditTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030" +
+      "\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030\004 \001(\t" +
+      "\022\r\n\005color\030\005 \001(\t\"E\n\022ListAlarmsResponse\022/\n" +
+      "\005alarm\030\001 \003(\0132 .yamcs.protobuf.alarms.Ala" +
+      "rmData\"2\n\020EditAlarmRequest\022\r\n\005state\030\001 \001(" +
+      "\t\022\017\n\007comment\030\002 \001(\t\"F\n\022ListTablesResponse" +
+      "\0220\n\005table\030\001 \003(\0132!.yamcs.protobuf.archive" +
+      ".TableInfo\"I\n\023ListStreamsResponse\0222\n\006str" +
+      "eam\030\001 \003(\0132\".yamcs.protobuf.archive.Strea" +
+      "mInfo\"U\n\022ListEventsResponse\022$\n\005event\030\001 \003",
+      "(\0132\025.yamcs.protobuf.Event\022\031\n\021continuatio" +
+      "nToken\030\002 \001(\t\"^\n\023ListPacketsResponse\022,\n\006p" +
+      "acket\030\001 \003(\0132\034.yamcs.protobuf.TmPacketDat" +
+      "a\022\031\n\021continuationToken\030\002 \001(\t\"W\n\027ListServ" +
+      "iceInfoResponse\022<\n\007service\030\001 \003(\0132+.yamcs" +
+      ".protobuf.yamcsManagement.ServiceInfo\"r\n" +
+      "\033ListParameterValuesResponse\0228\n\tparamete" +
+      "r\030\001 \003(\0132%.yamcs.protobuf.pvalue.Paramete" +
+      "rValue\022\031\n\021continuationToken\030\002 \001(\t\"#\n\022Edi" +
+      "tServiceRequest\022\r\n\005state\030\001 \001(\t\"V\n\023BulkGe",
+      "tIndexRequest\022\r\n\005start\030\001 \001(\t\022\014\n\004stop\030\002 \001" +
+      "(\t\022\016\n\006filter\030\003 \003(\t\022\022\n\npacketname\030\004 \003(\t\"#" +
+      "\n\023CreateBucketRequest\022\014\n\004name\030\001 \001(\t\"<\n\nB" +
+      "ucketInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004size\030\002 \001(\004\022\022\n" +
+      "\nnumObjects\030\003 \001(\r\"\253\001\n\nObjectInfo\022\014\n\004name" +
+      "\030\001 \001(\t\022\017\n\007created\030\002 \001(\t\022\014\n\004size\030\003 \001(\004\022?\n" +
+      "\010metadata\030\004 \003(\0132-.yamcs.protobuf.rest.Ob" +
+      "jectInfo.MetadataEntry\032/\n\rMetadataEntry\022" +
+      "\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"F\n\023ListB" +
+      "ucketsResponse\022/\n\006bucket\030\001 \003(\0132\037.yamcs.p",
+      "rotobuf.rest.BucketInfo\"V\n\023ListObjectsRe" +
+      "sponse\022\016\n\006prefix\030\001 \003(\t\022/\n\006object\030\002 \003(\0132\037" +
+      ".yamcs.protobuf.rest.ObjectInfoB\024\n\022org.y" +
+      "amcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -40815,7 +40984,7 @@ public final class Rest {
     internal_static_yamcs_protobuf_rest_ListCommandsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListCommandsResponse_descriptor,
-        new java.lang.String[] { "Entry", });
+        new java.lang.String[] { "Entry", "ContinuationToken", });
     internal_static_yamcs_protobuf_rest_EditLinkRequest_descriptor =
       getDescriptor().getMessageTypes().get(7);
     internal_static_yamcs_protobuf_rest_EditLinkRequest_fieldAccessorTable = new
