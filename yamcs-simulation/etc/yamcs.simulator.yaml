@@ -42,6 +42,11 @@ dataLinks:
       stream: tc_sim
       host: localhost
       port: 10025
+      commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+      commandPostprocessorArgs:
+            errorDetection:
+               type: 16-SUM
+            enforceEvenNumberOfBytes: true
   - name: TSE
     class: org.yamcs.tctm.TseDataLink
     args:

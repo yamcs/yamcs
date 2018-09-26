@@ -200,11 +200,11 @@ public class ArchiveParameterRestHandler extends RestHandler {
 
    
     private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
-        ParameterArchive parameterArchive = YamcsServer.getService(instance, ParameterArchive.class);
-        if (parameterArchive == null) {
+        List<ParameterArchive> l = YamcsServer.getServices(instance, ParameterArchive.class);
+        if (l.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }
-        return parameterArchive;
+        return l.get(0);
     }
 
     @Route(path = "/api/archive/:instance/parameters/:name*")

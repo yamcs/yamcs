@@ -3,27 +3,27 @@ package org.yamcs.simulation.simulator;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.LogManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Simulator extends Thread {
+import com.google.common.util.concurrent.AbstractExecutionThreadService;
+
+public class Simulator extends AbstractExecutionThreadService {
 
     private static final Logger log = LoggerFactory.getLogger(Simulator.class);
 
     // no more than 100 pending commands
     protected BlockingQueue<CCSDSPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
-    private int DEFAULT_MAX_LENGTH = 65542;
-    private int maxLength = DEFAULT_MAX_LENGTH;
-
-    private TelemetryLink tmLink;
+    static int DEFAULT_MAX_LENGTH = 65542;
+    int maxLength = DEFAULT_MAX_LENGTH;
+    private TmTcLink tmLink;
+    private TmTcLink losLink;
 
     private boolean los;
     private Date lastLosStart;
@@ -45,11 +45,10 @@ public class Simulator extends Thread {
     private boolean exeTransmitted = true;
 
     private BatteryCommand batteryCommand;
-
+    int tmCycle = 0;     
+    
     public Simulator(File dataDir, int tmPort, int tcPort, int losPort) {
-        tmLink = new TelemetryLink(this, tmPort, tcPort, losPort);
         losRecorder = new LosRecorder(dataDir);
-
         powerDataHandler = new PowerHandler();
         rcsHandler = new RCSHandler();
         epslvpduHandler = new EpsLvpduHandler();
@@ -59,154 +58,29 @@ public class Simulator extends Thread {
 
     @Override
     public void run() {
-        tmLink.yamcsServerConnect();
-
-        // start the TC reception thread;
-        new Thread(() -> {
-            while (true) {
-                try {
-                    // read commands
-                    CCSDSPacket packet = readPacket(
-                            new DataInputStream(tmLink.getTcSocket().getInputStream()));
-                    if (packet != null) {
-                        pendingCommands.put(packet);
-                    }
-
-                } catch (IOException e) {
-                    tmLink.setConnected(false);
-                    tmLink.yamcsServerConnect();
-                } catch (InterruptedException e) {
-                    log.warn("Read packets interrupted.", e);
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }).start();
-
-        // start the TM transmission thread
-        (new Thread(() -> tmLink.packetSend())).start();
-
-        new Thread(() -> {
-            while (true) {
-                try {
+        while (isRunning()) {
+            try {
+                while(!pendingCommands.isEmpty()) { 
                     executePendingCommands();
-                } catch (InterruptedException e) {
-                    log.warn("Execute pending commands interrupted.", e);
-                    Thread.currentThread().interrupt();
                 }
+            } catch (InterruptedException e) {
+                log.warn("Execute pending commands interrupted.", e);
+                Thread.currentThread().interrupt();
             }
-        }).start();
-        CCSDSPacket packet = null;
-        try {
-            for (int i = 0;;) {
-                CCSDSPacket flightpacket = new CCSDSPacket(60, 33);
-                flightDataHandler.fillPacket(flightpacket);
-                transmitTM(flightpacket);
 
-                if (i < 30) {
-                    ++i;
-                } else {
-                    if (waitToEngage == 2 || engaged) {
-                        engaged = true;
-                        // unengaged = false;
-                        CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
-
-                        powerDataHandler.fillPacket(powerpacket);
-                        if (batteryCommand.batteryOn) {
-                            if (!exeTransmitted) {
-                                CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
-                                if (1 <= batteryCommand.batteryNumber && batteryCommand.batteryNumber <= 3) {
-                                    ByteBuffer buffer = packet.getUserDataBuffer();
-                                    buffer.position(batteryCommand.batteryNumber - 1);
-                                    buffer.put((byte) 1);
-                                }
-                                transmitTM(exeCompPacket);
-                                exeTransmitted = true;
-                            }
-                        } else {
-                            powerDataHandler.setBattOneOff(powerpacket);
-                            if (!exeTransmitted) {
-                                CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
-                                if (1 <= batteryCommand.batteryNumber && batteryCommand.batteryNumber <= 3) {
-                                    ByteBuffer buffer = packet.getUserDataBuffer();
-                                    buffer.position(batteryCommand.batteryNumber - 1);
-                                    buffer.put((byte) 0);
-                                }
-                                transmitTM(exeCompPacket);
-                                exeTransmitted = true;
-                            }
-                        }
-
-                        transmitTM(powerpacket);
-
-                        engageHoldOneCycle = false;
-                        waitToEngage = 0;
-
-                    } else if (waitToUnengage == 2 || unengaged) {
-                        CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
-                        powerDataHandler.fillPacket(powerpacket);
-                        transmitTM(powerpacket);
-                        unengaged = true;
-                        // engaged = false;
-
-                        unengageHoldOneCycle = false;
-                        waitToUnengage = 0;
-                    }
-
-                    packet = new CCSDSPacket(9, 2);
-                    dhsHandler.fillPacket(packet);
-                    transmitTM(packet);
-
-                    packet = new CCSDSPacket(36, 3);
-                    rcsHandler.fillPacket(packet);
-                    transmitTM(packet);
-
-                    packet = new CCSDSPacket(6, 4);
-                    epslvpduHandler.fillPacket(packet);
-                    transmitTM(packet);
-
-                    if (engageHoldOneCycle) { // hold the command for 1 cycle after the command Ack received
-                        waitToEngage = waitToEngage + 1;
-                        log.debug("Value : {}", waitToEngage);
-                    }
-
-                    if (unengageHoldOneCycle) {
-                        waitToUnengage = waitToUnengage + 1;
-                    }
-
-                    i = 0;
-                }
+            try {
+                sendTm();
                 Thread.sleep(4000 / 20);
+            } catch (InterruptedException e) {
+                log.warn("Send TM interrupted.", e);
+                Thread.currentThread().interrupt();
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
     /**
      * this runs in a separate thread but pushes commands to the main TM thread
      */
-    protected CCSDSPacket readPacket(DataInputStream dIn) {
-        try {
-            byte hdr[] = new byte[6];
-            dIn.readFully(hdr);
-            int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
-            if (remaining > maxLength - 6) {
-                throw new IOException(
-                        "Remaining packet length too big: " + remaining + " maximum allowed is " + (maxLength - 6));
-            }
-            byte[] b = new byte[6 + remaining];
-            System.arraycopy(hdr, 0, b, 0, 6);
-            dIn.readFully(b, 6, remaining);
-            CCSDSPacket packet = new CCSDSPacket(ByteBuffer.wrap(b));
-            tmLink.ackPacketSend(ackPacket(packet, 0, 0));
-            return packet;
-        } catch (IOException e) {
-            log.error("Connection lost:" + e.getMessage(), e);
-        } catch (Exception e) {
-            log.error("Error reading command " + e.getMessage(), e);
-        }
-        return null;
-    }
 
     public LosRecorder getLosDataRecorder() {
         return losRecorder;
@@ -242,7 +116,11 @@ public class Simulator extends Thread {
 
     protected void transmitTM(CCSDSPacket packet) {
         packet.fillChecksum();
-        tmLink.tmTransmit(packet);
+        if(isLOS()) {
+           losRecorder.record(packet);
+        } else {
+            tmLink.sendPacket(packet);
+        }
     }
 
     public void dumpLosDataFile(String filename) {
@@ -256,20 +134,18 @@ public class Simulator extends Thread {
 
         try (DataInputStream dataStream = new DataInputStream(losRecorder.getInputStream(filename))) {
             while (dataStream.available() > 0) {
-                CCSDSPacket packet = readPacket(dataStream);
+                CCSDSPacket packet = readLosPacket(dataStream);
                 if (packet != null) {
-                    tmLink.addTmDumpPacket(packet);
+                    losLink.sendPacket(packet);
                 }
             }
 
             // add packet notifying that the file has been downloaded entirely
             CCSDSPacket confirmationPacket = buildLosTransmittedRecordingPacket(filename);
-            tmLink.addTmDumpPacket(confirmationPacket);
+            tmLink.sendPacket(confirmationPacket);
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        } 
     }
 
     private static CCSDSPacket buildLosTransmittedRecordingPacket(String transmittedRecordName) {
@@ -284,11 +160,7 @@ public class Simulator extends Thread {
         losRecorder.deleteDump(filename);
         // add packet notifying that the file has been deleted
         CCSDSPacket confirmationPacket = buildLosDeletedRecordingPacket(filename);
-        try {
-            tmLink.addTmDumpPacket(confirmationPacket);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        tmLink.sendPacket(confirmationPacket);
     }
 
     private static CCSDSPacket buildLosDeletedRecordingPacket(String deletedRecordName) {
@@ -313,6 +185,76 @@ public class Simulator extends Thread {
         ackPacket.appendUserDataBuffer(bb.array());
 
         return ackPacket;
+    }
+
+    private void sendTm() {
+        CCSDSPacket flightpacket = new CCSDSPacket(60, 33);
+        flightDataHandler.fillPacket(flightpacket);
+        transmitTM(flightpacket);
+        
+        if (tmCycle < 30) {
+            ++tmCycle;
+        } else {
+            if (waitToEngage == 2 || engaged) {
+                engaged = true;
+                // unengaged = false;
+                CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
+
+                powerDataHandler.fillPacket(powerpacket);
+                if (batteryCommand.batteryOn) {
+                    if (!exeTransmitted) {
+                        CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
+                        transmitTM(exeCompPacket);
+                        exeTransmitted = true;
+                    }
+                } else {
+                    powerDataHandler.setBattOneOff(powerpacket);
+                    if (!exeTransmitted) {
+                        CCSDSPacket exeCompPacket = new CCSDSPacket(3, 2, 8);
+                        transmitTM(exeCompPacket);
+                        exeTransmitted = true;
+                    }
+                }
+
+                transmitTM(powerpacket);
+
+                engageHoldOneCycle = false;
+                waitToEngage = 0;
+
+            } else if (waitToUnengage == 2 || unengaged) {
+                CCSDSPacket powerpacket = new CCSDSPacket(16, 1);
+                powerDataHandler.fillPacket(powerpacket);
+                transmitTM(powerpacket);
+                unengaged = true;
+                // engaged = false;
+
+                unengageHoldOneCycle = false;
+                waitToUnengage = 0;
+            }
+
+            CCSDSPacket packet = new CCSDSPacket(9, 2);
+            dhsHandler.fillPacket(packet);
+            transmitTM(packet);
+
+            packet = new CCSDSPacket(36, 3);
+            rcsHandler.fillPacket(packet);
+            transmitTM(packet);
+
+            packet = new CCSDSPacket(6, 4);
+            epslvpduHandler.fillPacket(packet);
+            transmitTM(packet);
+
+            if (engageHoldOneCycle) { // hold the command for 1 cycle after the command Ack received
+                waitToEngage = waitToEngage + 1;
+                log.debug("Value : {}", waitToEngage);
+            }
+
+            if (unengageHoldOneCycle) {
+                waitToUnengage = waitToUnengage + 1;
+            }
+
+            tmCycle = 0;
+        }
     }
 
     /**
@@ -342,6 +284,8 @@ public class Simulator extends Thread {
             default:
                 log.error("Invalid command packet id: {}", commandPacket.getPacketId());
             }
+        } else {
+            log.warn("Unknown command type "+commandPacket.getPacketType());
         }
     }
 
@@ -449,33 +393,39 @@ public class Simulator extends Thread {
         tmLink.ackPacketSend(ackPacket(commandPacket, 2, 0));
     }
 
-    public static void main(String[] args) throws IOException {
-        configureLogging();
-
-        log.info("Yamcs Demo Simulator");
-
-        int tmPort = 10015;
-        int tcPort = 10025;
-        int dumpPort = 10115;
-        File dataDir = new File("losData");
-        dataDir.mkdirs();
-        Simulator simulator = new Simulator(dataDir, tmPort, tcPort, dumpPort);
-        simulator.start();
-
-        int telnetPort = 10023;
-        TelnetServer telnetServer = new TelnetServer(simulator);
-        telnetServer.setPort(telnetPort);
-        telnetServer.startAsync();
+    public void setTmLink(TmTcLink tmLink) {
+        this.tmLink = tmLink;
     }
 
-    private static void configureLogging() {
+    public void processTc(CCSDSPacket tc) {
+        tmLink.ackPacketSend(ackPacket(tc, 0, 0));
         try {
-            LogManager logManager = LogManager.getLogManager();
-            try (InputStream in = Simulator.class.getResourceAsStream("/simulator-logging.properties")) {
-                logManager.readConfiguration(in);
-            }
-        } catch (IOException e) {
-            System.err.println("Failed to set up logging configuration: " + e.getMessage());
+            pendingCommands.put(tc);
+        } catch (InterruptedException e) {
+           Thread.currentThread().interrupt();
         }
+    }
+
+    protected CCSDSPacket readLosPacket(DataInputStream dIn) {
+        try {
+            byte hdr[] = new byte[6];
+            dIn.readFully(hdr);
+            int remaining = ((hdr[4] & 0xFF) << 8) + (hdr[5] & 0xFF) + 1;
+            if (remaining > maxLength - 6) {
+                throw new IOException(
+                        "Remaining packet length too big: " + remaining + " maximum allowed is " + (maxLength - 6));
+            }
+            byte[] b = new byte[6 + remaining];
+            System.arraycopy(hdr, 0, b, 0, 6);
+            dIn.readFully(b, 6, remaining);
+            return new CCSDSPacket(ByteBuffer.wrap(b));
+        } catch (Exception e) {
+            log.error("Error reading LOS packet from file " + e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public void setLosLink(TmTcLink losLink) {
+       this.losLink = losLink;
     }
 }

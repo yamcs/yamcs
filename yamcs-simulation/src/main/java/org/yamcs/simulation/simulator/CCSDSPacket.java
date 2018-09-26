@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.utils.TimeEncoding;
 
 public class CCSDSPacket {
 
@@ -51,7 +52,7 @@ public class CCSDSPacket {
     // Header Attributes
 
     private int apid, packetid, packetType, seq;
-    private long timeMillis;
+    private long timeMillis; //yamcs time 
     private short w;
 
     private Logger log = LoggerFactory.getLogger(this.getClass().getName());
@@ -63,7 +64,7 @@ public class CCSDSPacket {
         seq = buffer.getShort(2) & 0x3fff;
         packetType = (byte) (buffer.get(11) & 0x0F); // get the packet type
         packetid = buffer.getInt(12);
-        timeMillis = ((long) (buffer.getInt(6)) + 315964800L) * 1000 + (long) (buffer.get(10)) * 1000 / 256;
+        timeMillis = TimeEncoding.fromGpsCcsdsTime(buffer.getInt(6),  buffer.get(10));
     }
 
     public CCSDSPacket(int userDataLength, int packetid) {
@@ -81,7 +82,7 @@ public class CCSDSPacket {
     public CCSDSPacket(int userDataLength, int packetType, int packetid, boolean checksumPresent) {
         apid = 1;
         seq = 0;
-        timeMillis = System.currentTimeMillis() + 18000; // gps time as of 2017
+        timeMillis = TimeEncoding.getWallclockTime(); // gps time as of 2017
         int dl = userDataLength + 16;
         if (checksumPresent) {
             dl += 2;
@@ -96,6 +97,11 @@ public class CCSDSPacket {
         this.packetid = packetid;
         this.checksumPresent = checksumPresent;
 
+        putHeader();
+    }
+    
+    public void setTime(long instant) {
+        timeMillis = instant;
         putHeader();
     }
 
@@ -174,8 +180,9 @@ public class CCSDSPacket {
         seq = getSeq(apid);
         buffer.putShort(2, (short) (seq & 0x3fff));
         buffer.putShort(4, (short) (buffer.capacity() - 7)); // secondary
-        buffer.putInt(6, (int) (timeMillis / 1000 - 315964800L)); // epoch starts a 06-Jan-1980 00:00:00
-        buffer.put(10, (byte) ((timeMillis % 1000) * 256 / 1000));
+        long gpsMillis = TimeEncoding.toGpsTimeMillisec(timeMillis);
+        buffer.putInt(6, (int) (gpsMillis / 1000));
+        buffer.put(10, (byte) ((gpsMillis % 1000) * 256 / 1000));
         // original version with checksum;
         int checksum = checksumPresent ? 1 : 0;
         buffer.put(11, (byte) ((SH_TIME_ID_TIME_OF_PACKET_GENERATION << 6) | (checksum << 5) | packetType)); // checksum
@@ -199,4 +206,6 @@ public class CCSDSPacket {
             buffer.putShort(buffer.limit() - 2, (short) checksum);
         }
     }
+
+   
 }

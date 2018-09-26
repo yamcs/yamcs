@@ -2,7 +2,6 @@ package org.yamcs;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -213,7 +212,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {
-        ParameterArchive parameterArchive = YamcsServer.getService(yamcsInstance, ParameterArchive.class);
+        ParameterArchive parameterArchive = YamcsServer.getServices(yamcsInstance, ParameterArchive.class).get(0);
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse(start),
                 TimeEncoding.parse(stop));
         f.get();
