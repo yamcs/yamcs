@@ -26,7 +26,6 @@ public class UdpTmDataLink extends AbstractTmDataLink {
     private volatile int invalidDatagramCount = 0;
     private volatile boolean disabled = false;
 
-    private volatile boolean quitting = false;
     private DatagramSocket tmSocket;
     private int port = 31002;
 
@@ -46,6 +45,7 @@ public class UdpTmDataLink extends AbstractTmDataLink {
      *             if port is not defined in the configuration
      */
     public UdpTmDataLink(String instance, String name, Map<String, Object> args) throws ConfigurationException {
+        super(instance, name);
         port = YConfiguration.getInt(args, "port");
         maxLength = YConfiguration.getInt(args, "maxLength", MAX_LENGTH);
         datagram = new DatagramPacket(new byte[maxLength], maxLength);

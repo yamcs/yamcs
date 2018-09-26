@@ -28,6 +28,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
     long delayBetweenPackets = -1;
 
     public FilePollingTmDataLink(String yamcsInstance, String name, Map<String, Object> args) {
+        super(yamcsInstance, name);
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
 
         this.incomingDir = YConfiguration.getString(args, "incomingDir", getDefaultIncomingDir(yamcsInstance));
@@ -38,6 +39,7 @@ public class FilePollingTmDataLink extends AbstractTmDataLink {
     }
 
     public FilePollingTmDataLink(String yamcsInstance, String name, String incomingDir) {
+        super(yamcsInstance, name);
         log = LoggingUtils.getLogger(this.getClass(), yamcsInstance);
         this.incomingDir = incomingDir;
         this.timeService = YamcsServer.getTimeService(yamcsInstance);

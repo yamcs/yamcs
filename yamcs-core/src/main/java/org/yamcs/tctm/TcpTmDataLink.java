@@ -7,24 +7,19 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
 import org.yamcs.archive.PacketWithTime;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersCollector;
-import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.YObjectLoader;
 
 public class TcpTmDataLink extends AbstractTmDataLink {
-    protected volatile long packetcount = 0;
+  
     protected Socket tmSocket;
     protected String host = "localhost";
     protected int port = 10031;
@@ -33,21 +28,15 @@ public class TcpTmDataLink extends AbstractTmDataLink {
     protected final Logger log;
     private TmSink tmSink;
 
-    private SystemParametersCollector sysParamCollector;
     ParameterValue svConnectionStatus;
     List<ParameterValue> sysVariables = new ArrayList<>();
-    private String spLinkStatus, spDataCount;
-    final String yamcsInstance;
-    final String name;
-    final protected TimeService timeService;
+   
     String packetInputStreamClassName;
     Object packetInputStreamArgs;
     PacketInputStream packetInputStream;
 
     protected TcpTmDataLink(String instance, String name) {// dummy constructor needed by subclass constructors
-        this.yamcsInstance = instance;
-        this.name = name;
-        this.timeService = YamcsServer.getTimeService(instance);
+        super(instance, name);
         this.packetInputStreamClassName = CcsdsPacketInputStream.class.getName();
         this.packetInputStreamArgs = null;
         log = LoggingUtils.getLogger(this.getClass(), instance);
@@ -130,7 +119,7 @@ public class TcpTmDataLink extends AbstractTmDataLink {
                     log.info("TM connection established to {}:{}", host, port);
                 }
                 byte[] packet = packetInputStream.readPacket();
-                packetcount++;
+                updateStats(packet.length);
                 pwt = packetPreprocessor.process(packet);
                 if (pwt != null) {
                     break;
@@ -219,33 +208,5 @@ public class TcpTmDataLink extends AbstractTmDataLink {
         }
     }
 
-    @Override
-    public long getDataInCount() {
-        return packetcount;
-    }
-
-    @Override
-    public long getDataOutCount() {
-        return 0;
-    }
-
-    protected void setupSysVariables() {
-        this.sysParamCollector = SystemParametersCollector.getInstance(yamcsInstance);
-        if (sysParamCollector != null) {
-            sysParamCollector.registerProducer(this);
-            spLinkStatus = sysParamCollector.getNamespace() + "/" + name + "/linkStatus";
-            spDataCount = sysParamCollector.getNamespace() + "/" + name + "/dataCount";
-
-        } else {
-            log.info("System variables collector not defined for instance {} ", yamcsInstance);
-        }
-    }
-
-    @Override
-    public Collection<ParameterValue> getSystemParameters() {
-        long time = timeService.getMissionTime();
-        ParameterValue linkStatus = SystemParametersCollector.getPV(spLinkStatus, time, getLinkStatus().name());
-        ParameterValue dataCount = SystemParametersCollector.getPV(spDataCount, time, getDataInCount());
-        return Arrays.asList(linkStatus, dataCount);
-    }
+   
 }
