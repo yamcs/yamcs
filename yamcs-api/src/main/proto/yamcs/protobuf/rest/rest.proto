@@ -59,6 +59,7 @@ message ListLinkInfoResponse {
 
 message ListCommandsResponse {
   repeated commanding.CommandHistoryEntry entry = 1;
+  optional string continuationToken = 2;
 }
 
 message EditLinkRequest {

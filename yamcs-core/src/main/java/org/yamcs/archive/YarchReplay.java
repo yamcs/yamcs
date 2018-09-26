@@ -30,12 +30,10 @@ import org.yamcs.yarch.streamsql.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
- * Performs a replay from Yarch So far supported are: TM packets, PP groups,
- * Events, Parameters and Command History.
+ * Performs a replay from Yarch So far supported are: TM packets, PP groups, Events, Parameters and Command History.
  * 
- * It relies on handlers for each data type. Each handler creates a stream, the
- * streams are merged and the output is sent to the listener This class can also
- * handle pause/resume: simply stop sending data seek: closes the streams and
+ * It relies on handlers for each data type. Each handler creates a stream, the streams are merged and the output is
+ * sent to the listener This class can also handle pause/resume: simply stop sending data seek: closes the streams and
  * creates new ones with a different starting time.
  * 
  * @author nm
@@ -52,6 +50,9 @@ public class YarchReplay implements StreamSubscriber {
     final String instance;
     static AtomicInteger counter = new AtomicInteger();
     XtceDb xtceDb;
+
+    private long stepCutOff = 0;
+    private long emittedDuringStep = 0;
 
     volatile ReplayRequest currentRequest;
 
@@ -105,14 +106,18 @@ public class YarchReplay implements StreamSubscriber {
                     "The replay cannot handle directly parameters. Please create a replay processor for that");
         }
 
-        if (currentRequest.hasEventRequest())
+        if (currentRequest.hasEventRequest()) {
             handlers.put(ProtoDataType.EVENT, new EventReplayHandler());
-        if (currentRequest.hasPacketRequest())
+        }
+        if (currentRequest.hasPacketRequest()) {
             handlers.put(ProtoDataType.TM_PACKET, new XtceTmReplayHandler(xtceDb));
-        if (currentRequest.hasPpRequest())
+        }
+        if (currentRequest.hasPpRequest()) {
             handlers.put(ProtoDataType.PP, new ParameterReplayHandler(xtceDb));
-        if (currentRequest.hasCommandHistoryRequest())
+        }
+        if (currentRequest.hasCommandHistoryRequest()) {
             handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance));
+        }
 
         for (ReplayHandler rh : handlers.values()) {
             rh.setRequest(newRequest);
@@ -165,8 +170,9 @@ public class YarchReplay implements StreamSubscriber {
             if (selectCmd != null) {
                 if (first) {
                     first = false;
-                } else
+                } else {
                     sb.append(", ");
+                }
                 if (handlers.size() > 1) {
                     sb.append("(");
                 }
@@ -187,7 +193,7 @@ public class YarchReplay implements StreamSubscriber {
         if (handlers.size() > 1) {
             sb.append(" USING gentime");
         }
-        
+
         if (handlers.size() > 1 && currentRequest.hasReverse() && currentRequest.getReverse()) {
             sb.append(" ORDER DESC");
         }
@@ -200,6 +206,7 @@ public class YarchReplay implements StreamSubscriber {
         }
         switch (rs.getType()) {
         case AFAP:
+        case STEP_BY_STEP: // Step advancing is controlled from within this class
             sb.append(" SPEED AFAP");
             break;
         case FIXED_DELAY:
@@ -207,8 +214,9 @@ public class YarchReplay implements StreamSubscriber {
             break;
         case REALTIME:
             sb.append(" SPEED ORIGINAL gentime," + (long) rs.getParam());
+            break;
         }
-      
+
         String query = sb.toString();
         log.debug("running query {}", query);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
@@ -263,13 +271,13 @@ public class YarchReplay implements StreamSubscriber {
         ReplayRequest.Builder b = ReplayRequest.newBuilder(currentRequest);
         b.setSpeed(newSpeed);
         currentRequest = b.build();
-
     }
 
     private SpeedSpec toSpeedSpec(ReplaySpeed speed) {
         SpeedSpec ss;
         switch (speed.getType()) {
         case AFAP:
+        case STEP_BY_STEP: // Step advancing is controlled from within this class
             ss = new SpeedSpec(SpeedSpec.Type.AFAP);
             break;
         case FIXED_DELAY:
@@ -279,7 +287,7 @@ public class YarchReplay implements StreamSubscriber {
             ss = new SpeedSpec(SpeedSpec.Type.ORIGINAL, "gentime", speed.getParam());
             break;
         default:
-            throw new IllegalArgumentException("Unkown speed type " + speed.getType());
+            throw new IllegalArgumentException("Unknown speed type " + speed.getType());
         }
         return ss;
     }
@@ -313,6 +321,31 @@ public class YarchReplay implements StreamSubscriber {
             return;
         }
         try {
+            if (currentRequest.hasSpeed()
+                    && currentRequest.getSpeed().getType() == ReplaySpeedType.STEP_BY_STEP) {
+
+                long stepSize = (long) currentRequest.getSpeed().getParam();
+                long tupleTime = (Long) t.getColumn("gentime");
+
+                if (stepCutOff == 0) {
+                    stepCutOff = tupleTime + stepSize;
+                    emittedDuringStep = 0;
+                }
+
+                if (tupleTime > stepCutOff) {
+                    if (emittedDuringStep == 0) { // Step over gaps
+                        stepCutOff = tupleTime + stepSize;
+                        emittedDuringStep = 0;
+                    } else {
+                        stepCutOff += stepSize;
+                        emittedDuringStep = 0;
+                        // Step finished. Force user to trigger next step.
+                        pause();
+                        signalStateChange();
+                    }
+                }
+            }
+
             while (state == ReplayState.PAUSED) {
                 pausedSemaphore.acquire();
             }
@@ -320,13 +353,13 @@ public class YarchReplay implements StreamSubscriber {
                 dropTuple = false;
                 return;
             }
+
             ProtoDataType type = ProtoDataType.valueOf((Integer) t.getColumn(0));
             Object data = handlers.get(type).transform(t);
-
             if (data != null) {
+                emittedDuringStep++;
                 listener.newData(type, data);
             }
-
         } catch (Exception e) {
             if (!quitting) {
                 log.warn("Exception received: ", e);

@@ -16861,6 +16861,10 @@ public final class Yamcs {
        * <code>REALTIME = 3;</code>
        */
       REALTIME(3),
+      /**
+       * <code>STEP_BY_STEP = 4;</code>
+       */
+      STEP_BY_STEP(4),
       ;
 
       /**
@@ -16875,6 +16879,10 @@ public final class Yamcs {
        * <code>REALTIME = 3;</code>
        */
       public static final int REALTIME_VALUE = 3;
+      /**
+       * <code>STEP_BY_STEP = 4;</code>
+       */
+      public static final int STEP_BY_STEP_VALUE = 4;
 
 
       public final int getNumber() {
@@ -16894,6 +16902,7 @@ public final class Yamcs {
           case 1: return AFAP;
           case 2: return FIXED_DELAY;
           case 3: return REALTIME;
+          case 4: return STEP_BY_STEP;
           default: return null;
         }
       }
@@ -29900,66 +29909,67 @@ public final class Yamcs {
       "2\032.yamcs.protobuf.ArchiveTag\022*\n\006newTag\030\002" +
       " \002(\0132\032.yamcs.protobuf.ArchiveTag\";\n\020Dele" +
       "teTagRequest\022\'\n\003tag\030\003 \002(\0132\032.yamcs.protob" +
-      "uf.ArchiveTag\"\223\001\n\013ReplaySpeed\0229\n\004type\030\001 ",
+      "uf.ArchiveTag\"\245\001\n\013ReplaySpeed\0229\n\004type\030\001 ",
       "\002(\0162+.yamcs.protobuf.ReplaySpeed.ReplayS" +
-      "peedType\022\r\n\005param\030\002 \001(\002\":\n\017ReplaySpeedTy" +
+      "peedType\022\r\n\005param\030\002 \001(\002\"L\n\017ReplaySpeedTy" +
       "pe\022\010\n\004AFAP\020\001\022\017\n\013FIXED_DELAY\020\002\022\014\n\010REALTIM" +
-      "E\020\003\"\370\003\n\rReplayRequest\022\r\n\005start\030\001 \001(\003\022\014\n\004" +
-      "stop\030\002 \001(\003\022\020\n\010utcStart\030\r \001(\t\022\017\n\007utcStop\030" +
-      "\016 \001(\t\0222\n\tendAction\030\003 \001(\0162\031.yamcs.protobu" +
-      "f.EndAction:\004QUIT\022*\n\005speed\030\004 \001(\0132\033.yamcs" +
-      ".protobuf.ReplaySpeed\022\017\n\007reverse\030\017 \001(\010\022@" +
-      "\n\020parameterRequest\030\010 \001(\0132&.yamcs.protobu" +
-      "f.ParameterReplayRequest\022:\n\rpacketReques",
-      "t\030\t \001(\0132#.yamcs.protobuf.PacketReplayReq" +
-      "uest\0228\n\014eventRequest\030\n \001(\0132\".yamcs.proto" +
-      "buf.EventReplayRequest\022J\n\025commandHistory" +
-      "Request\030\013 \001(\0132+.yamcs.protobuf.CommandHi" +
-      "storyReplayRequest\0222\n\tppRequest\030\014 \001(\0132\037." +
-      "yamcs.protobuf.PpReplayRequest\"\205\001\n\026Param" +
-      "eterReplayRequest\0221\n\nnameFilter\030\001 \003(\0132\035." +
-      "yamcs.protobuf.NamedObjectId\022\026\n\007sendRaw\030" +
-      "\002 \001(\010:\005false\022 \n\021performMonitoring\030\003 \001(\010:" +
-      "\005false\"H\n\023PacketReplayRequest\0221\n\nnameFil",
-      "ter\030\001 \003(\0132\035.yamcs.protobuf.NamedObjectId" +
-      "\"\024\n\022EventReplayRequest\"P\n\033CommandHistory" +
-      "ReplayRequest\0221\n\nnameFilter\030\001 \003(\0132\035.yamc" +
-      "s.protobuf.NamedObjectId\"D\n\017PpReplayRequ" +
-      "est\022\027\n\017groupNameFilter\030\001 \003(\t\022\030\n\020groupNam" +
-      "eExclude\030\002 \003(\t\"\355\001\n\014ReplayStatus\0227\n\005state" +
-      "\030\001 \002(\0162(.yamcs.protobuf.ReplayStatus.Rep" +
-      "layState\022.\n\007request\030\002 \001(\0132\035.yamcs.protob" +
-      "uf.ReplayRequest\022\024\n\014errorMessage\030\003 \001(\t\"^" +
-      "\n\013ReplayState\022\022\n\016INITIALIZATION\020\000\022\013\n\007RUN",
-      "NING\020\001\022\013\n\007STOPPED\020\002\022\t\n\005ERROR\020\003\022\n\n\006PAUSED" +
-      "\020\004\022\n\n\006CLOSED\020\005\"\305\001\n\014TmPacketData\022\025\n\rrecep" +
-      "tionTime\030\001 \002(\003\022\016\n\006packet\030\002 \002(\014\022\026\n\016genera" +
-      "tionTime\030\003 \001(\003\022\026\n\016sequenceNumber\030\004 \001(\005\022)" +
-      "\n\002id\030\005 \001(\0132\035.yamcs.protobuf.NamedObjectI" +
-      "d\022\031\n\021generationTimeUTC\030\006 \001(\t\022\030\n\020receptio" +
-      "nTimeUTC\030\007 \001(\t\"7\n\010TimeInfo\022\023\n\013currentTim" +
-      "e\030\001 \001(\003\022\026\n\016currentTimeUTC\030\002 \001(\t\"\352\002\n\005Even" +
-      "t\022\016\n\006source\030\001 \002(\t\022\026\n\016generationTime\030\002 \002(" +
-      "\003\022\025\n\rreceptionTime\030\003 \002(\003\022\021\n\tseqNumber\030\004 ",
-      "\002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007message\030\006 \002(\t\022;\n\010se" +
-      "verity\030\007 \001(\0162#.yamcs.protobuf.Event.Even" +
-      "tSeverity:\004INFO\022\031\n\021generationTimeUTC\030\010 \001" +
-      "(\t\022\030\n\020receptionTimeUTC\030\t \001(\t\022\021\n\tcreatedB" +
-      "y\030\n \001(\t\"d\n\rEventSeverity\022\010\n\004INFO\020\000\022\013\n\007WA" +
-      "RNING\020\001\022\t\n\005ERROR\020\002\022\t\n\005WATCH\020\003\022\014\n\010DISTRES" +
-      "S\020\005\022\014\n\010CRITICAL\020\006\022\n\n\006SEVERE\020\007*\005\010d\020\221N\"!\n\021" +
-      "ProcessorTypeInfo\022\014\n\004type\030\001 \003(\t*)\n\tEndAc" +
-      "tion\022\010\n\004LOOP\020\001\022\010\n\004QUIT\020\002\022\010\n\004STOP\020\003*\375\002\n\rP" +
-      "rotoDataType\022\014\n\010DT_ERROR\020\001\022\020\n\014STATE_CHAN",
-      "GE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n\002PP\020\004\022\t\n\005EVENT\020\005\022\021" +
-      "\n\rARCHIVE_INDEX\020\006\022\017\n\013ARCHIVE_TAG\020\007\022\r\n\tPA" +
-      "RAMETER\020\010\022\017\n\013CMD_HISTORY\020\t\022\022\n\016PROCESSOR_" +
-      "INFO\020\n\022\017\n\013CLIENT_INFO\020\013\022\031\n\025PROCESSING_ST" +
-      "ATISTICS\020\014\022\017\n\013STREAM_DATA\020\r\022\016\n\nALARM_DAT" +
-      "A\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\nLINK_EVENT\020\020\022\026\n\022CO" +
-      "MMAND_QUEUE_INFO\020\021\022\027\n\023COMMAND_QUEUE_EVEN" +
-      "T\020\022\022\023\n\017CONNECTION_INFO\020\023\022\014\n\010INSTANCE\020\024\022\022" +
-      "\n\016EXTENSION_DATA\020dB\024\n\022org.yamcs.protobuf"
+      "E\020\003\022\020\n\014STEP_BY_STEP\020\004\"\370\003\n\rReplayRequest\022" +
+      "\r\n\005start\030\001 \001(\003\022\014\n\004stop\030\002 \001(\003\022\020\n\010utcStart" +
+      "\030\r \001(\t\022\017\n\007utcStop\030\016 \001(\t\0222\n\tendAction\030\003 \001" +
+      "(\0162\031.yamcs.protobuf.EndAction:\004QUIT\022*\n\005s" +
+      "peed\030\004 \001(\0132\033.yamcs.protobuf.ReplaySpeed\022" +
+      "\017\n\007reverse\030\017 \001(\010\022@\n\020parameterRequest\030\010 \001" +
+      "(\0132&.yamcs.protobuf.ParameterReplayReque",
+      "st\022:\n\rpacketRequest\030\t \001(\0132#.yamcs.protob" +
+      "uf.PacketReplayRequest\0228\n\014eventRequest\030\n" +
+      " \001(\0132\".yamcs.protobuf.EventReplayRequest" +
+      "\022J\n\025commandHistoryRequest\030\013 \001(\0132+.yamcs." +
+      "protobuf.CommandHistoryReplayRequest\0222\n\t" +
+      "ppRequest\030\014 \001(\0132\037.yamcs.protobuf.PpRepla" +
+      "yRequest\"\205\001\n\026ParameterReplayRequest\0221\n\nn" +
+      "ameFilter\030\001 \003(\0132\035.yamcs.protobuf.NamedOb" +
+      "jectId\022\026\n\007sendRaw\030\002 \001(\010:\005false\022 \n\021perfor" +
+      "mMonitoring\030\003 \001(\010:\005false\"H\n\023PacketReplay",
+      "Request\0221\n\nnameFilter\030\001 \003(\0132\035.yamcs.prot" +
+      "obuf.NamedObjectId\"\024\n\022EventReplayRequest" +
+      "\"P\n\033CommandHistoryReplayRequest\0221\n\nnameF" +
+      "ilter\030\001 \003(\0132\035.yamcs.protobuf.NamedObject" +
+      "Id\"D\n\017PpReplayRequest\022\027\n\017groupNameFilter" +
+      "\030\001 \003(\t\022\030\n\020groupNameExclude\030\002 \003(\t\"\355\001\n\014Rep" +
+      "layStatus\0227\n\005state\030\001 \002(\0162(.yamcs.protobu" +
+      "f.ReplayStatus.ReplayState\022.\n\007request\030\002 " +
+      "\001(\0132\035.yamcs.protobuf.ReplayRequest\022\024\n\014er" +
+      "rorMessage\030\003 \001(\t\"^\n\013ReplayState\022\022\n\016INITI",
+      "ALIZATION\020\000\022\013\n\007RUNNING\020\001\022\013\n\007STOPPED\020\002\022\t\n" +
+      "\005ERROR\020\003\022\n\n\006PAUSED\020\004\022\n\n\006CLOSED\020\005\"\305\001\n\014TmP" +
+      "acketData\022\025\n\rreceptionTime\030\001 \002(\003\022\016\n\006pack" +
+      "et\030\002 \002(\014\022\026\n\016generationTime\030\003 \001(\003\022\026\n\016sequ" +
+      "enceNumber\030\004 \001(\005\022)\n\002id\030\005 \001(\0132\035.yamcs.pro" +
+      "tobuf.NamedObjectId\022\031\n\021generationTimeUTC" +
+      "\030\006 \001(\t\022\030\n\020receptionTimeUTC\030\007 \001(\t\"7\n\010Time" +
+      "Info\022\023\n\013currentTime\030\001 \001(\003\022\026\n\016currentTime" +
+      "UTC\030\002 \001(\t\"\352\002\n\005Event\022\016\n\006source\030\001 \002(\t\022\026\n\016g" +
+      "enerationTime\030\002 \002(\003\022\025\n\rreceptionTime\030\003 \002",
+      "(\003\022\021\n\tseqNumber\030\004 \002(\005\022\014\n\004type\030\005 \001(\t\022\017\n\007m" +
+      "essage\030\006 \002(\t\022;\n\010severity\030\007 \001(\0162#.yamcs.p" +
+      "rotobuf.Event.EventSeverity:\004INFO\022\031\n\021gen" +
+      "erationTimeUTC\030\010 \001(\t\022\030\n\020receptionTimeUTC" +
+      "\030\t \001(\t\022\021\n\tcreatedBy\030\n \001(\t\"d\n\rEventSeveri" +
+      "ty\022\010\n\004INFO\020\000\022\013\n\007WARNING\020\001\022\t\n\005ERROR\020\002\022\t\n\005" +
+      "WATCH\020\003\022\014\n\010DISTRESS\020\005\022\014\n\010CRITICAL\020\006\022\n\n\006S" +
+      "EVERE\020\007*\005\010d\020\221N\"!\n\021ProcessorTypeInfo\022\014\n\004t" +
+      "ype\030\001 \003(\t*)\n\tEndAction\022\010\n\004LOOP\020\001\022\010\n\004QUIT" +
+      "\020\002\022\010\n\004STOP\020\003*\375\002\n\rProtoDataType\022\014\n\010DT_ERR",
+      "OR\020\001\022\020\n\014STATE_CHANGE\020\002\022\r\n\tTM_PACKET\020\003\022\006\n" +
+      "\002PP\020\004\022\t\n\005EVENT\020\005\022\021\n\rARCHIVE_INDEX\020\006\022\017\n\013A" +
+      "RCHIVE_TAG\020\007\022\r\n\tPARAMETER\020\010\022\017\n\013CMD_HISTO" +
+      "RY\020\t\022\022\n\016PROCESSOR_INFO\020\n\022\017\n\013CLIENT_INFO\020" +
+      "\013\022\031\n\025PROCESSING_STATISTICS\020\014\022\017\n\013STREAM_D" +
+      "ATA\020\r\022\016\n\nALARM_DATA\020\016\022\r\n\tTIME_INFO\020\017\022\016\n\n" +
+      "LINK_EVENT\020\020\022\026\n\022COMMAND_QUEUE_INFO\020\021\022\027\n\023" +
+      "COMMAND_QUEUE_EVENT\020\022\022\023\n\017CONNECTION_INFO" +
+      "\020\023\022\014\n\010INSTANCE\020\024\022\022\n\016EXTENSION_DATA\020dB\024\n\022" +
+      "org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
