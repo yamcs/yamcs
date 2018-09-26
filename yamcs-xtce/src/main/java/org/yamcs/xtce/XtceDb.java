@@ -523,6 +523,7 @@ public class XtceDb implements Serializable {
      *            - if true, create all the necessary space systems
      */
     public void addParameter(Parameter p, boolean createSpaceSystem) {
+        log.debug("Adding parameter {} , createSpaceSystem: {}", p.getQualifiedName(), createSpaceSystem);
         rwLock.writeLock().lock();
         try {
             if (parameters.containsKey(p.getQualifiedName())) {

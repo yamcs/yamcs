@@ -1,6 +1,10 @@
 package org.yamcs.parameter;
 
+import java.io.IOException;
+import java.nio.file.FileStore;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +23,6 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.LoggingUtils;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.NameDescription;
-import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -46,9 +49,17 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
     private String spJvmTotalMemory;
     private String spJvmMemoryUsed;
     private String spJvmTheadCount;
+
     public static final int JVM_COLLECTION_INTERVAL = 10;
+
     private boolean provideJvmVariables = false;
     private int jvmCollectionCountdown = 0;
+
+    public static final int FS_COLLECTION_INTERVAL = 60;
+    private boolean provideFsVariables = false;
+    private int fsCollectionCountdown = 0;
+
+    static final List<String> FILE_SYSTEM_TYPES = Arrays.asList("ext4", "ext3", "xfs");
 
     ScheduledThreadPoolExecutor timer;
     final Stream stream;
@@ -61,6 +72,7 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
 
     final String instance;
     TimeService timeService;
+    List<FileStore> fileStores;
 
     public SystemParametersCollector(String instance) throws ConfigurationException {
         this(instance, null);
@@ -91,6 +103,16 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
             spJvmTheadCount = namespace + "/jvmThreadCount";
             log.debug("publishing jvmThreadCount with parameter id {}", spJvmTheadCount);
         }
+
+        if (provideFsVariables) {
+            fileStores = new ArrayList<>();
+            for (FileStore store : FileSystems.getDefault().getFileStores()) {
+                if (FILE_SYSTEM_TYPES.contains(store.type())) {
+                    log.debug("Adding store " + store + " to the file stores to be monitored");
+                    fileStores.add(store);
+                }
+            }
+        }
         synchronized (instances) {
             instances.put(instance, this);
         }
@@ -106,9 +128,8 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
         if (args == null) {
             return;
         }
-        if (args.containsKey("provideJvmVariables")) {
-            provideJvmVariables = YConfiguration.getBoolean(args, "provideJvmVariables");
-        }
+        provideJvmVariables = YConfiguration.getBoolean(args, "provideJvmVariables", false);
+        provideFsVariables = YConfiguration.getBoolean(args, "provideFsVariables", false);
     }
 
     @Override
@@ -143,6 +164,14 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
                 jvmCollectionCountdown = JVM_COLLECTION_INTERVAL;
             }
         }
+        if (provideFsVariables) {
+            fsCollectionCountdown--;
+            if (fsCollectionCountdown <= 0) {
+                collectFsParameters(params, gentime);
+                fsCollectionCountdown = FS_COLLECTION_INTERVAL;
+            }
+        }
+
         for (SystemParametersProducer p : providers) {
             try {
                 Collection<ParameterValue> pvc = p.getSystemParameters();
@@ -190,25 +219,32 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
         params.add(jvmThreadCount);
     }
 
-    /**
-     * Register a parameter producer to be called each time the parameters are collected
-     *
-     * @deprecated use {@link #registerProducer(SystemParametersProducer p)} instead. There is no need to specify which
-     *             paramameters will be provided and in addition they don't even need to be part of the Xtcedb (i.e. the
-     *             provider can make them up on the fly)
-     * 
-     */
-    @Deprecated
-    public void registerProvider(SystemParametersProducer p, Collection<Parameter> params) {
-        registerProvider(p);
-    }
+    private void collectFsParameters(List<ParameterValue> params, long gentime) {
+        try {
+            for (FileStore store : fileStores) {
+                String name = store.name();
+                if (name.startsWith("/")) {
+                    name = name.substring(1);
+                }
+                long ts = store.getTotalSpace();
+                long av = store.getUsableSpace();
+                float perc = (float) (100 - av * 100.0 / ts);
 
-    /**
-     * @deprecated old name for {@link #registerProducer}
-     */
-    @Deprecated
-    public void registerProvider(SystemParametersProducer p) {
-        registerProducer(p);
+                ParameterValue total = SystemParametersCollector.getPV(namespace + "/df/" + name + "/total",
+                        gentime, ts / 1024);
+                ParameterValue available = SystemParametersCollector.getPV(namespace + "/df/" + name + "/available",
+                        gentime, av / 1024);
+                ParameterValue use = SystemParametersCollector.getPV(namespace + "/df/" + name + "/percentageUse",
+                        gentime, perc);
+
+                params.add(total);
+                params.add(available);
+                params.add(use);
+
+            }
+        } catch (IOException e) {
+            log.error("Error when collecting disk space", e);
+        }
     }
 
     /**
@@ -256,6 +292,12 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
     public static ParameterValue getPV(String fqn, long time, double v) {
         ParameterValue pv = getNewPv(fqn, time);
         pv.setEngValue(ValueUtility.getDoubleValue(v));
+        return pv;
+    }
+
+    public static ParameterValue getPV(String fqn, long time, float v) {
+        ParameterValue pv = getNewPv(fqn, time);
+        pv.setEngValue(ValueUtility.getFloatValue(v));
         return pv;
     }
 
