@@ -158,6 +158,7 @@ message ReplaySpeed {
     AFAP = 1;
     FIXED_DELAY = 2;
     REALTIME = 3;
+    STEP_BY_STEP = 4;
   }
   required ReplaySpeedType type = 1;
   optional float param = 2;

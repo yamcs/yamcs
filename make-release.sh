@@ -96,10 +96,10 @@ mkdir -p $HOME/rpmbuild/{RPMS,BUILD,SPECS,tmp}
 
 if [ $yamcs -eq 1 ]; then
     rm -rf /tmp/$serverdist
-    mkdir -p /tmp/$serverdist/{bin,cache,etc,lib,lib/ext,log,mdb}
+    mkdir -p /tmp/$serverdist/{bin,cache,etc,lib,lib/ext,lib/proto,log,mdb}
 
     cp -a yamcs-core/etc/* /tmp/$serverdist/etc/
-    cp -a yamcs-api/src/main/*.proto /tmp/$serverdist/lib/
+    cp -a yamcs-api/src/main/proto/* /tmp/$serverdist/lib/proto/
     
     cp -a yamcs-server/bin/* /tmp/$serverdist/bin/
     cp -a yamcs-server/target/yamcs*.jar /tmp/$serverdist/lib/
