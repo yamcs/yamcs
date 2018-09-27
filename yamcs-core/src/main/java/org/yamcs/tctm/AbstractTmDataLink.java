@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +17,6 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.DataRateMeter;
 import org.yamcs.utils.YObjectLoader;
 
-import com.codahale.metrics.EWMA;
-import com.codahale.metrics.Meter;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 public abstract class AbstractTmDataLink extends AbstractExecutionThreadService
