@@ -29,6 +29,7 @@ import org.yamcs.parameter.ParameterCacheConfig;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.protobuf.Yamcs.ReplayRequest;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
+import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.protobuf.YamcsManagement.ServiceState;
 import org.yamcs.tctm.ArchiveTmPacketProvider;
@@ -127,8 +128,10 @@ public class Processor extends AbstractService {
     /**
      * 
      * @param serviceList
-     * @param config - configuration from processor.yaml
-     * @param spec - configuration passed from the client when creating the processor
+     * @param config
+     *            - configuration from processor.yaml
+     * @param spec
+     *            - configuration passed from the client when creating the processor
      * @throws ProcessorException
      * @throws ConfigurationException
      */
@@ -137,10 +140,10 @@ public class Processor extends AbstractService {
             throws ProcessorException, ConfigurationException {
         xtcedb = XtceDbFactory.getInstance(yamcsInstance);
         boolean generateEvents = false;
-        if(config !=null) {
+        if (config != null) {
             generateEvents = YConfiguration.getBoolean(config, CONFIG_KEY_GENERATE_EVENTS, true);
         }
-        
+
         processorData = new ProcessorData(yamcsInstance, name, xtcedb, generateEvents);
         this.serviceList = serviceList;
 
@@ -385,8 +388,12 @@ public class Processor extends AbstractService {
     }
 
     public void resume() {
-        ((ArchiveTmPacketProvider) tmPacketProvider).resume();
-        propagateProcessorStateChange();
+        ArchiveTmPacketProvider provider = (ArchiveTmPacketProvider) tmPacketProvider;
+        provider.resume();
+        if (provider.getSpeed() != null
+                && provider.getSpeed().getType() != ReplaySpeedType.STEP_BY_STEP) {
+            propagateProcessorStateChange();
+        }
     }
 
     private void propagateProcessorStateChange() {

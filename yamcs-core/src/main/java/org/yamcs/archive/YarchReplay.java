@@ -51,9 +51,6 @@ public class YarchReplay implements StreamSubscriber {
     static AtomicInteger counter = new AtomicInteger();
     XtceDb xtceDb;
 
-    private long stepCutOff = 0;
-    private long emittedDuringStep = 0;
-
     volatile ReplayRequest currentRequest;
 
     Map<ProtoDataType, ReplayHandler> handlers;
@@ -321,31 +318,6 @@ public class YarchReplay implements StreamSubscriber {
             return;
         }
         try {
-            if (currentRequest.hasSpeed()
-                    && currentRequest.getSpeed().getType() == ReplaySpeedType.STEP_BY_STEP) {
-
-                long stepSize = (long) currentRequest.getSpeed().getParam();
-                long tupleTime = (Long) t.getColumn("gentime");
-
-                if (stepCutOff == 0) {
-                    stepCutOff = tupleTime + stepSize;
-                    emittedDuringStep = 0;
-                }
-
-                if (tupleTime > stepCutOff) {
-                    if (emittedDuringStep == 0) { // Step over gaps
-                        stepCutOff = tupleTime + stepSize;
-                        emittedDuringStep = 0;
-                    } else {
-                        stepCutOff += stepSize;
-                        emittedDuringStep = 0;
-                        // Step finished. Force user to trigger next step.
-                        pause();
-                        signalStateChange();
-                    }
-                }
-            }
-
             while (state == ReplayState.PAUSED) {
                 pausedSemaphore.acquire();
             }
@@ -357,8 +329,14 @@ public class YarchReplay implements StreamSubscriber {
             ProtoDataType type = ProtoDataType.valueOf((Integer) t.getColumn(0));
             Object data = handlers.get(type).transform(t);
             if (data != null) {
-                emittedDuringStep++;
                 listener.newData(type, data);
+            }
+
+            if (currentRequest.hasSpeed()
+                    && currentRequest.getSpeed().getType() == ReplaySpeedType.STEP_BY_STEP) {
+                // Force user to trigger next step.
+                state = ReplayState.PAUSED;
+                signalStateChange();
             }
         } catch (Exception e) {
             if (!quitting) {
