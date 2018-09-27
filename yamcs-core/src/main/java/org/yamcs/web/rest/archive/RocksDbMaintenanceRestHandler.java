@@ -66,6 +66,41 @@ public class RocksDbMaintenanceRestHandler extends RestHandler {
         }
     }
 
+    @Route(path = "/api/archive/rocksdb/:tablespace/compact", method = "GET", offThread = true)
+    @Route(path = "/api/archive/rocksdb/:tablespace/compact/:dbpath*", method = "GET", offThread = true)
+    public void compactDatabase(RestRequest req) throws HttpException {
+        checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
+        Tablespace tablespace = verifyTablespace(req);
+        String dbpath = req.hasRouteParam("dbpath") ? req.getRouteParam("dbpath") : null;
+
+        RDBFactory rdbFactory = tablespace.getRdbFactory();
+        YRDB yrdb;
+        if (dbpath == null) {
+            yrdb = rdbFactory.getOpenRdb();
+        } else {
+            yrdb = rdbFactory.getOpenRdb(dbpath);
+            if (yrdb == null) {
+                yrdb = rdbFactory.getOpenRdb("/" + dbpath);
+            }
+        }
+        if (yrdb == null) {
+            if (dbpath == null) {
+                throw new BadRequestException("Root database not open for tablespace " + tablespace.getName());
+            } else {
+                throw new BadRequestException("No open database " + dbpath + " for tablespace " + tablespace.getName());
+            }
+        }
+
+        try {
+            yrdb.getDb().compactRange();
+            completeOK(req);    
+        } catch (RocksDBException e) {
+            log.error("Error when compacting database", e);
+            completeWithError(req, new InternalServerErrorException(e));
+        } finally {
+            rdbFactory.dispose(yrdb);
+        }
+    }
     @Route(path = "/api/archive/rocksdb/list", method = "GET")
     public void listOpenDbs(RestRequest req) throws HttpException {
         checkSystemPrivilege(req, SystemPrivilege.ControlArchiving);
