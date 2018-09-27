@@ -9,6 +9,7 @@ services:
   - class: org.yamcs.parameter.SystemParametersCollector
     args:
       provideJvmVariables: true
+      provideFsVariables: true
   - class: org.yamcs.ProcessorCreatorService
     args: 
       name: "realtime"
@@ -17,8 +18,10 @@ services:
   - class: org.yamcs.parameterarchive.ParameterArchive
     args:
       realtimeFiller: 
+        enabled: false
+      backFiller:
         enabled: true
-        flushInterval: 60
+        warmupTime: 60
 
 #name of the class that is used for the TM index. If not specified, org.yamcs.archive.GenericCccsdsTmIndex is used
 #tmIndexer: 
@@ -67,6 +70,11 @@ mdb:
     subLoaders:
       - type: "sheet"
         spec: "mdb/tse/simulator.xls"
+  #Loads the performance testing mission database
+  - type: "org.yamcs.simulator.PerfMdbLoader"
+    args: 
+        numPackets: 18 
+        packetSize: 1476
 
 #Configuration for streams created at server startup
 streamConfig:
