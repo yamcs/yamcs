@@ -1,7 +1,9 @@
 package org.yamcs.tctm;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
@@ -25,6 +27,7 @@ public class IssPacketPreprocessor implements PacketPreprocessor {
     TimeService timeService;
     EventProducer eventProducer;
     ErrorDetectionWordCalculator errorDetectionCalculator;
+    static Map<Integer, AtomicInteger> seqCounts = new HashMap<Integer, AtomicInteger>();
 
     public IssPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, null);
@@ -59,9 +62,18 @@ public class IssPacketPreprocessor implements PacketPreprocessor {
             return null;
         }
         int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
+        int apid = (apidseqcount >> 16) & 0x07FF;
+        int seq = (apidseqcount) & 0x3FFF;
+        AtomicInteger ai = seqCounts.computeIfAbsent(apid, k -> new AtomicInteger());
+        int oldseq = ai.getAndSet(seq);
+        if (((seq - oldseq) & 0x3FFF) != 1) {
+            eventProducer.sendWarning("SEQ_COUNT_JUMP",
+                    "Sequence count jump for apid: "+apid+" old seq: "+oldseq+" newseq: "+seq);
+        }
+
         boolean checksumIndicator = CcsdsPacket.getChecksumIndicator(packet);
         boolean corrupted = false;
-        
+
         if (checksumIndicator) {
             int n = packet.length;
             int computedCheckword;
@@ -76,13 +88,14 @@ public class IssPacketPreprocessor implements PacketPreprocessor {
                 }
             } catch (IllegalArgumentException e) {
                 eventProducer.sendWarning("CORRUPTED_PACKET",
-                        "Error when computing checkword: " +e.getMessage());
+                        "Error when computing checkword: " + e.getMessage());
                 corrupted = true;
             }
-            
+
         }
-        
-        PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(packet), apidseqcount, packet);
+
+        PacketWithTime pwt = new PacketWithTime(timeService.getMissionTime(), CcsdsPacket.getInstant(packet),
+                apidseqcount, packet);
         pwt.setCorrupted(corrupted);
         return pwt;
     }
