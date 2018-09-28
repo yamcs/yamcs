@@ -34,7 +34,7 @@ import com.google.common.util.concurrent.AbstractService;
  *
  */
 public class StreamParameterProvider extends AbstractService implements StreamSubscriber, ParameterProvider {
-    Stream stream;
+    List<Stream> streams = new ArrayList<>();
     ParameterListener paraListener;
     final XtceDb xtceDb;
     private static final Logger log = LoggerFactory.getLogger(StreamParameterProvider.class);
@@ -56,10 +56,11 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
         }
 
         for (String streamName : streamNames) {
-            stream = ydb.getStream(streamName);
+            Stream stream = ydb.getStream(streamName);
             if (stream == null) {
                 throw new ConfigurationException("Cannot find a stream named " + streamName);
             }
+            streams.add(stream);
         }
     }
 
@@ -67,7 +68,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
     public void init(Processor processor) {
         ptypeProcessor = processor.getProcessorData().getParameterTypeProcessor();
         processor.getParameterRequestManager().addParameterProvider(this);
-        stream.addSubscriber(this);
+        streams.forEach(s -> s.addSubscriber(this));
     }
 
     @Override
@@ -77,7 +78,7 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
 
     @Override
     protected void doStop() {
-        stream.removeSubscriber(this);
+        streams.forEach(s -> s.removeSubscriber(this));
         notifyStopped();
     }
 
