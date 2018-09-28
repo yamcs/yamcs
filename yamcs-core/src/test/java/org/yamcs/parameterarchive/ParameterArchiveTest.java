@@ -176,7 +176,7 @@ public class ParameterArchiveTest {
 
         // new value in a different segment but same partition
         long t2 = SortedTimeSegment.getSegmentEnd(0) + 100;
-        PGSegment pgSegment2 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t2),
+        PGSegment pgSegment2 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t2),
                 new SortedIntArray(new int[] { p1id }));
         ParameterValue pv1_2 = getParameterValue(p1, t2, "pv1_2", 30);
         pv1_2.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
@@ -187,7 +187,7 @@ public class ParameterArchiveTest {
 
         // new value in a different partition
         long t3 = TimeEncoding.parse("2017-01-01T00:00:51");
-        PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t3),
+        PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t3),
                 new SortedIntArray(new int[] { p1id }));
         ParameterValue pv1_3 = getParameterValue(p1, t3, "pv1_3", 45);
         pgSegment3.addRecord(t3, Arrays.asList(pv1_3));
@@ -246,7 +246,7 @@ public class ParameterArchiveTest {
         pgSegment1.consolidate();
 
         parchive.writeToArchive(pgSegment1);
-        long segmentStart = SortedTimeSegment.getSegmentStart(100);
+        long segmentStart = SortedTimeSegment.getMinSegmentStart(100);
 
         Partition p = parchive.getPartitions(100);
         assertNotNull(parchive.getTablespace().getRdb(p.partitionDir)
@@ -362,7 +362,7 @@ public class ParameterArchiveTest {
 
         // new value in a different segment but same partition
         long t2 = SortedTimeSegment.getSegmentEnd(0) + 100;
-        PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t2),
+        PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t2),
                 new SortedIntArray(new int[] { p1id, p2id }));
         ParameterValue pv1_3 = getParameterValue(p1, t2, "pv1_3");
         ParameterValue pv2_1 = getParameterValue(p1, t2, "pv2_1");
@@ -372,7 +372,7 @@ public class ParameterArchiveTest {
 
         // new value in a different partition
         long t3 = TimeEncoding.parse("2017-01-01T00:00:00");
-        PGSegment pgSegment4 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t3),
+        PGSegment pgSegment4 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t3),
                 new SortedIntArray(new int[] { p1id, p2id }));
         ParameterValue pv1_4 = getParameterValue(p1, t3, "pv1_4");
         ParameterValue pv2_2 = getParameterValue(p1, t3, "pv2_2");
@@ -527,7 +527,7 @@ public class ParameterArchiveTest {
 
         // new value in a different segment but same partition
         long t2 = SortedTimeSegment.getSegmentEnd(0) + 100;
-        PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t2),
+        PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t2),
                 new SortedIntArray(new int[] { p1id, p2id }));
         ParameterValue pv1_3 = getParameterValue(p1, t2, "pv1_3");
         ParameterValue pv2_1 = getParameterValue(p1, t2, "pv2_1");
@@ -537,7 +537,7 @@ public class ParameterArchiveTest {
 
         // new value in a different partition
         long t3 = TimeEncoding.parse("2017-01-01T00:00:00");
-        PGSegment pgSegment4 = new PGSegment(pg1id, SortedTimeSegment.getSegmentStart(t3),
+        PGSegment pgSegment4 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t3),
                 new SortedIntArray(new int[] { p1id, p2id }));
         ParameterValue pv1_4 = getParameterValue(p1, t3, "pv1_4");
         ParameterValue pv2_2 = getParameterValue(p1, t3, "pv2_2");
@@ -602,7 +602,7 @@ public class ParameterArchiveTest {
                 pv1_0.getRawValue().getType());
 
         int pg1id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id });
-        PGSegment pgSegment1 = new PGSegment(pg1id, SortedTimeSegment.getSegmentId(t),
+        PGSegment pgSegment1 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t),
                 new SortedIntArray(new int[] { p1id }));
 
         pgSegment1.addRecord(t, Arrays.asList(pv1_0));

@@ -11,6 +11,7 @@ import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * builds ranges of parameters

@@ -13,7 +13,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.YConfiguration;
 import org.yamcs.Processor;
 
-public class RealtimeArchiveFiller extends ArchiveFillerTask {
+public class RealtimeArchiveFiller extends OldArchiveFillerTask {
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
     int flushInterval = 300; // seconds
     final private Logger log;
@@ -34,9 +34,9 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
 
     private static int getMaxSegmentSize(Map<String, Object> config) {
         if(config!=null) {
-            return YConfiguration.getInt(config, "maxSegmentSize", DEFAULT_MAX_SEGMENT_SIZE);
+            return YConfiguration.getInt(config, "maxSegmentSize", ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
         } else {
-            return DEFAULT_MAX_SEGMENT_SIZE;
+            return ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE;
         }
     }
 
@@ -65,7 +65,7 @@ public class RealtimeArchiveFiller extends ArchiveFillerTask {
                 if (log.isDebugEnabled()) {
                     log.debug("Writing to archive the segment: [{} - {})",
                             TimeEncoding.toString(sstart),
-                            TimeEncoding.toString(SortedTimeSegment.getNextSegmentStart(sstart)));
+                            TimeEncoding.toString(SortedTimeSegment.getMinSegmentStart(sstart)));
                 }
                 consolidateAndWriteToArchive(sstart, m.values());
             }

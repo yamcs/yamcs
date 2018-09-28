@@ -64,7 +64,8 @@ public class BackFiller implements StreamSubscriber {
     long streamUpdateFillFrequency;
 
     private int maxSegmentSize = ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE;
-        
+  
+    
     BackFiller(ParameterArchive parchive, Map<String, Object> config) {
         this.parchive = parchive;
         if (config != null) {
@@ -89,7 +90,7 @@ public class BackFiller implements StreamSubscriber {
             }
             if (c > 0) {
                 long now = timeService.getMissionTime();
-                t0 = SortedTimeSegment.getNextSegmentStart(now);
+                t0 = SortedTimeSegment.getMinSegmentStart(now);
 
                 executor.schedule(() -> {
                     runSegmentSchedules();
@@ -156,7 +157,7 @@ public class BackFiller implements StreamSubscriber {
 
     private void runTask(long start, long stop) {
         try {
-            start = SortedTimeSegment.getSegmentStart(start);
+            start = SortedTimeSegment.getMinSegmentStart(start);
             stop = SortedTimeSegment.getSegmentEnd(stop) + 1;
 
             ArchiveFillerTask aft = new ArchiveFillerTask(parchive, maxSegmentSize);
@@ -170,17 +171,21 @@ public class BackFiller implements StreamSubscriber {
             rrb.setStart(start - warmupTime).setStop(stop);
             rrb.setPacketRequest(PacketReplayRequest.newBuilder().build());
             rrb.setPpRequest(PpReplayRequest.newBuilder().build());
-            Processor yproc = ProcessorFactory.create(parchive.getYamcsInstance(),
+            Processor proc = ProcessorFactory.create(parchive.getYamcsInstance(),
                     "ParameterArchive-backfilling_" + count.incrementAndGet(), "ParameterArchive", "internal",
                     rrb.build());
-            yproc.getParameterRequestManager().subscribeAll(aft);
+            aft.setProcessor(proc);
+            proc.getParameterRequestManager().subscribeAll(aft);
 
-            yproc.start();
-            yproc.awaitTerminated();
-            aft.flush();
-
-            log.info("Parameter archive fillup for interval {} finished, number of processed parameter samples: {}",
-                    timePeriod, aft.getNumProcessedParameters());
+            proc.start();
+            proc.awaitTerminated();
+            if(aft.aborted) {
+                log.warn("Parameter archive fillup for interval {} aborted", timePeriod);
+            } else {
+                aft.flush();
+                log.info("Parameter archive fillup for interval {} finished, number of processed parameter samples: {}",
+                        timePeriod, aft.getNumProcessedParameters());
+            }
         } catch (Exception e) {
             log.error("Error when running the archive filler task", e);
         }
@@ -217,7 +222,7 @@ public class BackFiller implements StreamSubscriber {
         for (int i = 0; i < a.length; i++) {
             int j;
             for (j = i; j < a.length - 1; j++) {
-                if (SortedTimeSegment.getNextSegmentStart(a[j]) != a[j + 1]) {
+                if (SortedTimeSegment.getMinSegmentStart(a[j]) != a[j + 1]) {
                     break;
                 }
             }
@@ -260,7 +265,7 @@ public class BackFiller implements StreamSubscriber {
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
         long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
-        long t0 = SortedTimeSegment.getSegmentStart(gentime);
+        long t0 = SortedTimeSegment.getMinSegmentStart(gentime);
         synchronized (streamUpdates) {
             streamUpdates.add(t0);
         }

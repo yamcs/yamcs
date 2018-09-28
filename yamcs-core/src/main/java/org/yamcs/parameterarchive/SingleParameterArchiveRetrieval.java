@@ -16,7 +16,8 @@ import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.DatabaseCorruptionException;
 
-import static org.yamcs.parameterarchive.SortedTimeSegment.getSegmentStart;
+import static org.yamcs.parameterarchive.SortedTimeSegment.getMinSegmentStart;
+import static org.yamcs.parameterarchive.SortedTimeSegment.getCeilSegmentStart;
 
 public class SingleParameterArchiveRetrieval {
     final private ParameterRequest spvr;
@@ -82,7 +83,7 @@ public class SingleParameterArchiveRetrieval {
     private void retrieveForId(ParameterId pid, int[] pgids, Consumer<ParameterValueArray> consumer)
             throws RocksDBException, IOException {
 
-        List<Partition> parts = parchive.getPartitions(getSegmentStart(spvr.start), getSegmentStart(spvr.stop),
+        List<Partition> parts = parchive.getPartitions(getMinSegmentStart(spvr.start), getCeilSegmentStart(spvr.stop), //TODO
                 spvr.ascending);
         if (pgids.length == 1) {
             for (Partition p : parts) {
@@ -126,6 +127,7 @@ public class SingleParameterArchiveRetrieval {
     // multiple parameter groups -> merging of segments necessary
     private void retrieveValuesFromPartitionMultiGroup(ParameterId pid, int parameterGroupIds[], Partition p, Consumer<ParameterValueArray> consumer)
             throws RocksDBException, IOException {
+        
         RocksIterator[] its = new RocksIterator[parameterGroupIds.length];
         try {
 
@@ -274,8 +276,8 @@ public class SingleParameterArchiveRetrieval {
             if (mergedPva == null) {
                 mergedPva = pva;
             } else {
-                if (SortedTimeSegment.getSegmentId(mergedPva.timestamps[0]) != SortedTimeSegment
-                        .getSegmentId(pva.timestamps[0])) {
+                if (SortedTimeSegment.getMinSegmentStart(mergedPva.timestamps[0])
+                        != SortedTimeSegment.getMinSegmentStart(pva.timestamps[0])) {
                     finalConsumer.accept(mergedPva);
                     mergedPva = pva;
                 } else {

@@ -6,16 +6,24 @@ import java.util.PrimitiveIterator;
 import me.lemire.integercompression.FastPFOR128;
 import me.lemire.integercompression.IntWrapper;
 
-import org.yamcs.parameter.Value;
-import org.yamcs.parameter.ValueArray;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;
-import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.VarIntUtil;
 
 /**
- * TimeSegment stores timestamps relative to a t0. 
+ * TimeSegment stores timestamps relative to a segmentStart. 
+ * 
+ * If we mask the timestamps with a 22 bit mask, we can define some time intervals
+ * [t0, t1) [t1, t2)  [t2, t3) ...
+ * 
+ * where t0 = 0<<22, t1=1<<22, t2 = 2<<22...
+ * 
+ * The segments stored by this class should not cross the borders of the time intervals defined above.
+ * 
+ * Initially (yamcs<4.7) the time segments would correspond exactly to the intervals defined above,
+ * however if the data comes at high frequency it is necessary to split it further in order
+ *  to avoid too much data accumulating in one segment. 
+ * 
  * The timestamps are stored in a sorted int array.
  * 
  * @author nm
@@ -36,9 +44,6 @@ public class SortedTimeSegment extends BaseSegment {
 
     public SortedTimeSegment(long segmentStart) {
         super(FORMAT_ID_SortedTimeValueSegment);
-        if((segmentStart & TIMESTAMP_MASK) !=0) {
-            throw new IllegalArgumentException("t0 must be 0 in last "+NUMBITS_MASK+" bits");
-        }
 
         tsarray = new SortedIntArray();
         this.segmentStart = segmentStart;
@@ -50,10 +55,10 @@ public class SortedTimeSegment extends BaseSegment {
      * @param instant
      */
     public int add(long instant) {
-        if((instant&SEGMENT_MASK) != segmentStart) {
+        if((instant&SEGMENT_MASK) != (segmentStart&SEGMENT_MASK)) {
             throw new IllegalArgumentException("This timestamp does not fit into this segment");
         }
-        return tsarray.insert((int)(instant & TIMESTAMP_MASK));
+        return tsarray.insert((int)(instant - segmentStart));
     }
 
     /**
@@ -62,7 +67,7 @@ public class SortedTimeSegment extends BaseSegment {
      * @return
      */
     public long getTime(int idx) {
-        return tsarray.get(idx) | segmentStart;
+        return tsarray.get(idx) + segmentStart;
     }
 
     /**
@@ -82,7 +87,7 @@ public class SortedTimeSegment extends BaseSegment {
 
             @Override
             public long nextLong() {
-                return segmentStart+ it.nextInt();
+                return segmentStart + it.nextInt();
 
             }
         };
@@ -112,25 +117,14 @@ public class SortedTimeSegment extends BaseSegment {
     }
 
 
-    public long getT0() {
-        return segmentStart;
-    }
 
     /**
-     * returns the start of the segment where instant fits
+     * returns the minimum segmentStart where this instant could fit.
+     * 
      * @param instant
      * @return
      */
-    public static long getSegmentStart(long instant) {
-        return instant & SEGMENT_MASK;
-    }
-
-    /**
-     * returns the ID of the segment where the instant fits - this is the same with segment start
-     * @param instant
-     * @return
-     */
-    public static long getSegmentId(long instant) {
+    public static long getMinSegmentStart(long instant) {
         return instant & SEGMENT_MASK;
     }
     /**
@@ -142,7 +136,13 @@ public class SortedTimeSegment extends BaseSegment {
         return instant  | TIMESTAMP_MASK;
     }
 
-    public static long getNextSegmentStart(long instant) {
+    /**
+     * Returns a segmentStart of the segment that is guaranteed to be above instant 
+     * 
+     * @param instant
+     * @return
+     */
+    public static long getCeilSegmentStart(long instant) {
         return (instant  | TIMESTAMP_MASK) +1;
     }
 
@@ -170,10 +170,10 @@ public class SortedTimeSegment extends BaseSegment {
      * @return
      */
     public int search(long instant) {
-        if((instant&SEGMENT_MASK) != segmentStart) {
+        if((instant&SEGMENT_MASK) != (segmentStart &SEGMENT_MASK)) {
             throw new IllegalArgumentException("This timestamp does not fit into this segment");
         }
-        return tsarray.search((int)(instant&TIMESTAMP_MASK));
+        return tsarray.search((int)(instant - segmentStart));
     }
 
     public int size() {
@@ -185,7 +185,7 @@ public class SortedTimeSegment extends BaseSegment {
     }
 
     public String toString() {
-        return "[TimeSegment: t0:"+segmentStart+", relative times: "+ tsarray.toString()+"]";
+        return "[TimeSegment: id:"+segmentStart+", relative times: "+ tsarray.toString()+"]";
     }
 
     /**
@@ -275,18 +275,18 @@ public class SortedTimeSegment extends BaseSegment {
 
 
     public long getSegmentEnd() {
-        return getSegmentEnd(segmentStart);
+        return getTime(tsarray.size()-1);
     }
 
     public long[] getRange(int posStart, int posStop, boolean ascending) {
         long[] r = new long[posStop-posStart];
         if(ascending) {
             for(int i = posStart; i<posStop; i++) {
-                r[i-posStart] = tsarray.get(i)|segmentStart;
+                r[i-posStart] = tsarray.get(i) + segmentStart;
             }
         } else {
             for(int i = posStop; i>posStart; i--) {
-                r[posStop-i] = tsarray.get(i)|segmentStart;
+                r[posStop-i] = tsarray.get(i) + segmentStart;
             }
         }
         return r;

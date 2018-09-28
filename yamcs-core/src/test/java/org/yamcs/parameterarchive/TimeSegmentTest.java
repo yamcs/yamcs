@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class TimeSegmentTest {
-    long t0 = SortedTimeSegment.getSegmentStart(10*365*25*60*1000L);
+    long t0 = SortedTimeSegment.getMinSegmentStart(10*365*25*60*1000L);
     @Test
     public void testIllegalAdd() {
        

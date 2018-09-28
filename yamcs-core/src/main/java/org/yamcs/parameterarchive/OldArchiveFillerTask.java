@@ -1,18 +1,16 @@
 package org.yamcs.parameterarchive;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.Processor;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.Value;
@@ -22,20 +20,19 @@ import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 
 /**
- * Archive filler that creates segments of max size .
+ * Old archive filler - it works if the data is not perfectly sorted.
  * 
  * @author nm
  *
  */
-class ArchiveFillerTask implements ParameterConsumer {
+class OldArchiveFillerTask implements ParameterConsumer {
     final ParameterArchive parameterArchive;
     final private Logger log;
 
     long numParams = 0;
-    static int DEFAULT_MAX_SEGMENT_SIZE = 5000;
-    static MemoryPoolMXBean memoryBean = getMemoryBean();
-    // ParameterGroup_id -> PGSegment
-    protected Map<Integer, PGSegment> pgSegments = new HashMap<>();
+
+    // segment start -> ParameterGroup_id -> PGSegment
+    protected TreeMap<Long, Map<Integer, PGSegment>> pgSegments = new TreeMap<>();
     protected final ParameterIdDb parameterIdMap;
     protected final ParameterGroupIdDb parameterGroupIdMap;
 
@@ -44,16 +41,13 @@ class ArchiveFillerTask implements ParameterConsumer {
 
     long threshold = 60000;
     int maxSegmentSize;
-    private Processor processor;
-    boolean aborted = false;
 
-    public ArchiveFillerTask(ParameterArchive parameterArchive, int maxSegmentSize) {
+    public OldArchiveFillerTask(ParameterArchive parameterArchive, int maxSegmentSize) {
         this.parameterArchive = parameterArchive;
         this.parameterIdMap = parameterArchive.getParameterIdDb();
         this.parameterGroupIdMap = parameterArchive.getParameterGroupIdDb();
         log = LoggingUtils.getLogger(this.getClass(), parameterArchive.getYamcsInstance());
         this.maxSegmentSize = maxSegmentSize;
-        log.debug("Archive filler task maxSegmentSize: {} ", maxSegmentSize);
     }
 
     void setCollectionSegmentStart(long collectionSegmentStart) {
@@ -61,15 +55,16 @@ class ArchiveFillerTask implements ParameterConsumer {
     }
 
     /**
-     * adds the parameters to the pgSegments structure
+     * adds the parameters to the pgSegments structure and return the highest timestamp or -1 if all parameters have
+     * been ignored (because they were too old)
      * 
-     * parameters older than collectionSegmentStart are ignored.
+     * parameters older than ignoreOlderThan are ignored.
      * 
      * 
      * @param items
      * @return
      */
-    void processParameters(List<ParameterValue> items) {
+    protected long processParameters(List<ParameterValue> items) {
         Map<Long, SortedParameterList> m = new HashMap<>();
         for (ParameterValue pv : items) {
             long t = pv.getGenerationTime();
@@ -91,47 +86,46 @@ class ArchiveFillerTask implements ParameterConsumer {
             }
             l.add(pv);
         }
-        boolean needsFlush = false;
-        long maxTimestamp = collectionSegmentStart;
+        long maxTimestamp = -1;
         for (Map.Entry<Long, SortedParameterList> entry : m.entrySet()) {
             long t = entry.getKey();
             SortedParameterList pvList = entry.getValue();
-            if (processParameters(t, pvList)) {
-                needsFlush = true;
-            }
+            processParameters(t, pvList);
             if (t > maxTimestamp) {
                 maxTimestamp = t;
             }
         }
-        if (needsFlush) {
-            consolidateAndWriteToArchive(collectionSegmentStart);
-            collectionSegmentStart = maxTimestamp + 1;
-        }
+        return maxTimestamp;
     }
 
-    private boolean processParameters(long t, SortedParameterList pvList) {
+    private void processParameters(long t, SortedParameterList pvList) {
         numParams += pvList.size();
         try {
             int parameterGroupId = parameterGroupIdMap.createAndGet(pvList.parameterIdArray);
-
-            PGSegment pgs = pgSegments.get(parameterGroupId);
+            long segmentId = SortedTimeSegment.getMinSegmentStart(t);
+            Map<Integer, PGSegment> m = pgSegments.get(segmentId);
+            if (m == null) {
+                m = new HashMap<>();
+                pgSegments.put(segmentId, m);
+            }
+            PGSegment pgs = m.get(parameterGroupId);
             if (pgs == null) {
-                pgs = new PGSegment(parameterGroupId, collectionSegmentStart, pvList.parameterIdArray, maxSegmentSize);
-                pgSegments.put(parameterGroupId, pgs);
+                pgs = new PGSegment(parameterGroupId, segmentId, pvList.parameterIdArray, maxSegmentSize);
+                m.put(parameterGroupId, pgs);
             }
 
             pgs.addRecord(t, pvList.sortedPvList);
-            return pgs.size() > maxSegmentSize;
 
         } catch (RocksDBException e) {
             log.error("Error processing parameters", e);
-            return false;
         }
+
     }
 
     void flush() {
-        if(pgSegments!=null) {
-            consolidateAndWriteToArchive(collectionSegmentStart);
+        log.debug("Starting a consolidation process, number of intervals: {}", pgSegments.size());
+        for (Map.Entry<Long, Map<Integer, PGSegment>> entry : pgSegments.entrySet()) {
+            consolidateAndWriteToArchive(entry.getKey(), entry.getValue().values());
         }
     }
 
@@ -140,38 +134,38 @@ class ArchiveFillerTask implements ParameterConsumer {
      * 
      * @param pgList
      */
-    protected void consolidateAndWriteToArchive(long segStart) {
-        log.debug("writing to archive semgent starting at {} with {} groups", TimeEncoding.toString(segStart),
-                pgSegments.size());
-
-        for (PGSegment pgs : pgSegments.values()) {
+    protected void consolidateAndWriteToArchive(long segStart, Collection<PGSegment> pgList) {
+        for (PGSegment pgs : pgList) {
             pgs.consolidate();
         }
         try {
-            parameterArchive.writeToArchive(segStart, pgSegments.values());
+            parameterArchive.writeToArchive(segStart, pgList);
         } catch (RocksDBException | IOException e) {
             log.error("failed to write data to the archive", e);
         }
-        pgSegments.clear();
     }
 
     @Override
     public void updateItems(int subscriptionId, List<ParameterValue> items) {
-        if(oomImminent()) {
+        long t = processParameters(items);
+        if (t < 0) {
             return;
         }
 
-        long t = items.get(0).getGenerationTime();
-        long t1 = SortedTimeSegment.getMinSegmentStart(t);
+        long nextSegmentStart = SortedTimeSegment.getMinSegmentStart(collectionSegmentStart);
 
-        if (t1 > collectionSegmentStart) {
-            if (!pgSegments.isEmpty()) {
-                consolidateAndWriteToArchive(collectionSegmentStart);
+        while (t > nextSegmentStart + threshold) {
+            Map<Integer, PGSegment> m = pgSegments.remove(collectionSegmentStart);
+            if (m != null) {
+                if (log.isDebugEnabled())
+                    log.debug("Writing to archive the segment: [{} - {}) with {} groups",
+                            TimeEncoding.toString(collectionSegmentStart), TimeEncoding.toString(nextSegmentStart),
+                            m.size());
+                consolidateAndWriteToArchive(collectionSegmentStart, m.values());
             }
-            collectionSegmentStart = t1;
+            collectionSegmentStart = nextSegmentStart;
+            nextSegmentStart = SortedTimeSegment.getMinSegmentStart(collectionSegmentStart);
         }
-
-        processParameters(items);
     }
 
     public long getNumProcessedParameters() {
@@ -202,41 +196,5 @@ class ArchiveFillerTask implements ParameterConsumer {
         public int size() {
             return parameterIdArray.size();
         }
-    }
-
-    private boolean oomImminent() {
-        if (memoryBean != null && memoryBean.isCollectionUsageThresholdExceeded()) {
-            aborted = true;
-            
-            String msg = "Aborting parameter archive filling due to imminent out of memory. Consider decreasing the maxSegmentSize (current value is "+maxSegmentSize+").";
-            log.error(msg);
-            pgSegments = null;
-            processor.stopAsync();
-            System.gc();
-            return true;
-        }
-        return false;
-    }
-
-    static MemoryPoolMXBean getMemoryBean() {
-        for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
-            if (pool.getType() == MemoryType.HEAP && pool.isCollectionUsageThresholdSupported() && pool.getName().toLowerCase().contains("old")) {
-                long threshold = (long) Math.floor(pool.getUsage().getMax() * 0.90);
-                pool.setCollectionUsageThreshold(threshold);
-                return pool;
-            }
-        }
-        return null;
-    }
-
-    public void setProcessor(Processor proc) {
-        this.processor = proc;
-    }
-    
-    /**
-     * If the archive filling has been aborted (due to imminent OOM) this returns true 
-     */
-    boolean isAborted() {
-        return aborted;
     }
 }

@@ -110,6 +110,7 @@ public class PGSegment {
      * @param sortedPvList
      */
     public void addRecord(long instant, List<ParameterValue> sortedPvList) {
+        
         if (sortedPvList.size() != parameterIds.size()) {
             throw new IllegalArgumentException(
                     "Wrong number of values passed: " + sortedPvList.size() + ";expected " + engValueSegments.size());
@@ -118,8 +119,7 @@ public class PGSegment {
         if (engValueSegments == null) {
             init(sortedPvList);
         }
-
-        if (timeSegment.size() >= maxSize) {
+        if (timeSegment.size() > maxSize) {
             throw new ParameterArchiveException("Segment size reached the maximum " + maxSize);
         }
         int pos = timeSegment.add(instant);
@@ -164,6 +164,10 @@ public class PGSegment {
     public long getSegmentStart() {
         return timeSegment.getSegmentStart();
     }
+    
+    public long getSegmentEnd() {
+        return timeSegment.getSegmentEnd();
+    }
 
     public SortedTimeSegment getTimeSegment() {
         return timeSegment;
@@ -187,5 +191,9 @@ public class PGSegment {
 
     public List<ParameterStatusSegment> getConsolidatedParameterStatusSegments() {
         return consolidatedParameterStatusSegments;
+    }
+
+    public int size() {
+        return timeSegment.size();
     }
 }
