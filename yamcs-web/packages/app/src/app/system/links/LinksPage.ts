@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatSort, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { Link, LinkEvent } from '@yamcs/client';
@@ -26,7 +26,7 @@ export class LinksPage implements AfterViewInit, OnDestroy {
 
   private linksByName: { [key: string]: Link } = {};
 
-  constructor(private yamcs: YamcsService, private authService: AuthService, title: Title) {
+  constructor(private yamcs: YamcsService, private authService: AuthService, title: Title, private changeDetection: ChangeDetectorRef) {
     title.setTitle('Links - Yamcs');
 
     // Fetch with REST first, otherwise may take up to a second
@@ -49,15 +49,8 @@ export class LinksPage implements AfterViewInit, OnDestroy {
     this.dataSource.sort = this.sort;
   }
 
-  /*
-   * TODO would like to pass this via [trackBy] of mat-table
-   * so that rows are recycled. But this causes update issues.
-   *
-   * This link suggests that it should work though:
-   * https://github.com/angular/material2/issues/7877
-   *
-   * Maybe use custom DataSource?
-   */
+  // trackBy is needed to prevent menu from closing when
+  // the link is updated.
   tableTrackerFn = (index: number, link: Link) => link.name;
 
   enableLink(name: string) {
@@ -87,6 +80,9 @@ export class LinksPage implements AfterViewInit, OnDestroy {
         console.error('Unexpected link update of type ' + evt.type);
         break;
     }
+
+    // Needed to show table updates in combination with trackBy
+    this.changeDetection.detectChanges();
   }
 
   ngOnDestroy() {
