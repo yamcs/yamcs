@@ -22,7 +22,7 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * ParameterRecorder Records (processed) Parameters
  * 
- * The base table definition is {@link ParameterDataLinkInitialiser}
+ * The base table definition is {@link org.yamcs.tctm.DataLinkInitialiser}
  * 
  * This records parameters as tuples - good for realtime recording but not very efficient for retrieval of a few
  * parameters over long time periods.
