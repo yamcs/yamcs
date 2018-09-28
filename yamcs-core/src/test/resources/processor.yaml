@@ -25,6 +25,7 @@ realtime:
        # manages software parameters
        - class: org.yamcs.parameter.LocalParameterManager
     config:
+        subscribeAll: true
         #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
         alarm:
             check: true

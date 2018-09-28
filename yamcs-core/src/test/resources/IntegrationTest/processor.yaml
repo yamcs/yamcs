@@ -24,6 +24,7 @@ realtime:
         - class: org.yamcs.parameter.SystemParametersProvider
         - class: org.yamcs.parameter.LocalParameterManager
     config:
+        subscribeAll: true
         #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
         alarm:
             check: true
@@ -40,6 +41,7 @@ Archive:
     services: 
        - class: org.yamcs.tctm.ReplayService
     config:
+        subscribeAll: true
         parameterCache:
             enabled: true
             cacheAll: true
@@ -52,6 +54,7 @@ ArchiveWithPpExclusion:
              #do not replay these parameters
             excludeParameterGroups: ["IntegrationTest"]
     config:
+        subscribeAll: true
         parameterCache:
             enabled: true
             cacheAll: true

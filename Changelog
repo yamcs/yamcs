@@ -1,3 +1,9 @@
+Version 4.7 released 28-September-2018
+- implemented interface to Test Support Equipment (power supplies, osciloscopes, ...)
+- several changes in instance state - allow offline instances
+- implemented step by step replay
+- allow same DataLink to be IN and OUT
+
 Version 4.6.3 released 28-August-2018
 - limit the number of parameters that can be stored in one segment of the
 parameter arhchive to avoid OOM errors

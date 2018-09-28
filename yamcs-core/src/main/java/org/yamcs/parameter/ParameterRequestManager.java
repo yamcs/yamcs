@@ -56,7 +56,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     public final Processor yproc;
 
     // if all parameter shall be subscribed/processed
-    private boolean cacheAll = false;
+    private boolean shouldSubcribeAllParameters = false;
 
     AlarmServer alarmServer;
     Map<DataSource, SoftwareParameterManagerIf> spm = new HashMap<>();
@@ -71,7 +71,8 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         this.yproc = yproc;
         log = LoggingUtils.getLogger(this.getClass(), yproc);
         cacheConfig = yproc.getPameterCacheConfig();
-        cacheAll = cacheConfig.cacheAll;
+        shouldSubcribeAllParameters = yproc.isSubscribeAll();
+        
         this.lastValueCache = yproc.getLastValueCache();
 
         tmProcessor.setParameterListener(this);
@@ -100,12 +101,10 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     /**
-     * This is called after all the parameter providers have been added but before the start. We subscribe to all
-     * parameters if cacheAll is enabled this way we give the opportunity to the ReplayService to find out what is
-     * required to retrieve from the ReplayServer
+     * This is called after all the parameter providers have been added but before the start. 
      */
     public void init() {
-        if (cacheAll) {
+        if (shouldSubcribeAllParameters) {
             for (ParameterProvider prov : parameterProviders.values()) {
                 prov.startProvidingAll();
             }
@@ -363,7 +362,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     private void subscribeToProviders(Parameter param) throws NoProviderException {
-        if (cacheAll) {
+        if (shouldSubcribeAllParameters) {
             return;
         }
         boolean providerFound = false;
@@ -381,7 +380,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     private void subscribeToProviders(List<Parameter> itemList) {
-        if (cacheAll) {
+        if (shouldSubcribeAllParameters) {
             return;
         }
         for (int i = 0; i < itemList.size(); i++) {

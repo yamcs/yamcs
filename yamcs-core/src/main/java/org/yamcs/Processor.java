@@ -56,6 +56,7 @@ public class Processor extends AbstractService {
     private static final String CONFIG_KEY_PARAMETER_CACHE = "parameterCache";
     private static final String CONFIG_KEY_ALARM = "alarm";
     private static final String CONFIG_KEY_GENERATE_EVENTS = "generateEvents";
+    private static final String CONFIG_KEY_SUBSCRIBE_ALL = "subscribeAll";
 
     // handles subscriptions to parameters
     private ParameterRequestManager parameterRequestManager;
@@ -99,6 +100,9 @@ public class Processor extends AbstractService {
     private boolean quitting;
     // a synchronous processor waits for all the clients to deliver tm packets and parameters
     private boolean synchronous = false;
+    
+    //if the PRM should subscribe to all parameters at startup
+    boolean subscribeAll = false;
     XtceTmProcessor tmProcessor;
 
     // unless very good performance reasons, we should try to serialize all the processing in this thread
@@ -112,6 +116,8 @@ public class Processor extends AbstractService {
     @GuardedBy("this")
     HashSet<ConnectedClient> connectedClients = new HashSet<>();
     List<ServiceWithConfig> serviceList;
+    
+  
 
     public Processor(String yamcsInstance, String name, String type, String creator) throws ProcessorException {
         if ((name == null) || "".equals(name)) {
@@ -164,6 +170,8 @@ public class Processor extends AbstractService {
                             throw new ConfigurationException(CONFIG_KEY_ALARM + " configuration should be a map");
                         }
                         configureAlarms((Map<String, Object>) o);
+                    } else if (CONFIG_KEY_SUBSCRIBE_ALL.equals(c)) {
+                        subscribeAll = YConfiguration.getBoolean(config, CONFIG_KEY_SUBSCRIBE_ALL);
                     } else if (CONFIG_KEY_PARAMETER_CACHE.equals(c)) {
                         if (!(o instanceof Map)) {
                             throw new ConfigurationException(
@@ -736,5 +744,9 @@ public class Processor extends AbstractService {
 
     public LastValueCache getLastValueCache() {
         return processorData.getLastValueCache();
+    }
+    
+    public boolean isSubscribeAll() {
+        return subscribeAll;
     }
 }

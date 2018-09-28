@@ -189,6 +189,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals("2015-02-01T10:01:00.000Z", p1_1_6.getGenerationTimeUTC());
 
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
+        System.out.println("pdata: "+pdata);
         assertNotNull(pdata);
         assertEquals(1, pdata.getParameterCount());
         ParameterValue pp_para_uint = pdata.getParameter(0);

@@ -23,6 +23,10 @@ realtime:
         - class: org.yamcs.parameter.SystemParametersProvider
         - class: org.yamcs.parameter.LocalParameterManager
     config:
+        #subcribe by default to parameters from all providers (this means also process all incoming TM packets)
+        # if this is not enabled(default) then only parameters that are subscribed by client are processed
+        # if the alarm checking is enabled below, all parameters that have limits defined are subscribed even if this is set to false
+        subscribeAll: true
         #Generate events in case of errors when processing telemetry
         generateEvents: true
         #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
