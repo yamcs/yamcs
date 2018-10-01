@@ -1,3 +1,7 @@
+Version 3.4.6 released 1-Oct-2018
+- added a workaround for a bug where the data is not garbage collected after a
+parameter archive refill happens
+
 Version 3.4.5 released 11-Jul-2018
 - fixed the replay service to always take into account the parameter group exclusion
 option implemented in 3.4.4

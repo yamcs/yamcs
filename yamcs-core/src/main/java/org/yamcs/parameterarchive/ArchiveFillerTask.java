@@ -114,6 +114,7 @@ class ArchiveFillerTask implements ParameterConsumer {
         for(Map<Integer, PGSegment> m: pgSegments.values()) {
             consolidateAndWriteToArchive(m.values());
         }
+        pgSegments = null;
     }
     
     /**
