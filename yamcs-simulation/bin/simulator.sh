@@ -18,4 +18,4 @@ YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
 . "$YAMCS_HOME"/bin/setclasspath.sh
 
-exec "$_RUNJAVA" org.yamcs.simulation.simulator.Simulator "$@"
+exec "$_RUNJAVA" org.yamcs.simulation.simulator.SimulatorCommander "$@"
