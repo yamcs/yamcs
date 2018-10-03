@@ -11,6 +11,7 @@ import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 
 /**
@@ -69,15 +70,23 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
     @Override
     public void addedCommand(PreparedCommand pc) {
         CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(pc.getCommandId())
-                .addAllAttr(pc.getAttributes()).build();
+                .setGenerationTimeUTC(TimeEncoding.toString(pc.getCommandId().getGenerationTime()))
+                .addAllAttr(pc.getAttributes())
+                .build();
         client.sendData(ProtoDataType.CMD_HISTORY, entry);
     }
 
     @Override
     public void updatedCommand(CommandId cmdId, long changeDate, String key, Value value) {
-        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder().setName(key)
-                .setValue(ValueUtility.toGbp(value)).build();
-        CommandHistoryEntry entry = CommandHistoryEntry.newBuilder().setCommandId(cmdId).addAttr(cha).build();
+        CommandHistoryAttribute cha = CommandHistoryAttribute.newBuilder()
+                .setName(key)
+                .setValue(ValueUtility.toGbp(value))
+                .build();
+        CommandHistoryEntry entry = CommandHistoryEntry.newBuilder()
+                .setGenerationTimeUTC(TimeEncoding.toString(cmdId.getGenerationTime()))
+                .setCommandId(cmdId)
+                .addAttr(cha)
+                .build();
         client.sendData(ProtoDataType.CMD_HISTORY, entry);
     }
 
