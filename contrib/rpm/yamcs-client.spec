@@ -28,11 +28,6 @@ cp -a mdb %{buildroot}/%{prefix}/
 
 rm %{buildroot}/%{prefix}/bin/*.bat
 
-# Set up tab completion
-mkdir -p %{buildroot}%{_sysconfdir}/bash_completion.d/
-cat completion/yamcs-completion.bash > %{buildroot}%{_sysconfdir}/bash_completion.d/yamcs-cli
-
-
 %files
 %defattr(-,root,root)
 
@@ -44,4 +39,3 @@ cat completion/yamcs-completion.bash > %{buildroot}%{_sysconfdir}/bash_completio
 %dir %{prefix}/bin
 %attr(755, root, root) %{prefix}/bin/*
 
-%{_sysconfdir}/bash_completion.d/yamcs-cli
