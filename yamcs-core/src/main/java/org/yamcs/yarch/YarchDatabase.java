@@ -31,7 +31,7 @@ public class YarchDatabase {
 
     static {
         config = YConfiguration.getConfiguration("yamcs");
-        if(config.containsKey("dataDir")) {
+        if (config.containsKey("dataDir")) {
             home = config.getString("dataDir");
         }
 
@@ -62,7 +62,7 @@ public class YarchDatabase {
 
     }
     static Map<String, YarchDatabaseInstance> databases = new HashMap<>();
-    
+
     /**
      * 
      * @param yamcsInstance
@@ -79,6 +79,13 @@ public class YarchDatabase {
             databases.put(yamcsInstance, instance);
         }
         return instance;
+    }
+
+    /**
+     * Returns the names of the loaded databases.
+     */
+    public static Set<String> getDatabases() {
+        return databases.keySet();
     }
 
     static public boolean hasInstance(String dbname) {
@@ -123,7 +130,7 @@ public class YarchDatabase {
         return storageEngines.get(storageEngineName);
     }
 
-    public static Set<String> getStorageEngineNamesk() {
+    public static Set<String> getStorageEngineNames() {
         return storageEngines.keySet();
     }
 

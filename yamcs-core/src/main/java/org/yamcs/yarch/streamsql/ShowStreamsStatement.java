@@ -1,5 +1,9 @@
 package org.yamcs.yarch.streamsql;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -12,7 +16,9 @@ public class ShowStreamsStatement extends StreamSqlStatement {
         StreamSqlResult res = new StreamSqlResult();
         res.setHeader("name", "emitted", "subscribers");
         synchronized (dict) {
-            for (Stream stream : dict.getStreams()) {
+            List<Stream> streams = new ArrayList<>(dict.getStreams());
+            Collections.sort(streams, (s1, s2) -> s1.getName().compareToIgnoreCase(s2.getName()));
+            for (Stream stream : streams) {
                 res.addRow(stream.getName(), stream.getDataCount(), stream.getSubscriberCount());
             }
         }
