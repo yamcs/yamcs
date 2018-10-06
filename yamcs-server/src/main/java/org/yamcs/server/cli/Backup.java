@@ -37,7 +37,7 @@ import com.beust.jcommander.Parameters;
  */
 @Parameters(commandDescription = "Perform and restore backups")
 public class Backup extends Command {
-    public Backup(YamcsCtlCli yamcsCli) {
+    public Backup(YamcsAdminCli yamcsCli) {
         super("backup", yamcsCli);
         addSubCommand(new BackupCreate());
         addSubCommand(new BackupDelete());
