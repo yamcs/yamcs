@@ -104,6 +104,7 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_DECIMAL:"DECIMAL">
 |   <K_DELETE:"DELETE">
 |   <K_DESC:"DESC">
+|   <K_DESCRIBE:"DESCRIBE">
 |   <K_DISTINCT:"DISTINCT">
 |   <K_DOUBLE:"DOUBLE">
 |   <K_DROP:"DROP">
@@ -267,6 +268,8 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     statement=CloseStreamStatement()
     |
     statement=DropTableStatement()
+    |
+    statement=DescribeStatement()
     |
     LOOKAHEAD(2) statement=ShowStreamsStatement()
     |    
@@ -447,6 +450,15 @@ ShowStreamStatement ShowStreamStatement() throws StreamSqlException: {
     <K_SHOW> <K_STREAM> name=ObjectName() [<K_PORT> {showPort=true;}]
     {
 	return new ShowStreamStatement(name,showPort);
+    }
+}
+
+DescribeStatement DescribeStatement() throws StreamSqlException: {
+    String name;
+} {
+    <K_DESCRIBE> name=ObjectName()
+    {
+	return new DescribeStatement(name);
     }
 }
 
