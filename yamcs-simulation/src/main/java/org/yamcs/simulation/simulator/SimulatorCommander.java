@@ -54,13 +54,15 @@ public class SimulatorCommander extends ProcessRunner {
         if (userArgs.containsKey("perfTest")) {
             Map<String, Object> yamcsArgs = YConfiguration.getMap(userArgs, "perfTest");
             int numPackets = YConfiguration.getInt(yamcsArgs, "numPackets", defaultOptions.perfNp);
-            int packetSize = YConfiguration.getInt(yamcsArgs, "packetSize", defaultOptions.perfPs);
-            long interval = YConfiguration.getLong(yamcsArgs, "interval", defaultOptions.perfMs);
-            cmdl.addAll(Arrays.asList("--perf-np", "" + numPackets,
-                    "--perf-ps", "" + packetSize,
-                    "--perf-ms", "" + interval));
+            if (numPackets > 0) {
+                int packetSize = YConfiguration.getInt(yamcsArgs, "packetSize", defaultOptions.perfPs);
+                long interval = YConfiguration.getLong(yamcsArgs, "interval", defaultOptions.perfMs);
+                cmdl.addAll(Arrays.asList("--perf-np", "" + numPackets,
+                        "--perf-ps", "" + packetSize,
+                        "--perf-ms", "" + interval));
+            }
         }
-        
+
         Map<String, Object> args = new HashMap<>();
         args.put("command", cmdl);
         args.put("logPrefix", "");
