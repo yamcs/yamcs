@@ -49,7 +49,7 @@ case "$1" in
                if [ -f $OUTERR.$i ] ; then mv $OUTERR.$i $OUTERR.$((i+1)) ; fi
             done
             #written such that /etc/profile.d scripts do not trigger
-            su -c "YAMCS_DAEMON=1; export YAMCS_DAEMON; cd; nohup $YAMCS_BIN >$OUTERR.0  2>&1 & echo \$! >$PID_FILE" $YAMCS_USER
+            su -c "YAMCS_DAEMON=1; export YAMCS_DAEMON; nohup $YAMCS_BIN >$OUTERR.0  2>&1 & echo \$! >$PID_FILE" $YAMCS_USER
             pid=`cat $PID_FILE`
             i=0
             #wait up to $WAIT_FOR_START seconds, maybe the database has to be loaded

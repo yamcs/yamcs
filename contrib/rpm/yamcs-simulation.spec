@@ -29,7 +29,6 @@ cp -r yamcs-simulation/mdb %{buildroot}/%{prefix}
 
 cp -r yamcs-simulation/etc %{buildroot}/%{prefix}
 mv %{buildroot}/%{prefix}/etc/logging.properties.rpm %{buildroot}/%{prefix}/etc/logging.properties
-mv %{buildroot}/%{prefix}/etc/yamcs.yaml.rpm %{buildroot}/%{prefix}/etc/yamcs.yaml
 
 mkdir -p %{buildroot}/storage/yamcs-data
 mkdir -p %{buildroot}/storage/yamcs-incoming

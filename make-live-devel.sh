@@ -89,4 +89,8 @@ for f in $YAMCS_HOME/yamcs-core/etc/* ; do
     esac
 done
 
-echo "Development environment installed to `cd $TARGET; pwd`"
+echo "Yamcs Server installed to `cd $TARGET; pwd`"
+echo
+echo "You may want to add Yamcs Server executables to your PATH:"
+echo "  export PATH=`cd $TARGET/bin; pwd`:\$PATH"
+echo
