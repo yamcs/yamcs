@@ -10,7 +10,7 @@
 #
 YAMCS_USER=yamcs
 YAMCS_HOME=/opt/yamcs
-YAMCS_BIN=$YAMCS_HOME/bin/yamcs-server.sh
+YAMCS_BIN=$YAMCS_HOME/bin/yamcsd
 PID_FILE=/var/run/yamcs-server.pid
 OUTERR=$YAMCS_HOME/log/yamcs-server.out # standard out and err go here
 
@@ -21,7 +21,7 @@ test -x $YAMCS_BIN || { echo "$YAMCS_BIN not installed";
 
 function is_running {
     pid=$1
-    return $((1-`ps ww -p $pid -o args= | grep -c "yamcs-server.sh\|java.*yamcs.YamcsServer"`))
+    return $((1-`ps ww -p $pid -o args= | grep -c "yamcsd\|java.*yamcs.YamcsServer"`))
 }
 
 WAIT_FOR_START=120

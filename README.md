@@ -38,7 +38,7 @@ By providing the `--yss` flag, this live environment is preconfigured for an all
 ### Run Yamcs
 
     cd live
-    bin/yamcs-server.sh
+    bin/yamcsd
 
 When you see `Server running... press ctrl-c to stop` your server has fully started. If you built the web files you can now also visit the built-in web interface by navigating to `http://localhost:8090`.
 
