@@ -47,9 +47,9 @@ dataLinks:
       port: 10025
       commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
       commandPostprocessorArgs:
-            errorDetection:
-               type: 16-SUM
-            enforceEvenNumberOfBytes: true
+        errorDetection:
+          type: 16-SUM
+        enforceEvenNumberOfBytes: true
   - name: TSE
     class: org.yamcs.tctm.TseDataLink
     args:
@@ -72,9 +72,9 @@ mdb:
         spec: "mdb/tse/simulator.xls"
   #Loads the performance testing mission database
   - type: "org.yamcs.simulator.PerfMdbLoader"
-    args: 
-        numPackets: 18 
-        packetSize: 1476
+    args:
+      numPackets: 18
+      packetSize: 1476
 
 #Configuration for streams created at server startup
 streamConfig:

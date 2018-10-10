@@ -169,6 +169,7 @@
     <module>yamcs-simulation</module>
     <module>yamcs-tse</module>
     <module>yamcs-xtce</module>
+    <module>distribution</module>
   </modules>
 
   <distributionManagement>

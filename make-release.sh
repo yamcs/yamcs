@@ -89,49 +89,23 @@ if [ $yamcs -eq 1 -a $buildweb -eq 1 ]; then
     cd ..
 fi
 
+rm -rf $yamcshome/dist
 mvn clean package -DskipTests
 
 mkdir -p $yamcshome/dist
 mkdir -p $HOME/rpmbuild/{RPMS,BUILD,SPECS,tmp}
 
 if [ $yamcs -eq 1 ]; then
-    rm -rf /tmp/$serverdist
-    mkdir -p /tmp/$serverdist/{bin,cache,etc,lib,lib/ext,lib/proto,log,mdb}
-
-    cp -a yamcs-core/etc/* /tmp/$serverdist/etc/
-    cp -a yamcs-api/src/main/proto/* /tmp/$serverdist/lib/proto/
-    
-    cp -a yamcs-server/bin/* /tmp/$serverdist/bin/
-    cp -a yamcs-server/target/yamcs*.jar /tmp/$serverdist/lib/
-    cp -a yamcs-server/lib/* /tmp/$serverdist/lib/
-
-    cp -a yamcs-artemis/lib/*.jar /tmp/$serverdist/lib/
-    cp -a yamcs-artemis/target/yamcs-artemis*.jar /tmp/$serverdist/lib/
-
-    cp -a yamcs-tse/bin/* /tmp/$serverdist/bin/
-    cp -a yamcs-tse/target/yamcs-tse*.jar /tmp/$serverdist/lib/
-    cp -a yamcs-tse/lib/*.jar /tmp/$serverdist/lib/
-
-    rm -f /tmp/$serverdist/lib/*-sources.jar
-
-    if [ $buildweb -eq 1 ]; then
-        mkdir -p /tmp/$serverdist/lib/yamcs-web
-        cp -a yamcs-web/packages/app/dist/* /tmp/$serverdist/lib/yamcs-web/
-    fi
-
-    cd /tmp
-    tar czfh $yamcshome/dist/$serverdist.tar.gz $serverdist
+    cp distribution/target/yamcs-$pomversion.tar.gz $yamcshome/dist/
 
     rpmbuilddir="$HOME/rpmbuild/BUILD/$serverdist"
     rm -rf $rpmbuilddir
     mkdir -p "$rpmbuilddir/opt/yamcs"
-    cp -a /tmp/$serverdist/* "$rpmbuilddir/opt/yamcs"
+    tar -xzf distribution/target/yamcs-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs"
     mkdir -p "$rpmbuilddir/etc/init.d"
     cp -a $yamcshome/contrib/sysvinit/* "$rpmbuilddir/etc/init.d"
     cat "$yamcshome/contrib/rpm/yamcs.spec" | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $HOME/rpmbuild/SPECS/yamcs.spec
     rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs.spec
-    
-    rm -rf /tmp/$serverdist
 fi
 
 if [ $yamcssimulation -eq 1 ]; then
@@ -142,20 +116,12 @@ if [ $yamcssimulation -eq 1 ]; then
 fi
 
 if [ $yamcsclient -eq 1 ]; then
-    cd $buildroot
-    rm -rf /tmp/$clientdist
-    mkdir -p /tmp/$clientdist/{bin,etc,lib,mdb}
-    cp yamcs-client/bin/* /tmp/$clientdist/bin/
-    cp yamcs-client/etc/* /tmp/$clientdist/etc/
-    cp yamcs-client/target/yamcs-client-$pomversion.jar /tmp/$clientdist/lib/
-    cp yamcs-client/lib/*.jar /tmp/$clientdist/lib/
+    cp distribution/target/yamcs-client-$pomversion.tar.gz $yamcshome/dist/
 
-    cd /tmp
-    tar czfh $yamcshome/dist/$clientdist.tar.gz $clientdist
-
-    rm -rf "$HOME/rpmbuild/BUILD/$clientdist"
-    cp -r "/tmp/$clientdist" "$HOME/rpmbuild/BUILD/"
-    cp -a $yamcshome/contrib/completion "$HOME/rpmbuild/BUILD/$clientdist"
+    rpmbuilddir="$HOME/rpmbuild/BUILD/$clientdist"
+    rm -rf $rpmbuilddir
+    mkdir -p "$rpmbuilddir/opt/yamcs-client"
+    tar -xzf distribution/target/yamcs-client-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs-client"
     cat "$yamcshome/contrib/rpm/yamcs-client.spec" | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $HOME/rpmbuild/SPECS/yamcs-client.spec
     rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-client.spec
 
@@ -173,4 +139,4 @@ fi
 
 echo
 echo 'All done. Generated artifacts:'
-ls -lh dist/*$version-$release*
+ls -lh dist/

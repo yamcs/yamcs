@@ -10,9 +10,9 @@ services:
       # Make sure the yamcs.simulator.yaml, mdb section contains a database generator for these packets, such that they are processed by Yamcs
       # if numPackets is greater than 0, the simulator will send <numPackets> packets of size <packetSize> at each <interval> (in ms)
       perfTest: 
-         numPackets: 0 
-         packetSize: 1476 #length of the performance testing packets
-         interval: 10 
+        numPackets: 0 
+        packetSize: 1476 #length of the performance testing packets
+        interval: 10 
   - class: org.yamcs.tse.TseCommander
     args:
       tctm:
