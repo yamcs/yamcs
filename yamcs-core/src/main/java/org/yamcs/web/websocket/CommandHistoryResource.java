@@ -1,15 +1,20 @@
 package org.yamcs.web.websocket;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.cmdhistory.CommandHistoryFilter;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
+import org.yamcs.commanding.InvalidCommandId;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Web.CommandHistorySubscriptionRequest;
 import org.yamcs.protobuf.Yamcs.ProtoDataType;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
@@ -23,22 +28,63 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
 
     private ConnectedWebSocketClient client;
 
-    private CommandHistoryFilter subscription;
-    private CommandHistoryRequestManager commandHistoryRequestManager;
+    private CommandHistoryFilter allSubscription;
+    private Set<CommandId> subscribedCommands = new HashSet<>();
+    private CommandHistoryRequestManager requestManager;
 
     public CommandHistoryResource(ConnectedWebSocketClient client) {
         this.client = client;
         Processor processor = client.getProcessor();
         if (processor != null && processor.hasCommanding()) {
-            commandHistoryRequestManager = processor.getCommandHistoryManager();
+            requestManager = processor.getCommandHistoryManager();
         }
     }
 
     @Override
     public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
-        if (commandHistoryRequestManager != null) {
-            subscription = commandHistoryRequestManager.subscribeCommandHistory(null, 0, this);
+        if (requestManager == null) {
+            return WebSocketReply.ack(ctx.getRequestId());
         }
+
+        boolean subscribeAll = true;
+        boolean ignorePastCommands = true;
+
+        CommandHistorySubscriptionRequest req = null;
+        if (ctx.getData() != null) {
+            req = decoder.decodeMessageData(ctx,
+                    CommandHistorySubscriptionRequest.newBuilder()).build();
+            if (req.hasIgnorePastCommands()) {
+                ignorePastCommands = req.getIgnorePastCommands();
+            }
+            if (req.getCommandIdCount() > 0) {
+                subscribeAll = false;
+                ignorePastCommands = false;
+                for (CommandId commandId : req.getCommandIdList()) {
+                    if (!subscribedCommands.contains(commandId)) {
+                        try {
+                            CommandHistoryEntry entry = requestManager.subscribeCommand(commandId, this);
+                            subscribedCommands.add(commandId);
+
+                            entry = CommandHistoryEntry.newBuilder(entry)
+                                    .setGenerationTimeUTC(TimeEncoding.toString(commandId.getGenerationTime()))
+                                    .build();
+                            client.sendData(ProtoDataType.CMD_HISTORY, entry);
+
+                        } catch (InvalidCommandId e) {
+                            WebSocketException ex = new WebSocketException(ctx.getRequestId(), e);
+                            ex.attachData("InvalidCommandIdentification", commandId);
+                            throw ex;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (subscribeAll) {
+            long since = ignorePastCommands ? client.getProcessor().getCurrentTime() : 0;
+            allSubscription = requestManager.subscribeCommandHistory(null, since, this);
+        }
+
         return WebSocketReply.ack(ctx.getRequestId());
     }
 
@@ -49,20 +95,23 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
 
     @Override
     public void unselectProcessor() {
-        if (subscription != null) {
-            if (commandHistoryRequestManager != null) {
-                commandHistoryRequestManager.unsubscribeCommandHistory(subscription.subscriptionId);
+        if (requestManager != null) {
+            if (allSubscription != null) {
+                requestManager.unsubscribeCommandHistory(allSubscription.subscriptionId);
+            }
+            for (CommandId commandId : subscribedCommands) {
+                requestManager.unsubscribeCommand(commandId, this);
             }
         }
-        commandHistoryRequestManager = null;
+        requestManager = null;
     }
 
     @Override
     public void selectProcessor(Processor processor) throws ProcessorException {
         if (processor.hasCommanding()) {
-            commandHistoryRequestManager = processor.getCommandHistoryManager();
-            if (commandHistoryRequestManager != null && subscription != null) {
-                commandHistoryRequestManager.addSubscription(subscription, this);
+            requestManager = processor.getCommandHistoryManager();
+            if (requestManager != null && allSubscription != null) {
+                requestManager.addSubscription(allSubscription, this);
             }
         }
     }
@@ -92,8 +141,13 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
 
     @Override
     public void socketClosed() {
-        if (subscription != null && commandHistoryRequestManager != null) {
-            commandHistoryRequestManager.unsubscribeCommandHistory(subscription.subscriptionId);
+        if (requestManager != null) {
+            if (allSubscription != null) {
+                requestManager.unsubscribeCommandHistory(allSubscription.subscriptionId);
+            }
+            for (CommandId commandId : subscribedCommands) {
+                requestManager.unsubscribeCommand(commandId, this);
+            }
         }
     }
 }

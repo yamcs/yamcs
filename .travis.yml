@@ -1,18 +1,49 @@
-language: java
-jdk: oraclejdk8
 sudo: false
+language: java
+jdk: openjdk8
 
-addons:
-  sonarcloud:
-    token:
-      secure: "BZHKofLWAebdg6XL7aHcJlRJ8YIjYfJdk8vlltNb9TuhRTrdFJ+bjOCMFN8iiPtg2uDNdbj13B2/TVbTwixeanrTz7zNTFo+I37kRuxtMV3qZZB7dBgjceu/xTRBX1XCNXhHpyoblBZcQntaKlLm5qnASs78GRUJr8YNFNZsTjE="
+# Prevent Travis from running 'mvn install'
+install: true
 
 cache:
   directories:
     - $HOME/.m2
     - $HOME/.sonar/cache
 
-script: mvn -Dsurefire.useFile=false test
+stages:
+  - test
+  - name: deploy
+    if: branch = master
+  - name: sonar
+    if: branch = master
 
-#Remove .yamcs directory before running sonar, otherwise the XTCE Db loader will not be measured for test coverage
-after_success: rm -r $HOME/.yamcs; mvn -Dsurefire.useFile=false clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
+jobs:
+  include:
+
+    - stage: test
+      script: mvn -Dsurefire.useFile=false test
+
+    - stage: deploy
+      script:
+        - mvn -DskipTests javadoc:aggregate
+        - mkdir docs
+        - touch docs/.nojekyll
+        - cp -r target/site/apidocs docs/javadoc
+      deploy:
+        provider: pages
+        skip-cleanup: true  # Keep HTML files generated during 'script'
+        local-dir: docs
+        github-token: $GITHUB_TOKEN
+        keep-history: false  # Force-update single commit on gh-pages branch
+        #on:
+        #  tags: true
+
+    - stage: sonar
+      script: skip
+      after_success:  # Use this hook so it does not impact global build success
+        - mvn -Dsurefire.useFile=false clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
+      addons:
+        sonarcloud:
+          token:
+            secure: "BZHKofLWAebdg6XL7aHcJlRJ8YIjYfJdk8vlltNb9TuhRTrdFJ+bjOCMFN8iiPtg2uDNdbj13B2/TVbTwixeanrTz7zNTFo+I37kRuxtMV3qZZB7dBgjceu/xTRBX1XCNXhHpyoblBZcQntaKlLm5qnASs78GRUJr8YNFNZsTjE="
+

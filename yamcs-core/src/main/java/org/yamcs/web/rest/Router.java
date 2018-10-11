@@ -43,6 +43,7 @@ import org.yamcs.web.rest.archive.ArchiveIndexDownloadsRestHandler;
 import org.yamcs.web.rest.archive.ArchiveIndexRestHandler;
 import org.yamcs.web.rest.archive.ArchivePacketRestHandler;
 import org.yamcs.web.rest.archive.ArchiveParameterRestHandler;
+import org.yamcs.web.rest.archive.ArchiveSqlRestHandler;
 import org.yamcs.web.rest.archive.ArchiveStreamRestHandler;
 import org.yamcs.web.rest.archive.ArchiveTableRestHandler;
 import org.yamcs.web.rest.archive.ArchiveTagRestHandler;
@@ -122,6 +123,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         registerRouteHandler(null, new ParameterArchiveMaintenanceRestHandler());
         registerRouteHandler(null, new ArchiveParameterRestHandler());
         registerRouteHandler(null, new ArchiveStreamRestHandler());
+        registerRouteHandler(null, new ArchiveSqlRestHandler());
         registerRouteHandler(null, new ArchiveTableRestHandler());
         registerRouteHandler(null, new ArchiveTagRestHandler());
         registerRouteHandler(null, new BucketRestHandler());

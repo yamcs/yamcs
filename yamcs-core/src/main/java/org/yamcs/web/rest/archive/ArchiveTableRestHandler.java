@@ -69,7 +69,9 @@ public class ArchiveTableRestHandler extends RestHandler {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
-        for (TableDefinition def : ydb.getTableDefinitions()) {
+        List<TableDefinition> defs = new ArrayList<>(ydb.getTableDefinitions());
+        defs.sort((d1, d2) -> d1.getName().compareToIgnoreCase(d2.getName()));
+        for (TableDefinition def : defs) {
             responseb.addTable(ArchiveHelper.toTableInfo(def));
         }
         completeOK(req, responseb.build());

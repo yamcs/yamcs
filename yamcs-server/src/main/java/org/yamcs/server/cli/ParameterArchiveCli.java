@@ -25,7 +25,7 @@ public class ParameterArchiveCli extends Command {
     @Parameter(names = "--instance", description = "yamcs instance", required = true)
     String yamcsInstance;
 
-    public ParameterArchiveCli(YamcsCtlCli yamcsCli) {
+    public ParameterArchiveCli(YamcsAdminCli yamcsCli) {
         super("parchive", yamcsCli);
         addSubCommand(new PrintPid());
         addSubCommand(new PrintPgid());

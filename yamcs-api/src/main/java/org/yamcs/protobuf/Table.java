@@ -89,6 +89,7 @@ public final class Table {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.table.ColumnInfo)
       ColumnInfoOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use ColumnInfo.newBuilder() to construct.
     private ColumnInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -110,6 +111,9 @@ public final class Table {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -121,13 +125,6 @@ public final class Table {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 8: {
               bitField0_ |= 0x00000001;
               id_ = input.readUInt32();
@@ -151,6 +148,13 @@ public final class Table {
               protoClass_ = bs;
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -168,6 +172,7 @@ public final class Table {
       return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_ColumnInfo_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_ColumnInfo_fieldAccessorTable
@@ -330,6 +335,7 @@ public final class Table {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -339,6 +345,7 @@ public final class Table {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -356,6 +363,7 @@ public final class Table {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -379,7 +387,6 @@ public final class Table {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -421,7 +428,7 @@ public final class Table {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasId()) {
         hash = (37 * hash) + ID_FIELD_NUMBER;
         hash = (53 * hash) + getId();
@@ -443,6 +450,17 @@ public final class Table {
       return hash;
     }
 
+    public static org.yamcs.protobuf.Table.ColumnInfo parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Table.ColumnInfo parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.protobuf.Table.ColumnInfo parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -502,6 +520,7 @@ public final class Table {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -509,6 +528,7 @@ public final class Table {
     public static Builder newBuilder(org.yamcs.protobuf.Table.ColumnInfo prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -532,6 +552,7 @@ public final class Table {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_ColumnInfo_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_ColumnInfo_fieldAccessorTable
@@ -554,6 +575,7 @@ public final class Table {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         id_ = 0;
@@ -567,15 +589,18 @@ public final class Table {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_ColumnInfo_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.ColumnInfo getDefaultInstanceForType() {
         return org.yamcs.protobuf.Table.ColumnInfo.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.ColumnInfo build() {
         org.yamcs.protobuf.Table.ColumnInfo result = buildPartial();
         if (!result.isInitialized()) {
@@ -584,6 +609,7 @@ public final class Table {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.ColumnInfo buildPartial() {
         org.yamcs.protobuf.Table.ColumnInfo result = new org.yamcs.protobuf.Table.ColumnInfo(this);
         int from_bitField0_ = bitField0_;
@@ -609,32 +635,39 @@ public final class Table {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
         return (Builder) super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return (Builder) super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return (Builder) super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Table.ColumnInfo) {
           return mergeFrom((org.yamcs.protobuf.Table.ColumnInfo)other);
@@ -669,10 +702,12 @@ public final class Table {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -975,11 +1010,13 @@ public final class Table {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -1001,11 +1038,12 @@ public final class Table {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<ColumnInfo>
         PARSER = new com.google.protobuf.AbstractParser<ColumnInfo>() {
+      @java.lang.Override
       public ColumnInfo parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new ColumnInfo(input, extensionRegistry);
+        return new ColumnInfo(input, extensionRegistry);
       }
     };
 
@@ -1018,6 +1056,7 @@ public final class Table {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Table.ColumnInfo getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -1053,6 +1092,7 @@ public final class Table {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.table.Cell)
       CellOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use Cell.newBuilder() to construct.
     private Cell(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -1072,6 +1112,9 @@ public final class Table {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -1083,13 +1126,6 @@ public final class Table {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 8: {
               bitField0_ |= 0x00000001;
               columnId_ = input.readUInt32();
@@ -1098,6 +1134,13 @@ public final class Table {
             case 18: {
               bitField0_ |= 0x00000002;
               data_ = input.readBytes();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -1117,6 +1160,7 @@ public final class Table {
       return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_Cell_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_Cell_fieldAccessorTable
@@ -1156,6 +1200,7 @@ public final class Table {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1165,6 +1210,7 @@ public final class Table {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -1176,6 +1222,7 @@ public final class Table {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1194,7 +1241,6 @@ public final class Table {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -1226,7 +1272,7 @@ public final class Table {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasColumnId()) {
         hash = (37 * hash) + COLUMNID_FIELD_NUMBER;
         hash = (53 * hash) + getColumnId();
@@ -1240,6 +1286,17 @@ public final class Table {
       return hash;
     }
 
+    public static org.yamcs.protobuf.Table.Cell parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Table.Cell parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.protobuf.Table.Cell parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1299,6 +1356,7 @@ public final class Table {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -1306,6 +1364,7 @@ public final class Table {
     public static Builder newBuilder(org.yamcs.protobuf.Table.Cell prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -1329,6 +1388,7 @@ public final class Table {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_Cell_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_Cell_fieldAccessorTable
@@ -1351,6 +1411,7 @@ public final class Table {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         columnId_ = 0;
@@ -1360,15 +1421,18 @@ public final class Table {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_Cell_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.Cell getDefaultInstanceForType() {
         return org.yamcs.protobuf.Table.Cell.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.Cell build() {
         org.yamcs.protobuf.Table.Cell result = buildPartial();
         if (!result.isInitialized()) {
@@ -1377,6 +1441,7 @@ public final class Table {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.Cell buildPartial() {
         org.yamcs.protobuf.Table.Cell result = new org.yamcs.protobuf.Table.Cell(this);
         int from_bitField0_ = bitField0_;
@@ -1394,32 +1459,39 @@ public final class Table {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
         return (Builder) super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return (Builder) super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return (Builder) super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Table.Cell) {
           return mergeFrom((org.yamcs.protobuf.Table.Cell)other);
@@ -1442,10 +1514,12 @@ public final class Table {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1531,11 +1605,13 @@ public final class Table {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -1557,11 +1633,12 @@ public final class Table {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<Cell>
         PARSER = new com.google.protobuf.AbstractParser<Cell>() {
+      @java.lang.Override
       public Cell parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Cell(input, extensionRegistry);
+        return new Cell(input, extensionRegistry);
       }
     };
 
@@ -1574,6 +1651,7 @@ public final class Table {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Table.Cell getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -1659,6 +1737,7 @@ public final class Table {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.table.Row)
       RowOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use Row.newBuilder() to construct.
     private Row(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -1678,6 +1757,9 @@ public final class Table {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -1689,13 +1771,6 @@ public final class Table {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
                 column_ = new java.util.ArrayList<org.yamcs.protobuf.Table.ColumnInfo>();
@@ -1712,6 +1787,13 @@ public final class Table {
               }
               cell_.add(
                   input.readMessage(org.yamcs.protobuf.Table.Cell.PARSER, extensionRegistry));
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -1737,6 +1819,7 @@ public final class Table {
       return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_Row_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_Row_fieldAccessorTable
@@ -1835,6 +1918,7 @@ public final class Table {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1844,6 +1928,7 @@ public final class Table {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < column_.size(); i++) {
@@ -1855,6 +1940,7 @@ public final class Table {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1873,7 +1959,6 @@ public final class Table {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -1899,7 +1984,7 @@ public final class Table {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (getColumnCount() > 0) {
         hash = (37 * hash) + COLUMN_FIELD_NUMBER;
         hash = (53 * hash) + getColumnList().hashCode();
@@ -1913,6 +1998,17 @@ public final class Table {
       return hash;
     }
 
+    public static org.yamcs.protobuf.Table.Row parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Table.Row parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.protobuf.Table.Row parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1972,6 +2068,7 @@ public final class Table {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -1979,6 +2076,7 @@ public final class Table {
     public static Builder newBuilder(org.yamcs.protobuf.Table.Row prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -2002,6 +2100,7 @@ public final class Table {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_Row_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_Row_fieldAccessorTable
@@ -2026,6 +2125,7 @@ public final class Table {
           getCellFieldBuilder();
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         if (columnBuilder_ == null) {
@@ -2043,15 +2143,18 @@ public final class Table {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_Row_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.Row getDefaultInstanceForType() {
         return org.yamcs.protobuf.Table.Row.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.Row build() {
         org.yamcs.protobuf.Table.Row result = buildPartial();
         if (!result.isInitialized()) {
@@ -2060,6 +2163,7 @@ public final class Table {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.Row buildPartial() {
         org.yamcs.protobuf.Table.Row result = new org.yamcs.protobuf.Table.Row(this);
         int from_bitField0_ = bitField0_;
@@ -2085,32 +2189,39 @@ public final class Table {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
         return (Builder) super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return (Builder) super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return (Builder) super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Table.Row) {
           return mergeFrom((org.yamcs.protobuf.Table.Row)other);
@@ -2179,10 +2290,12 @@ public final class Table {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2753,11 +2866,13 @@ public final class Table {
         }
         return cellBuilder_;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -2779,11 +2894,12 @@ public final class Table {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<Row>
         PARSER = new com.google.protobuf.AbstractParser<Row>() {
+      @java.lang.Override
       public Row parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Row(input, extensionRegistry);
+        return new Row(input, extensionRegistry);
       }
     };
 
@@ -2796,6 +2912,7 @@ public final class Table {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Table.Row getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -2822,6 +2939,7 @@ public final class Table {
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:yamcs.protobuf.table.TableLoadResponse)
       TableLoadResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use TableLoadResponse.newBuilder() to construct.
     private TableLoadResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -2840,6 +2958,9 @@ public final class Table {
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       int mutable_bitField0_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
@@ -2851,16 +2972,16 @@ public final class Table {
             case 0:
               done = true;
               break;
-            default: {
-              if (!parseUnknownField(input, unknownFields,
-                                     extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
             case 8: {
               bitField0_ |= 0x00000001;
               rowsLoaded_ = input.readUInt32();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -2880,6 +3001,7 @@ public final class Table {
       return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_TableLoadResponse_descriptor;
     }
 
+    @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_TableLoadResponse_fieldAccessorTable
@@ -2904,6 +3026,7 @@ public final class Table {
     }
 
     private byte memoizedIsInitialized = -1;
+    @java.lang.Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -2913,6 +3036,7 @@ public final class Table {
       return true;
     }
 
+    @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -2921,6 +3045,7 @@ public final class Table {
       unknownFields.writeTo(output);
     }
 
+    @java.lang.Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -2935,7 +3060,6 @@ public final class Table {
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @java.lang.Override
     public boolean equals(final java.lang.Object obj) {
       if (obj == this) {
@@ -2962,7 +3086,7 @@ public final class Table {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasRowsLoaded()) {
         hash = (37 * hash) + ROWSLOADED_FIELD_NUMBER;
         hash = (53 * hash) + getRowsLoaded();
@@ -2972,6 +3096,17 @@ public final class Table {
       return hash;
     }
 
+    public static org.yamcs.protobuf.Table.TableLoadResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Table.TableLoadResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static org.yamcs.protobuf.Table.TableLoadResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -3031,6 +3166,7 @@ public final class Table {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @java.lang.Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -3038,6 +3174,7 @@ public final class Table {
     public static Builder newBuilder(org.yamcs.protobuf.Table.TableLoadResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @java.lang.Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -3061,6 +3198,7 @@ public final class Table {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_TableLoadResponse_descriptor;
       }
 
+      @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_TableLoadResponse_fieldAccessorTable
@@ -3083,6 +3221,7 @@ public final class Table {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @java.lang.Override
       public Builder clear() {
         super.clear();
         rowsLoaded_ = 0;
@@ -3090,15 +3229,18 @@ public final class Table {
         return this;
       }
 
+      @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return org.yamcs.protobuf.Table.internal_static_yamcs_protobuf_table_TableLoadResponse_descriptor;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.TableLoadResponse getDefaultInstanceForType() {
         return org.yamcs.protobuf.Table.TableLoadResponse.getDefaultInstance();
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.TableLoadResponse build() {
         org.yamcs.protobuf.Table.TableLoadResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -3107,6 +3249,7 @@ public final class Table {
         return result;
       }
 
+      @java.lang.Override
       public org.yamcs.protobuf.Table.TableLoadResponse buildPartial() {
         org.yamcs.protobuf.Table.TableLoadResponse result = new org.yamcs.protobuf.Table.TableLoadResponse(this);
         int from_bitField0_ = bitField0_;
@@ -3120,32 +3263,39 @@ public final class Table {
         return result;
       }
 
+      @java.lang.Override
       public Builder clone() {
         return (Builder) super.clone();
       }
+      @java.lang.Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.setField(field, value);
       }
+      @java.lang.Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
         return (Builder) super.clearField(field);
       }
+      @java.lang.Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
         return (Builder) super.clearOneof(oneof);
       }
+      @java.lang.Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          int index, Object value) {
+          int index, java.lang.Object value) {
         return (Builder) super.setRepeatedField(field, index, value);
       }
+      @java.lang.Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
-          Object value) {
+          java.lang.Object value) {
         return (Builder) super.addRepeatedField(field, value);
       }
+      @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof org.yamcs.protobuf.Table.TableLoadResponse) {
           return mergeFrom((org.yamcs.protobuf.Table.TableLoadResponse)other);
@@ -3165,10 +3315,12 @@ public final class Table {
         return this;
       }
 
+      @java.lang.Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @java.lang.Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3219,11 +3371,13 @@ public final class Table {
         onChanged();
         return this;
       }
+      @java.lang.Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFields(unknownFields);
       }
 
+      @java.lang.Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.mergeUnknownFields(unknownFields);
@@ -3245,11 +3399,12 @@ public final class Table {
 
     @java.lang.Deprecated public static final com.google.protobuf.Parser<TableLoadResponse>
         PARSER = new com.google.protobuf.AbstractParser<TableLoadResponse>() {
+      @java.lang.Override
       public TableLoadResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TableLoadResponse(input, extensionRegistry);
+        return new TableLoadResponse(input, extensionRegistry);
       }
     };
 
@@ -3262,6 +3417,7 @@ public final class Table {
       return PARSER;
     }
 
+    @java.lang.Override
     public org.yamcs.protobuf.Table.TableLoadResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -3317,7 +3473,7 @@ public final class Table {
       ".table.ColumnInfo\022(\n\004cell\030\002 \003(\0132\032.yamcs." +
       "protobuf.table.Cell\"\'\n\021TableLoadResponse" +
       "\022\022\n\nrowsLoaded\030\001 \001(\r:<\n\nrowsLoaded\022(.yam" +
-      "cs.protobuf.web.RestExceptionMessage\030d \001",
+      "cs.protobuf.web.RestExceptionMessage\030d \001" +
       "(\rB\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =

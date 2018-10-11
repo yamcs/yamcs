@@ -20,7 +20,7 @@ public class YamcsCliTest {
 
     @Test
     public void testXtceDbCli() throws Exception {
-        YamcsCtlCli yamcsCli = new YamcsCtlCli();
+        YamcsAdminCli yamcsCli = new YamcsAdminCli();
         yamcsCli.parse(new String[] { "xtcedb", "print", "refmdb" });
         yamcsCli.validate();
         yamcsCli.execute();

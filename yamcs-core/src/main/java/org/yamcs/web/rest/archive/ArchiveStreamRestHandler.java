@@ -1,5 +1,8 @@
 package org.yamcs.web.rest.archive;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.yamcs.protobuf.Archive.StreamInfo;
 import org.yamcs.protobuf.Rest.ListStreamsResponse;
 import org.yamcs.security.ObjectPrivilegeType;
@@ -19,7 +22,9 @@ public class ArchiveStreamRestHandler extends RestHandler {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
-        for (Stream stream : ydb.getStreams()) {
+        List<Stream> streams = new ArrayList<>(ydb.getStreams());
+        streams.sort((s1, s2) -> s1.getName().compareToIgnoreCase(s2.getName()));
+        for (Stream stream : streams) {
             if (!hasObjectPrivilege(req, ObjectPrivilegeType.Stream, stream.getName())) {
                 continue;
             }

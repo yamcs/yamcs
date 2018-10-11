@@ -1,25 +1,39 @@
 package org.yamcs.yarch.streamsql;
 
-import org.yamcs.yarch.streamsql.StreamSqlException;
-
 public class StreamSqlException extends Exception {
+
     public enum ErrCode {
-        ERROR, RESOURCE_EXISTS, NOT_A_STREAM, NONE_SPECIFIED, INCOMPATIBLE, NOT_IMPLEMENTED, 
-        COLUMN_NOT_FOUND, AGGREGATE_IN_AGGREGATE, COMPILE_ERROR, NOT_SUPPORTED, RESOURCE_NOT_FOUND, 
-        AGGREGATE_WITHOUT_WINDOW, INVALID_HISTOGRAM_COLUMN, WRONG_ARG_COUNT, BAD_ARG_TYPE;
+        ERROR,
+        RESOURCE_EXISTS,
+        NOT_A_STREAM,
+        NONE_SPECIFIED,
+        INCOMPATIBLE,
+        NOT_IMPLEMENTED,
+        COLUMN_NOT_FOUND,
+        AGGREGATE_IN_AGGREGATE,
+        COMPILE_ERROR,
+        NOT_SUPPORTED,
+        RESOURCE_NOT_FOUND,
+        AGGREGATE_WITHOUT_WINDOW,
+        INVALID_HISTOGRAM_COLUMN,
+        WRONG_ARG_COUNT,
+        BAD_ARG_TYPE;
     };
+
     ErrCode errCode;
-    
+
     public StreamSqlException(ErrCode code, String msg) {
         super(code + " " + msg);
         this.errCode = code;
     }
+
     public StreamSqlException(ErrCode code) {
         this.errCode = code;
     }
-    
+
+    @Override
     public String toString() {
-        return errCode+":  "+getMessage();
+        return errCode + ":  " + getMessage();
     }
 }
 
