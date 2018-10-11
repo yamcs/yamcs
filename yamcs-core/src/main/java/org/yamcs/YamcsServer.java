@@ -358,8 +358,8 @@ public class YamcsServer {
     }
 
     private static void printOptionsAndExit() {
-        System.err.println("Usage: yamcs-server.sh");
-        System.err.println("\t All options are taken from yamcs.yaml");
+        System.err.println("Usage: yamcsd");
+        System.err.println("\t All options are read from yamcs.yaml");
         System.exit(-1);
     }
 

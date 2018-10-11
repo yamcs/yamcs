@@ -1,4 +1,4 @@
-package org.yamcs.cli;
+package org.yamcs.yarch.streamsql;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,14 +6,14 @@ import java.util.List;
 /**
  * Helper for outputting records in columnar fashion without harcoding column widths
  */
-public class TableStringBuilder {
+public class ResultSetPrinter {
 
     private String[] header;
     private List<String[]> rows = new ArrayList<>();
 
     private int[] widths;
 
-    public TableStringBuilder(String... header) {
+    public ResultSetPrinter(String... header) {
         this.header = header;
         widths = new int[header.length];
         for (int i = 0; i < header.length; i++) {
@@ -21,7 +21,7 @@ public class TableStringBuilder {
         }
     }
 
-    public void addLine(Object... data) {
+    public void addRow(Object... data) {
         String[] dataStrings = new String[data.length];
         for (int i = 0; i < data.length; i++) {
             String stringValue = data[i] != null ? data[i].toString() : "";
@@ -36,25 +36,38 @@ public class TableStringBuilder {
     private String buildStringFormat() {
         StringBuilder fm = new StringBuilder();
         for (int i = 0; i < widths.length; i++) {
-            fm.append("%-").append(widths[i]).append("s");
-            if (i < widths.length - 1) {
-                fm.append("  "); // 2 spaces so that it is larger than column name with spaces
-            }
+            fm.append("| ").append("%-").append(widths[i]).append("s").append(" ");
         }
-        return fm.toString();
+        return fm.append("|").toString();
     }
 
     @Override
     public String toString() {
         String fm = buildStringFormat();
 
+        StringBuilder buf = new StringBuilder();
+
+        StringBuilder separatorb = new StringBuilder();
+        for (int i = 0; i < widths.length; i++) {
+            separatorb.append("+-");
+            for (int j = 0; j < widths[i]; j++) {
+                separatorb.append('-');
+            }
+            separatorb.append("-");
+        }
+        String separator = separatorb.append("+").toString();
+
+        buf.append(separator);
         String hline = String.format(fm, (Object[]) header);
-        StringBuilder buf = new StringBuilder(hline);
+        buf.append("\n").append(hline);
+        buf.append("\n").append(separator);
 
         for (String[] row : rows) {
             String line = String.format(fm, (Object[]) row);
             buf.append("\n").append(line);
         }
+        buf.append("\n").append(separator);
+        buf.append("\n").append(rows.size() + " rows");
 
         return buf.toString();
     }

@@ -96,6 +96,15 @@ message ManagementSubscriptionRequest {
   optional bool processorStatistics = 3;
 }
 
+message CommandHistorySubscriptionRequest {
+  // if not specified, updates on any command are returned
+  repeated commanding.CommandId commandId = 1;
+
+  // if set to true (default), incremental updates on commands that were
+  // issued before this subscription are not emitted.
+  optional bool ignorePastCommands = 2;
+}
+
 /*
  * Used for parameter subscription and unsubscription.
  */

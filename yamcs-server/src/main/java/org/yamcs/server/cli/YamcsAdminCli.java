@@ -18,14 +18,14 @@ import com.beust.jcommander.ParameterException;
 /**
  * Command line utility for doing yamcs stuff.
  *
- * This usage is yamcsctl &lt;command&gt; [command_specific_options]
+ * This usage is yamcsadmin &lt;command&gt; [command_specific_options]
  *
  * @author nm
  */
-public class YamcsCtlCli extends Command {
+public class YamcsAdminCli extends Command {
 
-    public YamcsCtlCli() {
-        super("yamcsctl", null);     
+    public YamcsAdminCli() {
+        super("yamcsadmin", null);
         addSubCommand(new Backup(this));
         addSubCommand(new CheckConfig(this));
         addSubCommand(new ParameterArchiveCli(this));
@@ -49,7 +49,7 @@ public class YamcsCtlCli extends Command {
     }
 
     public static void main(String[] args) {
-        YamcsCtlCli yamcsCli = new YamcsCtlCli();
+        YamcsAdminCli yamcsCli = new YamcsAdminCli();
         yamcsCli.parse(args);
 
         try {

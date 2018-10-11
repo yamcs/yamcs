@@ -59,7 +59,6 @@ ln -fs $YAMCS_HOME/yamcs-server/target/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-server/lib/*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-web/packages/app/dist $TARGET/lib/yamcs-web
 ln -fs $YAMCS_HOME/yamcs-client/target/*.jar $TARGET/lib
-ln -fs $YAMCS_HOME/yamcs-client/lib/jcommander*.jar $TARGET/lib
 ln -fs $YAMCS_HOME/yamcs-client/lib/jdatepicker*.jar $TARGET/lib
 
 # Sets up a development environment for an example Yamcs configuration
@@ -90,4 +89,8 @@ for f in $YAMCS_HOME/yamcs-core/etc/* ; do
     esac
 done
 
-echo "Development environment installed to `cd $TARGET; pwd`"
+echo "Yamcs Server installed to `cd $TARGET; pwd`"
+echo
+echo "You may want to add Yamcs Server executables to your PATH:"
+echo "  export PATH=`cd $TARGET/bin; pwd`:\$PATH"
+echo

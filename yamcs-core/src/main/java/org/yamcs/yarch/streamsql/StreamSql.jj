@@ -99,15 +99,18 @@ TOKEN: /* (Stream) SQL keywords. prefixed with K_ to avoid name clashes */
 |   <K_COMPRESSED:"COMPRESSED">
 |   <K_CREATE:"CREATE">
 |   <K_CURRENT:"CURRENT">
+|   <K_DATABASES:"DATABASES">
 |   <K_DATADIR:"DATADIR">
 |   <K_DATE:"DATE">
 |   <K_DECIMAL:"DECIMAL">
 |   <K_DELETE:"DELETE">
 |   <K_DESC:"DESC">
+|   <K_DESCRIBE:"DESCRIBE">
 |   <K_DISTINCT:"DISTINCT">
 |   <K_DOUBLE:"DOUBLE">
 |   <K_DROP:"DROP">
 |   <K_ENGINE:"ENGINE">
+|   <K_ENGINES:"ENGINES">
 |   <K_ENUM:"ENUM">
 |   <K_ESCAPE:"ESCAPE">
 |   <K_EXISTS:"EXISTS">
@@ -268,11 +271,17 @@ StreamSqlStatement StreamSqlStatement() throws StreamSqlException: {StreamSqlSta
     |
     statement=DropTableStatement()
     |
+    statement=DescribeStatement()
+    |
     LOOKAHEAD(2) statement=ShowStreamsStatement()
     |    
     LOOKAHEAD(2) statement=ShowStreamStatement()
     |
     LOOKAHEAD(2) statement=ShowTablesStatement()
+    |
+    LOOKAHEAD(2) statement=ShowEnginesStatement()
+    |
+    LOOKAHEAD(2) statement=ShowDatabasesStatement()
     )
     {
 	return statement;
@@ -447,6 +456,31 @@ ShowStreamStatement ShowStreamStatement() throws StreamSqlException: {
     <K_SHOW> <K_STREAM> name=ObjectName() [<K_PORT> {showPort=true;}]
     {
 	return new ShowStreamStatement(name,showPort);
+    }
+}
+
+ShowEnginesStatement ShowEnginesStatement() throws StreamSqlException: {
+} {
+    <K_SHOW> <K_ENGINES> 
+    {
+	return new ShowEnginesStatement();
+    }
+}
+
+ShowDatabasesStatement ShowDatabasesStatement() throws StreamSqlException: {
+} {
+    <K_SHOW> <K_DATABASES> 
+    {
+	return new ShowDatabasesStatement();
+    }
+}
+
+DescribeStatement DescribeStatement() throws StreamSqlException: {
+    String name;
+} {
+    <K_DESCRIBE> name=ObjectName()
+    {
+	return new DescribeStatement(name);
     }
 }
 

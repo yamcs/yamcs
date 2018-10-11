@@ -4,7 +4,7 @@ YAMCS_DIR="/opt/yamcs/"
 
 function is_running {
     pid=$1
-    return $((1-`ps ww -p $pid -o args= | grep -c "yamcs-server.sh\|java.*yamcs.YamcsServer"`))
+    return $((1-`ps ww -p $pid -o args= | grep -c "yamcsd\|java.*yamcs.YamcsServer"`))
 }
 if [ -s $PID_FILE ] ; then
     pid=`cat $PID_FILE`

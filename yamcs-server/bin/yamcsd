@@ -27,12 +27,15 @@ done
 PRGDIR=`dirname "$PRG"`
 YAMCS_HOME=`cd "$PRGDIR/.." ; pwd`
 
-if [ -r "$YAMCS_HOME/bin/setenv.sh" ]; then
-  . "$YAMCS_HOME/bin/setenv.sh"
+# cd into YAMCS_HOME to support relative links in configuration files
+cd "$YAMCS_HOME"
+
+if [ -r bin/setenv.sh ]; then
+  . bin/setenv.sh
 fi
 
 # set classpath
-. "$YAMCS_HOME"/bin/setclasspath.sh
+. bin/setclasspath.sh
 
 if [ "$JMX" = 1 ]; then
   JMX_OPTS="-Dcom.sun.management.jmxremote.port=9999  -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false" 
@@ -42,7 +45,7 @@ fi
 exec "$_RUNJAVA" $MODULE_OPTS $JAVA_OPTS $JMX_OPTS\
     -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/\
     -Djxl.nowarnings=true \
-    -Djava.util.logging.config.file=$YAMCS_HOME/etc/logging.properties \
+    -Djava.util.logging.config.file=etc/logging.properties \
     -Djacorb.home=$YAMCS_HOME\
-    -Djavax.net.ssl.trustStore=$YAMCS_HOME/etc/trustStore\
+    -Djavax.net.ssl.trustStore=etc/trustStore\
     org.yamcs.YamcsServer "$@"

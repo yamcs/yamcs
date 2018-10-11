@@ -48,11 +48,11 @@ public abstract class Command {
         jc.addCommand(cmd.name, cmd);
     }
 
-    protected YamcsCtlCli getYamcsCtlCli() {
+    protected YamcsAdminCli getYamcsAdminCli() {
         Command c = this;
         while (c != null) {
-            if (c instanceof YamcsCtlCli) {
-                return (YamcsCtlCli) c;
+            if (c instanceof YamcsAdminCli) {
+                return (YamcsAdminCli) c;
             }
             c = c.parent;
         }
@@ -89,7 +89,7 @@ public abstract class Command {
         }
 
         // Special case. Global --version flag prints version info and quits
-        if (this instanceof YamcsCtlCli && ((YamcsCtlCli) this).version) {
+        if (this instanceof YamcsAdminCli && ((YamcsAdminCli) this).version) {
             console.println("yamcs " + YamcsVersion.version);
             for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
                 console.println(plugin.getName() + " " + plugin.getVersion());

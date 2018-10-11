@@ -93,3 +93,11 @@ message IndexEntry {
 message GetPacketNamesResponse {
   repeated string name = 1;
 }
+
+message ExecuteSqlRequest {
+  optional string statement = 1;
+}
+
+message ExecuteSqlResponse {
+  optional string result = 1;
+}

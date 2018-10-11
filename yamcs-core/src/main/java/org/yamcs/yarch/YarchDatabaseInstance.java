@@ -265,7 +265,7 @@ public class YarchDatabaseInstance {
         StorageEngine se = YarchDatabase.getStorageEngine(def.getStorageEngineName());
         if (se == null) {
             throw new YarchException("Invalid storage engine '" + def.getStorageEngineName()
-                    + "' specified. Valid names are: " + YarchDatabase.getStorageEngineNamesk());
+                    + "' specified. Valid names are: " + YarchDatabase.getStorageEngineNames());
         }
         se.createTable(this, def);
 

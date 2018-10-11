@@ -26,7 +26,7 @@ import com.beust.jcommander.Parameters;
 @Parameters(commandDescription = "Provides low-level RocksDB data operations")
 public class RocksDbCli extends Command {
 
-    public RocksDbCli(YamcsCtlCli yamcsCli) {
+    public RocksDbCli(YamcsAdminCli yamcsCli) {
         super("rocksdb", yamcsCli);
         addSubCommand(new RocksdbCompact());
         addSubCommand(new RocksDbBenchmark(this));

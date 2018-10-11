@@ -88,21 +88,11 @@ public class ArchiveParameterRestHandler extends RestHandler {
                 unsortedGroups.add(entry.getKey());
             }
             Collections.sort(unsortedGroups);
-            System.out.println("returning " + unsortedGroups);
             responseb.addAllGroup(unsortedGroups);
         }
         completeOK(req, responseb.build());
     }
 
-    /**
-     * A series is a list of samples that are determined in one-pass while processing a stream result. Final API
-     * unstable.
-     * <p>
-     * If no query parameters are defined, the series covers *all* data.
-     * 
-     * @param req
-     * @throws HttpException
-     */
     @Route(path = "/api/archive/:instance/parameters/:name*/samples")
     public void getParameterSamples(RestRequest req) throws HttpException {
         if (isReplayAsked(req)) {
@@ -141,7 +131,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         try {
             spdr.retrieve(sampler);
         } catch (IOException e) {
-            log.warn("Received exception during parmaeter retrieval ", e);
+            log.warn("Received exception during parameter retrieval ", e);
             throw new InternalServerErrorException(e.getMessage());
         }
 
@@ -153,19 +143,10 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, series.build());
     }
 
-    /**
-     * A series is a list of samples that are determined in one-pass while processing a stream result. Final API
-     * unstable.
-     * <p>
-     * If no query parameters are defined, the series covers *all* data.
-     * 
-     * @param req
-     * @throws HttpException
-     */
     @Route(path = "/api/archive/:instance/parameters/:name*/ranges")
     public void getParameterRanges(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-       
+
         XtceDb mdb = XtceDbFactory.getInstance(instance);
 
         Parameter p = verifyParameter(req, mdb, req.getRouteParam("name"));
@@ -186,7 +167,7 @@ public class ArchiveParameterRestHandler extends RestHandler {
         try {
             spdr.retrieve(ranger);
         } catch (IOException e) {
-            log.warn("Received exception during parmaeter retrieval ", e);
+            log.warn("Received exception during parameter retrieval ", e);
             throw new InternalServerErrorException(e.getMessage());
         }
 
@@ -198,7 +179,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, ranges.build());
     }
 
-   
     private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
         List<ParameterArchive> l = YamcsServer.getServices(instance, ParameterArchive.class);
         if (l.isEmpty()) {
@@ -215,7 +195,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         }
 
         String instance = verifyInstance(req, req.getRouteParam("instance"));
-        
 
         XtceDb mdb = XtceDbFactory.getInstance(instance);
         NameDescriptionWithId<Parameter> requestedParamWithId = verifyParameterWithId(req, mdb,
@@ -233,7 +212,6 @@ public class ArchiveParameterRestHandler extends RestHandler {
         long stop = req.getQueryParameterAsDate("stop", TimeEncoding.getWallclockTime());
 
         boolean ascending = !req.asksDescending(true);
-
 
         ParameterArchive parchive = getParameterArchive(instance);
         ParameterIdDb piddb = parchive.getParameterIdDb();
