@@ -2,7 +2,7 @@
 set -e
 
 # This script generates releases in two steps:
-# 1. Compile a fresh clone of the development tree (somewhere under /tmp)
+# 1. Compile a fresh clone of the development tree
 # 2. Emit artifacts (yamcs, yamcs-simulation, yamcs-client) in various formats.
 #
 # By design (2) does not require any sort of compilation.
@@ -68,18 +68,15 @@ if [[ -n $(git status -s) ]]; then
     fi
 fi
 
-buildroot=/tmp/yamcs-$version-$release-buildroot
+mvn clean
 
-serverdist=yamcs-$version-$release
-simdist=yamcs-simulation-$version-$release
-clientdist=yamcs-client-$version-$release
+clonedir=$yamcshome/distribution/target/yamcs-clone
 
-rm -rf $buildroot
-mkdir $buildroot
-git clone . $buildroot
-rm -rf $buildroot/.git
+mkdir -p $clonedir
+git clone . $clonedir
+rm -rf $clonedir/.git
 
-cd $buildroot
+cd $clonedir
 
 if [ $yamcs -eq 1 -a $buildweb -eq 1 ]; then
     cd yamcs-web
@@ -89,54 +86,47 @@ if [ $yamcs -eq 1 -a $buildweb -eq 1 ]; then
     cd ..
 fi
 
-rm -rf $yamcshome/dist
-mvn clean package -DskipTests
+mvn package -DskipTests
 
-mkdir -p $yamcshome/dist
-mkdir -p $HOME/rpmbuild/{RPMS,BUILD,SPECS,tmp}
+rpmtopdir="$yamcshome/distribution/target/rpmbuild"
+mkdir -p $rpmtopdir/{RPMS,BUILD,SPECS,tmp}
 
 if [ $yamcs -eq 1 ]; then
-    cp distribution/target/yamcs-$pomversion.tar.gz $yamcshome/dist/
-
-    rpmbuilddir="$HOME/rpmbuild/BUILD/$serverdist"
-    rm -rf $rpmbuilddir
+    cp distribution/target/yamcs-$pomversion.tar.gz $yamcshome/distribution/target
+    rpmbuilddir="$rpmtopdir/BUILD/yamcs-$version-$release"
     mkdir -p "$rpmbuilddir/opt/yamcs"
     tar -xzf distribution/target/yamcs-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs"
     mkdir -p "$rpmbuilddir/etc/init.d"
-    cp -a $yamcshome/contrib/sysvinit/* "$rpmbuilddir/etc/init.d"
-    cat "$yamcshome/contrib/rpm/yamcs.spec" | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $HOME/rpmbuild/SPECS/yamcs.spec
-    rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs.spec
+    cp -a distribution/sysvinit/* "$rpmbuilddir/etc/init.d"
+    cat distribution/rpm/yamcs.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs.spec
+    rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs.spec"
 fi
 
 if [ $yamcssimulation -eq 1 ]; then
-    rm -rf "$HOME/rpmbuild/BUILD/$simdist"
-    cp -r $buildroot "$HOME/rpmbuild/BUILD/$simdist"
-    cat "$yamcshome/contrib/rpm/yamcs-simulation.spec" | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $HOME/rpmbuild/SPECS/yamcs-simulation.spec
-    rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-simulation.spec
+    cp -r $clonedir "$rpmtopdir/BUILD/yamcs-simulation-$version-$release"
+    cat distribution/rpm/yamcs-simulation.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs-simulation.spec
+    rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs-simulation.spec"
 fi
 
 if [ $yamcsclient -eq 1 ]; then
-    cp distribution/target/yamcs-client-$pomversion.tar.gz $yamcshome/dist/
-
-    rpmbuilddir="$HOME/rpmbuild/BUILD/$clientdist"
-    rm -rf $rpmbuilddir
+    cp distribution/target/yamcs-client-$pomversion.tar.gz $yamcshome/distribution/target
+    rpmbuilddir="$rpmtopdir/BUILD/yamcs-client-$version-$release"
     mkdir -p "$rpmbuilddir/opt/yamcs-client"
     tar -xzf distribution/target/yamcs-client-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs-client"
-    cat "$yamcshome/contrib/rpm/yamcs-client.spec" | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $HOME/rpmbuild/SPECS/yamcs-client.spec
-    rpmbuild -bb $HOME/rpmbuild/SPECS/yamcs-client.spec
-
-    rm -rf /tmp/$clientdist
+    cat distribution/rpm/yamcs-client.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs-client.spec
+    rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs-client.spec"
 fi
 
-rm -rf $buildroot
-
 cd "$yamcshome"
-mv $HOME/rpmbuild/RPMS/noarch/*$version-$release* dist/
+mv distribution/target/rpmbuild/RPMS/noarch/* distribution/target/
+
+rm -rf $clonedir
+rm -rf $rpmtopdir
 
 if [ $sign -eq 1 ]; then
-    rpmsign --key-id yamcs@spaceapplications.com --addsign dist/*$version-$release*.rpm
+    rpmsign --key-id yamcs@spaceapplications.com --addsign distribution/target/*.rpm
 fi
 
 echo
 echo 'All done. Generated artifacts:'
-ls -lh dist/
+ls -lh `find distribution/target -type f -maxdepth 1`

@@ -6,9 +6,9 @@
     <version>4.7.1-SNAPSHOT</version>
   </parent>
   
-  <artifactId>assembly</artifactId>
+  <artifactId>distribution</artifactId>
   <packaging>pom</packaging>
-  <name>Assembly</name>
+  <name>Distribution</name>
   
   <dependencies>
     <dependency>
