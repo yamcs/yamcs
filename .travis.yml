@@ -35,8 +35,8 @@ jobs:
         local-dir: docs
         github-token: $GITHUB_TOKEN
         keep-history: false  # Force-update single commit on gh-pages branch
-        #on:
-        #  tags: true
+        on:
+          tags: true
 
     - stage: sonar
       script: skip

@@ -20,13 +20,11 @@ Client utilities for Yamcs.
 %install
 cd %{name}-%{version}-%{release}
 
-mkdir -p %{buildroot}/%{prefix}
-cp -a bin %{buildroot}/%{prefix}/
-cp -a etc %{buildroot}/%{prefix}/
-cp -a lib %{buildroot}/%{prefix}/
-cp -a mdb %{buildroot}/%{prefix}/
+mkdir -p %{buildroot}
+cp -r opt %{buildroot}
 
 rm %{buildroot}/%{prefix}/bin/*.bat
+
 
 %files
 %defattr(-,root,root)
@@ -38,4 +36,3 @@ rm %{buildroot}/%{prefix}/bin/*.bat
 
 %dir %{prefix}/bin
 %attr(755, root, root) %{prefix}/bin/*
-
