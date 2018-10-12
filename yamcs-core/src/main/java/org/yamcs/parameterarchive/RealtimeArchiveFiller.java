@@ -26,7 +26,7 @@ import org.yamcs.Processor;
  * Realtime archive filler task - it works even if the data is not perfectly sorted
  * 
  * We can save data in max two intervals at a time. The first interval we keep open only as long as
- * the most recent timestamp received is not older than {@link #orderingThreshold} ms from the interval end
+ * the most recent timestamp received is not older than orderingThreshold ms from the interval end
  * 
  * 
  * When we receive a new delivery, we sort the parameters into groups, all parameter from the same group having the same
@@ -35,10 +35,7 @@ import org.yamcs.Processor;
  * 
  * We keep open max two segments for each group, one in each interval.
  * 
- * If the group reaches its max size, we archive it and open another one. For each
- * 
- * 
- * orderingThreshold
+ * If the group reaches its max size, we archive it and open another one.
  * 
  * @author nm
  *

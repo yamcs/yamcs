@@ -48,7 +48,7 @@ public abstract class Value {
     /**
      * This function is used to retrieve values from hierarchical aggregates.
      * 
-     * It is equivalent with a chain of {@link #getMemberValue(Value, PathElement[]))} calls:
+     * It is equivalent with a chain of getMemberValue() calls:
      * 
      * <pre>
      *   getMemberValue(getMemberValue(getMemberValue(value, path[0]),path[1])...,path[n])
