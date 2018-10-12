@@ -41,7 +41,7 @@ import com.google.common.util.concurrent.AbstractService;
 public class ProcessorsTest {
     // static EmbeddedActiveMQ artemisServer;
     @BeforeClass
-    public static void setupHornetAndManagement() throws Exception {
+    public static void setup() throws Exception {
         YConfiguration.setup("ProcessorsTest");
         YamcsServer.setupYamcsServer();
     }

@@ -2,10 +2,18 @@ package org.yamcs.parameterarchive;
 
 import static org.junit.Assert.*;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.yamcs.utils.TimeEncoding;
 
 public class TimeSegmentTest {
-    long t0 = SortedTimeSegment.getMinSegmentStart(10*365*25*60*1000L);
+    long t0 = ParameterArchive.getIntervalStart(10*365*25*60*1000L);
+    
+    @BeforeClass
+    public static void beforeClass() {
+        TimeEncoding.setUp();
+    }
+
     @Test
     public void testIllegalAdd() {
        

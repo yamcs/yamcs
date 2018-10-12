@@ -90,7 +90,7 @@ public class BackFiller implements StreamSubscriber {
             }
             if (c > 0) {
                 long now = timeService.getMissionTime();
-                t0 = SortedTimeSegment.getMinSegmentStart(now);
+                t0 = ParameterArchive.getIntervalStart(now);
 
                 executor.schedule(() -> {
                     runSegmentSchedules();
@@ -157,8 +157,8 @@ public class BackFiller implements StreamSubscriber {
 
     private void runTask(long start, long stop) {
         try {
-            start = SortedTimeSegment.getMinSegmentStart(start);
-            stop = SortedTimeSegment.getSegmentEnd(stop) + 1;
+            start = ParameterArchive.getIntervalStart(start);
+            stop = ParameterArchive.getIntervalEnd(stop) + 1;
 
             ArchiveFillerTask aft = new ArchiveFillerTask(parchive, maxSegmentSize);
             aft.setCollectionSegmentStart(start);
@@ -193,7 +193,7 @@ public class BackFiller implements StreamSubscriber {
 
     private void runSchedule(Schedule s) {
         long start, stop;
-        long segmentDuration = SortedTimeSegment.getSegmentDuration();
+        long segmentDuration = ParameterArchive.getIntervalDuration();
         if (s.interval == -1) {
             start = t0 + (runCount - s.segmentStart) * segmentDuration;
             stop = start + s.numSegments * segmentDuration - 1;
@@ -222,7 +222,7 @@ public class BackFiller implements StreamSubscriber {
         for (int i = 0; i < a.length; i++) {
             int j;
             for (j = i; j < a.length - 1; j++) {
-                if (SortedTimeSegment.getMinSegmentStart(a[j]) != a[j + 1]) {
+                if (ParameterArchive.getIntervalStart(a[j]) != a[j + 1]) {
                     break;
                 }
             }
@@ -265,7 +265,7 @@ public class BackFiller implements StreamSubscriber {
     @Override
     public void onTuple(Stream stream, Tuple tuple) {
         long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_GENTIME_COLUMN);
-        long t0 = SortedTimeSegment.getMinSegmentStart(gentime);
+        long t0 = ParameterArchive.getIntervalStart(gentime);
         synchronized (streamUpdates) {
             streamUpdates.add(t0);
         }

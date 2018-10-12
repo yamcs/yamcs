@@ -147,7 +147,6 @@ public class ParameterArchiveTest {
         List<ParameterValueArray> l0d = retrieveSingleParamSingleGroup(0, 1000, p1id, pg1id, true);
         assertEquals(0, l0d.size());
 
-        pgSegment1.consolidate();
         parchive.writeToArchive(pgSegment1);
 
         // ascending request on two value
@@ -174,24 +173,22 @@ public class ParameterArchiveTest {
         List<ParameterValueArray> l6d = retrieveSingleParamSingleGroup(100, 200, p1id, pg1id, false);
         checkEquals(l6d.get(0), pv1_1);
 
-        // new value in a different segment but same partition
-        long t2 = SortedTimeSegment.getSegmentEnd(0) + 100;
-        PGSegment pgSegment2 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t2),
+        // new value in a different interval but same partition
+        long t2 = ParameterArchive.getIntervalEnd(0) + 100;
+        PGSegment pgSegment2 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t2),
                 new SortedIntArray(new int[] { p1id }));
         ParameterValue pv1_2 = getParameterValue(p1, t2, "pv1_2", 30);
         pv1_2.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
 
         pgSegment2.addRecord(t2, Arrays.asList(pv1_2));
-        pgSegment2.consolidate();
         parchive.writeToArchive(pgSegment2);
 
         // new value in a different partition
         long t3 = TimeEncoding.parse("2017-01-01T00:00:51");
-        PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t3),
+        PGSegment pgSegment3 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t3),
                 new SortedIntArray(new int[] { p1id }));
         ParameterValue pv1_3 = getParameterValue(p1, t3, "pv1_3", 45);
         pgSegment3.addRecord(t3, Arrays.asList(pv1_3));
-        pgSegment3.consolidate();
         parchive.writeToArchive(pgSegment3);
 
         // ascending request on four values
@@ -243,10 +240,8 @@ public class ParameterArchiveTest {
         ParameterValue pv1_1 = getParameterValue(p1, 200, "blala200", "blala200");
         pgSegment1.addRecord(200, Arrays.asList(pv1_1));
 
-        pgSegment1.consolidate();
-
         parchive.writeToArchive(pgSegment1);
-        long segmentStart = SortedTimeSegment.getMinSegmentStart(100);
+        long segmentStart = ParameterArchive.getIntervalStart(100);
 
         Partition p = parchive.getPartitions(100);
         assertNotNull(parchive.getTablespace().getRdb(p.partitionDir)
@@ -339,12 +334,10 @@ public class ParameterArchiveTest {
 
         PGSegment pgSegment1 = new PGSegment(pg1id, 0, new SortedIntArray(new int[] { p1id, p2id }));
         pgSegment1.addRecord(100, Arrays.asList(pv1_0, pv2_0));
-        pgSegment1.consolidate();
 
         PGSegment pgSegment2 = new PGSegment(pg2id, 0, new SortedIntArray(new int[] { p1id }));
         pgSegment2.addRecord(200, Arrays.asList(pv1_1));
         pgSegment2.addRecord(300, Arrays.asList(pv1_2));
-        pgSegment2.consolidate();
 
         parchive.writeToArchive(0, Arrays.asList(pgSegment1, pgSegment2));
 
@@ -360,24 +353,22 @@ public class ParameterArchiveTest {
         assertEquals(1, l1d.size());
         checkEquals(l1d.get(0), pv1_2, pv1_1, pv1_0);
 
-        // new value in a different segment but same partition
-        long t2 = SortedTimeSegment.getSegmentEnd(0) + 100;
-        PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t2),
+        // new value in a different interval but same partition
+        long t2 = ParameterArchive.getIntervalEnd(0) + 100;
+        PGSegment pgSegment3 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t2),
                 new SortedIntArray(new int[] { p1id, p2id }));
         ParameterValue pv1_3 = getParameterValue(p1, t2, "pv1_3");
         ParameterValue pv2_1 = getParameterValue(p1, t2, "pv2_1");
         pgSegment3.addRecord(t2, Arrays.asList(pv1_3, pv2_1));
-        pgSegment3.consolidate();
         parchive.writeToArchive(pgSegment3);
 
         // new value in a different partition
         long t3 = TimeEncoding.parse("2017-01-01T00:00:00");
-        PGSegment pgSegment4 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t3),
+        PGSegment pgSegment4 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t3),
                 new SortedIntArray(new int[] { p1id, p2id }));
         ParameterValue pv1_4 = getParameterValue(p1, t3, "pv1_4");
         ParameterValue pv2_2 = getParameterValue(p1, t3, "pv2_2");
         pgSegment4.addRecord(t3, Arrays.asList(pv1_4, pv2_2));
-        pgSegment4.consolidate();
         parchive.writeToArchive(pgSegment4);
 
         // ascending on 5 values from three segments ascending
@@ -478,12 +469,10 @@ public class ParameterArchiveTest {
 
         PGSegment pgSegment1 = new PGSegment(pg1id, 0, new SortedIntArray(new int[] { p1id, p2id }));
         pgSegment1.addRecord(100, Arrays.asList(pv1_0, pv2_0));
-        pgSegment1.consolidate();
 
         PGSegment pgSegment2 = new PGSegment(pg2id, 0, new SortedIntArray(new int[] { p1id }));
         pgSegment2.addRecord(200, Arrays.asList(pv1_1));
         pgSegment2.addRecord(300, Arrays.asList(pv1_2));
-        pgSegment2.consolidate();
 
         parchive.writeToArchive(0, Arrays.asList(pgSegment1, pgSegment2));
 
@@ -525,24 +514,22 @@ public class ParameterArchiveTest {
         assertEquals(1, l3d.size());
         checkEquals(l3d.get(0), 100, pv1_0, pv2_0);
 
-        // new value in a different segment but same partition
-        long t2 = SortedTimeSegment.getSegmentEnd(0) + 100;
-        PGSegment pgSegment3 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t2),
+        // new value in a different interval but same partition
+        long t2 = ParameterArchive.getIntervalEnd(0) + 100;
+        PGSegment pgSegment3 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t2),
                 new SortedIntArray(new int[] { p1id, p2id }));
         ParameterValue pv1_3 = getParameterValue(p1, t2, "pv1_3");
         ParameterValue pv2_1 = getParameterValue(p1, t2, "pv2_1");
         pgSegment3.addRecord(t2, Arrays.asList(pv1_3, pv2_1));
-        pgSegment3.consolidate();
         parchive.writeToArchive(pgSegment3);
 
         // new value in a different partition
         long t3 = TimeEncoding.parse("2017-01-01T00:00:00");
-        PGSegment pgSegment4 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t3),
+        PGSegment pgSegment4 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t3),
                 new SortedIntArray(new int[] { p1id, p2id }));
         ParameterValue pv1_4 = getParameterValue(p1, t3, "pv1_4");
         ParameterValue pv2_2 = getParameterValue(p1, t3, "pv2_2");
         pgSegment4.addRecord(t3, Arrays.asList(pv1_4, pv2_2));
-        pgSegment4.consolidate();
         parchive.writeToArchive(pgSegment4);
 
         // ascending retrieving two para
@@ -602,12 +589,11 @@ public class ParameterArchiveTest {
                 pv1_0.getRawValue().getType());
 
         int pg1id = parchive.getParameterGroupIdDb().createAndGet(new int[] { p1id });
-        PGSegment pgSegment1 = new PGSegment(pg1id, SortedTimeSegment.getMinSegmentStart(t),
+        PGSegment pgSegment1 = new PGSegment(pg1id, ParameterArchive.getIntervalStart(t),
                 new SortedIntArray(new int[] { p1id }));
 
         pgSegment1.addRecord(t, Arrays.asList(pv1_0));
 
-        pgSegment1.consolidate();
         parchive.writeToArchive(pgSegment1);
 
         // ascending request on empty data

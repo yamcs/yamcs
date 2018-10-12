@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,9 +15,7 @@ import org.yamcs.Processor;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.LoggingUtils;
-import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -76,17 +73,22 @@ class ArchiveFillerTask implements ParameterConsumer {
             if (t < collectionSegmentStart) {
                 continue;
             }
+            
             if (pv.getParameterQualifiedNamed() == null) {
                 log.warn("No qualified name for parameter value {}, ignoring", pv);
                 continue;
             }
-            if (pv.getEngValue() instanceof AggregateValue) {
+            Value engValue = pv.getEngValue();
+            if(engValue == null) {
+                log.warn("Ignoring parameter without engineering value: {} ", pv.getParameterQualifiedNamed());
+            }
+            if (engValue instanceof AggregateValue) {
                 // log.warn("{}: aggregate values not supported, ignoring", pv.getParameterQualifiedNamed());
                 continue;
             }
             SortedParameterList l = m.get(t);
             if (l == null) {
-                l = new SortedParameterList();
+                l = new SortedParameterList(parameterIdMap);
                 m.put(t, l);
             }
             l.add(pv);
@@ -104,7 +106,7 @@ class ArchiveFillerTask implements ParameterConsumer {
             }
         }
         if (needsFlush) {
-            consolidateAndWriteToArchive(collectionSegmentStart);
+            writeToArchive(collectionSegmentStart);
             collectionSegmentStart = maxTimestamp + 1;
         }
     }
@@ -116,7 +118,7 @@ class ArchiveFillerTask implements ParameterConsumer {
 
             PGSegment pgs = pgSegments.get(parameterGroupId);
             if (pgs == null) {
-                pgs = new PGSegment(parameterGroupId, collectionSegmentStart, pvList.parameterIdArray, maxSegmentSize);
+                pgs = new PGSegment(parameterGroupId, collectionSegmentStart, pvList.parameterIdArray);
                 pgSegments.put(parameterGroupId, pgs);
             }
 
@@ -131,7 +133,7 @@ class ArchiveFillerTask implements ParameterConsumer {
 
     void flush() {
         if(pgSegments!=null) {
-            consolidateAndWriteToArchive(collectionSegmentStart);
+            writeToArchive(collectionSegmentStart);
         }
     }
 
@@ -140,13 +142,10 @@ class ArchiveFillerTask implements ParameterConsumer {
      * 
      * @param pgList
      */
-    protected void consolidateAndWriteToArchive(long segStart) {
+    protected void writeToArchive(long segStart) {
         log.debug("writing to archive semgent starting at {} with {} groups", TimeEncoding.toString(segStart),
                 pgSegments.size());
 
-        for (PGSegment pgs : pgSegments.values()) {
-            pgs.consolidate();
-        }
         try {
             parameterArchive.writeToArchive(segStart, pgSegments.values());
         } catch (RocksDBException | IOException e) {
@@ -162,11 +161,11 @@ class ArchiveFillerTask implements ParameterConsumer {
         }
 
         long t = items.get(0).getGenerationTime();
-        long t1 = SortedTimeSegment.getMinSegmentStart(t);
+        long t1 = ParameterArchive.getIntervalStart(t);
 
         if (t1 > collectionSegmentStart) {
             if (!pgSegments.isEmpty()) {
-                consolidateAndWriteToArchive(collectionSegmentStart);
+                writeToArchive(collectionSegmentStart);
             }
             collectionSegmentStart = t1;
         }
@@ -178,32 +177,7 @@ class ArchiveFillerTask implements ParameterConsumer {
         return numParams;
     }
 
-    /* builds incrementally a list of parameter id and parameter value, sorted by parameter ids */
-    class SortedParameterList {
-        SortedIntArray parameterIdArray = new SortedIntArray();
-        List<ParameterValue> sortedPvList = new ArrayList<>();
-
-        void add(ParameterValue pv) {
-            String fqn = pv.getParameterQualifiedNamed();
-            Value engValue = pv.getEngValue();
-            if (engValue == null) {
-                log.warn("Ignoring parameter without engineering value: {} ", pv.getParameterQualifiedNamed());
-                return;
-            }
-            Value rawValue = pv.getRawValue();
-            Type engType = engValue.getType();
-            Type rawType = (rawValue == null) ? null : rawValue.getType();
-            int parameterId = parameterIdMap.createAndGet(fqn, engType, rawType);
-
-            int pos = parameterIdArray.insert(parameterId);
-            sortedPvList.add(pos, pv);
-        }
-
-        public int size() {
-            return parameterIdArray.size();
-        }
-    }
-
+   
     private boolean oomImminent() {
         if (memoryBean != null && memoryBean.isCollectionUsageThresholdExceeded()) {
             aborted = true;

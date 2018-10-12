@@ -287,4 +287,14 @@ public class SortedIntArray implements Serializable {
         return true;
     }
 
+    /**
+     * Change the elements of the array by adding x to each element
+     * 
+     * @param x
+     */
+    public void add(int x) {
+        for (int i = 0; i < length; i++) {
+            a[i] += x;
+        }
+    }
 }

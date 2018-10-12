@@ -1,46 +1,35 @@
 package org.yamcs.parameterarchive;
 
 import java.nio.ByteBuffer;
-import java.util.PrimitiveIterator;
 
 import me.lemire.integercompression.FastPFOR128;
 import me.lemire.integercompression.IntWrapper;
 
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.VarIntUtil;
 
+import static org.yamcs.parameterarchive.ParameterArchive.INTERVAL_MASK;
+
 /**
- * TimeSegment stores timestamps relative to a segmentStart. 
+ * TimeSegment stores timestamps relative to a segmentStart. The timestamps are stored in a sorted int array.
  * 
- * If we mask the timestamps with a 22 bit mask, we can define some time intervals
- * [t0, t1) [t1, t2)  [t2, t3) ...
- * 
- * where t0 = 0<<22, t1=1<<22, t2 = 2<<22...
- * 
- * The segments stored by this class should not cross the borders of the time intervals defined above.
- * 
- * Initially (yamcs<4.7) the time segments would correspond exactly to the intervals defined above,
- * however if the data comes at high frequency it is necessary to split it further in order
- *  to avoid too much data accumulating in one segment. 
- * 
- * The timestamps are stored in a sorted int array.
+ * The timestamps have to be larger than the segmentStart and have to be part of the same interval (see
+ * {@link ParameterArchive#INTERVAL_MASK}.
  * 
  * @author nm
  *
  */
 public class SortedTimeSegment extends BaseSegment {
-    public static final int NUMBITS_MASK = 22; //2^22 millisecons =~ 70 minutes per segment    
-    public static final int TIMESTAMP_MASK = (0xFFFFFFFF>>>(32-NUMBITS_MASK));
-    public static final long SEGMENT_MASK = ~TIMESTAMP_MASK;
-    
-    static final byte SUBFORMAT_ID_DELTAZG_FPF128_VB = 1; //compressed with DeltaZigzag and then FastPFOR128 plus VarInt32 for remaining
-    static final byte SUBFORMAT_ID_DELTAZG_VB = 2; //compressed with DeltaZigzag plus VarInt32
+
+    static final byte SUBFORMAT_ID_DELTAZG_FPF128_VB = 1; // compressed with DeltaZigzag and then FastPFOR128 plus
+                                                          // VarInt32 for remaining
+    static final byte SUBFORMAT_ID_DELTAZG_VB = 2; // compressed with DeltaZigzag plus VarInt32
 
     public static final int VERSION = 0;
-    private final long segmentStart;    
+    private long segmentStart;
     private SortedIntArray tsarray;
-
 
     public SortedTimeSegment(long segmentStart) {
         super(FORMAT_ID_SortedTimeValueSegment);
@@ -55,125 +44,41 @@ public class SortedTimeSegment extends BaseSegment {
      * @param instant
      */
     public int add(long instant) {
-        if((instant&SEGMENT_MASK) != (segmentStart&SEGMENT_MASK)) {
-            throw new IllegalArgumentException("This timestamp does not fit into this segment");
+        if ((instant & INTERVAL_MASK) != (segmentStart & INTERVAL_MASK)) {
+            throw new IllegalArgumentException("This timestamp does not fit into this interval;"
+                    + " intervalStart: " + TimeEncoding.toString(ParameterArchive.getIntervalStart(segmentStart))
+                    + ", instant: " + TimeEncoding.toString(instant));
         }
-        return tsarray.insert((int)(instant - segmentStart));
+        if (instant < segmentStart) {
+            throw new IllegalArgumentException("The timestamp has to be bigger than the segmentStart");
+        }
+
+        return tsarray.insert((int) (instant - segmentStart));
     }
 
     /**
      * get timestamp at position idx
+     * 
      * @param idx
      * @return
      */
     public long getTime(int idx) {
-        return tsarray.get(idx) + segmentStart;
+        return segmentStart + tsarray.get(idx);
     }
 
     /**
-     * Constructs an ascending iterator starting from a specified value (inclusive) 
-     * 
-     * @param startFrom
-     * @return
-     */
-    public PrimitiveIterator.OfLong getAscendingIterator(long startFrom) {
-        return new PrimitiveIterator.OfLong() {
-            PrimitiveIterator.OfInt it = tsarray.getAscendingIterator((int)(startFrom&TIMESTAMP_MASK));
-
-            @Override
-            public boolean hasNext() {
-                return it.hasNext();
-            }
-
-            @Override
-            public long nextLong() {
-                return segmentStart + it.nextInt();
-
-            }
-        };
-    }
-
-    /**
-     * Constructs an descending iterator starting from a specified value (exclusive) 
-     * 
-     * @param startFrom
-     * @return
-     */
-    public PrimitiveIterator.OfLong getDescendingIterator(long startFrom) {
-        return new PrimitiveIterator.OfLong() {
-            PrimitiveIterator.OfInt it = tsarray.getDescendingIterator((int)(startFrom&TIMESTAMP_MASK));
-
-            @Override
-            public boolean hasNext() {
-                return it.hasNext();
-            }
-
-            @Override
-            public long nextLong() {
-                return segmentStart + it.nextInt();
-
-            }
-        };
-    }
-
-
-
-    /**
-     * returns the minimum segmentStart where this instant could fit.
-     * 
-     * @param instant
-     * @return
-     */
-    public static long getMinSegmentStart(long instant) {
-        return instant & SEGMENT_MASK;
-    }
-    /**
-     * returns the end of the segment where the instant fits
-     * @param instant
-     * @return
-     */
-    public static long getSegmentEnd(long instant) {
-        return instant  | TIMESTAMP_MASK;
-    }
-
-    /**
-     * Returns a segmentStart of the segment that is guaranteed to be above instant 
-     * 
-     * @param instant
-     * @return
-     */
-    public static long getCeilSegmentStart(long instant) {
-        return (instant  | TIMESTAMP_MASK) +1;
-    }
-
-    /**
-     * returns true if the segment overlaps the [start,stop) interval
-     * @param segmentId
-     * @param start
-     * @param stop
-     * @return
-     */
-    public static boolean overlap(long segmentId, long start, long stop) {
-        long segmentStart = segmentId;
-        long segmentStop = getSegmentEnd(segmentId);
-
-        return start<segmentStop && stop>segmentStart;
-
-    }
-
-
-    /**
-     * performs a binary search in the time segment and returns the position of t or where t would fit in. 
+     * performs a binary search in the time segment and returns the position of t or where t would fit in.
      * 
      * @see java.util.Arrays#binarySearch(int[], int)
      * @param instant
      * @return
      */
     public int search(long instant) {
-        if((instant&SEGMENT_MASK) != (segmentStart &SEGMENT_MASK)) {
+        if ((instant & INTERVAL_MASK) != (segmentStart & INTERVAL_MASK)) {
             throw new IllegalArgumentException("This timestamp does not fit into this segment");
         }
-        return tsarray.search((int)(instant - segmentStart));
+
+        return tsarray.search((int) (instant - segmentStart));
     }
 
     public int size() {
@@ -185,7 +90,7 @@ public class SortedTimeSegment extends BaseSegment {
     }
 
     public String toString() {
-        return "[TimeSegment: id:"+segmentStart+", relative times: "+ tsarray.toString()+"]";
+        return "[TimeSegment: id:" + segmentStart + ", relative times: " + tsarray.toString() + "]";
     }
 
     /**
@@ -193,74 +98,72 @@ public class SortedTimeSegment extends BaseSegment {
      */
     @Override
     public void writeTo(ByteBuffer bb) {
-        if(tsarray.size()==0) {
+        if (tsarray.size() == 0) {
             throw new IllegalStateException(" the time segment has no data");
         }
         int[] ddz = VarIntUtil.encodeDeltaDeltaZigZag(tsarray);
         int position = bb.position();
         bb.put(SUBFORMAT_ID_DELTAZG_FPF128_VB);
-        
+
         int size = ddz.length;
-        
-        VarIntUtil.writeVarInt32(bb,size);
-        
-        
+
+        VarIntUtil.writeVarInt32(bb, size);
+
         FastPFOR128 fastpfor = FastPFORFactory.get();
-        
+
         IntWrapper inputoffset = new IntWrapper(0);
         IntWrapper outputoffset = new IntWrapper(0);
         int[] out = new int[size];
         fastpfor.compress(ddz, inputoffset, size, out, outputoffset);
-        if (outputoffset.get() == 0) { 
-            //fastpfor didn't compress anything, probably there were too few datapoints
+        if (outputoffset.get() == 0) {
+            // fastpfor didn't compress anything, probably there were too few datapoints
             bb.put(position, SUBFORMAT_ID_DELTAZG_VB);
         } else {
-            //write the fastpfor output
-            for(int i=0; i<outputoffset.get(); i++) {
+            // write the fastpfor output
+            for (int i = 0; i < outputoffset.get(); i++) {
                 bb.putInt(out[i]);
             }
         }
-        //write the remaining bytes varint compressed
-        for(int i = inputoffset.get(); i<size; i++) {
+        // write the remaining bytes varint compressed
+        for (int i = inputoffset.get(); i < size; i++) {
             VarIntUtil.writeVarInt32(bb, ddz[i]);
         }
     }
 
     /**
-     * Creates a TimeSegment by decoding the buffer 
+     * Creates a TimeSegment by decoding the buffer
      * this is the reverse of the {@link #encode()} operation
      * 
      * @param buf
      * @return
-     * @throws DecodingException 
+     * @throws DecodingException
      */
     private void parse(ByteBuffer bb) throws DecodingException {
         byte subFormatId = bb.get();
         int n = VarIntUtil.readVarInt32(bb);
         int position = bb.position();
-        
+
         IntWrapper inputoffset = new IntWrapper(0);
         IntWrapper outputoffset = new IntWrapper(0);
         int[] ddz = new int[n];
 
-        if(subFormatId==SUBFORMAT_ID_DELTAZG_FPF128_VB) {
-            int[] x = new int[(bb.limit()-bb.position())/4];
-            for(int i=0; i<x.length;i++) {
-                x[i]=bb.getInt();
+        if (subFormatId == SUBFORMAT_ID_DELTAZG_FPF128_VB) {
+            int[] x = new int[(bb.limit() - bb.position()) / 4];
+            for (int i = 0; i < x.length; i++) {
+                x[i] = bb.getInt();
             }
-            
+
             FastPFOR128 fastpfor = FastPFORFactory.get();
             fastpfor.uncompress(x, inputoffset, x.length, ddz, outputoffset);
-            bb.position(position+inputoffset.get()*4);
+            bb.position(position + inputoffset.get() * 4);
         }
-        
-        for(int i = outputoffset.get(); i<n; i++) {
+
+        for (int i = outputoffset.get(); i < n; i++) {
             ddz[i] = VarIntUtil.readVarInt32(bb);
         }
-       
+
         tsarray = new SortedIntArray(VarIntUtil.decodeDeltaDeltaZigZag(ddz));
     }
-
 
     public static SortedTimeSegment parseFrom(ByteBuffer bb, long segmentStart) throws DecodingException {
         SortedTimeSegment r = new SortedTimeSegment(segmentStart);
@@ -270,33 +173,35 @@ public class SortedTimeSegment extends BaseSegment {
 
     @Override
     public int getMaxSerializedSize() {
-        return 4*(tsarray.size())+3;
+        return 4 * (tsarray.size()) + 3;
     }
 
-
     public long getSegmentEnd() {
-        return getTime(tsarray.size()-1);
+        return getTime(tsarray.size() - 1);
     }
 
     public long[] getRange(int posStart, int posStop, boolean ascending) {
-        long[] r = new long[posStop-posStart];
-        if(ascending) {
-            for(int i = posStart; i<posStop; i++) {
-                r[i-posStart] = tsarray.get(i) + segmentStart;
+        long[] r = new long[posStop - posStart];
+        if (ascending) {
+            for (int i = posStart; i < posStop; i++) {
+                r[i - posStart] = tsarray.get(i) + segmentStart;
             }
         } else {
-            for(int i = posStop; i>posStart; i--) {
-                r[posStop-i] = tsarray.get(i) + segmentStart;
+            for (int i = posStop; i > posStart; i--) {
+                r[posStop - i] = tsarray.get(i) + segmentStart;
             }
         }
         return r;
     }
 
     /**
-     * duration in milliseconds of one segment
-     * @return
+     * sets the segmentStart to the first timestamp of the segment (and adjusts all the other times accordingly)
      */
-    public static long getSegmentDuration() {
-        return TIMESTAMP_MASK+1;
+    void trimSegmentStart() {
+        int diff = tsarray.get(0);
+        if (diff != 0) {
+            tsarray.add(-diff);
+            segmentStart += diff;
+        }
     }
 }

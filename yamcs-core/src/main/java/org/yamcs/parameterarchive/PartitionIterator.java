@@ -40,7 +40,7 @@ public class PartitionIterator {
         this.retrieveRawValue = retrieveRawValue;
         this.retrieveParameterStatus = retrieveParameterStatus;
 
-        byte[] rangeStart = new SegmentKey(parameterId, parameterGroupId, SortedTimeSegment.getMinSegmentStart(start),
+        byte[] rangeStart = new SegmentKey(parameterId, parameterGroupId, ParameterArchive.getIntervalStart(start),
                 (byte) 0).encode();
         byte[] rangeStop = new SegmentKey(parameterId, parameterGroupId, stop, Byte.MAX_VALUE).encode();
         if (ascending) {

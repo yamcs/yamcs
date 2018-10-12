@@ -19,8 +19,8 @@ import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.TimeEncoding;
-import static org.yamcs.parameterarchive.SortedTimeSegment.getMinSegmentStart;
-import static org.yamcs.parameterarchive.SortedTimeSegment.getCeilSegmentStart;
+import static org.yamcs.parameterarchive.ParameterArchive.getIntervalStart;
+import static org.yamcs.parameterarchive.ParameterArchive.getIntervalEnd;
 
 public class MultiParameterDataRetrieval {
     final ParameterArchive parchive;
@@ -38,7 +38,7 @@ public class MultiParameterDataRetrieval {
     public void retrieve(Consumer<ParameterIdValueList> consumer) throws RocksDBException, DecodingException, IOException {
         count = 0;
         try {
-            List<Partition> parts = parchive.getPartitions(getMinSegmentStart(mpvr.start), getCeilSegmentStart(mpvr.stop), mpvr.ascending);
+            List<Partition> parts = parchive.getPartitions(getIntervalStart(mpvr.start), getIntervalEnd(mpvr.stop), mpvr.ascending);
             for (Partition p : parts) {
                 retrieveFromPartition(p, consumer);
             }

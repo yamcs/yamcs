@@ -7,6 +7,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.SortedIntArray;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * Parameter Group segment - keeps references to Time and Value segments for a given parameter group and segment.
@@ -31,22 +32,15 @@ public class PGSegment {
     private final boolean storeRawValues = ParameterArchive.STORE_RAW_VALUES;
     private long segmentStart;
 
-   
-    private final int maxSize;
-    public PGSegment(int parameterGroupId, long segmentStart, SortedIntArray parameterIds) {
-        this(parameterGroupId, segmentStart, parameterIds, ArchiveFillerTask.DEFAULT_MAX_SEGMENT_SIZE);
-    }
     
-    public PGSegment(int parameterGroupId, long segmentStart, SortedIntArray parameterIds, int maxSize) {
+    public PGSegment(int parameterGroupId, long segmentStart, SortedIntArray parameterIds) {
         this.parameterGroupId = parameterGroupId;
         this.parameterIds = parameterIds;
         this.segmentStart = segmentStart;
-        this.maxSize = maxSize;
+        timeSegment = new SortedTimeSegment(segmentStart);
     }
 
     private void init(List<ParameterValue> sortedPvList) {
-        timeSegment = new SortedTimeSegment(segmentStart);
-
         engValueSegments = new ArrayList<>(parameterIds.size());
         parameterStatusSegments = new ArrayList<>(parameterIds.size());
         if (storeRawValues) {
@@ -119,9 +113,7 @@ public class PGSegment {
         if (engValueSegments == null) {
             init(sortedPvList);
         }
-        if (timeSegment.size() > maxSize) {
-            throw new ParameterArchiveException("Segment size reached the maximum " + maxSize);
-        }
+        
         int pos = timeSegment.add(instant);
         for (int i = 0; i < engValueSegments.size(); i++) {
             ParameterValue pv = sortedPvList.get(i);
@@ -161,8 +153,19 @@ public class PGSegment {
         }
     }
 
+    /**
+     * called before writing to disk to set the segment start to the first timestamp in the segment.
+     * 
+     * This is necessary in order to not overwrite some existing data in the archive (from a previous yamcs run in the same interval)
+     */
+    void trimSegmentStart() {
+        timeSegment.trimSegmentStart();
+        this.segmentStart = timeSegment.getSegmentStart();
+    }
+    
+    
     public long getSegmentStart() {
-        return timeSegment.getSegmentStart();
+        return segmentStart;
     }
     
     public long getSegmentEnd() {
@@ -195,5 +198,9 @@ public class PGSegment {
 
     public int size() {
         return timeSegment.size();
+    }
+    
+    public String toString() {
+        return "groupId: "+parameterGroupId+", ["+TimeEncoding.toString(getSegmentStart())+", "+TimeEncoding.toString(getSegmentEnd())+"]"; 
     }
 }

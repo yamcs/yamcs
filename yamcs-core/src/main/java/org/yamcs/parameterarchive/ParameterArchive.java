@@ -42,9 +42,28 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
 
 import com.google.common.util.concurrent.AbstractService;
 
+/**
+ * 
+ * The parameter archive stores data in partitions -> intervals -> segments.
+ * A partition covers one year and each partition has its own RocksDB database
+ * 
+ * An interval covers 2^23 millisec =~ 139 minutes
+ * 
+ * An segment covers at most maxSegmentSize values for one parameter
+ * 
+ *  
+ * 
+ * @author nm
+ *
+ */
 public class ParameterArchive extends AbstractService implements YamcsService {
     public static final boolean STORE_RAW_VALUES = true;
 
+    public static final int NUMBITS_MASK = 23; // 2^23 millisecons =~ 139 minutes per interval
+    public static final int TIMESTAMP_MASK = (0xFFFFFFFF >>> (32 - NUMBITS_MASK));
+    public static final long INTERVAL_MASK = ~TIMESTAMP_MASK;
+
+    
     private final Logger log = LoggerFactory.getLogger(ParameterArchive.class);
     private ParameterIdDb parameterIdMap;
     private ParameterGroupIdDb parameterGroupIdMap;
@@ -190,6 +209,7 @@ public class ParameterArchive extends AbstractService implements YamcsService {
     }
 
     public void writeToArchive(PGSegment pgs) throws RocksDBException, IOException {
+        pgs.consolidate();
         Partition p = createAndGetPartition(pgs.getSegmentStart());
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             writeToBatch(writeBatch, p, pgs);
@@ -202,6 +222,7 @@ public class ParameterArchive extends AbstractService implements YamcsService {
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
 
             for (PGSegment pgs : pgList) {
+                pgs.consolidate();
                 assert (segStart == pgs.getSegmentStart());
                 writeToBatch(writeBatch, p, pgs);
             }
@@ -336,7 +357,7 @@ public class ParameterArchive extends AbstractService implements YamcsService {
         }
         if (realtimeFillerEnabled) {
             realtimeFiller = new RealtimeArchiveFiller(this, realtimeFillerConfig);
-            realtimeFiller.start();
+            realtimeFiller.startAsync();
         }
         notifyStarted();
     }
@@ -350,7 +371,8 @@ public class ParameterArchive extends AbstractService implements YamcsService {
         }
 
         if (realtimeFiller != null) {
-            realtimeFiller.stop();
+            realtimeFiller.stopAsync();
+            realtimeFiller.awaitTerminated();
         }
         notifyStopped();
     }
@@ -411,6 +433,35 @@ public class ParameterArchive extends AbstractService implements YamcsService {
         synchronized (partitions) {
             return partitions.getFit(instant);
         }
+    }
+
+    /**
+     * returns the intervalStart where this instant could fit.
+     * 
+     * @param instant
+     * @return
+     */
+    public static long getIntervalStart(long instant) {
+        return instant & INTERVAL_MASK;
+    }
+
+    /**
+     * returns the end of the interval where the instant fits
+     * 
+     * @param instant
+     * @return
+     */
+    public static long getIntervalEnd(long instant) {
+        return instant | TIMESTAMP_MASK;
+    }
+
+    /**
+     * duration in milliseconds of one segment
+     * 
+     * @return
+     */
+    public static long getIntervalDuration() {
+        return TIMESTAMP_MASK + 1;
     }
 
     public Tablespace getTablespace() {
