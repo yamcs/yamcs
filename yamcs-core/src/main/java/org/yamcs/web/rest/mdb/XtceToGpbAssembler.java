@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb;
 import org.yamcs.protobuf.Mdb.AbsoluteTimeInfo;
@@ -583,7 +581,7 @@ public class XtceToGpbAssembler {
             return ((StringDataType) dataType).getInitialValue();
         } else if (dataType instanceof BinaryDataType) {
             byte[] initialValue = ((BinaryDataType) dataType).getInitialValue();
-            return initialValue != null ? DatatypeConverter.printHexBinary(initialValue) : null;
+            return initialValue != null ? StringConverter.arrayToHexString(initialValue) : null;
         } else if (dataType instanceof BooleanDataType) {
             return ((BooleanDataType) dataType).getInitialValue() != null
                     ? ((BooleanDataType) dataType).getInitialValue().toString()
