@@ -48,8 +48,13 @@ public class ArchiveIntervalFiller {
                 k -> new PGSegment(parameterGroupId, intervalStart, pvList.parameterIdArray));
 
         if (t < pgs.getSegmentStart()) {
-            log.warn("Ignoring parameter data because the time {} is too old for this segment starting at {}"
-                    + "(this may happen in case of badly ordered high frequency data)", TimeEncoding.toString(t), TimeEncoding.toString(pgs.getSegmentStart()));
+            String name =  pvList.sortedPvList.get(0).getParameterQualifiedNamed() 
+                    + ((pvList.sortedPvList.size()>1)?" and "+(pvList.sortedPvList.size()-1)+" others"
+                            :"");
+            log.warn("Ignoring parameter data ({}) because the time {} is too old for this segment starting at {}"
+                    + "(this may happen in case of badly ordered high frequency data)",
+                    name,
+                    TimeEncoding.toString(t), TimeEncoding.toString(pgs.getSegmentStart()));
             return;
         }
 
