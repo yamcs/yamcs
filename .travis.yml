@@ -1,17 +1,20 @@
 sudo: false
 language: java
-jdk: openjdk8
-
-# Prevent Travis from running 'mvn install'
-install: true
+jdk:
+  - openjdk8
+  - openjdk11
 
 cache:
   directories:
     - $HOME/.m2
     - $HOME/.sonar/cache
 
+# Prevent Travis from running 'mvn install'
+install: true
+script: mvn -Dsurefire.useFile=false test
+
 stages:
-  - test
+  - name: test
   - name: deploy
     if: branch = master
   - name: sonar
@@ -19,11 +22,8 @@ stages:
 
 jobs:
   include:
-
-    - stage: test
-      script: mvn -Dsurefire.useFile=false test
-
     - stage: deploy
+      jdk: openjdk8
       script:
         - mvn -DskipTests javadoc:aggregate
         - mkdir docs
@@ -39,9 +39,10 @@ jobs:
           tags: true
 
     - stage: sonar
+      jdk: openjdk8
       script: skip
       after_success:  # Use this hook so it does not impact global build success
-        - mvn -Dsurefire.useFile=false clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
+        - mvn -Dsurefire.useFile=false org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
       addons:
         sonarcloud:
           token:

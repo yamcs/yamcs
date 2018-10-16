@@ -3,13 +3,21 @@ package org.yamcs.tctm;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.time.TimeService;
+import org.yamcs.utils.TimeEncoding;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -22,16 +30,21 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  *
  */
 public class UdpParameterDataLink extends AbstractExecutionThreadService implements ParameterDataLink {
+
     private volatile int validDatagramCount = 0;
     private volatile int invalidDatagramCount = 0;
     private volatile boolean disabled = false;
 
+    private int sequenceCount = 0;
+
+    private TimeService timeService;
     private DatagramSocket udpSocket;
     private int port = 31002;
+    private String defaultRecordingGroup;
 
     ParameterSink parameterSink;
 
-    private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    private Logger log = LoggerFactory.getLogger(getClass().getName());
     int MAX_LENGTH = 10 * 1024;
 
     DatagramPacket datagram = new DatagramPacket(new byte[MAX_LENGTH], MAX_LENGTH);
@@ -47,7 +60,9 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
      */
     public UdpParameterDataLink(String instance, String name, Map<String, Object> config)
             throws ConfigurationException {
+        timeService = YamcsServer.getTimeService(instance);
         port = YConfiguration.getInt(config, "port");
+        defaultRecordingGroup = YConfiguration.getString(config, "recordingGroup", "DEFAULT");
     }
 
     @Override
@@ -58,10 +73,38 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
     @Override
     public void run() {
         while (isRunning()) {
-            ParameterData pd = getNextData();
-            if (pd != null) {
-                parameterSink.updateParams(pd.getGenerationTime(), pd.getGroup(), pd.getSeqNum(),
-                        pd.getParameterList());
+            ParameterData pdata = getNextData();
+            if (pdata == null) {
+                continue;
+            }
+
+            if (pdata.hasGenerationTime()) {
+                log.error("Generation time must be specified for each parameter separately");
+                continue;
+            }
+
+            long now = timeService.getMissionTime();
+            String recgroup = pdata.hasGroup() ? pdata.getGroup() : defaultRecordingGroup;
+            int sequenceNumber = pdata.hasSeqNum() ? pdata.getSeqNum() : sequenceCount++;
+
+            // Regroup by gentime, just in case multiple parameters are submitted with different times.
+            Map<Long, List<ParameterValue>> valuesByTime = new LinkedHashMap<>();
+
+            for (ParameterValue pval : pdata.getParameterList()) {
+                long gentime = now;
+                if (pval.hasGenerationTimeUTC()) {
+                    gentime = TimeEncoding.parse(pval.getGenerationTimeUTC());
+                    pval = ParameterValue.newBuilder(pval).clearGenerationTimeUTC().setGenerationTime(gentime).build();
+                } else if (!pval.hasGenerationTime()) {
+                    pval = ParameterValue.newBuilder(pval).setGenerationTime(now).build();
+                }
+
+                List<ParameterValue> pvals = valuesByTime.computeIfAbsent(gentime, x -> new ArrayList<>());
+                pvals.add(pval);
+            }
+
+            for (Entry<Long, List<ParameterValue>> group : valuesByTime.entrySet()) {
+                parameterSink.updateParams(group.getKey(), recgroup, sequenceNumber, group.getValue());
             }
         }
     }
@@ -90,7 +133,7 @@ public class UdpParameterDataLink extends AbstractExecutionThreadService impleme
             validDatagramCount++;
             return pdb.build();
         } catch (IOException e) {
-            log.warn("exception when receiving parameter data: {}'", e.getMessage());
+            log.warn("Exception when receiving parameter data: {}'", e.getMessage());
             invalidDatagramCount++;
         }
 
