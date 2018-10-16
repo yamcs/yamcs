@@ -108,8 +108,13 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
             fileStores = new ArrayList<>();
             for (FileStore store : FileSystems.getDefault().getFileStores()) {
                 if (FILE_SYSTEM_TYPES.contains(store.type())) {
-                    log.debug("Adding store " + store + " to the file stores to be monitored");
-                    fileStores.add(store);
+                    if(fileStores.stream().filter(fs -> fs.name().equals(store.name())).findFirst().isPresent()) {
+                        //sometimes (e.g. docker) the same filesystem is mounted multiple times in different locations
+                        log.debug("Do not adding duplicate store '{}' to the file stores to be monitored", store);
+                    } else {
+                        log.debug("Adding store '{}' to the file stores to be monitored", store);
+                        fileStores.add(store);
+                    }
                 }
             }
         }
