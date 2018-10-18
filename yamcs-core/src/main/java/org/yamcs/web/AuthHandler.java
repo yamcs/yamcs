@@ -6,10 +6,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
@@ -23,12 +19,12 @@ import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationException;
-import org.yamcs.security.CryptoUtils;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SpnegoAuthModule;
 import org.yamcs.security.ThirdPartyAuthorizationCode;
 import org.yamcs.security.User;
 import org.yamcs.security.UsernamePasswordToken;
+import org.yamcs.web.TokenStore.IdentifyResult;
 import org.yamcs.web.rest.UserRestHandler;
 
 import io.netty.channel.ChannelHandler.Sharable;
@@ -58,8 +54,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private static final Logger log = LoggerFactory.getLogger(AuthHandler.class);
 
-    // Does not store refresh token itself, but only an hmac of an issued token.
-    private static final ConcurrentMap<Hmac, User> refreshTokenHmacs = new ConcurrentHashMap<>();
+    private static TokenStore tokenStore = new TokenStore();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
@@ -157,7 +152,8 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         AuthenticationToken token = new UsernamePasswordToken(username, password.toCharArray());
         try {
             User user = SecurityStore.getInstance().login(token).get();
-            sendNewAccessToken(ctx, req, user, true);
+            String refreshToken = tokenStore.generateRefreshToken(user);
+            sendNewAccessToken(ctx, req, user, refreshToken);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
@@ -182,7 +178,8 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         String authcode = getStringFromForm(formDecoder, "code");
         try {
             User user = SecurityStore.getInstance().login(new ThirdPartyAuthorizationCode(authcode)).get();
-            sendNewAccessToken(ctx, req, user, true);
+            String refreshToken = tokenStore.generateRefreshToken(user);
+            sendNewAccessToken(ctx, req, user, refreshToken);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
@@ -204,24 +201,18 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     private void handleTokenRequestWithRefreshToken(ChannelHandlerContext ctx, FullHttpRequest req,
             HttpPostRequestDecoder formDecoder) throws IOException {
         String refreshToken = getStringFromForm(formDecoder, "refresh_token");
-
-        // Verify hash
-        Hmac hmac = new Hmac(CryptoUtils.calculateHmac(refreshToken, YamcsServer.getSecretKey()));
-        User user = refreshTokenHmacs.get(hmac);
-        if (user == null) {
+        IdentifyResult result = tokenStore.identify(refreshToken);
+        if (result == null) {
             log.info("Invalid refresh token");
             HttpRequestHandler.sendPlainTextError(ctx, req, HttpResponseStatus.UNAUTHORIZED);
         } else {
-            // Rotate out this token (enforces single use)
-            refreshTokenHmacs.remove(hmac);
-            sendNewAccessToken(ctx, req, user, true);
+            sendNewAccessToken(ctx, req, result.user, result.refreshToken);
         }
     }
 
-    private void sendNewAccessToken(ChannelHandlerContext ctx, FullHttpRequest req, User user,
-            boolean withRefreshToken) {
+    private void sendNewAccessToken(ChannelHandlerContext ctx, FullHttpRequest req, User user, String refreshToken) {
         try {
-            TokenResponse response = generateTokenResponse(user, withRefreshToken);
+            TokenResponse response = generateTokenResponse(user, refreshToken);
             HttpRequestHandler.getAuthorizationChecker().storeTokenToUserMapping(response.getAccessToken(), user);
             HttpRequestHandler.sendMessageResponse(ctx, req, HttpResponseStatus.OK, response, true);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
@@ -234,7 +225,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
      * <p>
      * The refresh token can be used one single time get a new access token (and optional new refresh token).
      */
-    private TokenResponse generateTokenResponse(User user, boolean withRefreshToken)
+    private TokenResponse generateTokenResponse(User user, String refreshToken)
             throws InvalidKeyException, NoSuchAlgorithmException {
         int ttl = 500; // in seconds
         String jwt = JwtHelper.generateHS256Token(user, YamcsServer.getSecretKey(), ttl);
@@ -245,10 +236,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         responseb.setExpiresIn(ttl);
         responseb.setUser(UserRestHandler.toUserInfo(user, false));
 
-        if (withRefreshToken) {
-            String refreshToken = UUID.randomUUID().toString();
-            Hmac hmac = new Hmac(CryptoUtils.calculateHmac(refreshToken, YamcsServer.getSecretKey()));
-            refreshTokenHmacs.put(hmac, user);
+        if (refreshToken != null) {
             responseb.setRefreshToken(refreshToken);
         }
 
@@ -262,30 +250,5 @@ public class AuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         }
 
         return null;
-    }
-
-    /**
-     * byte[] wrapper that allows value comparison in HashMap
-     */
-    private static final class Hmac {
-
-        private byte[] hmac;
-
-        Hmac(byte[] hmac) {
-            this.hmac = hmac;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof Hmac)) {
-                return false;
-            }
-            return Arrays.equals(hmac, ((Hmac) obj).hmac);
-        }
-
-        @Override
-        public int hashCode() {
-            return Arrays.hashCode(hmac);
-        }
     }
 }
