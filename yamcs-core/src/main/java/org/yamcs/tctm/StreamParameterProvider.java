@@ -2,14 +2,18 @@ package org.yamcs.tctm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
+import org.yamcs.StreamConfig;
+import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterListener;
 import org.yamcs.parameter.ParameterProvider;
@@ -41,9 +45,12 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
 
     ParameterTypeProcessor ptypeProcessor;
 
-    public StreamParameterProvider(String archiveInstance, Map<String, Object> config) throws ConfigurationException {
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(archiveInstance);
-        xtceDb = XtceDbFactory.getInstance(archiveInstance);
+    public StreamParameterProvider(String yamcsInstance) throws ConfigurationException {
+        this(yamcsInstance, Collections.emptyMap());
+    }
+    public StreamParameterProvider(String yamcsInstance, Map<String, Object> config) throws ConfigurationException {
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        xtceDb = XtceDbFactory.getInstance(yamcsInstance);
 
         List<String> streamNames;
         if (config.containsKey("stream")) {
@@ -51,9 +58,11 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
         } else if (config.containsKey("streams")) {
             streamNames = YConfiguration.getList(config, "streams");
         } else {
-            throw new ConfigurationException("the config(args) for StreamParameterProvider has to contain a parameter"
-                    + " 'stream' - stream name for retrieving parameters from");
+            streamNames = StreamConfig.getInstance(yamcsInstance).getEntries(StandardStreamType.param).stream()
+                    .map(sce -> sce.getName()).collect(Collectors.toList());
         }
+        
+        log.debug("Subscribing to streams {} ", streamNames);
 
         for (String streamName : streamNames) {
             Stream stream = ydb.getStream(streamName);
@@ -103,9 +112,15 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
             } else if (o instanceof ParameterValue) {
                 pv = (ParameterValue) o;
                 if (pv.getParameter() == null) {
-                    Parameter ppdef = xtceDb.getParameter(pv.getParameterQualifiedNamed());
+                    String fqn = pv.getParameterQualifiedNamed();
+                    Parameter ppdef = xtceDb.getParameter(fqn);
                     if (ppdef == null) {
-                        continue;
+                        if(XtceDb.isSystemParameter(fqn)) {
+                            ppdef = xtceDb.createSystemParameter(fqn);
+                        } else {
+                            log.trace("Ignoring unknown parameter {}", fqn);
+                            continue;
+                        }
                     }
                     pv.setParameter(ppdef);
                 }
@@ -163,12 +178,9 @@ public class StreamParameterProvider extends AbstractService implements StreamSu
 
     @Override
     public void startProviding(Parameter paramDef) {
-        // TODO Auto-generated method stub
     }
 
     @Override
     public void startProvidingAll() {
-        // TODO Auto-generated method stub
     }
-
 }

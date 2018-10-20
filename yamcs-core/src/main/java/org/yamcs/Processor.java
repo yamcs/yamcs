@@ -150,7 +150,7 @@ public class Processor extends AbstractService {
             generateEvents = YConfiguration.getBoolean(config, CONFIG_KEY_GENERATE_EVENTS, true);
         }
 
-        processorData = new ProcessorData(yamcsInstance, name, xtcedb, generateEvents);
+        processorData = new ProcessorData(this, generateEvents);
         this.serviceList = serviceList;
 
         timeService = YamcsServer.getTimeService(yamcsInstance);

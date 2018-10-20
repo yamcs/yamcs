@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.Processor;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.api.QuietEventProducer;
@@ -51,12 +52,26 @@ public class ProcessorData {
 
     private LastValueCache lastValueCache = new LastValueCache();
 
+    public ProcessorData(Processor proc, boolean generateEvents) {
+        this(proc.getInstance(), proc.getName(), proc.getXtceDb(), generateEvents);
+
+        long genTime = TimeEncoding.getWallclockTime();
+        // populate with /yamcs/processor variables (these never change)
+        ParameterValue procNamePv = getProcessorPV(xtcedb, genTime, "name", proc.getName());
+        lastValueCache.put(procNamePv.getParameter(), procNamePv);
+
+        String mode = proc.isReplay() ? "replay" : "realtime";
+        ParameterValue procModePv = getProcessorPV(xtcedb, genTime, "mode", mode);
+        lastValueCache.put(procModePv.getParameter(), procModePv);
+    }
+
     /**
      * @param xtcedb
      * @param generateEvents
      *            - generate events in case of errors when processing data
      */
     public ProcessorData(String instance, String procName, XtceDb xtcedb, boolean generateEvents) {
+        
         this.xtcedb = xtcedb;
         if ((instance != null) && generateEvents) {
             eventProducer = EventProducerFactory.getEventProducer(instance);
@@ -67,7 +82,7 @@ public class ProcessorData {
         eventProducer.setRepeatedEventReduction(true, 10000);
 
         // populate last value cache with the default (initial) value for each parameter that has one
-        long t = TimeEncoding.getWallclockTime();
+        long genTime = TimeEncoding.getWallclockTime();
         for(Parameter p: xtcedb.getParameters()) {
             ParameterType ptype = p.getParameterType();
             if(ptype != null) {
@@ -75,13 +90,23 @@ public class ProcessorData {
                 if(v!=null) {
                     ParameterValue pv = new ParameterValue(p);
                     pv.setEngineeringValue(v);
-                    pv.setGenerationTime(t);
-                    pv.setAcquisitionTime(t);
+                    pv.setGenerationTime(genTime);
+                    pv.setAcquisitionTime(genTime);
                     lastValueCache.put(p, pv);
                 }
             }
         }
+        
         log.debug("Initialized lastValueCache with {} entries", lastValueCache.size());
+    }
+
+    private ParameterValue getProcessorPV(XtceDb xtceDb, long time, String name, String value) {
+        ParameterValue pv = new ParameterValue(
+                xtceDb.createSystemParameter((XtceDb.YAMCS_SPACESYSTEM_NAME + "/processor/" + name)));
+        pv.setAcquisitionTime(time);
+        pv.setGenerationTime(time);
+        pv.setStringValue(value);
+        return pv;
     }
 
     /**
