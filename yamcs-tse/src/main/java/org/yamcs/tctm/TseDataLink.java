@@ -155,7 +155,7 @@ public class TseDataLink extends AbstractService implements Link {
         if (disabled) {
             return Status.DISABLED;
         }
-        if (channel != null && !channel.isActive()) {
+        if (channel == null || !channel.isActive()) {
             return Status.UNAVAIL;
         }
         return Status.OK;
@@ -226,7 +226,7 @@ public class TseDataLink extends AbstractService implements Link {
                         pipeline.addLast(new LengthFieldPrepender(4));
                         pipeline.addLast(new ProtobufEncoder());
 
-                        pipeline.addLast(new TseDataLinkInboundHandler(timeService, ppStream));
+                        pipeline.addLast(new TseDataLinkInboundHandler(xtcedb, timeService, ppStream));
                     }
                 });
 
