@@ -18,7 +18,7 @@
           <span *ngIf="errorMessage$ | async as errorMessage" class="vmiddle error-message">
             <mat-icon class="icon18">error</mat-icon>&nbsp;&nbsp;{{ errorMessage }}
           </span>
-          <div fxFlex></div>
+          <div style="flex: 1 1 0%"></div>
           <button mat-raised-button (click)="doLogin()">Login</button>
         </mat-card-actions>
       </mat-card>

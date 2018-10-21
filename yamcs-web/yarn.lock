@@ -171,13 +171,6 @@
   dependencies:
     tslib "^1.9.0"
 
-"@angular/flex-layout@7.0.0-beta.19":
-  version "7.0.0-beta.19"
-  resolved "https://registry.yarnpkg.com/@angular/flex-layout/-/flex-layout-7.0.0-beta.19.tgz#f8aa46dd1290adba512a15e762938d6a1d71bcd5"
-  integrity sha512-MXq+zZ6/s5/+GsL9fZ42mKL0LjZ/+L0sVU5FaQuSAJ57soLl5QAGWvdxVmROtqcHd3Htp35R49nKSZBJ0nfAjg==
-  dependencies:
-    tslib "^1.7.1"
-
 "@angular/forms@^7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/@angular/forms/-/forms-7.0.0.tgz#672c306b13e94a20b72c096214642a326c43699a"

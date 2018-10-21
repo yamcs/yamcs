@@ -1,8 +1,8 @@
 <div class="scrollpane">
   <div class="panel-content">
     <form [formGroup]="filter">
-      <div fxLayout="row" class="filter-bar">
-        <div fxFlex class="vmiddle">
+      <div class="filter-bar">
+        <div class="vmiddle" style="flex: 1 1 0%">
           <mat-icon class="icon14">access_time</mat-icon>&nbsp;
           <select formControlName="interval">
             <option value="PT1H">Last Hour</option>
@@ -28,7 +28,7 @@
           <app-dots *ngIf="dataSource.loading$ | async">
           </app-dots>
         </div>
-        <div fxFlex style="text-align: right">
+        <div style="flex: 1 1 0%; text-align: right">
           <app-action-link icon="file_download"
                           [link]="downloadURL$ | async">Download Data</app-action-link>
         </div>

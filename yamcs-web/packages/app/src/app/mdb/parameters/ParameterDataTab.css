@@ -1,6 +1,7 @@
 .filter-bar {
   height: 24px;
   margin-bottom: 12px;
+  display: flex;
 }
 
 .table-status {

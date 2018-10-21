@@ -36,8 +36,8 @@
 
   <div class="panel-content" *ngIf="dataSource">
     <form [formGroup]="filter">
-      <div fxLayout="row" class="filter-bar">
-        <div fxFlex class="vmiddle">
+      <div class="filter-bar">
+        <div class="vmiddle" style="flex: 1 1 0%">
           <input formControlName="textSearch"
                  placeholder="Filter by text search"
                  style="width: 300px">
@@ -47,8 +47,8 @@
                               (change)="updateColumns($event)"></app-column-chooser>
         </div>
       </div>
-      <div fxLayout="row" class="filter-bar">
-        <div fxFlex class="vmiddle">
+      <div class="filter-bar">
+        <div class="vmiddle" style="flex: 1 1 0%">
           <app-select [options]="severityOptions" (change)="updateSeverity($event)"></app-select>
           &nbsp;&nbsp;
           <app-select [options]="sourceOptions"
@@ -77,7 +77,7 @@
           <app-dots *ngIf="dataSource.loading$ | async">
           </app-dots>
         </div>
-        <div fxFlex="150px" style="text-align: right">
+        <div style="text-align: right; flex: 1 1 150px">
           <app-action-link icon="file_download"
                           [link]="downloadURL$ | async">Download Data</app-action-link>
         </div>

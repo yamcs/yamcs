@@ -1,5 +1,5 @@
-<div fxLayout="row">
-  <div fxFlex="none" class="current-value-pane">
+<div style="display: flex">
+  <div class="current-value-pane" style="flex: 0 0 auto">
     <ng-container *ngIf="currentValue">
       <span class="mat-display-1">
         <app-expirable [pval]="currentValue" style="white-space: nowrap">
@@ -19,7 +19,7 @@
     </ng-container>
     <span *ngIf="!currentValue" style="white-space: nowrap">---</span>
   </div>
-  <div fxFlex>
+  <div style="flex: 1 1 0%">
     <dl class="dl-horizontal no-lead no-trail">
       <ng-container *ngFor="let alias of parameter.alias">
         <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
