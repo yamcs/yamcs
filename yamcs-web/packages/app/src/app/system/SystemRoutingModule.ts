@@ -8,9 +8,10 @@ import { ClientsPage } from './clients/ClientsPage';
 import { DashboardPage } from './dashboard/DashboardPage';
 import { LinksPage } from './links/LinksPage';
 import { ProcessorPage } from './processors/ProcessorPage';
+import { ProcessorServicesTab } from './processors/ProcessorServicesTab';
+import { ProcessorsPage } from './processors/ProcessorsPage';
 import { ProcessorTCTab } from './processors/ProcessorTCTab';
 import { ProcessorTMTab } from './processors/ProcessorTMTab';
-import { ProcessorsPage } from './processors/ProcessorsPage';
 import { ServicesPage } from './services/ServicesPage';
 import { StreamColumnsTab } from './stream/StreamColumnsTab';
 import { StreamPage } from './stream/StreamPage';
@@ -55,7 +56,10 @@ const routes = [
         children: [
           {
             path: '',
-            redirectTo: 'tm',
+            redirectTo: 'services',
+          }, {
+            path: 'services',
+            component: ProcessorServicesTab,
           }, {
             path: 'tm',
             component: ProcessorTMTab,
@@ -134,6 +138,7 @@ export const routingComponents = [
   LinksPage,
   ProcessorsPage,
   ProcessorPage,
+  ProcessorServicesTab,
   ProcessorTCTab,
   ProcessorTMTab,
   ServicesPage,

@@ -29,7 +29,7 @@
           Stop service
         </button>
       </mat-menu>
-      <button mat-button [matMenuTriggerFor]="serviceMenu">
+      <button mat-button [matMenuTriggerFor]="serviceMenu" *ngIf="!readonly">
         <mat-icon>more_vert</mat-icon>
       </button>
     </td>

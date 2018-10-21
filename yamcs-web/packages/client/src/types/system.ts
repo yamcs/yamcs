@@ -132,6 +132,7 @@ export interface Processor {
   time: string;
   replay: boolean;
   replayRequest?: ReplayRequest;
+  service: Service[];
 }
 
 export interface ReplayRequest {
