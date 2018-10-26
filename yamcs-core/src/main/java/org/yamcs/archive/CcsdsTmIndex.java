@@ -351,7 +351,7 @@ public class CcsdsTmIndex implements TmIndex {
                             .setFirst(r.firstTime()).setLast(r.lastTime())
                             .setSeqFirst(r.seqFirst).setSeqLast(r.seqLast);
                     // WARN: this string is parsed in the CompletenessGUI
-                    // TODO: make it smarter
+                    // TODO: remove it
                     arb.setInfo("seqFirst: " + r.seqFirst + " seqLast: " + r.seqLast);
                     return arb.build();
                 }
