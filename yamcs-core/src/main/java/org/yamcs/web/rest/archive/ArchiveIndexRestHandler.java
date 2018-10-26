@@ -238,10 +238,17 @@ public class ArchiveIndexRestHandler extends RestHandler {
                                 groupb = IndexGroup.newBuilder().setId(rec.getId());
                                 groupBuilders.put(rec.getId(), groupb);
                             }
-                            groupb.addEntry(IndexEntry.newBuilder()
-                                    .setStart(TimeEncoding.toString(rec.getFirst()))
-                                    .setStop(TimeEncoding.toString(rec.getLast()))
-                                    .setCount(rec.getNum()));
+                            IndexEntry.Builder ieb = IndexEntry.newBuilder()
+                            .setStart(TimeEncoding.toString(rec.getFirst()))
+                            .setStop(TimeEncoding.toString(rec.getLast()))
+                            .setCount(rec.getNum());
+                            if(rec.hasSeqFirst()) {
+                                ieb.setSeqStart(rec.getSeqFirst());
+                            }
+                            if(rec.hasSeqLast()) {
+                                ieb.setSeqStop(rec.getSeqLast());
+                            }
+                            groupb.addEntry(ieb);
                             last = Math.max(last, rec.getLast());
                         }
                     }

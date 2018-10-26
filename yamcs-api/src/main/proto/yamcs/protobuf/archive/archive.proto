@@ -88,6 +88,8 @@ message IndexEntry {
   optional string start = 1;
   optional string stop = 2;
   optional int32 count = 3;
+  optional int64 seqStart = 4;
+  optional int64 seqStop = 5;
 }
 
 message GetPacketNamesResponse {
