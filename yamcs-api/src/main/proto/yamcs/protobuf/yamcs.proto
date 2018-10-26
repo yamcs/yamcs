@@ -106,6 +106,8 @@ message ArchiveRecord {
   required int64 last = 3;
   required int32 num = 4;
   optional string info = 5;
+  required int64 seqFirst = 6;
+  required int64 seqLast = 7;
 }
 
 message IndexResult {
