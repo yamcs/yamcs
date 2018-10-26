@@ -101,13 +101,13 @@ message IndexRequest {
 
 //contains histogram data
 message ArchiveRecord {
-  required NamedObjectId id = 1;
-  required int64 first = 2;
-  required int64 last = 3;
-  required int32 num = 4;
+  optional NamedObjectId id = 1;
+  optional int64 first = 2;
+  optional int64 last = 3;
+  optional int32 num = 4;
   optional string info = 5;
-  required int64 seqFirst = 6;
-  required int64 seqLast = 7;
+  optional int64 seqFirst = 6;
+  optional int64 seqLast = 7;
 }
 
 message IndexResult {

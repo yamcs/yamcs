@@ -10452,42 +10452,42 @@ public final class Yamcs {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+     * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
      */
     boolean hasId();
     /**
-     * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+     * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
      */
     org.yamcs.protobuf.Yamcs.NamedObjectId getId();
     /**
-     * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+     * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
      */
     org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder();
 
     /**
-     * <code>required int64 first = 2;</code>
+     * <code>optional int64 first = 2;</code>
      */
     boolean hasFirst();
     /**
-     * <code>required int64 first = 2;</code>
+     * <code>optional int64 first = 2;</code>
      */
     long getFirst();
 
     /**
-     * <code>required int64 last = 3;</code>
+     * <code>optional int64 last = 3;</code>
      */
     boolean hasLast();
     /**
-     * <code>required int64 last = 3;</code>
+     * <code>optional int64 last = 3;</code>
      */
     long getLast();
 
     /**
-     * <code>required int32 num = 4;</code>
+     * <code>optional int32 num = 4;</code>
      */
     boolean hasNum();
     /**
-     * <code>required int32 num = 4;</code>
+     * <code>optional int32 num = 4;</code>
      */
     int getNum();
 
@@ -10506,20 +10506,20 @@ public final class Yamcs {
         getInfoBytes();
 
     /**
-     * <code>required int64 seqFirst = 6;</code>
+     * <code>optional int64 seqFirst = 6;</code>
      */
     boolean hasSeqFirst();
     /**
-     * <code>required int64 seqFirst = 6;</code>
+     * <code>optional int64 seqFirst = 6;</code>
      */
     long getSeqFirst();
 
     /**
-     * <code>required int64 seqLast = 7;</code>
+     * <code>optional int64 seqLast = 7;</code>
      */
     boolean hasSeqLast();
     /**
-     * <code>required int64 seqLast = 7;</code>
+     * <code>optional int64 seqLast = 7;</code>
      */
     long getSeqLast();
   }
@@ -10652,19 +10652,19 @@ public final class Yamcs {
     public static final int ID_FIELD_NUMBER = 1;
     private org.yamcs.protobuf.Yamcs.NamedObjectId id_;
     /**
-     * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+     * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
      */
     public boolean hasId() {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+     * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
      */
     public org.yamcs.protobuf.Yamcs.NamedObjectId getId() {
       return id_ == null ? org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance() : id_;
     }
     /**
-     * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+     * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
      */
     public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder() {
       return id_ == null ? org.yamcs.protobuf.Yamcs.NamedObjectId.getDefaultInstance() : id_;
@@ -10673,13 +10673,13 @@ public final class Yamcs {
     public static final int FIRST_FIELD_NUMBER = 2;
     private long first_;
     /**
-     * <code>required int64 first = 2;</code>
+     * <code>optional int64 first = 2;</code>
      */
     public boolean hasFirst() {
       return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
-     * <code>required int64 first = 2;</code>
+     * <code>optional int64 first = 2;</code>
      */
     public long getFirst() {
       return first_;
@@ -10688,13 +10688,13 @@ public final class Yamcs {
     public static final int LAST_FIELD_NUMBER = 3;
     private long last_;
     /**
-     * <code>required int64 last = 3;</code>
+     * <code>optional int64 last = 3;</code>
      */
     public boolean hasLast() {
       return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
-     * <code>required int64 last = 3;</code>
+     * <code>optional int64 last = 3;</code>
      */
     public long getLast() {
       return last_;
@@ -10703,13 +10703,13 @@ public final class Yamcs {
     public static final int NUM_FIELD_NUMBER = 4;
     private int num_;
     /**
-     * <code>required int32 num = 4;</code>
+     * <code>optional int32 num = 4;</code>
      */
     public boolean hasNum() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
     /**
-     * <code>required int32 num = 4;</code>
+     * <code>optional int32 num = 4;</code>
      */
     public int getNum() {
       return num_;
@@ -10760,13 +10760,13 @@ public final class Yamcs {
     public static final int SEQFIRST_FIELD_NUMBER = 6;
     private long seqFirst_;
     /**
-     * <code>required int64 seqFirst = 6;</code>
+     * <code>optional int64 seqFirst = 6;</code>
      */
     public boolean hasSeqFirst() {
       return ((bitField0_ & 0x00000020) == 0x00000020);
     }
     /**
-     * <code>required int64 seqFirst = 6;</code>
+     * <code>optional int64 seqFirst = 6;</code>
      */
     public long getSeqFirst() {
       return seqFirst_;
@@ -10775,13 +10775,13 @@ public final class Yamcs {
     public static final int SEQLAST_FIELD_NUMBER = 7;
     private long seqLast_;
     /**
-     * <code>required int64 seqLast = 7;</code>
+     * <code>optional int64 seqLast = 7;</code>
      */
     public boolean hasSeqLast() {
       return ((bitField0_ & 0x00000040) == 0x00000040);
     }
     /**
-     * <code>required int64 seqLast = 7;</code>
+     * <code>optional int64 seqLast = 7;</code>
      */
     public long getSeqLast() {
       return seqLast_;
@@ -10794,33 +10794,11 @@ public final class Yamcs {
       if (isInitialized == 1) return true;
       if (isInitialized == 0) return false;
 
-      if (!hasId()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasFirst()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasLast()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasNum()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasSeqFirst()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!hasSeqLast()) {
-        memoizedIsInitialized = 0;
-        return false;
-      }
-      if (!getId().isInitialized()) {
-        memoizedIsInitialized = 0;
-        return false;
+      if (hasId()) {
+        if (!getId().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -11275,26 +11253,10 @@ public final class Yamcs {
 
       @java.lang.Override
       public final boolean isInitialized() {
-        if (!hasId()) {
-          return false;
-        }
-        if (!hasFirst()) {
-          return false;
-        }
-        if (!hasLast()) {
-          return false;
-        }
-        if (!hasNum()) {
-          return false;
-        }
-        if (!hasSeqFirst()) {
-          return false;
-        }
-        if (!hasSeqLast()) {
-          return false;
-        }
-        if (!getId().isInitialized()) {
-          return false;
+        if (hasId()) {
+          if (!getId().isInitialized()) {
+            return false;
+          }
         }
         return true;
       }
@@ -11323,13 +11285,13 @@ public final class Yamcs {
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> idBuilder_;
       /**
-       * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+       * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public boolean hasId() {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+       * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectId getId() {
         if (idBuilder_ == null) {
@@ -11339,7 +11301,7 @@ public final class Yamcs {
         }
       }
       /**
-       * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+       * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public Builder setId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (idBuilder_ == null) {
@@ -11355,7 +11317,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+       * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public Builder setId(
           org.yamcs.protobuf.Yamcs.NamedObjectId.Builder builderForValue) {
@@ -11369,7 +11331,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+       * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public Builder mergeId(org.yamcs.protobuf.Yamcs.NamedObjectId value) {
         if (idBuilder_ == null) {
@@ -11389,7 +11351,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+       * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public Builder clearId() {
         if (idBuilder_ == null) {
@@ -11402,7 +11364,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+       * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectId.Builder getIdBuilder() {
         bitField0_ |= 0x00000001;
@@ -11410,7 +11372,7 @@ public final class Yamcs {
         return getIdFieldBuilder().getBuilder();
       }
       /**
-       * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+       * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       public org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder getIdOrBuilder() {
         if (idBuilder_ != null) {
@@ -11421,7 +11383,7 @@ public final class Yamcs {
         }
       }
       /**
-       * <code>required .yamcs.protobuf.NamedObjectId id = 1;</code>
+       * <code>optional .yamcs.protobuf.NamedObjectId id = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Yamcs.NamedObjectId, org.yamcs.protobuf.Yamcs.NamedObjectId.Builder, org.yamcs.protobuf.Yamcs.NamedObjectIdOrBuilder> 
@@ -11439,19 +11401,19 @@ public final class Yamcs {
 
       private long first_ ;
       /**
-       * <code>required int64 first = 2;</code>
+       * <code>optional int64 first = 2;</code>
        */
       public boolean hasFirst() {
         return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
-       * <code>required int64 first = 2;</code>
+       * <code>optional int64 first = 2;</code>
        */
       public long getFirst() {
         return first_;
       }
       /**
-       * <code>required int64 first = 2;</code>
+       * <code>optional int64 first = 2;</code>
        */
       public Builder setFirst(long value) {
         bitField0_ |= 0x00000002;
@@ -11460,7 +11422,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required int64 first = 2;</code>
+       * <code>optional int64 first = 2;</code>
        */
       public Builder clearFirst() {
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -11471,19 +11433,19 @@ public final class Yamcs {
 
       private long last_ ;
       /**
-       * <code>required int64 last = 3;</code>
+       * <code>optional int64 last = 3;</code>
        */
       public boolean hasLast() {
         return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
-       * <code>required int64 last = 3;</code>
+       * <code>optional int64 last = 3;</code>
        */
       public long getLast() {
         return last_;
       }
       /**
-       * <code>required int64 last = 3;</code>
+       * <code>optional int64 last = 3;</code>
        */
       public Builder setLast(long value) {
         bitField0_ |= 0x00000004;
@@ -11492,7 +11454,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required int64 last = 3;</code>
+       * <code>optional int64 last = 3;</code>
        */
       public Builder clearLast() {
         bitField0_ = (bitField0_ & ~0x00000004);
@@ -11503,19 +11465,19 @@ public final class Yamcs {
 
       private int num_ ;
       /**
-       * <code>required int32 num = 4;</code>
+       * <code>optional int32 num = 4;</code>
        */
       public boolean hasNum() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
       /**
-       * <code>required int32 num = 4;</code>
+       * <code>optional int32 num = 4;</code>
        */
       public int getNum() {
         return num_;
       }
       /**
-       * <code>required int32 num = 4;</code>
+       * <code>optional int32 num = 4;</code>
        */
       public Builder setNum(int value) {
         bitField0_ |= 0x00000008;
@@ -11524,7 +11486,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required int32 num = 4;</code>
+       * <code>optional int32 num = 4;</code>
        */
       public Builder clearNum() {
         bitField0_ = (bitField0_ & ~0x00000008);
@@ -11611,19 +11573,19 @@ public final class Yamcs {
 
       private long seqFirst_ ;
       /**
-       * <code>required int64 seqFirst = 6;</code>
+       * <code>optional int64 seqFirst = 6;</code>
        */
       public boolean hasSeqFirst() {
         return ((bitField0_ & 0x00000020) == 0x00000020);
       }
       /**
-       * <code>required int64 seqFirst = 6;</code>
+       * <code>optional int64 seqFirst = 6;</code>
        */
       public long getSeqFirst() {
         return seqFirst_;
       }
       /**
-       * <code>required int64 seqFirst = 6;</code>
+       * <code>optional int64 seqFirst = 6;</code>
        */
       public Builder setSeqFirst(long value) {
         bitField0_ |= 0x00000020;
@@ -11632,7 +11594,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required int64 seqFirst = 6;</code>
+       * <code>optional int64 seqFirst = 6;</code>
        */
       public Builder clearSeqFirst() {
         bitField0_ = (bitField0_ & ~0x00000020);
@@ -11643,19 +11605,19 @@ public final class Yamcs {
 
       private long seqLast_ ;
       /**
-       * <code>required int64 seqLast = 7;</code>
+       * <code>optional int64 seqLast = 7;</code>
        */
       public boolean hasSeqLast() {
         return ((bitField0_ & 0x00000040) == 0x00000040);
       }
       /**
-       * <code>required int64 seqLast = 7;</code>
+       * <code>optional int64 seqLast = 7;</code>
        */
       public long getSeqLast() {
         return seqLast_;
       }
       /**
-       * <code>required int64 seqLast = 7;</code>
+       * <code>optional int64 seqLast = 7;</code>
        */
       public Builder setSeqLast(long value) {
         bitField0_ |= 0x00000040;
@@ -11664,7 +11626,7 @@ public final class Yamcs {
         return this;
       }
       /**
-       * <code>required int64 seqLast = 7;</code>
+       * <code>optional int64 seqLast = 7;</code>
        */
       public Builder clearSeqLast() {
         bitField0_ = (bitField0_ & ~0x00000040);
@@ -31156,10 +31118,10 @@ public final class Yamcs {
       "sendAllEvent\030\014 \001(\010:\005false\0222\n\013eventSource" +
       "\030\r \003(\0132\035.yamcs.protobuf.NamedObjectId\022\021\n" +
       "\tmergeTime\030\020 \001(\r\"\225\001\n\rArchiveRecord\022)\n\002id" +
-      "\030\001 \002(\0132\035.yamcs.protobuf.NamedObjectId\022\r\n" +
-      "\005first\030\002 \002(\003\022\014\n\004last\030\003 \002(\003\022\013\n\003num\030\004 \002(\005\022" +
-      "\014\n\004info\030\005 \001(\t\022\020\n\010seqFirst\030\006 \002(\003\022\017\n\007seqLa" +
-      "st\030\007 \002(\003\"p\n\013IndexResult\022\020\n\010instance\030\001 \002(" +
+      "\030\001 \001(\0132\035.yamcs.protobuf.NamedObjectId\022\r\n" +
+      "\005first\030\002 \001(\003\022\014\n\004last\030\003 \001(\003\022\013\n\003num\030\004 \001(\005\022" +
+      "\014\n\004info\030\005 \001(\t\022\020\n\010seqFirst\030\006 \001(\003\022\017\n\007seqLa" +
+      "st\030\007 \001(\003\"p\n\013IndexResult\022\020\n\010instance\030\001 \002(" +
       "\t\022.\n\007records\030\002 \003(\0132\035.yamcs.protobuf.Arch" +
       "iveRecord\022\014\n\004type\030\003 \001(\t\022\021\n\ttableName\030\004 \001" +
       "(\t\";\n\nTagRequest\022\020\n\010instance\030\001 \002(\t\022\r\n\005st" +
