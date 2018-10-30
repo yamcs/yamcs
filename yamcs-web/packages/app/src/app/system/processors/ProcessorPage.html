@@ -6,20 +6,28 @@
   </app-system-toolbar>
 
   <nav mat-tab-nav-bar>
-    <a mat-tab-link
-      routerLink="./tm"
+      <a mat-tab-link
+      routerLink="./services"
       routerLinkActive #rla="routerLinkActive"
       [queryParams]="{instance: instance.name}"
       [active]="rla.isActive">
+      Services
+    </a>
+
+    <a mat-tab-link
+      routerLink="./tm"
+      routerLinkActive #rlb="routerLinkActive"
+      [queryParams]="{instance: instance.name}"
+      [active]="rlb.isActive">
       TM
     </a>
 
     <a *ngIf="mayControlCommandQueue()"
       mat-tab-link
       routerLink="./tc"
-      routerLinkActive #rlb="routerLinkActive"
+      routerLinkActive #rlc="routerLinkActive"
       [queryParams]="{instance: instance.name}"
-      [active]="rlb.isActive">
+      [active]="rlc.isActive">
       TC
     </a>
   </nav>

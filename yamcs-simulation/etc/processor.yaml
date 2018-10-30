@@ -15,11 +15,8 @@ realtime:
       args:
         stream: "tc_realtime"
     - class: org.yamcs.tctm.StreamParameterProvider
-      args:
-        streams: ["pp_realtime", "pp_tse"]
     - class: org.yamcs.algorithms.AlgorithmManager
     # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersCollector service)
-    - class: org.yamcs.parameter.SystemParametersProvider
     - class: org.yamcs.parameter.LocalParameterManager
   config:
     #check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)

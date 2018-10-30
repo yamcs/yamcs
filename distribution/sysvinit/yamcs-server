@@ -87,10 +87,11 @@ case "$1" in
             if is_running $pid ; then
                 #first get a stack trace
                 kill -3 $pid
-                kill -TERM $pid
+                #kill entire process group
+                kill -TERM -$pid
                 while [ $i -lt 5 ] ; do
                     if is_running $pid ; then
-                        kill -TERM $pid
+                        kill -TERM -$pid
                     else
                         rm $PID_FILE
                         break

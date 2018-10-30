@@ -19,6 +19,9 @@ export class ServicesTable implements AfterViewInit {
   @Input()
   dataSource = new MatTableDataSource<Service>();
 
+  @Input()
+  readonly = false;
+
   @Output()
   startService = new EventEmitter<string>();
 

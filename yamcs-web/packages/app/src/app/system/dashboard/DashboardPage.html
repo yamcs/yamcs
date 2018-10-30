@@ -40,10 +40,10 @@
       </mat-list>
     </mat-card>
 
-    <div fxLayout="row" fxLayoutGap="16px">
-      <div fxFlex="50">
+    <div>
+      <div style="float: left; width: 50%">
         <ng-container *ngIf="jvmTotalMemoryParameter$ | async as totalMemory">
-          <mat-card *ngIf="jvmMemoryUsedParameter$ | async as memoryUsed">
+          <mat-card *ngIf="jvmMemoryUsedParameter$ | async as memoryUsed" style="margin-right: 8px">
             <mat-card-subtitle>JVM Memory (KiB)</mat-card-subtitle>
             <div style="height: 300px">
               <app-parameter-plot [dataSource]="jvmMemoryUsedDataSource"
@@ -64,8 +64,8 @@
         </ng-container>
       </div>
 
-      <div fxFlex="50">
-        <mat-card *ngIf="jvmThreadCountParameter$ | async as parameter">
+      <div style="float: right; width: 50%">
+        <mat-card *ngIf="jvmThreadCountParameter$ | async as parameter" style="margin-left: 8px">
           <mat-card-subtitle>JVM Thread Count</mat-card-subtitle>
           <div style="height: 300px">
             <app-parameter-plot [dataSource]="jvmThreadCountDataSource" duration="PT20M" lightAxisBackgroundColor="white">
@@ -77,6 +77,8 @@
           </div>
         </mat-card>
       </div>
+
+      <div style="clear: both"></div>
     </div>
   </div>
 </app-system-page>

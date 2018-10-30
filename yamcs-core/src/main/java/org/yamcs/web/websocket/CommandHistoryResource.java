@@ -28,6 +28,7 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
 
     private ConnectedWebSocketClient client;
 
+    private volatile boolean subscribed = false;
     private CommandHistoryFilter allSubscription;
     private Set<CommandId> subscribedCommands = new HashSet<>();
     private CommandHistoryRequestManager requestManager;
@@ -42,6 +43,8 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
 
     @Override
     public WebSocketReply subscribe(WebSocketDecodeContext ctx, WebSocketDecoder decoder) throws WebSocketException {
+        subscribed = true;
+
         if (requestManager == null) {
             return WebSocketReply.ack(ctx.getRequestId());
         }
@@ -108,10 +111,15 @@ public class CommandHistoryResource implements WebSocketResource, CommandHistory
 
     @Override
     public void selectProcessor(Processor processor) throws ProcessorException {
-        if (processor.hasCommanding()) {
+        if (subscribed && processor.hasCommanding()) {
             requestManager = processor.getCommandHistoryManager();
-            if (requestManager != null && allSubscription != null) {
-                requestManager.addSubscription(allSubscription, this);
+            if (requestManager != null) {
+                if (allSubscription != null) {
+                    requestManager.addSubscription(allSubscription, this);
+                } else {
+                    long since = client.getProcessor().getCurrentTime();
+                    allSubscription = requestManager.subscribeCommandHistory(null, since, this);
+                }
             }
         }
     }
