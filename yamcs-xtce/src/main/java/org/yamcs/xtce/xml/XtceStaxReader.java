@@ -343,7 +343,6 @@ public class XtceStaxReader {
             log.info("XTCE file parsing finished, loaded: {} parameters, {} tm containers, {} commands", 
                     spaceSystem.getParameterCount(true), spaceSystem.getSequenceContainerCount(true), spaceSystem.getMetaCommandCount(true));
         } catch (IllegalArgumentException e) {
-            e.getCause().printStackTrace();
             throw new XMLStreamException(e.getMessage(), xmlEvent.getLocation());
         }
         return spaceSystem;
