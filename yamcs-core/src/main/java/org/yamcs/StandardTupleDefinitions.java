@@ -26,12 +26,12 @@ public class StandardTupleDefinitions {
     }
 
     public static final TupleDefinition TC = new TupleDefinition();
-    // this is the commandId (used as the primary key when recording), ohter columns are handled dynamically
+    // this is the commandId (used as the primary key when recording), other columns are handled dynamically
     static {
         TC.addColumn("gentime", DataType.TIMESTAMP);
         TC.addColumn("origin", DataType.STRING);
         TC.addColumn("seqNum", DataType.INT);
-        TC.addColumn(CMDHIST_TUPLE_COL_CMDNAME, DataType.STRING);
+        TC.addColumn(CMDHIST_TUPLE_COL_CMDNAME, DataType.ENUM);
     }
 
     public static final TupleDefinition PARAMETER = new TupleDefinition();
