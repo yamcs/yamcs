@@ -781,7 +781,7 @@ public class YamcsMonitor implements WebSocketClientCallback, ProcessorListener,
         pane.setText("<center>" +
                 "<h2>Yamcs Monitor</h2>" +
                 "<h3>&copy; Space Applications Services</h3>" +
-                "<h3>Version " + YamcsVersion.version + "</h3>" +
+                "<h3>Version " + YamcsVersion.VERSION + "</h3>" +
                 "<p>This program is used to manage processors in a Yamcs server " +
                 "and clients connected to it." +
                 "</center>");

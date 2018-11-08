@@ -55,10 +55,10 @@ pomversion=`grep -m 1 '<version>.*</version>' pom.xml | sed -e 's/.*<version>\(.
 if [[ $pomversion == *-SNAPSHOT ]]; then
     d=`date +%Y%m%d%H%M%S`
     version=${pomversion/-SNAPSHOT/}
-    release=SNAPSHOT$d.`git rev-parse --short HEAD`
+    release=SNAPSHOT$d
 else
     version=$pomversion
-    release=1.`git rev-parse --short HEAD`
+    release=1
 fi
 
 if [[ -n $(git status -s) ]]; then

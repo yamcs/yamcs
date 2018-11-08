@@ -22,6 +22,7 @@ message GetApiOverviewResponse {
     optional string vendor = 4;
   }
   optional string yamcsVersion = 1;
+  optional string revision = 6;
   optional string serverId = 2;
   optional string defaultYamcsInstance = 3;
   repeated RouteInfo route = 4;
