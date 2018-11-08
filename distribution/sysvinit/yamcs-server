@@ -91,7 +91,7 @@ case "$1" in
                 kill -TERM -$pid
                 while [ $i -lt 5 ] ; do
                     if is_running $pid ; then
-                        kill -TERM -$pid
+                        kill -TERM -$(ps -o pgid= $pid | grep -o [0-9]*)
                     else
                         rm $PID_FILE
                         break
