@@ -4,8 +4,8 @@ cd `dirname $0`
 yamcshome=`pwd`
 
 unset GREP_OPTIONS
-# Get the latest yamcs-core/yamcs*.jar but exclude the sources jar because the client needs the compiled Java class files
-yjar=`ls -t -1 yamcs-core/target/yamcs*.jar | grep -v -- -sources.jar | head -n 1`
+# Get the latest yamcs-core/yamcs*.jar but exclude the sources jar and the javadoc jar
+yjar=`ls -t -1 yamcs-core/target/yamcs*.jar | grep -v -- -sources.jar | grep -v -- -javadoc.jar | head -n 1`
 if [ -z "$yjar" ]; then
 	echo "ERROR: yamcs jar not found in yamcs-core/target/yamcs*.jar - did you build the project first? Try: mvn clean install"
 	exit 1
