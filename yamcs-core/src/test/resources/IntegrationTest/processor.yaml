@@ -11,8 +11,6 @@ realtime:
           args:
               stream: "tc_realtime"    
         - class: org.yamcs.tctm.StreamParameterProvider
-          args:
-              stream: "pp_realtime"
        # implements XTCE algorithms
         - class: org.yamcs.algorithms.AlgorithmManager
           args:            
@@ -21,7 +19,6 @@ realtime:
                       - mdb/algolib.js
                   python:
                       - mdb/algolib.py
-        - class: org.yamcs.parameter.SystemParametersProvider
         - class: org.yamcs.parameter.LocalParameterManager
     config:
         subscribeAll: true
