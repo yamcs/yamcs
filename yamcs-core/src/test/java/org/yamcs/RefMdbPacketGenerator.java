@@ -376,11 +376,8 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         xs = (short) ((3 << 11) | apid);
         bb.putShort(0, xs);
 
-        AtomicInteger a = seqCount.get(apid);
-        if (a == null) {
-            a = new AtomicInteger(0);
-            seqCount.put(apid, a);
-        }
+        AtomicInteger a = seqCount.computeIfAbsent(apid, r-> new AtomicInteger(0));
+
         // Seq Flags (2 bits) Seq Count(14 bits)
         xs = (short) ((3 << 14) | a.getAndIncrement());
 
@@ -390,7 +387,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
 
         // Secondary header:
         // coarse time(32 bits)
-        GpsCcsdsTime t = TimeEncoding.getCurrentGpsTime();
+        GpsCcsdsTime t = TimeEncoding.toGpsTime(generationTime);
         bb.putInt(6, t.coarseTime);
         // fine time(8 bits) timeID(2bits) checkword(1 bit) spare(1 bit) pktType(4 bits)
         // xs=(short)((shTimeId<<6)|(shChecksumIndicator<<5)|shPacketType);
@@ -688,6 +685,11 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
             tmProcessor.processPacket(new PacketWithTime(rectime, gentime, bb.getInt(0), bb.array()));
         }
     }
+    
+    public void simulateGap(int apid) {
+        AtomicInteger a = seqCount.computeIfAbsent(apid, r-> new AtomicInteger(0));
+        a.incrementAndGet();
+    }
 
     @Override
     public boolean isArchiveReplay() {
@@ -703,6 +705,8 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     protected void doStop() {
         notifyStopped();
     }
+
+   
 
   
 }

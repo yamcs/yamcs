@@ -54,7 +54,7 @@ public class HistogramReaderStream extends Stream implements Runnable, DbReaderS
                     mergeTime);
         }
         try {
-            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(ydb, tblDef, histoColumnName, interval, mergeTime);
+            iter = ydb.getStorageEngine(tblDef).getHistogramIterator(ydb, tblDef, histoColumnName, interval);
             HistogramRecord r;
             while (!quit && iter.hasNext()) {
                 r = iter.next();

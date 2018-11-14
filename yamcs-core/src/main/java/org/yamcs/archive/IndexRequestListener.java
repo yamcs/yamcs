@@ -1,20 +1,31 @@
 package org.yamcs.archive;
 
-import org.yamcs.protobuf.Yamcs.IndexResult;
+import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 
 /**
  * Used by {@link IndexRequestProcessor}
  */
 public interface IndexRequestListener {
-        
+    enum IndexType {HISTOGRAM, COMPLETENESS};
     /**
-     * Process the index chunk. If indexResult is null, the end was reached
+     * Called at the beginning or when the table/type changes in case multiple indices are sent.
+     * If only one type of index is requested, it can be ignored
      */
-    void processData(IndexResult indexResult);
+    default void begin(IndexType type, String tblName) {};
+    
+    /**
+     * Called with new data
+     * @param ar
+     */
+    void processData( ArchiveRecord ar);
     
     /**
      * Called right after the processing ended, either successfully or through
-     * error
+     * error.
+     * 
+     * If a paged request has been performed, the token can be used to retrieve the next chunk
      */
-    void finished(boolean success);
+    void finished(String token, boolean success);
+
+    
 }

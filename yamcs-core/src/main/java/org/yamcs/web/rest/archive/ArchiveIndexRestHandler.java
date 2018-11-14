@@ -15,7 +15,6 @@ import org.yamcs.protobuf.Archive.IndexGroup;
 import org.yamcs.protobuf.Archive.IndexResponse;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
-import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.web.BadRequestException;
@@ -36,6 +35,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         IndexServer indexServer = verifyIndexServer(req, instance);
 
         int mergeTime = req.getQueryParameterAsInt("mergeTime", 2000);
+        int limit = req.getQueryParameterAsInt("limit", 500);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -49,10 +49,6 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setStop(ir.getStop());
         }
         String next = req.getQueryParameter("next", null);
-        if (next != null) {
-            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
-            requestb.setStart(pageToken.time);
-        }
 
         if (req.hasQueryParameter("name")) {
             for (String names : req.getQueryParameterList("name")) {
@@ -64,7 +60,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setSendAllCmd(true);
         }
 
-        handleOneIndexResult(req, indexServer, requestb.build());
+        handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
     @Route(path = "/api/archive/:instance/event-index", method = "GET")
@@ -73,6 +69,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         IndexServer indexServer = verifyIndexServer(req, instance);
 
         int mergeTime = req.getQueryParameterAsInt("mergeTime", 2000);
+        int limit = req.getQueryParameterAsInt("limit", 500);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -86,10 +83,6 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setStop(ir.getStop());
         }
         String next = req.getQueryParameter("next", null);
-        if (next != null) {
-            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
-            requestb.setStart(pageToken.time);
-        }
 
         if (req.hasQueryParameter("source")) {
             for (String sources : req.getQueryParameterList("source")) {
@@ -101,7 +94,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setSendAllEvent(true);
         }
 
-        handleOneIndexResult(req, indexServer, requestb.build());
+        handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
     @Route(path = "/api/archive/:instance/packet-index", method = "GET")
@@ -110,6 +103,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         IndexServer indexServer = verifyIndexServer(req, instance);
 
         int mergeTime = req.getQueryParameterAsInt("mergeTime", 2000);
+        int limit = req.getQueryParameterAsInt("limit", 500);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -123,10 +117,6 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setStop(ir.getStop());
         }
         String next = req.getQueryParameter("next", null);
-        if (next != null) {
-            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
-            requestb.setStart(pageToken.time);
-        }
 
         if (req.hasQueryParameter("name")) {
             for (String names : req.getQueryParameterList("name")) {
@@ -138,7 +128,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setSendAllTm(true);
         }
 
-        handleOneIndexResult(req, indexServer, requestb.build());
+        handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
     @Route(path = "/api/archive/:instance/parameter-index", method = "GET")
@@ -147,6 +137,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
         IndexServer indexServer = verifyIndexServer(req, instance);
 
         int mergeTime = req.getQueryParameterAsInt("mergeTime", 20000);
+        int limit = req.getQueryParameterAsInt("limit", 500);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setInstance(instance);
@@ -160,11 +151,6 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setStop(ir.getStop());
         }
         String next = req.getQueryParameter("next", null);
-        if (next != null) {
-            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
-            requestb.setStart(pageToken.time);
-        }
-
         if (req.hasQueryParameter("group")) {
             for (String groups : req.getQueryParameterList("group")) {
                 for (String group : groups.split(",")) {
@@ -175,13 +161,14 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setSendAllPp(true);
         }
 
-        handleOneIndexResult(req, indexServer, requestb.build());
+        handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
     @Route(path = "/api/archive/:instance/completeness-index", method = "GET")
     public void listCompletenessIndex(RestRequest req) throws HttpException {
         String instance = verifyInstance(req, req.getRouteParam("instance"));
         IndexServer indexServer = verifyIndexServer(req, instance);
+        int limit = req.getQueryParameterAsInt("limit", 500);
 
         IndexRequest.Builder requestb = IndexRequest.newBuilder();
         requestb.setSendCompletenessIndex(true);
@@ -195,12 +182,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
             requestb.setStop(ir.getStop());
         }
         String next = req.getQueryParameter("next", null);
-        if (next != null) {
-            TimeSortedPageToken pageToken = TimeSortedPageToken.decode(next);
-            requestb.setStart(pageToken.time);
-        }
-
-        handleOneIndexResult(req, indexServer, requestb.build());
+        handleOneIndexResult(req, indexServer, requestb.build(), limit, next);
     }
 
     private IndexServer verifyIndexServer(RestRequest req, String instance) throws HttpException {
@@ -215,53 +197,46 @@ public class ArchiveIndexRestHandler extends RestHandler {
 
     /**
      * Submits an index request but returns only the first batch of results combined with a pagination token if the user
-     * whishes to retrieve the next batch.
+     * wishes to retrieve the next batch.
      * 
      * The batch size is determined by the IndexServer and is set to 500 (shared between all requested groups).
      */
-    private void handleOneIndexResult(RestRequest req, IndexServer indexServer, IndexRequest request)
+    private void handleOneIndexResult(RestRequest req, IndexServer indexServer, IndexRequest request, int limit,
+            String token)
             throws HttpException {
         try {
             IndexResponse.Builder responseb = IndexResponse.newBuilder();
             Map<NamedObjectId, IndexGroup.Builder> groupBuilders = new HashMap<>();
-            indexServer.submitIndexRequest(request, new IndexRequestListener() {
+            indexServer.submitIndexRequest(request, limit, token, new IndexRequestListener() {
 
-                int batchCount = 0;
                 long last;
 
                 @Override
-                public void processData(IndexResult indexResult) {
-                    if (batchCount == 0) {
-                        for (ArchiveRecord rec : indexResult.getRecordsList()) {
-                            IndexGroup.Builder groupb = groupBuilders.get(rec.getId());
-                            if (groupb == null) {
-                                groupb = IndexGroup.newBuilder().setId(rec.getId());
-                                groupBuilders.put(rec.getId(), groupb);
-                            }
-                            IndexEntry.Builder ieb = IndexEntry.newBuilder()
+                public void processData(ArchiveRecord rec) {
+                    IndexGroup.Builder groupb = groupBuilders.get(rec.getId());
+                    if (groupb == null) {
+                        groupb = IndexGroup.newBuilder().setId(rec.getId());
+                        groupBuilders.put(rec.getId(), groupb);
+                    }
+                    IndexEntry.Builder ieb = IndexEntry.newBuilder()
                             .setStart(TimeEncoding.toString(rec.getFirst()))
                             .setStop(TimeEncoding.toString(rec.getLast()))
                             .setCount(rec.getNum());
-                            if(rec.hasSeqFirst()) {
-                                ieb.setSeqStart(rec.getSeqFirst());
-                            }
-                            if(rec.hasSeqLast()) {
-                                ieb.setSeqStop(rec.getSeqLast());
-                            }
-                            groupb.addEntry(ieb);
-                            last = Math.max(last, rec.getLast());
-                        }
+                    if (rec.hasSeqFirst()) {
+                        ieb.setSeqStart(rec.getSeqFirst());
                     }
-
-                    batchCount++;
+                    if (rec.hasSeqLast()) {
+                        ieb.setSeqStop(rec.getSeqLast());
+                    }
+                    groupb.addEntry(ieb);
+                    last = Math.max(last, rec.getLast());
                 }
 
                 @Override
-                public void finished(boolean success) {
+                public void finished(String token, boolean success) {
                     if (success) {
-                        if (batchCount > 1) {
-                            TimeSortedPageToken token = new TimeSortedPageToken(last);
-                            responseb.setContinuationToken(token.encodeAsString());
+                        if (token != null) {
+                            responseb.setContinuationToken(token);
                         }
                         List<IndexGroup.Builder> sortedGroups = new ArrayList<>(groupBuilders.values());
                         Collections.sort(sortedGroups, (g1, g2) -> {
@@ -279,4 +254,5 @@ public class ArchiveIndexRestHandler extends RestHandler {
             throw new InternalServerErrorException("Too many results", e);
         }
     }
+
 }

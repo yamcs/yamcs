@@ -257,6 +257,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
         private ChunkedTransferStats stats;
 
         private boolean first;
+        private IndexResult.Builder indexResult;
 
         // If unpack, the result will be a stream of Archive Records, otherwise IndexResult
         public ChunkedIndexResultProtobufEncoder(RestRequest req, boolean unpack) {
@@ -270,23 +271,65 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
         private void resetBuffer() {
             buf = req.getChannelHandlerContext().alloc().buffer();
             bufOut = new ByteBufOutputStream(buf);
+
         }
 
         @Override
-        public void processData(IndexResult indexResult) {
+        public void begin(IndexType type, String tblName) {
+            if (!unpack) {
+                if (indexResult != null) {
+                    bufferIndexResult(indexResult.build());
+                }
+                indexResult = newBuilder(type.name(), tblName);
+            }
+        }
+
+        @Override
+        public void processData(ArchiveRecord ar) {
             if (first) {
                 lastChannelFuture = HttpRequestHandler.startChunkedTransfer(req.getChannelHandlerContext(),
                         req.getHttpRequest(), contentType, null);
                 stats = req.getChannelHandlerContext().channel().attr(HttpRequestHandler.CTX_CHUNK_STATS).get();
                 first = false;
             }
+            if (unpack) {
+                bufferArchiveRecord(ar);
+            } else {
+                indexResult.addRecords(ar);
+                if (indexResult.getRecordsCount() > 500) {
+                    bufferIndexResult(indexResult.build());
+                    indexResult = newBuilder(indexResult.getType(), indexResult.getTableName());
+                }
+            }
+          
+        }
+
+        private void bufferArchiveRecord(ArchiveRecord msg) {
             try {
-                if (unpack) {
-                    for (ArchiveRecord rec : indexResult.getRecordsList()) {
-                        bufferArchiveRecord(rec);
-                    }
+                if (MediaType.PROTOBUF.equals(contentType)) {
+                    msg.writeDelimitedTo(bufOut);
                 } else {
-                    bufferIndexResult(indexResult);
+                    String json = JsonFormat.printer().print(msg);
+                    bufOut.write(json.getBytes(StandardCharsets.UTF_8));
+                }
+                
+                if (buf.readableBytes() >= CHUNK_TRESHOLD) {
+                    bufOut.close();
+                    writeChunk();
+                    resetBuffer();
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+
+        private void bufferIndexResult(IndexResult msg) {
+            try {
+                if (MediaType.PROTOBUF.equals(contentType)) {
+                    msg.writeDelimitedTo(bufOut);
+                } else {
+                    String json = JsonFormat.printer().print(msg);
+                    bufOut.write(json.getBytes(StandardCharsets.UTF_8));
                 }
                 if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                     bufOut.close();
@@ -298,26 +341,16 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
             }
         }
 
-        private void bufferArchiveRecord(ArchiveRecord msg) throws IOException {
-            if (MediaType.PROTOBUF.equals(contentType)) {
-                msg.writeDelimitedTo(bufOut);
-            } else {
-                String json = JsonFormat.printer().print(msg);
-                bufOut.write(json.getBytes(StandardCharsets.UTF_8));
+        private IndexResult.Builder newBuilder(String type, String tblName) {
+            IndexResult.Builder b = IndexResult.newBuilder().setType(type);
+            if(tblName!=null) {
+                b.setTableName(tblName);
             }
-        }
-
-        private void bufferIndexResult(IndexResult msg) throws IOException {
-            if (MediaType.PROTOBUF.equals(contentType)) {
-                msg.writeDelimitedTo(bufOut);
-            } else {
-                String json = JsonFormat.printer().print(msg);
-                bufOut.write(json.getBytes(StandardCharsets.UTF_8));
-            }
+            return b;
         }
 
         @Override
-        public void finished(boolean success) {
+        public void finished(String token, boolean success) {
             if (first) { // empty result
                 RestHandler.completeOK(req);
             } else {
@@ -343,6 +376,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
             stats.chunkCount++;
             lastChannelFuture = HttpRequestHandler.writeChunk(req.getChannelHandlerContext(), buf);
         }
+
     }
 
     private IndexServer verifyIndexServer(RestRequest req, String instance) throws HttpException {

@@ -45,18 +45,18 @@ public class HistogramRebuilderTest  extends YarchTestCase {
     public void testDeleteValues() throws Exception {
         Tablespace tablespace = rse.getTablespace(ydb.getName());
         TimeInterval interval = new TimeInterval();
-        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval);
         assertNumElementsEqual(iter, 3);
         iter.close();
         
         HistogramRebuilder rebuilder = new HistogramRebuilder(tablespace, ydb, tblName);
         rebuilder.deleteHistograms(new TimeInterval(1000L, 1000L));
-        iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        iter = rse.getHistogramIterator(ydb, tblDef, "name", interval);
         assertNumElementsEqual(iter, 1);
         iter.close();
         
         rebuilder.rebuild(new TimeInterval(0, 2000)).get();
-        iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        iter = rse.getHistogramIterator(ydb, tblDef, "name", interval);
         assertNumElementsEqual(iter, 3);
         iter.close();
     }
@@ -65,19 +65,19 @@ public class HistogramRebuilderTest  extends YarchTestCase {
     public void testRebuildAll() throws Exception {
         Tablespace tablespace = rse.getTablespace(ydb.getName());
         TimeInterval interval = new TimeInterval();
-        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval);
         assertNumElementsEqual(iter, 3);
         iter.close();
         
         HistogramRebuilder rebuilder = new HistogramRebuilder(tablespace, ydb,  tblName);
         rebuilder.deleteHistograms(new TimeInterval());
         
-        iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        iter = rse.getHistogramIterator(ydb, tblDef, "name", interval);
         assertNumElementsEqual(iter, 0);
         iter.close();
 
         rebuilder.rebuild(new TimeInterval()).get();
-        iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        iter = rse.getHistogramIterator(ydb, tblDef, "name", interval);
         
         assertNumElementsEqual(iter, 3);
         iter.close();

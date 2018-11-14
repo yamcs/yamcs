@@ -3,7 +3,6 @@ package org.yamcs.yarch.rocksdb;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 import org.junit.Test;
 import org.yamcs.utils.TimeEncoding;
@@ -11,7 +10,6 @@ import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.HistogramIterator;
-import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWriter;
@@ -84,7 +82,7 @@ public class RdbEngineTest extends YarchTestCase {
         TableDefinition tblDef = populate();
         RdbStorageEngine rse =  RdbStorageEngine.getInstance();
         TimeInterval interval = new TimeInterval();
-        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        HistogramIterator iter = rse.getHistogramIterator(ydb, tblDef, "name", interval);
         assertNumElementsEqual(iter, 3);
         iter.close();
 
@@ -92,7 +90,7 @@ public class RdbEngineTest extends YarchTestCase {
 
         rse.loadTablespaces(false);
         rse.loadTable(ydb, tblDef);
-        iter = rse.getHistogramIterator(ydb, tblDef, "name", interval, 0);
+        iter = rse.getHistogramIterator(ydb, tblDef, "name", interval);
         assertNumElementsEqual(iter, 3);
         iter.close();
     }

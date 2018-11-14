@@ -1,27 +1,35 @@
 package org.yamcs.archive;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.archive.IndexRequestListener.IndexType;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.IndexRequest;
-import org.yamcs.protobuf.Yamcs.IndexResult;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.TimeInterval;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.XtceDb;
 import org.yamcs.xtceproc.XtceDbFactory;
-import org.yamcs.yarch.Stream;
-import org.yamcs.yarch.StreamSubscriber;
-import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.ColumnDefinition;
+import org.yamcs.yarch.ColumnSerializer;
+import org.yamcs.yarch.HistogramIterator;
+import org.yamcs.yarch.HistogramRecord;
+import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * Performs histogram and completeness index retrievals.
@@ -30,13 +38,15 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  *
  */
 class IndexRequestProcessor implements Runnable {
-    int n = 500;
-    final String archiveInstance;
+    final String yamcsInstance;
     final static AtomicInteger counter = new AtomicInteger();
     static Logger log = LoggerFactory.getLogger(IndexRequestProcessor.class.getName());
     final IndexRequest req;
     TmIndex tmIndexer;
     IndexRequestListener indexRequestListener;
+
+    private static Cache<String, TokenData> tokenCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.SECONDS).maximumSize(1000).build();
 
     // these maps contains the names with which the records will be sent to the client
     Map<String, NamedObjectId> tmpackets;
@@ -45,17 +55,34 @@ class IndexRequestProcessor implements Runnable {
     Map<String, NamedObjectId> ppGroups;
 
     boolean sendTms;
+    int batchSize = 500;
+    int limit = -1;
 
-    IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, IndexRequestListener l) {
+    String token;
+    TokenData tokenData = null;
+    int count = 0;
+    HistoRequest[] hreq = new HistoRequest[5];
+    MergingResult mergingResult;
+
+    IndexRequestProcessor(TmIndex tmIndexer, IndexRequest req, int limit, String recToken, IndexRequestListener l) {
         log.debug("new index request: {}", req);
-        this.archiveInstance = req.getInstance();
+        this.yamcsInstance = req.getInstance();
         this.req = req;
         this.tmIndexer = tmIndexer;
         this.indexRequestListener = l;
+        this.limit = limit;
+
+        if (recToken != null) {
+            tokenData = tokenCache.getIfPresent(recToken);
+            if (tokenData == null) {
+                throw new IllegalArgumentException("Invalid token specified");
+            }
+            this.token = recToken;
+        }
 
         if (req.getSendAllTm() || req.getTmPacketCount() > 0) {
             sendTms = true;
-            XtceDb db = XtceDbFactory.getInstance(archiveInstance);
+            XtceDb db = XtceDbFactory.getInstance(yamcsInstance);
 
             if (req.getSendAllTm()) {
                 if (req.hasDefaultNamespace()) {
@@ -77,13 +104,18 @@ class IndexRequestProcessor implements Runnable {
                     }
                 }
             }
+            int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
+            hreq[0] = new HistoRequest(XtceTmRecorder.TABLE_NAME, XtceTmRecorder.PNAME_COLUMN, mergeTime,
+                    tmpackets);
         }
 
-        if (req.getEventSourceCount() > 0) {
+        if ((req.getEventSourceCount() > 0)) {
             eventSources = new HashMap<>();
             for (NamedObjectId id : req.getEventSourceList()) {
                 eventSources.put(id.getName(), id);
             }
+            int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
+            hreq[1] = new HistoRequest(EventRecorder.TABLE_NAME, "source", mergeTime, eventSources);
         }
 
         if (req.getCmdNameCount() > 0) {
@@ -91,6 +123,9 @@ class IndexRequestProcessor implements Runnable {
             for (NamedObjectId id : req.getCmdNameList()) {
                 commands.put(id.getName(), id);
             }
+            int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
+            hreq[2] = new HistoRequest(CommandHistoryRecorder.TABLE_NAME,
+                    StandardTupleDefinitions.CMDHIST_TUPLE_COL_CMDNAME, mergeTime, commands);
         }
 
         if (req.getSendAllPp() || req.getPpGroupCount() > 0) {
@@ -98,179 +133,256 @@ class IndexRequestProcessor implements Runnable {
             for (NamedObjectId id : req.getPpGroupList()) {
                 ppGroups.put(id.getName(), id);
             }
+            // use 20 sec for the PP to avoid millions of records
+            int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 20000);
+            hreq[3] = new HistoRequest(ParameterRecorder.TABLE_NAME,
+                    StandardTupleDefinitions.PARAMETER_COL_GROUP, mergeTime, ppGroups);
         }
+
+        if(req.getSendCompletenessIndex()) {
+            int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : -1);
+            hreq[4] = new HistoRequest(null, null, mergeTime, null);
+        }
+        
+        if (tokenData != null) {
+            for (int i = 0; i < tokenData.lastHistoId; i++) {
+                hreq[i] = null;
+            }
+            HistoRequest hr = hreq[tokenData.lastHistoId];
+            if (hr != null) {
+                hr.seekTime = tokenData.lastTime;
+                hr.seekValue = tokenData.lastName;
+                hr.seekId = tokenData.lastId;
+            }
+        } else if (limit > 0) {
+            tokenData = new TokenData();
+            token = getRandomToken();
+            tokenCache.put(token, tokenData);
+        }
+
+    }
+
+    private static String getRandomToken() {
+        Random r = new Random();
+        byte[] b = new byte[16];
+        r.nextBytes(b);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(b);
     }
 
     @Override
     public void run() {
         boolean ok = true;
+        boolean cont = true;
         try {
-            if (sendTms) {
-                int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
-                ok = sendHistogramData(XtceTmRecorder.TABLE_NAME, XtceTmRecorder.PNAME_COLUMN, mergeTime, tmpackets);
+            if (tokenData != null) {
+                mergingResult = tokenData.mergingResult;
+            } else {
+                mergingResult = new MergingResult();
             }
 
-            if (ok && req.getSendAllPp()) {
-                // use 20 sec for the PP to avoid millions of records
-                int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 20000);
-                ok = sendHistogramData(ParameterRecorder.TABLE_NAME,
-                        StandardTupleDefinitions.PARAMETER_COL_GROUP, mergeTime, null);
-            } else if (ok && req.getPpGroupCount() > 0) {
-                // use 20 sec for the PP to avoid millions of records
-                int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 20000);
-                ok = sendHistogramData(ParameterRecorder.TABLE_NAME,
-                        StandardTupleDefinitions.PARAMETER_COL_GROUP, mergeTime, ppGroups);
+            for (int i = 0; i < 5; i++) {
+                if (cont && hreq[i] != null) {
+                    if (tokenData != null) {
+                        tokenData.lastHistoId = i;
+                    }
+                    if (i < 4) {
+                        indexRequestListener.begin(IndexType.HISTOGRAM, hreq[i].tblName);
+                        cont = sendHistogramData(hreq[i]);
+                    } else {
+                        indexRequestListener.begin(IndexType.COMPLETENESS, null);
+                        cont = sendCompletenessIndex(hreq[4]);
+                    }
+                    if (cont) {
+                        cont = flushMergingResult();
+                        mergingResult = new MergingResult();
+                        if (tokenData != null) {
+                            tokenData.mergingResult = mergingResult;
+                        }
+                    }
+                }
             }
-
-            if (ok && req.getSendAllCmd()) {
-                int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
-                ok = sendHistogramData(CommandHistoryRecorder.TABLE_NAME,
-                        StandardTupleDefinitions.CMDHIST_TUPLE_COL_CMDNAME, mergeTime, null);
-            } else if (ok && commands != null) {
-                int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
-                ok = sendHistogramData(CommandHistoryRecorder.TABLE_NAME,
-                        StandardTupleDefinitions.CMDHIST_TUPLE_COL_CMDNAME, mergeTime, commands);
-            }
-
-            if (ok && req.getSendAllEvent()) {
-                int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
-                ok = sendHistogramData(EventRecorder.TABLE_NAME, "source", mergeTime, null);
-            } else if (ok && eventSources != null) {
-                int mergeTime = (req.hasMergeTime() ? req.getMergeTime() : 2000);
-                ok = sendHistogramData(EventRecorder.TABLE_NAME, "source", mergeTime, eventSources);
-            }
-
-            if (ok && req.getSendCompletenessIndex()) {
-                ok = sendCompletenessIndex();
+            if (cont) {
+                token = null;
             }
         } catch (Exception e) {
             log.warn("got exception while sending the response", e);
             ok = false;
         } finally {
             try {
-                indexRequestListener.finished(ok);
+                indexRequestListener.finished(ok ? token : null, ok);
             } catch (Exception e) {
                 log.warn("Error when sending finished signal ", e);
             }
         }
     }
 
-    boolean sendHistogramData(String tblName, String columnName, long mergeTime, Map<String, NamedObjectId> name2id) {
-        try {
-            YarchDatabaseInstance ydb = YarchDatabase.getInstance(req.getInstance());
-            if (ydb.getTable(tblName) == null) {
-                log.warn("Histogram from table '{}' requested, but table does not exist.", tblName);
-                return true;
+    private boolean flushMergingResult() {
+        for (ArchiveRecord ar : mergingResult.res.values()) {
+            indexRequestListener.processData(ar);
+            count++;
+            if (limit > 0 && count >= limit) {
+                return false;
             }
-            String streamName = tblName + "_histo_str" + counter.getAndIncrement();
-            StringBuilder sb = new StringBuilder();
-            sb.append("create stream ").append(streamName).append(" as select * from ")
-                    .append(tblName).append(" histogram(").append(columnName).append(",").append(mergeTime).append(")");
-            if (req.hasStart() || req.hasStop()) {
-                sb.append(" where ");
-            }
-            if (req.hasStart()) {
-                sb.append("last>").append(req.getStart());
-            }
-            if (req.hasStart() && req.hasStop()) {
-                sb.append(" and ");
-            }
-            if (req.hasStop()) {
-                sb.append("first<").append(req.getStop());
-            }
-
-            String query = sb.toString();
-            log.debug("executing query: {}", query);
-            ydb.execute(query);
-            final Semaphore semaphore = new Semaphore(0);
-            final Stream stream = ydb.getStream(streamName);
-            final AtomicBoolean ok = new AtomicBoolean(true);
-            stream.addSubscriber(new StreamSubscriber() {
-                IndexResult.Builder builder = IndexResult.newBuilder().setInstance(archiveInstance).setType("histogram")
-                        .setTableName(tblName);
-
-                @Override
-                public void streamClosed(Stream s) {
-                    log.debug("Stream {} closed", s.getName());
-                    IndexRequestProcessor.this.sendData(builder);
-                    semaphore.release();
-                }
-
-                @Override
-                public void onTuple(Stream s, Tuple t) {
-                    String name = (String) t.getColumn(0);
-                    NamedObjectId id;
-                    if (name2id != null) {
-                        id = name2id.get(name);
-                        if (id == null) {
-                            log.debug("Not sending {} because no id for it", name);
-                            return;
-                        }
-                    } else {
-                        id = NamedObjectId.newBuilder().setName(name).build();
-                    }
-                    long first = (Long) t.getColumn(1);
-                    long last = (Long) t.getColumn(2);
-                    int num = (Integer) t.getColumn(3);
-                    ArchiveRecord ar = ArchiveRecord.newBuilder().setId(id)
-                            .setFirst(first).setLast(last).setNum(num).build();
-                    builder.addRecords(ar);
-                    if (builder.getRecordsCount() >= n) {
-                        sendData();
-                    }
-                }
-
-                void sendData() {
-                    if (!IndexRequestProcessor.this.sendData(builder)) {
-                        stream.close();
-                        ok.set(false);
-                        return;
-                    }
-                    builder = IndexResult.newBuilder().setInstance(archiveInstance).setType("histogram")
-                            .setTableName(tblName);
-                }
-            });
-            stream.start();
-            semaphore.acquire();
-            return ok.get();
-        } catch (Exception e) {
-            log.error("got exception while retrieving histogram data", e);
-            return false;
-        }
-    }
-
-    private boolean sendCompletenessIndex() {
-        long start = req.hasStart() ? req.getStart() : TimeEncoding.INVALID_INSTANT;
-        long stop = req.hasStop() ? req.getStop() : TimeEncoding.INVALID_INSTANT;
-        IndexIterator it = tmIndexer.getIterator(null, start, stop);
-        ArchiveRecord ar;
-        IndexResult.Builder builder = IndexResult.newBuilder().setInstance(archiveInstance).setType("completeness");
-        while ((ar = it.getNextRecord()) != null) {
-            builder.addRecords(ar);
-            if (builder.getRecordsCount() >= n) {
-                if (!sendData(builder)) {
-                    return false;
-                }
-                builder = IndexResult.newBuilder().setInstance(archiveInstance).setType("completeness");
-            }
-        }
-        if (!sendData(builder)) {
-            return false;
         }
         return true;
     }
 
-    boolean sendData(IndexResult.Builder builder) {
-        if (builder.getRecordsCount() == 0) {
+    boolean sendHistogramData(HistoRequest hreq) {
+        log.debug("Sending histogram data for table {} column {}", hreq.tblName, hreq.columnName);
+
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        TableDefinition tblDef = ydb.getTable(hreq.tblName);
+        if (tblDef == null) {
+            log.warn("Histogram from table '{}' requested, but table does not exist.", hreq.tblName);
             return true;
         }
-        log.debug("sending {} {} records", builder.getRecordsCount(), builder.getType());
-        try {
-            indexRequestListener.processData(builder.build());
-            return true;
+        ColumnSerializer<String> histoColumnSerializer = tblDef.getColumnSerializer(hreq.columnName);
+        ColumnDefinition histoColumnDefinition = tblDef.getColumnDefinition(hreq.columnName);
+        TimeInterval interval = getTimeInterval(req);
+
+        try (HistogramIterator iter = ydb.getStorageEngine(tblDef).getHistogramIterator(ydb, tblDef, hreq.columnName,
+                interval)) {
+            if (hreq.seekValue != null) {
+                iter.seek(hreq.seekValue, hreq.seekTime);
+            }
+
+            while (iter.hasNext()) {
+                HistogramRecord hr = iter.next();
+                String name = histoColumnSerializer.fromByteArray(hr.getColumnv(), histoColumnDefinition);
+
+                NamedObjectId id;
+                if (hreq.name2id != null) {
+                    id = hreq.name2id.get(name);
+                    if (id == null) {
+                        log.debug("Not sending {} because no id for it", name);
+                        continue;
+                    }
+                } else {
+                    id = NamedObjectId.newBuilder().setName(name).build();
+                }
+                if (tokenData != null) {
+                    tokenData.lastName = hr.getColumnv();
+                    tokenData.lastTime = hr.getStop();
+                }
+
+                ArchiveRecord ar = ArchiveRecord.newBuilder().setId(id)
+                        .setFirst(hr.getStart()).setLast(hr.getStop()).setNum(hr.getNumTuples()).build();
+                sendData(ar);
+                if (limit > 0 && count >= limit) {
+                    return false;
+                }
+            }
+
         } catch (Exception e) {
-            log.warn("Error when sending histogram data", e);
+            log.error("got exception while reading histogram data", e);
             return false;
+        }
+
+        return true;
+    }
+
+    private TimeInterval getTimeInterval(IndexRequest req) {
+        TimeInterval r = new TimeInterval();
+        if (req.hasStart()) {
+            r.setStart(req.getStart());
+        }
+        if (req.hasStop()) {
+            r.setEnd(req.getStop());
+        }
+        return r;
+    }
+
+    private boolean sendCompletenessIndex(HistoRequest hreq) {
+       
+        long start = req.hasStart() ? req.getStart() : TimeEncoding.INVALID_INSTANT;
+        long stop = req.hasStop() ? req.getStop() : TimeEncoding.INVALID_INSTANT;
+        
+        if(hreq.seekId!=null) {
+            start = hreq.seekTime; 
+        }
+        IndexIterator it = tmIndexer.getIterator(null, start, stop);
+       
+        ArchiveRecord ar;
+        while ((ar = it.getNextRecord()) != null) {
+            sendData(ar);
+            if (tokenData != null) {
+                tokenData.lastId = ar.getId();
+                tokenData.lastTime = ar.getLast();
+            }
+            if (limit > 0 && count >= limit) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void sendData(ArchiveRecord ar) {
+        if (req.getMergeTime() > 0) {
+            ArchiveRecord ar1 = mergingResult.add(ar, req.getMergeTime());
+            if (ar1 != null) {
+                count++;
+                indexRequestListener.processData(ar1);
+            }
+        } else {
+            count++;
+            indexRequestListener.processData(ar);
+        }
+    }
+
+    static class MergingResult {
+        Map<NamedObjectId, ArchiveRecord> res = new HashMap<>();
+
+        public ArchiveRecord add(ArchiveRecord ar, int mergeTime) {
+            ArchiveRecord ar1 = res.get(ar.getId());
+            if (ar1 == null) {
+                res.put(ar.getId(), ar);
+                return null;
+            }
+            if (ar.getFirst() - ar1.getLast() < mergeTime) {
+                ArchiveRecord ar2 = ArchiveRecord.newBuilder().setFirst(ar1.getFirst())
+                        .setLast(ar.getLast()).setNum(ar1.getNum() + ar.getNum())
+                        .setId(ar.getId()).build();
+                res.put(ar.getId(), ar2);
+                return null;
+            } else {
+                res.put(ar.getId(), ar);
+                return ar1;
+            }
+        }
+    }
+
+    static class TokenData {
+        int lastHistoId = 0;
+        byte[] lastName;
+        NamedObjectId lastId;
+        
+        long lastTime;
+        MergingResult mergingResult = new MergingResult();
+
+        @Override
+        public String toString() {
+            return "TokenData [lastHistoId=" + lastHistoId
+                    + (lastName == null ? "" : ", lastName=" + StringConverter.arrayToHexString(lastName))
+                    + (lastId == null ? "" : ", lastId=" + lastId.getName())
+                    + ", lastTime=" + TimeEncoding.toString(lastTime) + "]";
+        }
+    }
+
+    static class HistoRequest {
+        final String tblName;
+        final String columnName;
+        final long mergeTime;
+        final Map<String, NamedObjectId> name2id;
+        byte[] seekValue;
+        NamedObjectId seekId;
+        long seekTime;
+
+        public HistoRequest(String tableName, String columnName, int mergeTime,
+                Map<String, NamedObjectId> name2id) {
+            this.tblName = tableName;
+            this.columnName = columnName;
+            this.mergeTime = mergeTime;
+            this.name2id = name2id;
         }
     }
 }

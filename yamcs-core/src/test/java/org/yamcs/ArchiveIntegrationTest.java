@@ -1,6 +1,7 @@
 package org.yamcs;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -22,6 +23,7 @@ import org.yamcs.api.YamcsApiException.RestExceptionData;
 import org.yamcs.api.rest.BulkRestDataReceiver;
 import org.yamcs.api.rest.BulkRestDataSender;
 import org.yamcs.api.ws.WebSocketRequest;
+import org.yamcs.protobuf.Archive.IndexResponse;
 import org.yamcs.protobuf.Archive.TableData.TableRecord;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -59,6 +61,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     static { // to avoid getting the warning in the console in the test below that loads invalid table records
         Logger.getLogger("org.yamcs.yarch").setLevel(Level.SEVERE);
+        
     }
 
     @Test
@@ -189,7 +192,6 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals("2015-02-01T10:01:00.000Z", p1_1_6.getGenerationTimeUTC());
 
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
-        System.out.println("pdata: "+pdata);
         assertNotNull(pdata);
         assertEquals(1, pdata.getParameterCount());
         ParameterValue pp_para_uint = pdata.getParameter(0);
@@ -215,7 +217,9 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testIndexWithRestClient() throws Exception {
+       
         generatePkt13AndPps("2015-02-01T10:00:00", 3600);
+        LoggingUtils.enableLogging();
         List<ArchiveRecord> arlist = new ArrayList<>();
         restClient.setAcceptMediaType(MediaType.PROTOBUF);
         CompletableFuture<Void> f = restClient.doBulkGetRequest(
@@ -240,6 +244,10 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         f.get();
         assertEquals(4, arlist.size());
     }
+    
+    
+ 
+    
 
     @Test
     public void testParameterHistory() throws Exception {
@@ -274,6 +282,66 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         verifyRecords("table0", 100);
         verifyRecordsDumpFormat("table0", 100);
     }
+    
+    @Test
+    public void testTokenizedHistoIndexViaRest() throws Exception {
+        generatePkt13AndPps("2015-02-03T10:00:00", 120);
+        generatePkt13AndPps("2015-02-03T10:03:00", 100);
+        
+        //first without a limit
+        String resp = restClient.doRequest("/archive/IntegrationTest/packet-index?start=2015-02-03T00:00:00&stop=2015-02-03T11:00:00", HttpMethod.GET,  "").get();
+        
+        IndexResponse ir = fromJson(resp, IndexResponse.newBuilder()).build();
+        assertEquals(2, ir.getGroupCount());
+        assertEquals(2, ir.getGroup(0).getEntryCount());
+        assertEquals(2, ir.getGroup(1).getEntryCount());
+        assertFalse(ir.hasContinuationToken());
+        
+        //now 1+3
+        resp = restClient.doRequest("/archive/IntegrationTest/packet-index?start=2015-02-03T00:00:00&stop=2015-02-03T11:00:00&limit=1", HttpMethod.GET,  "").get();
+        ir = fromJson(resp, IndexResponse.newBuilder()).build();
+        assertEquals(1, ir.getGroupCount());
+        assertEquals(1, ir.getGroup(0).getEntryCount());
+        assertTrue(ir.hasContinuationToken());
+        
+        resp = restClient.doRequest("/archive/IntegrationTest/packet-index?start=2015-02-03T00:00:00&stop=2015-02-03T11:00:00&limit=4&next="+ir.getContinuationToken(), HttpMethod.GET,  "").get();
+        ir = fromJson(resp, IndexResponse.newBuilder()).build();
+        assertEquals(2, ir.getGroupCount());
+        assertEquals(1, ir.getGroup(0).getEntryCount());
+        assertEquals(2, ir.getGroup(1).getEntryCount());
+        assertFalse(ir.hasContinuationToken());
+        
+    }
+    
+    
+    @Test
+    public void testTokenizedCompletnessIndexViaRest() throws Exception {
+        generatePkt13AndPps("2015-02-04T10:00:00", 120);
+        packetGenerator.simulateGap(995);
+        generatePkt13AndPps("2015-02-04T10:03:00", 100);
+        
+        //first without a limit
+        String resp = restClient.doRequest("/archive/IntegrationTest/completeness-index?start=2015-02-04T00:00:00&stop=2015-02-04T11:00:00", HttpMethod.GET,  "").get();
+        IndexResponse ir = fromJson(resp, IndexResponse.newBuilder()).build();
+        assertEquals(1, ir.getGroupCount());
+        assertEquals(2, ir.getGroup(0).getEntryCount());
+        assertFalse(ir.hasContinuationToken());
+        
+        //now 1+3
+        resp = restClient.doRequest("/archive/IntegrationTest/completeness-index?start=2015-02-04T00:00:00&stop=2015-02-04T11:00:00&limit=1", HttpMethod.GET,  "").get();
+        ir = fromJson(resp, IndexResponse.newBuilder()).build();
+        assertEquals(1, ir.getGroupCount());
+        assertEquals(1, ir.getGroup(0).getEntryCount());
+        assertTrue(ir.hasContinuationToken());
+        
+        resp = restClient.doRequest("/archive/IntegrationTest/completeness-index?start=2015-02-04T00:00:00&stop=2015-02-04T11:00:00&limit=4&next="+ir.getContinuationToken(), HttpMethod.GET,  "").get();
+        ir = fromJson(resp, IndexResponse.newBuilder()).build();
+        assertEquals(1, ir.getGroupCount());
+        assertEquals(1, ir.getGroup(0).getEntryCount());
+        assertFalse(ir.hasContinuationToken());
+        
+    }
+    
 
     @Test
     public void testTableLoadWithInvalidRecord() throws Exception {
@@ -331,6 +399,8 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(50, numRowsLoaded);
         verifyRecords("table2", 50);
     }
+    
+    
 
     @SuppressWarnings({ "unchecked" })
     private Row getRecord(int i) {

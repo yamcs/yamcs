@@ -120,6 +120,36 @@ public class IndexServer extends AbstractService implements YamcsService {
     public String getInstance() {
         return yamcsInstance;
     }
+    
+
+    /**
+     * Asynchronously submit an index request. When the request is processed the provided listener will receive
+     * callbacks.
+     * 
+     * @param req
+     *            the request to be executed
+     * @param limit
+     *            if greater than 0, the result will be limited to this number of records. If more records are available, 
+     *            the last call will provide a token which can be used for a subsequent request to get more data
+     * @param token
+     *            if this is a subsequent request, indicates a token which is used for continuation. 
+     * @param listener
+     *            where to send the resulting data
+     * @throws YamcsException
+     *             exception thrown if the service is not in running state or the the request is invalid
+     */
+    public void submitIndexRequest(IndexRequest req, int limit, String token, IndexRequestListener listener) throws YamcsException {
+        State state = state();
+        if (state != State.RUNNING) {
+            throw new YamcsException("The IndexServer service is not in state RUNNING but " + state);
+        }
+
+        if (!YamcsServer.hasInstance(req.getInstance())) {
+            throw new YamcsException("Invalid instance " + req.getInstance());
+        }
+        IndexRequestProcessor p = new IndexRequestProcessor(tmIndexer, req, limit, token, listener);
+        executor.submit(p);
+    }
 
     /**
      * Asynchronously submit an index request. When the request is processed the provided listener will receive
@@ -133,16 +163,7 @@ public class IndexServer extends AbstractService implements YamcsService {
      *             exception thrown if the service is not in running state or the the request is invalid
      */
     public void submitIndexRequest(IndexRequest req, IndexRequestListener listener) throws YamcsException {
-        State state = state();
-        if (state != State.RUNNING) {
-            throw new YamcsException("The IndexServer service is not in state RUNNING but " + state);
-        }
-
-        if (!YamcsServer.hasInstance(req.getInstance())) {
-            throw new YamcsException("Invalid instance " + req.getInstance());
-        }
-        IndexRequestProcessor p = new IndexRequestProcessor(tmIndexer, req, listener);
-        executor.submit(p);
+       submitIndexRequest(req, -1, null, listener);
     }
     
     private void unsubscribe(StreamConfigEntry sce) {
