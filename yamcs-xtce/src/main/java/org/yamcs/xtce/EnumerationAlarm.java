@@ -48,7 +48,7 @@ public class EnumerationAlarm extends AlarmType implements Serializable {
         AlarmLevels alarmLevel;
         String enumerationLabel;
 
-        EnumerationAlarmItem(String label, AlarmLevels level) {
+        public EnumerationAlarmItem(String label, AlarmLevels level) {
             this.enumerationLabel = label;
             this.alarmLevel = level;
         }

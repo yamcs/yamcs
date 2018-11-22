@@ -42,6 +42,19 @@ public class StringDataEncoding extends DataEncoding {
         this.sizeType = sizeType;
     }
 
+    /**
+     * copy constructor
+     * @param sde
+     */
+    StringDataEncoding(StringDataEncoding sde) {
+        super(sde);
+        this.sizeType = sde.sizeType;
+        this.terminationChar = sde.terminationChar;
+        this.sizeInBitsOfSizeTag = sde.sizeInBitsOfSizeTag;
+        this.encoding = sde.encoding;
+    }
+
+
     public void setSizeType(SizeType sizeType) {
         this.sizeType = sizeType;
     }
@@ -111,5 +124,11 @@ public class StringDataEncoding extends DataEncoding {
         Charset.forName(encoding);
         
         this.encoding = encoding;
+    }
+
+
+    @Override
+    public StringDataEncoding copy() {
+        return new StringDataEncoding(this);
     }
 }

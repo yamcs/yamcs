@@ -78,7 +78,6 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
                 skipRun = true;
             }
         }
-
         // But run it only, if this satisfies an onParameterUpdate trigger
         boolean triggered = false;
         for (OnParameterUpdateTrigger trigger : algorithmDef.getTriggerSet().getOnParameterUpdateTriggers()) {

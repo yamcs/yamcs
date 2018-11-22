@@ -8,13 +8,13 @@
     <td>default</td>
     <td>{{ defaultCalibrator.type }}</td>
     <td [ngSwitch]="defaultCalibrator.type">
-      <span *ngSwitchCase="'Polynomial'"
+      <span *ngSwitchCase="'POLYNOMIAL'"
             [innerHTML]="defaultCalibrator.polynomialCalibrator.coefficient | polynomial">
       </span>
-      <span *ngSwitchCase="'Spline'">
+      <span *ngSwitchCase="'SPLINE'">
         {{ defaultCalibrator.splineCalibrator.point.length }} points
       </span>
-      <span *ngSwitchCase="'Java Expression'">
+      <span *ngSwitchCase="'JAVA_EXPRESSION'">
         {{ defaultCalibrator.javaExpressionCalibrator.formula }}
       </span>
       <span *ngSwitchDefault>-</span>
@@ -32,13 +32,13 @@
       </td>
       <td>{{ contextCalibrator.calibrator.type }}</td>
       <td [ngSwitch]="contextCalibrator.calibrator.type">
-        <span *ngSwitchCase="'Polynomial'"
+        <span *ngSwitchCase="'POLYNOMIAL'"
               [innerHTML]="contextCalibrator.calibrator.polynomialCalibrator.coefficient | polynomial">
         </span>
-        <span *ngSwitchCase="'Spline'">
+        <span *ngSwitchCase="'SPLINE'">
           {{ contextCalibrator.calibrator.splineCalibrator.point.length }} points
         </span>
-        <span *ngSwitchCase="'Java Expression'">
+        <span *ngSwitchCase="'JAVA_EXPRESSION'">
           {{ contextCalibrator.calibrator.javaExpressionCalibrator.formula }}
         </span>
         <span *ngSwitchDefault>-</span>

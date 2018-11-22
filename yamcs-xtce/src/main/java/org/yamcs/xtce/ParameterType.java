@@ -38,11 +38,24 @@ public interface ParameterType extends DataType {
     Object parseStringForRawValue(String stringValue);
     
     /**
-     * set the data encoding for the parameter type
+     * Set the data encoding for the parameter type
+     * <br>
+     * For arrays and aggregates types that do not have encoding;
+     * this operation will throw an {@link UnsupportedOperationException}
+     * 
      * @param dataEncoding
      */
     void setEncoding(DataEncoding dataEncoding);
 
+    /**
+     * Get the data encoding for the parameter type.
+     * <br>
+     * For arrays and aggregates types that do not have encoding;
+     * this operation will throw an {@link UnsupportedOperationException}
+     * @return
+     */
+    DataEncoding getEncoding();
+        
     /**
      * Create a shallow copy of the parameter type
      *  - the object itself (and the primitive fields) are new 

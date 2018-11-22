@@ -90,6 +90,8 @@ public class AlgorithmManager extends AbstractService
     final static Map<String, AlgorithmEngine> algorithmEngines = new HashMap<>();
 
     final Map<String, AlgorithmExecutorFactory> factories = new HashMap<>();
+    final Map<CustomAlgorithm, CustomAlgorithm> algoOverrides = new HashMap<>();
+    
     final Map<String, Object> config;
     static {
         registerScriptEngines();
@@ -460,5 +462,40 @@ public class AlgorithmManager extends AbstractService
 
     public Processor getProcessor() {
         return processor;
+    }
+
+    public void clearAlgorithmOverride(CustomAlgorithm calg) {
+        CustomAlgorithm algOverr = algoOverrides.remove(calg);
+        if(algOverr==null) {
+            return;
+        }
+        deactivateAlgorithm(algOverr, globalCtx);
+        activateAlgorithm(calg, globalCtx, null);
+    }
+
+    /**
+     * Override the algorithm 
+     * @param calg
+     * @param text
+     */
+    public void setAlgorithmText(CustomAlgorithm calg, String text) {
+        CustomAlgorithm algOverr = algoOverrides.remove(calg);
+        if(algOverr==null) {
+            deactivateAlgorithm(calg, globalCtx);    
+        } else {
+            deactivateAlgorithm(algOverr, globalCtx);
+        }
+        
+        
+        AlgorithmExecutorFactory factory = factories.get(calg.getLanguage());
+        if(factory == null) {
+            throw new AlgorithmException("No factory available for algorithms with language '"+calg.getLanguage()+"'");
+        }
+        algOverr = calg.copy();
+        algOverr.setAlgorithmText(text);
+        AlgorithmExecutor executor = factory.makeExecutor(algOverr, globalCtx);
+        globalCtx.addAlgorithm(algOverr, executor);
+        algoOverrides.put(calg, algOverr);
+        executionOrder.add(executor);
     }
 }

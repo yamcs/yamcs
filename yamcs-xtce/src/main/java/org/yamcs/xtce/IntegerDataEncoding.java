@@ -56,6 +56,10 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
         stringEncoding = sde;
     }
 
+    public IntegerDataEncoding(IntegerDataEncoding ide) {
+        super(ide);
+    }
+
     public Encoding getEncoding() {
         return encoding;
     }
@@ -129,6 +133,11 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    @Override
+    public IntegerDataEncoding copy() {
+        return new IntegerDataEncoding(this);
     }
 
 }

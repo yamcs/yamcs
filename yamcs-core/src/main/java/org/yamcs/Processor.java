@@ -749,4 +749,17 @@ public class Processor extends AbstractService {
     public boolean isSubscribeAll() {
         return subscribeAll;
     }
+    
+    @SuppressWarnings("unchecked")
+    public <T extends ProcessorService> List<T> getServices(Class<T> serviceClass) {
+        List<T> services = new ArrayList<>();
+        if (serviceList != null) {
+            for (ServiceWithConfig swc : serviceList) {
+                if (swc.getServiceClass().equals(serviceClass.getName())) {
+                    services.add((T) swc.service);
+                }
+            }
+        }
+        return services;
+    }
 }

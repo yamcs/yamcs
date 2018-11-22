@@ -55,6 +55,8 @@ public class ArrayParameterType extends ArrayDataType implements ParameterType {
     public void setInitialValue(String initialValue) {
     }
 
-    
-
+    @Override
+    public DataEncoding getEncoding() {
+        throw new UnsupportedOperationException("aggregate parameters do not support encodings");
+    }
 }

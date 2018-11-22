@@ -19,7 +19,8 @@ Administrator:
   WriteParameter: [".*"]
   ReadPacket: [".*"]
   Command: [".*"]
+  ChangeCalibrator: [".*"]
   System: ["ControlProcessor", "ModifyCommandHistory", "ControlCommandQueue", "Command", "GetMissionDatabase", 
-"ControlArchiving", "ControlServices", "ReadTables", "WriteTables",  "WriteEvents"]
+"ControlArchiving", "ControlServices", "ReadTables", "WriteTables",  "WriteEvents", "ChangeMissionDatabase"]
 
 EmptyRole:

@@ -409,15 +409,6 @@ limitations under the License.
 						</xtce:FloatDataEncoding>
 						<xtce:ValidRange minInclusive="-10.00" maxInclusive="10.00" rangeAppliesToCalibrated="false"/>
 					</xtce:FloatParameterType>
-					<xtce:FloatParameterType name="Float_Missing_SplinePoints_Type" sizeInBits="32" shortDescription="This is a float parameter with no points in a spline calibrator (invalid)">
-						<xtce:UnitSet/>
-						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32">
-							<xtce:DefaultCalibrator>
-								<xtce:SplineCalibrator/>
-							</xtce:DefaultCalibrator>
-						</xtce:FloatDataEncoding>
-						<xtce:ValidRange minInclusive="-10.00" maxInclusive="10.00" rangeAppliesToCalibrated="false"/>
-					</xtce:FloatParameterType>
 					<xtce:FloatParameterType name="Float_Order0_PolyTerms_Type" sizeInBits="32" shortDescription="This is a float parameter with an order 0 polynomial calibrator">
 						<xtce:UnitSet/>
 						<xtce:FloatDataEncoding bitOrder="mostSignificantBitFirst" encoding="IEEE754_1985" sizeInBits="32">
@@ -826,11 +817,6 @@ limitations under the License.
 						</xtce:ParameterProperties>
 					</xtce:Parameter>
 					<xtce:Parameter name="Float_Missing_PolyTerms" parameterTypeRef="Float_Missing_PolyTerms_Type">
-						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
-							<xtce:SystemName>NONE</xtce:SystemName>
-						</xtce:ParameterProperties>
-					</xtce:Parameter>
-					<xtce:Parameter name="Float_Missing_SplinePoints" parameterTypeRef="Float_Missing_SplinePoints_Type">
 						<xtce:ParameterProperties dataSource="telemetered" readOnly="true">
 							<xtce:SystemName>NONE</xtce:SystemName>
 						</xtce:ParameterProperties>

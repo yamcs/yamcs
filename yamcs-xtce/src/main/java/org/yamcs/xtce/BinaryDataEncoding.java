@@ -28,6 +28,16 @@ public class BinaryDataEncoding extends DataEncoding {
         this.type = Type.FIXED_SIZE;
     }
 
+    
+    /**
+     * copy constructor
+     * @param bde
+     */
+    public BinaryDataEncoding(BinaryDataEncoding bde) {
+        super(bde);
+        this.sizeInBitsOfSizeTag = bde.sizeInBitsOfSizeTag;
+        this.type = bde.type;
+    }
 
     public void setSizeType(Type sizeType) {
         this.type = sizeType;
@@ -52,5 +62,10 @@ public class BinaryDataEncoding extends DataEncoding {
     @Override
     public Object parseString(String stringValue) {
         return BinaryDataType.hexStringToArray(stringValue);
+    }
+
+    @Override
+    public BinaryDataEncoding copy() {
+        return new BinaryDataEncoding(this);
     }
 }

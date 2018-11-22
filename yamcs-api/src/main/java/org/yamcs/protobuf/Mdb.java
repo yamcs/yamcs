@@ -5995,6 +5995,962 @@ public final class Mdb {
 
   }
 
+  public interface ContextAlarmInfoOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.mdb.ContextAlarmInfo)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> 
+        getComparisonList();
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ComparisonInfo getComparison(int index);
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+     */
+    int getComparisonCount();
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder> 
+        getComparisonOrBuilderList();
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder getComparisonOrBuilder(
+        int index);
+
+    /**
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+     */
+    boolean hasAlarm();
+    /**
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+     */
+    org.yamcs.protobuf.Mdb.AlarmInfo getAlarm();
+    /**
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+     */
+    org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder getAlarmOrBuilder();
+  }
+  /**
+   * Protobuf type {@code yamcs.protobuf.mdb.ContextAlarmInfo}
+   */
+  public  static final class ContextAlarmInfo extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.mdb.ContextAlarmInfo)
+      ContextAlarmInfoOrBuilder {
+    // Use ContextAlarmInfo.newBuilder() to construct.
+    private ContextAlarmInfo(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ContextAlarmInfo() {
+      comparison_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ContextAlarmInfo(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                comparison_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ComparisonInfo>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              comparison_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.ComparisonInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 18: {
+              org.yamcs.protobuf.Mdb.AlarmInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = alarm_.toBuilder();
+              }
+              alarm_ = input.readMessage(org.yamcs.protobuf.Mdb.AlarmInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(alarm_);
+                alarm_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          comparison_ = java.util.Collections.unmodifiableList(comparison_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ContextAlarmInfo_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ContextAlarmInfo_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.ContextAlarmInfo.class, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int COMPARISON_FIELD_NUMBER = 1;
+    private java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> comparison_;
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> getComparisonList() {
+      return comparison_;
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder> 
+        getComparisonOrBuilderList() {
+      return comparison_;
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+     */
+    public int getComparisonCount() {
+      return comparison_.size();
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ComparisonInfo getComparison(int index) {
+      return comparison_.get(index);
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder getComparisonOrBuilder(
+        int index) {
+      return comparison_.get(index);
+    }
+
+    public static final int ALARM_FIELD_NUMBER = 2;
+    private org.yamcs.protobuf.Mdb.AlarmInfo alarm_;
+    /**
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+     */
+    public boolean hasAlarm() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+     */
+    public org.yamcs.protobuf.Mdb.AlarmInfo getAlarm() {
+      return alarm_ == null ? org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance() : alarm_;
+    }
+    /**
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+     */
+    public org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder getAlarmOrBuilder() {
+      return alarm_ == null ? org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance() : alarm_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getComparisonCount(); i++) {
+        if (!getComparison(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      for (int i = 0; i < comparison_.size(); i++) {
+        output.writeMessage(1, comparison_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(2, getAlarm());
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < comparison_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, comparison_.get(i));
+      }
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getAlarm());
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.ContextAlarmInfo)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.ContextAlarmInfo other = (org.yamcs.protobuf.Mdb.ContextAlarmInfo) obj;
+
+      boolean result = true;
+      result = result && getComparisonList()
+          .equals(other.getComparisonList());
+      result = result && (hasAlarm() == other.hasAlarm());
+      if (hasAlarm()) {
+        result = result && getAlarm()
+            .equals(other.getAlarm());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getComparisonCount() > 0) {
+        hash = (37 * hash) + COMPARISON_FIELD_NUMBER;
+        hash = (53 * hash) + getComparisonList().hashCode();
+      }
+      if (hasAlarm()) {
+        hash = (37 * hash) + ALARM_FIELD_NUMBER;
+        hash = (53 * hash) + getAlarm().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.ContextAlarmInfo prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code yamcs.protobuf.mdb.ContextAlarmInfo}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.mdb.ContextAlarmInfo)
+        org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ContextAlarmInfo_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ContextAlarmInfo_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.ContextAlarmInfo.class, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.ContextAlarmInfo.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getComparisonFieldBuilder();
+          getAlarmFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (comparisonBuilder_ == null) {
+          comparison_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          comparisonBuilder_.clear();
+        }
+        if (alarmBuilder_ == null) {
+          alarm_ = null;
+        } else {
+          alarmBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ContextAlarmInfo_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.ContextAlarmInfo.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo build() {
+        org.yamcs.protobuf.Mdb.ContextAlarmInfo result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo buildPartial() {
+        org.yamcs.protobuf.Mdb.ContextAlarmInfo result = new org.yamcs.protobuf.Mdb.ContextAlarmInfo(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (comparisonBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            comparison_ = java.util.Collections.unmodifiableList(comparison_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.comparison_ = comparison_;
+        } else {
+          result.comparison_ = comparisonBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (alarmBuilder_ == null) {
+          result.alarm_ = alarm_;
+        } else {
+          result.alarm_ = alarmBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.ContextAlarmInfo) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.ContextAlarmInfo)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.ContextAlarmInfo other) {
+        if (other == org.yamcs.protobuf.Mdb.ContextAlarmInfo.getDefaultInstance()) return this;
+        if (comparisonBuilder_ == null) {
+          if (!other.comparison_.isEmpty()) {
+            if (comparison_.isEmpty()) {
+              comparison_ = other.comparison_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureComparisonIsMutable();
+              comparison_.addAll(other.comparison_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.comparison_.isEmpty()) {
+            if (comparisonBuilder_.isEmpty()) {
+              comparisonBuilder_.dispose();
+              comparisonBuilder_ = null;
+              comparison_ = other.comparison_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              comparisonBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getComparisonFieldBuilder() : null;
+            } else {
+              comparisonBuilder_.addAllMessages(other.comparison_);
+            }
+          }
+        }
+        if (other.hasAlarm()) {
+          mergeAlarm(other.getAlarm());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getComparisonCount(); i++) {
+          if (!getComparison(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.ContextAlarmInfo parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.ContextAlarmInfo) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> comparison_ =
+        java.util.Collections.emptyList();
+      private void ensureComparisonIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          comparison_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ComparisonInfo>(comparison_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ComparisonInfo, org.yamcs.protobuf.Mdb.ComparisonInfo.Builder, org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder> comparisonBuilder_;
+
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo> getComparisonList() {
+        if (comparisonBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(comparison_);
+        } else {
+          return comparisonBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public int getComparisonCount() {
+        if (comparisonBuilder_ == null) {
+          return comparison_.size();
+        } else {
+          return comparisonBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ComparisonInfo getComparison(int index) {
+        if (comparisonBuilder_ == null) {
+          return comparison_.get(index);
+        } else {
+          return comparisonBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder setComparison(
+          int index, org.yamcs.protobuf.Mdb.ComparisonInfo value) {
+        if (comparisonBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureComparisonIsMutable();
+          comparison_.set(index, value);
+          onChanged();
+        } else {
+          comparisonBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder setComparison(
+          int index, org.yamcs.protobuf.Mdb.ComparisonInfo.Builder builderForValue) {
+        if (comparisonBuilder_ == null) {
+          ensureComparisonIsMutable();
+          comparison_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          comparisonBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder addComparison(org.yamcs.protobuf.Mdb.ComparisonInfo value) {
+        if (comparisonBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureComparisonIsMutable();
+          comparison_.add(value);
+          onChanged();
+        } else {
+          comparisonBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder addComparison(
+          int index, org.yamcs.protobuf.Mdb.ComparisonInfo value) {
+        if (comparisonBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureComparisonIsMutable();
+          comparison_.add(index, value);
+          onChanged();
+        } else {
+          comparisonBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder addComparison(
+          org.yamcs.protobuf.Mdb.ComparisonInfo.Builder builderForValue) {
+        if (comparisonBuilder_ == null) {
+          ensureComparisonIsMutable();
+          comparison_.add(builderForValue.build());
+          onChanged();
+        } else {
+          comparisonBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder addComparison(
+          int index, org.yamcs.protobuf.Mdb.ComparisonInfo.Builder builderForValue) {
+        if (comparisonBuilder_ == null) {
+          ensureComparisonIsMutable();
+          comparison_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          comparisonBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder addAllComparison(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ComparisonInfo> values) {
+        if (comparisonBuilder_ == null) {
+          ensureComparisonIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, comparison_);
+          onChanged();
+        } else {
+          comparisonBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder clearComparison() {
+        if (comparisonBuilder_ == null) {
+          comparison_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          comparisonBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public Builder removeComparison(int index) {
+        if (comparisonBuilder_ == null) {
+          ensureComparisonIsMutable();
+          comparison_.remove(index);
+          onChanged();
+        } else {
+          comparisonBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ComparisonInfo.Builder getComparisonBuilder(
+          int index) {
+        return getComparisonFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder getComparisonOrBuilder(
+          int index) {
+        if (comparisonBuilder_ == null) {
+          return comparison_.get(index);  } else {
+          return comparisonBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder> 
+           getComparisonOrBuilderList() {
+        if (comparisonBuilder_ != null) {
+          return comparisonBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(comparison_);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ComparisonInfo.Builder addComparisonBuilder() {
+        return getComparisonFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ComparisonInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ComparisonInfo.Builder addComparisonBuilder(
+          int index) {
+        return getComparisonFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ComparisonInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ComparisonInfo comparison = 1;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ComparisonInfo.Builder> 
+           getComparisonBuilderList() {
+        return getComparisonFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ComparisonInfo, org.yamcs.protobuf.Mdb.ComparisonInfo.Builder, org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder> 
+          getComparisonFieldBuilder() {
+        if (comparisonBuilder_ == null) {
+          comparisonBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.ComparisonInfo, org.yamcs.protobuf.Mdb.ComparisonInfo.Builder, org.yamcs.protobuf.Mdb.ComparisonInfoOrBuilder>(
+                  comparison_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          comparison_ = null;
+        }
+        return comparisonBuilder_;
+      }
+
+      private org.yamcs.protobuf.Mdb.AlarmInfo alarm_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.AlarmInfo, org.yamcs.protobuf.Mdb.AlarmInfo.Builder, org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder> alarmBuilder_;
+      /**
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+       */
+      public boolean hasAlarm() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlarmInfo getAlarm() {
+        if (alarmBuilder_ == null) {
+          return alarm_ == null ? org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance() : alarm_;
+        } else {
+          return alarmBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+       */
+      public Builder setAlarm(org.yamcs.protobuf.Mdb.AlarmInfo value) {
+        if (alarmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          alarm_ = value;
+          onChanged();
+        } else {
+          alarmBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+       */
+      public Builder setAlarm(
+          org.yamcs.protobuf.Mdb.AlarmInfo.Builder builderForValue) {
+        if (alarmBuilder_ == null) {
+          alarm_ = builderForValue.build();
+          onChanged();
+        } else {
+          alarmBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+       */
+      public Builder mergeAlarm(org.yamcs.protobuf.Mdb.AlarmInfo value) {
+        if (alarmBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              alarm_ != null &&
+              alarm_ != org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance()) {
+            alarm_ =
+              org.yamcs.protobuf.Mdb.AlarmInfo.newBuilder(alarm_).mergeFrom(value).buildPartial();
+          } else {
+            alarm_ = value;
+          }
+          onChanged();
+        } else {
+          alarmBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+       */
+      public Builder clearAlarm() {
+        if (alarmBuilder_ == null) {
+          alarm_ = null;
+          onChanged();
+        } else {
+          alarmBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlarmInfo.Builder getAlarmBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getAlarmFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder getAlarmOrBuilder() {
+        if (alarmBuilder_ != null) {
+          return alarmBuilder_.getMessageOrBuilder();
+        } else {
+          return alarm_ == null ?
+              org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance() : alarm_;
+        }
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo alarm = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.AlarmInfo, org.yamcs.protobuf.Mdb.AlarmInfo.Builder, org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder> 
+          getAlarmFieldBuilder() {
+        if (alarmBuilder_ == null) {
+          alarmBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.AlarmInfo, org.yamcs.protobuf.Mdb.AlarmInfo.Builder, org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder>(
+                  getAlarm(),
+                  getParentForChildren(),
+                  isClean());
+          alarm_ = null;
+        }
+        return alarmBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.mdb.ContextAlarmInfo)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.mdb.ContextAlarmInfo)
+    private static final org.yamcs.protobuf.Mdb.ContextAlarmInfo DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.ContextAlarmInfo();
+    }
+
+    public static org.yamcs.protobuf.Mdb.ContextAlarmInfo getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ContextAlarmInfo>
+        PARSER = new com.google.protobuf.AbstractParser<ContextAlarmInfo>() {
+      public ContextAlarmInfo parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ContextAlarmInfo(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ContextAlarmInfo> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ContextAlarmInfo> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.ContextAlarmInfo getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface DataEncodingInfoOrBuilder extends
       // @@protoc_insertion_point(interface_extends:yamcs.protobuf.mdb.DataEncodingInfo)
       com.google.protobuf.MessageOrBuilder {
@@ -8466,28 +9422,26 @@ public final class Mdb {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string type = 1;</code>
-     */
-    boolean hasType();
-    /**
-     * <code>optional string type = 1;</code>
-     */
-    java.lang.String getType();
-    /**
-     * <code>optional string type = 1;</code>
-     */
-    com.google.protobuf.ByteString
-        getTypeBytes();
-
-    /**
+     * <pre>
+     *optional string type = 1; //replaced with an enum
+     * </pre>
+     *
      * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
      */
     boolean hasPolynomialCalibrator();
     /**
+     * <pre>
+     *optional string type = 1; //replaced with an enum
+     * </pre>
+     *
      * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
      */
     org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo getPolynomialCalibrator();
     /**
+     * <pre>
+     *optional string type = 1; //replaced with an enum
+     * </pre>
+     *
      * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
      */
     org.yamcs.protobuf.Mdb.PolynomialCalibratorInfoOrBuilder getPolynomialCalibratorOrBuilder();
@@ -8517,6 +9471,15 @@ public final class Mdb {
      * <code>optional .yamcs.protobuf.mdb.JavaExpressionCalibratorInfo javaExpressionCalibrator = 4;</code>
      */
     org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfoOrBuilder getJavaExpressionCalibratorOrBuilder();
+
+    /**
+     * <code>optional .yamcs.protobuf.mdb.CalibratorInfo.Type type = 5;</code>
+     */
+    boolean hasType();
+    /**
+     * <code>optional .yamcs.protobuf.mdb.CalibratorInfo.Type type = 5;</code>
+     */
+    org.yamcs.protobuf.Mdb.CalibratorInfo.Type getType();
   }
   /**
    * Protobuf type {@code yamcs.protobuf.mdb.CalibratorInfo}
@@ -8530,7 +9493,7 @@ public final class Mdb {
       super(builder);
     }
     private CalibratorInfo() {
-      type_ = "";
+      type_ = 0;
     }
 
     @java.lang.Override
@@ -8561,15 +9524,9 @@ public final class Mdb {
               }
               break;
             }
-            case 10: {
-              com.google.protobuf.ByteString bs = input.readBytes();
-              bitField0_ |= 0x00000001;
-              type_ = bs;
-              break;
-            }
             case 18: {
               org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
                 subBuilder = polynomialCalibrator_.toBuilder();
               }
               polynomialCalibrator_ = input.readMessage(org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo.PARSER, extensionRegistry);
@@ -8577,12 +9534,12 @@ public final class Mdb {
                 subBuilder.mergeFrom(polynomialCalibrator_);
                 polynomialCalibrator_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000002;
+              bitField0_ |= 0x00000001;
               break;
             }
             case 26: {
               org.yamcs.protobuf.Mdb.SplineCalibratorInfo.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
                 subBuilder = splineCalibrator_.toBuilder();
               }
               splineCalibrator_ = input.readMessage(org.yamcs.protobuf.Mdb.SplineCalibratorInfo.PARSER, extensionRegistry);
@@ -8590,12 +9547,12 @@ public final class Mdb {
                 subBuilder.mergeFrom(splineCalibrator_);
                 splineCalibrator_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000004;
+              bitField0_ |= 0x00000002;
               break;
             }
             case 34: {
               org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo.Builder subBuilder = null;
-              if (((bitField0_ & 0x00000008) == 0x00000008)) {
+              if (((bitField0_ & 0x00000004) == 0x00000004)) {
                 subBuilder = javaExpressionCalibrator_.toBuilder();
               }
               javaExpressionCalibrator_ = input.readMessage(org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo.PARSER, extensionRegistry);
@@ -8603,7 +9560,18 @@ public final class Mdb {
                 subBuilder.mergeFrom(javaExpressionCalibrator_);
                 javaExpressionCalibrator_ = subBuilder.buildPartial();
               }
-              bitField0_ |= 0x00000008;
+              bitField0_ |= 0x00000004;
+              break;
+            }
+            case 40: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.Mdb.CalibratorInfo.Type value = org.yamcs.protobuf.Mdb.CalibratorInfo.Type.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(5, rawValue);
+              } else {
+                bitField0_ |= 0x00000008;
+                type_ = rawValue;
+              }
               break;
             }
           }
@@ -8630,64 +9598,142 @@ public final class Mdb {
               org.yamcs.protobuf.Mdb.CalibratorInfo.class, org.yamcs.protobuf.Mdb.CalibratorInfo.Builder.class);
     }
 
-    private int bitField0_;
-    public static final int TYPE_FIELD_NUMBER = 1;
-    private volatile java.lang.Object type_;
     /**
-     * <code>optional string type = 1;</code>
+     * Protobuf enum {@code yamcs.protobuf.mdb.CalibratorInfo.Type}
      */
-    public boolean hasType() {
-      return ((bitField0_ & 0x00000001) == 0x00000001);
-    }
-    /**
-     * <code>optional string type = 1;</code>
-     */
-    public java.lang.String getType() {
-      java.lang.Object ref = type_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          type_ = s;
+    public enum Type
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>POLYNOMIAL = 0;</code>
+       */
+      POLYNOMIAL(0),
+      /**
+       * <code>SPLINE = 1;</code>
+       */
+      SPLINE(1),
+      /**
+       * <code>MATH_OPERATION = 2;</code>
+       */
+      MATH_OPERATION(2),
+      /**
+       * <code>JAVA_EXPRESSION = 3;</code>
+       */
+      JAVA_EXPRESSION(3),
+      ;
+
+      /**
+       * <code>POLYNOMIAL = 0;</code>
+       */
+      public static final int POLYNOMIAL_VALUE = 0;
+      /**
+       * <code>SPLINE = 1;</code>
+       */
+      public static final int SPLINE_VALUE = 1;
+      /**
+       * <code>MATH_OPERATION = 2;</code>
+       */
+      public static final int MATH_OPERATION_VALUE = 2;
+      /**
+       * <code>JAVA_EXPRESSION = 3;</code>
+       */
+      public static final int JAVA_EXPRESSION_VALUE = 3;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static Type valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static Type forNumber(int value) {
+        switch (value) {
+          case 0: return POLYNOMIAL;
+          case 1: return SPLINE;
+          case 2: return MATH_OPERATION;
+          case 3: return JAVA_EXPRESSION;
+          default: return null;
         }
-        return s;
       }
-    }
-    /**
-     * <code>optional string type = 1;</code>
-     */
-    public com.google.protobuf.ByteString
-        getTypeBytes() {
-      java.lang.Object ref = type_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        type_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
+
+      public static com.google.protobuf.Internal.EnumLiteMap<Type>
+          internalGetValueMap() {
+        return internalValueMap;
       }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          Type> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<Type>() {
+              public Type findValueByNumber(int number) {
+                return Type.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.CalibratorInfo.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final Type[] VALUES = values();
+
+      public static Type valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private Type(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:yamcs.protobuf.mdb.CalibratorInfo.Type)
     }
 
+    private int bitField0_;
     public static final int POLYNOMIALCALIBRATOR_FIELD_NUMBER = 2;
     private org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo polynomialCalibrator_;
     /**
+     * <pre>
+     *optional string type = 1; //replaced with an enum
+     * </pre>
+     *
      * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
      */
     public boolean hasPolynomialCalibrator() {
-      return ((bitField0_ & 0x00000002) == 0x00000002);
+      return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
+     * <pre>
+     *optional string type = 1; //replaced with an enum
+     * </pre>
+     *
      * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
      */
     public org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo getPolynomialCalibrator() {
       return polynomialCalibrator_ == null ? org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo.getDefaultInstance() : polynomialCalibrator_;
     }
     /**
+     * <pre>
+     *optional string type = 1; //replaced with an enum
+     * </pre>
+     *
      * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
      */
     public org.yamcs.protobuf.Mdb.PolynomialCalibratorInfoOrBuilder getPolynomialCalibratorOrBuilder() {
@@ -8700,7 +9746,7 @@ public final class Mdb {
      * <code>optional .yamcs.protobuf.mdb.SplineCalibratorInfo splineCalibrator = 3;</code>
      */
     public boolean hasSplineCalibrator() {
-      return ((bitField0_ & 0x00000004) == 0x00000004);
+      return ((bitField0_ & 0x00000002) == 0x00000002);
     }
     /**
      * <code>optional .yamcs.protobuf.mdb.SplineCalibratorInfo splineCalibrator = 3;</code>
@@ -8721,7 +9767,7 @@ public final class Mdb {
      * <code>optional .yamcs.protobuf.mdb.JavaExpressionCalibratorInfo javaExpressionCalibrator = 4;</code>
      */
     public boolean hasJavaExpressionCalibrator() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
+      return ((bitField0_ & 0x00000004) == 0x00000004);
     }
     /**
      * <code>optional .yamcs.protobuf.mdb.JavaExpressionCalibratorInfo javaExpressionCalibrator = 4;</code>
@@ -8734,6 +9780,22 @@ public final class Mdb {
      */
     public org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfoOrBuilder getJavaExpressionCalibratorOrBuilder() {
       return javaExpressionCalibrator_ == null ? org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo.getDefaultInstance() : javaExpressionCalibrator_;
+    }
+
+    public static final int TYPE_FIELD_NUMBER = 5;
+    private int type_;
+    /**
+     * <code>optional .yamcs.protobuf.mdb.CalibratorInfo.Type type = 5;</code>
+     */
+    public boolean hasType() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional .yamcs.protobuf.mdb.CalibratorInfo.Type type = 5;</code>
+     */
+    public org.yamcs.protobuf.Mdb.CalibratorInfo.Type getType() {
+      org.yamcs.protobuf.Mdb.CalibratorInfo.Type result = org.yamcs.protobuf.Mdb.CalibratorInfo.Type.valueOf(type_);
+      return result == null ? org.yamcs.protobuf.Mdb.CalibratorInfo.Type.POLYNOMIAL : result;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -8749,16 +9811,16 @@ public final class Mdb {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, type_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeMessage(2, getPolynomialCalibrator());
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeMessage(3, getSplineCalibrator());
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeMessage(4, getJavaExpressionCalibrator());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeEnum(5, type_);
       }
       unknownFields.writeTo(output);
     }
@@ -8769,19 +9831,20 @@ public final class Mdb {
 
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, type_);
-      }
-      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, getPolynomialCalibrator());
       }
-      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, getSplineCalibrator());
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, getJavaExpressionCalibrator());
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(5, type_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -8800,11 +9863,6 @@ public final class Mdb {
       org.yamcs.protobuf.Mdb.CalibratorInfo other = (org.yamcs.protobuf.Mdb.CalibratorInfo) obj;
 
       boolean result = true;
-      result = result && (hasType() == other.hasType());
-      if (hasType()) {
-        result = result && getType()
-            .equals(other.getType());
-      }
       result = result && (hasPolynomialCalibrator() == other.hasPolynomialCalibrator());
       if (hasPolynomialCalibrator()) {
         result = result && getPolynomialCalibrator()
@@ -8820,6 +9878,10 @@ public final class Mdb {
         result = result && getJavaExpressionCalibrator()
             .equals(other.getJavaExpressionCalibrator());
       }
+      result = result && (hasType() == other.hasType());
+      if (hasType()) {
+        result = result && type_ == other.type_;
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -8831,10 +9893,6 @@ public final class Mdb {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      if (hasType()) {
-        hash = (37 * hash) + TYPE_FIELD_NUMBER;
-        hash = (53 * hash) + getType().hashCode();
-      }
       if (hasPolynomialCalibrator()) {
         hash = (37 * hash) + POLYNOMIALCALIBRATOR_FIELD_NUMBER;
         hash = (53 * hash) + getPolynomialCalibrator().hashCode();
@@ -8846,6 +9904,10 @@ public final class Mdb {
       if (hasJavaExpressionCalibrator()) {
         hash = (37 * hash) + JAVAEXPRESSIONCALIBRATOR_FIELD_NUMBER;
         hash = (53 * hash) + getJavaExpressionCalibrator().hashCode();
+      }
+      if (hasType()) {
+        hash = (37 * hash) + TYPE_FIELD_NUMBER;
+        hash = (53 * hash) + type_;
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -8968,25 +10030,25 @@ public final class Mdb {
       }
       public Builder clear() {
         super.clear();
-        type_ = "";
-        bitField0_ = (bitField0_ & ~0x00000001);
         if (polynomialCalibratorBuilder_ == null) {
           polynomialCalibrator_ = null;
         } else {
           polynomialCalibratorBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         if (splineCalibratorBuilder_ == null) {
           splineCalibrator_ = null;
         } else {
           splineCalibratorBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         if (javaExpressionCalibratorBuilder_ == null) {
           javaExpressionCalibrator_ = null;
         } else {
           javaExpressionCalibratorBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000004);
+        type_ = 0;
         bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
@@ -9015,31 +10077,31 @@ public final class Mdb {
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
           to_bitField0_ |= 0x00000001;
         }
-        result.type_ = type_;
-        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
-          to_bitField0_ |= 0x00000002;
-        }
         if (polynomialCalibratorBuilder_ == null) {
           result.polynomialCalibrator_ = polynomialCalibrator_;
         } else {
           result.polynomialCalibrator_ = polynomialCalibratorBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
-          to_bitField0_ |= 0x00000004;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
         }
         if (splineCalibratorBuilder_ == null) {
           result.splineCalibrator_ = splineCalibrator_;
         } else {
           result.splineCalibrator_ = splineCalibratorBuilder_.build();
         }
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
         }
         if (javaExpressionCalibratorBuilder_ == null) {
           result.javaExpressionCalibrator_ = javaExpressionCalibrator_;
         } else {
           result.javaExpressionCalibrator_ = javaExpressionCalibratorBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.type_ = type_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9082,11 +10144,6 @@ public final class Mdb {
 
       public Builder mergeFrom(org.yamcs.protobuf.Mdb.CalibratorInfo other) {
         if (other == org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance()) return this;
-        if (other.hasType()) {
-          bitField0_ |= 0x00000001;
-          type_ = other.type_;
-          onChanged();
-        }
         if (other.hasPolynomialCalibrator()) {
           mergePolynomialCalibrator(other.getPolynomialCalibrator());
         }
@@ -9095,6 +10152,9 @@ public final class Mdb {
         }
         if (other.hasJavaExpressionCalibrator()) {
           mergeJavaExpressionCalibrator(other.getJavaExpressionCalibrator());
+        }
+        if (other.hasType()) {
+          setType(other.getType());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -9124,92 +10184,24 @@ public final class Mdb {
       }
       private int bitField0_;
 
-      private java.lang.Object type_ = "";
-      /**
-       * <code>optional string type = 1;</code>
-       */
-      public boolean hasType() {
-        return ((bitField0_ & 0x00000001) == 0x00000001);
-      }
-      /**
-       * <code>optional string type = 1;</code>
-       */
-      public java.lang.String getType() {
-        java.lang.Object ref = type_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            type_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <code>optional string type = 1;</code>
-       */
-      public com.google.protobuf.ByteString
-          getTypeBytes() {
-        java.lang.Object ref = type_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          type_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>optional string type = 1;</code>
-       */
-      public Builder setType(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        type_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string type = 1;</code>
-       */
-      public Builder clearType() {
-        bitField0_ = (bitField0_ & ~0x00000001);
-        type_ = getDefaultInstance().getType();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional string type = 1;</code>
-       */
-      public Builder setTypeBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        type_ = value;
-        onChanged();
-        return this;
-      }
-
       private org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo polynomialCalibrator_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
           org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo, org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo.Builder, org.yamcs.protobuf.Mdb.PolynomialCalibratorInfoOrBuilder> polynomialCalibratorBuilder_;
       /**
+       * <pre>
+       *optional string type = 1; //replaced with an enum
+       * </pre>
+       *
        * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
        */
       public boolean hasPolynomialCalibrator() {
-        return ((bitField0_ & 0x00000002) == 0x00000002);
+        return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
+       * <pre>
+       *optional string type = 1; //replaced with an enum
+       * </pre>
+       *
        * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
        */
       public org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo getPolynomialCalibrator() {
@@ -9220,6 +10212,10 @@ public final class Mdb {
         }
       }
       /**
+       * <pre>
+       *optional string type = 1; //replaced with an enum
+       * </pre>
+       *
        * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
        */
       public Builder setPolynomialCalibrator(org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo value) {
@@ -9232,10 +10228,14 @@ public final class Mdb {
         } else {
           polynomialCalibratorBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         return this;
       }
       /**
+       * <pre>
+       *optional string type = 1; //replaced with an enum
+       * </pre>
+       *
        * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
        */
       public Builder setPolynomialCalibrator(
@@ -9246,15 +10246,19 @@ public final class Mdb {
         } else {
           polynomialCalibratorBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         return this;
       }
       /**
+       * <pre>
+       *optional string type = 1; //replaced with an enum
+       * </pre>
+       *
        * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
        */
       public Builder mergePolynomialCalibrator(org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo value) {
         if (polynomialCalibratorBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
               polynomialCalibrator_ != null &&
               polynomialCalibrator_ != org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo.getDefaultInstance()) {
             polynomialCalibrator_ =
@@ -9266,10 +10270,14 @@ public final class Mdb {
         } else {
           polynomialCalibratorBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         return this;
       }
       /**
+       * <pre>
+       *optional string type = 1; //replaced with an enum
+       * </pre>
+       *
        * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
        */
       public Builder clearPolynomialCalibrator() {
@@ -9279,18 +10287,26 @@ public final class Mdb {
         } else {
           polynomialCalibratorBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
       /**
+       * <pre>
+       *optional string type = 1; //replaced with an enum
+       * </pre>
+       *
        * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
        */
       public org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo.Builder getPolynomialCalibratorBuilder() {
-        bitField0_ |= 0x00000002;
+        bitField0_ |= 0x00000001;
         onChanged();
         return getPolynomialCalibratorFieldBuilder().getBuilder();
       }
       /**
+       * <pre>
+       *optional string type = 1; //replaced with an enum
+       * </pre>
+       *
        * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
        */
       public org.yamcs.protobuf.Mdb.PolynomialCalibratorInfoOrBuilder getPolynomialCalibratorOrBuilder() {
@@ -9302,6 +10318,10 @@ public final class Mdb {
         }
       }
       /**
+       * <pre>
+       *optional string type = 1; //replaced with an enum
+       * </pre>
+       *
        * <code>optional .yamcs.protobuf.mdb.PolynomialCalibratorInfo polynomialCalibrator = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
@@ -9325,7 +10345,7 @@ public final class Mdb {
        * <code>optional .yamcs.protobuf.mdb.SplineCalibratorInfo splineCalibrator = 3;</code>
        */
       public boolean hasSplineCalibrator() {
-        return ((bitField0_ & 0x00000004) == 0x00000004);
+        return ((bitField0_ & 0x00000002) == 0x00000002);
       }
       /**
        * <code>optional .yamcs.protobuf.mdb.SplineCalibratorInfo splineCalibrator = 3;</code>
@@ -9350,7 +10370,7 @@ public final class Mdb {
         } else {
           splineCalibratorBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
         return this;
       }
       /**
@@ -9364,7 +10384,7 @@ public final class Mdb {
         } else {
           splineCalibratorBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
         return this;
       }
       /**
@@ -9372,7 +10392,7 @@ public final class Mdb {
        */
       public Builder mergeSplineCalibrator(org.yamcs.protobuf.Mdb.SplineCalibratorInfo value) {
         if (splineCalibratorBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004) &&
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
               splineCalibrator_ != null &&
               splineCalibrator_ != org.yamcs.protobuf.Mdb.SplineCalibratorInfo.getDefaultInstance()) {
             splineCalibrator_ =
@@ -9384,7 +10404,7 @@ public final class Mdb {
         } else {
           splineCalibratorBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
         return this;
       }
       /**
@@ -9397,14 +10417,14 @@ public final class Mdb {
         } else {
           splineCalibratorBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
       /**
        * <code>optional .yamcs.protobuf.mdb.SplineCalibratorInfo splineCalibrator = 3;</code>
        */
       public org.yamcs.protobuf.Mdb.SplineCalibratorInfo.Builder getSplineCalibratorBuilder() {
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000002;
         onChanged();
         return getSplineCalibratorFieldBuilder().getBuilder();
       }
@@ -9443,7 +10463,7 @@ public final class Mdb {
        * <code>optional .yamcs.protobuf.mdb.JavaExpressionCalibratorInfo javaExpressionCalibrator = 4;</code>
        */
       public boolean hasJavaExpressionCalibrator() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
+        return ((bitField0_ & 0x00000004) == 0x00000004);
       }
       /**
        * <code>optional .yamcs.protobuf.mdb.JavaExpressionCalibratorInfo javaExpressionCalibrator = 4;</code>
@@ -9468,7 +10488,7 @@ public final class Mdb {
         } else {
           javaExpressionCalibratorBuilder_.setMessage(value);
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000004;
         return this;
       }
       /**
@@ -9482,7 +10502,7 @@ public final class Mdb {
         } else {
           javaExpressionCalibratorBuilder_.setMessage(builderForValue.build());
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000004;
         return this;
       }
       /**
@@ -9490,7 +10510,7 @@ public final class Mdb {
        */
       public Builder mergeJavaExpressionCalibrator(org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo value) {
         if (javaExpressionCalibratorBuilder_ == null) {
-          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+          if (((bitField0_ & 0x00000004) == 0x00000004) &&
               javaExpressionCalibrator_ != null &&
               javaExpressionCalibrator_ != org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo.getDefaultInstance()) {
             javaExpressionCalibrator_ =
@@ -9502,7 +10522,7 @@ public final class Mdb {
         } else {
           javaExpressionCalibratorBuilder_.mergeFrom(value);
         }
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000004;
         return this;
       }
       /**
@@ -9515,14 +10535,14 @@ public final class Mdb {
         } else {
           javaExpressionCalibratorBuilder_.clear();
         }
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
       /**
        * <code>optional .yamcs.protobuf.mdb.JavaExpressionCalibratorInfo javaExpressionCalibrator = 4;</code>
        */
       public org.yamcs.protobuf.Mdb.JavaExpressionCalibratorInfo.Builder getJavaExpressionCalibratorBuilder() {
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000004;
         onChanged();
         return getJavaExpressionCalibratorFieldBuilder().getBuilder();
       }
@@ -9552,6 +10572,42 @@ public final class Mdb {
           javaExpressionCalibrator_ = null;
         }
         return javaExpressionCalibratorBuilder_;
+      }
+
+      private int type_ = 0;
+      /**
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo.Type type = 5;</code>
+       */
+      public boolean hasType() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo.Type type = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CalibratorInfo.Type getType() {
+        org.yamcs.protobuf.Mdb.CalibratorInfo.Type result = org.yamcs.protobuf.Mdb.CalibratorInfo.Type.valueOf(type_);
+        return result == null ? org.yamcs.protobuf.Mdb.CalibratorInfo.Type.POLYNOMIAL : result;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo.Type type = 5;</code>
+       */
+      public Builder setType(org.yamcs.protobuf.Mdb.CalibratorInfo.Type value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000008;
+        type_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo.Type type = 5;</code>
+       */
+      public Builder clearType() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        type_ = 0;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -12718,6 +13774,30 @@ public final class Mdb {
      * <code>optional .yamcs.protobuf.mdb.AbsoluteTimeInfo absoluteTimeInfo = 6;</code>
      */
     org.yamcs.protobuf.Mdb.AbsoluteTimeInfoOrBuilder getAbsoluteTimeInfoOrBuilder();
+
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo> 
+        getContextAlarmList();
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+     */
+    org.yamcs.protobuf.Mdb.ContextAlarmInfo getContextAlarm(int index);
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+     */
+    int getContextAlarmCount();
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder> 
+        getContextAlarmOrBuilderList();
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+     */
+    org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder getContextAlarmOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code yamcs.protobuf.mdb.ParameterTypeInfo}
@@ -12734,6 +13814,7 @@ public final class Mdb {
       engType_ = "";
       unitSet_ = java.util.Collections.emptyList();
       enumValue_ = java.util.Collections.emptyList();
+      contextAlarm_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -12827,6 +13908,15 @@ public final class Mdb {
               bitField0_ |= 0x00000008;
               break;
             }
+            case 58: {
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+                contextAlarm_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ContextAlarmInfo>();
+                mutable_bitField0_ |= 0x00000040;
+              }
+              contextAlarm_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.ContextAlarmInfo.PARSER, extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -12840,6 +13930,9 @@ public final class Mdb {
         }
         if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
           enumValue_ = java.util.Collections.unmodifiableList(enumValue_);
+        }
+        if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+          contextAlarm_ = java.util.Collections.unmodifiableList(contextAlarm_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -13033,6 +14126,41 @@ public final class Mdb {
       return absoluteTimeInfo_ == null ? org.yamcs.protobuf.Mdb.AbsoluteTimeInfo.getDefaultInstance() : absoluteTimeInfo_;
     }
 
+    public static final int CONTEXTALARM_FIELD_NUMBER = 7;
+    private java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo> contextAlarm_;
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo> getContextAlarmList() {
+      return contextAlarm_;
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder> 
+        getContextAlarmOrBuilderList() {
+      return contextAlarm_;
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+     */
+    public int getContextAlarmCount() {
+      return contextAlarm_.size();
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ContextAlarmInfo getContextAlarm(int index) {
+      return contextAlarm_.get(index);
+    }
+    /**
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder getContextAlarmOrBuilder(
+        int index) {
+      return contextAlarm_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -13047,6 +14175,12 @@ public final class Mdb {
       }
       if (hasAbsoluteTimeInfo()) {
         if (!getAbsoluteTimeInfo().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      for (int i = 0; i < getContextAlarmCount(); i++) {
+        if (!getContextAlarm(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -13074,6 +14208,9 @@ public final class Mdb {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeMessage(6, getAbsoluteTimeInfo());
+      }
+      for (int i = 0; i < contextAlarm_.size(); i++) {
+        output.writeMessage(7, contextAlarm_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -13105,6 +14242,10 @@ public final class Mdb {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(6, getAbsoluteTimeInfo());
+      }
+      for (int i = 0; i < contextAlarm_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(7, contextAlarm_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -13147,6 +14288,8 @@ public final class Mdb {
         result = result && getAbsoluteTimeInfo()
             .equals(other.getAbsoluteTimeInfo());
       }
+      result = result && getContextAlarmList()
+          .equals(other.getContextAlarmList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -13181,6 +14324,10 @@ public final class Mdb {
       if (hasAbsoluteTimeInfo()) {
         hash = (37 * hash) + ABSOLUTETIMEINFO_FIELD_NUMBER;
         hash = (53 * hash) + getAbsoluteTimeInfo().hashCode();
+      }
+      if (getContextAlarmCount() > 0) {
+        hash = (37 * hash) + CONTEXTALARM_FIELD_NUMBER;
+        hash = (53 * hash) + getContextAlarmList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -13301,6 +14448,7 @@ public final class Mdb {
           getDefaultAlarmFieldBuilder();
           getEnumValueFieldBuilder();
           getAbsoluteTimeInfoFieldBuilder();
+          getContextAlarmFieldBuilder();
         }
       }
       public Builder clear() {
@@ -13337,6 +14485,12 @@ public final class Mdb {
           absoluteTimeInfoBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000020);
+        if (contextAlarmBuilder_ == null) {
+          contextAlarm_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000040);
+        } else {
+          contextAlarmBuilder_.clear();
+        }
         return this;
       }
 
@@ -13406,6 +14560,15 @@ public final class Mdb {
           result.absoluteTimeInfo_ = absoluteTimeInfo_;
         } else {
           result.absoluteTimeInfo_ = absoluteTimeInfoBuilder_.build();
+        }
+        if (contextAlarmBuilder_ == null) {
+          if (((bitField0_ & 0x00000040) == 0x00000040)) {
+            contextAlarm_ = java.util.Collections.unmodifiableList(contextAlarm_);
+            bitField0_ = (bitField0_ & ~0x00000040);
+          }
+          result.contextAlarm_ = contextAlarm_;
+        } else {
+          result.contextAlarm_ = contextAlarmBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -13515,6 +14678,32 @@ public final class Mdb {
         if (other.hasAbsoluteTimeInfo()) {
           mergeAbsoluteTimeInfo(other.getAbsoluteTimeInfo());
         }
+        if (contextAlarmBuilder_ == null) {
+          if (!other.contextAlarm_.isEmpty()) {
+            if (contextAlarm_.isEmpty()) {
+              contextAlarm_ = other.contextAlarm_;
+              bitField0_ = (bitField0_ & ~0x00000040);
+            } else {
+              ensureContextAlarmIsMutable();
+              contextAlarm_.addAll(other.contextAlarm_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.contextAlarm_.isEmpty()) {
+            if (contextAlarmBuilder_.isEmpty()) {
+              contextAlarmBuilder_.dispose();
+              contextAlarmBuilder_ = null;
+              contextAlarm_ = other.contextAlarm_;
+              bitField0_ = (bitField0_ & ~0x00000040);
+              contextAlarmBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getContextAlarmFieldBuilder() : null;
+            } else {
+              contextAlarmBuilder_.addAllMessages(other.contextAlarm_);
+            }
+          }
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -13528,6 +14717,11 @@ public final class Mdb {
         }
         if (hasAbsoluteTimeInfo()) {
           if (!getAbsoluteTimeInfo().isInitialized()) {
+            return false;
+          }
+        }
+        for (int i = 0; i < getContextAlarmCount(); i++) {
+          if (!getContextAlarm(i).isInitialized()) {
             return false;
           }
         }
@@ -14461,6 +15655,246 @@ public final class Mdb {
           absoluteTimeInfo_ = null;
         }
         return absoluteTimeInfoBuilder_;
+      }
+
+      private java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo> contextAlarm_ =
+        java.util.Collections.emptyList();
+      private void ensureContextAlarmIsMutable() {
+        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
+          contextAlarm_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ContextAlarmInfo>(contextAlarm_);
+          bitField0_ |= 0x00000040;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ContextAlarmInfo, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder, org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder> contextAlarmBuilder_;
+
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo> getContextAlarmList() {
+        if (contextAlarmBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(contextAlarm_);
+        } else {
+          return contextAlarmBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public int getContextAlarmCount() {
+        if (contextAlarmBuilder_ == null) {
+          return contextAlarm_.size();
+        } else {
+          return contextAlarmBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo getContextAlarm(int index) {
+        if (contextAlarmBuilder_ == null) {
+          return contextAlarm_.get(index);
+        } else {
+          return contextAlarmBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public Builder setContextAlarm(
+          int index, org.yamcs.protobuf.Mdb.ContextAlarmInfo value) {
+        if (contextAlarmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextAlarmIsMutable();
+          contextAlarm_.set(index, value);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public Builder setContextAlarm(
+          int index, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder builderForValue) {
+        if (contextAlarmBuilder_ == null) {
+          ensureContextAlarmIsMutable();
+          contextAlarm_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          contextAlarmBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public Builder addContextAlarm(org.yamcs.protobuf.Mdb.ContextAlarmInfo value) {
+        if (contextAlarmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextAlarmIsMutable();
+          contextAlarm_.add(value);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public Builder addContextAlarm(
+          int index, org.yamcs.protobuf.Mdb.ContextAlarmInfo value) {
+        if (contextAlarmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextAlarmIsMutable();
+          contextAlarm_.add(index, value);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public Builder addContextAlarm(
+          org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder builderForValue) {
+        if (contextAlarmBuilder_ == null) {
+          ensureContextAlarmIsMutable();
+          contextAlarm_.add(builderForValue.build());
+          onChanged();
+        } else {
+          contextAlarmBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public Builder addContextAlarm(
+          int index, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder builderForValue) {
+        if (contextAlarmBuilder_ == null) {
+          ensureContextAlarmIsMutable();
+          contextAlarm_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          contextAlarmBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public Builder addAllContextAlarm(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ContextAlarmInfo> values) {
+        if (contextAlarmBuilder_ == null) {
+          ensureContextAlarmIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, contextAlarm_);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public Builder clearContextAlarm() {
+        if (contextAlarmBuilder_ == null) {
+          contextAlarm_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000040);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public Builder removeContextAlarm(int index) {
+        if (contextAlarmBuilder_ == null) {
+          ensureContextAlarmIsMutable();
+          contextAlarm_.remove(index);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder getContextAlarmBuilder(
+          int index) {
+        return getContextAlarmFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder getContextAlarmOrBuilder(
+          int index) {
+        if (contextAlarmBuilder_ == null) {
+          return contextAlarm_.get(index);  } else {
+          return contextAlarmBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder> 
+           getContextAlarmOrBuilderList() {
+        if (contextAlarmBuilder_ != null) {
+          return contextAlarmBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(contextAlarm_);
+        }
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder addContextAlarmBuilder() {
+        return getContextAlarmFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ContextAlarmInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder addContextAlarmBuilder(
+          int index) {
+        return getContextAlarmFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ContextAlarmInfo.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 7;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder> 
+           getContextAlarmBuilderList() {
+        return getContextAlarmFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ContextAlarmInfo, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder, org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder> 
+          getContextAlarmFieldBuilder() {
+        if (contextAlarmBuilder_ == null) {
+          contextAlarmBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.ContextAlarmInfo, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder, org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder>(
+                  contextAlarm_,
+                  ((bitField0_ & 0x00000040) == 0x00000040),
+                  getParentForChildren(),
+                  isClean());
+          contextAlarm_ = null;
+        }
+        return contextAlarmBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -51861,6 +53295,3039 @@ public final class Mdb {
 
   }
 
+  public interface ChangeParameterRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.mdb.ChangeParameterRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .yamcs.protobuf.mdb.ChangeParameterRequest.ActionType action = 1;</code>
+     */
+    boolean hasAction();
+    /**
+     * <code>optional .yamcs.protobuf.mdb.ChangeParameterRequest.ActionType action = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType getAction();
+
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+     */
+    boolean hasDefaultCalibrator();
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+     */
+    org.yamcs.protobuf.Mdb.CalibratorInfo getDefaultCalibrator();
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+     */
+    org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder getDefaultCalibratorOrBuilder();
+
+    /**
+     * <pre>
+     *used when action = SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo> 
+        getContextCalibratorList();
+    /**
+     * <pre>
+     *used when action = SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+     */
+    org.yamcs.protobuf.Mdb.ContextCalibratorInfo getContextCalibrator(int index);
+    /**
+     * <pre>
+     *used when action = SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+     */
+    int getContextCalibratorCount();
+    /**
+     * <pre>
+     *used when action = SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder> 
+        getContextCalibratorOrBuilderList();
+    /**
+     * <pre>
+     *used when action = SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+     */
+    org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder getContextCalibratorOrBuilder(
+        int index);
+
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+     */
+    boolean hasDefaultAlarm();
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+     */
+    org.yamcs.protobuf.Mdb.AlarmInfo getDefaultAlarm();
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+     */
+    org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder getDefaultAlarmOrBuilder();
+
+    /**
+     * <pre>
+     *used when action = SET_ALARMS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+     */
+    java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo> 
+        getContextAlarmList();
+    /**
+     * <pre>
+     *used when action = SET_ALARMS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+     */
+    org.yamcs.protobuf.Mdb.ContextAlarmInfo getContextAlarm(int index);
+    /**
+     * <pre>
+     *used when action = SET_ALARMS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+     */
+    int getContextAlarmCount();
+    /**
+     * <pre>
+     *used when action = SET_ALARMS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+     */
+    java.util.List<? extends org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder> 
+        getContextAlarmOrBuilderList();
+    /**
+     * <pre>
+     *used when action = SET_ALARMS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+     */
+    org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder getContextAlarmOrBuilder(
+        int index);
+  }
+  /**
+   * <pre>
+   * used to change calibrators or alarms for one parameter
+   * </pre>
+   *
+   * Protobuf type {@code yamcs.protobuf.mdb.ChangeParameterRequest}
+   */
+  public  static final class ChangeParameterRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.mdb.ChangeParameterRequest)
+      ChangeParameterRequestOrBuilder {
+    // Use ChangeParameterRequest.newBuilder() to construct.
+    private ChangeParameterRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ChangeParameterRequest() {
+      action_ = 0;
+      contextCalibrator_ = java.util.Collections.emptyList();
+      contextAlarm_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ChangeParameterRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType value = org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                action_ = rawValue;
+              }
+              break;
+            }
+            case 18: {
+              org.yamcs.protobuf.Mdb.CalibratorInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = defaultCalibrator_.toBuilder();
+              }
+              defaultCalibrator_ = input.readMessage(org.yamcs.protobuf.Mdb.CalibratorInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(defaultCalibrator_);
+                defaultCalibrator_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                contextCalibrator_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ContextCalibratorInfo>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              contextCalibrator_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.ContextCalibratorInfo.PARSER, extensionRegistry));
+              break;
+            }
+            case 34: {
+              org.yamcs.protobuf.Mdb.AlarmInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000004) == 0x00000004)) {
+                subBuilder = defaultAlarm_.toBuilder();
+              }
+              defaultAlarm_ = input.readMessage(org.yamcs.protobuf.Mdb.AlarmInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(defaultAlarm_);
+                defaultAlarm_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000004;
+              break;
+            }
+            case 42: {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+                contextAlarm_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ContextAlarmInfo>();
+                mutable_bitField0_ |= 0x00000010;
+              }
+              contextAlarm_.add(
+                  input.readMessage(org.yamcs.protobuf.Mdb.ContextAlarmInfo.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          contextCalibrator_ = java.util.Collections.unmodifiableList(contextCalibrator_);
+        }
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+          contextAlarm_ = java.util.Collections.unmodifiableList(contextAlarm_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ChangeParameterRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ChangeParameterRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.ChangeParameterRequest.class, org.yamcs.protobuf.Mdb.ChangeParameterRequest.Builder.class);
+    }
+
+    /**
+     * Protobuf enum {@code yamcs.protobuf.mdb.ChangeParameterRequest.ActionType}
+     */
+    public enum ActionType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <pre>
+       *reset all parameter properties (calibrators+alarms) to their default MDB value
+       * </pre>
+       *
+       * <code>CLEAR = 0;</code>
+       */
+      CLEAR(0),
+      /**
+       * <pre>
+       *reset calibrators to their default MDB value
+       * </pre>
+       *
+       * <code>CLEAR_CALIBRATORS = 1;</code>
+       */
+      CLEAR_CALIBRATORS(1),
+      /**
+       * <pre>
+       *sets the default calibrator (the contextual ones are unmodified)
+       * </pre>
+       *
+       * <code>SET_DEFAULT_CALIBRATOR = 2;</code>
+       */
+      SET_DEFAULT_CALIBRATOR(2),
+      /**
+       * <pre>
+       *sets all calibratiosn (default+contextual), if default is not set in the proto message, the existing one is not modified
+       * </pre>
+       *
+       * <code>SET_CALIBRATORS = 3;</code>
+       */
+      SET_CALIBRATORS(3),
+      /**
+       * <pre>
+       *reset alarms to their default MDB value
+       * </pre>
+       *
+       * <code>CLEAR_ALARMS = 4;</code>
+       */
+      CLEAR_ALARMS(4),
+      /**
+       * <pre>
+       *sets the default alarms (the contextual ones are unmodified)
+       * </pre>
+       *
+       * <code>SET_DEFAULT_ALARMS = 5;</code>
+       */
+      SET_DEFAULT_ALARMS(5),
+      /**
+       * <pre>
+       *sets all alarms (default+contextual), if default is not set in the proto message, the existing one is not modified
+       * </pre>
+       *
+       * <code>SET_ALARMS = 6;</code>
+       */
+      SET_ALARMS(6),
+      ;
+
+      /**
+       * <pre>
+       *reset all parameter properties (calibrators+alarms) to their default MDB value
+       * </pre>
+       *
+       * <code>CLEAR = 0;</code>
+       */
+      public static final int CLEAR_VALUE = 0;
+      /**
+       * <pre>
+       *reset calibrators to their default MDB value
+       * </pre>
+       *
+       * <code>CLEAR_CALIBRATORS = 1;</code>
+       */
+      public static final int CLEAR_CALIBRATORS_VALUE = 1;
+      /**
+       * <pre>
+       *sets the default calibrator (the contextual ones are unmodified)
+       * </pre>
+       *
+       * <code>SET_DEFAULT_CALIBRATOR = 2;</code>
+       */
+      public static final int SET_DEFAULT_CALIBRATOR_VALUE = 2;
+      /**
+       * <pre>
+       *sets all calibratiosn (default+contextual), if default is not set in the proto message, the existing one is not modified
+       * </pre>
+       *
+       * <code>SET_CALIBRATORS = 3;</code>
+       */
+      public static final int SET_CALIBRATORS_VALUE = 3;
+      /**
+       * <pre>
+       *reset alarms to their default MDB value
+       * </pre>
+       *
+       * <code>CLEAR_ALARMS = 4;</code>
+       */
+      public static final int CLEAR_ALARMS_VALUE = 4;
+      /**
+       * <pre>
+       *sets the default alarms (the contextual ones are unmodified)
+       * </pre>
+       *
+       * <code>SET_DEFAULT_ALARMS = 5;</code>
+       */
+      public static final int SET_DEFAULT_ALARMS_VALUE = 5;
+      /**
+       * <pre>
+       *sets all alarms (default+contextual), if default is not set in the proto message, the existing one is not modified
+       * </pre>
+       *
+       * <code>SET_ALARMS = 6;</code>
+       */
+      public static final int SET_ALARMS_VALUE = 6;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static ActionType valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static ActionType forNumber(int value) {
+        switch (value) {
+          case 0: return CLEAR;
+          case 1: return CLEAR_CALIBRATORS;
+          case 2: return SET_DEFAULT_CALIBRATOR;
+          case 3: return SET_CALIBRATORS;
+          case 4: return CLEAR_ALARMS;
+          case 5: return SET_DEFAULT_ALARMS;
+          case 6: return SET_ALARMS;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<ActionType>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          ActionType> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<ActionType>() {
+              public ActionType findValueByNumber(int number) {
+                return ActionType.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.ChangeParameterRequest.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final ActionType[] VALUES = values();
+
+      public static ActionType valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private ActionType(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:yamcs.protobuf.mdb.ChangeParameterRequest.ActionType)
+    }
+
+    private int bitField0_;
+    public static final int ACTION_FIELD_NUMBER = 1;
+    private int action_;
+    /**
+     * <code>optional .yamcs.protobuf.mdb.ChangeParameterRequest.ActionType action = 1;</code>
+     */
+    public boolean hasAction() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcs.protobuf.mdb.ChangeParameterRequest.ActionType action = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType getAction() {
+      org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType result = org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType.valueOf(action_);
+      return result == null ? org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType.CLEAR : result;
+    }
+
+    public static final int DEFAULTCALIBRATOR_FIELD_NUMBER = 2;
+    private org.yamcs.protobuf.Mdb.CalibratorInfo defaultCalibrator_;
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+     */
+    public boolean hasDefaultCalibrator() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+     */
+    public org.yamcs.protobuf.Mdb.CalibratorInfo getDefaultCalibrator() {
+      return defaultCalibrator_ == null ? org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance() : defaultCalibrator_;
+    }
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+     */
+    public org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder getDefaultCalibratorOrBuilder() {
+      return defaultCalibrator_ == null ? org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance() : defaultCalibrator_;
+    }
+
+    public static final int CONTEXTCALIBRATOR_FIELD_NUMBER = 3;
+    private java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo> contextCalibrator_;
+    /**
+     * <pre>
+     *used when action = SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo> getContextCalibratorList() {
+      return contextCalibrator_;
+    }
+    /**
+     * <pre>
+     *used when action = SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder> 
+        getContextCalibratorOrBuilderList() {
+      return contextCalibrator_;
+    }
+    /**
+     * <pre>
+     *used when action = SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+     */
+    public int getContextCalibratorCount() {
+      return contextCalibrator_.size();
+    }
+    /**
+     * <pre>
+     *used when action = SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ContextCalibratorInfo getContextCalibrator(int index) {
+      return contextCalibrator_.get(index);
+    }
+    /**
+     * <pre>
+     *used when action = SET_CALIBRATORS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder getContextCalibratorOrBuilder(
+        int index) {
+      return contextCalibrator_.get(index);
+    }
+
+    public static final int DEFAULTALARM_FIELD_NUMBER = 4;
+    private org.yamcs.protobuf.Mdb.AlarmInfo defaultAlarm_;
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+     */
+    public boolean hasDefaultAlarm() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+     */
+    public org.yamcs.protobuf.Mdb.AlarmInfo getDefaultAlarm() {
+      return defaultAlarm_ == null ? org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance() : defaultAlarm_;
+    }
+    /**
+     * <pre>
+     *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+     */
+    public org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder getDefaultAlarmOrBuilder() {
+      return defaultAlarm_ == null ? org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance() : defaultAlarm_;
+    }
+
+    public static final int CONTEXTALARM_FIELD_NUMBER = 5;
+    private java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo> contextAlarm_;
+    /**
+     * <pre>
+     *used when action = SET_ALARMS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+     */
+    public java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo> getContextAlarmList() {
+      return contextAlarm_;
+    }
+    /**
+     * <pre>
+     *used when action = SET_ALARMS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+     */
+    public java.util.List<? extends org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder> 
+        getContextAlarmOrBuilderList() {
+      return contextAlarm_;
+    }
+    /**
+     * <pre>
+     *used when action = SET_ALARMS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+     */
+    public int getContextAlarmCount() {
+      return contextAlarm_.size();
+    }
+    /**
+     * <pre>
+     *used when action = SET_ALARMS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ContextAlarmInfo getContextAlarm(int index) {
+      return contextAlarm_.get(index);
+    }
+    /**
+     * <pre>
+     *used when action = SET_ALARMS
+     * </pre>
+     *
+     * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder getContextAlarmOrBuilder(
+        int index) {
+      return contextAlarm_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      for (int i = 0; i < getContextCalibratorCount(); i++) {
+        if (!getContextCalibrator(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      for (int i = 0; i < getContextAlarmCount(); i++) {
+        if (!getContextAlarm(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, action_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, getDefaultCalibrator());
+      }
+      for (int i = 0; i < contextCalibrator_.size(); i++) {
+        output.writeMessage(3, contextCalibrator_.get(i));
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeMessage(4, getDefaultAlarm());
+      }
+      for (int i = 0; i < contextAlarm_.size(); i++) {
+        output.writeMessage(5, contextAlarm_.get(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, action_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getDefaultCalibrator());
+      }
+      for (int i = 0; i < contextCalibrator_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, contextCalibrator_.get(i));
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, getDefaultAlarm());
+      }
+      for (int i = 0; i < contextAlarm_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, contextAlarm_.get(i));
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.ChangeParameterRequest)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.ChangeParameterRequest other = (org.yamcs.protobuf.Mdb.ChangeParameterRequest) obj;
+
+      boolean result = true;
+      result = result && (hasAction() == other.hasAction());
+      if (hasAction()) {
+        result = result && action_ == other.action_;
+      }
+      result = result && (hasDefaultCalibrator() == other.hasDefaultCalibrator());
+      if (hasDefaultCalibrator()) {
+        result = result && getDefaultCalibrator()
+            .equals(other.getDefaultCalibrator());
+      }
+      result = result && getContextCalibratorList()
+          .equals(other.getContextCalibratorList());
+      result = result && (hasDefaultAlarm() == other.hasDefaultAlarm());
+      if (hasDefaultAlarm()) {
+        result = result && getDefaultAlarm()
+            .equals(other.getDefaultAlarm());
+      }
+      result = result && getContextAlarmList()
+          .equals(other.getContextAlarmList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasAction()) {
+        hash = (37 * hash) + ACTION_FIELD_NUMBER;
+        hash = (53 * hash) + action_;
+      }
+      if (hasDefaultCalibrator()) {
+        hash = (37 * hash) + DEFAULTCALIBRATOR_FIELD_NUMBER;
+        hash = (53 * hash) + getDefaultCalibrator().hashCode();
+      }
+      if (getContextCalibratorCount() > 0) {
+        hash = (37 * hash) + CONTEXTCALIBRATOR_FIELD_NUMBER;
+        hash = (53 * hash) + getContextCalibratorList().hashCode();
+      }
+      if (hasDefaultAlarm()) {
+        hash = (37 * hash) + DEFAULTALARM_FIELD_NUMBER;
+        hash = (53 * hash) + getDefaultAlarm().hashCode();
+      }
+      if (getContextAlarmCount() > 0) {
+        hash = (37 * hash) + CONTEXTALARM_FIELD_NUMBER;
+        hash = (53 * hash) + getContextAlarmList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.ChangeParameterRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * used to change calibrators or alarms for one parameter
+     * </pre>
+     *
+     * Protobuf type {@code yamcs.protobuf.mdb.ChangeParameterRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.mdb.ChangeParameterRequest)
+        org.yamcs.protobuf.Mdb.ChangeParameterRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ChangeParameterRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ChangeParameterRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.ChangeParameterRequest.class, org.yamcs.protobuf.Mdb.ChangeParameterRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.ChangeParameterRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getDefaultCalibratorFieldBuilder();
+          getContextCalibratorFieldBuilder();
+          getDefaultAlarmFieldBuilder();
+          getContextAlarmFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        action_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (defaultCalibratorBuilder_ == null) {
+          defaultCalibrator_ = null;
+        } else {
+          defaultCalibratorBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        if (contextCalibratorBuilder_ == null) {
+          contextCalibrator_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+        } else {
+          contextCalibratorBuilder_.clear();
+        }
+        if (defaultAlarmBuilder_ == null) {
+          defaultAlarm_ = null;
+        } else {
+          defaultAlarmBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000008);
+        if (contextAlarmBuilder_ == null) {
+          contextAlarm_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000010);
+        } else {
+          contextAlarmBuilder_.clear();
+        }
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ChangeParameterRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.ChangeParameterRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.ChangeParameterRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.ChangeParameterRequest build() {
+        org.yamcs.protobuf.Mdb.ChangeParameterRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.ChangeParameterRequest buildPartial() {
+        org.yamcs.protobuf.Mdb.ChangeParameterRequest result = new org.yamcs.protobuf.Mdb.ChangeParameterRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.action_ = action_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (defaultCalibratorBuilder_ == null) {
+          result.defaultCalibrator_ = defaultCalibrator_;
+        } else {
+          result.defaultCalibrator_ = defaultCalibratorBuilder_.build();
+        }
+        if (contextCalibratorBuilder_ == null) {
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            contextCalibrator_ = java.util.Collections.unmodifiableList(contextCalibrator_);
+            bitField0_ = (bitField0_ & ~0x00000004);
+          }
+          result.contextCalibrator_ = contextCalibrator_;
+        } else {
+          result.contextCalibrator_ = contextCalibratorBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        if (defaultAlarmBuilder_ == null) {
+          result.defaultAlarm_ = defaultAlarm_;
+        } else {
+          result.defaultAlarm_ = defaultAlarmBuilder_.build();
+        }
+        if (contextAlarmBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) == 0x00000010)) {
+            contextAlarm_ = java.util.Collections.unmodifiableList(contextAlarm_);
+            bitField0_ = (bitField0_ & ~0x00000010);
+          }
+          result.contextAlarm_ = contextAlarm_;
+        } else {
+          result.contextAlarm_ = contextAlarmBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.ChangeParameterRequest) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.ChangeParameterRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.ChangeParameterRequest other) {
+        if (other == org.yamcs.protobuf.Mdb.ChangeParameterRequest.getDefaultInstance()) return this;
+        if (other.hasAction()) {
+          setAction(other.getAction());
+        }
+        if (other.hasDefaultCalibrator()) {
+          mergeDefaultCalibrator(other.getDefaultCalibrator());
+        }
+        if (contextCalibratorBuilder_ == null) {
+          if (!other.contextCalibrator_.isEmpty()) {
+            if (contextCalibrator_.isEmpty()) {
+              contextCalibrator_ = other.contextCalibrator_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+            } else {
+              ensureContextCalibratorIsMutable();
+              contextCalibrator_.addAll(other.contextCalibrator_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.contextCalibrator_.isEmpty()) {
+            if (contextCalibratorBuilder_.isEmpty()) {
+              contextCalibratorBuilder_.dispose();
+              contextCalibratorBuilder_ = null;
+              contextCalibrator_ = other.contextCalibrator_;
+              bitField0_ = (bitField0_ & ~0x00000004);
+              contextCalibratorBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getContextCalibratorFieldBuilder() : null;
+            } else {
+              contextCalibratorBuilder_.addAllMessages(other.contextCalibrator_);
+            }
+          }
+        }
+        if (other.hasDefaultAlarm()) {
+          mergeDefaultAlarm(other.getDefaultAlarm());
+        }
+        if (contextAlarmBuilder_ == null) {
+          if (!other.contextAlarm_.isEmpty()) {
+            if (contextAlarm_.isEmpty()) {
+              contextAlarm_ = other.contextAlarm_;
+              bitField0_ = (bitField0_ & ~0x00000010);
+            } else {
+              ensureContextAlarmIsMutable();
+              contextAlarm_.addAll(other.contextAlarm_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.contextAlarm_.isEmpty()) {
+            if (contextAlarmBuilder_.isEmpty()) {
+              contextAlarmBuilder_.dispose();
+              contextAlarmBuilder_ = null;
+              contextAlarm_ = other.contextAlarm_;
+              bitField0_ = (bitField0_ & ~0x00000010);
+              contextAlarmBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getContextAlarmFieldBuilder() : null;
+            } else {
+              contextAlarmBuilder_.addAllMessages(other.contextAlarm_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getContextCalibratorCount(); i++) {
+          if (!getContextCalibrator(i).isInitialized()) {
+            return false;
+          }
+        }
+        for (int i = 0; i < getContextAlarmCount(); i++) {
+          if (!getContextAlarm(i).isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.ChangeParameterRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.ChangeParameterRequest) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private int action_ = 0;
+      /**
+       * <code>optional .yamcs.protobuf.mdb.ChangeParameterRequest.ActionType action = 1;</code>
+       */
+      public boolean hasAction() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.ChangeParameterRequest.ActionType action = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType getAction() {
+        org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType result = org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType.valueOf(action_);
+        return result == null ? org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType.CLEAR : result;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.ChangeParameterRequest.ActionType action = 1;</code>
+       */
+      public Builder setAction(org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        action_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.ChangeParameterRequest.ActionType action = 1;</code>
+       */
+      public Builder clearAction() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        action_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private org.yamcs.protobuf.Mdb.CalibratorInfo defaultCalibrator_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.CalibratorInfo, org.yamcs.protobuf.Mdb.CalibratorInfo.Builder, org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder> defaultCalibratorBuilder_;
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+       */
+      public boolean hasDefaultCalibrator() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CalibratorInfo getDefaultCalibrator() {
+        if (defaultCalibratorBuilder_ == null) {
+          return defaultCalibrator_ == null ? org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance() : defaultCalibrator_;
+        } else {
+          return defaultCalibratorBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+       */
+      public Builder setDefaultCalibrator(org.yamcs.protobuf.Mdb.CalibratorInfo value) {
+        if (defaultCalibratorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          defaultCalibrator_ = value;
+          onChanged();
+        } else {
+          defaultCalibratorBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+       */
+      public Builder setDefaultCalibrator(
+          org.yamcs.protobuf.Mdb.CalibratorInfo.Builder builderForValue) {
+        if (defaultCalibratorBuilder_ == null) {
+          defaultCalibrator_ = builderForValue.build();
+          onChanged();
+        } else {
+          defaultCalibratorBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+       */
+      public Builder mergeDefaultCalibrator(org.yamcs.protobuf.Mdb.CalibratorInfo value) {
+        if (defaultCalibratorBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              defaultCalibrator_ != null &&
+              defaultCalibrator_ != org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance()) {
+            defaultCalibrator_ =
+              org.yamcs.protobuf.Mdb.CalibratorInfo.newBuilder(defaultCalibrator_).mergeFrom(value).buildPartial();
+          } else {
+            defaultCalibrator_ = value;
+          }
+          onChanged();
+        } else {
+          defaultCalibratorBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+       */
+      public Builder clearDefaultCalibrator() {
+        if (defaultCalibratorBuilder_ == null) {
+          defaultCalibrator_ = null;
+          onChanged();
+        } else {
+          defaultCalibratorBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CalibratorInfo.Builder getDefaultCalibratorBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getDefaultCalibratorFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder getDefaultCalibratorOrBuilder() {
+        if (defaultCalibratorBuilder_ != null) {
+          return defaultCalibratorBuilder_.getMessageOrBuilder();
+        } else {
+          return defaultCalibrator_ == null ?
+              org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance() : defaultCalibrator_;
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.CalibratorInfo defaultCalibrator = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.CalibratorInfo, org.yamcs.protobuf.Mdb.CalibratorInfo.Builder, org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder> 
+          getDefaultCalibratorFieldBuilder() {
+        if (defaultCalibratorBuilder_ == null) {
+          defaultCalibratorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.CalibratorInfo, org.yamcs.protobuf.Mdb.CalibratorInfo.Builder, org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder>(
+                  getDefaultCalibrator(),
+                  getParentForChildren(),
+                  isClean());
+          defaultCalibrator_ = null;
+        }
+        return defaultCalibratorBuilder_;
+      }
+
+      private java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo> contextCalibrator_ =
+        java.util.Collections.emptyList();
+      private void ensureContextCalibratorIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          contextCalibrator_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ContextCalibratorInfo>(contextCalibrator_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ContextCalibratorInfo, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder, org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder> contextCalibratorBuilder_;
+
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo> getContextCalibratorList() {
+        if (contextCalibratorBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(contextCalibrator_);
+        } else {
+          return contextCalibratorBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public int getContextCalibratorCount() {
+        if (contextCalibratorBuilder_ == null) {
+          return contextCalibrator_.size();
+        } else {
+          return contextCalibratorBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo getContextCalibrator(int index) {
+        if (contextCalibratorBuilder_ == null) {
+          return contextCalibrator_.get(index);
+        } else {
+          return contextCalibratorBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public Builder setContextCalibrator(
+          int index, org.yamcs.protobuf.Mdb.ContextCalibratorInfo value) {
+        if (contextCalibratorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.set(index, value);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public Builder setContextCalibrator(
+          int index, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder builderForValue) {
+        if (contextCalibratorBuilder_ == null) {
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public Builder addContextCalibrator(org.yamcs.protobuf.Mdb.ContextCalibratorInfo value) {
+        if (contextCalibratorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.add(value);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public Builder addContextCalibrator(
+          int index, org.yamcs.protobuf.Mdb.ContextCalibratorInfo value) {
+        if (contextCalibratorBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.add(index, value);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public Builder addContextCalibrator(
+          org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder builderForValue) {
+        if (contextCalibratorBuilder_ == null) {
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.add(builderForValue.build());
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public Builder addContextCalibrator(
+          int index, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder builderForValue) {
+        if (contextCalibratorBuilder_ == null) {
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public Builder addAllContextCalibrator(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ContextCalibratorInfo> values) {
+        if (contextCalibratorBuilder_ == null) {
+          ensureContextCalibratorIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, contextCalibrator_);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public Builder clearContextCalibrator() {
+        if (contextCalibratorBuilder_ == null) {
+          contextCalibrator_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public Builder removeContextCalibrator(int index) {
+        if (contextCalibratorBuilder_ == null) {
+          ensureContextCalibratorIsMutable();
+          contextCalibrator_.remove(index);
+          onChanged();
+        } else {
+          contextCalibratorBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder getContextCalibratorBuilder(
+          int index) {
+        return getContextCalibratorFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder getContextCalibratorOrBuilder(
+          int index) {
+        if (contextCalibratorBuilder_ == null) {
+          return contextCalibrator_.get(index);  } else {
+          return contextCalibratorBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder> 
+           getContextCalibratorOrBuilderList() {
+        if (contextCalibratorBuilder_ != null) {
+          return contextCalibratorBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(contextCalibrator_);
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder addContextCalibratorBuilder() {
+        return getContextCalibratorFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ContextCalibratorInfo.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder addContextCalibratorBuilder(
+          int index) {
+        return getContextCalibratorFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       *used when action = SET_CALIBRATORS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextCalibratorInfo contextCalibrator = 3;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder> 
+           getContextCalibratorBuilderList() {
+        return getContextCalibratorFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ContextCalibratorInfo, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder, org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder> 
+          getContextCalibratorFieldBuilder() {
+        if (contextCalibratorBuilder_ == null) {
+          contextCalibratorBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.ContextCalibratorInfo, org.yamcs.protobuf.Mdb.ContextCalibratorInfo.Builder, org.yamcs.protobuf.Mdb.ContextCalibratorInfoOrBuilder>(
+                  contextCalibrator_,
+                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  getParentForChildren(),
+                  isClean());
+          contextCalibrator_ = null;
+        }
+        return contextCalibratorBuilder_;
+      }
+
+      private org.yamcs.protobuf.Mdb.AlarmInfo defaultAlarm_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.AlarmInfo, org.yamcs.protobuf.Mdb.AlarmInfo.Builder, org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder> defaultAlarmBuilder_;
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+       */
+      public boolean hasDefaultAlarm() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlarmInfo getDefaultAlarm() {
+        if (defaultAlarmBuilder_ == null) {
+          return defaultAlarm_ == null ? org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance() : defaultAlarm_;
+        } else {
+          return defaultAlarmBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+       */
+      public Builder setDefaultAlarm(org.yamcs.protobuf.Mdb.AlarmInfo value) {
+        if (defaultAlarmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          defaultAlarm_ = value;
+          onChanged();
+        } else {
+          defaultAlarmBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+       */
+      public Builder setDefaultAlarm(
+          org.yamcs.protobuf.Mdb.AlarmInfo.Builder builderForValue) {
+        if (defaultAlarmBuilder_ == null) {
+          defaultAlarm_ = builderForValue.build();
+          onChanged();
+        } else {
+          defaultAlarmBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+       */
+      public Builder mergeDefaultAlarm(org.yamcs.protobuf.Mdb.AlarmInfo value) {
+        if (defaultAlarmBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+              defaultAlarm_ != null &&
+              defaultAlarm_ != org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance()) {
+            defaultAlarm_ =
+              org.yamcs.protobuf.Mdb.AlarmInfo.newBuilder(defaultAlarm_).mergeFrom(value).buildPartial();
+          } else {
+            defaultAlarm_ = value;
+          }
+          onChanged();
+        } else {
+          defaultAlarmBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+       */
+      public Builder clearDefaultAlarm() {
+        if (defaultAlarmBuilder_ == null) {
+          defaultAlarm_ = null;
+          onChanged();
+        } else {
+          defaultAlarmBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlarmInfo.Builder getDefaultAlarmBuilder() {
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return getDefaultAlarmFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder getDefaultAlarmOrBuilder() {
+        if (defaultAlarmBuilder_ != null) {
+          return defaultAlarmBuilder_.getMessageOrBuilder();
+        } else {
+          return defaultAlarm_ == null ?
+              org.yamcs.protobuf.Mdb.AlarmInfo.getDefaultInstance() : defaultAlarm_;
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlarmInfo defaultAlarm = 4;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.AlarmInfo, org.yamcs.protobuf.Mdb.AlarmInfo.Builder, org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder> 
+          getDefaultAlarmFieldBuilder() {
+        if (defaultAlarmBuilder_ == null) {
+          defaultAlarmBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.AlarmInfo, org.yamcs.protobuf.Mdb.AlarmInfo.Builder, org.yamcs.protobuf.Mdb.AlarmInfoOrBuilder>(
+                  getDefaultAlarm(),
+                  getParentForChildren(),
+                  isClean());
+          defaultAlarm_ = null;
+        }
+        return defaultAlarmBuilder_;
+      }
+
+      private java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo> contextAlarm_ =
+        java.util.Collections.emptyList();
+      private void ensureContextAlarmIsMutable() {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          contextAlarm_ = new java.util.ArrayList<org.yamcs.protobuf.Mdb.ContextAlarmInfo>(contextAlarm_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ContextAlarmInfo, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder, org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder> contextAlarmBuilder_;
+
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo> getContextAlarmList() {
+        if (contextAlarmBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(contextAlarm_);
+        } else {
+          return contextAlarmBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public int getContextAlarmCount() {
+        if (contextAlarmBuilder_ == null) {
+          return contextAlarm_.size();
+        } else {
+          return contextAlarmBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo getContextAlarm(int index) {
+        if (contextAlarmBuilder_ == null) {
+          return contextAlarm_.get(index);
+        } else {
+          return contextAlarmBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public Builder setContextAlarm(
+          int index, org.yamcs.protobuf.Mdb.ContextAlarmInfo value) {
+        if (contextAlarmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextAlarmIsMutable();
+          contextAlarm_.set(index, value);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public Builder setContextAlarm(
+          int index, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder builderForValue) {
+        if (contextAlarmBuilder_ == null) {
+          ensureContextAlarmIsMutable();
+          contextAlarm_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          contextAlarmBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public Builder addContextAlarm(org.yamcs.protobuf.Mdb.ContextAlarmInfo value) {
+        if (contextAlarmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextAlarmIsMutable();
+          contextAlarm_.add(value);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public Builder addContextAlarm(
+          int index, org.yamcs.protobuf.Mdb.ContextAlarmInfo value) {
+        if (contextAlarmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureContextAlarmIsMutable();
+          contextAlarm_.add(index, value);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public Builder addContextAlarm(
+          org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder builderForValue) {
+        if (contextAlarmBuilder_ == null) {
+          ensureContextAlarmIsMutable();
+          contextAlarm_.add(builderForValue.build());
+          onChanged();
+        } else {
+          contextAlarmBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public Builder addContextAlarm(
+          int index, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder builderForValue) {
+        if (contextAlarmBuilder_ == null) {
+          ensureContextAlarmIsMutable();
+          contextAlarm_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          contextAlarmBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public Builder addAllContextAlarm(
+          java.lang.Iterable<? extends org.yamcs.protobuf.Mdb.ContextAlarmInfo> values) {
+        if (contextAlarmBuilder_ == null) {
+          ensureContextAlarmIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, contextAlarm_);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public Builder clearContextAlarm() {
+        if (contextAlarmBuilder_ == null) {
+          contextAlarm_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000010);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public Builder removeContextAlarm(int index) {
+        if (contextAlarmBuilder_ == null) {
+          ensureContextAlarmIsMutable();
+          contextAlarm_.remove(index);
+          onChanged();
+        } else {
+          contextAlarmBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder getContextAlarmBuilder(
+          int index) {
+        return getContextAlarmFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder getContextAlarmOrBuilder(
+          int index) {
+        if (contextAlarmBuilder_ == null) {
+          return contextAlarm_.get(index);  } else {
+          return contextAlarmBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public java.util.List<? extends org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder> 
+           getContextAlarmOrBuilderList() {
+        if (contextAlarmBuilder_ != null) {
+          return contextAlarmBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(contextAlarm_);
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder addContextAlarmBuilder() {
+        return getContextAlarmFieldBuilder().addBuilder(
+            org.yamcs.protobuf.Mdb.ContextAlarmInfo.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder addContextAlarmBuilder(
+          int index) {
+        return getContextAlarmFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.Mdb.ContextAlarmInfo.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       *used when action = SET_ALARMS
+       * </pre>
+       *
+       * <code>repeated .yamcs.protobuf.mdb.ContextAlarmInfo contextAlarm = 5;</code>
+       */
+      public java.util.List<org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder> 
+           getContextAlarmBuilderList() {
+        return getContextAlarmFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.ContextAlarmInfo, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder, org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder> 
+          getContextAlarmFieldBuilder() {
+        if (contextAlarmBuilder_ == null) {
+          contextAlarmBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.ContextAlarmInfo, org.yamcs.protobuf.Mdb.ContextAlarmInfo.Builder, org.yamcs.protobuf.Mdb.ContextAlarmInfoOrBuilder>(
+                  contextAlarm_,
+                  ((bitField0_ & 0x00000010) == 0x00000010),
+                  getParentForChildren(),
+                  isClean());
+          contextAlarm_ = null;
+        }
+        return contextAlarmBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.mdb.ChangeParameterRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.mdb.ChangeParameterRequest)
+    private static final org.yamcs.protobuf.Mdb.ChangeParameterRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.ChangeParameterRequest();
+    }
+
+    public static org.yamcs.protobuf.Mdb.ChangeParameterRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ChangeParameterRequest>
+        PARSER = new com.google.protobuf.AbstractParser<ChangeParameterRequest>() {
+      public ChangeParameterRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ChangeParameterRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ChangeParameterRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ChangeParameterRequest> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.ChangeParameterRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface ChangeAlgorithmRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.mdb.ChangeAlgorithmRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .yamcs.protobuf.mdb.ChangeAlgorithmRequest.ActionType action = 1;</code>
+     */
+    boolean hasAction();
+    /**
+     * <code>optional .yamcs.protobuf.mdb.ChangeAlgorithmRequest.ActionType action = 1;</code>
+     */
+    org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType getAction();
+
+    /**
+     * <pre>
+     *used when action = SET
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+     */
+    boolean hasAlgorithm();
+    /**
+     * <pre>
+     *used when action = SET
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+     */
+    org.yamcs.protobuf.Mdb.AlgorithmInfo getAlgorithm();
+    /**
+     * <pre>
+     *used when action = SET
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+     */
+    org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder getAlgorithmOrBuilder();
+  }
+  /**
+   * <pre>
+   *used to change algorithms
+   * </pre>
+   *
+   * Protobuf type {@code yamcs.protobuf.mdb.ChangeAlgorithmRequest}
+   */
+  public  static final class ChangeAlgorithmRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.mdb.ChangeAlgorithmRequest)
+      ChangeAlgorithmRequestOrBuilder {
+    // Use ChangeAlgorithmRequest.newBuilder() to construct.
+    private ChangeAlgorithmRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private ChangeAlgorithmRequest() {
+      action_ = 0;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ChangeAlgorithmRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+              org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType value = org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType.valueOf(rawValue);
+              if (value == null) {
+                unknownFields.mergeVarintField(1, rawValue);
+              } else {
+                bitField0_ |= 0x00000001;
+                action_ = rawValue;
+              }
+              break;
+            }
+            case 18: {
+              org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000002) == 0x00000002)) {
+                subBuilder = algorithm_.toBuilder();
+              }
+              algorithm_ = input.readMessage(org.yamcs.protobuf.Mdb.AlgorithmInfo.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(algorithm_);
+                algorithm_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000002;
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ChangeAlgorithmRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ChangeAlgorithmRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.class, org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.Builder.class);
+    }
+
+    /**
+     * Protobuf enum {@code yamcs.protobuf.mdb.ChangeAlgorithmRequest.ActionType}
+     */
+    public enum ActionType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <pre>
+       *restores the original MDB definition
+       * </pre>
+       *
+       * <code>CLEAR = 0;</code>
+       */
+      CLEAR(0),
+      /**
+       * <pre>
+       *sets the algorithm text
+       * </pre>
+       *
+       * <code>SET = 1;</code>
+       */
+      SET(1),
+      ;
+
+      /**
+       * <pre>
+       *restores the original MDB definition
+       * </pre>
+       *
+       * <code>CLEAR = 0;</code>
+       */
+      public static final int CLEAR_VALUE = 0;
+      /**
+       * <pre>
+       *sets the algorithm text
+       * </pre>
+       *
+       * <code>SET = 1;</code>
+       */
+      public static final int SET_VALUE = 1;
+
+
+      public final int getNumber() {
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static ActionType valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static ActionType forNumber(int value) {
+        switch (value) {
+          case 0: return CLEAR;
+          case 1: return SET;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<ActionType>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          ActionType> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<ActionType>() {
+              public ActionType findValueByNumber(int number) {
+                return ActionType.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final ActionType[] VALUES = values();
+
+      public static ActionType valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private ActionType(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:yamcs.protobuf.mdb.ChangeAlgorithmRequest.ActionType)
+    }
+
+    private int bitField0_;
+    public static final int ACTION_FIELD_NUMBER = 1;
+    private int action_;
+    /**
+     * <code>optional .yamcs.protobuf.mdb.ChangeAlgorithmRequest.ActionType action = 1;</code>
+     */
+    public boolean hasAction() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .yamcs.protobuf.mdb.ChangeAlgorithmRequest.ActionType action = 1;</code>
+     */
+    public org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType getAction() {
+      org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType result = org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType.valueOf(action_);
+      return result == null ? org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType.CLEAR : result;
+    }
+
+    public static final int ALGORITHM_FIELD_NUMBER = 2;
+    private org.yamcs.protobuf.Mdb.AlgorithmInfo algorithm_;
+    /**
+     * <pre>
+     *used when action = SET
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+     */
+    public boolean hasAlgorithm() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <pre>
+     *used when action = SET
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+     */
+    public org.yamcs.protobuf.Mdb.AlgorithmInfo getAlgorithm() {
+      return algorithm_ == null ? org.yamcs.protobuf.Mdb.AlgorithmInfo.getDefaultInstance() : algorithm_;
+    }
+    /**
+     * <pre>
+     *used when action = SET
+     * </pre>
+     *
+     * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+     */
+    public org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder getAlgorithmOrBuilder() {
+      return algorithm_ == null ? org.yamcs.protobuf.Mdb.AlgorithmInfo.getDefaultInstance() : algorithm_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      if (hasAlgorithm()) {
+        if (!getAlgorithm().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeEnum(1, action_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeMessage(2, getAlgorithm());
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, action_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getAlgorithm());
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest other = (org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest) obj;
+
+      boolean result = true;
+      result = result && (hasAction() == other.hasAction());
+      if (hasAction()) {
+        result = result && action_ == other.action_;
+      }
+      result = result && (hasAlgorithm() == other.hasAlgorithm());
+      if (hasAlgorithm()) {
+        result = result && getAlgorithm()
+            .equals(other.getAlgorithm());
+      }
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasAction()) {
+        hash = (37 * hash) + ACTION_FIELD_NUMBER;
+        hash = (53 * hash) + action_;
+      }
+      if (hasAlgorithm()) {
+        hash = (37 * hash) + ALGORITHM_FIELD_NUMBER;
+        hash = (53 * hash) + getAlgorithm().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     *used to change algorithms
+     * </pre>
+     *
+     * Protobuf type {@code yamcs.protobuf.mdb.ChangeAlgorithmRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.mdb.ChangeAlgorithmRequest)
+        org.yamcs.protobuf.Mdb.ChangeAlgorithmRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ChangeAlgorithmRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ChangeAlgorithmRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.class, org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getAlgorithmFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        action_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (algorithmBuilder_ == null) {
+          algorithm_ = null;
+        } else {
+          algorithmBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Mdb.internal_static_yamcs_protobuf_mdb_ChangeAlgorithmRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest build() {
+        org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest buildPartial() {
+        org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest result = new org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.action_ = action_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        if (algorithmBuilder_ == null) {
+          result.algorithm_ = algorithm_;
+        } else {
+          result.algorithm_ = algorithmBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest) {
+          return mergeFrom((org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest other) {
+        if (other == org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.getDefaultInstance()) return this;
+        if (other.hasAction()) {
+          setAction(other.getAction());
+        }
+        if (other.hasAlgorithm()) {
+          mergeAlgorithm(other.getAlgorithm());
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (hasAlgorithm()) {
+          if (!getAlgorithm().isInitialized()) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private int action_ = 0;
+      /**
+       * <code>optional .yamcs.protobuf.mdb.ChangeAlgorithmRequest.ActionType action = 1;</code>
+       */
+      public boolean hasAction() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.ChangeAlgorithmRequest.ActionType action = 1;</code>
+       */
+      public org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType getAction() {
+        org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType result = org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType.valueOf(action_);
+        return result == null ? org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType.CLEAR : result;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.ChangeAlgorithmRequest.ActionType action = 1;</code>
+       */
+      public Builder setAction(org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest.ActionType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        bitField0_ |= 0x00000001;
+        action_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional .yamcs.protobuf.mdb.ChangeAlgorithmRequest.ActionType action = 1;</code>
+       */
+      public Builder clearAction() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        action_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private org.yamcs.protobuf.Mdb.AlgorithmInfo algorithm_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.AlgorithmInfo, org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder, org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder> algorithmBuilder_;
+      /**
+       * <pre>
+       *used when action = SET
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+       */
+      public boolean hasAlgorithm() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <pre>
+       *used when action = SET
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlgorithmInfo getAlgorithm() {
+        if (algorithmBuilder_ == null) {
+          return algorithm_ == null ? org.yamcs.protobuf.Mdb.AlgorithmInfo.getDefaultInstance() : algorithm_;
+        } else {
+          return algorithmBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+       */
+      public Builder setAlgorithm(org.yamcs.protobuf.Mdb.AlgorithmInfo value) {
+        if (algorithmBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          algorithm_ = value;
+          onChanged();
+        } else {
+          algorithmBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+       */
+      public Builder setAlgorithm(
+          org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder builderForValue) {
+        if (algorithmBuilder_ == null) {
+          algorithm_ = builderForValue.build();
+          onChanged();
+        } else {
+          algorithmBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+       */
+      public Builder mergeAlgorithm(org.yamcs.protobuf.Mdb.AlgorithmInfo value) {
+        if (algorithmBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002) &&
+              algorithm_ != null &&
+              algorithm_ != org.yamcs.protobuf.Mdb.AlgorithmInfo.getDefaultInstance()) {
+            algorithm_ =
+              org.yamcs.protobuf.Mdb.AlgorithmInfo.newBuilder(algorithm_).mergeFrom(value).buildPartial();
+          } else {
+            algorithm_ = value;
+          }
+          onChanged();
+        } else {
+          algorithmBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000002;
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+       */
+      public Builder clearAlgorithm() {
+        if (algorithmBuilder_ == null) {
+          algorithm_ = null;
+          onChanged();
+        } else {
+          algorithmBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      /**
+       * <pre>
+       *used when action = SET
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder getAlgorithmBuilder() {
+        bitField0_ |= 0x00000002;
+        onChanged();
+        return getAlgorithmFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       *used when action = SET
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+       */
+      public org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder getAlgorithmOrBuilder() {
+        if (algorithmBuilder_ != null) {
+          return algorithmBuilder_.getMessageOrBuilder();
+        } else {
+          return algorithm_ == null ?
+              org.yamcs.protobuf.Mdb.AlgorithmInfo.getDefaultInstance() : algorithm_;
+        }
+      }
+      /**
+       * <pre>
+       *used when action = SET
+       * </pre>
+       *
+       * <code>optional .yamcs.protobuf.mdb.AlgorithmInfo algorithm = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          org.yamcs.protobuf.Mdb.AlgorithmInfo, org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder, org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder> 
+          getAlgorithmFieldBuilder() {
+        if (algorithmBuilder_ == null) {
+          algorithmBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              org.yamcs.protobuf.Mdb.AlgorithmInfo, org.yamcs.protobuf.Mdb.AlgorithmInfo.Builder, org.yamcs.protobuf.Mdb.AlgorithmInfoOrBuilder>(
+                  getAlgorithm(),
+                  getParentForChildren(),
+                  isClean());
+          algorithm_ = null;
+        }
+        return algorithmBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.mdb.ChangeAlgorithmRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.mdb.ChangeAlgorithmRequest)
+    private static final org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest();
+    }
+
+    public static org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<ChangeAlgorithmRequest>
+        PARSER = new com.google.protobuf.AbstractParser<ChangeAlgorithmRequest>() {
+      public ChangeAlgorithmRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ChangeAlgorithmRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<ChangeAlgorithmRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ChangeAlgorithmRequest> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_protobuf_mdb_MissionDatabase_descriptor;
   private static final 
@@ -51891,6 +56358,11 @@ public final class Mdb {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_protobuf_mdb_AlarmInfo_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_mdb_ContextAlarmInfo_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_mdb_ContextAlarmInfo_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_protobuf_mdb_DataEncodingInfo_descriptor;
   private static final 
@@ -52076,6 +56548,16 @@ public final class Mdb {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_protobuf_mdb_SpaceSystemInfo_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_mdb_ChangeParameterRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_mdb_ChangeParameterRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_mdb_ChangeAlgorithmRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_mdb_ChangeAlgorithmRequest_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -52102,190 +56584,214 @@ public final class Mdb {
       "mInfo\022\025\n\rminViolations\030\001 \001(\005\0228\n\020staticAl" +
       "armRange\030\002 \003(\0132\036.yamcs.protobuf.mdb.Alar" +
       "mRange\022>\n\020enumerationAlarm\030\003 \003(\0132$.yamcs" +
-      ".protobuf.mdb.EnumerationAlarm\"\321\002\n\020DataE" +
-      "ncodingInfo\0227\n\004type\030\001 \001(\0162).yamcs.protob" +
-      "uf.mdb.DataEncodingInfo.Type\022\024\n\014littleEn",
-      "dian\030\002 \001(\010\022\022\n\nsizeInBits\030\003 \001(\005\022\020\n\010encodi" +
-      "ng\030\004 \001(\t\022=\n\021defaultCalibrator\030\006 \001(\0132\".ya" +
-      "mcs.protobuf.mdb.CalibratorInfo\022D\n\021conte" +
-      "xtCalibrator\030\007 \003(\0132).yamcs.protobuf.mdb." +
-      "ContextCalibratorInfo\"C\n\004Type\022\n\n\006BINARY\020" +
-      "\000\022\013\n\007BOOLEAN\020\001\022\t\n\005FLOAT\020\002\022\013\n\007INTEGER\020\003\022\n" +
-      "\n\006STRING\020\004\"\207\001\n\025ContextCalibratorInfo\0226\n\n" +
-      "comparison\030\001 \003(\0132\".yamcs.protobuf.mdb.Co" +
-      "mparisonInfo\0226\n\ncalibrator\030\002 \001(\0132\".yamcs" +
-      ".protobuf.mdb.CalibratorInfo\"\202\002\n\016Calibra",
-      "torInfo\022\014\n\004type\030\001 \001(\t\022J\n\024polynomialCalib" +
-      "rator\030\002 \001(\0132,.yamcs.protobuf.mdb.Polynom" +
-      "ialCalibratorInfo\022B\n\020splineCalibrator\030\003 " +
-      "\001(\0132(.yamcs.protobuf.mdb.SplineCalibrato" +
-      "rInfo\022R\n\030javaExpressionCalibrator\030\004 \001(\0132" +
-      "0.yamcs.protobuf.mdb.JavaExpressionCalib" +
-      "ratorInfo\"/\n\030PolynomialCalibratorInfo\022\023\n" +
+      ".protobuf.mdb.EnumerationAlarm\"x\n\020Contex" +
+      "tAlarmInfo\0226\n\ncomparison\030\001 \003(\0132\".yamcs.p" +
+      "rotobuf.mdb.ComparisonInfo\022,\n\005alarm\030\002 \001(",
+      "\0132\035.yamcs.protobuf.mdb.AlarmInfo\"\321\002\n\020Dat" +
+      "aEncodingInfo\0227\n\004type\030\001 \001(\0162).yamcs.prot" +
+      "obuf.mdb.DataEncodingInfo.Type\022\024\n\014little" +
+      "Endian\030\002 \001(\010\022\022\n\nsizeInBits\030\003 \001(\005\022\020\n\010enco" +
+      "ding\030\004 \001(\t\022=\n\021defaultCalibrator\030\006 \001(\0132\"." +
+      "yamcs.protobuf.mdb.CalibratorInfo\022D\n\021con" +
+      "textCalibrator\030\007 \003(\0132).yamcs.protobuf.md" +
+      "b.ContextCalibratorInfo\"C\n\004Type\022\n\n\006BINAR" +
+      "Y\020\000\022\013\n\007BOOLEAN\020\001\022\t\n\005FLOAT\020\002\022\013\n\007INTEGER\020\003" +
+      "\022\n\n\006STRING\020\004\"\207\001\n\025ContextCalibratorInfo\0226",
+      "\n\ncomparison\030\001 \003(\0132\".yamcs.protobuf.mdb." +
+      "ComparisonInfo\0226\n\ncalibrator\030\002 \001(\0132\".yam" +
+      "cs.protobuf.mdb.CalibratorInfo\"\370\002\n\016Calib" +
+      "ratorInfo\022J\n\024polynomialCalibrator\030\002 \001(\0132" +
+      ",.yamcs.protobuf.mdb.PolynomialCalibrato" +
+      "rInfo\022B\n\020splineCalibrator\030\003 \001(\0132(.yamcs." +
+      "protobuf.mdb.SplineCalibratorInfo\022R\n\030jav" +
+      "aExpressionCalibrator\030\004 \001(\01320.yamcs.prot" +
+      "obuf.mdb.JavaExpressionCalibratorInfo\0225\n" +
+      "\004type\030\005 \001(\0162\'.yamcs.protobuf.mdb.Calibra",
+      "torInfo.Type\"K\n\004Type\022\016\n\nPOLYNOMIAL\020\000\022\n\n\006" +
+      "SPLINE\020\001\022\022\n\016MATH_OPERATION\020\002\022\023\n\017JAVA_EXP" +
+      "RESSION\020\003\"/\n\030PolynomialCalibratorInfo\022\023\n" +
       "\013coefficient\030\001 \003(\001\"\223\001\n\024SplineCalibratorI" +
       "nfo\022G\n\005point\030\001 \003(\01328.yamcs.protobuf.mdb." +
-      "SplineCalibratorInfo.SplinePointInfo\0322\n\017",
+      "SplineCalibratorInfo.SplinePointInfo\0322\n\017" +
       "SplinePointInfo\022\013\n\003raw\030\001 \001(\001\022\022\n\ncalibrat" +
       "ed\030\002 \001(\001\"/\n\034JavaExpressionCalibratorInfo" +
       "\022\017\n\007formula\030\001 \001(\t\")\n\tEnumValue\022\r\n\005value\030" +
-      "\001 \001(\003\022\r\n\005label\030\002 \001(\t\"\266\002\n\021ParameterTypeIn" +
+      "\001 \001(\003\022\r\n\005label\030\002 \001(\t\"\362\002\n\021ParameterTypeIn",
       "fo\022\017\n\007engType\030\001 \001(\t\022:\n\014dataEncoding\030\002 \001(" +
       "\0132$.yamcs.protobuf.mdb.DataEncodingInfo\022" +
       "-\n\007unitSet\030\003 \003(\0132\034.yamcs.protobuf.mdb.Un" +
       "itInfo\0223\n\014defaultAlarm\030\004 \001(\0132\035.yamcs.pro" +
       "tobuf.mdb.AlarmInfo\0220\n\tenumValue\030\005 \003(\0132\035" +
-      ".yamcs.protobuf.mdb.EnumValue\022>\n\020absolut",
+      ".yamcs.protobuf.mdb.EnumValue\022>\n\020absolut" +
       "eTimeInfo\030\006 \001(\0132$.yamcs.protobuf.mdb.Abs" +
-      "oluteTimeInfo\"\215\001\n\020AbsoluteTimeInfo\022\024\n\014in" +
-      "itialValue\030\001 \001(\t\022\r\n\005scale\030\002 \001(\001\022\016\n\006offse" +
-      "t\030\003 \001(\001\0225\n\noffsetFrom\030\004 \001(\0132!.yamcs.prot" +
-      "obuf.mdb.ParameterInfo\022\r\n\005epoch\030\005 \001(\t\"x\n" +
-      "\nUsedByInfo\0224\n\talgorithm\030\001 \003(\0132!.yamcs.p" +
-      "rotobuf.mdb.AlgorithmInfo\0224\n\tcontainer\030\002" +
-      " \003(\0132!.yamcs.protobuf.mdb.ContainerInfo\"" +
-      "\262\002\n\rParameterInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rquali" +
-      "fiedName\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t",
-      "\022\027\n\017longDescription\030\004 \001(\t\022,\n\005alias\030\005 \003(\013" +
-      "2\035.yamcs.protobuf.NamedObjectId\0223\n\004type\030" +
-      "\006 \001(\0132%.yamcs.protobuf.mdb.ParameterType" +
-      "Info\0226\n\ndataSource\030\007 \001(\0162\".yamcs.protobu" +
-      "f.mdb.DataSourceType\022.\n\006usedBy\030\010 \001(\0132\036.y" +
-      "amcs.protobuf.mdb.UsedByInfo\"\344\001\n\020Argumen" +
-      "tTypeInfo\022\017\n\007engType\030\001 \001(\t\022:\n\014dataEncodi" +
-      "ng\030\002 \001(\0132$.yamcs.protobuf.mdb.DataEncodi" +
-      "ngInfo\022-\n\007unitSet\030\003 \003(\0132\034.yamcs.protobuf" +
-      ".mdb.UnitInfo\0220\n\tenumValue\030\005 \003(\0132\035.yamcs",
-      ".protobuf.mdb.EnumValue\022\020\n\010rangeMin\030\006 \001(" +
-      "\001\022\020\n\010rangeMax\030\007 \001(\001\"{\n\014ArgumentInfo\022\014\n\004n" +
-      "ame\030\001 \001(\t\022\023\n\013description\030\002 \001(\t\022\024\n\014initia" +
-      "lValue\030\004 \001(\t\0222\n\004type\030\006 \001(\0132$.yamcs.proto" +
-      "buf.mdb.ArgumentTypeInfo\"5\n\026ArgumentAssi" +
-      "gnmentInfo\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"" +
-      "\345\001\n\020SignificanceInfo\022T\n\020consequenceLevel" +
-      "\030\001 \001(\0162:.yamcs.protobuf.mdb.Significance" +
-      "Info.SignificanceLevelType\022\030\n\020reasonForW" +
-      "arning\030\002 \001(\t\"a\n\025SignificanceLevelType\022\010\n",
-      "\004NONE\020\001\022\t\n\005WATCH\020\002\022\013\n\007WARNING\020\003\022\014\n\010DISTR" +
-      "ESS\020\004\022\014\n\010CRITICAL\020\005\022\n\n\006SEVERE\020\006\"\251\002\n\016Comp" +
-      "arisonInfo\0224\n\tparameter\030\001 \001(\0132!.yamcs.pr" +
-      "otobuf.mdb.ParameterInfo\022A\n\010operator\030\002 \001" +
-      "(\0162/.yamcs.protobuf.mdb.ComparisonInfo.O" +
-      "peratorType\022\r\n\005value\030\003 \001(\t\"\216\001\n\014OperatorT" +
-      "ype\022\014\n\010EQUAL_TO\020\001\022\020\n\014NOT_EQUAL_TO\020\002\022\020\n\014G" +
-      "REATER_THAN\020\003\022\034\n\030GREATER_THAN_OR_EQUAL_T" +
-      "O\020\004\022\020\n\014SMALLER_THAN\020\005\022\034\n\030SMALLER_THAN_OR" +
-      "_EQUAL_TO\020\006\"e\n\032TransmissionConstraintInf",
-      "o\0226\n\ncomparison\030\001 \003(\0132\".yamcs.protobuf.m" +
-      "db.ComparisonInfo\022\017\n\007timeout\030\002 \001(\003\"\233\004\n\013C" +
-      "ommandInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedNam" +
-      "e\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n\017lon" +
-      "gDescription\030\004 \001(\t\022,\n\005alias\030\005 \003(\0132\035.yamc" +
-      "s.protobuf.NamedObjectId\0224\n\013baseCommand\030" +
-      "\006 \001(\0132\037.yamcs.protobuf.mdb.CommandInfo\022\020" +
-      "\n\010abstract\030\007 \001(\010\0222\n\010argument\030\010 \003(\0132 .yam" +
-      "cs.protobuf.mdb.ArgumentInfo\022F\n\022argument" +
-      "Assignment\030\t \003(\0132*.yamcs.protobuf.mdb.Ar",
-      "gumentAssignmentInfo\022:\n\014significance\030\n \001" +
-      "(\0132$.yamcs.protobuf.mdb.SignificanceInfo" +
-      "\022B\n\nconstraint\030\013 \003(\0132..yamcs.protobuf.md" +
-      "b.TransmissionConstraintInfo\022B\n\020commandC" +
-      "ontainer\030\r \001(\0132(.yamcs.protobuf.mdb.Comm" +
-      "andContainerInfo\"n\n\nRepeatInfo\022\022\n\nfixedC" +
-      "ount\030\001 \001(\003\0227\n\014dynamicCount\030\002 \001(\0132!.yamcs" +
-      ".protobuf.mdb.ParameterInfo\022\023\n\013bitsBetwe" +
-      "en\030\003 \001(\005\"\315\003\n\021SequenceEntryInfo\022\026\n\016locati" +
-      "onInBits\030\001 \001(\005\022V\n\021referenceLocation\030\002 \001(",
-      "\0162;.yamcs.protobuf.mdb.SequenceEntryInfo" +
-      ".ReferenceLocationType\0224\n\tcontainer\030\003 \001(" +
-      "\0132!.yamcs.protobuf.mdb.ContainerInfo\0224\n\t" +
-      "parameter\030\004 \001(\0132!.yamcs.protobuf.mdb.Par" +
-      "ameterInfo\0222\n\010argument\030\006 \001(\0132 .yamcs.pro" +
-      "tobuf.mdb.ArgumentInfo\0226\n\nfixedValue\030\007 \001" +
-      "(\0132\".yamcs.protobuf.mdb.FixedValueInfo\022." +
-      "\n\006repeat\030\005 \001(\0132\036.yamcs.protobuf.mdb.Repe" +
-      "atInfo\"@\n\025ReferenceLocationType\022\023\n\017CONTA" +
-      "INER_START\020\001\022\022\n\016PREVIOUS_ENTRY\020\002\"D\n\016Fixe",
-      "dValueInfo\022\014\n\004name\030\001 \001(\t\022\020\n\010hexValue\030\002 \001" +
-      "(\t\022\022\n\nsizeInBits\030\003 \001(\005\"\247\002\n\024CommandContai" +
-      "nerInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedName\030\002" +
-      " \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n\017longDe" +
-      "scription\030\004 \001(\t\022,\n\005alias\030\005 \003(\0132\035.yamcs.p" +
-      "rotobuf.NamedObjectId\022\022\n\nsizeInBits\030\006 \001(" +
-      "\005\022?\n\rbaseContainer\030\007 \001(\0132(.yamcs.protobu" +
-      "f.mdb.CommandContainerInfo\0224\n\005entry\030\010 \003(" +
-      "\0132%.yamcs.protobuf.mdb.SequenceEntryInfo" +
-      "\"\237\003\n\rContainerInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqual",
-      "ifiedName\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(" +
-      "\t\022\027\n\017longDescription\030\004 \001(\t\022,\n\005alias\030\005 \003(" +
-      "\0132\035.yamcs.protobuf.NamedObjectId\022\023\n\013maxI" +
-      "nterval\030\006 \001(\003\022\022\n\nsizeInBits\030\007 \001(\005\0228\n\rbas" +
-      "eContainer\030\010 \001(\0132!.yamcs.protobuf.mdb.Co" +
-      "ntainerInfo\022?\n\023restrictionCriteria\030\t \003(\013" +
-      "2\".yamcs.protobuf.mdb.ComparisonInfo\0224\n\005" +
-      "entry\030\n \003(\0132%.yamcs.protobuf.mdb.Sequenc" +
-      "eEntryInfo\022.\n\006usedBy\030\013 \001(\0132\036.yamcs.proto" +
-      "buf.mdb.UsedByInfo\"\213\001\n\022InputParameterInf",
-      "o\0224\n\tparameter\030\001 \001(\0132!.yamcs.protobuf.md" +
-      "b.ParameterInfo\022\021\n\tinputName\030\002 \001(\t\022\031\n\021pa" +
-      "rameterInstance\030\003 \001(\005\022\021\n\tmandatory\030\004 \001(\010" +
-      "\"_\n\023OutputParameterInfo\0224\n\tparameter\030\001 \001" +
-      "(\0132!.yamcs.protobuf.mdb.ParameterInfo\022\022\n" +
-      "\noutputName\030\002 \001(\t\"\364\003\n\rAlgorithmInfo\022\014\n\004n" +
-      "ame\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shor" +
-      "tDescription\030\003 \001(\t\022\027\n\017longDescription\030\004 " +
-      "\001(\t\022,\n\005alias\030\005 \003(\0132\035.yamcs.protobuf.Name" +
-      "dObjectId\0226\n\005scope\030\006 \001(\0162\'.yamcs.protobu",
-      "f.mdb.AlgorithmInfo.Scope\022\020\n\010language\030\007 " +
-      "\001(\t\022\014\n\004text\030\010 \001(\t\022>\n\016inputParameter\030\t \003(" +
-      "\0132&.yamcs.protobuf.mdb.InputParameterInf" +
-      "o\022@\n\017outputParameter\030\n \003(\0132\'.yamcs.proto" +
-      "buf.mdb.OutputParameterInfo\022<\n\021onParamet" +
-      "erUpdate\030\013 \003(\0132!.yamcs.protobuf.mdb.Para" +
-      "meterInfo\022\026\n\016onPeriodicRate\030\014 \003(\003\"-\n\005Sco" +
-      "pe\022\n\n\006GLOBAL\020\000\022\030\n\024COMMAND_VERIFICATION\020\001" +
-      "\"|\n\026ListParametersResponse\0224\n\tparameter\030" +
-      "\001 \003(\0132!.yamcs.protobuf.mdb.ParameterInfo",
+      "oluteTimeInfo\022:\n\014contextAlarm\030\007 \003(\0132$.ya" +
+      "mcs.protobuf.mdb.ContextAlarmInfo\"\215\001\n\020Ab" +
+      "soluteTimeInfo\022\024\n\014initialValue\030\001 \001(\t\022\r\n\005",
+      "scale\030\002 \001(\001\022\016\n\006offset\030\003 \001(\001\0225\n\noffsetFro" +
+      "m\030\004 \001(\0132!.yamcs.protobuf.mdb.ParameterIn" +
+      "fo\022\r\n\005epoch\030\005 \001(\t\"x\n\nUsedByInfo\0224\n\talgor" +
+      "ithm\030\001 \003(\0132!.yamcs.protobuf.mdb.Algorith" +
+      "mInfo\0224\n\tcontainer\030\002 \003(\0132!.yamcs.protobu" +
+      "f.mdb.ContainerInfo\"\262\002\n\rParameterInfo\022\014\n" +
+      "\004name\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020sh" +
+      "ortDescription\030\003 \001(\t\022\027\n\017longDescription\030" +
+      "\004 \001(\t\022,\n\005alias\030\005 \003(\0132\035.yamcs.protobuf.Na" +
+      "medObjectId\0223\n\004type\030\006 \001(\0132%.yamcs.protob",
+      "uf.mdb.ParameterTypeInfo\0226\n\ndataSource\030\007" +
+      " \001(\0162\".yamcs.protobuf.mdb.DataSourceType" +
+      "\022.\n\006usedBy\030\010 \001(\0132\036.yamcs.protobuf.mdb.Us" +
+      "edByInfo\"\344\001\n\020ArgumentTypeInfo\022\017\n\007engType" +
+      "\030\001 \001(\t\022:\n\014dataEncoding\030\002 \001(\0132$.yamcs.pro" +
+      "tobuf.mdb.DataEncodingInfo\022-\n\007unitSet\030\003 " +
+      "\003(\0132\034.yamcs.protobuf.mdb.UnitInfo\0220\n\tenu" +
+      "mValue\030\005 \003(\0132\035.yamcs.protobuf.mdb.EnumVa" +
+      "lue\022\020\n\010rangeMin\030\006 \001(\001\022\020\n\010rangeMax\030\007 \001(\001\"" +
+      "{\n\014ArgumentInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013descrip",
+      "tion\030\002 \001(\t\022\024\n\014initialValue\030\004 \001(\t\0222\n\004type" +
+      "\030\006 \001(\0132$.yamcs.protobuf.mdb.ArgumentType" +
+      "Info\"5\n\026ArgumentAssignmentInfo\022\014\n\004name\030\001" +
+      " \001(\t\022\r\n\005value\030\002 \001(\t\"\345\001\n\020SignificanceInfo" +
+      "\022T\n\020consequenceLevel\030\001 \001(\0162:.yamcs.proto" +
+      "buf.mdb.SignificanceInfo.SignificanceLev" +
+      "elType\022\030\n\020reasonForWarning\030\002 \001(\t\"a\n\025Sign" +
+      "ificanceLevelType\022\010\n\004NONE\020\001\022\t\n\005WATCH\020\002\022\013" +
+      "\n\007WARNING\020\003\022\014\n\010DISTRESS\020\004\022\014\n\010CRITICAL\020\005\022" +
+      "\n\n\006SEVERE\020\006\"\251\002\n\016ComparisonInfo\0224\n\tparame",
+      "ter\030\001 \001(\0132!.yamcs.protobuf.mdb.Parameter" +
+      "Info\022A\n\010operator\030\002 \001(\0162/.yamcs.protobuf." +
+      "mdb.ComparisonInfo.OperatorType\022\r\n\005value" +
+      "\030\003 \001(\t\"\216\001\n\014OperatorType\022\014\n\010EQUAL_TO\020\001\022\020\n" +
+      "\014NOT_EQUAL_TO\020\002\022\020\n\014GREATER_THAN\020\003\022\034\n\030GRE" +
+      "ATER_THAN_OR_EQUAL_TO\020\004\022\020\n\014SMALLER_THAN\020" +
+      "\005\022\034\n\030SMALLER_THAN_OR_EQUAL_TO\020\006\"e\n\032Trans" +
+      "missionConstraintInfo\0226\n\ncomparison\030\001 \003(" +
+      "\0132\".yamcs.protobuf.mdb.ComparisonInfo\022\017\n" +
+      "\007timeout\030\002 \001(\003\"\233\004\n\013CommandInfo\022\014\n\004name\030\001",
+      " \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDesc" +
+      "ription\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022," +
+      "\n\005alias\030\005 \003(\0132\035.yamcs.protobuf.NamedObje" +
+      "ctId\0224\n\013baseCommand\030\006 \001(\0132\037.yamcs.protob" +
+      "uf.mdb.CommandInfo\022\020\n\010abstract\030\007 \001(\010\0222\n\010" +
+      "argument\030\010 \003(\0132 .yamcs.protobuf.mdb.Argu" +
+      "mentInfo\022F\n\022argumentAssignment\030\t \003(\0132*.y" +
+      "amcs.protobuf.mdb.ArgumentAssignmentInfo" +
+      "\022:\n\014significance\030\n \001(\0132$.yamcs.protobuf." +
+      "mdb.SignificanceInfo\022B\n\nconstraint\030\013 \003(\013",
+      "2..yamcs.protobuf.mdb.TransmissionConstr" +
+      "aintInfo\022B\n\020commandContainer\030\r \001(\0132(.yam" +
+      "cs.protobuf.mdb.CommandContainerInfo\"n\n\n" +
+      "RepeatInfo\022\022\n\nfixedCount\030\001 \001(\003\0227\n\014dynami" +
+      "cCount\030\002 \001(\0132!.yamcs.protobuf.mdb.Parame" +
+      "terInfo\022\023\n\013bitsBetween\030\003 \001(\005\"\315\003\n\021Sequenc" +
+      "eEntryInfo\022\026\n\016locationInBits\030\001 \001(\005\022V\n\021re" +
+      "ferenceLocation\030\002 \001(\0162;.yamcs.protobuf.m" +
+      "db.SequenceEntryInfo.ReferenceLocationTy" +
+      "pe\0224\n\tcontainer\030\003 \001(\0132!.yamcs.protobuf.m",
+      "db.ContainerInfo\0224\n\tparameter\030\004 \001(\0132!.ya" +
+      "mcs.protobuf.mdb.ParameterInfo\0222\n\010argume" +
+      "nt\030\006 \001(\0132 .yamcs.protobuf.mdb.ArgumentIn" +
+      "fo\0226\n\nfixedValue\030\007 \001(\0132\".yamcs.protobuf." +
+      "mdb.FixedValueInfo\022.\n\006repeat\030\005 \001(\0132\036.yam" +
+      "cs.protobuf.mdb.RepeatInfo\"@\n\025ReferenceL" +
+      "ocationType\022\023\n\017CONTAINER_START\020\001\022\022\n\016PREV" +
+      "IOUS_ENTRY\020\002\"D\n\016FixedValueInfo\022\014\n\004name\030\001" +
+      " \001(\t\022\020\n\010hexValue\030\002 \001(\t\022\022\n\nsizeInBits\030\003 \001" +
+      "(\005\"\247\002\n\024CommandContainerInfo\022\014\n\004name\030\001 \001(",
+      "\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescrip" +
+      "tion\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022,\n\005a" +
+      "lias\030\005 \003(\0132\035.yamcs.protobuf.NamedObjectI" +
+      "d\022\022\n\nsizeInBits\030\006 \001(\005\022?\n\rbaseContainer\030\007" +
+      " \001(\0132(.yamcs.protobuf.mdb.CommandContain" +
+      "erInfo\0224\n\005entry\030\010 \003(\0132%.yamcs.protobuf.m" +
+      "db.SequenceEntryInfo\"\237\003\n\rContainerInfo\022\014" +
+      "\n\004name\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020s" +
+      "hortDescription\030\003 \001(\t\022\027\n\017longDescription" +
+      "\030\004 \001(\t\022,\n\005alias\030\005 \003(\0132\035.yamcs.protobuf.N",
+      "amedObjectId\022\023\n\013maxInterval\030\006 \001(\003\022\022\n\nsiz" +
+      "eInBits\030\007 \001(\005\0228\n\rbaseContainer\030\010 \001(\0132!.y" +
+      "amcs.protobuf.mdb.ContainerInfo\022?\n\023restr" +
+      "ictionCriteria\030\t \003(\0132\".yamcs.protobuf.md" +
+      "b.ComparisonInfo\0224\n\005entry\030\n \003(\0132%.yamcs." +
+      "protobuf.mdb.SequenceEntryInfo\022.\n\006usedBy" +
+      "\030\013 \001(\0132\036.yamcs.protobuf.mdb.UsedByInfo\"\213" +
+      "\001\n\022InputParameterInfo\0224\n\tparameter\030\001 \001(\013" +
+      "2!.yamcs.protobuf.mdb.ParameterInfo\022\021\n\ti" +
+      "nputName\030\002 \001(\t\022\031\n\021parameterInstance\030\003 \001(",
+      "\005\022\021\n\tmandatory\030\004 \001(\010\"_\n\023OutputParameterI" +
+      "nfo\0224\n\tparameter\030\001 \001(\0132!.yamcs.protobuf." +
+      "mdb.ParameterInfo\022\022\n\noutputName\030\002 \001(\t\"\364\003" +
+      "\n\rAlgorithmInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifi" +
+      "edName\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027" +
+      "\n\017longDescription\030\004 \001(\t\022,\n\005alias\030\005 \003(\0132\035" +
+      ".yamcs.protobuf.NamedObjectId\0226\n\005scope\030\006" +
+      " \001(\0162\'.yamcs.protobuf.mdb.AlgorithmInfo." +
+      "Scope\022\020\n\010language\030\007 \001(\t\022\014\n\004text\030\010 \001(\t\022>\n" +
+      "\016inputParameter\030\t \003(\0132&.yamcs.protobuf.m",
+      "db.InputParameterInfo\022@\n\017outputParameter" +
+      "\030\n \003(\0132\'.yamcs.protobuf.mdb.OutputParame" +
+      "terInfo\022<\n\021onParameterUpdate\030\013 \003(\0132!.yam" +
+      "cs.protobuf.mdb.ParameterInfo\022\026\n\016onPerio" +
+      "dicRate\030\014 \003(\003\"-\n\005Scope\022\n\n\006GLOBAL\020\000\022\030\n\024CO" +
+      "MMAND_VERIFICATION\020\001\"|\n\026ListParametersRe" +
+      "sponse\0224\n\tparameter\030\001 \003(\0132!.yamcs.protob" +
+      "uf.mdb.ParameterInfo\022\031\n\021continuationToke" +
+      "n\030\002 \001(\t\022\021\n\ttotalSize\030\003 \001(\005\"\177\n\032ListParame" +
+      "terTypesResponse\0223\n\004type\030\001 \003(\0132%.yamcs.p",
+      "rotobuf.mdb.ParameterTypeInfo\022\031\n\021continu" +
+      "ationToken\030\002 \001(\t\022\021\n\ttotalSize\030\003 \001(\005\"H\n\033B" +
+      "ulkGetParameterInfoRequest\022)\n\002id\030\001 \003(\0132\035" +
+      ".yamcs.protobuf.NamedObjectId\"\370\001\n\034BulkGe" +
+      "tParameterInfoResponse\022[\n\010response\030\001 \003(\013" +
+      "2I.yamcs.protobuf.mdb.BulkGetParameterIn" +
+      "foResponse.GetParameterInfoResponse\032{\n\030G" +
+      "etParameterInfoResponse\022)\n\002id\030\001 \001(\0132\035.ya" +
+      "mcs.protobuf.NamedObjectId\0224\n\tparameter\030" +
+      "\002 \001(\0132!.yamcs.protobuf.mdb.ParameterInfo",
+      "\"|\n\026ListContainersResponse\0224\n\tcontainer\030" +
+      "\001 \003(\0132!.yamcs.protobuf.mdb.ContainerInfo" +
       "\022\031\n\021continuationToken\030\002 \001(\t\022\021\n\ttotalSize" +
-      "\030\003 \001(\005\"\177\n\032ListParameterTypesResponse\0223\n\004" +
-      "type\030\001 \003(\0132%.yamcs.protobuf.mdb.Paramete" +
-      "rTypeInfo\022\031\n\021continuationToken\030\002 \001(\t\022\021\n\t" +
-      "totalSize\030\003 \001(\005\"H\n\033BulkGetParameterInfoR" +
-      "equest\022)\n\002id\030\001 \003(\0132\035.yamcs.protobuf.Name" +
-      "dObjectId\"\370\001\n\034BulkGetParameterInfoRespon" +
-      "se\022[\n\010response\030\001 \003(\0132I.yamcs.protobuf.md" +
-      "b.BulkGetParameterInfoResponse.GetParame" +
-      "terInfoResponse\032{\n\030GetParameterInfoRespo",
-      "nse\022)\n\002id\030\001 \001(\0132\035.yamcs.protobuf.NamedOb" +
-      "jectId\0224\n\tparameter\030\002 \001(\0132!.yamcs.protob" +
-      "uf.mdb.ParameterInfo\"|\n\026ListContainersRe" +
-      "sponse\0224\n\tcontainer\030\001 \003(\0132!.yamcs.protob" +
-      "uf.mdb.ContainerInfo\022\031\n\021continuationToke" +
-      "n\030\002 \001(\t\022\021\n\ttotalSize\030\003 \001(\005\"v\n\024ListComman" +
-      "dsResponse\0220\n\007command\030\001 \003(\0132\037.yamcs.prot" +
-      "obuf.mdb.CommandInfo\022\031\n\021continuationToke" +
-      "n\030\002 \001(\t\022\021\n\ttotalSize\030\003 \001(\005\"|\n\026ListAlgori" +
-      "thmsResponse\0224\n\talgorithm\030\001 \003(\0132!.yamcs.",
-      "protobuf.mdb.AlgorithmInfo\022\031\n\021continuati" +
-      "onToken\030\002 \001(\t\022\021\n\ttotalSize\030\003 \001(\005\"\202\001\n\030Lis" +
-      "tSpaceSystemsResponse\0228\n\013spaceSystem\030\001 \003" +
-      "(\0132#.yamcs.protobuf.mdb.SpaceSystemInfo\022" +
-      "\031\n\021continuationToken\030\002 \001(\t\022\021\n\ttotalSize\030" +
-      "\003 \001(\005\"\274\002\n\017SpaceSystemInfo\022\014\n\004name\030\001 \001(\t\022" +
-      "\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescripti" +
-      "on\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022\017\n\007ver" +
-      "sion\030\005 \001(\t\022\026\n\016parameterCount\030\006 \001(\005\022\026\n\016co" +
-      "ntainerCount\030\007 \001(\005\022\024\n\014commandCount\030\010 \001(\005",
-      "\022\026\n\016algorithmCount\030\t \001(\005\0220\n\007history\030\016 \003(" +
-      "\0132\037.yamcs.protobuf.mdb.HistoryInfo\0220\n\003su" +
-      "b\030\017 \003(\0132#.yamcs.protobuf.mdb.SpaceSystem" +
-      "Info*\242\001\n\016DataSourceType\022\017\n\013TELEMETERED\020\000" +
-      "\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n" +
-      "\n\006SYSTEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_HISTO" +
-      "RY\020\006\022\r\n\tEXTERNAL1\020\007\022\r\n\tEXTERNAL2\020\010\022\r\n\tEX" +
-      "TERNAL3\020\t*\\\n\016AlarmLevelType\022\n\n\006NORMAL\020\000\022" +
-      "\t\n\005WATCH\020\001\022\013\n\007WARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n" +
-      "\010CRITICAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022org.yamcs.pro",
-      "tobuf"
+      "\030\003 \001(\005\"v\n\024ListCommandsResponse\0220\n\007comman" +
+      "d\030\001 \003(\0132\037.yamcs.protobuf.mdb.CommandInfo" +
+      "\022\031\n\021continuationToken\030\002 \001(\t\022\021\n\ttotalSize" +
+      "\030\003 \001(\005\"|\n\026ListAlgorithmsResponse\0224\n\talgo" +
+      "rithm\030\001 \003(\0132!.yamcs.protobuf.mdb.Algorit" +
+      "hmInfo\022\031\n\021continuationToken\030\002 \001(\t\022\021\n\ttot" +
+      "alSize\030\003 \001(\005\"\202\001\n\030ListSpaceSystemsRespons",
+      "e\0228\n\013spaceSystem\030\001 \003(\0132#.yamcs.protobuf." +
+      "mdb.SpaceSystemInfo\022\031\n\021continuationToken" +
+      "\030\002 \001(\t\022\021\n\ttotalSize\030\003 \001(\005\"\274\002\n\017SpaceSyste" +
+      "mInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001" +
+      "(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n\017longDesc" +
+      "ription\030\004 \001(\t\022\017\n\007version\030\005 \001(\t\022\026\n\016parame" +
+      "terCount\030\006 \001(\005\022\026\n\016containerCount\030\007 \001(\005\022\024" +
+      "\n\014commandCount\030\010 \001(\005\022\026\n\016algorithmCount\030\t" +
+      " \001(\005\0220\n\007history\030\016 \003(\0132\037.yamcs.protobuf.m" +
+      "db.HistoryInfo\0220\n\003sub\030\017 \003(\0132#.yamcs.prot",
+      "obuf.mdb.SpaceSystemInfo\"\361\003\n\026ChangeParam" +
+      "eterRequest\022E\n\006action\030\001 \001(\01625.yamcs.prot" +
+      "obuf.mdb.ChangeParameterRequest.ActionTy" +
+      "pe\022=\n\021defaultCalibrator\030\002 \001(\0132\".yamcs.pr" +
+      "otobuf.mdb.CalibratorInfo\022D\n\021contextCali" +
+      "brator\030\003 \003(\0132).yamcs.protobuf.mdb.Contex" +
+      "tCalibratorInfo\0223\n\014defaultAlarm\030\004 \001(\0132\035." +
+      "yamcs.protobuf.mdb.AlarmInfo\022:\n\014contextA" +
+      "larm\030\005 \003(\0132$.yamcs.protobuf.mdb.ContextA" +
+      "larmInfo\"\231\001\n\nActionType\022\t\n\005CLEAR\020\000\022\025\n\021CL",
+      "EAR_CALIBRATORS\020\001\022\032\n\026SET_DEFAULT_CALIBRA" +
+      "TOR\020\002\022\023\n\017SET_CALIBRATORS\020\003\022\020\n\014CLEAR_ALAR" +
+      "MS\020\004\022\026\n\022SET_DEFAULT_ALARMS\020\005\022\016\n\nSET_ALAR" +
+      "MS\020\006\"\267\001\n\026ChangeAlgorithmRequest\022E\n\006actio" +
+      "n\030\001 \001(\01625.yamcs.protobuf.mdb.ChangeAlgor" +
+      "ithmRequest.ActionType\0224\n\talgorithm\030\002 \001(" +
+      "\0132!.yamcs.protobuf.mdb.AlgorithmInfo\" \n\n" +
+      "ActionType\022\t\n\005CLEAR\020\000\022\007\n\003SET\020\001*\242\001\n\016DataS" +
+      "ourceType\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020\001\022" +
+      "\014\n\010CONSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007",
+      "COMMAND\020\005\022\023\n\017COMMAND_HISTORY\020\006\022\r\n\tEXTERN" +
+      "AL1\020\007\022\r\n\tEXTERNAL2\020\010\022\r\n\tEXTERNAL3\020\t*\\\n\016A" +
+      "larmLevelType\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n\007" +
+      "WARNING\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n\n" +
+      "\006SEVERE\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -52336,32 +56842,38 @@ public final class Mdb {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_AlarmInfo_descriptor,
         new java.lang.String[] { "MinViolations", "StaticAlarmRange", "EnumerationAlarm", });
-    internal_static_yamcs_protobuf_mdb_DataEncodingInfo_descriptor =
+    internal_static_yamcs_protobuf_mdb_ContextAlarmInfo_descriptor =
       getDescriptor().getMessageTypes().get(6);
+    internal_static_yamcs_protobuf_mdb_ContextAlarmInfo_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_mdb_ContextAlarmInfo_descriptor,
+        new java.lang.String[] { "Comparison", "Alarm", });
+    internal_static_yamcs_protobuf_mdb_DataEncodingInfo_descriptor =
+      getDescriptor().getMessageTypes().get(7);
     internal_static_yamcs_protobuf_mdb_DataEncodingInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_DataEncodingInfo_descriptor,
         new java.lang.String[] { "Type", "LittleEndian", "SizeInBits", "Encoding", "DefaultCalibrator", "ContextCalibrator", });
     internal_static_yamcs_protobuf_mdb_ContextCalibratorInfo_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(8);
     internal_static_yamcs_protobuf_mdb_ContextCalibratorInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ContextCalibratorInfo_descriptor,
         new java.lang.String[] { "Comparison", "Calibrator", });
     internal_static_yamcs_protobuf_mdb_CalibratorInfo_descriptor =
-      getDescriptor().getMessageTypes().get(8);
+      getDescriptor().getMessageTypes().get(9);
     internal_static_yamcs_protobuf_mdb_CalibratorInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_CalibratorInfo_descriptor,
-        new java.lang.String[] { "Type", "PolynomialCalibrator", "SplineCalibrator", "JavaExpressionCalibrator", });
+        new java.lang.String[] { "PolynomialCalibrator", "SplineCalibrator", "JavaExpressionCalibrator", "Type", });
     internal_static_yamcs_protobuf_mdb_PolynomialCalibratorInfo_descriptor =
-      getDescriptor().getMessageTypes().get(9);
+      getDescriptor().getMessageTypes().get(10);
     internal_static_yamcs_protobuf_mdb_PolynomialCalibratorInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_PolynomialCalibratorInfo_descriptor,
         new java.lang.String[] { "Coefficient", });
     internal_static_yamcs_protobuf_mdb_SplineCalibratorInfo_descriptor =
-      getDescriptor().getMessageTypes().get(10);
+      getDescriptor().getMessageTypes().get(11);
     internal_static_yamcs_protobuf_mdb_SplineCalibratorInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_SplineCalibratorInfo_descriptor,
@@ -52373,151 +56885,151 @@ public final class Mdb {
         internal_static_yamcs_protobuf_mdb_SplineCalibratorInfo_SplinePointInfo_descriptor,
         new java.lang.String[] { "Raw", "Calibrated", });
     internal_static_yamcs_protobuf_mdb_JavaExpressionCalibratorInfo_descriptor =
-      getDescriptor().getMessageTypes().get(11);
+      getDescriptor().getMessageTypes().get(12);
     internal_static_yamcs_protobuf_mdb_JavaExpressionCalibratorInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_JavaExpressionCalibratorInfo_descriptor,
         new java.lang.String[] { "Formula", });
     internal_static_yamcs_protobuf_mdb_EnumValue_descriptor =
-      getDescriptor().getMessageTypes().get(12);
+      getDescriptor().getMessageTypes().get(13);
     internal_static_yamcs_protobuf_mdb_EnumValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_EnumValue_descriptor,
         new java.lang.String[] { "Value", "Label", });
     internal_static_yamcs_protobuf_mdb_ParameterTypeInfo_descriptor =
-      getDescriptor().getMessageTypes().get(13);
+      getDescriptor().getMessageTypes().get(14);
     internal_static_yamcs_protobuf_mdb_ParameterTypeInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ParameterTypeInfo_descriptor,
-        new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "DefaultAlarm", "EnumValue", "AbsoluteTimeInfo", });
+        new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "DefaultAlarm", "EnumValue", "AbsoluteTimeInfo", "ContextAlarm", });
     internal_static_yamcs_protobuf_mdb_AbsoluteTimeInfo_descriptor =
-      getDescriptor().getMessageTypes().get(14);
+      getDescriptor().getMessageTypes().get(15);
     internal_static_yamcs_protobuf_mdb_AbsoluteTimeInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_AbsoluteTimeInfo_descriptor,
         new java.lang.String[] { "InitialValue", "Scale", "Offset", "OffsetFrom", "Epoch", });
     internal_static_yamcs_protobuf_mdb_UsedByInfo_descriptor =
-      getDescriptor().getMessageTypes().get(15);
+      getDescriptor().getMessageTypes().get(16);
     internal_static_yamcs_protobuf_mdb_UsedByInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_UsedByInfo_descriptor,
         new java.lang.String[] { "Algorithm", "Container", });
     internal_static_yamcs_protobuf_mdb_ParameterInfo_descriptor =
-      getDescriptor().getMessageTypes().get(16);
+      getDescriptor().getMessageTypes().get(17);
     internal_static_yamcs_protobuf_mdb_ParameterInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ParameterInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "Type", "DataSource", "UsedBy", });
     internal_static_yamcs_protobuf_mdb_ArgumentTypeInfo_descriptor =
-      getDescriptor().getMessageTypes().get(17);
+      getDescriptor().getMessageTypes().get(18);
     internal_static_yamcs_protobuf_mdb_ArgumentTypeInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ArgumentTypeInfo_descriptor,
         new java.lang.String[] { "EngType", "DataEncoding", "UnitSet", "EnumValue", "RangeMin", "RangeMax", });
     internal_static_yamcs_protobuf_mdb_ArgumentInfo_descriptor =
-      getDescriptor().getMessageTypes().get(18);
+      getDescriptor().getMessageTypes().get(19);
     internal_static_yamcs_protobuf_mdb_ArgumentInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ArgumentInfo_descriptor,
         new java.lang.String[] { "Name", "Description", "InitialValue", "Type", });
     internal_static_yamcs_protobuf_mdb_ArgumentAssignmentInfo_descriptor =
-      getDescriptor().getMessageTypes().get(19);
+      getDescriptor().getMessageTypes().get(20);
     internal_static_yamcs_protobuf_mdb_ArgumentAssignmentInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ArgumentAssignmentInfo_descriptor,
         new java.lang.String[] { "Name", "Value", });
     internal_static_yamcs_protobuf_mdb_SignificanceInfo_descriptor =
-      getDescriptor().getMessageTypes().get(20);
+      getDescriptor().getMessageTypes().get(21);
     internal_static_yamcs_protobuf_mdb_SignificanceInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_SignificanceInfo_descriptor,
         new java.lang.String[] { "ConsequenceLevel", "ReasonForWarning", });
     internal_static_yamcs_protobuf_mdb_ComparisonInfo_descriptor =
-      getDescriptor().getMessageTypes().get(21);
+      getDescriptor().getMessageTypes().get(22);
     internal_static_yamcs_protobuf_mdb_ComparisonInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ComparisonInfo_descriptor,
         new java.lang.String[] { "Parameter", "Operator", "Value", });
     internal_static_yamcs_protobuf_mdb_TransmissionConstraintInfo_descriptor =
-      getDescriptor().getMessageTypes().get(22);
+      getDescriptor().getMessageTypes().get(23);
     internal_static_yamcs_protobuf_mdb_TransmissionConstraintInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_TransmissionConstraintInfo_descriptor,
         new java.lang.String[] { "Comparison", "Timeout", });
     internal_static_yamcs_protobuf_mdb_CommandInfo_descriptor =
-      getDescriptor().getMessageTypes().get(23);
+      getDescriptor().getMessageTypes().get(24);
     internal_static_yamcs_protobuf_mdb_CommandInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_CommandInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "BaseCommand", "Abstract", "Argument", "ArgumentAssignment", "Significance", "Constraint", "CommandContainer", });
     internal_static_yamcs_protobuf_mdb_RepeatInfo_descriptor =
-      getDescriptor().getMessageTypes().get(24);
+      getDescriptor().getMessageTypes().get(25);
     internal_static_yamcs_protobuf_mdb_RepeatInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_RepeatInfo_descriptor,
         new java.lang.String[] { "FixedCount", "DynamicCount", "BitsBetween", });
     internal_static_yamcs_protobuf_mdb_SequenceEntryInfo_descriptor =
-      getDescriptor().getMessageTypes().get(25);
+      getDescriptor().getMessageTypes().get(26);
     internal_static_yamcs_protobuf_mdb_SequenceEntryInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_SequenceEntryInfo_descriptor,
         new java.lang.String[] { "LocationInBits", "ReferenceLocation", "Container", "Parameter", "Argument", "FixedValue", "Repeat", });
     internal_static_yamcs_protobuf_mdb_FixedValueInfo_descriptor =
-      getDescriptor().getMessageTypes().get(26);
+      getDescriptor().getMessageTypes().get(27);
     internal_static_yamcs_protobuf_mdb_FixedValueInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_FixedValueInfo_descriptor,
         new java.lang.String[] { "Name", "HexValue", "SizeInBits", });
     internal_static_yamcs_protobuf_mdb_CommandContainerInfo_descriptor =
-      getDescriptor().getMessageTypes().get(27);
+      getDescriptor().getMessageTypes().get(28);
     internal_static_yamcs_protobuf_mdb_CommandContainerInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_CommandContainerInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "SizeInBits", "BaseContainer", "Entry", });
     internal_static_yamcs_protobuf_mdb_ContainerInfo_descriptor =
-      getDescriptor().getMessageTypes().get(28);
+      getDescriptor().getMessageTypes().get(29);
     internal_static_yamcs_protobuf_mdb_ContainerInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ContainerInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "MaxInterval", "SizeInBits", "BaseContainer", "RestrictionCriteria", "Entry", "UsedBy", });
     internal_static_yamcs_protobuf_mdb_InputParameterInfo_descriptor =
-      getDescriptor().getMessageTypes().get(29);
+      getDescriptor().getMessageTypes().get(30);
     internal_static_yamcs_protobuf_mdb_InputParameterInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_InputParameterInfo_descriptor,
         new java.lang.String[] { "Parameter", "InputName", "ParameterInstance", "Mandatory", });
     internal_static_yamcs_protobuf_mdb_OutputParameterInfo_descriptor =
-      getDescriptor().getMessageTypes().get(30);
+      getDescriptor().getMessageTypes().get(31);
     internal_static_yamcs_protobuf_mdb_OutputParameterInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_OutputParameterInfo_descriptor,
         new java.lang.String[] { "Parameter", "OutputName", });
     internal_static_yamcs_protobuf_mdb_AlgorithmInfo_descriptor =
-      getDescriptor().getMessageTypes().get(31);
+      getDescriptor().getMessageTypes().get(32);
     internal_static_yamcs_protobuf_mdb_AlgorithmInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_AlgorithmInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Alias", "Scope", "Language", "Text", "InputParameter", "OutputParameter", "OnParameterUpdate", "OnPeriodicRate", });
     internal_static_yamcs_protobuf_mdb_ListParametersResponse_descriptor =
-      getDescriptor().getMessageTypes().get(32);
+      getDescriptor().getMessageTypes().get(33);
     internal_static_yamcs_protobuf_mdb_ListParametersResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ListParametersResponse_descriptor,
         new java.lang.String[] { "Parameter", "ContinuationToken", "TotalSize", });
     internal_static_yamcs_protobuf_mdb_ListParameterTypesResponse_descriptor =
-      getDescriptor().getMessageTypes().get(33);
+      getDescriptor().getMessageTypes().get(34);
     internal_static_yamcs_protobuf_mdb_ListParameterTypesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ListParameterTypesResponse_descriptor,
         new java.lang.String[] { "Type", "ContinuationToken", "TotalSize", });
     internal_static_yamcs_protobuf_mdb_BulkGetParameterInfoRequest_descriptor =
-      getDescriptor().getMessageTypes().get(34);
+      getDescriptor().getMessageTypes().get(35);
     internal_static_yamcs_protobuf_mdb_BulkGetParameterInfoRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_BulkGetParameterInfoRequest_descriptor,
         new java.lang.String[] { "Id", });
     internal_static_yamcs_protobuf_mdb_BulkGetParameterInfoResponse_descriptor =
-      getDescriptor().getMessageTypes().get(35);
+      getDescriptor().getMessageTypes().get(36);
     internal_static_yamcs_protobuf_mdb_BulkGetParameterInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_BulkGetParameterInfoResponse_descriptor,
@@ -52529,35 +57041,47 @@ public final class Mdb {
         internal_static_yamcs_protobuf_mdb_BulkGetParameterInfoResponse_GetParameterInfoResponse_descriptor,
         new java.lang.String[] { "Id", "Parameter", });
     internal_static_yamcs_protobuf_mdb_ListContainersResponse_descriptor =
-      getDescriptor().getMessageTypes().get(36);
+      getDescriptor().getMessageTypes().get(37);
     internal_static_yamcs_protobuf_mdb_ListContainersResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ListContainersResponse_descriptor,
         new java.lang.String[] { "Container", "ContinuationToken", "TotalSize", });
     internal_static_yamcs_protobuf_mdb_ListCommandsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(37);
+      getDescriptor().getMessageTypes().get(38);
     internal_static_yamcs_protobuf_mdb_ListCommandsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ListCommandsResponse_descriptor,
         new java.lang.String[] { "Command", "ContinuationToken", "TotalSize", });
     internal_static_yamcs_protobuf_mdb_ListAlgorithmsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(38);
+      getDescriptor().getMessageTypes().get(39);
     internal_static_yamcs_protobuf_mdb_ListAlgorithmsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ListAlgorithmsResponse_descriptor,
         new java.lang.String[] { "Algorithm", "ContinuationToken", "TotalSize", });
     internal_static_yamcs_protobuf_mdb_ListSpaceSystemsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(39);
+      getDescriptor().getMessageTypes().get(40);
     internal_static_yamcs_protobuf_mdb_ListSpaceSystemsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ListSpaceSystemsResponse_descriptor,
         new java.lang.String[] { "SpaceSystem", "ContinuationToken", "TotalSize", });
     internal_static_yamcs_protobuf_mdb_SpaceSystemInfo_descriptor =
-      getDescriptor().getMessageTypes().get(40);
+      getDescriptor().getMessageTypes().get(41);
     internal_static_yamcs_protobuf_mdb_SpaceSystemInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_SpaceSystemInfo_descriptor,
         new java.lang.String[] { "Name", "QualifiedName", "ShortDescription", "LongDescription", "Version", "ParameterCount", "ContainerCount", "CommandCount", "AlgorithmCount", "History", "Sub", });
+    internal_static_yamcs_protobuf_mdb_ChangeParameterRequest_descriptor =
+      getDescriptor().getMessageTypes().get(42);
+    internal_static_yamcs_protobuf_mdb_ChangeParameterRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_mdb_ChangeParameterRequest_descriptor,
+        new java.lang.String[] { "Action", "DefaultCalibrator", "ContextCalibrator", "DefaultAlarm", "ContextAlarm", });
+    internal_static_yamcs_protobuf_mdb_ChangeAlgorithmRequest_descriptor =
+      getDescriptor().getMessageTypes().get(43);
+    internal_static_yamcs_protobuf_mdb_ChangeAlgorithmRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_mdb_ChangeAlgorithmRequest_descriptor,
+        new java.lang.String[] { "Action", "Algorithm", });
     org.yamcs.protobuf.Yamcs.getDescriptor();
   }
 

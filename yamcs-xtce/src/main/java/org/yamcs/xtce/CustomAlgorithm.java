@@ -19,6 +19,12 @@ public class CustomAlgorithm extends Algorithm {
         super(name);
     }
     
+    public CustomAlgorithm(CustomAlgorithm a) {
+        super(a);
+        this.language = a.language;
+        this.algorithmText = a.algorithmText;
+    }
+
     public String getLanguage() {
         return language;
     }
@@ -38,6 +44,14 @@ public class CustomAlgorithm extends Algorithm {
     @Override
     public String toString() {
         return "CustomAlgorithm [language=" + language + ", algorithmText='" + algorithmText + "', inputSet: "+getInputList()+", outputSet: "+getOutputList()+"]";
+    }
+    
+    /**
+     * return a shallow copy of the algorithm
+     * @return
+     */
+    public CustomAlgorithm copy() {
+        return new CustomAlgorithm(this);
     }
 
 }

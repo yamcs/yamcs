@@ -254,7 +254,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                     plist = checkNames(idList);
                 } catch (InvalidIdentification e) {
                     log.warn("Got invalid identification when selecting parameters for processor {}: {}",
-                            prm.yproc.getName(), e.getInvalidParameters());
+                            prm.processor.getName(), e.getInvalidParameters());
                     idList.removeAll(e.getInvalidParameters());
                     invalid.addAll(e.getInvalidParameters());
                     try {
@@ -299,7 +299,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
                 return pv.getAcquisitionTime();
             }
         }
-        return prm.yproc.getCurrentTime();
+        return prm.processor.getCurrentTime();
     }
 
     // adds the pv into plist with all ids subscribed
@@ -321,7 +321,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         for (Map.Entry<Integer, Subscription> me : subscriptions.entrySet()) {
             Subscription subscription = me.getValue();
             synchronized (subscription) {
-                long now = prm.yproc.getCurrentTime();
+                long now = prm.processor.getCurrentTime();
                 if ((subscription.checkExpiration)
                         && (now - subscription.lastExpirationCheck > CHECK_EXPIRATION_INTERVAL)) {
                     List<ParameterValueWithId> expired = checkExpiration(subscription, now);

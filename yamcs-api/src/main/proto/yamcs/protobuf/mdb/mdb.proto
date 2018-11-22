@@ -65,6 +65,11 @@ message AlarmInfo {
   repeated EnumerationAlarm enumerationAlarm = 3;
 }
 
+message ContextAlarmInfo {
+  repeated ComparisonInfo comparison = 1;
+  optional AlarmInfo alarm = 2;
+}
+
 message DataEncodingInfo {
   enum Type {
     BINARY = 0;
@@ -87,10 +92,17 @@ message ContextCalibratorInfo {
 }
 
 message CalibratorInfo {
-  optional string type = 1;
+  enum Type {
+     POLYNOMIAL = 0;
+     SPLINE = 1;
+     MATH_OPERATION = 2;
+     JAVA_EXPRESSION = 3;
+  }
+  //optional string type = 1; //replaced with an enum
   optional PolynomialCalibratorInfo polynomialCalibrator = 2;
   optional SplineCalibratorInfo splineCalibrator = 3;
   optional JavaExpressionCalibratorInfo javaExpressionCalibrator = 4;
+  optional Type type = 5;
 }
 
 message PolynomialCalibratorInfo {
@@ -121,6 +133,7 @@ message ParameterTypeInfo {
   optional AlarmInfo defaultAlarm = 4;
   repeated EnumValue enumValue = 5;
   optional AbsoluteTimeInfo absoluteTimeInfo = 6;
+  repeated ContextAlarmInfo contextAlarm = 7;
 }
 
 message AbsoluteTimeInfo {
@@ -364,4 +377,35 @@ message SpaceSystemInfo {
   optional int32 algorithmCount = 9;
   repeated HistoryInfo history = 14;
   repeated SpaceSystemInfo sub = 15;
+}
+
+// used to change calibrators or alarms for one parameter
+message ChangeParameterRequest {
+  enum ActionType {
+     CLEAR = 0; //reset all parameter properties (calibrators+alarms) to their default MDB value
+     CLEAR_CALIBRATORS = 1; //reset calibrators to their default MDB value
+     SET_DEFAULT_CALIBRATOR = 2; //sets the default calibrator (the contextual ones are unmodified)
+     SET_CALIBRATORS = 3; //sets all calibratiosn (default+contextual), if default is not set in the proto message, the existing one is not modified
+     
+     CLEAR_ALARMS = 4; //reset alarms to their default MDB value
+     SET_DEFAULT_ALARMS = 5; //sets the default alarms (the contextual ones are unmodified)
+     SET_ALARMS = 6; //sets all alarms (default+contextual), if default is not set in the proto message, the existing one is not modified
+  } 
+
+  optional ActionType action = 1;
+  optional CalibratorInfo defaultCalibrator = 2; //used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+  repeated ContextCalibratorInfo contextCalibrator = 3; //used when action = SET_CALIBRATORS
+  optional AlarmInfo defaultAlarm = 4; //used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+  repeated ContextAlarmInfo contextAlarm = 5; //used when action = SET_ALARMS
+}
+
+
+//used to change algorithms
+message ChangeAlgorithmRequest {
+  enum ActionType {
+     CLEAR = 0; //restores the original MDB definition
+     SET = 1; //sets the algorithm text
+  }
+  optional ActionType action = 1;
+  optional AlgorithmInfo algorithm = 2;//used when action = SET
 }

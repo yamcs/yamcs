@@ -22,10 +22,12 @@ import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OutputParameter;
 
 /**
- * Handles the creation of algorithm executors for script algorithms for a given language and scriptEngine (currently javascript or python are supported).
- *  
+ * Handles the creation of algorithm executors for script algorithms for a given language and scriptEngine (currently
+ * javascript or python are supported).
+ * 
  * Each algorithm is created as a function in the scriptEngine.
- * There might be multiple executors for the same algorithm: for example in the command verifier there will be one algorithm executor for each command.
+ * There might be multiple executors for the same algorithm: for example in the command verifier there will be one
+ * algorithm executor for each command.
  * However there will be only one function created in the script engine.
  *
  * 
@@ -33,16 +35,17 @@ import org.yamcs.xtce.OutputParameter;
 public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory {
     final ScriptEngine scriptEngine;
     static final Logger log = LoggerFactory.getLogger(ScriptAlgorithmExecutorFactory.class);
-    
-    public  ScriptAlgorithmExecutorFactory(ScriptEngineManager scriptEngineManager, String language, List<String> libraryNames) {
+
+    public ScriptAlgorithmExecutorFactory(ScriptEngineManager scriptEngineManager, String language,
+            List<String> libraryNames) {
         scriptEngine = scriptEngineManager.getEngineByName(language);
         if (scriptEngine == null) {
             throw new ConfigurationException("Cannot get a script engine for language " + language);
         }
-        if(libraryNames!=null) {
+        if (libraryNames != null) {
             loadLibraries(libraryNames);
         }
-       
+
         // Put engine bindings in shared global scope - we want the variables in the libraries to be global
         Bindings commonBindings = scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
         Set<String> existingBindings = new HashSet<>(scriptEngineManager.getBindings().keySet());
@@ -56,8 +59,7 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
         commonBindings.putAll(scriptEngineManager.getBindings());
         scriptEngineManager.setBindings(commonBindings);
     }
-    
-    
+
     private void loadLibraries(List<String> libraryNames) {
         try {
             for (String lib : libraryNames) {
@@ -82,39 +84,36 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
         }
     }
 
-
-    public ScriptAlgorithmExecutor makeExecutor(CustomAlgorithm calg,  AlgorithmExecutionContext execCtx) {
+    public ScriptAlgorithmExecutor makeExecutor(CustomAlgorithm calg, AlgorithmExecutionContext execCtx) {
         String functionName = calg.getQualifiedName().replace("/", "_");
-        if(scriptEngine.get(functionName)==null) {
-            String functionScript = generateFunctionCode(functionName, calg);
-            log.debug("Evaluating script:\n{}", functionScript);
-            try {
-                //improve error messages as well as required for event generation to know from where it is called
-                scriptEngine.put(ScriptEngine.FILENAME, calg.getQualifiedName());
-                scriptEngine.eval(functionScript);
-            } catch (ScriptException e) {
-                execCtx.getEventProducer().sendWarning("Error evaluating script "+functionScript+": "+e.getMessage());
-                log.warn("Error while evaluating script {}: {}", functionScript, e.getMessage(), e);
-            }    
+        String functionScript = generateFunctionCode(functionName, calg);
+        log.debug("Evaluating script:\n{}", functionScript);
+        try {
+            // improve error messages as well as required for event generation to know from where it is called
+            scriptEngine.put(ScriptEngine.FILENAME, calg.getQualifiedName());
+            scriptEngine.eval(functionScript);
+        } catch (ScriptException e) {
+            String msg = "Error evaluating script " + functionScript + ": " + e.getMessage();
+            execCtx.getEventProducer().sendWarning(msg);
+            log.warn("Error while evaluating script {}: {}", functionScript, e.getMessage(), e);
+            throw new AlgorithmException(msg);
         }
-        
         return new ScriptAlgorithmExecutor(calg, (Invocable) scriptEngine, functionName, execCtx);
     }
-    
-    
+
     public static String generateFunctionCode(String functionName, CustomAlgorithm algorithmDef) {
         StringBuilder sb = new StringBuilder();
-        
+
         String language = algorithmDef.getLanguage();
-        if("JavaScript".equalsIgnoreCase(language)) {
+        if ("JavaScript".equalsIgnoreCase(language)) {
             sb.append("function ").append(functionName);
-        } else if("python".equalsIgnoreCase(language)) {
+        } else if ("python".equalsIgnoreCase(language)) {
             sb.append("def ").append(functionName);
         } else {
-            throw new IllegalArgumentException("Cannot execute scripts in "+language);
+            throw new IllegalArgumentException("Cannot execute scripts in " + language);
         }
         sb.append("(");
-        
+
         boolean firstParam = true;
         for (InputParameter inputParameter : algorithmDef.getInputList()) {
             // Default-define all input values to null to prevent ugly runtime errors
@@ -141,25 +140,23 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
             sb.append(scriptName);
         }
         sb.append(")");
-        
-        if("JavaScript".equalsIgnoreCase(language)) {
+
+        if ("JavaScript".equalsIgnoreCase(language)) {
             sb.append(" {\n");
-        } else if("python".equalsIgnoreCase(language)) {
+        } else if ("python".equalsIgnoreCase(language)) {
             sb.append(":\n");
         }
-        
 
         String[] a = algorithmDef.getAlgorithmText().split("\\r?\\n");
         for (String l : a) {
             sb.append("    ").append(l).append("\n");
         }
-        
-        if("JavaScript".equalsIgnoreCase(language)) {
+
+        if ("JavaScript".equalsIgnoreCase(language)) {
             sb.append("}");
         }
         return sb.toString();
     }
-
 
     static String getArgName(InputParameter inputParameter) {
         String r = inputParameter.getInputName();
@@ -168,7 +165,6 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
         }
         return r;
     }
-
 
     @Override
     public List<String> getLanguages() {

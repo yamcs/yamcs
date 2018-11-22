@@ -1,12 +1,25 @@
 package org.yamcs.xtce;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Set;
 import org.slf4j.Logger;
 
 public interface MatchCriteria extends Serializable {
+    
+   
+    /**
+     * Return the set of parameters which are required in order to evaluate the match criteria.
+     * If no parameter is required, return an empty set.
+     * @return
+     */
     public Set<Parameter> getDependentParameters();
 
+    /**
+     * Return true if the condition matches
+     * @param evaluator
+     * @return
+     */
     boolean isMet(CriteriaEvaluator evaluator);
 
     /**
@@ -39,4 +52,19 @@ public interface MatchCriteria extends Serializable {
             log.debug(indent + ")");
         }
     }
+    
+    public static final MatchCriteria ALWAYS_MATCH = new MatchCriteria() {
+        
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean isMet(CriteriaEvaluator evaluator) {
+            return true;
+        }
+        
+        @Override
+        public Set<Parameter> getDependentParameters() {
+            return Collections.emptySet();
+        }
+    };
 }

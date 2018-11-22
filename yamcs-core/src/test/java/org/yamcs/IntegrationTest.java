@@ -28,7 +28,25 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Mdb.AlarmInfo;
+import org.yamcs.protobuf.Mdb.AlarmLevelType;
+import org.yamcs.protobuf.Mdb.AlarmRange;
+import org.yamcs.protobuf.Mdb.AlgorithmInfo;
+import org.yamcs.protobuf.Mdb.CalibratorInfo;
+import org.yamcs.protobuf.Mdb.ChangeAlgorithmRequest;
+import org.yamcs.protobuf.Mdb.ChangeParameterRequest;
+import org.yamcs.protobuf.Mdb.ContextCalibratorInfo;
+import org.yamcs.protobuf.Mdb.EnumerationAlarm;
+import org.yamcs.protobuf.Mdb.ParameterInfo;
+import org.yamcs.protobuf.Mdb.ChangeParameterRequest.ActionType;
+import org.yamcs.protobuf.Mdb.ComparisonInfo.OperatorType;
+import org.yamcs.protobuf.Mdb.ContextAlarmInfo;
+import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
+import org.yamcs.protobuf.Mdb.ComparisonInfo;
+import org.yamcs.protobuf.Mdb.PolynomialCalibratorInfo;
+import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.protobuf.Pvalue.MonitoringResult;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Rest;
@@ -116,6 +134,232 @@ public class IntegrationTest extends AbstractIntegrationTest {
         wsClient.sendRequest(wsr);
         pdata = wsListener.parameterDataList.poll(2, TimeUnit.SECONDS);
         checkPvals(pdata.getParameterList(), packetGenerator);
+    }
+
+    @Test
+    public void testOnlineParameterCalibrationChange() throws Exception {
+        // subscribe to parameters
+        ParameterSubscriptionRequest subcr = getSubscription(false, false,
+                "/REFMDB/SUBSYS1/FloatPara1_1_2");
+
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subcr);
+        wsClient.sendRequest(wsr).get();
+
+        packetGenerator.generate_PKT1_1();
+        ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+        assertEquals(packetGenerator.pFloatPara1_1_2 * 0.0001672918,
+                pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
+
+        ChangeParameterRequest cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_DEFAULT_CALIBRATOR)
+                .setDefaultCalibrator(CalibratorInfo.newBuilder().setType(CalibratorInfo.Type.POLYNOMIAL)
+                        .setPolynomialCalibrator(
+                                PolynomialCalibratorInfo.newBuilder().addCoefficient(1).addCoefficient(2).build())
+                        .build())
+                .build();
+        restClient
+                .doRequest("/mdb/IntegrationTest/realtime/parameters//REFMDB/SUBSYS1/FloatPara1_1_2",
+                        HttpMethod.PATCH, toJson(cpr))
+                .get();
+
+        packetGenerator.generate_PKT1_1();
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(1 + packetGenerator.pFloatPara1_1_2 * 2, pdata.getParameter(0).getEngValue().getFloatValue(),
+                1e-5);
+
+        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.CLEAR).build();
+        restClient
+                .doRequest("/mdb/IntegrationTest/realtime/parameters//REFMDB/SUBSYS1/FloatPara1_1_2",
+                        HttpMethod.PATCH, toJson(cpr))
+                .get();
+
+        packetGenerator.generate_PKT1_1();
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(packetGenerator.pFloatPara1_1_2 * 0.0001672918,
+                pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
+    }
+
+    @Test
+    public void testOnlineParameterContextCalibrationChange() throws Exception {
+        // subscribe to parameters
+        ParameterSubscriptionRequest subcr = getSubscription(false, false,
+                "/REFMDB/SUBSYS1/FloatPara1_10_3");
+
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subcr);
+        wsClient.sendRequest(wsr).get();
+
+        packetGenerator.generate_PKT1_10(5, 0, 30);
+        ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(3, pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
+
+        // this will remove the context calibrators
+        ChangeParameterRequest cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_CALIBRATORS).build();
+        restClient
+                .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/FloatPara1_10_3",
+                        HttpMethod.PATCH, toJson(cpr))
+                .get();
+
+        packetGenerator.generate_PKT1_10(5, 0, 30);
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(30, pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
+
+        // set a context calibrator based on the IntegerPara1_10_1
+
+        ComparisonInfo cinfo = ComparisonInfo.newBuilder()
+                .setParameter(ParameterInfo.newBuilder().setQualifiedName("/REFMDB/SUBSYS1/IntegerPara1_10_1").build())
+                .setOperator(OperatorType.EQUAL_TO)
+                .setValue("10")
+                .build();
+        SplineCalibratorInfo spi = SplineCalibratorInfo.newBuilder()
+                .addPoint(SplinePointInfo.newBuilder().setRaw(30).setCalibrated(6).build())
+                .addPoint(SplinePointInfo.newBuilder().setRaw(60).setCalibrated(12).build())
+                .build();
+                
+        ContextCalibratorInfo cci = ContextCalibratorInfo.newBuilder().addComparison(cinfo)
+                .setCalibrator(CalibratorInfo.newBuilder().setType(CalibratorInfo.Type.SPLINE)
+                        .setSplineCalibrator(spi).build()).build();
+        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_CALIBRATORS)
+                .addContextCalibrator(cci)
+                .build();
+        
+        restClient.doRequest("/mdb/IntegrationTest/realtime/parameters//REFMDB/SUBSYS1/FloatPara1_10_3",
+                        HttpMethod.PATCH, toJson(cpr))
+                .get();
+
+        packetGenerator.generate_PKT1_10(10, 0, 40);
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(8, pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
+
+        
+        // remove all overrides
+        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.CLEAR).build();
+        restClient
+                .doRequest("/mdb/IntegrationTest/realtime/parameters//REFMDB/SUBSYS1/FloatPara1_10_3",
+                        HttpMethod.PATCH, toJson(cpr))
+                .get();
+
+        packetGenerator.generate_PKT1_10(0, 0, 30);
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(3, pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
+    }
+    
+    
+    @Test
+    public void testOnlineParameterAlarmChange() throws Exception {
+        // subscribe to parameters
+        ParameterSubscriptionRequest subcr = getSubscription(false, false,
+                "/REFMDB/SUBSYS1/EnumerationPara1_10_2");
+
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subcr);
+        wsClient.sendRequest(wsr).get();
+
+        packetGenerator.generate_PKT1_10(0, 3, 0);
+        ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertNotNull(pdata);
+        
+        assertEquals(MonitoringResult.WARNING, pdata.getParameter(0).getMonitoringResult());
+
+        EnumerationAlarm ea = EnumerationAlarm.newBuilder().setLevel(AlarmLevelType.CRITICAL).setLabel("three_ok").build();
+        ChangeParameterRequest cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_DEFAULT_ALARMS)
+                .setDefaultAlarm(AlarmInfo.newBuilder().addEnumerationAlarm(ea).build()).build();
+        restClient
+                .doRequest("/mdb/IntegrationTest/realtime/parameters//REFMDB/SUBSYS1/EnumerationPara1_10_2",
+                        HttpMethod.PATCH, toJson(cpr))
+                .get();
+
+        packetGenerator.generate_PKT1_10(0, 3, 0);
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(MonitoringResult.CRITICAL, pdata.getParameter(0).getMonitoringResult());
+
+        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.CLEAR).build();
+        restClient
+                .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/EnumerationPara1_10_2",
+                        HttpMethod.PATCH, toJson(cpr))
+                .get();
+
+        packetGenerator.generate_PKT1_10(0, 3, 0);
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(MonitoringResult.WARNING, pdata.getParameter(0).getMonitoringResult());
+
+    }
+    
+    @Test
+    public void testOnlineParameterContextAlarmChange() throws Exception {
+        // subscribe to parameters
+        ParameterSubscriptionRequest subcr = getSubscription(false, false,
+                "/REFMDB/SUBSYS1/IntegerPara1_10_1");
+
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subcr);
+        wsClient.sendRequest(wsr).get();
+
+        packetGenerator.generate_PKT1_10(80, 3, 0);
+        ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(MonitoringResult.SEVERE, pdata.getParameter(0).getMonitoringResult());
+
+        // add a context calibrator for EnumerationPara1_10_2=3
+        ComparisonInfo cinfo = ComparisonInfo.newBuilder()
+                .setParameter(ParameterInfo.newBuilder().setQualifiedName("/REFMDB/SUBSYS1/EnumerationPara1_10_2").build())
+                .setOperator(OperatorType.EQUAL_TO)
+                .setValue("three_ok")
+                .build();
+        AlarmInfo ai = AlarmInfo.newBuilder().addStaticAlarmRange(AlarmRange.newBuilder().setLevel(AlarmLevelType.DISTRESS).setMaxExclusive(70).build()).build();
+        ContextAlarmInfo cai = ContextAlarmInfo.newBuilder().addComparison(cinfo).setAlarm(ai).build();
+       
+        ChangeParameterRequest cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_ALARMS).addContextAlarm(cai).build();
+        restClient
+                .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/IntegerPara1_10_1",
+                        HttpMethod.PATCH, toJson(cpr))
+                .get();
+
+        packetGenerator.generate_PKT1_10(80, 3, 0);
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(MonitoringResult.DISTRESS, pdata.getParameter(0).getMonitoringResult());
+
+        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.CLEAR).addContextAlarm(cai).build();
+        restClient
+                .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/IntegerPara1_10_1",
+                        HttpMethod.PATCH, toJson(cpr))
+                .get();
+        
+        packetGenerator.generate_PKT1_10(80, 3, 0);
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(MonitoringResult.SEVERE, pdata.getParameter(0).getMonitoringResult());
+    }
+
+    @Test
+    public void testOnlineAlgorithmChange() throws Exception {
+        // subscribe to parameters
+        ParameterSubscriptionRequest subcr = getSubscription(false, false,
+                "/REFMDB/SUBSYS1/AlgoFloatAddition");
+
+        WebSocketRequest wsr = new WebSocketRequest("parameter", "subscribe", subcr);
+        wsClient.sendRequest(wsr).get();
+
+        packetGenerator.generate_PKT1_1();
+        ParameterData pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(2.16729187, pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
+
+        // change the algorithm
+        AlgorithmInfo ai = AlgorithmInfo.newBuilder().setText("AlgoFloatAddition.value = 10 + f0.value + f1.value").build();
+        
+        ChangeAlgorithmRequest car = ChangeAlgorithmRequest.newBuilder().setAction(ChangeAlgorithmRequest.ActionType.SET).setAlgorithm(ai).build();
+        restClient.doRequest("/mdb/IntegrationTest/realtime/algorithms/REFMDB/SUBSYS1/float_add",
+                HttpMethod.PATCH, toJson(car)).get();
+
+        packetGenerator.generate_PKT1_1();
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(12.16729187, pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
+        
+        
+        //reset back to MDB version
+        car = ChangeAlgorithmRequest.newBuilder().setAction(ChangeAlgorithmRequest.ActionType.CLEAR).build();
+        restClient.doRequest("/mdb/IntegrationTest/realtime/algorithms/REFMDB/SUBSYS1/float_add",
+                HttpMethod.PATCH, toJson(car)).get();
+
+        packetGenerator.generate_PKT1_1();
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        assertEquals(2.16729187, pdata.getParameter(0).getEngValue().getFloatValue(), 1e-5);
+        
     }
 
     @Test

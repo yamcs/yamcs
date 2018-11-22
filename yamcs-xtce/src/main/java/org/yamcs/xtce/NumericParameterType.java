@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import java.util.List;
+
 import org.yamcs.utils.DoubleRange;
 
 public interface NumericParameterType extends ParameterType {
@@ -20,5 +22,16 @@ public interface NumericParameterType extends ParameterType {
 
     
     public DataEncoding getEncoding();
+
+    public NumericAlarm getDefaultAlarm();
+
+    public void setDefaultAlarm(NumericAlarm defaultAlarm);
+    
+    /**
+     * Sets the contextual alarm list overriding any other contextual alarm if already set.
+     * 
+     * @param contextAlarmList
+     */
+    public void setContextAlarmList(List<NumericContextAlarm> contextAlarmList);
     
 }

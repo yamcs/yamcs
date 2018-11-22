@@ -11,6 +11,10 @@ public class BooleanDataEncoding extends DataEncoding {
         super(1);
     }
 
+    BooleanDataEncoding(BooleanDataEncoding bde) {
+        super(bde);
+    }
+
     @Override
     public String toString() {
         return "BooleanDataEncoding(sizeInBits:" + sizeInBits + ")";
@@ -19,5 +23,10 @@ public class BooleanDataEncoding extends DataEncoding {
     @Override
     public Object parseString(String stringValue) {
         return Boolean.parseBoolean(stringValue);
+    }
+
+    @Override
+    public DataEncoding copy() {
+        return new BooleanDataEncoding(this);
     }
 }

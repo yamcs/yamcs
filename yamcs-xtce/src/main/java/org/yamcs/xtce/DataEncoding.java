@@ -45,6 +45,16 @@ public abstract class DataEncoding implements Serializable {
     }
 
     /**
+     * copy constructor
+     * @param ide
+     */
+    DataEncoding(DataEncoding de) {
+        this.sizeInBits = de.sizeInBits;
+        this.byteOrder = de.byteOrder;
+        this.fromBinaryTransformAlgorithm = de.fromBinaryTransformAlgorithm;
+    }
+
+    /**
      * Returns the size in bits of data encoded according to this encoding.
      * For some encodings like {@link StringDataEncoding} the size may be variable (depending on the data to be
      * encoded). In this cases it returns -1.
@@ -102,4 +112,9 @@ public abstract class DataEncoding implements Serializable {
     public Set<Parameter> getDependentParameters() {
         return Collections.emptySet();
     }
+    /**
+     * Create a shallow copy of the data encoding
+     * @return
+     */
+    public abstract DataEncoding copy();
 }

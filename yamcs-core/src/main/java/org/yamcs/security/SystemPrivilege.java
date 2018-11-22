@@ -41,6 +41,11 @@ public class SystemPrivilege {
     public static final SystemPrivilege WriteTables = new SystemPrivilege("WriteTables");
     public static final SystemPrivilege ReadTables = new SystemPrivilege("ReadTables");
 
+    /**
+     * Allows to change online the MDB (calibrators, alarms and algorithms)
+     */
+    public static final SystemPrivilege ChangeMissionDatabase = new SystemPrivilege("ChangeMissionDatabase");
+
     private String name;
 
     public SystemPrivilege(String name) {

@@ -45,11 +45,13 @@ public class AlarmChecker {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     LastValueCache lastValueCache;
+    final ProcessorData pdata;
     
-    public AlarmChecker(ParameterRequestManager prm, int subscriptionId) {
+    public AlarmChecker(ParameterRequestManager prm, ProcessorData pdata, int subscriptionId) {
         this.subscriptionId = subscriptionId;
         this.prm = prm;
         this.lastValueCache = prm.getLastValueCache();
+        this.pdata = pdata;
     }
 
     /**
@@ -57,7 +59,7 @@ public class AlarmChecker {
      * Check and subscribe any dependencies required for alarm checking
      */
     public void parameterSubscribed(Parameter p) {
-        ParameterType ptype = p.getParameterType();
+        ParameterType ptype = pdata.getParameterType(p);
         if (ptype == null) {
             log.debug("Parameter {} has no type", p.getName());
             return;
@@ -76,8 +78,9 @@ public class AlarmChecker {
     public void performAlarmChecking(Collection<ParameterValue> pvals) {
         CriteriaEvaluator criteriaEvaluator = new CriteriaEvaluatorImpl(null, lastValueCache);
         for (ParameterValue pval : pvals) {
-            if (pval.getParameter().getParameterType() != null && pval.getParameter().getParameterType().hasAlarm()) {
-                performAlarmChecking(pval, criteriaEvaluator);
+            ParameterType ptype = pdata.getParameterType(pval.getParameter());
+            if (ptype != null && ptype.hasAlarm()) {
+                performAlarmChecking(pval, ptype, criteriaEvaluator);
             } // else do not set the MonitoringResult
         }
     }
@@ -93,8 +96,7 @@ public class AlarmChecker {
     /**
      * Updates the ParameterValue with monitoring (out of limits) information
      */
-    private void performAlarmChecking(ParameterValue pv, CriteriaEvaluator criteriaEvaluator) {
-        ParameterType ptype = pv.getParameter().getParameterType();
+    private void performAlarmChecking(ParameterValue pv, ParameterType ptype, CriteriaEvaluator criteriaEvaluator) {
         if (ptype instanceof FloatParameterType) {
             performAlarmCheckingFloat((FloatParameterType) ptype, pv, criteriaEvaluator);
         } else if (ptype instanceof EnumeratedParameterType) {

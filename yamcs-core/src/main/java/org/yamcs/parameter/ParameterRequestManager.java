@@ -53,7 +53,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     private Map<Class<?>, ParameterProvider> parameterProviders = new LinkedHashMap<>();
 
     private static AtomicInteger lastSubscriptionId = new AtomicInteger();
-    public final Processor yproc;
+    public final Processor processor;
 
     // if all parameter shall be subscribed/processed
     private boolean shouldSubcribeAllParameters = false;
@@ -68,7 +68,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
      * Creates a new ParameterRequestManager, configured to listen to the specified XtceTmProcessor.
      */
     public ParameterRequestManager(Processor yproc, XtceTmProcessor tmProcessor) throws ConfigurationException {
-        this.yproc = yproc;
+        this.processor = yproc;
         log = LoggingUtils.getLogger(this.getClass(), yproc);
         cacheConfig = yproc.getPameterCacheConfig();
         shouldSubcribeAllParameters = yproc.isSubscribeAll();
@@ -78,7 +78,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
         tmProcessor.setParameterListener(this);
         addParameterProvider(tmProcessor);
         if (yproc.hasAlarmChecker()) {
-            alarmChecker = new AlarmChecker(this, lastSubscriptionId.incrementAndGet());
+            alarmChecker = new AlarmChecker(this, yproc.getProcessorData(), lastSubscriptionId.incrementAndGet());
         }
         if (yproc.hasAlarmServer()) {
             alarmServer = new AlarmServer(yproc.getInstance(), "alarms_realtime");
@@ -109,7 +109,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
                 prov.startProvidingAll();
             }
         } else if (alarmChecker != null) { // at least get all that have alarms
-            for (Parameter p : yproc.getXtceDb().getParameters()) {
+            for (Parameter p : processor.getXtceDb().getParameters()) {
                 if (p.getParameterType() != null && p.getParameterType().hasAlarm()) {
                     try {
                         subscribeToProviders(p);
@@ -601,7 +601,7 @@ public class ParameterRequestManager extends AbstractService implements Paramete
     }
 
     public Object getXtceDb() {
-        return yproc.getXtceDb();
+        return processor.getXtceDb();
     }
 
     @Override

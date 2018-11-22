@@ -14,13 +14,21 @@ import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.AlarmType;
+import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.CriteriaEvaluator;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.EnumerationAlarm;
+import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MathOperationCalibrator;
+import org.yamcs.xtce.NumericAlarm;
+import org.yamcs.xtce.NumericContextAlarm;
 import org.yamcs.xtce.NumericDataEncoding;
+import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PolynomialCalibrator;
@@ -52,6 +60,11 @@ public class ProcessorData {
 
     private LastValueCache lastValueCache = new LastValueCache();
 
+    /**
+     * used to store parameter types which are changed dynamically (so they don't correspond anymore to MDB)
+     */
+    Map<Parameter, ParameterType> typeOverrides = new HashMap<>();
+
     public ProcessorData(Processor proc, boolean generateEvents) {
         this(proc.getInstance(), proc.getName(), proc.getXtceDb(), generateEvents);
 
@@ -71,7 +84,7 @@ public class ProcessorData {
      *            - generate events in case of errors when processing data
      */
     public ProcessorData(String instance, String procName, XtceDb xtcedb, boolean generateEvents) {
-        
+
         this.xtcedb = xtcedb;
         if ((instance != null) && generateEvents) {
             eventProducer = EventProducerFactory.getEventProducer(instance);
@@ -83,11 +96,11 @@ public class ProcessorData {
 
         // populate last value cache with the default (initial) value for each parameter that has one
         long genTime = TimeEncoding.getWallclockTime();
-        for(Parameter p: xtcedb.getParameters()) {
+        for (Parameter p : xtcedb.getParameters()) {
             ParameterType ptype = p.getParameterType();
-            if(ptype != null) {
+            if (ptype != null) {
                 Value v = DataTypeProcessor.getInitialValue(ptype);
-                if(v!=null) {
+                if (v != null) {
                     ParameterValue pv = new ParameterValue(p);
                     pv.setEngineeringValue(v);
                     pv.setGenerationTime(genTime);
@@ -96,7 +109,7 @@ public class ProcessorData {
                 }
             }
         }
-        
+
         log.debug("Initialized lastValueCache with {} entries", lastValueCache.size());
     }
 
@@ -220,5 +233,106 @@ public class ProcessorData {
 
     public LastValueCache getLastValueCache() {
         return lastValueCache;
+    }
+
+    public ParameterType getParameterType(Parameter parameter) {
+        ParameterType pt = typeOverrides.get(parameter);
+        if (pt == null) {
+            pt = parameter.getParameterType();
+        }
+        return pt;
+    }
+
+    public void clearParameterOverrides(Parameter p) {
+        typeOverrides.remove(p);
+    }
+
+    public void clearParameterCalibratorOverrides(Parameter p) {
+        ParameterType ptype = typeOverrides.get(p);
+        if (ptype == null) {
+            return;
+        }
+        ptype.setEncoding(p.getParameterType().getEncoding());
+    }
+
+    public void setDefaultCalibrator(Parameter p, Calibrator defaultCalibrator) {
+        NumericParameterType ptype = getNumericTypeOverride(p);
+        DataEncoding enc = ptype.getEncoding().copy();
+        ptype.setEncoding(enc);
+
+        ((NumericDataEncoding) enc).setDefaultCalibrator(defaultCalibrator);
+    }
+
+    public void setContextCalibratorList(Parameter p, List<ContextCalibrator> contextCalibrator) {
+        NumericParameterType ptype = getNumericTypeOverride(p);
+        DataEncoding enc = ptype.getEncoding().copy();
+        ptype.setEncoding(enc);
+
+        ((NumericDataEncoding) enc).setContextCalibratorList(contextCalibrator);
+
+    }
+
+    private NumericParameterType getNumericTypeOverride(Parameter p) {
+        ParameterType ptype = typeOverrides.get(p);
+        if (ptype == null) {
+            ptype = p.getParameterType();
+            if (!(ptype instanceof NumericParameterType)) {
+                throw new IllegalArgumentException("'"+ptype.getName()+"' is a non numeric type");
+            }
+            ptype = ptype.copy();
+            typeOverrides.put(p, ptype);
+        }
+        
+        return (NumericParameterType) ptype;
+    }
+
+    private EnumeratedParameterType getEnumeratedTypeOverride(Parameter p) {
+        ParameterType ptype = typeOverrides.get(p);
+        if (ptype == null) {
+            ptype = p.getParameterType();
+            if (!(ptype instanceof EnumeratedParameterType)) {
+                throw new IllegalArgumentException("'"+ptype.getName()+"' is a non enumerated type");
+            }
+            ptype = ptype.copy();
+            typeOverrides.put(p, ptype);
+        }
+        
+        return (EnumeratedParameterType) ptype;
+    }
+
+    public void clearParameterAlarmOverrides(Parameter p) {
+        ParameterType ptype = typeOverrides.get(p);
+        if (ptype == null) {
+            return;
+        }
+        if(ptype instanceof NumericParameterType) {
+            NumericParameterType optype = (NumericParameterType)p.getParameterType();
+            ((NumericParameterType) ptype).setDefaultAlarm(optype.getDefaultAlarm());
+        } else if (ptype instanceof EnumeratedParameterType) {
+            EnumeratedParameterType optype = (EnumeratedParameterType)p.getParameterType();
+            ((EnumeratedParameterType) ptype).setDefaultAlarm(optype.getDefaultAlarm());
+        } else {
+            throw new IllegalArgumentException("Can only have alarms on numeric and enumerated parameters");
+        }
+    }
+
+    public void setDefaultNumericAlarm(Parameter p, NumericAlarm alarm) {
+        NumericParameterType ptype = getNumericTypeOverride(p);
+        ptype.setDefaultAlarm(alarm);
+    }
+
+    public void setDefaultEnumerationAlarm(Parameter p, EnumerationAlarm alarm) {
+        EnumeratedParameterType ptype = getEnumeratedTypeOverride(p);
+        ptype.setDefaultAlarm(alarm);
+    }
+
+    public void setNumericContextAlarm(Parameter p, List<NumericContextAlarm> contextAlarmList) {
+        NumericParameterType ptype = getNumericTypeOverride(p);
+        ptype.setContextAlarmList(contextAlarmList);
+    }
+
+    public void setEnumerationContextAlarm(Parameter p, List<EnumerationContextAlarm> contextAlarmList) {
+        EnumeratedParameterType ptype = getEnumeratedTypeOverride(p);
+        ptype.setContextAlarmList(contextAlarmList);
     }
 }

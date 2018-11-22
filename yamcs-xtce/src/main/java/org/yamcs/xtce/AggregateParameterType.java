@@ -49,4 +49,9 @@ public class AggregateParameterType extends AggregateDataType implements Paramet
     @Override
     public void setInitialValue(String initialValue) {
     }
+
+    @Override
+    public DataEncoding getEncoding() {
+        throw new UnsupportedOperationException("aggregate parameters do not support encodings");
+    }
 }

@@ -23,6 +23,18 @@ public abstract class Algorithm extends NameDescription {
     
     private Scope scope = Scope.GLOBAL;
     
+    /**
+     * copy constructor
+     * @param a
+     */
+    Algorithm(Algorithm a) {
+        super(a);
+        this.triggerSet = a.triggerSet;
+        this.inputList = a.inputList;
+        this.outputList = a.outputList;
+        this.scope = a.scope;
+    }
+    
     public Algorithm(String name) {
         super(name);
     }

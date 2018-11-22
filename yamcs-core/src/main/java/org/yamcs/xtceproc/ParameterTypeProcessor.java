@@ -57,7 +57,7 @@ public class ParameterTypeProcessor {
      * @param pval
      */
     public void calibrate(ContainerProcessingContext pcontext, ParameterValue pval) {
-        Value engValue = doCalibrate(pcontext.result.params, pcontext.criteriaEvaluator, pval.getParameter().getParameterType(), pval.getRawValue());
+        Value engValue = doCalibrate(pcontext.result.params, pcontext.criteriaEvaluator, pdata.getParameterType(pval.getParameter()), pval.getRawValue());
         if(engValue!=null) {
             pval.setEngineeringValue(engValue);
         } else {
@@ -66,7 +66,7 @@ public class ParameterTypeProcessor {
     }
 
     public void calibrate(ParameterValue pval) {
-        Value engValue = doCalibrate(null, null, pval.getParameter().getParameterType(), pval.getRawValue());
+        Value engValue = doCalibrate(null, null, pdata.getParameterType(pval.getParameter()), pval.getRawValue());
         if(engValue!=null) {
             pval.setEngineeringValue(engValue);
         } else {

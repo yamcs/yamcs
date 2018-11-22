@@ -72,6 +72,18 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
         this(sizeInBits, ByteOrder.BIG_ENDIAN, encoding);
     }
 
+    /**
+     * copy constructor
+     * @param fde
+     */
+    public FloatDataEncoding(FloatDataEncoding fde) {
+        super(fde);
+        this.defaultCalibrator = fde.defaultCalibrator;
+        this.contextCalibratorList = fde.contextCalibratorList;
+        this.encoding = fde.encoding;
+        this.stringEncoding = fde.stringEncoding;
+    }
+
     public Encoding getEncoding() {
         return encoding;
     }
@@ -143,5 +155,10 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
         } else {
             return Collections.emptySet();
         }
+    }
+
+    @Override
+    public FloatDataEncoding copy() {
+        return new FloatDataEncoding(this);
     }
 }

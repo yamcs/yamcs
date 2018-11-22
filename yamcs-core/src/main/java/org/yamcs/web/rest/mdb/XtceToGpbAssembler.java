@@ -741,7 +741,7 @@ public class XtceToGpbAssembler {
     public static CalibratorInfo toCalibratorInfo(Calibrator calibrator) {
         CalibratorInfo.Builder calibratorInfob = CalibratorInfo.newBuilder();
         if (calibrator instanceof PolynomialCalibrator) {
-            calibratorInfob.setType("Polynomial");
+            calibratorInfob.setType(CalibratorInfo.Type.POLYNOMIAL);
             PolynomialCalibrator polynomialCalibrator = (PolynomialCalibrator) calibrator;
             PolynomialCalibratorInfo.Builder polyb = PolynomialCalibratorInfo.newBuilder();
             for (double coefficient : polynomialCalibrator.getCoefficients()) {
@@ -749,7 +749,7 @@ public class XtceToGpbAssembler {
             }
             calibratorInfob.setPolynomialCalibrator(polyb);
         } else if (calibrator instanceof SplineCalibrator) {
-            calibratorInfob.setType("Spline");
+            calibratorInfob.setType(CalibratorInfo.Type.SPLINE);
             SplineCalibrator splineCalibrator = (SplineCalibrator) calibrator;
             SplineCalibratorInfo.Builder splineb = SplineCalibratorInfo.newBuilder();
             for (SplinePoint point : splineCalibrator.getPoints()) {
@@ -759,13 +759,13 @@ public class XtceToGpbAssembler {
             }
             calibratorInfob.setSplineCalibrator(splineb);
         } else if (calibrator instanceof JavaExpressionCalibrator) {
-            calibratorInfob.setType("Java Expression");
+            calibratorInfob.setType(CalibratorInfo.Type.JAVA_EXPRESSION);
             JavaExpressionCalibrator javaCalibrator = (JavaExpressionCalibrator) calibrator;
             JavaExpressionCalibratorInfo.Builder javab = JavaExpressionCalibratorInfo.newBuilder();
             javab.setFormula(javaCalibrator.getFormula());
             calibratorInfob.setJavaExpressionCalibrator(javab);
         } else if (calibrator instanceof MathOperationCalibrator) {
-            calibratorInfob.setType("Math Operation");
+            calibratorInfob.setType(CalibratorInfo.Type.MATH_OPERATION);
             // MathOperationCalibrator mathOperationCalibrator = (MathOperationCalibrator) calibrator;
         } else {
             throw new IllegalArgumentException("Unexpected calibrator type " + calibrator.getClass());
