@@ -238,10 +238,10 @@ public class MDBParameterRestHandler extends RestHandler {
         ParameterType origParamType = p.getParameterType();
 
         switch (cpr.getAction()) {
-        case CLEAR:
+        case RESET:
             pdata.clearParameterOverrides(p);
             break;
-        case CLEAR_CALIBRATORS:
+        case RESET_CALIBRATORS:
             pdata.clearParameterCalibratorOverrides(p);
             break;
         case SET_CALIBRATORS:
@@ -259,7 +259,7 @@ public class MDBParameterRestHandler extends RestHandler {
                 throw new BadRequestException("Default calibrator not set");
             }
             break;
-        case CLEAR_ALARMS:
+        case RESET_ALARMS:
             pdata.clearParameterAlarmOverrides(p);
             break;
         case SET_DEFAULT_ALARMS:
@@ -322,7 +322,7 @@ public class MDBParameterRestHandler extends RestHandler {
         CustomAlgorithm calg = (CustomAlgorithm)a;
         ChangeAlgorithmRequest car = req.bodyAsMessage(ChangeAlgorithmRequest.newBuilder()).build();
         switch(car.getAction()) {
-        case CLEAR:
+        case RESET:
             algMng.clearAlgorithmOverride(calg);
             break;
         case SET:
@@ -346,7 +346,6 @@ public class MDBParameterRestHandler extends RestHandler {
         
         completeOK(req);
     }
-    
     
 
     private static void verifyNumericParameter(Parameter p) throws BadRequestException {

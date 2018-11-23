@@ -167,7 +167,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         assertEquals(1 + packetGenerator.pFloatPara1_1_2 * 2, pdata.getParameter(0).getEngValue().getFloatValue(),
                 1e-5);
 
-        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.CLEAR).build();
+        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.RESET).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters//REFMDB/SUBSYS1/FloatPara1_1_2",
                         HttpMethod.PATCH, toJson(cpr))
@@ -232,7 +232,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
 
         
         // remove all overrides
-        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.CLEAR).build();
+        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.RESET).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters//REFMDB/SUBSYS1/FloatPara1_10_3",
                         HttpMethod.PATCH, toJson(cpr))
@@ -271,7 +271,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
         assertEquals(MonitoringResult.CRITICAL, pdata.getParameter(0).getMonitoringResult());
 
-        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.CLEAR).build();
+        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.RESET).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/EnumerationPara1_10_2",
                         HttpMethod.PATCH, toJson(cpr))
@@ -315,7 +315,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
         assertEquals(MonitoringResult.DISTRESS, pdata.getParameter(0).getMonitoringResult());
 
-        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.CLEAR).addContextAlarm(cai).build();
+        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.RESET).addContextAlarm(cai).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/IntegerPara1_10_1",
                         HttpMethod.PATCH, toJson(cpr))
@@ -352,7 +352,7 @@ public class IntegrationTest extends AbstractIntegrationTest {
         
         
         //reset back to MDB version
-        car = ChangeAlgorithmRequest.newBuilder().setAction(ChangeAlgorithmRequest.ActionType.CLEAR).build();
+        car = ChangeAlgorithmRequest.newBuilder().setAction(ChangeAlgorithmRequest.ActionType.RESET).build();
         restClient.doRequest("/mdb/IntegrationTest/realtime/algorithms/REFMDB/SUBSYS1/float_add",
                 HttpMethod.PATCH, toJson(car)).get();
 

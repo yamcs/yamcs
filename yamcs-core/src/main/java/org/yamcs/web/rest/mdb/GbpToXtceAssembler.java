@@ -149,6 +149,9 @@ public class GbpToXtceAssembler {
         EnumerationAlarm ea = new EnumerationAlarm();
         
         ea.setAlarmList(toEnumerationAlarmList(ai.getEnumerationAlarmList()));
+        if(ai.hasMinViolations()) {
+            ea.setMinViolations(ai.getMinViolations());
+        }
         return ea;
     }
 
@@ -186,6 +189,9 @@ public class GbpToXtceAssembler {
             throw new BadRequestException("Cannot set enumeration alarms for an numeric parameter");
         }
         NumericAlarm na = new NumericAlarm();
+        if(ai.hasMinViolations()) {
+            na.setMinViolations(ai.getMinViolations());
+        }
         na.setStaticAlarmRanges(toStaticAlarmRanges(ai.getStaticAlarmRangeList()));
         return na;
     }

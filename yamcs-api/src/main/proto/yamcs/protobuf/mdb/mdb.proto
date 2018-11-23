@@ -68,6 +68,10 @@ message AlarmInfo {
 message ContextAlarmInfo {
   repeated ComparisonInfo comparison = 1;
   optional AlarmInfo alarm = 2;
+  
+  //this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+  // either this or the comparison above has to be used (not both at the same time)
+  optional string context = 3; 
 }
 
 message DataEncodingInfo {
@@ -382,12 +386,12 @@ message SpaceSystemInfo {
 // used to change calibrators or alarms for one parameter
 message ChangeParameterRequest {
   enum ActionType {
-     CLEAR = 0; //reset all parameter properties (calibrators+alarms) to their default MDB value
-     CLEAR_CALIBRATORS = 1; //reset calibrators to their default MDB value
+     RESET = 0; //reset all parameter properties (calibrators+alarms) to their default MDB value
+     RESET_CALIBRATORS = 1; //reset calibrators to their default MDB value
      SET_DEFAULT_CALIBRATOR = 2; //sets the default calibrator (the contextual ones are unmodified)
      SET_CALIBRATORS = 3; //sets all calibratiosn (default+contextual), if default is not set in the proto message, the existing one is not modified
      
-     CLEAR_ALARMS = 4; //reset alarms to their default MDB value
+     RESET_ALARMS = 4; //reset alarms to their default MDB value
      SET_DEFAULT_ALARMS = 5; //sets the default alarms (the contextual ones are unmodified)
      SET_ALARMS = 6; //sets all alarms (default+contextual), if default is not set in the proto message, the existing one is not modified
   } 
@@ -403,7 +407,7 @@ message ChangeParameterRequest {
 //used to change algorithms
 message ChangeAlgorithmRequest {
   enum ActionType {
-     CLEAR = 0; //restores the original MDB definition
+     RESET = 0; //restores the original MDB definition
      SET = 1; //sets the algorithm text
   }
   optional ActionType action = 1;
