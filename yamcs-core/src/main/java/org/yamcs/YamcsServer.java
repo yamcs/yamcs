@@ -309,8 +309,8 @@ public class YamcsServer {
             staticlog.info("Loading instance '{}'", name);
         }
         ysi = new YamcsServerInstance(name);
-        ysi.init();
         instances.put(name, ysi);
+        ysi.init();
         ManagementService.getInstance().registerYamcsInstance(ysi);
         return ysi;
     }
