@@ -5,10 +5,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.TimeEncoding;
 
+/**
+ * Keeps track of the alarm for one parameter 
+ * 
+ * @author nm
+ *
+ */
 public class ActiveAlarm {
     
     static AtomicInteger counter = new AtomicInteger();
     public int id;
+    
+    /**
+     * triggered will become true when the violations>= minViolations
+     */
+    boolean triggered;
     
     public boolean acknowledged;
     

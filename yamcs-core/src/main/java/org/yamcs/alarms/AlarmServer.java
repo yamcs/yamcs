@@ -144,7 +144,8 @@ public class AlarmServer extends AbstractService {
                 return;
             }
 
-            if (activeAlarm.violations == minViolations) {
+            if (!activeAlarm.triggered) {
+                activeAlarm.triggered = true;
                 for (AlarmListener l : alarmListeners) {
                     l.notifyTriggered(activeAlarm);
                 }
