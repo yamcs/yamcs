@@ -315,7 +315,16 @@ public class ProcessorData {
             throw new IllegalArgumentException("Can only have alarms on numeric and enumerated parameters");
         }
     }
-
+    
+    public void removeDefaultCalibrator(Parameter p) {
+        setDefaultCalibrator(p, null);
+    }
+    
+    public void removeDefaultAlarm(Parameter p) {
+        NumericParameterType ptype = getNumericTypeOverride(p);
+        ptype.setDefaultAlarm(null);
+    }
+    
     public void setDefaultNumericAlarm(Parameter p, NumericAlarm alarm) {
         NumericParameterType ptype = getNumericTypeOverride(p);
         ptype.setDefaultAlarm(alarm);

@@ -8726,6 +8726,35 @@ public final class Mdb {
      * <code>optional .yamcs.protobuf.mdb.CalibratorInfo calibrator = 2;</code>
      */
     org.yamcs.protobuf.Mdb.CalibratorInfoOrBuilder getCalibratorOrBuilder();
+
+    /**
+     * <pre>
+     *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+     * either this or the comparison above has to be used (not both at the same time)
+     * </pre>
+     *
+     * <code>optional string context = 3;</code>
+     */
+    boolean hasContext();
+    /**
+     * <pre>
+     *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+     * either this or the comparison above has to be used (not both at the same time)
+     * </pre>
+     *
+     * <code>optional string context = 3;</code>
+     */
+    java.lang.String getContext();
+    /**
+     * <pre>
+     *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+     * either this or the comparison above has to be used (not both at the same time)
+     * </pre>
+     *
+     * <code>optional string context = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getContextBytes();
   }
   /**
    * Protobuf type {@code yamcs.protobuf.mdb.ContextCalibratorInfo}
@@ -8740,6 +8769,7 @@ public final class Mdb {
     }
     private ContextCalibratorInfo() {
       comparison_ = java.util.Collections.emptyList();
+      context_ = "";
     }
 
     @java.lang.Override
@@ -8790,6 +8820,12 @@ public final class Mdb {
                 calibrator_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000001;
+              break;
+            }
+            case 26: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              context_ = bs;
               break;
             }
           }
@@ -8876,6 +8912,63 @@ public final class Mdb {
       return calibrator_ == null ? org.yamcs.protobuf.Mdb.CalibratorInfo.getDefaultInstance() : calibrator_;
     }
 
+    public static final int CONTEXT_FIELD_NUMBER = 3;
+    private volatile java.lang.Object context_;
+    /**
+     * <pre>
+     *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+     * either this or the comparison above has to be used (not both at the same time)
+     * </pre>
+     *
+     * <code>optional string context = 3;</code>
+     */
+    public boolean hasContext() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <pre>
+     *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+     * either this or the comparison above has to be used (not both at the same time)
+     * </pre>
+     *
+     * <code>optional string context = 3;</code>
+     */
+    public java.lang.String getContext() {
+      java.lang.Object ref = context_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          context_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+     * either this or the comparison above has to be used (not both at the same time)
+     * </pre>
+     *
+     * <code>optional string context = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getContextBytes() {
+      java.lang.Object ref = context_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        context_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -8900,6 +8993,9 @@ public final class Mdb {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         output.writeMessage(2, getCalibrator());
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, context_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -8915,6 +9011,9 @@ public final class Mdb {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, getCalibrator());
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, context_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -8940,6 +9039,11 @@ public final class Mdb {
         result = result && getCalibrator()
             .equals(other.getCalibrator());
       }
+      result = result && (hasContext() == other.hasContext());
+      if (hasContext()) {
+        result = result && getContext()
+            .equals(other.getContext());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -8958,6 +9062,10 @@ public final class Mdb {
       if (hasCalibrator()) {
         hash = (37 * hash) + CALIBRATOR_FIELD_NUMBER;
         hash = (53 * hash) + getCalibrator().hashCode();
+      }
+      if (hasContext()) {
+        hash = (37 * hash) + CONTEXT_FIELD_NUMBER;
+        hash = (53 * hash) + getContext().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -9091,6 +9199,8 @@ public final class Mdb {
           calibratorBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000002);
+        context_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
 
@@ -9132,6 +9242,10 @@ public final class Mdb {
         } else {
           result.calibrator_ = calibratorBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.context_ = context_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9202,6 +9316,11 @@ public final class Mdb {
         }
         if (other.hasCalibrator()) {
           mergeCalibrator(other.getCalibrator());
+        }
+        if (other.hasContext()) {
+          bitField0_ |= 0x00000004;
+          context_ = other.context_;
+          onChanged();
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -9592,6 +9711,112 @@ public final class Mdb {
           calibrator_ = null;
         }
         return calibratorBuilder_;
+      }
+
+      private java.lang.Object context_ = "";
+      /**
+       * <pre>
+       *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+       * either this or the comparison above has to be used (not both at the same time)
+       * </pre>
+       *
+       * <code>optional string context = 3;</code>
+       */
+      public boolean hasContext() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <pre>
+       *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+       * either this or the comparison above has to be used (not both at the same time)
+       * </pre>
+       *
+       * <code>optional string context = 3;</code>
+       */
+      public java.lang.String getContext() {
+        java.lang.Object ref = context_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            context_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+       * either this or the comparison above has to be used (not both at the same time)
+       * </pre>
+       *
+       * <code>optional string context = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getContextBytes() {
+        java.lang.Object ref = context_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          context_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+       * either this or the comparison above has to be used (not both at the same time)
+       * </pre>
+       *
+       * <code>optional string context = 3;</code>
+       */
+      public Builder setContext(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        context_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+       * either this or the comparison above has to be used (not both at the same time)
+       * </pre>
+       *
+       * <code>optional string context = 3;</code>
+       */
+      public Builder clearContext() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        context_ = getDefaultInstance().getContext();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+       * either this or the comparison above has to be used (not both at the same time)
+       * </pre>
+       *
+       * <code>optional string context = 3;</code>
+       */
+      public Builder setContextBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        context_ = value;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -56821,203 +57046,203 @@ public final class Mdb {
       "ibratorInfo\022D\n\021contextCalibrator\030\007 \003(\0132)" +
       ".yamcs.protobuf.mdb.ContextCalibratorInf" +
       "o\"C\n\004Type\022\n\n\006BINARY\020\000\022\013\n\007BOOLEAN\020\001\022\t\n\005FL" +
-      "OAT\020\002\022\013\n\007INTEGER\020\003\022\n\n\006STRING\020\004\"\207\001\n\025Conte",
+      "OAT\020\002\022\013\n\007INTEGER\020\003\022\n\n\006STRING\020\004\"\230\001\n\025Conte",
       "xtCalibratorInfo\0226\n\ncomparison\030\001 \003(\0132\".y" +
       "amcs.protobuf.mdb.ComparisonInfo\0226\n\ncali" +
       "brator\030\002 \001(\0132\".yamcs.protobuf.mdb.Calibr" +
-      "atorInfo\"\370\002\n\016CalibratorInfo\022J\n\024polynomia" +
-      "lCalibrator\030\002 \001(\0132,.yamcs.protobuf.mdb.P" +
-      "olynomialCalibratorInfo\022B\n\020splineCalibra" +
-      "tor\030\003 \001(\0132(.yamcs.protobuf.mdb.SplineCal" +
-      "ibratorInfo\022R\n\030javaExpressionCalibrator\030" +
-      "\004 \001(\01320.yamcs.protobuf.mdb.JavaExpressio" +
-      "nCalibratorInfo\0225\n\004type\030\005 \001(\0162\'.yamcs.pr",
-      "otobuf.mdb.CalibratorInfo.Type\"K\n\004Type\022\016" +
-      "\n\nPOLYNOMIAL\020\000\022\n\n\006SPLINE\020\001\022\022\n\016MATH_OPERA" +
-      "TION\020\002\022\023\n\017JAVA_EXPRESSION\020\003\"/\n\030Polynomia" +
-      "lCalibratorInfo\022\023\n\013coefficient\030\001 \003(\001\"\223\001\n" +
-      "\024SplineCalibratorInfo\022G\n\005point\030\001 \003(\01328.y" +
-      "amcs.protobuf.mdb.SplineCalibratorInfo.S" +
-      "plinePointInfo\0322\n\017SplinePointInfo\022\013\n\003raw" +
-      "\030\001 \001(\001\022\022\n\ncalibrated\030\002 \001(\001\"/\n\034JavaExpres" +
-      "sionCalibratorInfo\022\017\n\007formula\030\001 \001(\t\")\n\tE" +
-      "numValue\022\r\n\005value\030\001 \001(\003\022\r\n\005label\030\002 \001(\t\"\362",
-      "\002\n\021ParameterTypeInfo\022\017\n\007engType\030\001 \001(\t\022:\n" +
-      "\014dataEncoding\030\002 \001(\0132$.yamcs.protobuf.mdb" +
-      ".DataEncodingInfo\022-\n\007unitSet\030\003 \003(\0132\034.yam" +
-      "cs.protobuf.mdb.UnitInfo\0223\n\014defaultAlarm" +
-      "\030\004 \001(\0132\035.yamcs.protobuf.mdb.AlarmInfo\0220\n" +
-      "\tenumValue\030\005 \003(\0132\035.yamcs.protobuf.mdb.En" +
-      "umValue\022>\n\020absoluteTimeInfo\030\006 \001(\0132$.yamc" +
-      "s.protobuf.mdb.AbsoluteTimeInfo\022:\n\014conte" +
-      "xtAlarm\030\007 \003(\0132$.yamcs.protobuf.mdb.Conte" +
-      "xtAlarmInfo\"\215\001\n\020AbsoluteTimeInfo\022\024\n\014init",
-      "ialValue\030\001 \001(\t\022\r\n\005scale\030\002 \001(\001\022\016\n\006offset\030" +
-      "\003 \001(\001\0225\n\noffsetFrom\030\004 \001(\0132!.yamcs.protob" +
-      "uf.mdb.ParameterInfo\022\r\n\005epoch\030\005 \001(\t\"x\n\nU" +
-      "sedByInfo\0224\n\talgorithm\030\001 \003(\0132!.yamcs.pro" +
-      "tobuf.mdb.AlgorithmInfo\0224\n\tcontainer\030\002 \003" +
-      "(\0132!.yamcs.protobuf.mdb.ContainerInfo\"\262\002" +
-      "\n\rParameterInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifi" +
-      "edName\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027" +
-      "\n\017longDescription\030\004 \001(\t\022,\n\005alias\030\005 \003(\0132\035" +
-      ".yamcs.protobuf.NamedObjectId\0223\n\004type\030\006 ",
-      "\001(\0132%.yamcs.protobuf.mdb.ParameterTypeIn" +
-      "fo\0226\n\ndataSource\030\007 \001(\0162\".yamcs.protobuf." +
-      "mdb.DataSourceType\022.\n\006usedBy\030\010 \001(\0132\036.yam" +
-      "cs.protobuf.mdb.UsedByInfo\"\344\001\n\020ArgumentT" +
-      "ypeInfo\022\017\n\007engType\030\001 \001(\t\022:\n\014dataEncoding" +
-      "\030\002 \001(\0132$.yamcs.protobuf.mdb.DataEncoding" +
-      "Info\022-\n\007unitSet\030\003 \003(\0132\034.yamcs.protobuf.m" +
-      "db.UnitInfo\0220\n\tenumValue\030\005 \003(\0132\035.yamcs.p" +
-      "rotobuf.mdb.EnumValue\022\020\n\010rangeMin\030\006 \001(\001\022" +
-      "\020\n\010rangeMax\030\007 \001(\001\"{\n\014ArgumentInfo\022\014\n\004nam",
-      "e\030\001 \001(\t\022\023\n\013description\030\002 \001(\t\022\024\n\014initialV" +
-      "alue\030\004 \001(\t\0222\n\004type\030\006 \001(\0132$.yamcs.protobu" +
-      "f.mdb.ArgumentTypeInfo\"5\n\026ArgumentAssign" +
-      "mentInfo\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"\345\001" +
-      "\n\020SignificanceInfo\022T\n\020consequenceLevel\030\001" +
-      " \001(\0162:.yamcs.protobuf.mdb.SignificanceIn" +
-      "fo.SignificanceLevelType\022\030\n\020reasonForWar" +
-      "ning\030\002 \001(\t\"a\n\025SignificanceLevelType\022\010\n\004N" +
-      "ONE\020\001\022\t\n\005WATCH\020\002\022\013\n\007WARNING\020\003\022\014\n\010DISTRES" +
-      "S\020\004\022\014\n\010CRITICAL\020\005\022\n\n\006SEVERE\020\006\"\251\002\n\016Compar",
-      "isonInfo\0224\n\tparameter\030\001 \001(\0132!.yamcs.prot" +
-      "obuf.mdb.ParameterInfo\022A\n\010operator\030\002 \001(\016" +
-      "2/.yamcs.protobuf.mdb.ComparisonInfo.Ope" +
-      "ratorType\022\r\n\005value\030\003 \001(\t\"\216\001\n\014OperatorTyp" +
-      "e\022\014\n\010EQUAL_TO\020\001\022\020\n\014NOT_EQUAL_TO\020\002\022\020\n\014GRE" +
-      "ATER_THAN\020\003\022\034\n\030GREATER_THAN_OR_EQUAL_TO\020" +
-      "\004\022\020\n\014SMALLER_THAN\020\005\022\034\n\030SMALLER_THAN_OR_E" +
-      "QUAL_TO\020\006\"e\n\032TransmissionConstraintInfo\022" +
-      "6\n\ncomparison\030\001 \003(\0132\".yamcs.protobuf.mdb" +
-      ".ComparisonInfo\022\017\n\007timeout\030\002 \001(\003\"\233\004\n\013Com",
-      "mandInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedName\030" +
-      "\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n\017longD" +
-      "escription\030\004 \001(\t\022,\n\005alias\030\005 \003(\0132\035.yamcs." +
-      "protobuf.NamedObjectId\0224\n\013baseCommand\030\006 " +
-      "\001(\0132\037.yamcs.protobuf.mdb.CommandInfo\022\020\n\010" +
-      "abstract\030\007 \001(\010\0222\n\010argument\030\010 \003(\0132 .yamcs" +
-      ".protobuf.mdb.ArgumentInfo\022F\n\022argumentAs" +
-      "signment\030\t \003(\0132*.yamcs.protobuf.mdb.Argu" +
-      "mentAssignmentInfo\022:\n\014significance\030\n \001(\013" +
-      "2$.yamcs.protobuf.mdb.SignificanceInfo\022B",
-      "\n\nconstraint\030\013 \003(\0132..yamcs.protobuf.mdb." +
-      "TransmissionConstraintInfo\022B\n\020commandCon" +
-      "tainer\030\r \001(\0132(.yamcs.protobuf.mdb.Comman" +
-      "dContainerInfo\"n\n\nRepeatInfo\022\022\n\nfixedCou" +
-      "nt\030\001 \001(\003\0227\n\014dynamicCount\030\002 \001(\0132!.yamcs.p" +
-      "rotobuf.mdb.ParameterInfo\022\023\n\013bitsBetween" +
-      "\030\003 \001(\005\"\315\003\n\021SequenceEntryInfo\022\026\n\016location" +
-      "InBits\030\001 \001(\005\022V\n\021referenceLocation\030\002 \001(\0162" +
-      ";.yamcs.protobuf.mdb.SequenceEntryInfo.R" +
-      "eferenceLocationType\0224\n\tcontainer\030\003 \001(\0132",
-      "!.yamcs.protobuf.mdb.ContainerInfo\0224\n\tpa" +
-      "rameter\030\004 \001(\0132!.yamcs.protobuf.mdb.Param" +
-      "eterInfo\0222\n\010argument\030\006 \001(\0132 .yamcs.proto" +
-      "buf.mdb.ArgumentInfo\0226\n\nfixedValue\030\007 \001(\013" +
-      "2\".yamcs.protobuf.mdb.FixedValueInfo\022.\n\006" +
-      "repeat\030\005 \001(\0132\036.yamcs.protobuf.mdb.Repeat" +
-      "Info\"@\n\025ReferenceLocationType\022\023\n\017CONTAIN" +
-      "ER_START\020\001\022\022\n\016PREVIOUS_ENTRY\020\002\"D\n\016FixedV" +
-      "alueInfo\022\014\n\004name\030\001 \001(\t\022\020\n\010hexValue\030\002 \001(\t" +
-      "\022\022\n\nsizeInBits\030\003 \001(\005\"\247\002\n\024CommandContaine",
-      "rInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001" +
-      "(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n\017longDesc" +
-      "ription\030\004 \001(\t\022,\n\005alias\030\005 \003(\0132\035.yamcs.pro" +
-      "tobuf.NamedObjectId\022\022\n\nsizeInBits\030\006 \001(\005\022" +
-      "?\n\rbaseContainer\030\007 \001(\0132(.yamcs.protobuf." +
-      "mdb.CommandContainerInfo\0224\n\005entry\030\010 \003(\0132" +
-      "%.yamcs.protobuf.mdb.SequenceEntryInfo\"\237" +
-      "\003\n\rContainerInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualif" +
-      "iedName\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022" +
-      "\027\n\017longDescription\030\004 \001(\t\022,\n\005alias\030\005 \003(\0132",
-      "\035.yamcs.protobuf.NamedObjectId\022\023\n\013maxInt" +
-      "erval\030\006 \001(\003\022\022\n\nsizeInBits\030\007 \001(\005\0228\n\rbaseC" +
-      "ontainer\030\010 \001(\0132!.yamcs.protobuf.mdb.Cont" +
-      "ainerInfo\022?\n\023restrictionCriteria\030\t \003(\0132\"" +
-      ".yamcs.protobuf.mdb.ComparisonInfo\0224\n\005en" +
-      "try\030\n \003(\0132%.yamcs.protobuf.mdb.SequenceE" +
-      "ntryInfo\022.\n\006usedBy\030\013 \001(\0132\036.yamcs.protobu" +
-      "f.mdb.UsedByInfo\"\213\001\n\022InputParameterInfo\022" +
-      "4\n\tparameter\030\001 \001(\0132!.yamcs.protobuf.mdb." +
-      "ParameterInfo\022\021\n\tinputName\030\002 \001(\t\022\031\n\021para",
-      "meterInstance\030\003 \001(\005\022\021\n\tmandatory\030\004 \001(\010\"_" +
-      "\n\023OutputParameterInfo\0224\n\tparameter\030\001 \001(\013" +
-      "2!.yamcs.protobuf.mdb.ParameterInfo\022\022\n\no" +
-      "utputName\030\002 \001(\t\"\364\003\n\rAlgorithmInfo\022\014\n\004nam" +
+      "atorInfo\022\017\n\007context\030\003 \001(\t\"\370\002\n\016Calibrator" +
+      "Info\022J\n\024polynomialCalibrator\030\002 \001(\0132,.yam" +
+      "cs.protobuf.mdb.PolynomialCalibratorInfo" +
+      "\022B\n\020splineCalibrator\030\003 \001(\0132(.yamcs.proto" +
+      "buf.mdb.SplineCalibratorInfo\022R\n\030javaExpr" +
+      "essionCalibrator\030\004 \001(\01320.yamcs.protobuf." +
+      "mdb.JavaExpressionCalibratorInfo\0225\n\004type",
+      "\030\005 \001(\0162\'.yamcs.protobuf.mdb.CalibratorIn" +
+      "fo.Type\"K\n\004Type\022\016\n\nPOLYNOMIAL\020\000\022\n\n\006SPLIN" +
+      "E\020\001\022\022\n\016MATH_OPERATION\020\002\022\023\n\017JAVA_EXPRESSI" +
+      "ON\020\003\"/\n\030PolynomialCalibratorInfo\022\023\n\013coef" +
+      "ficient\030\001 \003(\001\"\223\001\n\024SplineCalibratorInfo\022G" +
+      "\n\005point\030\001 \003(\01328.yamcs.protobuf.mdb.Splin" +
+      "eCalibratorInfo.SplinePointInfo\0322\n\017Splin" +
+      "ePointInfo\022\013\n\003raw\030\001 \001(\001\022\022\n\ncalibrated\030\002 " +
+      "\001(\001\"/\n\034JavaExpressionCalibratorInfo\022\017\n\007f" +
+      "ormula\030\001 \001(\t\")\n\tEnumValue\022\r\n\005value\030\001 \001(\003",
+      "\022\r\n\005label\030\002 \001(\t\"\362\002\n\021ParameterTypeInfo\022\017\n" +
+      "\007engType\030\001 \001(\t\022:\n\014dataEncoding\030\002 \001(\0132$.y" +
+      "amcs.protobuf.mdb.DataEncodingInfo\022-\n\007un" +
+      "itSet\030\003 \003(\0132\034.yamcs.protobuf.mdb.UnitInf" +
+      "o\0223\n\014defaultAlarm\030\004 \001(\0132\035.yamcs.protobuf" +
+      ".mdb.AlarmInfo\0220\n\tenumValue\030\005 \003(\0132\035.yamc" +
+      "s.protobuf.mdb.EnumValue\022>\n\020absoluteTime" +
+      "Info\030\006 \001(\0132$.yamcs.protobuf.mdb.Absolute" +
+      "TimeInfo\022:\n\014contextAlarm\030\007 \003(\0132$.yamcs.p" +
+      "rotobuf.mdb.ContextAlarmInfo\"\215\001\n\020Absolut",
+      "eTimeInfo\022\024\n\014initialValue\030\001 \001(\t\022\r\n\005scale" +
+      "\030\002 \001(\001\022\016\n\006offset\030\003 \001(\001\0225\n\noffsetFrom\030\004 \001" +
+      "(\0132!.yamcs.protobuf.mdb.ParameterInfo\022\r\n" +
+      "\005epoch\030\005 \001(\t\"x\n\nUsedByInfo\0224\n\talgorithm\030" +
+      "\001 \003(\0132!.yamcs.protobuf.mdb.AlgorithmInfo" +
+      "\0224\n\tcontainer\030\002 \003(\0132!.yamcs.protobuf.mdb" +
+      ".ContainerInfo\"\262\002\n\rParameterInfo\022\014\n\004name" +
+      "\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDe" +
+      "scription\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t" +
+      "\022,\n\005alias\030\005 \003(\0132\035.yamcs.protobuf.NamedOb",
+      "jectId\0223\n\004type\030\006 \001(\0132%.yamcs.protobuf.md" +
+      "b.ParameterTypeInfo\0226\n\ndataSource\030\007 \001(\0162" +
+      "\".yamcs.protobuf.mdb.DataSourceType\022.\n\006u" +
+      "sedBy\030\010 \001(\0132\036.yamcs.protobuf.mdb.UsedByI" +
+      "nfo\"\344\001\n\020ArgumentTypeInfo\022\017\n\007engType\030\001 \001(" +
+      "\t\022:\n\014dataEncoding\030\002 \001(\0132$.yamcs.protobuf" +
+      ".mdb.DataEncodingInfo\022-\n\007unitSet\030\003 \003(\0132\034" +
+      ".yamcs.protobuf.mdb.UnitInfo\0220\n\tenumValu" +
+      "e\030\005 \003(\0132\035.yamcs.protobuf.mdb.EnumValue\022\020" +
+      "\n\010rangeMin\030\006 \001(\001\022\020\n\010rangeMax\030\007 \001(\001\"{\n\014Ar",
+      "gumentInfo\022\014\n\004name\030\001 \001(\t\022\023\n\013description\030" +
+      "\002 \001(\t\022\024\n\014initialValue\030\004 \001(\t\0222\n\004type\030\006 \001(" +
+      "\0132$.yamcs.protobuf.mdb.ArgumentTypeInfo\"" +
+      "5\n\026ArgumentAssignmentInfo\022\014\n\004name\030\001 \001(\t\022" +
+      "\r\n\005value\030\002 \001(\t\"\345\001\n\020SignificanceInfo\022T\n\020c" +
+      "onsequenceLevel\030\001 \001(\0162:.yamcs.protobuf.m" +
+      "db.SignificanceInfo.SignificanceLevelTyp" +
+      "e\022\030\n\020reasonForWarning\030\002 \001(\t\"a\n\025Significa" +
+      "nceLevelType\022\010\n\004NONE\020\001\022\t\n\005WATCH\020\002\022\013\n\007WAR" +
+      "NING\020\003\022\014\n\010DISTRESS\020\004\022\014\n\010CRITICAL\020\005\022\n\n\006SE",
+      "VERE\020\006\"\251\002\n\016ComparisonInfo\0224\n\tparameter\030\001" +
+      " \001(\0132!.yamcs.protobuf.mdb.ParameterInfo\022" +
+      "A\n\010operator\030\002 \001(\0162/.yamcs.protobuf.mdb.C" +
+      "omparisonInfo.OperatorType\022\r\n\005value\030\003 \001(" +
+      "\t\"\216\001\n\014OperatorType\022\014\n\010EQUAL_TO\020\001\022\020\n\014NOT_" +
+      "EQUAL_TO\020\002\022\020\n\014GREATER_THAN\020\003\022\034\n\030GREATER_" +
+      "THAN_OR_EQUAL_TO\020\004\022\020\n\014SMALLER_THAN\020\005\022\034\n\030" +
+      "SMALLER_THAN_OR_EQUAL_TO\020\006\"e\n\032Transmissi" +
+      "onConstraintInfo\0226\n\ncomparison\030\001 \003(\0132\".y" +
+      "amcs.protobuf.mdb.ComparisonInfo\022\017\n\007time",
+      "out\030\002 \001(\003\"\233\004\n\013CommandInfo\022\014\n\004name\030\001 \001(\t\022" +
+      "\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescripti" +
+      "on\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022,\n\005ali" +
+      "as\030\005 \003(\0132\035.yamcs.protobuf.NamedObjectId\022" +
+      "4\n\013baseCommand\030\006 \001(\0132\037.yamcs.protobuf.md" +
+      "b.CommandInfo\022\020\n\010abstract\030\007 \001(\010\0222\n\010argum" +
+      "ent\030\010 \003(\0132 .yamcs.protobuf.mdb.ArgumentI" +
+      "nfo\022F\n\022argumentAssignment\030\t \003(\0132*.yamcs." +
+      "protobuf.mdb.ArgumentAssignmentInfo\022:\n\014s" +
+      "ignificance\030\n \001(\0132$.yamcs.protobuf.mdb.S",
+      "ignificanceInfo\022B\n\nconstraint\030\013 \003(\0132..ya" +
+      "mcs.protobuf.mdb.TransmissionConstraintI" +
+      "nfo\022B\n\020commandContainer\030\r \001(\0132(.yamcs.pr" +
+      "otobuf.mdb.CommandContainerInfo\"n\n\nRepea" +
+      "tInfo\022\022\n\nfixedCount\030\001 \001(\003\0227\n\014dynamicCoun" +
+      "t\030\002 \001(\0132!.yamcs.protobuf.mdb.ParameterIn" +
+      "fo\022\023\n\013bitsBetween\030\003 \001(\005\"\315\003\n\021SequenceEntr" +
+      "yInfo\022\026\n\016locationInBits\030\001 \001(\005\022V\n\021referen" +
+      "ceLocation\030\002 \001(\0162;.yamcs.protobuf.mdb.Se" +
+      "quenceEntryInfo.ReferenceLocationType\0224\n",
+      "\tcontainer\030\003 \001(\0132!.yamcs.protobuf.mdb.Co" +
+      "ntainerInfo\0224\n\tparameter\030\004 \001(\0132!.yamcs.p" +
+      "rotobuf.mdb.ParameterInfo\0222\n\010argument\030\006 " +
+      "\001(\0132 .yamcs.protobuf.mdb.ArgumentInfo\0226\n" +
+      "\nfixedValue\030\007 \001(\0132\".yamcs.protobuf.mdb.F" +
+      "ixedValueInfo\022.\n\006repeat\030\005 \001(\0132\036.yamcs.pr" +
+      "otobuf.mdb.RepeatInfo\"@\n\025ReferenceLocati" +
+      "onType\022\023\n\017CONTAINER_START\020\001\022\022\n\016PREVIOUS_" +
+      "ENTRY\020\002\"D\n\016FixedValueInfo\022\014\n\004name\030\001 \001(\t\022" +
+      "\020\n\010hexValue\030\002 \001(\t\022\022\n\nsizeInBits\030\003 \001(\005\"\247\002",
+      "\n\024CommandContainerInfo\022\014\n\004name\030\001 \001(\t\022\025\n\r" +
+      "qualifiedName\030\002 \001(\t\022\030\n\020shortDescription\030" +
+      "\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022,\n\005alias\030" +
+      "\005 \003(\0132\035.yamcs.protobuf.NamedObjectId\022\022\n\n" +
+      "sizeInBits\030\006 \001(\005\022?\n\rbaseContainer\030\007 \001(\0132" +
+      "(.yamcs.protobuf.mdb.CommandContainerInf" +
+      "o\0224\n\005entry\030\010 \003(\0132%.yamcs.protobuf.mdb.Se" +
+      "quenceEntryInfo\"\237\003\n\rContainerInfo\022\014\n\004nam" +
       "e\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n\020shortD" +
-      "escription\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(" +
+      "escription\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(",
       "\t\022,\n\005alias\030\005 \003(\0132\035.yamcs.protobuf.NamedO" +
-      "bjectId\0226\n\005scope\030\006 \001(\0162\'.yamcs.protobuf." +
-      "mdb.AlgorithmInfo.Scope\022\020\n\010language\030\007 \001(" +
-      "\t\022\014\n\004text\030\010 \001(\t\022>\n\016inputParameter\030\t \003(\0132",
-      "&.yamcs.protobuf.mdb.InputParameterInfo\022" +
-      "@\n\017outputParameter\030\n \003(\0132\'.yamcs.protobu" +
-      "f.mdb.OutputParameterInfo\022<\n\021onParameter" +
-      "Update\030\013 \003(\0132!.yamcs.protobuf.mdb.Parame" +
-      "terInfo\022\026\n\016onPeriodicRate\030\014 \003(\003\"-\n\005Scope" +
-      "\022\n\n\006GLOBAL\020\000\022\030\n\024COMMAND_VERIFICATION\020\001\"|" +
-      "\n\026ListParametersResponse\0224\n\tparameter\030\001 " +
-      "\003(\0132!.yamcs.protobuf.mdb.ParameterInfo\022\031" +
-      "\n\021continuationToken\030\002 \001(\t\022\021\n\ttotalSize\030\003" +
-      " \001(\005\"\177\n\032ListParameterTypesResponse\0223\n\004ty",
-      "pe\030\001 \003(\0132%.yamcs.protobuf.mdb.ParameterT" +
-      "ypeInfo\022\031\n\021continuationToken\030\002 \001(\t\022\021\n\tto" +
-      "talSize\030\003 \001(\005\"H\n\033BulkGetParameterInfoReq" +
-      "uest\022)\n\002id\030\001 \003(\0132\035.yamcs.protobuf.NamedO" +
-      "bjectId\"\370\001\n\034BulkGetParameterInfoResponse" +
-      "\022[\n\010response\030\001 \003(\0132I.yamcs.protobuf.mdb." +
-      "BulkGetParameterInfoResponse.GetParamete" +
-      "rInfoResponse\032{\n\030GetParameterInfoRespons" +
-      "e\022)\n\002id\030\001 \001(\0132\035.yamcs.protobuf.NamedObje" +
-      "ctId\0224\n\tparameter\030\002 \001(\0132!.yamcs.protobuf",
-      ".mdb.ParameterInfo\"|\n\026ListContainersResp" +
-      "onse\0224\n\tcontainer\030\001 \003(\0132!.yamcs.protobuf" +
-      ".mdb.ContainerInfo\022\031\n\021continuationToken\030" +
-      "\002 \001(\t\022\021\n\ttotalSize\030\003 \001(\005\"v\n\024ListCommands" +
-      "Response\0220\n\007command\030\001 \003(\0132\037.yamcs.protob" +
-      "uf.mdb.CommandInfo\022\031\n\021continuationToken\030" +
-      "\002 \001(\t\022\021\n\ttotalSize\030\003 \001(\005\"|\n\026ListAlgorith" +
-      "msResponse\0224\n\talgorithm\030\001 \003(\0132!.yamcs.pr" +
-      "otobuf.mdb.AlgorithmInfo\022\031\n\021continuation" +
-      "Token\030\002 \001(\t\022\021\n\ttotalSize\030\003 \001(\005\"\202\001\n\030ListS",
-      "paceSystemsResponse\0228\n\013spaceSystem\030\001 \003(\013" +
-      "2#.yamcs.protobuf.mdb.SpaceSystemInfo\022\031\n" +
-      "\021continuationToken\030\002 \001(\t\022\021\n\ttotalSize\030\003 " +
-      "\001(\005\"\274\002\n\017SpaceSystemInfo\022\014\n\004name\030\001 \001(\t\022\025\n" +
-      "\rqualifiedName\030\002 \001(\t\022\030\n\020shortDescription" +
-      "\030\003 \001(\t\022\027\n\017longDescription\030\004 \001(\t\022\017\n\007versi" +
-      "on\030\005 \001(\t\022\026\n\016parameterCount\030\006 \001(\005\022\026\n\016cont" +
-      "ainerCount\030\007 \001(\005\022\024\n\014commandCount\030\010 \001(\005\022\026" +
-      "\n\016algorithmCount\030\t \001(\005\0220\n\007history\030\016 \003(\0132" +
-      "\037.yamcs.protobuf.mdb.HistoryInfo\0220\n\003sub\030",
-      "\017 \003(\0132#.yamcs.protobuf.mdb.SpaceSystemIn" +
-      "fo\"\361\003\n\026ChangeParameterRequest\022E\n\006action\030" +
-      "\001 \001(\01625.yamcs.protobuf.mdb.ChangeParamet" +
-      "erRequest.ActionType\022=\n\021defaultCalibrato" +
-      "r\030\002 \001(\0132\".yamcs.protobuf.mdb.CalibratorI" +
-      "nfo\022D\n\021contextCalibrator\030\003 \003(\0132).yamcs.p" +
-      "rotobuf.mdb.ContextCalibratorInfo\0223\n\014def" +
-      "aultAlarm\030\004 \001(\0132\035.yamcs.protobuf.mdb.Ala" +
-      "rmInfo\022:\n\014contextAlarm\030\005 \003(\0132$.yamcs.pro" +
-      "tobuf.mdb.ContextAlarmInfo\"\231\001\n\nActionTyp",
-      "e\022\t\n\005RESET\020\000\022\025\n\021RESET_CALIBRATORS\020\001\022\032\n\026S" +
-      "ET_DEFAULT_CALIBRATOR\020\002\022\023\n\017SET_CALIBRATO" +
-      "RS\020\003\022\020\n\014RESET_ALARMS\020\004\022\026\n\022SET_DEFAULT_AL" +
-      "ARMS\020\005\022\016\n\nSET_ALARMS\020\006\"\267\001\n\026ChangeAlgorit" +
-      "hmRequest\022E\n\006action\030\001 \001(\01625.yamcs.protob" +
-      "uf.mdb.ChangeAlgorithmRequest.ActionType" +
-      "\0224\n\talgorithm\030\002 \001(\0132!.yamcs.protobuf.mdb" +
-      ".AlgorithmInfo\" \n\nActionType\022\t\n\005RESET\020\000\022" +
-      "\007\n\003SET\020\001*\242\001\n\016DataSourceType\022\017\n\013TELEMETER" +
-      "ED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CONSTANT\020\002\022\t\n\005LOCAL",
-      "\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007COMMAND\020\005\022\023\n\017COMMAND_H" +
-      "ISTORY\020\006\022\r\n\tEXTERNAL1\020\007\022\r\n\tEXTERNAL2\020\010\022\r" +
-      "\n\tEXTERNAL3\020\t*\\\n\016AlarmLevelType\022\n\n\006NORMA" +
-      "L\020\000\022\t\n\005WATCH\020\001\022\013\n\007WARNING\020\002\022\014\n\010DISTRESS\020" +
-      "\003\022\014\n\010CRITICAL\020\004\022\n\n\006SEVERE\020\005B\024\n\022org.yamcs" +
-      ".protobuf"
+      "bjectId\022\023\n\013maxInterval\030\006 \001(\003\022\022\n\nsizeInBi" +
+      "ts\030\007 \001(\005\0228\n\rbaseContainer\030\010 \001(\0132!.yamcs." +
+      "protobuf.mdb.ContainerInfo\022?\n\023restrictio" +
+      "nCriteria\030\t \003(\0132\".yamcs.protobuf.mdb.Com" +
+      "parisonInfo\0224\n\005entry\030\n \003(\0132%.yamcs.proto" +
+      "buf.mdb.SequenceEntryInfo\022.\n\006usedBy\030\013 \001(" +
+      "\0132\036.yamcs.protobuf.mdb.UsedByInfo\"\213\001\n\022In" +
+      "putParameterInfo\0224\n\tparameter\030\001 \001(\0132!.ya" +
+      "mcs.protobuf.mdb.ParameterInfo\022\021\n\tinputN",
+      "ame\030\002 \001(\t\022\031\n\021parameterInstance\030\003 \001(\005\022\021\n\t" +
+      "mandatory\030\004 \001(\010\"_\n\023OutputParameterInfo\0224" +
+      "\n\tparameter\030\001 \001(\0132!.yamcs.protobuf.mdb.P" +
+      "arameterInfo\022\022\n\noutputName\030\002 \001(\t\"\364\003\n\rAlg" +
+      "orithmInfo\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedNam" +
+      "e\030\002 \001(\t\022\030\n\020shortDescription\030\003 \001(\t\022\027\n\017lon" +
+      "gDescription\030\004 \001(\t\022,\n\005alias\030\005 \003(\0132\035.yamc" +
+      "s.protobuf.NamedObjectId\0226\n\005scope\030\006 \001(\0162" +
+      "\'.yamcs.protobuf.mdb.AlgorithmInfo.Scope" +
+      "\022\020\n\010language\030\007 \001(\t\022\014\n\004text\030\010 \001(\t\022>\n\016inpu",
+      "tParameter\030\t \003(\0132&.yamcs.protobuf.mdb.In" +
+      "putParameterInfo\022@\n\017outputParameter\030\n \003(" +
+      "\0132\'.yamcs.protobuf.mdb.OutputParameterIn" +
+      "fo\022<\n\021onParameterUpdate\030\013 \003(\0132!.yamcs.pr" +
+      "otobuf.mdb.ParameterInfo\022\026\n\016onPeriodicRa" +
+      "te\030\014 \003(\003\"-\n\005Scope\022\n\n\006GLOBAL\020\000\022\030\n\024COMMAND" +
+      "_VERIFICATION\020\001\"|\n\026ListParametersRespons" +
+      "e\0224\n\tparameter\030\001 \003(\0132!.yamcs.protobuf.md" +
+      "b.ParameterInfo\022\031\n\021continuationToken\030\002 \001" +
+      "(\t\022\021\n\ttotalSize\030\003 \001(\005\"\177\n\032ListParameterTy",
+      "pesResponse\0223\n\004type\030\001 \003(\0132%.yamcs.protob" +
+      "uf.mdb.ParameterTypeInfo\022\031\n\021continuation" +
+      "Token\030\002 \001(\t\022\021\n\ttotalSize\030\003 \001(\005\"H\n\033BulkGe" +
+      "tParameterInfoRequest\022)\n\002id\030\001 \003(\0132\035.yamc" +
+      "s.protobuf.NamedObjectId\"\370\001\n\034BulkGetPara" +
+      "meterInfoResponse\022[\n\010response\030\001 \003(\0132I.ya" +
+      "mcs.protobuf.mdb.BulkGetParameterInfoRes" +
+      "ponse.GetParameterInfoResponse\032{\n\030GetPar" +
+      "ameterInfoResponse\022)\n\002id\030\001 \001(\0132\035.yamcs.p" +
+      "rotobuf.NamedObjectId\0224\n\tparameter\030\002 \001(\013",
+      "2!.yamcs.protobuf.mdb.ParameterInfo\"|\n\026L" +
+      "istContainersResponse\0224\n\tcontainer\030\001 \003(\013" +
+      "2!.yamcs.protobuf.mdb.ContainerInfo\022\031\n\021c" +
+      "ontinuationToken\030\002 \001(\t\022\021\n\ttotalSize\030\003 \001(" +
+      "\005\"v\n\024ListCommandsResponse\0220\n\007command\030\001 \003" +
+      "(\0132\037.yamcs.protobuf.mdb.CommandInfo\022\031\n\021c" +
+      "ontinuationToken\030\002 \001(\t\022\021\n\ttotalSize\030\003 \001(" +
+      "\005\"|\n\026ListAlgorithmsResponse\0224\n\talgorithm" +
+      "\030\001 \003(\0132!.yamcs.protobuf.mdb.AlgorithmInf" +
+      "o\022\031\n\021continuationToken\030\002 \001(\t\022\021\n\ttotalSiz",
+      "e\030\003 \001(\005\"\202\001\n\030ListSpaceSystemsResponse\0228\n\013" +
+      "spaceSystem\030\001 \003(\0132#.yamcs.protobuf.mdb.S" +
+      "paceSystemInfo\022\031\n\021continuationToken\030\002 \001(" +
+      "\t\022\021\n\ttotalSize\030\003 \001(\005\"\274\002\n\017SpaceSystemInfo" +
+      "\022\014\n\004name\030\001 \001(\t\022\025\n\rqualifiedName\030\002 \001(\t\022\030\n" +
+      "\020shortDescription\030\003 \001(\t\022\027\n\017longDescripti" +
+      "on\030\004 \001(\t\022\017\n\007version\030\005 \001(\t\022\026\n\016parameterCo" +
+      "unt\030\006 \001(\005\022\026\n\016containerCount\030\007 \001(\005\022\024\n\014com" +
+      "mandCount\030\010 \001(\005\022\026\n\016algorithmCount\030\t \001(\005\022" +
+      "0\n\007history\030\016 \003(\0132\037.yamcs.protobuf.mdb.Hi",
+      "storyInfo\0220\n\003sub\030\017 \003(\0132#.yamcs.protobuf." +
+      "mdb.SpaceSystemInfo\"\361\003\n\026ChangeParameterR" +
+      "equest\022E\n\006action\030\001 \001(\01625.yamcs.protobuf." +
+      "mdb.ChangeParameterRequest.ActionType\022=\n" +
+      "\021defaultCalibrator\030\002 \001(\0132\".yamcs.protobu" +
+      "f.mdb.CalibratorInfo\022D\n\021contextCalibrato" +
+      "r\030\003 \003(\0132).yamcs.protobuf.mdb.ContextCali" +
+      "bratorInfo\0223\n\014defaultAlarm\030\004 \001(\0132\035.yamcs" +
+      ".protobuf.mdb.AlarmInfo\022:\n\014contextAlarm\030" +
+      "\005 \003(\0132$.yamcs.protobuf.mdb.ContextAlarmI",
+      "nfo\"\231\001\n\nActionType\022\t\n\005RESET\020\000\022\025\n\021RESET_C" +
+      "ALIBRATORS\020\001\022\032\n\026SET_DEFAULT_CALIBRATOR\020\002" +
+      "\022\023\n\017SET_CALIBRATORS\020\003\022\020\n\014RESET_ALARMS\020\004\022" +
+      "\026\n\022SET_DEFAULT_ALARMS\020\005\022\016\n\nSET_ALARMS\020\006\"" +
+      "\267\001\n\026ChangeAlgorithmRequest\022E\n\006action\030\001 \001" +
+      "(\01625.yamcs.protobuf.mdb.ChangeAlgorithmR" +
+      "equest.ActionType\0224\n\talgorithm\030\002 \001(\0132!.y" +
+      "amcs.protobuf.mdb.AlgorithmInfo\" \n\nActio" +
+      "nType\022\t\n\005RESET\020\000\022\007\n\003SET\020\001*\242\001\n\016DataSource" +
+      "Type\022\017\n\013TELEMETERED\020\000\022\013\n\007DERIVED\020\001\022\014\n\010CO",
+      "NSTANT\020\002\022\t\n\005LOCAL\020\003\022\n\n\006SYSTEM\020\004\022\013\n\007COMMA" +
+      "ND\020\005\022\023\n\017COMMAND_HISTORY\020\006\022\r\n\tEXTERNAL1\020\007" +
+      "\022\r\n\tEXTERNAL2\020\010\022\r\n\tEXTERNAL3\020\t*\\\n\016AlarmL" +
+      "evelType\022\n\n\006NORMAL\020\000\022\t\n\005WATCH\020\001\022\013\n\007WARNI" +
+      "NG\020\002\022\014\n\010DISTRESS\020\003\022\014\n\010CRITICAL\020\004\022\n\n\006SEVE" +
+      "RE\020\005B\024\n\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -57085,7 +57310,7 @@ public final class Mdb {
     internal_static_yamcs_protobuf_mdb_ContextCalibratorInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_mdb_ContextCalibratorInfo_descriptor,
-        new java.lang.String[] { "Comparison", "Calibrator", });
+        new java.lang.String[] { "Comparison", "Calibrator", "Context", });
     internal_static_yamcs_protobuf_mdb_CalibratorInfo_descriptor =
       getDescriptor().getMessageTypes().get(9);
     internal_static_yamcs_protobuf_mdb_CalibratorInfo_fieldAccessorTable = new

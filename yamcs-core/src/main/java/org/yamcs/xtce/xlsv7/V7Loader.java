@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -153,7 +154,8 @@ public class V7Loader extends V7LoaderBase {
     protected Set<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
     Map<String, SequenceContainer> containers = new HashMap<>();
 
-    final ConditionParser conditionParser = new ConditionParser(ctx);
+    BasicPrefFactory prefFactory = new BasicPrefFactory();
+    final ConditionParser conditionParser = new ConditionParser(prefFactory);
     final Pattern FIXED_VALUE_PATTERN = Pattern.compile("FixedValue\\((\\d+)\\)");
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
@@ -2230,19 +2232,11 @@ public class V7Loader extends V7LoaderBase {
      * @return
      */
     private MatchCriteria toMatchCriteria(SpaceSystem spaceSystem, String criteriaString) {
-        criteriaString = criteriaString.trim();
-
-        if ((criteriaString.startsWith("&(") || criteriaString.startsWith("|(")) && (criteriaString.endsWith(")"))) {
-            return conditionParser.parseBooleanExpression(spaceSystem, criteriaString);
-        } else if (criteriaString.contains(";")) {
-            ComparisonList cl = new ComparisonList();
-            String splitted[] = criteriaString.split(";");
-            for (String part : splitted) {
-                cl.addComparison(conditionParser.toComparison(spaceSystem, part));
-            }
-            return cl;
-        } else {
-            return conditionParser.toComparison(spaceSystem, criteriaString);
+        prefFactory.setCurrentSpaceSystem(spaceSystem);
+        try {
+            return conditionParser.parseMatchCriteria(criteriaString);
+        } catch (ParseException e) {
+            throw new SpreadsheetLoadException(ctx, e.getMessage());
         }
     }
 

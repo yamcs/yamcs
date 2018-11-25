@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,7 @@ import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
+import org.yamcs.xtce.BaseSpreadsheetLoader.BasicPrefFactory;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
@@ -130,8 +132,9 @@ public class V6Loader extends V6LoaderBase {
     protected HashMap<String, EnumerationDefinition> enumerations = new HashMap<>();
     protected HashMap<String, Parameter> parameters = new HashMap<>();
     protected HashSet<Parameter> outputParameters = new HashSet<>(); // Outputs to algorithms
+    BasicPrefFactory prefFactory = new BasicPrefFactory();
 
-    final ConditionParser conditionParser = new ConditionParser(ctx);
+    final ConditionParser conditionParser = new ConditionParser(prefFactory);
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
     final static String FORMAT_VERSION = "6.3";
@@ -2254,18 +2257,23 @@ public class V6Loader extends V6LoaderBase {
      */
     private MatchCriteria toMatchCriteria(SpaceSystem spaceSystem, String criteriaString) {
         criteriaString = criteriaString.trim();
-
-        if ((criteriaString.startsWith("&(") || criteriaString.startsWith("|(")) && (criteriaString.endsWith(")"))) {
-            return conditionParser.parseBooleanExpression(spaceSystem, criteriaString);
-        } else if (criteriaString.contains(";")) {
-            ComparisonList cl = new ComparisonList();
-            String splitted[] = criteriaString.split(";");
-            for (String part : splitted) {
-                cl.addComparison(conditionParser.toComparison(spaceSystem, part));
+        prefFactory.setCurrentSpaceSystem(spaceSystem);
+        try {
+            if ((criteriaString.startsWith("&(") || criteriaString.startsWith("|("))
+                    && (criteriaString.endsWith(")"))) {
+                return conditionParser.parseBooleanExpression(criteriaString);
+            } else if (criteriaString.contains(";")) {
+                ComparisonList cl = new ComparisonList();
+                String splitted[] = criteriaString.split(";");
+                for (String part : splitted) {
+                    cl.addComparison(conditionParser.toComparison(part));
+                }
+                return cl;
+            } else {
+                return conditionParser.toComparison(criteriaString);
             }
-            return cl;
-        } else {
-            return conditionParser.toComparison(spaceSystem, criteriaString);
+        } catch (ParseException e) {
+            throw new SpreadsheetLoadException(ctx, e.getMessage());
         }
     }
 

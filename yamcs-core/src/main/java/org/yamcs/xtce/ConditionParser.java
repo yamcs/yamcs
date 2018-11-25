@@ -1,5 +1,6 @@
 package org.yamcs.xtce;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,10 +14,7 @@ import org.yamcs.xtce.ORedConditions;
 import org.yamcs.xtce.OperatorType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterInstanceRef;
-import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.util.NameReference;
-import org.yamcs.xtce.util.NameReference.Type;
-import org.yamcs.xtce.util.UnresolvedNameReference;
 
 /**
  * used by the SpreadsheetLoader to parse conditions
@@ -26,12 +24,28 @@ import org.yamcs.xtce.util.UnresolvedNameReference;
  *
  */
 public class ConditionParser {
-    final SpreadsheetLoadContext ctx;
+    ParameterReferenceFactory prefFactory;
 
-    public ConditionParser(SpreadsheetLoadContext ctx) {
-        this.ctx = ctx;
+    public ConditionParser(ParameterReferenceFactory prefFactory) {
+        this.prefFactory = prefFactory;
     }
 
+    public MatchCriteria parseMatchCriteria(String criteriaString) throws ParseException {
+    criteriaString = criteriaString.trim();
+        if ((criteriaString.startsWith("&(") || criteriaString.startsWith("|("))
+                && (criteriaString.endsWith(")"))) {
+            return parseBooleanExpression(criteriaString);
+        } else if (criteriaString.contains(";")) {
+            ComparisonList cl = new ComparisonList();
+            String splitted[] = criteriaString.split(";");
+            for (String part : splitted) {
+                cl.addComparison(toComparison(part));
+            }
+            return cl;
+        } else {
+            return toComparison(criteriaString);
+        }
+    }
     /**
      * Boolean expression has the following pattern: op(epx1;exp2;...;expn)
      *
@@ -55,8 +69,9 @@ public class ConditionParser {
      * @param rawExpression
      * 
      * @return
+     * @throws ParseException 
      */
-    public BooleanExpression parseBooleanExpression(SpaceSystem spaceSystem, String rawExpression) {
+    public BooleanExpression parseBooleanExpression(String rawExpression) throws ParseException {
         String regex = "([\"”])([^\"”\\\\]*(?:\\\\.[^\"”\\\\]*)*)([\"”])";
 
         rawExpression = rawExpression.trim();
@@ -75,10 +90,10 @@ public class ConditionParser {
 
         String spec = p.matcher(rawExpression).replaceAll("\\$\\$");
 
-        return toBooleanExpression(spaceSystem, spec, quotes);
+        return toBooleanExpression(spec, quotes);
     }
 
-    void parseConditionList(SpaceSystem spaceSystem, ExpressionList conditions, String spec, ArrayList<String> quotes) {
+    void parseConditionList(ExpressionList conditions, String spec, ArrayList<String> quotes) throws ParseException {
         // Split top-level expressions
         ArrayList<String> expressions = new ArrayList<>();
         int balance = 0;
@@ -105,31 +120,31 @@ public class ConditionParser {
 
         // Parse each expression
         for (String expression : expressions) {
-            conditions.addConditionExpression(toBooleanExpression(spaceSystem, expression, quotes));
+            conditions.addConditionExpression(toBooleanExpression(expression, quotes));
         }
     }
 
-    private BooleanExpression toBooleanExpression(SpaceSystem spaceSystem, String spec, ArrayList<String> quotes) {
+    private BooleanExpression toBooleanExpression(String spec, ArrayList<String> quotes) throws ParseException {
         spec = spec.trim();
         BooleanExpression condition = null;
 
         if (spec.startsWith("&(") && (spec.endsWith(")"))) {
             condition = new ANDedConditions();
-            parseConditionList(spaceSystem, (ExpressionList) condition, spec.substring(2, spec.length() - 1), quotes);
+            parseConditionList((ExpressionList) condition, spec.substring(2, spec.length() - 1), quotes);
         } else if (spec.startsWith("|(") && (spec.endsWith(")"))) {
             condition = new ORedConditions();
-            parseConditionList(spaceSystem, (ExpressionList) condition, spec.substring(2, spec.length() - 1), quotes);
+            parseConditionList((ExpressionList) condition, spec.substring(2, spec.length() - 1), quotes);
         } else {
-            condition = toCondition(spaceSystem, spec, quotes);
+            condition = toCondition(spec, quotes);
         }
 
         return condition;
     }
 
-    private Condition toCondition(SpaceSystem spaceSystem, String comparisonString, ArrayList<String> quotes) {
+    private Condition toCondition(String comparisonString, ArrayList<String> quotes) throws ParseException {
         Matcher m = Pattern.compile("(.*?)(==|=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
         if (!m.matches()) {
-            throw new SpreadsheetLoadException(ctx, "Cannot parse condition '" + comparisonString + "'");
+            throw new ParseException("Cannot parse condition '" + comparisonString + "'", 0);
         }
 
         String lParamName = m.group(1).trim();
@@ -139,8 +154,7 @@ public class ConditionParser {
             lParamName = lParamName.substring(0, lParamName.length() - 4);
             lParamCalibrated = false;
         }
-        Parameter lParam = spaceSystem.getParameter(lParamName);
-        final ParameterInstanceRef lParamRef = new ParameterInstanceRef(lParam, lParamCalibrated);
+        final ParameterInstanceRef lParamRef = new ParameterInstanceRef(lParamCalibrated);
 
         String op = m.group(2);
         if ("=".equals(op)) {
@@ -149,7 +163,6 @@ public class ConditionParser {
 
         String rValue = m.group(3).trim();
         String rParamName = null;
-        Parameter rParam = null;
         final ParameterInstanceRef rParamRef;
         final Condition cond;
 
@@ -165,8 +178,7 @@ public class ConditionParser {
                 rParamCalibrated = false;
             }
 
-            rParam = spaceSystem.getParameter(rParamName);
-            rParamRef = new ParameterInstanceRef(rParam, rParamCalibrated);
+            rParamRef = new ParameterInstanceRef(rParamCalibrated);
             cond = new Condition(OperatorType.stringToOperator(op), lParamRef, rParamRef);
         } else {
             rParamRef = null;
@@ -177,32 +189,28 @@ public class ConditionParser {
             cond = new Condition(OperatorType.stringToOperator(op), lParamRef, rValue);
         }
 
-        if ((rParamRef != null) && (rParam == null)) {
-            spaceSystem.addUnresolvedReference(
-                    new UnresolvedNameReference(rParamName, Type.PARAMETER).addResolvedAction(nd -> {
-                        rParamRef.setParameter((Parameter) nd);
-                        return true;
-                    }));
+        if (rParamRef != null) {
+            NameReference pref = prefFactory.getReference(rParamName);
+            pref.addResolvedAction(nd -> {
+                rParamRef.setParameter((Parameter) nd);
+                return true;
+            });
         }
 
-        if (lParam == null) {
-            spaceSystem.addUnresolvedReference(
-                    new UnresolvedNameReference(lParamName, Type.PARAMETER).addResolvedAction(nd -> {
-                        lParamRef.setParameter((Parameter) nd);
-                        cond.resolveValueType();
-                        return true;
-                    }));
-        } else {
+        NameReference pref = prefFactory.getReference(lParamName);
+        pref.addResolvedAction(nd -> {
+            lParamRef.setParameter((Parameter) nd);
             cond.resolveValueType();
-        }
+            return true;
+        });
 
         return cond;
     }
 
-    public Comparison toComparison(SpaceSystem spaceSystem, String comparisonString) {
+    public Comparison toComparison(String comparisonString) throws ParseException {
         Matcher m = Pattern.compile("(.*?)(==|=|!=|<=|>=|<|>)(.*)").matcher(comparisonString);
         if (!m.matches()) {
-            throw new SpreadsheetLoadException(ctx, "Cannot parse condition '" + comparisonString + "'");
+            throw new ParseException("Cannot parse condition '" + comparisonString + "'", 0);
         }
         String pname = m.group(1).trim();
         boolean useCalibrated = true;
@@ -213,8 +221,8 @@ public class ConditionParser {
                 pname = pname.substring(0, idx);
                 useCalibrated = false;
             } else {
-                throw new SpreadsheetLoadException(ctx, "Cannot parse parameter for comparison '" + pname
-                        + "'. Use parameterName or parameterName.raw");
+                throw new ParseException("Cannot parse parameter for comparison '" + pname
+                        + "'. Use parameterName or parameterName.raw", 0);
             }
         }
 
@@ -230,13 +238,13 @@ public class ConditionParser {
         }
         OperatorType opType = Comparison.stringToOperator(op);
         if (opType == null) {
-            throw new SpreadsheetLoadException(ctx, "Unknown operator '" + op + "'");
+            throw new ParseException("Unknown operator '" + op + "'", 0);
         }
 
         final ParameterInstanceRef pInstRef = new ParameterInstanceRef(useCalibrated);
         final Comparison ucomp = new Comparison(pInstRef, value, opType);
 
-        NameReference pref = BaseSpreadsheetLoader.getParameterReference(spaceSystem, pname, true);
+        NameReference pref = prefFactory.getReference(pname);
         pref.addResolvedAction(nd -> {
             pInstRef.setParameter((Parameter) nd);
             ucomp.resolveValueType();
@@ -246,4 +254,7 @@ public class ConditionParser {
         return ucomp;
     }
 
+    public interface ParameterReferenceFactory {
+        NameReference getReference(String pname);
+    }
 }

@@ -1,7 +1,9 @@
 package org.yamcs.web.rest.mdb;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.yamcs.protobuf.Mdb.AlarmInfo;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
@@ -22,9 +24,13 @@ import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
+import org.yamcs.xtce.ConditionParser;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationAlarm.EnumerationAlarmItem;
+import org.yamcs.xtce.util.NameReference;
+import org.yamcs.xtce.util.ResolvedNameReference;
+import org.yamcs.xtce.util.UnresolvedNameReference;
 import org.yamcs.xtce.EnumerationContextAlarm;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.NumericAlarm;
@@ -73,18 +79,27 @@ public class GbpToXtceAssembler {
         return new SplineCalibrator(c);
     }
 
-    public static List<ContextCalibrator> toContextCalibratorList(XtceDb xtcedb, List<ContextCalibratorInfo> ccl)
+    //spaceSystemName is the name of the space system used to lookup parameters which may be part of context specification in string format
+    public static List<ContextCalibrator> toContextCalibratorList(XtceDb xtcedb, String spaceSystemName, List<ContextCalibratorInfo> ccl)
             throws BadRequestException {
         List<ContextCalibrator> l = new ArrayList<>(ccl.size());
         for (ContextCalibratorInfo cci : ccl) {
-            l.add(toContextCalibrator(xtcedb, cci));
+            l.add(toContextCalibrator(xtcedb, spaceSystemName, cci));
         }
         return l;
     }
 
-    public static ContextCalibrator toContextCalibrator(XtceDb xtcedb, ContextCalibratorInfo cci)
+    public static ContextCalibrator toContextCalibrator(XtceDb xtcedb, String spaceSystemName, ContextCalibratorInfo cci)
             throws BadRequestException {
-        MatchCriteria mc = toMatchCriteria(xtcedb, cci.getComparisonList());
+        MatchCriteria mc = null;
+        if (cci.hasContext()) {
+            mc = toMatchCriteria(xtcedb, spaceSystemName, cci.getContext());
+        } else if (cci.getComparisonCount() > 0) {
+            mc = toMatchCriteria(xtcedb, cci.getComparisonList());
+        } else {
+            throw new BadRequestException("No context provided in the ContextAlarmInfo");
+        }
+        toMatchCriteria(xtcedb, cci.getComparisonList());
         return new ContextCalibrator(mc, toCalibrator(cci.getCalibrator()));
     }
 
@@ -147,9 +162,9 @@ public class GbpToXtceAssembler {
             throw new BadRequestException("Cannot set numeric alarm ranges for an enumerated parameter");
         }
         EnumerationAlarm ea = new EnumerationAlarm();
-        
+
         ea.setAlarmList(toEnumerationAlarmList(ai.getEnumerationAlarmList()));
-        if(ai.hasMinViolations()) {
+        if (ai.hasMinViolations()) {
             ea.setMinViolations(ai.getMinViolations());
         }
         return ea;
@@ -158,17 +173,16 @@ public class GbpToXtceAssembler {
     private static List<EnumerationAlarmItem> toEnumerationAlarmList(
             List<org.yamcs.protobuf.Mdb.EnumerationAlarm> enumerationAlarmList) throws BadRequestException {
         List<EnumerationAlarmItem> r = new ArrayList<>(enumerationAlarmList.size());
-        for(org.yamcs.protobuf.Mdb.EnumerationAlarm ea: enumerationAlarmList) {
+        for (org.yamcs.protobuf.Mdb.EnumerationAlarm ea : enumerationAlarmList) {
             r.add(new EnumerationAlarmItem(ea.getLabel(), toAlarmsLevel(ea.getLevel())));
         }
         return r;
     }
 
-
     private static AlarmLevels toAlarmsLevel(AlarmLevelType level) throws BadRequestException {
-        switch(level) {
+        switch (level) {
         case CRITICAL:
-           return AlarmLevels.critical;
+            return AlarmLevels.critical;
         case DISTRESS:
             return AlarmLevels.distress;
         case SEVERE:
@@ -180,7 +194,7 @@ public class GbpToXtceAssembler {
         case NORMAL:
             throw new BadRequestException("Normal alarm range does not need to be specified");
         default:
-            throw new IllegalStateException("unknown alarm level "+level);
+            throw new IllegalStateException("unknown alarm level " + level);
         }
     }
 
@@ -189,7 +203,7 @@ public class GbpToXtceAssembler {
             throw new BadRequestException("Cannot set enumeration alarms for an numeric parameter");
         }
         NumericAlarm na = new NumericAlarm();
-        if(ai.hasMinViolations()) {
+        if (ai.hasMinViolations()) {
             na.setMinViolations(ai.getMinViolations());
         }
         na.setStaticAlarmRanges(toStaticAlarmRanges(ai.getStaticAlarmRangeList()));
@@ -198,11 +212,11 @@ public class GbpToXtceAssembler {
 
     public static AlarmRanges toStaticAlarmRanges(List<AlarmRange> alarmRangeList) throws BadRequestException {
         AlarmRanges ar = new AlarmRanges();
-        for(AlarmRange a: alarmRangeList) {
-            if(!a.hasLevel()) {
+        for (AlarmRange a : alarmRangeList) {
+            if (!a.hasLevel()) {
                 throw new BadRequestException("no level specified for alarm");
             }
-            switch(a.getLevel()) {
+            switch (a.getLevel()) {
             case CRITICAL:
                 ar.addCriticalRange(toDoubleRange(a));
                 break;
@@ -232,34 +246,53 @@ public class GbpToXtceAssembler {
         boolean maxIncl = false;
         double min = Double.NEGATIVE_INFINITY;
         double max = Double.POSITIVE_INFINITY;
-        if(a.hasMinInclusive()) {
+        if (a.hasMinInclusive()) {
             minIncl = true;
             min = a.getMinInclusive();
-        } else if(a.hasMinExclusive()) {
+        } else if (a.hasMinExclusive()) {
             min = a.getMinExclusive();
         }
-        if(a.hasMaxInclusive()) {
+        if (a.hasMaxInclusive()) {
             maxIncl = true;
             max = a.getMaxInclusive();
-        } else if(a.hasMaxExclusive()) {
+        } else if (a.hasMaxExclusive()) {
             max = a.getMaxExclusive();
         }
-        
+
         return new DoubleRange(min, max, minIncl, maxIncl);
     }
 
-    public static List<EnumerationContextAlarm> toEnumerationContextAlarm(XtceDb xtcedb, List<ContextAlarmInfo> contextAlarmList) throws BadRequestException {
+    public static List<EnumerationContextAlarm> toEnumerationContextAlarm(XtceDb xtcedb,
+            String spaceSystemName, List<ContextAlarmInfo> contextAlarmList) throws BadRequestException {
         List<EnumerationContextAlarm> l = new ArrayList<>(contextAlarmList.size());
-        for(ContextAlarmInfo cai: contextAlarmList) {
-            l.add(toEnumerationContextAlarm(xtcedb, cai));
+        for (ContextAlarmInfo cai : contextAlarmList) {
+            if (cai.hasContext()) {
+                l.add(toEnumerationContextAlarm(xtcedb, spaceSystemName, cai));
+            }
         }
         return l;
     }
 
-    public static EnumerationContextAlarm toEnumerationContextAlarm(XtceDb xtcedb, ContextAlarmInfo cai) throws BadRequestException {
+    /**
+     * 
+     * @param xtcedb
+     * @param spaceSystemName - the name of the space system used to lookup parameters reference by relative name in the context specification
+     * @param cai
+     * @return
+     * @throws BadRequestException
+     */
+    public static EnumerationContextAlarm toEnumerationContextAlarm(XtceDb xtcedb, String spaceSystemName, ContextAlarmInfo cai)
+            throws BadRequestException {
         EnumerationContextAlarm eca = new EnumerationContextAlarm();
-        eca.setContextMatch(toMatchCriteria(xtcedb, cai.getComparisonList()));
-        if(!cai.hasAlarm()) {
+        if (cai.hasContext()) {
+            eca.setContextMatch(toMatchCriteria(xtcedb, spaceSystemName, cai.getContext()));
+        } else if (cai.getComparisonCount() > 0) {
+            eca.setContextMatch(toMatchCriteria(xtcedb, cai.getComparisonList()));
+        } else {
+            throw new BadRequestException("No context provided in the ContextAlarmInfo");
+        }
+        
+        if (!cai.hasAlarm()) {
             throw new BadRequestException("No alarm specified for the context");
         }
         AlarmInfo ai = cai.getAlarm();
@@ -270,17 +303,27 @@ public class GbpToXtceAssembler {
         return eca;
     }
 
-    public static List<NumericContextAlarm> toNumericContextAlarm(XtceDb xtcedb, List<ContextAlarmInfo> contextAlarmList) throws BadRequestException {
+    public static List<NumericContextAlarm> toNumericContextAlarm(XtceDb xtcedb,
+            String spaceSystemName, List<ContextAlarmInfo> contextAlarmList) throws BadRequestException {
         List<NumericContextAlarm> l = new ArrayList<>(contextAlarmList.size());
-        for(ContextAlarmInfo cai: contextAlarmList) {
-            l.add(toNumericContextAlarm(xtcedb, cai));
+        for (ContextAlarmInfo cai : contextAlarmList) {
+            l.add(toNumericContextAlarm(xtcedb, spaceSystemName, cai));
         }
         return l;
     }
-    public static NumericContextAlarm toNumericContextAlarm(XtceDb xtcedb, ContextAlarmInfo cai) throws BadRequestException {
+
+    public static NumericContextAlarm toNumericContextAlarm(XtceDb xtcedb, String spaceSystemName, ContextAlarmInfo cai)
+            throws BadRequestException {
         NumericContextAlarm nca = new NumericContextAlarm();
-        nca.setContextMatch(toMatchCriteria(xtcedb, cai.getComparisonList()));
-        if(!cai.hasAlarm()) {
+        if (cai.hasContext()) {
+            nca.setContextMatch(toMatchCriteria(xtcedb, spaceSystemName, cai.getContext()));
+        } else if (cai.getComparisonCount() > 0) {
+            nca.setContextMatch(toMatchCriteria(xtcedb, cai.getComparisonList()));
+        } else {
+            throw new BadRequestException("No context provided in the ContextAlarmInfo");
+        }
+
+        if (!cai.hasAlarm()) {
             throw new BadRequestException("No alarm specified for the context");
         }
         AlarmInfo ai = cai.getAlarm();
@@ -289,5 +332,37 @@ public class GbpToXtceAssembler {
         }
         nca.setStaticAlarmRanges(toStaticAlarmRanges(ai.getStaticAlarmRangeList()));
         return nca;
+    }
+
+    private static MatchCriteria toMatchCriteria(XtceDb xtcedb, String spaceSystemName, String context)
+            throws BadRequestException {
+        List<UnresolvedNameReference> unresolvedRefs = new ArrayList<>();
+
+        ConditionParser condParser = new ConditionParser(pname -> {
+            Parameter p = null;
+            if(pname.startsWith("/")) {
+                p = xtcedb.getParameter(pname);
+            } else {
+                p = xtcedb.getParameter(spaceSystemName+"/"+pname);
+            }
+            if (p != null) {
+                return new ResolvedNameReference(pname, NameReference.Type.PARAMETER, p);
+            } else {
+                UnresolvedNameReference unr = new UnresolvedNameReference(pname, NameReference.Type.PARAMETER);
+                unresolvedRefs.add(unr);
+                return unr;
+            }
+        });
+
+        try {
+            MatchCriteria mc = condParser.parseMatchCriteria(context);
+            if (!unresolvedRefs.isEmpty()) {
+                throw new BadRequestException("Unknown references in context expression: "
+                        + unresolvedRefs.stream().map(unr -> unr.getReference()).collect(Collectors.joining(",")));
+            }
+            return mc;
+        } catch (ParseException e) {
+            throw new BadRequestException(e.getMessage());
+        }
     }
 }

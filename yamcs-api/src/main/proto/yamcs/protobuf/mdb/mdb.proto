@@ -93,6 +93,10 @@ message DataEncodingInfo {
 message ContextCalibratorInfo {
   repeated ComparisonInfo comparison = 1;
   optional CalibratorInfo calibrator = 2;
+
+  //this can be used in the ChangeParameteRequest to pass a context that is parsed on the server, according to the rules in the excel spreadsheet
+  // either this or the comparison above has to be used (not both at the same time)
+  optional string context = 3; 
 }
 
 message CalibratorInfo {

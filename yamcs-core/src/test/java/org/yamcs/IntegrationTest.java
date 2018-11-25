@@ -315,6 +315,23 @@ public class IntegrationTest extends AbstractIntegrationTest {
         pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
         assertEquals(MonitoringResult.DISTRESS, pdata.getParameter(0).getMonitoringResult());
 
+        //set the context using a string rather than comparison
+        ai = AlarmInfo.newBuilder().addStaticAlarmRange(AlarmRange.newBuilder().setLevel(AlarmLevelType.SEVERE).setMaxExclusive(10).build()).build();
+        cai = ContextAlarmInfo.newBuilder().setContext("EnumerationPara1_10_2==five_yes").setAlarm(ai).build();
+       
+        cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_ALARMS).addContextAlarm(cai).build();
+        String resp = restClient
+                .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/IntegerPara1_10_1",
+                        HttpMethod.PATCH, toJson(cpr))
+                .get();
+        System.out.println(resp);
+
+        packetGenerator.generate_PKT1_10(11, 5, 0);
+        pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
+        System.out.println(pdata);
+        assertEquals(MonitoringResult.SEVERE, pdata.getParameter(0).getMonitoringResult());
+        
+        //reset to the original MDB value
         cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.RESET).addContextAlarm(cai).build();
         restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/IntegerPara1_10_1",

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.swing.plaf.synth.SynthSeparatorUI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.Processor;
@@ -249,30 +251,31 @@ public class MDBParameterRestHandler extends RestHandler {
             if (cpr.hasDefaultCalibrator()) {
                 pdata.setDefaultCalibrator(p, toCalibrator(cpr.getDefaultCalibrator()));
             }
-            pdata.setContextCalibratorList(p, toContextCalibratorList(xtcedb, cpr.getContextCalibratorList()));
+            pdata.setContextCalibratorList(p,
+                    toContextCalibratorList(xtcedb, p.getSubsystemName(), cpr.getContextCalibratorList()));
             break;
         case SET_DEFAULT_CALIBRATOR:
             verifyNumericParameter(p);
             if (cpr.hasDefaultCalibrator()) {
                 pdata.setDefaultCalibrator(p, toCalibrator(cpr.getDefaultCalibrator()));
             } else {
-                throw new BadRequestException("Default calibrator not set");
+                pdata.removeDefaultCalibrator(p);                
             }
             break;
         case RESET_ALARMS:
             pdata.clearParameterAlarmOverrides(p);
             break;
         case SET_DEFAULT_ALARMS:
-
             if (!cpr.hasDefaultAlarm()) {
-                throw new BadRequestException("Default alarm not set");
-            }
-            if (origParamType instanceof NumericParameterType) {
-                pdata.setDefaultNumericAlarm(p, toNumericAlarm(cpr.getDefaultAlarm()));
-            } else if (origParamType instanceof EnumeratedParameterType) {
-                pdata.setDefaultEnumerationAlarm(p, toEnumerationAlarm(cpr.getDefaultAlarm()));
+                pdata.removeDefaultAlarm(p);
             } else {
-                throw new BadRequestException("Can only set alarms on numeric or enumerated parameters");
+                if (origParamType instanceof NumericParameterType) {
+                    pdata.setDefaultNumericAlarm(p, toNumericAlarm(cpr.getDefaultAlarm()));
+                } else if (origParamType instanceof EnumeratedParameterType) {
+                    pdata.setDefaultEnumerationAlarm(p, toEnumerationAlarm(cpr.getDefaultAlarm()));
+                } else {
+                    throw new BadRequestException("Can only set alarms on numeric or enumerated parameters");
+                }
             }
             break;
         case SET_ALARMS:
@@ -280,23 +283,23 @@ public class MDBParameterRestHandler extends RestHandler {
                 if (cpr.hasDefaultAlarm()) {
                     pdata.setDefaultNumericAlarm(p, toNumericAlarm(cpr.getDefaultAlarm()));
                 }
-                pdata.setNumericContextAlarm(p, toNumericContextAlarm(xtcedb, cpr.getContextAlarmList()));
+                pdata.setNumericContextAlarm(p,
+                        toNumericContextAlarm(xtcedb, p.getSubsystemName(), cpr.getContextAlarmList()));
             } else if (origParamType instanceof EnumeratedParameterType) {
                 if (cpr.hasDefaultAlarm()) {
                     pdata.setDefaultEnumerationAlarm(p, toEnumerationAlarm(cpr.getDefaultAlarm()));
                 }
-                pdata.setEnumerationContextAlarm(p, toEnumerationContextAlarm(xtcedb, cpr.getContextAlarmList()));
+                pdata.setEnumerationContextAlarm(p,
+                        toEnumerationContextAlarm(xtcedb, p.getSubsystemName(), cpr.getContextAlarmList()));
             } else {
                 throw new BadRequestException("Can only set alarms on numeric or enumerated parameters");
             }
             break;
         default:
-            throw new BadRequestException("Unknown action "+cpr.getAction());
-                
+            throw new BadRequestException("Unknown action " + cpr.getAction());
 
         }
         ParameterType ptype = pdata.getParameterType(p);
-
         ParameterTypeInfo pinfo = XtceToGpbAssembler.toParameterTypeInfo(ptype, DetailLevel.FULL);
         completeOK(req, pinfo);
     }
@@ -307,46 +310,48 @@ public class MDBParameterRestHandler extends RestHandler {
 
         Processor processor = verifyProcessor(req, req.getRouteParam("instance"), req.getRouteParam("processor"));
         List<AlgorithmManager> l = processor.getServices(AlgorithmManager.class);
-        if(l.size()==0) {
+        if (l.size() == 0) {
             throw new BadRequestException("No AlgorithmManager available for this processor");
         }
-        if(l.size()>1) {
-            throw new BadRequestException("Cannot patch algorithm when a processor has more than 1 AlgorithmManager services");
+        if (l.size() > 1) {
+            throw new BadRequestException(
+                    "Cannot patch algorithm when a processor has more than 1 AlgorithmManager services");
         }
         AlgorithmManager algMng = l.get(0);
         XtceDb xtcedb = XtceDbFactory.getInstance(processor.getInstance());
         Algorithm a = verifyAlgorithm(req, xtcedb, req.getRouteParam("name"));
-        if(!(a instanceof CustomAlgorithm)) {
+        if (!(a instanceof CustomAlgorithm)) {
             throw new BadRequestException("Can only patch CustomAlgorithm instances");
         }
-        CustomAlgorithm calg = (CustomAlgorithm)a;
+        CustomAlgorithm calg = (CustomAlgorithm) a;
         ChangeAlgorithmRequest car = req.bodyAsMessage(ChangeAlgorithmRequest.newBuilder()).build();
-        switch(car.getAction()) {
+        log.debug("received ChangeAlgorithmRequest {}", car);
+        switch (car.getAction()) {
         case RESET:
             algMng.clearAlgorithmOverride(calg);
             break;
         case SET:
-            if(!car.hasAlgorithm()) {
+            if (!car.hasAlgorithm()) {
                 throw new BadRequestException("No algorithm info provided");
             }
             AlgorithmInfo ai = car.getAlgorithm();
-            if(!ai.hasText()) {
+            if (!ai.hasText()) {
                 throw new BadRequestException("No algorithm text provided");
             }
             try {
+                log.debug("Setting text for algorithm {} to {}", calg.getQualifiedName(), ai.getText());
                 algMng.setAlgorithmText(calg, ai.getText());
             } catch (Exception e) {
-                System.out.println("here ---------- "+e.getMessage());
-                throw new BadRequestException(e.getMessage());   
+                System.out.println("here ---------- " + e.getMessage());
+                throw new BadRequestException(e.getMessage());
             }
             break;
         default:
-            throw new BadRequestException("Unknown action "+car.getAction());
+            throw new BadRequestException("Unknown action " + car.getAction());
         }
-        
+
         completeOK(req);
     }
-    
 
     private static void verifyNumericParameter(Parameter p) throws BadRequestException {
         ParameterType ptype = p.getParameterType();

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.xtce.ConditionParser.ParameterReferenceFactory;
 import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.ResolvedNameReference;
 import org.yamcs.xtce.util.UnresolvedNameReference;
@@ -356,5 +357,20 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
             throw new SpreadsheetLoadException(ctx,
                     "Invalid name '" + name + "'; should only contain letters, digits, _, and -");
         }
+    }
+    
+    
+    public static class BasicPrefFactory implements ParameterReferenceFactory {
+        SpaceSystem spaceSystem;
+        
+        @Override
+        public NameReference getReference(String pname) {
+            return getParameterReference(spaceSystem, pname, true);
+        }
+
+        public void setCurrentSpaceSystem(SpaceSystem spaceSystem) {
+            this.spaceSystem = spaceSystem;
+        }
+        
     }
 }
