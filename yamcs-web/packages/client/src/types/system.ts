@@ -20,6 +20,7 @@ export interface TokenResponse {
 
 export interface GeneralInfo {
   yamcsVersion: string;
+  revision: string;
   serverId: string;
   defaultYamcsInstance: string;
   plugin: PluginInfo;

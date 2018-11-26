@@ -485,7 +485,7 @@ public class PpSimulationGui implements ActionListener {
 				+ " GUI</h2>"
 				+ "<h3>&copy; Space Applications Services</h3>"
 				+ "<h3>Version "
-				+ YamcsVersion.version
+				+ YamcsVersion.VERSION
 				+ "</h3>"
 				+ "<p>This program is used to simulate Processed Parameters in a Yamcs server "
 				+ "</center>");

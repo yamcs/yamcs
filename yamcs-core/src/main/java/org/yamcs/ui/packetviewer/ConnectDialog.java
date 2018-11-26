@@ -322,13 +322,13 @@ public class ConnectDialog extends JDialog implements ActionListener {
             }
 
             // values.ssl= sslCheckBox.isSelected();
-            passwordTextField.setText("");
             if (!usernameTextField.getText().isEmpty()) {
                 connectionProps.setCredentials(usernameTextField.getText(), passwordTextField.getPassword());
             } else {
                 // If not authenticating, don't use last credentials
                 connectionProps.setCredentials(null, null);
             }
+            passwordTextField.setText("");
 
             if (instanceCombo != null) {
                 connectionProps.setInstance((String) instanceCombo.getSelectedItem());

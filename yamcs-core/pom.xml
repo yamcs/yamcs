@@ -100,11 +100,16 @@
             <phase>process-sources</phase>
             <configuration>
               <tasks>
+                <exec executable="git" outputproperty="revision">
+                  <arg value="rev-parse" />
+                  <arg value="HEAD" />
+                </exec>
                 <mkdir dir="target/generated-sources/version/org/yamcs" />
                 <echo file="target/generated-sources/version/org/yamcs/YamcsVersion.java">
                   package org.yamcs;
                   public class YamcsVersion {
-	                  public static final String version = "${project.version}";
+                      public static final String VERSION = "${project.version}";
+                      public static final String REVISION = "${revision}";
                   }
                 </echo>
               </tasks>

@@ -90,7 +90,7 @@ public abstract class Command {
 
         // Special case. Global --version flag prints version info and quits
         if (this instanceof YamcsAdminCli && ((YamcsAdminCli) this).version) {
-            console.println("yamcs " + YamcsVersion.version);
+            console.println("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
             for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
                 console.println(plugin.getName() + " " + plugin.getVersion());
             }
