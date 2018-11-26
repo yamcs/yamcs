@@ -500,7 +500,8 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         @Route(path = "/api", method = "GET")
         public void getApiOverview(RestRequest req) throws HttpException {
             GetApiOverviewResponse.Builder responseb = GetApiOverviewResponse.newBuilder();
-            responseb.setYamcsVersion(YamcsVersion.version);
+            responseb.setYamcsVersion(YamcsVersion.VERSION);
+            responseb.setRevision(YamcsVersion.REVISION);
             responseb.setServerId(YamcsServer.getServerId());
 
             List<Plugin> plugins = new ArrayList<>(YamcsServer.getPlugins());

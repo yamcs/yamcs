@@ -225,7 +225,7 @@ public class YamcsServer {
     }
 
     public static void setupYamcsServer() throws Exception {
-        staticlog.info("yamcs {}", YamcsVersion.version);
+        staticlog.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
         discoverPlugins();
         createGlobalServicesAndInstances();
         startServices();
