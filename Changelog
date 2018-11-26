@@ -1,5 +1,6 @@
-Version 4.8.0 released 22-November-2018
-- allow to change calibrations and alarms for running processor
+Version 4.7.3 released 26-November-2018
+- allow to online (i.e. without modifying the MDB) change calibrations and alarms for parameters part of a running processor
+- various bugfixes
 
 Version 4.7.2 released 30-October-2018
 - various bugfixes
