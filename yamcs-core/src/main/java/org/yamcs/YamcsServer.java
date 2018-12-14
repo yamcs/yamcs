@@ -377,7 +377,7 @@ public class YamcsServer {
     /**
      * Start the instance.
      * If the instance is already started, do nothing.
-     * If the instance is offline, rename the <instance>.yaml.offline to <instance>.yaml and start the instance
+     * If the instance is offline, rename the &lt;instance&gt;.yaml.offline to &lt;instance&gt;.yaml and start the instance
      * Otherwise (if the instance is failed) restart it
      * 
      * @param instanceName
