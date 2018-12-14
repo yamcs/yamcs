@@ -1,6 +1,9 @@
 package org.yamcs;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -14,6 +17,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,15 +46,16 @@ import com.google.common.util.concurrent.Service.State;
  */
 public class YamcsServer {
     static Map<String, YamcsServerInstance> instances = new LinkedHashMap<>();
+
     private static final String SERVER_ID_KEY = "serverId";
     private static final String SECRET_KEY = "secretKey";
 
-    private static Set<Plugin> plugins = new HashSet<>();
+    private Set<Plugin> plugins = new HashSet<>();
 
     ReplayServer replay;
 
     // global services
-    static List<ServiceWithConfig> globalServiceList = null;
+    List<ServiceWithConfig> globalServiceList = null;
 
     static Logger staticlog = LoggerFactory.getLogger(YamcsServer.class);
 
@@ -65,6 +71,14 @@ public class YamcsServer {
     private static byte[] secretKey;
 
     static CrashHandler globalCrashHandler = new LogCrashHandler();
+    int maxOnlineInstances = 1000;
+    int maxNumInstances = 20;
+    static String dataDir;
+
+    static final Pattern ONLINE_INST_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml");
+    static final Pattern OFFLINE_INST_PATTERN = Pattern.compile("yamcs\\.(.*)\\.yaml.offline");
+
+    static YamcsServer server;
 
     static CrashHandler loadCrashHandler(YConfiguration conf) throws ConfigurationException, IOException {
         if (conf.containsKey("crashHandler", "args")) {
@@ -73,6 +87,7 @@ public class YamcsServer {
         } else {
             return YObjectLoader.loadObject(conf.getString("crashHandler", "class"));
         }
+
     }
 
     /**
@@ -182,14 +197,14 @@ public class YamcsServer {
         return secretKey;
     }
 
-    public static void discoverPlugins() {
+    public void discoverPlugins() {
         for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
             staticlog.info("{} {}", plugin.getName(), plugin.getVersion());
             plugins.add(plugin);
         }
     }
 
-    public static void createGlobalServicesAndInstances() throws ConfigurationException, IOException {
+    public void createGlobalServicesAndInstances() throws ConfigurationException, IOException {
         serverId = deriveServerId();
         deriveSecretKey();
 
@@ -197,38 +212,79 @@ public class YamcsServer {
         if (c.containsKey("crashHandler")) {
             globalCrashHandler = loadCrashHandler(c);
         }
+        dataDir = c.getString("dataDir");
 
         if (c.containsKey("services")) {
             List<Object> services = c.getList("services");
             globalServiceList = createServices(null, services);
         }
-
+        int numOnlineInst = 0;
         if (c.containsKey("instances")) {
             List<String> instArray = c.getList("instances");
             for (String inst : instArray) {
                 if (instances.containsKey(inst)) {
                     throw new ConfigurationException("Duplicate instance specified: '" + inst + "'");
                 }
-                createYamcsInstance(inst);
+                createYamcsInstance(inst, YConfiguration.getConfiguration("yamcs." + inst), true);
+                numOnlineInst++;
+            }
+        }
+
+        File dir = new File(dataDir + "/instance-def");
+        if (dir.exists()) {
+            for (File f : dir.listFiles()) {
+                boolean online;
+                String name;
+                Matcher m = ONLINE_INST_PATTERN.matcher(f.getName());
+                if (m.matches()) {
+                    online = true;
+                    name = m.group(1);
+                    numOnlineInst++;
+                    if (numOnlineInst > maxOnlineInstances) {
+                        throw new ConfigurationException(
+                                "Number of online instances greater than maximum allowed " + maxOnlineInstances);
+                    }
+                } else {
+                    m = OFFLINE_INST_PATTERN.matcher(f.getName());
+                    if (m.matches()) {
+                        online = false;
+                        name = m.group(1);
+                        if (instances.size() > maxNumInstances) {
+                            staticlog.warn("Number of instances exceeds the maximum {}, offline instance {} not loaded",
+                                    maxNumInstances, name);
+                            continue;
+                        }
+                    } else {
+                        continue;
+                    }
+                }
+                createYamcsInstance(name, getConf(name, online), online);
             }
         }
     }
 
-    public static void startServices() throws Exception {
+    private int getNumOnlineInstances() {
+        return (int)instances.values().stream().filter(ysi -> ysi.getState()!=InstanceState.OFFLINE).count();
+    }
+    
+    private void startServices() throws Exception {
         if (globalServiceList != null) {
             startServices(globalServiceList);
         }
 
-        for (String inst : instances.keySet()) {
-            instances.get(inst).startAsync();
+        for (YamcsServerInstance ysi : instances.values()) {
+            if (ysi.getState() != InstanceState.OFFLINE) {
+                ysi.startAsync();
+            }
         }
     }
 
     public static void setupYamcsServer() throws Exception {
         staticlog.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
-        discoverPlugins();
-        createGlobalServicesAndInstances();
-        startServices();
+        server = new YamcsServer();
+        server.discoverPlugins();
+        server.createGlobalServicesAndInstances();
+        server.startServices();
 
         Thread.setDefaultUncaughtExceptionHandler((t, thrown) -> {
             String msg = "Uncaught exception '" + thrown + "' in thread " + t + ": "
@@ -267,11 +323,8 @@ public class YamcsServer {
         XtceDbFactory.remove(instanceName);
         staticlog.info("Re-loading instance '{}'", instanceName);
 
-        ysi = new YamcsServerInstance(instanceName);
-        instances.put(instanceName, ysi);
-        ManagementService.getInstance().registerYamcsInstance(ysi);
         try {
-            ysi.init();
+            ysi.init(getConf(instanceName, true));
             ysi.startAsync();
         } catch (IOException e) {
             staticlog.error("Failed to init/start instance '{}'", instanceName, e);
@@ -280,13 +333,85 @@ public class YamcsServer {
         return ysi;
     }
 
-    public static Set<Plugin> getPlugins() {
+    private static YConfiguration getConf(String instanceName, boolean online) {
+        File f = new File(dataDir + "/instance-def/yamcs." + instanceName + ".yaml" + (online ? "" : ".offline"));
+        if (f.exists()) {
+            try (InputStream is = new FileInputStream(f)) {
+                return new YConfiguration("yamcs." + instanceName, is, f.getAbsolutePath());
+            } catch (IOException e) {
+                throw new ConfigurationException("Cannot load configuration from " + f.getAbsolutePath(), e);
+            }
+        } else {
+            return YConfiguration.getConfiguration("yamcs." + instanceName);
+        }
+    }
+
+    /**
+     * Stop the instance (it will be offline after this)
+     * 
+     * @param instanceName
+     *            the name of the instance
+     * 
+     * @return the instance
+     */
+    public YamcsServerInstance stopInstance(String instanceName) {
+        YamcsServerInstance ysi = instances.get(instanceName);
+
+        if (ysi.getState() == InstanceState.RUNNING) {
+            try {
+                ysi.stop();
+            } catch (IllegalStateException e) {
+                staticlog.error("Instance did not terminate normally", e);
+            }
+        }
+        YarchDatabase.removeInstance(instanceName);
+        XtceDbFactory.remove(instanceName);
+        File f = new File(dataDir + "/instance-def/yamcs." + instanceName + ".yaml");
+        if (f.exists()) {
+            f.renameTo(new File(dataDir + "/instance-def/yamcs." + instanceName + ".yaml.offline"));
+        }
+
+        return ysi;
+    }
+
+    /**
+     * Start the instance.
+     * If the instance is already started, do nothing.
+     * If the instance is offline, rename the <instance>.yaml.offline to <instance>.yaml and start the instance
+     * Otherwise (if the instance is failed) restart it
+     * 
+     * @param instanceName
+     *            the name of the instance
+     * 
+     * @return the instance
+     * @throws IOException 
+     */
+    public YamcsServerInstance startInstance(String instanceName) throws IOException {
+        YamcsServerInstance ysi = instances.get(instanceName);
+
+        if (ysi.getState() == InstanceState.RUNNING) {
+            return ysi;
+        } else if (ysi.getState() != InstanceState.OFFLINE) {
+            return restartYamcsInstance(instanceName);
+        }
+        if(getNumOnlineInstances()>=maxOnlineInstances) {
+            throw new LimitExceededException("Number of online instances already at the limit "+maxOnlineInstances); 
+        }
+        File f = new File(dataDir + "/instance-def/yamcs." + instanceName + ".yaml.offline");
+        if (f.exists()) {
+            f.renameTo(new File(dataDir + "/instance-def/yamcs." + instanceName + ".yaml"));
+        }
+        ysi.init(getConf(instanceName, true));
+        ysi.startAsync();
+        return ysi;
+    }
+
+    public Set<Plugin> getPlugins() {
         return plugins;
     }
 
     /**
-     * Creates a new yamcs instance. If the instance already exist and not in the state FAILED or OFFLINE a
-     * ConfigurationException is thrown
+     * Creates a new yamcs instance. If the instance already exists a ConfigurationException is thrown
      * 
      * @param name
      *            the name of the new instance
@@ -294,23 +419,27 @@ public class YamcsServer {
      * @return the newly created instance
      * @throws IOException
      */
-    public static YamcsServerInstance createYamcsInstance(String name) throws IOException {
+    public YamcsServerInstance createYamcsInstance(String name, YConfiguration conf, boolean online)
+            throws IOException {
         YamcsServerInstance ysi = instances.get(name);
         if (ysi != null) {
-            if ((ysi.getState() != InstanceState.FAILED) && (ysi.getState() != InstanceState.OFFLINE)) {
-                throw new IllegalArgumentException(String.format(
-                        "There already exists an instance named '%s' and it is not in FAILED or OFFLINE state", name));
-            } else {
-                staticlog.info("Re-loading instance '{}'", name);
-                YarchDatabase.removeInstance(name);
-                XtceDbFactory.remove(name);
-            }
+            throw new IllegalArgumentException(String.format(
+                    "There already exists an instance named '%s' and it is not in FAILED or OFFLINE state", name));
+        }
+
+        if (online) {
+            staticlog.info("Loading online instance '{}'", name);
         } else {
-            staticlog.info("Loading instance '{}'", name);
+            staticlog.debug("Loading offline instance '{}'", name);
         }
         ysi = new YamcsServerInstance(name);
+        if (conf.containsKey("tags")) {
+            ysi.setTags(conf.getMap("tags"));
+        }
         instances.put(name, ysi);
-        ysi.init();
+        if (online) {
+            ysi.init(conf);
+        }
         ManagementService.getInstance().registerYamcsInstance(ysi);
         return ysi;
     }
@@ -376,11 +505,11 @@ public class YamcsServer {
 
     }
 
-    public static List<ServiceWithConfig> getGlobalServices() {
+    public List<ServiceWithConfig> getGlobalServices() {
         return new ArrayList<>(globalServiceList);
     }
 
-    public static ServiceWithConfig getGlobalServiceWithConfig(String serviceName) {
+    public ServiceWithConfig getGlobalServiceWithConfig(String serviceName) {
         if (globalServiceList == null) {
             return null;
         }
@@ -407,13 +536,13 @@ public class YamcsServer {
         mockupTimeService = timeService;
     }
 
-    public static YamcsService getGlobalService(String serviceName) {
+    public YamcsService getGlobalService(String serviceName) {
         ServiceWithConfig serviceWithConfig = getGlobalServiceWithConfig(serviceName);
         return serviceWithConfig != null ? serviceWithConfig.getService() : null;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends YamcsService> List<T> getGlobalServices(Class<T> serviceClass) {
+    public <T extends YamcsService> List<T> getGlobalServices(Class<T> serviceClass) {
         List<T> services = new ArrayList<>();
         if (globalServiceList != null) {
             for (ServiceWithConfig swc : globalServiceList) {
@@ -473,7 +602,7 @@ public class YamcsServer {
         return null;
     }
 
-    public static void startGlobalService(String serviceName) throws ConfigurationException, IOException {
+    public void startGlobalService(String serviceName) throws ConfigurationException, IOException {
         startService(null, serviceName, globalServiceList);
     }
 
@@ -511,4 +640,11 @@ public class YamcsServer {
         return globalCrashHandler;
     }
 
+    /**
+     * 
+     * @return the (singleton) server
+     */
+    public static YamcsServer getServer() {
+        return server;
+    }
 }

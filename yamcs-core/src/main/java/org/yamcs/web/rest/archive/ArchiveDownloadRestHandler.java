@@ -428,7 +428,7 @@ public class ArchiveDownloadRestHandler extends RestHandler {
 
     private GpbExtensionRegistry getExtensionRegistry() {
         if (gpbExtensionRegistry == null) {
-            List<HttpServer> services = YamcsServer.getGlobalServices(HttpServer.class);
+            List<HttpServer> services = YamcsServer.getServer().getGlobalServices(HttpServer.class);
             gpbExtensionRegistry = services.get(0).getGpbExtensionRegistry();
         }
         return gpbExtensionRegistry;

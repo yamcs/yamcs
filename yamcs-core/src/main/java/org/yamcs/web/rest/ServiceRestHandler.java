@@ -35,9 +35,10 @@ public class ServiceRestHandler extends RestHandler {
         }
 
         ListServiceInfoResponse.Builder responseb = ListServiceInfoResponse.newBuilder();
-
+        
+ 
         if (global) {
-            for (ServiceWithConfig serviceWithConfig : YamcsServer.getGlobalServices()) {
+            for (ServiceWithConfig serviceWithConfig : YamcsServer.getServer().getGlobalServices()) {
                 responseb.addService(ServiceHelper.toServiceInfo(serviceWithConfig, null, null));
             }
         } else {
@@ -65,7 +66,8 @@ public class ServiceRestHandler extends RestHandler {
         }
         String serviceName = req.getRouteParam("name");
         if (global) {
-            ServiceWithConfig serviceWithConfig = YamcsServer.getGlobalServiceWithConfig(serviceName);
+            YamcsServer server = YamcsServer.getServer();
+            ServiceWithConfig serviceWithConfig = server.getGlobalServiceWithConfig(serviceName);
             if (serviceWithConfig == null) {
                 throw new NotFoundException(req);
             }
@@ -121,7 +123,7 @@ public class ServiceRestHandler extends RestHandler {
             case "stopped":
                 Service s;
                 if (global) {
-                    s = YamcsServer.getGlobalService(serviceName);
+                    s = YamcsServer.getServer().getGlobalService(serviceName);
                 } else {
                     s = YamcsServer.getInstance(instance).getService(serviceName);
                 }
@@ -135,8 +137,9 @@ public class ServiceRestHandler extends RestHandler {
             case "running":
                 try {
                     if (global) {
-                        ServiceWithConfig service = YamcsServer.getGlobalServiceWithConfig(serviceName);
-                        YamcsServer.startGlobalService(service.getName());
+                        YamcsServer server = YamcsServer.getServer();
+                        ServiceWithConfig service = server.getGlobalServiceWithConfig(serviceName);
+                        server.startGlobalService(service.getName());
                     } else {
                         ServiceWithConfig service = YamcsServer.getInstance(instance)
                                 .getServiceWithConfig(serviceName);

@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.YamcsServer;
 import org.yamcs.archive.CcsdsTmIndex;
 import org.yamcs.archive.Record;
 import org.yamcs.archive.CcsdsTmIndex.CcsdsIndexIterator;
@@ -15,7 +15,7 @@ import org.yamcs.yarch.YarchTestCase;
 public class CcsdsTmIndexTest extends YarchTestCase {
 
     @BeforeClass
-    public static void oneTimeSetup() throws ConfigurationException {
+    public static void oneTimeSetup() throws Exception {
         YConfiguration.setup();
     }
 

@@ -45,22 +45,34 @@ public class YConfiguration {
     // the path is something like filename->key1->subkey2[3]->...
     static private IdentityHashMap<Object, String> confPath = new IdentityHashMap<>();
 
-    @SuppressWarnings("unchecked")
     private YConfiguration(String subsystem) throws IOException, ConfigurationException {
+        this(subsystem, resolver.getConfigurationStream("/" + subsystem + ".yaml"), subsystem + ".yaml");
+    }
+
+    /**
+     * Constructs a new configuration object parsing the input stream
+     * 
+     * @param is - input stream where the configuration is loaded from
+     * @param confpath
+     *            - configuration path - it is remembered together with the configuration in case of error to indicate
+     *            where it is coming from (i.e. which file)
+     */
+    @SuppressWarnings("unchecked")
+    public YConfiguration(String subsystem, InputStream is, String confpath) {
         Yaml yaml = new Yaml();
-        String filename = subsystem + ".yaml";
         try {
-            Object o = yaml.load(resolver.getConfigurationStream("/" + filename));
+            Object o = yaml.load(is);
             if (o == null) {
                 o = new HashMap<String, Object>(); // config file is empty, not an error
             } else if (!(o instanceof Map<?, ?>)) {
-                throw new ConfigurationException(filename, "top level structure must be a map and not a " + o);
+                throw new ConfigurationException(confpath, "top level structure must be a map and not a " + o);
             }
             root = (Map<String, Object>) o;
-            confPath.put(root, filename);
+            confPath.put(root, confpath);
         } catch (YAMLException e) {
-            throw new ConfigurationException(filename, e.toString(), e);
+            throw new ConfigurationException(confpath, e.toString(), e);
         }
+        configurations.put(subsystem, this);
     }
 
     /**

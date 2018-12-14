@@ -53,11 +53,16 @@ public class YamcsServerInstance {
     private Exception initFailed;
 
     private AbstractService guavaService;
+    Map<String, Object> tags;
+    YConfiguration conf;
+    
+    YamcsServerInstance(String name) {
+        this.instanceName = name;
+        log = LoggingUtils.getLogger(YamcsServer.class, name);
+    }
 
-    YamcsServerInstance(String instance) {
-        this.instanceName = instance;
-        log = LoggingUtils.getLogger(YamcsServer.class, instance);
-        loadTimeService();
+
+    void initGuava() {
 
         guavaService = new AbstractService() {
 
@@ -123,11 +128,13 @@ public class YamcsServerInstance {
         }, MoreExecutors.directExecutor());
     }
 
-    void init() throws IOException {
+    void init(YConfiguration conf) throws IOException {
+        this.conf = conf;
         initFailed = null;
+        loadTimeService();
+        initGuava();
         state = InstanceState.INITIALIZING;
         stateListeners.forEach(InstanceStateListener::initializing);
-        YConfiguration conf = YConfiguration.getConfiguration("yamcs." + instanceName);
         if (conf.containsKey("crashHandler")) {
             crashHandler = YamcsServer.loadCrashHandler(conf);
         } else {
@@ -141,7 +148,7 @@ public class YamcsServerInstance {
             serviceList = YamcsServer.createServices(instanceName, services);
             state = InstanceState.INITIALIZED;
             stateListeners.forEach(InstanceStateListener::initialized);
-        } catch (Exception e) {
+        } catch (ConfigurationException e) {
             state = InstanceState.FAILED;
             initFailed = e;
             stateListeners.forEach(l -> l.failed(initFailed));
@@ -196,6 +203,12 @@ public class YamcsServerInstance {
     public void stop() throws IllegalStateException {
         guavaService.stopAsync();
         guavaService.awaitTerminated();
+        state = InstanceState.OFFLINE;
+        
+        //set to null to free some memory
+        guavaService = null;
+        xtceDb = null;
+        serviceList = null;
     }
 
     public Service stopAsync() {
@@ -206,8 +219,7 @@ public class YamcsServerInstance {
         guavaService.awaitTerminated();
     }
 
-    private void loadTimeService() throws ConfigurationException {
-        YConfiguration conf = YConfiguration.getConfiguration("yamcs." + instanceName);
+    public void loadTimeService() throws ConfigurationException {
         if (conf.containsKey("timeService")) {
             Map<String, Object> m = conf.getMap("timeService");
             String servclass = YConfiguration.getString(m, "class");
@@ -303,9 +315,8 @@ public class YamcsServerInstance {
         }
         try {
             MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
-            YConfiguration c = YConfiguration.getConfiguration("yamcs." + instanceName);
-            if (!c.isList("mdb")) {
-                String configName = c.getString("mdb");
+            if (!conf.isList("mdb")) {
+                String configName = conf.getString("mdb");
                 mdb.setConfigName(configName);
             }
             XtceDb xtcedb = getXtceDb();
@@ -322,5 +333,10 @@ public class YamcsServerInstance {
             log.warn("Got error when finding the mission database for instance {}", instanceName, e);
         }
         return aib.build();
+    }
+
+
+    public void setTags(Map<String, Object> tags) {
+        this.tags = tags;
     }
 }

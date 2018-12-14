@@ -73,7 +73,7 @@ public class CheckConfig extends Command {
         // change the data directory, otherwise we will get RocksDB LOCK errors if a yamcs server is running
         YarchDatabase.setHome(tmpDir.getAbsolutePath());
 
-        YamcsServer.createGlobalServicesAndInstances();
+        new YamcsServer().createGlobalServicesAndInstances();
         FileUtils.deleteRecursively(tmpDir);
         console.println("The configuration appears to be valid.");
     }
