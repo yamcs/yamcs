@@ -12,7 +12,7 @@ import org.yamcs.yarch.DbReaderStream;
 import org.yamcs.yarch.streamsql.ColumnExpression;
 import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.yarch.streamsql.IncompatibilityException;
-import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.ValueExpression;
 

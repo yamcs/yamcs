@@ -61,7 +61,6 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     static { // to avoid getting the warning in the console in the test below that loads invalid table records
         Logger.getLogger("org.yamcs.yarch").setLevel(Level.SEVERE);
-        
     }
 
     @Test
@@ -217,9 +216,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testIndexWithRestClient() throws Exception {
-       
         generatePkt13AndPps("2015-02-01T10:00:00", 3600);
-        LoggingUtils.enableLogging();
         List<ArchiveRecord> arlist = new ArrayList<>();
         restClient.setAcceptMediaType(MediaType.PROTOBUF);
         CompletableFuture<Void> f = restClient.doBulkGetRequest(

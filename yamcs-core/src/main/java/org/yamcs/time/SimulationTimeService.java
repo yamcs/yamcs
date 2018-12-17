@@ -68,7 +68,7 @@ public class SimulationTimeService implements TimeService {
         @Route(path = "/api/time/:instance", method = { "PUT", "POST" })
         public void setSimTime(RestRequest req) throws HttpException {
             String instance = verifyInstance(req, req.getRouteParam("instance"));
-            TimeService ts = YamcsServer.getInstance(instance).getTimeService();
+            TimeService ts = yamcsServer.getInstance(instance).getTimeService();
             if (!(ts instanceof SimulationTimeService)) {
                 log.warn("Simulation time service requested for a non-simulation TimeService {}", ts);
                 throw new NotFoundException(req);

@@ -83,7 +83,7 @@ public class RdbTableWriter extends TableWriter {
             tablespace.dispose(db);
         } catch (IOException | RocksDBException e) {
             log.error("failed to insert a record: ", e);
-            YamcsServer.getCrashHandler(ydb.getYamcsInstance()).handleCrash("Archive",
+            YamcsServer.getServer().getCrashHandler(ydb.getYamcsInstance()).handleCrash("Archive",
                     "failed to insert a record in " + tableDefinition.getName() + ": " + e);
         }
 

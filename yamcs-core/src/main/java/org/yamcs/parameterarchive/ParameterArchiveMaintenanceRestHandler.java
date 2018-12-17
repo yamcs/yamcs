@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.rocksdb.RocksDBException;
-import org.yamcs.YamcsServer;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.protobuf.Yamcs.StringMessage;
 import org.yamcs.security.SystemPrivilege;
@@ -102,8 +101,8 @@ public class ParameterArchiveMaintenanceRestHandler extends RestHandler {
         completeOK(req, sm);
     }
 
-    private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
-        List<ParameterArchive> l = YamcsServer.getServices(instance, ParameterArchive.class);
+    private ParameterArchive getParameterArchive(String instance) throws BadRequestException {
+        List<ParameterArchive> l = yamcsServer.getServices(instance, ParameterArchive.class);
 
         if (l.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");

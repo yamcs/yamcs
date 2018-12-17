@@ -139,7 +139,7 @@ public class SystemParametersCollector extends AbstractService implements YamcsS
 
     @Override
     public void doStart() {
-        timeService = YamcsServer.getInstance(instance).getTimeService();
+        timeService = YamcsServer.getServer().getInstance(instance).getTimeService();
         timer = new ScheduledThreadPoolExecutor(1);
         timer.scheduleAtFixedRate(this, 1000L, frequencyMillisec, TimeUnit.MILLISECONDS);
         notifyStarted();

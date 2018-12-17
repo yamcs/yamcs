@@ -64,6 +64,8 @@ public abstract class RestHandler extends RouteHandler {
 
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
 
+    protected final YamcsServer yamcsServer = YamcsServer.getServer();
+    
     protected static void completeOK(RestRequest restRequest) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
         HttpUtil.setContentLength(httpResponse, 0);

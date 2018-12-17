@@ -1004,6 +1004,40 @@ public final class YamcsManagement {
      */
     com.google.protobuf.ByteString
         getMissionTimeBytes();
+
+    /**
+     * <code>map&lt;string, string&gt; tags = 12;</code>
+     */
+    int getTagsCount();
+    /**
+     * <code>map&lt;string, string&gt; tags = 12;</code>
+     */
+    boolean containsTags(
+        java.lang.String key);
+    /**
+     * Use {@link #getTagsMap()} instead.
+     */
+    @java.lang.Deprecated
+    java.util.Map<java.lang.String, java.lang.String>
+    getTags();
+    /**
+     * <code>map&lt;string, string&gt; tags = 12;</code>
+     */
+    java.util.Map<java.lang.String, java.lang.String>
+    getTagsMap();
+    /**
+     * <code>map&lt;string, string&gt; tags = 12;</code>
+     */
+
+    java.lang.String getTagsOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue);
+    /**
+     * <code>map&lt;string, string&gt; tags = 12;</code>
+     */
+
+    java.lang.String getTagsOrThrow(
+        java.lang.String key);
   }
   /**
    * Protobuf type {@code yamcs.protobuf.yamcsManagement.YamcsInstance}
@@ -1103,6 +1137,18 @@ public final class YamcsManagement {
               }
               break;
             }
+            case 98: {
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+                tags_ = com.google.protobuf.MapField.newMapField(
+                    TagsDefaultEntryHolder.defaultEntry);
+                mutable_bitField0_ |= 0x00000040;
+              }
+              com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+              tags = input.readMessage(
+                  TagsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              tags_.getMutableMap().put(tags.getKey(), tags.getValue());
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -1123,6 +1169,17 @@ public final class YamcsManagement {
       return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_descriptor;
     }
 
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMapField(
+        int number) {
+      switch (number) {
+        case 12:
+          return internalGetTags();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
       return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_fieldAccessorTable
@@ -1479,6 +1536,82 @@ public final class YamcsManagement {
       }
     }
 
+    public static final int TAGS_FIELD_NUMBER = 12;
+    private static final class TagsDefaultEntryHolder {
+      static final com.google.protobuf.MapEntry<
+          java.lang.String, java.lang.String> defaultEntry =
+              com.google.protobuf.MapEntry
+              .<java.lang.String, java.lang.String>newDefaultInstance(
+                  org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_TagsEntry_descriptor, 
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "",
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "");
+    }
+    private com.google.protobuf.MapField<
+        java.lang.String, java.lang.String> tags_;
+    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+    internalGetTags() {
+      if (tags_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            TagsDefaultEntryHolder.defaultEntry);
+      }
+      return tags_;
+    }
+
+    public int getTagsCount() {
+      return internalGetTags().getMap().size();
+    }
+    /**
+     * <code>map&lt;string, string&gt; tags = 12;</code>
+     */
+
+    public boolean containsTags(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      return internalGetTags().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getTagsMap()} instead.
+     */
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.String> getTags() {
+      return getTagsMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; tags = 12;</code>
+     */
+
+    public java.util.Map<java.lang.String, java.lang.String> getTagsMap() {
+      return internalGetTags().getMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; tags = 12;</code>
+     */
+
+    public java.lang.String getTagsOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetTags().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <code>map&lt;string, string&gt; tags = 12;</code>
+     */
+
+    public java.lang.String getTagsOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetTags().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -1515,6 +1648,15 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeEnum(11, state_);
       }
+      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+           : internalGetTags().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+        tags = TagsDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        output.writeMessage(12, tags);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -1543,6 +1685,16 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(11, state_);
+      }
+      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+           : internalGetTags().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+        tags = TagsDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(12, tags);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -1587,6 +1739,8 @@ public final class YamcsManagement {
         result = result && getMissionTime()
             .equals(other.getMissionTime());
       }
+      result = result && internalGetTags().equals(
+          other.internalGetTags());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -1621,6 +1775,10 @@ public final class YamcsManagement {
       if (hasMissionTime()) {
         hash = (37 * hash) + MISSIONTIME_FIELD_NUMBER;
         hash = (53 * hash) + getMissionTime().hashCode();
+      }
+      if (!internalGetTags().getMap().isEmpty()) {
+        hash = (37 * hash) + TAGS_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetTags().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -1716,6 +1874,28 @@ public final class YamcsManagement {
         return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_descriptor;
       }
 
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMapField(
+          int number) {
+        switch (number) {
+          case 12:
+            return internalGetTags();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMutableMapField(
+          int number) {
+        switch (number) {
+          case 12:
+            return internalGetMutableTags();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
         return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_fieldAccessorTable
@@ -1762,6 +1942,7 @@ public final class YamcsManagement {
         bitField0_ = (bitField0_ & ~0x00000010);
         missionTime_ = "";
         bitField0_ = (bitField0_ & ~0x00000020);
+        internalGetMutableTags().clear();
         return this;
       }
 
@@ -1819,6 +2000,8 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000010;
         }
         result.missionTime_ = missionTime_;
+        result.tags_ = internalGetTags();
+        result.tags_.makeImmutable();
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -1908,6 +2091,8 @@ public final class YamcsManagement {
           missionTime_ = other.missionTime_;
           onChanged();
         }
+        internalGetMutableTags().mergeFrom(
+            other.internalGetTags());
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -2590,6 +2775,125 @@ public final class YamcsManagement {
   bitField0_ |= 0x00000020;
         missionTime_ = value;
         onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.MapField<
+          java.lang.String, java.lang.String> tags_;
+      private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      internalGetTags() {
+        if (tags_ == null) {
+          return com.google.protobuf.MapField.emptyMapField(
+              TagsDefaultEntryHolder.defaultEntry);
+        }
+        return tags_;
+      }
+      private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      internalGetMutableTags() {
+        onChanged();;
+        if (tags_ == null) {
+          tags_ = com.google.protobuf.MapField.newMapField(
+              TagsDefaultEntryHolder.defaultEntry);
+        }
+        if (!tags_.isMutable()) {
+          tags_ = tags_.copy();
+        }
+        return tags_;
+      }
+
+      public int getTagsCount() {
+        return internalGetTags().getMap().size();
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 12;</code>
+       */
+
+      public boolean containsTags(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        return internalGetTags().getMap().containsKey(key);
+      }
+      /**
+       * Use {@link #getTagsMap()} instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, java.lang.String> getTags() {
+        return getTagsMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 12;</code>
+       */
+
+      public java.util.Map<java.lang.String, java.lang.String> getTagsMap() {
+        return internalGetTags().getMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 12;</code>
+       */
+
+      public java.lang.String getTagsOrDefault(
+          java.lang.String key,
+          java.lang.String defaultValue) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, java.lang.String> map =
+            internalGetTags().getMap();
+        return map.containsKey(key) ? map.get(key) : defaultValue;
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 12;</code>
+       */
+
+      public java.lang.String getTagsOrThrow(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, java.lang.String> map =
+            internalGetTags().getMap();
+        if (!map.containsKey(key)) {
+          throw new java.lang.IllegalArgumentException();
+        }
+        return map.get(key);
+      }
+
+      public Builder clearTags() {
+        getMutableTags().clear();
+        return this;
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 12;</code>
+       */
+
+      public Builder removeTags(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        getMutableTags().remove(key);
+        return this;
+      }
+      /**
+       * Use alternate mutation accessors instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, java.lang.String>
+      getMutableTags() {
+        return internalGetMutableTags().getMutableMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 12;</code>
+       */
+      public Builder putTags(
+          java.lang.String key,
+          java.lang.String value) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (value == null) { throw new java.lang.NullPointerException(); }
+        getMutableTags().put(key, value);
+        return this;
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 12;</code>
+       */
+
+      public Builder putAllTags(
+          java.util.Map<java.lang.String, java.lang.String> values) {
+        getMutableTags().putAll(values);
         return this;
       }
       public final Builder setUnknownFields(
@@ -18717,6 +19021,11 @@ public final class YamcsManagement {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_TagsEntry_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_TagsEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_protobuf_yamcsManagement_ProcessorInfo_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -18785,81 +19094,84 @@ public final class YamcsManagement {
       "gement\032\032yamcs/protobuf/yamcs.proto\032\034yamc" +
       "s/protobuf/mdb/mdb.proto\"Q\n\016YamcsInstanc" +
       "es\022?\n\010instance\030\001 \003(\0132-.yamcs.protobuf.ya" +
-      "mcsManagement.YamcsInstance\"\212\003\n\rYamcsIns" +
+      "mcsManagement.YamcsInstance\"\376\003\n\rYamcsIns" +
       "tance\022\014\n\004name\030\001 \001(\t\022<\n\017missionDatabase\030\003" +
       " \001(\0132#.yamcs.protobuf.mdb.MissionDatabas" +
       "e\022@\n\tprocessor\030\004 \003(\0132-.yamcs.protobuf.ya" +
       "mcsManagement.ProcessorInfo\022J\n\005state\030\013 \001",
       "(\0162;.yamcs.protobuf.yamcsManagement.Yamc" +
       "sInstance.InstanceState\022\024\n\014failureCause\030" +
-      "\t \001(\t\022\023\n\013missionTime\030\n \001(\t\"t\n\rInstanceSt" +
-      "ate\022\013\n\007OFFLINE\020\000\022\020\n\014INITIALIZING\020\001\022\017\n\013IN" +
-      "ITIALIZED\020\002\022\014\n\010STARTING\020\003\022\013\n\007RUNNING\020\004\022\014" +
-      "\n\010STOPPING\020\005\022\n\n\006FAILED\020\006\"\250\003\n\rProcessorIn" +
-      "fo\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\014\n\004ty" +
-      "pe\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022\017\n\007creator\030\005 \001(\t\022" +
-      "\021\n\thasAlarms\030\006 \001(\010\022\025\n\rhasCommanding\030\007 \001(" +
-      "\010\022;\n\005state\030\010 \001(\0162,.yamcs.protobuf.yamcsM",
-      "anagement.ServiceState\0224\n\rreplayRequest\030" +
-      "\t \001(\0132\035.yamcs.protobuf.ReplayRequest\022=\n\013" +
-      "replayState\030\n \001(\0162(.yamcs.protobuf.Repla" +
-      "yStatus.ReplayState\022<\n\007service\030\020 \003(\0132+.y" +
-      "amcs.protobuf.yamcsManagement.ServiceInf" +
-      "o\022\022\n\npersistent\030\021 \001(\010\022\014\n\004time\030\022 \001(\t\022\016\n\006r" +
-      "eplay\030\023 \001(\010\"\214\002\n\nClientInfo\022\n\n\002id\030\002 \001(\005\022\020" +
-      "\n\010username\030\003 \001(\t\022\027\n\017applicationName\030\004 \001(" +
-      "\t\022\020\n\010instance\030\001 \001(\t\022\025\n\rprocessorName\030\005 \001" +
-      "(\t\022E\n\005state\030\006 \001(\01626.yamcs.protobuf.yamcs",
-      "Management.ClientInfo.ClientState\022\021\n\tlog" +
-      "inTime\030\010 \001(\003\022\024\n\014loginTimeUTC\030\t \001(\t\".\n\013Cl" +
-      "ientState\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED" +
-      "\020\001\"3\n\023ObjectPrivilegeInfo\022\014\n\004type\030\001 \001(\t\022" +
-      "\016\n\006object\030\002 \003(\t\"\323\001\n\010UserInfo\022\r\n\005login\030\001 " +
-      "\001(\t\022>\n\nclientInfo\030\002 \003(\0132*.yamcs.protobuf" +
-      ".yamcsManagement.ClientInfo\022\027\n\017systemPri" +
-      "vilege\030\013 \003(\t\022L\n\017objectPrivilege\030\014 \003(\01323." +
-      "yamcs.protobuf.yamcsManagement.ObjectPri" +
-      "vilegeInfo\022\021\n\tsuperuser\030\r \001(\010\"\277\001\n\014TmStat",
-      "istics\022\022\n\npacketName\030\001 \001(\t\022\027\n\017receivedPa" +
-      "ckets\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n\017las" +
-      "tReceivedUTC\030\010 \001(\t\022\026\n\016lastPacketTime\030\004 \001" +
-      "(\003\022\031\n\021lastPacketTimeUTC\030\007 \001(\t\022 \n\030subscri" +
-      "bedParameterCount\030\006 \001(\005\"\242\001\n\nStatistics\022\020" +
-      "\n\010instance\030\001 \001(\t\022\026\n\016yProcessorName\030\002 \001(\t" +
-      "\022=\n\007tmstats\030\003 \003(\0132,.yamcs.protobuf.yamcs" +
-      "Management.TmStatistics\022\023\n\013lastUpdated\030\004" +
-      " \001(\003\022\026\n\016lastUpdatedUTC\030\005 \001(\t\"\235\002\n\032Process" +
-      "orManagementRequest\022W\n\toperation\030\001 \001(\0162D",
-      ".yamcs.protobuf.yamcsManagement.Processo" +
-      "rManagementRequest.Operation\022\020\n\010instance" +
-      "\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type\030\004 \001(\t\022\016\n\006co" +
-      "nfig\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\031\n\npersiste" +
-      "nt\030\007 \001(\010:\005false\";\n\tOperation\022\024\n\020CREATE_P" +
-      "ROCESSOR\020\000\022\030\n\024CONNECT_TO_PROCESSOR\020\001\"\205\002\n" +
-      "\020ProcessorRequest\022M\n\toperation\030\001 \001(\0162:.y" +
-      "amcs.protobuf.yamcsManagement.ProcessorR" +
-      "equest.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004na" +
-      "me\030\003 \001(\t\022\020\n\010seekTime\030\004 \001(\003\0220\n\013replaySpee",
-      "d\030\005 \001(\0132\033.yamcs.protobuf.ReplaySpeed\">\n\t" +
-      "Operation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK" +
-      "\020\004\022\020\n\014CHANGE_SPEED\020\005\"\326\001\n\010LinkInfo\022\020\n\010ins" +
-      "tance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022" +
-      "\014\n\004spec\030\004 \001(\t\022\022\n\006stream\030\005 \001(\tB\002\030\001\022\020\n\010dis" +
-      "abled\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\025\n\tdataCount" +
-      "\030\010 \001(\003B\002\030\001\022\023\n\013dataInCount\030\n \001(\003\022\024\n\014dataO" +
-      "utCount\030\013 \001(\003\022\026\n\016detailedStatus\030\t \001(\t\"\274\001" +
-      "\n\tLinkEvent\022<\n\004type\030\001 \001(\0162..yamcs.protob" +
-      "uf.yamcsManagement.LinkEvent.Type\022:\n\010lin",
-      "kInfo\030\002 \001(\0132(.yamcs.protobuf.yamcsManage" +
-      "ment.LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n" +
-      "\014UNREGISTERED\020\002\022\013\n\007UPDATED\020\003\"\220\001\n\013Service" +
-      "Info\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022;\n\005" +
-      "state\030\003 \001(\0162,.yamcs.protobuf.yamcsManage" +
-      "ment.ServiceState\022\021\n\tclassName\030\004 \001(\t\022\021\n\t" +
-      "processor\030\005 \001(\t*\\\n\014ServiceState\022\007\n\003NEW\020\000" +
-      "\022\014\n\010STARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020" +
-      "\003\022\016\n\nTERMINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022org.yam" +
-      "cs.protobuf"
+      "\t \001(\t\022\023\n\013missionTime\030\n \001(\t\022E\n\004tags\030\014 \003(\013" +
+      "27.yamcs.protobuf.yamcsManagement.YamcsI" +
+      "nstance.TagsEntry\032+\n\tTagsEntry\022\013\n\003key\030\001 " +
+      "\001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"t\n\rInstanceState\022" +
+      "\013\n\007OFFLINE\020\000\022\020\n\014INITIALIZING\020\001\022\017\n\013INITIA" +
+      "LIZED\020\002\022\014\n\010STARTING\020\003\022\013\n\007RUNNING\020\004\022\014\n\010ST" +
+      "OPPING\020\005\022\n\n\006FAILED\020\006\"\250\003\n\rProcessorInfo\022\020" +
+      "\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\014\n\004type\030\003",
+      " \001(\t\022\014\n\004spec\030\004 \001(\t\022\017\n\007creator\030\005 \001(\t\022\021\n\th" +
+      "asAlarms\030\006 \001(\010\022\025\n\rhasCommanding\030\007 \001(\010\022;\n" +
+      "\005state\030\010 \001(\0162,.yamcs.protobuf.yamcsManag" +
+      "ement.ServiceState\0224\n\rreplayRequest\030\t \001(" +
+      "\0132\035.yamcs.protobuf.ReplayRequest\022=\n\013repl" +
+      "ayState\030\n \001(\0162(.yamcs.protobuf.ReplaySta" +
+      "tus.ReplayState\022<\n\007service\030\020 \003(\0132+.yamcs" +
+      ".protobuf.yamcsManagement.ServiceInfo\022\022\n" +
+      "\npersistent\030\021 \001(\010\022\014\n\004time\030\022 \001(\t\022\016\n\006repla" +
+      "y\030\023 \001(\010\"\214\002\n\nClientInfo\022\n\n\002id\030\002 \001(\005\022\020\n\010us",
+      "ername\030\003 \001(\t\022\027\n\017applicationName\030\004 \001(\t\022\020\n" +
+      "\010instance\030\001 \001(\t\022\025\n\rprocessorName\030\005 \001(\t\022E" +
+      "\n\005state\030\006 \001(\01626.yamcs.protobuf.yamcsMana" +
+      "gement.ClientInfo.ClientState\022\021\n\tloginTi" +
+      "me\030\010 \001(\003\022\024\n\014loginTimeUTC\030\t \001(\t\".\n\013Client" +
+      "State\022\r\n\tCONNECTED\020\000\022\020\n\014DISCONNECTED\020\001\"3" +
+      "\n\023ObjectPrivilegeInfo\022\014\n\004type\030\001 \001(\t\022\016\n\006o" +
+      "bject\030\002 \003(\t\"\323\001\n\010UserInfo\022\r\n\005login\030\001 \001(\t\022" +
+      ">\n\nclientInfo\030\002 \003(\0132*.yamcs.protobuf.yam" +
+      "csManagement.ClientInfo\022\027\n\017systemPrivile",
+      "ge\030\013 \003(\t\022L\n\017objectPrivilege\030\014 \003(\01323.yamc" +
+      "s.protobuf.yamcsManagement.ObjectPrivile" +
+      "geInfo\022\021\n\tsuperuser\030\r \001(\010\"\277\001\n\014TmStatisti" +
+      "cs\022\022\n\npacketName\030\001 \001(\t\022\027\n\017receivedPacket" +
+      "s\030\002 \001(\003\022\024\n\014lastReceived\030\003 \001(\003\022\027\n\017lastRec" +
+      "eivedUTC\030\010 \001(\t\022\026\n\016lastPacketTime\030\004 \001(\003\022\031" +
+      "\n\021lastPacketTimeUTC\030\007 \001(\t\022 \n\030subscribedP" +
+      "arameterCount\030\006 \001(\005\"\242\001\n\nStatistics\022\020\n\010in" +
+      "stance\030\001 \001(\t\022\026\n\016yProcessorName\030\002 \001(\t\022=\n\007" +
+      "tmstats\030\003 \003(\0132,.yamcs.protobuf.yamcsMana",
+      "gement.TmStatistics\022\023\n\013lastUpdated\030\004 \001(\003" +
+      "\022\026\n\016lastUpdatedUTC\030\005 \001(\t\"\235\002\n\032ProcessorMa" +
+      "nagementRequest\022W\n\toperation\030\001 \001(\0162D.yam" +
+      "cs.protobuf.yamcsManagement.ProcessorMan" +
+      "agementRequest.Operation\022\020\n\010instance\030\002 \001" +
+      "(\t\022\014\n\004name\030\003 \001(\t\022\014\n\004type\030\004 \001(\t\022\016\n\006config" +
+      "\030\005 \001(\t\022\020\n\010clientId\030\006 \003(\005\022\031\n\npersistent\030\007" +
+      " \001(\010:\005false\";\n\tOperation\022\024\n\020CREATE_PROCE" +
+      "SSOR\020\000\022\030\n\024CONNECT_TO_PROCESSOR\020\001\"\205\002\n\020Pro" +
+      "cessorRequest\022M\n\toperation\030\001 \001(\0162:.yamcs",
+      ".protobuf.yamcsManagement.ProcessorReque" +
+      "st.Operation\022\020\n\010instance\030\002 \001(\t\022\014\n\004name\030\003" +
+      " \001(\t\022\020\n\010seekTime\030\004 \001(\003\0220\n\013replaySpeed\030\005 " +
+      "\001(\0132\033.yamcs.protobuf.ReplaySpeed\">\n\tOper" +
+      "ation\022\t\n\005PAUSE\020\002\022\n\n\006RESUME\020\003\022\010\n\004SEEK\020\004\022\020" +
+      "\n\014CHANGE_SPEED\020\005\"\326\001\n\010LinkInfo\022\020\n\010instanc" +
+      "e\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004s" +
+      "pec\030\004 \001(\t\022\022\n\006stream\030\005 \001(\tB\002\030\001\022\020\n\010disable" +
+      "d\030\006 \001(\010\022\016\n\006status\030\007 \001(\t\022\025\n\tdataCount\030\010 \001" +
+      "(\003B\002\030\001\022\023\n\013dataInCount\030\n \001(\003\022\024\n\014dataOutCo",
+      "unt\030\013 \001(\003\022\026\n\016detailedStatus\030\t \001(\t\"\274\001\n\tLi" +
+      "nkEvent\022<\n\004type\030\001 \001(\0162..yamcs.protobuf.y" +
+      "amcsManagement.LinkEvent.Type\022:\n\010linkInf" +
+      "o\030\002 \001(\0132(.yamcs.protobuf.yamcsManagement" +
+      ".LinkInfo\"5\n\004Type\022\016\n\nREGISTERED\020\001\022\020\n\014UNR" +
+      "EGISTERED\020\002\022\013\n\007UPDATED\020\003\"\220\001\n\013ServiceInfo" +
+      "\022\020\n\010instance\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022;\n\005stat" +
+      "e\030\003 \001(\0162,.yamcs.protobuf.yamcsManagement" +
+      ".ServiceState\022\021\n\tclassName\030\004 \001(\t\022\021\n\tproc" +
+      "essor\030\005 \001(\t*\\\n\014ServiceState\022\007\n\003NEW\020\000\022\014\n\010",
+      "STARTING\020\001\022\013\n\007RUNNING\020\002\022\014\n\010STOPPING\020\003\022\016\n" +
+      "\nTERMINATED\020\004\022\n\n\006FAILED\020\005B\024\n\022org.yamcs.p" +
+      "rotobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -18886,7 +19198,13 @@ public final class YamcsManagement {
     internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_descriptor,
-        new java.lang.String[] { "Name", "MissionDatabase", "Processor", "State", "FailureCause", "MissionTime", });
+        new java.lang.String[] { "Name", "MissionDatabase", "Processor", "State", "FailureCause", "MissionTime", "Tags", });
+    internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_TagsEntry_descriptor =
+      internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_descriptor.getNestedTypes().get(0);
+    internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_TagsEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_yamcsManagement_YamcsInstance_TagsEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
     internal_static_yamcs_protobuf_yamcsManagement_ProcessorInfo_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_yamcs_protobuf_yamcsManagement_ProcessorInfo_fieldAccessorTable = new

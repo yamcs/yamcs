@@ -25279,6 +25279,1296 @@ public final class Rest {
 
   }
 
+  public interface CreateInstanceRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.rest.CreateInstanceRequest)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    boolean hasName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    java.lang.String getName();
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getNameBytes();
+
+    /**
+     * <code>optional string template = 2;</code>
+     */
+    boolean hasTemplate();
+    /**
+     * <code>optional string template = 2;</code>
+     */
+    java.lang.String getTemplate();
+    /**
+     * <code>optional string template = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getTemplateBytes();
+
+    /**
+     * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+     */
+    int getTemplateArgsCount();
+    /**
+     * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+     */
+    boolean containsTemplateArgs(
+        java.lang.String key);
+    /**
+     * Use {@link #getTemplateArgsMap()} instead.
+     */
+    @java.lang.Deprecated
+    java.util.Map<java.lang.String, java.lang.String>
+    getTemplateArgs();
+    /**
+     * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+     */
+    java.util.Map<java.lang.String, java.lang.String>
+    getTemplateArgsMap();
+    /**
+     * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+     */
+
+    java.lang.String getTemplateArgsOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue);
+    /**
+     * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+     */
+
+    java.lang.String getTemplateArgsOrThrow(
+        java.lang.String key);
+
+    /**
+     * <code>map&lt;string, string&gt; tags = 4;</code>
+     */
+    int getTagsCount();
+    /**
+     * <code>map&lt;string, string&gt; tags = 4;</code>
+     */
+    boolean containsTags(
+        java.lang.String key);
+    /**
+     * Use {@link #getTagsMap()} instead.
+     */
+    @java.lang.Deprecated
+    java.util.Map<java.lang.String, java.lang.String>
+    getTags();
+    /**
+     * <code>map&lt;string, string&gt; tags = 4;</code>
+     */
+    java.util.Map<java.lang.String, java.lang.String>
+    getTagsMap();
+    /**
+     * <code>map&lt;string, string&gt; tags = 4;</code>
+     */
+
+    java.lang.String getTagsOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue);
+    /**
+     * <code>map&lt;string, string&gt; tags = 4;</code>
+     */
+
+    java.lang.String getTagsOrThrow(
+        java.lang.String key);
+  }
+  /**
+   * Protobuf type {@code yamcs.protobuf.rest.CreateInstanceRequest}
+   */
+  public  static final class CreateInstanceRequest extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.rest.CreateInstanceRequest)
+      CreateInstanceRequestOrBuilder {
+    // Use CreateInstanceRequest.newBuilder() to construct.
+    private CreateInstanceRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private CreateInstanceRequest() {
+      name_ = "";
+      template_ = "";
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private CreateInstanceRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000001;
+              name_ = bs;
+              break;
+            }
+            case 18: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00000002;
+              template_ = bs;
+              break;
+            }
+            case 26: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                templateArgs_ = com.google.protobuf.MapField.newMapField(
+                    TemplateArgsDefaultEntryHolder.defaultEntry);
+                mutable_bitField0_ |= 0x00000004;
+              }
+              com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+              templateArgs = input.readMessage(
+                  TemplateArgsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              templateArgs_.getMutableMap().put(templateArgs.getKey(), templateArgs.getValue());
+              break;
+            }
+            case 34: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+                tags_ = com.google.protobuf.MapField.newMapField(
+                    TagsDefaultEntryHolder.defaultEntry);
+                mutable_bitField0_ |= 0x00000008;
+              }
+              com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+              tags = input.readMessage(
+                  TagsDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              tags_.getMutableMap().put(tags.getKey(), tags.getValue());
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.yamcs.protobuf.Rest.internal_static_yamcs_protobuf_rest_CreateInstanceRequest_descriptor;
+    }
+
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMapField(
+        int number) {
+      switch (number) {
+        case 3:
+          return internalGetTemplateArgs();
+        case 4:
+          return internalGetTags();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.yamcs.protobuf.Rest.internal_static_yamcs_protobuf_rest_CreateInstanceRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.yamcs.protobuf.Rest.CreateInstanceRequest.class, org.yamcs.protobuf.Rest.CreateInstanceRequest.Builder.class);
+    }
+
+    private int bitField0_;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private volatile java.lang.Object name_;
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public boolean hasName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public java.lang.String getName() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          name_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getNameBytes() {
+      java.lang.Object ref = name_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        name_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int TEMPLATE_FIELD_NUMBER = 2;
+    private volatile java.lang.Object template_;
+    /**
+     * <code>optional string template = 2;</code>
+     */
+    public boolean hasTemplate() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string template = 2;</code>
+     */
+    public java.lang.String getTemplate() {
+      java.lang.Object ref = template_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          template_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string template = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTemplateBytes() {
+      java.lang.Object ref = template_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        template_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int TEMPLATEARGS_FIELD_NUMBER = 3;
+    private static final class TemplateArgsDefaultEntryHolder {
+      static final com.google.protobuf.MapEntry<
+          java.lang.String, java.lang.String> defaultEntry =
+              com.google.protobuf.MapEntry
+              .<java.lang.String, java.lang.String>newDefaultInstance(
+                  org.yamcs.protobuf.Rest.internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TemplateArgsEntry_descriptor, 
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "",
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "");
+    }
+    private com.google.protobuf.MapField<
+        java.lang.String, java.lang.String> templateArgs_;
+    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+    internalGetTemplateArgs() {
+      if (templateArgs_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            TemplateArgsDefaultEntryHolder.defaultEntry);
+      }
+      return templateArgs_;
+    }
+
+    public int getTemplateArgsCount() {
+      return internalGetTemplateArgs().getMap().size();
+    }
+    /**
+     * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+     */
+
+    public boolean containsTemplateArgs(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      return internalGetTemplateArgs().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getTemplateArgsMap()} instead.
+     */
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.String> getTemplateArgs() {
+      return getTemplateArgsMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+     */
+
+    public java.util.Map<java.lang.String, java.lang.String> getTemplateArgsMap() {
+      return internalGetTemplateArgs().getMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+     */
+
+    public java.lang.String getTemplateArgsOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetTemplateArgs().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+     */
+
+    public java.lang.String getTemplateArgsOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetTemplateArgs().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    public static final int TAGS_FIELD_NUMBER = 4;
+    private static final class TagsDefaultEntryHolder {
+      static final com.google.protobuf.MapEntry<
+          java.lang.String, java.lang.String> defaultEntry =
+              com.google.protobuf.MapEntry
+              .<java.lang.String, java.lang.String>newDefaultInstance(
+                  org.yamcs.protobuf.Rest.internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TagsEntry_descriptor, 
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "",
+                  com.google.protobuf.WireFormat.FieldType.STRING,
+                  "");
+    }
+    private com.google.protobuf.MapField<
+        java.lang.String, java.lang.String> tags_;
+    private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+    internalGetTags() {
+      if (tags_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            TagsDefaultEntryHolder.defaultEntry);
+      }
+      return tags_;
+    }
+
+    public int getTagsCount() {
+      return internalGetTags().getMap().size();
+    }
+    /**
+     * <code>map&lt;string, string&gt; tags = 4;</code>
+     */
+
+    public boolean containsTags(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      return internalGetTags().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getTagsMap()} instead.
+     */
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.String> getTags() {
+      return getTagsMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; tags = 4;</code>
+     */
+
+    public java.util.Map<java.lang.String, java.lang.String> getTagsMap() {
+      return internalGetTags().getMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; tags = 4;</code>
+     */
+
+    public java.lang.String getTagsOrDefault(
+        java.lang.String key,
+        java.lang.String defaultValue) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetTags().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <code>map&lt;string, string&gt; tags = 4;</code>
+     */
+
+    public java.lang.String getTagsOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.String> map =
+          internalGetTags().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 2, template_);
+      }
+      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+           : internalGetTemplateArgs().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+        templateArgs = TemplateArgsDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        output.writeMessage(3, templateArgs);
+      }
+      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+           : internalGetTags().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+        tags = TagsDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        output.writeMessage(4, tags);
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, template_);
+      }
+      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+           : internalGetTemplateArgs().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+        templateArgs = TemplateArgsDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(3, templateArgs);
+      }
+      for (java.util.Map.Entry<java.lang.String, java.lang.String> entry
+           : internalGetTags().getMap().entrySet()) {
+        com.google.protobuf.MapEntry<java.lang.String, java.lang.String>
+        tags = TagsDefaultEntryHolder.defaultEntry.newBuilderForType()
+            .setKey(entry.getKey())
+            .setValue(entry.getValue())
+            .build();
+        size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(4, tags);
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof org.yamcs.protobuf.Rest.CreateInstanceRequest)) {
+        return super.equals(obj);
+      }
+      org.yamcs.protobuf.Rest.CreateInstanceRequest other = (org.yamcs.protobuf.Rest.CreateInstanceRequest) obj;
+
+      boolean result = true;
+      result = result && (hasName() == other.hasName());
+      if (hasName()) {
+        result = result && getName()
+            .equals(other.getName());
+      }
+      result = result && (hasTemplate() == other.hasTemplate());
+      if (hasTemplate()) {
+        result = result && getTemplate()
+            .equals(other.getTemplate());
+      }
+      result = result && internalGetTemplateArgs().equals(
+          other.internalGetTemplateArgs());
+      result = result && internalGetTags().equals(
+          other.internalGetTags());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasName()) {
+        hash = (37 * hash) + NAME_FIELD_NUMBER;
+        hash = (53 * hash) + getName().hashCode();
+      }
+      if (hasTemplate()) {
+        hash = (37 * hash) + TEMPLATE_FIELD_NUMBER;
+        hash = (53 * hash) + getTemplate().hashCode();
+      }
+      if (!internalGetTemplateArgs().getMap().isEmpty()) {
+        hash = (37 * hash) + TEMPLATEARGS_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetTemplateArgs().hashCode();
+      }
+      if (!internalGetTags().getMap().isEmpty()) {
+        hash = (37 * hash) + TAGS_FIELD_NUMBER;
+        hash = (53 * hash) + internalGetTags().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(org.yamcs.protobuf.Rest.CreateInstanceRequest prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code yamcs.protobuf.rest.CreateInstanceRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.rest.CreateInstanceRequest)
+        org.yamcs.protobuf.Rest.CreateInstanceRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.yamcs.protobuf.Rest.internal_static_yamcs_protobuf_rest_CreateInstanceRequest_descriptor;
+      }
+
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMapField(
+          int number) {
+        switch (number) {
+          case 3:
+            return internalGetTemplateArgs();
+          case 4:
+            return internalGetTags();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
+      @SuppressWarnings({"rawtypes"})
+      protected com.google.protobuf.MapField internalGetMutableMapField(
+          int number) {
+        switch (number) {
+          case 3:
+            return internalGetMutableTemplateArgs();
+          case 4:
+            return internalGetMutableTags();
+          default:
+            throw new RuntimeException(
+                "Invalid map field number: " + number);
+        }
+      }
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.yamcs.protobuf.Rest.internal_static_yamcs_protobuf_rest_CreateInstanceRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.yamcs.protobuf.Rest.CreateInstanceRequest.class, org.yamcs.protobuf.Rest.CreateInstanceRequest.Builder.class);
+      }
+
+      // Construct using org.yamcs.protobuf.Rest.CreateInstanceRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        name_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        template_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        internalGetMutableTemplateArgs().clear();
+        internalGetMutableTags().clear();
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.yamcs.protobuf.Rest.internal_static_yamcs_protobuf_rest_CreateInstanceRequest_descriptor;
+      }
+
+      public org.yamcs.protobuf.Rest.CreateInstanceRequest getDefaultInstanceForType() {
+        return org.yamcs.protobuf.Rest.CreateInstanceRequest.getDefaultInstance();
+      }
+
+      public org.yamcs.protobuf.Rest.CreateInstanceRequest build() {
+        org.yamcs.protobuf.Rest.CreateInstanceRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.yamcs.protobuf.Rest.CreateInstanceRequest buildPartial() {
+        org.yamcs.protobuf.Rest.CreateInstanceRequest result = new org.yamcs.protobuf.Rest.CreateInstanceRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.name_ = name_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.template_ = template_;
+        result.templateArgs_ = internalGetTemplateArgs();
+        result.templateArgs_.makeImmutable();
+        result.tags_ = internalGetTags();
+        result.tags_.makeImmutable();
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.yamcs.protobuf.Rest.CreateInstanceRequest) {
+          return mergeFrom((org.yamcs.protobuf.Rest.CreateInstanceRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.yamcs.protobuf.Rest.CreateInstanceRequest other) {
+        if (other == org.yamcs.protobuf.Rest.CreateInstanceRequest.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          bitField0_ |= 0x00000001;
+          name_ = other.name_;
+          onChanged();
+        }
+        if (other.hasTemplate()) {
+          bitField0_ |= 0x00000002;
+          template_ = other.template_;
+          onChanged();
+        }
+        internalGetMutableTemplateArgs().mergeFrom(
+            other.internalGetTemplateArgs());
+        internalGetMutableTags().mergeFrom(
+            other.internalGetTags());
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.yamcs.protobuf.Rest.CreateInstanceRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.yamcs.protobuf.Rest.CreateInstanceRequest) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.lang.Object name_ = "";
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public boolean hasName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public java.lang.String getName() {
+        java.lang.Object ref = name_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            name_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getNameBytes() {
+        java.lang.Object ref = name_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          name_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder clearName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        name_ = getDefaultInstance().getName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string name = 1;</code>
+       */
+      public Builder setNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        name_ = value;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object template_ = "";
+      /**
+       * <code>optional string template = 2;</code>
+       */
+      public boolean hasTemplate() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string template = 2;</code>
+       */
+      public java.lang.String getTemplate() {
+        java.lang.Object ref = template_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            template_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string template = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getTemplateBytes() {
+        java.lang.Object ref = template_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          template_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string template = 2;</code>
+       */
+      public Builder setTemplate(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        template_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string template = 2;</code>
+       */
+      public Builder clearTemplate() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        template_ = getDefaultInstance().getTemplate();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string template = 2;</code>
+       */
+      public Builder setTemplateBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        template_ = value;
+        onChanged();
+        return this;
+      }
+
+      private com.google.protobuf.MapField<
+          java.lang.String, java.lang.String> templateArgs_;
+      private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      internalGetTemplateArgs() {
+        if (templateArgs_ == null) {
+          return com.google.protobuf.MapField.emptyMapField(
+              TemplateArgsDefaultEntryHolder.defaultEntry);
+        }
+        return templateArgs_;
+      }
+      private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      internalGetMutableTemplateArgs() {
+        onChanged();;
+        if (templateArgs_ == null) {
+          templateArgs_ = com.google.protobuf.MapField.newMapField(
+              TemplateArgsDefaultEntryHolder.defaultEntry);
+        }
+        if (!templateArgs_.isMutable()) {
+          templateArgs_ = templateArgs_.copy();
+        }
+        return templateArgs_;
+      }
+
+      public int getTemplateArgsCount() {
+        return internalGetTemplateArgs().getMap().size();
+      }
+      /**
+       * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+       */
+
+      public boolean containsTemplateArgs(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        return internalGetTemplateArgs().getMap().containsKey(key);
+      }
+      /**
+       * Use {@link #getTemplateArgsMap()} instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, java.lang.String> getTemplateArgs() {
+        return getTemplateArgsMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+       */
+
+      public java.util.Map<java.lang.String, java.lang.String> getTemplateArgsMap() {
+        return internalGetTemplateArgs().getMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+       */
+
+      public java.lang.String getTemplateArgsOrDefault(
+          java.lang.String key,
+          java.lang.String defaultValue) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, java.lang.String> map =
+            internalGetTemplateArgs().getMap();
+        return map.containsKey(key) ? map.get(key) : defaultValue;
+      }
+      /**
+       * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+       */
+
+      public java.lang.String getTemplateArgsOrThrow(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, java.lang.String> map =
+            internalGetTemplateArgs().getMap();
+        if (!map.containsKey(key)) {
+          throw new java.lang.IllegalArgumentException();
+        }
+        return map.get(key);
+      }
+
+      public Builder clearTemplateArgs() {
+        getMutableTemplateArgs().clear();
+        return this;
+      }
+      /**
+       * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+       */
+
+      public Builder removeTemplateArgs(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        getMutableTemplateArgs().remove(key);
+        return this;
+      }
+      /**
+       * Use alternate mutation accessors instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, java.lang.String>
+      getMutableTemplateArgs() {
+        return internalGetMutableTemplateArgs().getMutableMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+       */
+      public Builder putTemplateArgs(
+          java.lang.String key,
+          java.lang.String value) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (value == null) { throw new java.lang.NullPointerException(); }
+        getMutableTemplateArgs().put(key, value);
+        return this;
+      }
+      /**
+       * <code>map&lt;string, string&gt; templateArgs = 3;</code>
+       */
+
+      public Builder putAllTemplateArgs(
+          java.util.Map<java.lang.String, java.lang.String> values) {
+        getMutableTemplateArgs().putAll(values);
+        return this;
+      }
+
+      private com.google.protobuf.MapField<
+          java.lang.String, java.lang.String> tags_;
+      private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      internalGetTags() {
+        if (tags_ == null) {
+          return com.google.protobuf.MapField.emptyMapField(
+              TagsDefaultEntryHolder.defaultEntry);
+        }
+        return tags_;
+      }
+      private com.google.protobuf.MapField<java.lang.String, java.lang.String>
+      internalGetMutableTags() {
+        onChanged();;
+        if (tags_ == null) {
+          tags_ = com.google.protobuf.MapField.newMapField(
+              TagsDefaultEntryHolder.defaultEntry);
+        }
+        if (!tags_.isMutable()) {
+          tags_ = tags_.copy();
+        }
+        return tags_;
+      }
+
+      public int getTagsCount() {
+        return internalGetTags().getMap().size();
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 4;</code>
+       */
+
+      public boolean containsTags(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        return internalGetTags().getMap().containsKey(key);
+      }
+      /**
+       * Use {@link #getTagsMap()} instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, java.lang.String> getTags() {
+        return getTagsMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 4;</code>
+       */
+
+      public java.util.Map<java.lang.String, java.lang.String> getTagsMap() {
+        return internalGetTags().getMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 4;</code>
+       */
+
+      public java.lang.String getTagsOrDefault(
+          java.lang.String key,
+          java.lang.String defaultValue) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, java.lang.String> map =
+            internalGetTags().getMap();
+        return map.containsKey(key) ? map.get(key) : defaultValue;
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 4;</code>
+       */
+
+      public java.lang.String getTagsOrThrow(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        java.util.Map<java.lang.String, java.lang.String> map =
+            internalGetTags().getMap();
+        if (!map.containsKey(key)) {
+          throw new java.lang.IllegalArgumentException();
+        }
+        return map.get(key);
+      }
+
+      public Builder clearTags() {
+        getMutableTags().clear();
+        return this;
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 4;</code>
+       */
+
+      public Builder removeTags(
+          java.lang.String key) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        getMutableTags().remove(key);
+        return this;
+      }
+      /**
+       * Use alternate mutation accessors instead.
+       */
+      @java.lang.Deprecated
+      public java.util.Map<java.lang.String, java.lang.String>
+      getMutableTags() {
+        return internalGetMutableTags().getMutableMap();
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 4;</code>
+       */
+      public Builder putTags(
+          java.lang.String key,
+          java.lang.String value) {
+        if (key == null) { throw new java.lang.NullPointerException(); }
+        if (value == null) { throw new java.lang.NullPointerException(); }
+        getMutableTags().put(key, value);
+        return this;
+      }
+      /**
+       * <code>map&lt;string, string&gt; tags = 4;</code>
+       */
+
+      public Builder putAllTags(
+          java.util.Map<java.lang.String, java.lang.String> values) {
+        getMutableTags().putAll(values);
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.rest.CreateInstanceRequest)
+    }
+
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.rest.CreateInstanceRequest)
+    private static final org.yamcs.protobuf.Rest.CreateInstanceRequest DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.Rest.CreateInstanceRequest();
+    }
+
+    public static org.yamcs.protobuf.Rest.CreateInstanceRequest getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<CreateInstanceRequest>
+        PARSER = new com.google.protobuf.AbstractParser<CreateInstanceRequest>() {
+      public CreateInstanceRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new CreateInstanceRequest(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<CreateInstanceRequest> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<CreateInstanceRequest> getParserForType() {
+      return PARSER;
+    }
+
+    public org.yamcs.protobuf.Rest.CreateInstanceRequest getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface ListTagsResponseOrBuilder extends
       // @@protoc_insertion_point(interface_extends:yamcs.protobuf.rest.ListTagsResponse)
       com.google.protobuf.MessageOrBuilder {
@@ -40856,6 +42146,21 @@ public final class Rest {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_protobuf_rest_ListInstancesResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_rest_CreateInstanceRequest_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_rest_CreateInstanceRequest_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TemplateArgsEntry_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TemplateArgsEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TagsEntry_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TagsEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_protobuf_rest_ListTagsResponse_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -41035,44 +42340,52 @@ public final class Rest {
       " \001(\t\022\026\n\016simElapsedTime\030\003 \001(\003\022\020\n\010simSpeed" +
       "\030\004 \001(\001\"X\n\025ListInstancesResponse\022?\n\010insta" +
       "nce\030\001 \003(\0132-.yamcs.protobuf.yamcsManageme" +
-      "nt.YamcsInstance\";\n\020ListTagsResponse\022\'\n\003" +
-      "tag\030\001 \003(\0132\032.yamcs.protobuf.ArchiveTag\"a\n" +
-      "\020CreateTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005start" +
-      "\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description\030\004 \001(",
-      "\t\022\r\n\005color\030\005 \001(\t\"_\n\016EditTagRequest\022\014\n\004na" +
-      "me\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n" +
-      "\013description\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"E\n\022Lis" +
-      "tAlarmsResponse\022/\n\005alarm\030\001 \003(\0132 .yamcs.p" +
-      "rotobuf.alarms.AlarmData\"2\n\020EditAlarmReq" +
-      "uest\022\r\n\005state\030\001 \001(\t\022\017\n\007comment\030\002 \001(\t\"F\n\022" +
-      "ListTablesResponse\0220\n\005table\030\001 \003(\0132!.yamc" +
-      "s.protobuf.archive.TableInfo\"I\n\023ListStre" +
-      "amsResponse\0222\n\006stream\030\001 \003(\0132\".yamcs.prot" +
-      "obuf.archive.StreamInfo\"U\n\022ListEventsRes",
-      "ponse\022$\n\005event\030\001 \003(\0132\025.yamcs.protobuf.Ev" +
-      "ent\022\031\n\021continuationToken\030\002 \001(\t\"^\n\023ListPa" +
-      "cketsResponse\022,\n\006packet\030\001 \003(\0132\034.yamcs.pr" +
-      "otobuf.TmPacketData\022\031\n\021continuationToken" +
-      "\030\002 \001(\t\"W\n\027ListServiceInfoResponse\022<\n\007ser" +
-      "vice\030\001 \003(\0132+.yamcs.protobuf.yamcsManagem" +
-      "ent.ServiceInfo\"r\n\033ListParameterValuesRe" +
-      "sponse\0228\n\tparameter\030\001 \003(\0132%.yamcs.protob" +
-      "uf.pvalue.ParameterValue\022\031\n\021continuation" +
-      "Token\030\002 \001(\t\"#\n\022EditServiceRequest\022\r\n\005sta",
-      "te\030\001 \001(\t\"V\n\023BulkGetIndexRequest\022\r\n\005start" +
-      "\030\001 \001(\t\022\014\n\004stop\030\002 \001(\t\022\016\n\006filter\030\003 \003(\t\022\022\n\n" +
-      "packetname\030\004 \003(\t\"#\n\023CreateBucketRequest\022" +
-      "\014\n\004name\030\001 \001(\t\"<\n\nBucketInfo\022\014\n\004name\030\001 \001(" +
-      "\t\022\014\n\004size\030\002 \001(\004\022\022\n\nnumObjects\030\003 \001(\r\"\253\001\n\n" +
-      "ObjectInfo\022\014\n\004name\030\001 \001(\t\022\017\n\007created\030\002 \001(" +
-      "\t\022\014\n\004size\030\003 \001(\004\022?\n\010metadata\030\004 \003(\0132-.yamc" +
-      "s.protobuf.rest.ObjectInfo.MetadataEntry" +
-      "\032/\n\rMetadataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030" +
-      "\002 \001(\t:\0028\001\"F\n\023ListBucketsResponse\022/\n\006buck",
-      "et\030\001 \003(\0132\037.yamcs.protobuf.rest.BucketInf" +
-      "o\"V\n\023ListObjectsResponse\022\016\n\006prefix\030\001 \003(\t" +
-      "\022/\n\006object\030\002 \003(\0132\037.yamcs.protobuf.rest.O" +
-      "bjectInfoB\024\n\022org.yamcs.protobuf"
+      "nt.YamcsInstance\"\261\002\n\025CreateInstanceReque" +
+      "st\022\014\n\004name\030\001 \001(\t\022\020\n\010template\030\002 \001(\t\022R\n\014te" +
+      "mplateArgs\030\003 \003(\0132<.yamcs.protobuf.rest.C" +
+      "reateInstanceRequest.TemplateArgsEntry\022B",
+      "\n\004tags\030\004 \003(\01324.yamcs.protobuf.rest.Creat" +
+      "eInstanceRequest.TagsEntry\0323\n\021TemplateAr" +
+      "gsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\032" +
+      "+\n\tTagsEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t" +
+      ":\0028\001\";\n\020ListTagsResponse\022\'\n\003tag\030\001 \003(\0132\032." +
+      "yamcs.protobuf.ArchiveTag\"a\n\020CreateTagRe" +
+      "quest\022\014\n\004name\030\001 \001(\t\022\r\n\005start\030\002 \001(\t\022\014\n\004st" +
+      "op\030\003 \001(\t\022\023\n\013description\030\004 \001(\t\022\r\n\005color\030\005" +
+      " \001(\t\"_\n\016EditTagRequest\022\014\n\004name\030\001 \001(\t\022\r\n\005" +
+      "start\030\002 \001(\t\022\014\n\004stop\030\003 \001(\t\022\023\n\013description",
+      "\030\004 \001(\t\022\r\n\005color\030\005 \001(\t\"E\n\022ListAlarmsRespo" +
+      "nse\022/\n\005alarm\030\001 \003(\0132 .yamcs.protobuf.alar" +
+      "ms.AlarmData\"2\n\020EditAlarmRequest\022\r\n\005stat" +
+      "e\030\001 \001(\t\022\017\n\007comment\030\002 \001(\t\"F\n\022ListTablesRe" +
+      "sponse\0220\n\005table\030\001 \003(\0132!.yamcs.protobuf.a" +
+      "rchive.TableInfo\"I\n\023ListStreamsResponse\022" +
+      "2\n\006stream\030\001 \003(\0132\".yamcs.protobuf.archive" +
+      ".StreamInfo\"U\n\022ListEventsResponse\022$\n\005eve" +
+      "nt\030\001 \003(\0132\025.yamcs.protobuf.Event\022\031\n\021conti" +
+      "nuationToken\030\002 \001(\t\"^\n\023ListPacketsRespons",
+      "e\022,\n\006packet\030\001 \003(\0132\034.yamcs.protobuf.TmPac" +
+      "ketData\022\031\n\021continuationToken\030\002 \001(\t\"W\n\027Li" +
+      "stServiceInfoResponse\022<\n\007service\030\001 \003(\0132+" +
+      ".yamcs.protobuf.yamcsManagement.ServiceI" +
+      "nfo\"r\n\033ListParameterValuesResponse\0228\n\tpa" +
+      "rameter\030\001 \003(\0132%.yamcs.protobuf.pvalue.Pa" +
+      "rameterValue\022\031\n\021continuationToken\030\002 \001(\t\"" +
+      "#\n\022EditServiceRequest\022\r\n\005state\030\001 \001(\t\"V\n\023" +
+      "BulkGetIndexRequest\022\r\n\005start\030\001 \001(\t\022\014\n\004st" +
+      "op\030\002 \001(\t\022\016\n\006filter\030\003 \003(\t\022\022\n\npacketname\030\004",
+      " \003(\t\"#\n\023CreateBucketRequest\022\014\n\004name\030\001 \001(" +
+      "\t\"<\n\nBucketInfo\022\014\n\004name\030\001 \001(\t\022\014\n\004size\030\002 " +
+      "\001(\004\022\022\n\nnumObjects\030\003 \001(\r\"\253\001\n\nObjectInfo\022\014" +
+      "\n\004name\030\001 \001(\t\022\017\n\007created\030\002 \001(\t\022\014\n\004size\030\003 " +
+      "\001(\004\022?\n\010metadata\030\004 \003(\0132-.yamcs.protobuf.r" +
+      "est.ObjectInfo.MetadataEntry\032/\n\rMetadata" +
+      "Entry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"F\n" +
+      "\023ListBucketsResponse\022/\n\006bucket\030\001 \003(\0132\037.y" +
+      "amcs.protobuf.rest.BucketInfo\"V\n\023ListObj" +
+      "ectsResponse\022\016\n\006prefix\030\001 \003(\t\022/\n\006object\030\002",
+      " \003(\0132\037.yamcs.protobuf.rest.ObjectInfoB\024\n" +
+      "\022org.yamcs.protobuf"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -41266,98 +42579,116 @@ public final class Rest {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListInstancesResponse_descriptor,
         new java.lang.String[] { "Instance", });
-    internal_static_yamcs_protobuf_rest_ListTagsResponse_descriptor =
+    internal_static_yamcs_protobuf_rest_CreateInstanceRequest_descriptor =
       getDescriptor().getMessageTypes().get(24);
+    internal_static_yamcs_protobuf_rest_CreateInstanceRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_rest_CreateInstanceRequest_descriptor,
+        new java.lang.String[] { "Name", "Template", "TemplateArgs", "Tags", });
+    internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TemplateArgsEntry_descriptor =
+      internal_static_yamcs_protobuf_rest_CreateInstanceRequest_descriptor.getNestedTypes().get(0);
+    internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TemplateArgsEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TemplateArgsEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TagsEntry_descriptor =
+      internal_static_yamcs_protobuf_rest_CreateInstanceRequest_descriptor.getNestedTypes().get(1);
+    internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TagsEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_yamcs_protobuf_rest_CreateInstanceRequest_TagsEntry_descriptor,
+        new java.lang.String[] { "Key", "Value", });
+    internal_static_yamcs_protobuf_rest_ListTagsResponse_descriptor =
+      getDescriptor().getMessageTypes().get(25);
     internal_static_yamcs_protobuf_rest_ListTagsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListTagsResponse_descriptor,
         new java.lang.String[] { "Tag", });
     internal_static_yamcs_protobuf_rest_CreateTagRequest_descriptor =
-      getDescriptor().getMessageTypes().get(25);
+      getDescriptor().getMessageTypes().get(26);
     internal_static_yamcs_protobuf_rest_CreateTagRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_CreateTagRequest_descriptor,
         new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
     internal_static_yamcs_protobuf_rest_EditTagRequest_descriptor =
-      getDescriptor().getMessageTypes().get(26);
+      getDescriptor().getMessageTypes().get(27);
     internal_static_yamcs_protobuf_rest_EditTagRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_EditTagRequest_descriptor,
         new java.lang.String[] { "Name", "Start", "Stop", "Description", "Color", });
     internal_static_yamcs_protobuf_rest_ListAlarmsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(27);
+      getDescriptor().getMessageTypes().get(28);
     internal_static_yamcs_protobuf_rest_ListAlarmsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListAlarmsResponse_descriptor,
         new java.lang.String[] { "Alarm", });
     internal_static_yamcs_protobuf_rest_EditAlarmRequest_descriptor =
-      getDescriptor().getMessageTypes().get(28);
+      getDescriptor().getMessageTypes().get(29);
     internal_static_yamcs_protobuf_rest_EditAlarmRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_EditAlarmRequest_descriptor,
         new java.lang.String[] { "State", "Comment", });
     internal_static_yamcs_protobuf_rest_ListTablesResponse_descriptor =
-      getDescriptor().getMessageTypes().get(29);
+      getDescriptor().getMessageTypes().get(30);
     internal_static_yamcs_protobuf_rest_ListTablesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListTablesResponse_descriptor,
         new java.lang.String[] { "Table", });
     internal_static_yamcs_protobuf_rest_ListStreamsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(30);
+      getDescriptor().getMessageTypes().get(31);
     internal_static_yamcs_protobuf_rest_ListStreamsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListStreamsResponse_descriptor,
         new java.lang.String[] { "Stream", });
     internal_static_yamcs_protobuf_rest_ListEventsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(31);
+      getDescriptor().getMessageTypes().get(32);
     internal_static_yamcs_protobuf_rest_ListEventsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListEventsResponse_descriptor,
         new java.lang.String[] { "Event", "ContinuationToken", });
     internal_static_yamcs_protobuf_rest_ListPacketsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(32);
+      getDescriptor().getMessageTypes().get(33);
     internal_static_yamcs_protobuf_rest_ListPacketsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListPacketsResponse_descriptor,
         new java.lang.String[] { "Packet", "ContinuationToken", });
     internal_static_yamcs_protobuf_rest_ListServiceInfoResponse_descriptor =
-      getDescriptor().getMessageTypes().get(33);
+      getDescriptor().getMessageTypes().get(34);
     internal_static_yamcs_protobuf_rest_ListServiceInfoResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListServiceInfoResponse_descriptor,
         new java.lang.String[] { "Service", });
     internal_static_yamcs_protobuf_rest_ListParameterValuesResponse_descriptor =
-      getDescriptor().getMessageTypes().get(34);
+      getDescriptor().getMessageTypes().get(35);
     internal_static_yamcs_protobuf_rest_ListParameterValuesResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListParameterValuesResponse_descriptor,
         new java.lang.String[] { "Parameter", "ContinuationToken", });
     internal_static_yamcs_protobuf_rest_EditServiceRequest_descriptor =
-      getDescriptor().getMessageTypes().get(35);
+      getDescriptor().getMessageTypes().get(36);
     internal_static_yamcs_protobuf_rest_EditServiceRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_EditServiceRequest_descriptor,
         new java.lang.String[] { "State", });
     internal_static_yamcs_protobuf_rest_BulkGetIndexRequest_descriptor =
-      getDescriptor().getMessageTypes().get(36);
+      getDescriptor().getMessageTypes().get(37);
     internal_static_yamcs_protobuf_rest_BulkGetIndexRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_BulkGetIndexRequest_descriptor,
         new java.lang.String[] { "Start", "Stop", "Filter", "Packetname", });
     internal_static_yamcs_protobuf_rest_CreateBucketRequest_descriptor =
-      getDescriptor().getMessageTypes().get(37);
+      getDescriptor().getMessageTypes().get(38);
     internal_static_yamcs_protobuf_rest_CreateBucketRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_CreateBucketRequest_descriptor,
         new java.lang.String[] { "Name", });
     internal_static_yamcs_protobuf_rest_BucketInfo_descriptor =
-      getDescriptor().getMessageTypes().get(38);
+      getDescriptor().getMessageTypes().get(39);
     internal_static_yamcs_protobuf_rest_BucketInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_BucketInfo_descriptor,
         new java.lang.String[] { "Name", "Size", "NumObjects", });
     internal_static_yamcs_protobuf_rest_ObjectInfo_descriptor =
-      getDescriptor().getMessageTypes().get(39);
+      getDescriptor().getMessageTypes().get(40);
     internal_static_yamcs_protobuf_rest_ObjectInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ObjectInfo_descriptor,
@@ -41369,13 +42700,13 @@ public final class Rest {
         internal_static_yamcs_protobuf_rest_ObjectInfo_MetadataEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
     internal_static_yamcs_protobuf_rest_ListBucketsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(40);
+      getDescriptor().getMessageTypes().get(41);
     internal_static_yamcs_protobuf_rest_ListBucketsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListBucketsResponse_descriptor,
         new java.lang.String[] { "Bucket", });
     internal_static_yamcs_protobuf_rest_ListObjectsResponse_descriptor =
-      getDescriptor().getMessageTypes().get(41);
+      getDescriptor().getMessageTypes().get(42);
     internal_static_yamcs_protobuf_rest_ListObjectsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_rest_ListObjectsResponse_descriptor,

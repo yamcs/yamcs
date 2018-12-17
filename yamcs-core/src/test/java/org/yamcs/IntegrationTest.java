@@ -320,15 +320,13 @@ public class IntegrationTest extends AbstractIntegrationTest {
         cai = ContextAlarmInfo.newBuilder().setContext("EnumerationPara1_10_2==five_yes").setAlarm(ai).build();
        
         cpr = ChangeParameterRequest.newBuilder().setAction(ActionType.SET_ALARMS).addContextAlarm(cai).build();
-        String resp = restClient
+        restClient
                 .doRequest("/mdb/IntegrationTest/realtime/parameters/REFMDB/SUBSYS1/IntegerPara1_10_1",
                         HttpMethod.PATCH, toJson(cpr))
                 .get();
-        System.out.println(resp);
 
         packetGenerator.generate_PKT1_10(11, 5, 0);
         pdata = wsListener.parameterDataList.poll(5, TimeUnit.SECONDS);
-        System.out.println(pdata);
         assertEquals(MonitoringResult.SEVERE, pdata.getParameter(0).getMonitoringResult());
         
         //reset to the original MDB value

@@ -3,7 +3,7 @@ package org.yamcs.yarch;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
 

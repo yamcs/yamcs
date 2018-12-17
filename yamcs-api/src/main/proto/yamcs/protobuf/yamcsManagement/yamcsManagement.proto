@@ -38,6 +38,7 @@ message YamcsInstance {
   // the missionDatabase and other fields may not be filled when this happens
   optional string failureCause = 9;
   optional string missionTime = 10;
+  map<string, string> tags = 12;
 }
 
 message ProcessorInfo {

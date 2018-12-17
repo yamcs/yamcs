@@ -308,7 +308,7 @@ public class ArchiveEventRestHandler extends RestHandler {
 
     private GpbExtensionRegistry getExtensionRegistry() {
         if (gpbExtensionRegistry == null) {
-            List<HttpServer> services = YamcsServer.getServer().getGlobalServices(HttpServer.class);
+            List<HttpServer> services = yamcsServer.getGlobalServices(HttpServer.class);
             gpbExtensionRegistry = services.get(0).getGpbExtensionRegistry();
         }
         return gpbExtensionRegistry;

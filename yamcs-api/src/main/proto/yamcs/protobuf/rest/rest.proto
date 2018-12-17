@@ -141,6 +141,7 @@ message CreateProcessorRequest {
   optional string config = 13;
 }
 
+
 message EditProcessorRequest {
   optional string state = 1;
   optional string seek = 2;
@@ -162,6 +163,13 @@ message SetSimulationTimeRequest {
 
 message ListInstancesResponse {
   repeated yamcsManagement.YamcsInstance instance = 1;
+}
+
+message CreateInstanceRequest {
+   optional string name = 1;
+   optional string template = 2;
+   map<string, string> templateArgs = 3;
+   map<string, string> tags = 4;  
 }
 
 message ListTagsResponse {
