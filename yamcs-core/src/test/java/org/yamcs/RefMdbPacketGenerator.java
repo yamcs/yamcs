@@ -108,6 +108,9 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     // Get enumerations from strings
     public String pStringEnumPara1_12_1 = "1";
 
+    // Get boolean from strings
+    public String pStringBooleanPara1_13_1 = "True";
+
     static public final int pIntegerPara2_1 = 123;
     static public final int pIntegerPara2_2 = 25;
 
@@ -228,6 +231,13 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public byte[] generate_PKT1_12() {
         ByteBuffer bb = ByteBuffer.allocate(pkt1Length + pStringEnumPara1_12_1.length() + 1);
         fill_PKT1_12(bb);
+        sendToTmProcessor(bb);
+        return bb.array();
+    }
+
+    public byte[] generate_PKT1_13() {
+        ByteBuffer bb = ByteBuffer.allocate(pkt1Length + pStringBooleanPara1_13_1.length() + 1);
+        fill_PKT1_13(bb);
         sendToTmProcessor(bb);
         return bb.array();
     }
@@ -561,6 +571,14 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         bb.position(offset);
 
         putTerminatedStringParam(bb, pStringEnumPara1_12_1, (byte) ';');
+    }
+
+    private void fill_PKT1_13(ByteBuffer bb) {
+        fill_PKT1(bb, 12);
+        int offset = pkt1Length;
+        bb.position(offset);
+
+        putTerminatedStringParam(bb, pStringBooleanPara1_13_1, (byte) 0);
     }
 
     private void fill_PKT3(ByteBuffer bb) {
