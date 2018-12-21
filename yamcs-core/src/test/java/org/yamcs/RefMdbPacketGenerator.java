@@ -574,7 +574,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     }
 
     private void fill_PKT1_13(ByteBuffer bb) {
-        fill_PKT1(bb, 12);
+        fill_PKT1(bb, 13);
         int offset = pkt1Length;
         bb.position(offset);
 

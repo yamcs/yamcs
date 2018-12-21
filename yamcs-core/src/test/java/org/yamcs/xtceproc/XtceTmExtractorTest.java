@@ -416,7 +416,7 @@ public class XtceTmExtractorTest {
         XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
         tmExtractor.provideAll();
 
-        byte[] bb = tmGenerator.generate_PKT1_12();
+        byte[] bb = tmGenerator.generate_PKT1_13();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
 
         ParameterValueList received = tmExtractor.getParameterResult();
