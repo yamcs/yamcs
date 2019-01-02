@@ -109,7 +109,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
     public String pStringEnumPara1_12_1 = "1";
 
     // Get boolean from strings
-    public String pStringBooleanPara1_13_1 = "True";
+    public String pStringBooleanPara10_1 = "True";
 
     static public final int pIntegerPara2_1 = 123;
     static public final int pIntegerPara2_2 = 25;
@@ -235,12 +235,6 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         return bb.array();
     }
 
-    public byte[] generate_PKT1_13() {
-        ByteBuffer bb = ByteBuffer.allocate(pkt1Length + pStringBooleanPara1_13_1.length() + 1);
-        fill_PKT1_13(bb);
-        sendToTmProcessor(bb);
-        return bb.array();
-    }
 
     public byte[] generate_PKT4() {
         ByteBuffer bb = ByteBuffer.allocate(pkt4Length);
@@ -573,13 +567,7 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         putTerminatedStringParam(bb, pStringEnumPara1_12_1, (byte) ';');
     }
 
-    private void fill_PKT1_13(ByteBuffer bb) {
-        fill_PKT1(bb, 13);
-        int offset = pkt1Length;
-        bb.position(offset);
 
-        putTerminatedStringParam(bb, pStringBooleanPara1_13_1, (byte) 0);
-    }
 
     private void fill_PKT3(ByteBuffer bb) {
         fill_CcsdsHeader(bb, 995, 318813009);
@@ -647,6 +635,20 @@ public class RefMdbPacketGenerator extends AbstractService implements TmPacketPr
         sendToTmProcessor(bb);
         return bb.array();
     }
+
+
+    public byte[] generate_PKT10() {
+        int pkt10Length = headerLength + pStringBooleanPara10_1.length() + 1;
+        ByteBuffer bb = ByteBuffer.allocate(pkt10Length);
+
+        fill_CcsdsHeader(bb, 995, 10);
+        putTerminatedStringParam(bb, pStringBooleanPara10_1, (byte) 0);
+
+        sendToTmProcessor(bb);
+        return bb.array();
+    }
+
+
 
     private void putFixedStringParam(ByteBuffer bb, String value, int bits) {
         int baSize = bits / 8;
