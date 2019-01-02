@@ -162,7 +162,10 @@ public class ParameterTypeProcessor {
             return ValueUtility.getBooleanValue(rawValue.getDoubleValue() != 0);
         case STRING:
             return ValueUtility
-                    .getBooleanValue(rawValue.getStringValue() != null && !rawValue.getStringValue().isEmpty());
+                    .getBooleanValue(rawValue.getStringValue() != null
+                            && !rawValue.getStringValue().isEmpty()
+                            && !rawValue.getStringValue().equals("0")
+                            && !rawValue.getStringValue().toLowerCase().equals("false"));
         case BOOLEAN:
             return rawValue;
         case BINARY:

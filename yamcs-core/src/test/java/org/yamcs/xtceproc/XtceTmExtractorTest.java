@@ -407,6 +407,35 @@ public class XtceTmExtractorTest {
         assertEquals(AcquisitionStatus.INVALID, pv.getAcquisitionStatus());
     }
 
+
+    private void testPKT1_13(String rawValue, Boolean expectedEngineering){
+        RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
+
+        // True, case insensitive
+        tmGenerator.pStringBooleanPara1_13_1 = rawValue;
+        XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
+        tmExtractor.provideAll();
+
+        byte[] bb = tmGenerator.generate_PKT1_13();
+        tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
+
+        ParameterValueList received = tmExtractor.getParameterResult();
+        ParameterValue pv = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/StringBooleanPara1_13_1"));
+        assertEquals(tmGenerator.pStringBooleanPara1_13_1, pv.getRawValue().getStringValue());
+        assertTrue(expectedEngineering == pv.getEngValue().getBooleanValue());
+    }
+    @Test
+    public void testPKT1_13_values() {
+        testPKT1_13("True", true);
+        testPKT1_13("False", false);
+        testPKT1_13("true", true);
+        testPKT1_13("false", false);
+        testPKT1_13("0", false);
+        testPKT1_13("1", true);
+        testPKT1_13("", false);
+        testPKT1_13("arbitrary content", true);    }
+
+
     @Test
     public void testPKT3_dynamicSize() {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
