@@ -408,32 +408,31 @@ public class XtceTmExtractorTest {
     }
 
 
-    private void testPKT1_13(String rawValue, Boolean expectedEngineering){
+    private void testPKT10(String rawValue, Boolean expectedEngineering){
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
 
-        // True, case insensitive
-        tmGenerator.pStringBooleanPara1_13_1 = rawValue;
+        tmGenerator.pStringBooleanPara10_1 = rawValue;
         XtceTmExtractor tmExtractor = new XtceTmExtractor(xtcedb);
         tmExtractor.provideAll();
 
-        byte[] bb = tmGenerator.generate_PKT1_13();
+        byte[] bb = tmGenerator.generate_PKT10();
         tmExtractor.processPacket(bb, TimeEncoding.getWallclockTime(), TimeEncoding.getWallclockTime());
 
         ParameterValueList received = tmExtractor.getParameterResult();
-        ParameterValue pv = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/StringBooleanPara1_13_1"));
-        assertEquals(tmGenerator.pStringBooleanPara1_13_1, pv.getRawValue().getStringValue());
+        ParameterValue pv = received.getLastInserted(xtcedb.getParameter("/REFMDB/SUBSYS1/StringBooleanPara10_1"));
+        assertEquals(tmGenerator.pStringBooleanPara10_1, pv.getRawValue().getStringValue());
         assertTrue(expectedEngineering == pv.getEngValue().getBooleanValue());
     }
     @Test
-    public void testPKT1_13_values() {
-        testPKT1_13("True", true);
-        testPKT1_13("False", false);
-        testPKT1_13("true", true);
-        testPKT1_13("false", false);
-        testPKT1_13("0", false);
-        testPKT1_13("1", true);
-        testPKT1_13("", false);
-        testPKT1_13("arbitrary content", true);    }
+    public void testPKT10_values() {
+        testPKT10("True", true);
+        testPKT10("False", false);
+        testPKT10("false", false);
+        testPKT10("true", true);
+        testPKT10("0", false);
+        testPKT10("1", true);
+        testPKT10("", false);
+        testPKT10("arbitrary content", true);    }
 
 
     @Test
