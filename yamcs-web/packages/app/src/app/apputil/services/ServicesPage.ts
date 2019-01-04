@@ -21,7 +21,7 @@ export class ServicesPage {
 
   startService(name: string) {
     if (confirm(`Are you sure you want to start ${name} ?`)) {
-      this.yamcs.getInstanceClient()!.startService(name).then(() => {
+      this.yamcs.yamcsClient.startService(name).then(() => {
         this.refreshDataSources();
       });
     }
@@ -29,14 +29,14 @@ export class ServicesPage {
 
   stopService(name: string) {
     if (confirm(`Are you sure you want to stop ${name} ?`)) {
-      this.yamcs.getInstanceClient()!.stopService(name).then(() => {
+      this.yamcs.yamcsClient.stopService(name).then(() => {
         this.refreshDataSources();
       });
     }
   }
 
   private refreshDataSources() {
-    this.yamcs.getInstanceClient()!.getServices().then(services => {
+    this.yamcs.yamcsClient.getServices().then(services => {
       this.dataSource.data = services;
     });
   }

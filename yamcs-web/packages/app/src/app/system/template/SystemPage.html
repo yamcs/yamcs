@@ -29,11 +29,6 @@
         Processors
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-item routerLink="clients"
-                            [queryParams]="{instance: instance.name}">
-        Clients
-      </app-sidebar-nav-item>
-
       <app-sidebar-nav-item *ngIf="showTablesItem()"
                             routerLink="tables"
                             [queryParams]="{instance: instance.name}">

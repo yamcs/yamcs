@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { ClientsPage } from './apputil/clients/ClientsPage';
 import { CreateInstancePage1 } from './apputil/pages/CreateInstancePage1';
 import { CreateInstancePage2 } from './apputil/pages/CreateInstancePage2';
 import { ForbiddenPage } from './apputil/pages/ForbiddenPage';
@@ -8,6 +9,8 @@ import { LoginPage } from './apputil/pages/LoginPage';
 import { NotFoundPage } from './apputil/pages/NotFoundPage';
 import { ProfilePage } from './apputil/pages/ProfilePage';
 import { ServerUnavailablePage } from './apputil/pages/ServerUnavailablePage';
+import { ServerInfoPage } from './apputil/server-info/ServerInfoPage';
+import { ServicesPage } from './apputil/services/ServicesPage';
 import { AuthGuard } from './core/guards/AuthGuard';
 import { UnselectInstanceGuard } from './core/guards/UnselectInstanceGuard';
 
@@ -27,19 +30,19 @@ const routes: Routes = [
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'monitor',
-        loadChildren: 'src/app/monitor/MonitorModule#MonitorModule',
-        canActivate: [AuthGuard],
+        path: 'clients',
+        component: ClientsPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'mdb',
-        loadChildren: 'src/app/mdb/MdbModule#MdbModule',
-        canActivate: [AuthGuard],
+        path: 'services',
+        component: ServicesPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
-        path: 'system',
-        loadChildren: 'src/app/system/SystemModule#SystemModule',
-        canActivate: [AuthGuard],
+        path: 'server-info',
+        component: ServerInfoPage,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'create-instance',
@@ -56,6 +59,21 @@ const routes: Routes = [
         path: 'profile',
         component: ProfilePage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'monitor',
+        loadChildren: 'src/app/monitor/MonitorModule#MonitorModule',
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'mdb',
+        loadChildren: 'src/app/mdb/MdbModule#MdbModule',
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'system',
+        loadChildren: 'src/app/system/SystemModule#SystemModule',
+        canActivate: [AuthGuard],
       },
       {
         path: 'login',

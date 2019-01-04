@@ -22,6 +22,8 @@ import { OperatorPipe } from './pipes/OperatorPipe';
 import { PrintJsonPipe } from './pipes/PrintJsonPipe';
 import { UnitsPipe } from './pipes/UnitsPipe';
 import { ValuePipe } from './pipes/ValuePipe';
+import { ServicesTable } from './services/ServicesTable';
+import { ServiceState } from './services/ServiceState';
 import { ActionLink } from './template/ActionLink';
 import { AlarmLevel } from './template/AlarmLevel';
 import { ColumnChooser } from './template/ColumnChooser';
@@ -93,6 +95,8 @@ const sharedComponents = [
   Help,
   HelpDialog,
   Hex,
+  ServiceState,
+  ServicesTable,
   SidebarNavItem,
   ParameterLegend,
   ParameterPlot,

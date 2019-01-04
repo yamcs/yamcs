@@ -2,83 +2,43 @@
   <app-system-toolbar>Dashboard</app-system-toolbar>
 
   <div class="panel-content">
-    <mat-card>
-      <mat-card-subtitle>Server Info</mat-card-subtitle>
-      <mat-list dense>
-        <mat-list-item>
-          <h3 matLine>Yamcs version</h3>
-          <p matLine>
-            {{ info.yamcsVersion }}, build {{ info.revision }}
-          </p>
-        </mat-list-item>
-
-        <mat-list-item>
-          <h3 matLine>Server ID</h3>
-          <p matLine>
-            {{ info.serverId }}
-          </p>
-        </mat-list-item>
-
-        <mat-list-item *ngIf="info.plugin">
-          <h3 matLine>Plugins</h3>
-        </mat-list-item>
-
-        <table *ngIf="info.plugin" yaDataTable style="margin-left: 16px;">
-          <tr>
-            <th>Name</th>
-            <th>Version</th>
-            <th>Vendor</th>
-          </tr>
-          <tr *ngFor="let plugin of info.plugin">
-            <td>{{ plugin.name }}</td>
-            <td>{{ plugin.version || '-' }}</td>
-            <td>{{ plugin.vendor || '-' }}</td>
-          </tr>
-        </table>
-
-        <br>
-      </mat-list>
-    </mat-card>
-
-    <div>
-      <div style="float: left; width: 50%">
-        <ng-container *ngIf="jvmTotalMemoryParameter$ | async as totalMemory">
-          <mat-card *ngIf="jvmMemoryUsedParameter$ | async as memoryUsed" style="margin-right: 8px">
-            <mat-card-subtitle>JVM Memory (KiB)</mat-card-subtitle>
-            <div style="height: 300px">
-              <app-parameter-plot [dataSource]="jvmMemoryUsedDataSource"
-                                  duration="PT20M"
-                                  lightAxisBackgroundColor="white">
-                <app-parameter-series [parameter]="memoryUsed.qualifiedName"
-                                      [grid]="true"
-                                      [axisLineWidth]="0">
-                </app-parameter-series>
-                <app-parameter-series [parameter]="totalMemory.qualifiedName"
-                                      [grid]="true"
-                                      [axisLineWidth]="0"
-                                      color="purple">
-                </app-parameter-series>
-              </app-parameter-plot>
-            </div>
-          </mat-card>
-        </ng-container>
-      </div>
-
-      <div style="float: right; width: 50%">
-        <mat-card *ngIf="jvmThreadCountParameter$ | async as parameter" style="margin-left: 8px">
-          <mat-card-subtitle>JVM Thread Count</mat-card-subtitle>
+    <div style="float: left; width: 50%">
+      <ng-container *ngIf="jvmTotalMemoryParameter$ | async as totalMemory">
+        <mat-card *ngIf="jvmMemoryUsedParameter$ | async as memoryUsed" style="margin-right: 8px">
+          <mat-card-subtitle>JVM Memory (KiB)</mat-card-subtitle>
           <div style="height: 300px">
-            <app-parameter-plot [dataSource]="jvmThreadCountDataSource" duration="PT20M" lightAxisBackgroundColor="white">
-              <app-parameter-series [parameter]="parameter.qualifiedName"
+            <app-parameter-plot [dataSource]="jvmMemoryUsedDataSource"
+                                duration="PT20M"
+                                lightAxisBackgroundColor="white">
+              <app-parameter-series [parameter]="memoryUsed.qualifiedName"
                                     [grid]="true"
                                     [axisLineWidth]="0">
+              </app-parameter-series>
+              <app-parameter-series [parameter]="totalMemory.qualifiedName"
+                                    [grid]="true"
+                                    [axisLineWidth]="0"
+                                    color="purple">
               </app-parameter-series>
             </app-parameter-plot>
           </div>
         </mat-card>
-      </div>
-
-      <div style="clear: both"></div>
+      </ng-container>
     </div>
+
+    <div style="float: right; width: 50%">
+      <mat-card *ngIf="jvmThreadCountParameter$ | async as parameter" style="margin-left: 8px">
+        <mat-card-subtitle>JVM Thread Count</mat-card-subtitle>
+        <div style="height: 300px">
+          <app-parameter-plot [dataSource]="jvmThreadCountDataSource" duration="PT20M" lightAxisBackgroundColor="white">
+            <app-parameter-series [parameter]="parameter.qualifiedName"
+                                  [grid]="true"
+                                  [axisLineWidth]="0">
+            </app-parameter-series>
+          </app-parameter-plot>
+        </div>
+      </mat-card>
+    </div>
+
+    <div style="clear: both"></div>
   </div>
 </app-system-page>

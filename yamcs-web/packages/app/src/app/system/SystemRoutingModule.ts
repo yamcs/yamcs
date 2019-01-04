@@ -4,7 +4,6 @@ import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
 import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
-import { ClientsPage } from './clients/ClientsPage';
 import { DashboardPage } from './dashboard/DashboardPage';
 import { LinksPage } from './links/LinksPage';
 import { ProcessorPage } from './processors/ProcessorPage';
@@ -24,8 +23,6 @@ import { TableScriptTab } from './table/TableScriptTab';
 import { TablesPage } from './tables/TablesPage';
 import { SystemPage } from './template/SystemPage';
 
-
-
 const routes = [
   {
     path: '',
@@ -36,10 +33,6 @@ const routes = [
       {
         path: 'dashboard',
         component: DashboardPage,
-      },
-      {
-        path: 'clients',
-        component: ClientsPage,
       },
       {
         path: 'links',
@@ -133,7 +126,6 @@ const routes = [
 export class SystemRoutingModule { }
 
 export const routingComponents = [
-  ClientsPage,
   DashboardPage,
   LinksPage,
   ProcessorsPage,

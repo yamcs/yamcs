@@ -1,124 +1,115 @@
-<mat-sidenav-container class="mat-typography">
-  <mat-sidenav mode="side" opened="true">
-    <mat-toolbar class="module-title">
-      <mat-toolbar-row>&nbsp;</mat-toolbar-row>
-    </mat-toolbar>
-  </mat-sidenav>
+<app-main-page>
 
-  <mat-sidenav-content>
-    <mat-toolbar class="main">
-      <mat-toolbar-row>
-        Instances
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        <a mat-button
-            color="primary"
-            routerLink="create-instance">
-          <mat-icon>add_box</mat-icon>
-            CREATE INSTANCE
-        </a>
-      </mat-toolbar-row>
-    </mat-toolbar>
+  <app-main-toolbar>
+    Instances
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <a mat-button
+       color="primary"
+       routerLink="create-instance">
+      <mat-icon>add_box</mat-icon>
+      CREATE INSTANCE
+    </a>
+  </app-main-toolbar>
 
-    <div class="panel-content">
-      <div style="margin-bottom: 12px;">
-        <input placeholder="Filter instances"
-                style="width: 400px"
-                (keyup)="applyFilter($event.target.value)">
-      </div>
-      <table mat-table
-              [dataSource]="dataSource"
-              class="ya-data-table"
-              style="width: 100%"
-              matSort
-              matSortActive="name"
-              matSortDirection="asc"
-              matSortDisableClear>
-
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef style="width: 32px"></th>
-          <td mat-cell *matCellDef="let row">
-              <mat-icon *ngIf="row.state === 'INITIALIZED'"
-              class="warning"
-              [matTooltip]="row.state">
-              adjust
-            </mat-icon>
-            <mat-icon *ngIf="row.state === 'RUNNING'"
-                      class="success"
-                      [matTooltip]="row.state">
-              check_circle
-            </mat-icon>
-            <mat-icon *ngIf="row.state === 'FAILED'"
-                      class="alert"
-                      [matTooltip]="row.state">
-              highlight_off
-            </mat-icon>
-            <mat-icon *ngIf="row.state === 'OFFLINE'"
-                      class="down"
-                      [matTooltip]="row.state">
-              lens
-            </mat-icon>
-            <mat-icon *ngIf="row.state === 'INITIALIZING' || row.state === 'STARTING' || row.state === 'STOPPING'"
-                      class="spin"
-                      [matTooltip]="row.state">
-              cached
-            </mat-icon>
-          </td>
-        </ng-container>
-
-        <ng-container cdkColumnDef="name">
-          <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 300px">Instance</th>
-          <td mat-cell *cdkCellDef="let row">
-            <a *ngIf="row.state !== 'OFFLINE'"
-               routerLink="/monitor/displays/browse"
-               [queryParams]="{instance: row.name}">
-              {{ row.name }}
-            </a>
-            <span *ngIf="row.state === 'OFFLINE'">{{ row.name }}</span>
-          </td>
-        </ng-container>
-
-        <ng-container cdkColumnDef="state">
-          <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 200px">State</th>
-          <td mat-cell *cdkCellDef="let row">
-            {{ row.state }}
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let instance">
-            <mat-menu #instanceMenu="matMenu" overlapTrigger="false" class="ya-menu">
-              <button mat-menu-item
-                      (click)="startInstance(instance)"
-                      [disabled]="instance.state === 'RUNNING'">
-                Start
-              </button>
-              <button mat-menu-item
-                      (click)="stopInstance(instance)"
-                      [disabled]="instance.state !== 'RUNNING'">
-                Stop
-              </button>
-              <button mat-menu-item
-                      (click)="restartInstance(instance)"
-                      [disabled]="instance.state !== 'RUNNING'">
-                Restart
-              </button>
-            </mat-menu>
-            <button mat-button [matMenuTriggerFor]="instanceMenu"
-                    *ngIf="mayControlServices()">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
-
-      <mat-paginator [pageSize]="100"
-                      [hidePageSize]="true"
-                      [showFirstLastButtons]="true">
-      </mat-paginator>
+  <div class="panel-content">
+    <div style="margin-bottom: 12px;">
+      <input placeholder="Filter instances"
+             style="width: 400px"
+             (keyup)="applyFilter($event.target.value)">
     </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+    <table mat-table
+           [dataSource]="dataSource"
+           class="ya-data-table"
+           style="width: 100%"
+           matSort
+           matSortActive="name"
+           matSortDirection="asc"
+           matSortDisableClear>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef style="width: 32px"></th>
+        <td mat-cell *matCellDef="let row">
+            <mat-icon *ngIf="row.state === 'INITIALIZED'"
+            class="warning"
+            [matTooltip]="row.state">
+            adjust
+          </mat-icon>
+          <mat-icon *ngIf="row.state === 'RUNNING'"
+                    class="success"
+                    [matTooltip]="row.state">
+            check_circle
+          </mat-icon>
+          <mat-icon *ngIf="row.state === 'FAILED'"
+                    class="alert"
+                    [matTooltip]="row.state">
+            highlight_off
+          </mat-icon>
+          <mat-icon *ngIf="row.state === 'OFFLINE'"
+                    class="down"
+                    [matTooltip]="row.state">
+            lens
+          </mat-icon>
+          <mat-icon *ngIf="row.state === 'INITIALIZING' || row.state === 'STARTING' || row.state === 'STOPPING'"
+                    class="spin"
+                    [matTooltip]="row.state">
+            cached
+          </mat-icon>
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="name">
+        <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 300px">Instance</th>
+        <td mat-cell *cdkCellDef="let row">
+          <a *ngIf="row.state !== 'OFFLINE'"
+            routerLink="/monitor/displays/browse"
+            [queryParams]="{instance: row.name}">
+            {{ row.name }}
+          </a>
+          <span *ngIf="row.state === 'OFFLINE'">{{ row.name }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="state">
+        <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 200px">State</th>
+        <td mat-cell *cdkCellDef="let row">
+          {{ row.state }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let instance">
+          <mat-menu #instanceMenu="matMenu" overlapTrigger="false" class="ya-menu">
+            <button mat-menu-item
+                    (click)="startInstance(instance)"
+                    [disabled]="instance.state === 'RUNNING'">
+              Start
+            </button>
+            <button mat-menu-item
+                    (click)="stopInstance(instance)"
+                    [disabled]="instance.state !== 'RUNNING'">
+              Stop
+            </button>
+            <button mat-menu-item
+                    (click)="restartInstance(instance)"
+                    [disabled]="instance.state !== 'RUNNING'">
+              Restart
+            </button>
+          </mat-menu>
+          <button mat-button [matMenuTriggerFor]="instanceMenu"
+                  *ngIf="mayControlServices()">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator [pageSize]="100"
+                   [hidePageSize]="true"
+                   [showFirstLastButtons]="true">
+    </mat-paginator>
+  </div>
+</app-main-page>

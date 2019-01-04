@@ -1,0 +1,40 @@
+<app-main-page>
+  <app-main-toolbar>Server Info</app-main-toolbar>
+
+  <div class="panel-content" *ngIf="info$ | async as info">
+    <mat-list dense>
+      <mat-list-item>
+        <h3 matLine>Yamcs version</h3>
+        <p matLine>
+          {{ info.yamcsVersion }}, build {{ info.revision }}
+        </p>
+      </mat-list-item>
+
+      <mat-list-item>
+        <h3 matLine>Server ID</h3>
+        <p matLine>
+          {{ info.serverId }}
+        </p>
+      </mat-list-item>
+
+      <mat-list-item *ngIf="info.plugin">
+        <h3 matLine>Plugins</h3>
+      </mat-list-item>
+
+      <table *ngIf="info.plugin" yaDataTable style="margin-left: 16px;">
+        <tr>
+          <th>Name</th>
+          <th>Version</th>
+          <th>Vendor</th>
+        </tr>
+        <tr *ngFor="let plugin of info.plugin">
+          <td>{{ plugin.name }}</td>
+          <td>{{ plugin.version || '-' }}</td>
+          <td>{{ plugin.vendor || '-' }}</td>
+        </tr>
+      </table>
+
+      <br>
+    </mat-list>
+  </div>
+</app-main-page>

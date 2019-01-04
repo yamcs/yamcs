@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
-import { MatButtonToggleGroup, MatSort, MatTableDataSource } from '@angular/material';
+import { MatSort, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { ClientInfo } from '@yamcs/client';
 import { Subscription } from 'rxjs';
@@ -22,36 +22,20 @@ export class ClientsPage implements AfterViewInit, OnDestroy {
 
   clientSubscription: Subscription;
 
-  @ViewChild(MatButtonToggleGroup)
-  group: MatButtonToggleGroup;
-
   private clientsById: { [key: string]: ClientInfo } = {};
 
   constructor(private yamcs: YamcsService, title: Title) {
     title.setTitle('Clients - Yamcs');
 
-    // Do this subscription via the instance-specific websocket connection,
-    // so that we don't need a second connection.
-    this.yamcs.getInstanceClient()!.getClientUpdates(true /* any instance */).then(response => {
+    this.yamcs.yamcsClient.getClientUpdates().then(response => {
       this.clientSubscription = response.client$.subscribe(evt => {
         this.processClientEvent(evt);
       });
     });
-
-    this.dataSource.filterPredicate = (client, filter) => {
-      const currentInstance = this.yamcs.getInstance().name;
-      const v = filter === 'all' || client.instance === currentInstance;
-      return v;
-    };
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
-    this.dataSource.filter = 'current';
-  }
-
-  applyFilter() {
-    this.dataSource.filter = this.group.value;
   }
 
   ngOnDestroy() {

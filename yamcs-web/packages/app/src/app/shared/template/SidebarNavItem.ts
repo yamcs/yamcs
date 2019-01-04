@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-sidebar-nav-item',
@@ -13,4 +13,7 @@ export class SidebarNavItem {
 
   @Input()
   queryParams: {};
+
+  @Input()
+  exact = false;
 }
