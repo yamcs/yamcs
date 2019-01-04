@@ -7,11 +7,11 @@ import { DyDataSource } from '../../shared/widgets/DyDataSource';
 
 
 @Component({
-  templateUrl: './DashboardPage.html',
-  styleUrls: ['./DashboardPage.css'],
+  templateUrl: './SystemPage.html',
+  styleUrls: ['./SystemPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardPage implements OnDestroy {
+export class SystemPage implements OnDestroy {
 
   info$: Promise<GeneralInfo>;
 
@@ -23,7 +23,7 @@ export class DashboardPage implements OnDestroy {
   jvmThreadCountDataSource: DyDataSource;
 
   constructor(yamcs: YamcsService, title: Title, private authService: AuthService) {
-    title.setTitle('Dashboard - Yamcs');
+    title.setTitle('System - Yamcs');
     this.info$ = yamcs.yamcsClient.getGeneralInfo();
 
     this.jvmMemoryUsedParameter$ = this.info$.then(info => {

@@ -1,9 +1,9 @@
-<app-system-page>
-  <app-system-toolbar>Services</app-system-toolbar>
+<app-monitor-page>
+  <app-monitor-toolbar>Services</app-monitor-toolbar>
 
   <div class="panel-content">
     <app-services-table [dataSource]="dataSource"
                         (startService)="startService($event)"
                         (stopService)="stopService($event)"></app-services-table>
   </div>
-</app-system-page>
+</app-monitor-page>

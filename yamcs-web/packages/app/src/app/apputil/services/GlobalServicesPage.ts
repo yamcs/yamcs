@@ -7,10 +7,10 @@ import { YamcsService } from '../../core/services/YamcsService';
 
 
 @Component({
-  templateUrl: './ServicesPage.html',
+  templateUrl: './GlobalServicesPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ServicesPage {
+export class GlobalServicesPage {
 
   dataSource = new MatTableDataSource<Service>();
 

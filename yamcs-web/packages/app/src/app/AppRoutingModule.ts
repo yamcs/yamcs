@@ -10,7 +10,7 @@ import { NotFoundPage } from './apputil/pages/NotFoundPage';
 import { ProfilePage } from './apputil/pages/ProfilePage';
 import { ServerUnavailablePage } from './apputil/pages/ServerUnavailablePage';
 import { ServerInfoPage } from './apputil/server-info/ServerInfoPage';
-import { ServicesPage } from './apputil/services/ServicesPage';
+import { GlobalServicesPage } from './apputil/services/GlobalServicesPage';
 import { AuthGuard } from './core/guards/AuthGuard';
 import { UnselectInstanceGuard } from './core/guards/UnselectInstanceGuard';
 
@@ -36,7 +36,7 @@ const routes: Routes = [
       },
       {
         path: 'services',
-        component: ServicesPage,
+        component: GlobalServicesPage,
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
@@ -68,11 +68,6 @@ const routes: Routes = [
       {
         path: 'mdb',
         loadChildren: 'src/app/mdb/MdbModule#MdbModule',
-        canActivate: [AuthGuard],
-      },
-      {
-        path: 'system',
-        loadChildren: 'src/app/system/SystemModule#SystemModule',
         canActivate: [AuthGuard],
       },
       {

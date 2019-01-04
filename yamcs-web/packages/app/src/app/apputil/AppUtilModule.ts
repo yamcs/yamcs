@@ -12,7 +12,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ServerUnavailablePage } from './pages/ServerUnavailablePage';
 import { ServerInfoPage } from './server-info/ServerInfoPage';
-import { ServicesPage } from './services/ServicesPage';
+import { GlobalServicesPage } from './services/GlobalServicesPage';
 import { MainPage } from './template/MainPage';
 import { MainToolbar } from './template/MainToolbar';
 
@@ -29,7 +29,7 @@ const apputilComponents = [
   MainToolbar,
   NotFoundPage,
   ProfilePage,
-  ServicesPage,
+  GlobalServicesPage,
   ServerInfoPage,
   ServerUnavailablePage,
 ];

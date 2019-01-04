@@ -1,11 +1,11 @@
-/deep/ .dtype {
+::ng-deep .dtype {
   color: red;
 }
 
-/deep/ .paren {
+::ng-deep .paren {
   color:#1b61b9;
 }
 
-/deep/ .kw {
+::ng-deep .kw {
   color: #1b61b9;
 }

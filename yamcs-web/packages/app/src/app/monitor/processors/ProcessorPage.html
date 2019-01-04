@@ -1,9 +1,9 @@
-<app-system-page>
-  <app-system-toolbar *ngIf="processor$ | async as processor">
+<app-monitor-page>
+  <app-monitor-toolbar *ngIf="processor$ | async as processor">
     <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
       <mat-icon>arrow_back</mat-icon>
     </a> Processors / {{ processor.name }}
-  </app-system-toolbar>
+  </app-monitor-toolbar>
 
   <nav mat-tab-nav-bar>
       <a mat-tab-link
@@ -35,4 +35,4 @@
   <div class="outlet-wrapper">
     <router-outlet></router-outlet>
   </div>
-</app-system-page>
+</app-monitor-page>

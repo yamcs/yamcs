@@ -1,9 +1,9 @@
-<app-system-page *ngIf="stream$ | async as stream">
-  <app-system-toolbar>
+<app-monitor-page *ngIf="stream$ | async as stream">
+  <app-monitor-toolbar>
     <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
       <mat-icon>arrow_back</mat-icon>
     </a> Streams / {{ stream.name }}
-  </app-system-toolbar>
+  </app-monitor-toolbar>
 
   <nav mat-tab-nav-bar>
     <a mat-tab-link
@@ -26,4 +26,4 @@
   <div class="outlet-wrapper">
     <router-outlet></router-outlet>
   </div>
-</app-system-page>
+</app-monitor-page>

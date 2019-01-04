@@ -44,6 +44,39 @@
                             [queryParams]="{instance: instance.name}">
         {{ extraItem.label }}
       </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="links"
+                            [queryParams]="{instance: instance.name}">
+        Links
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item *ngIf="showServicesItem()"
+                            routerLink="services"
+                            [queryParams]="{instance: instance.name}">
+        Services
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="processors"
+                            [queryParams]="{instance: instance.name}">
+        Processors
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item *ngIf="showTablesItem()"
+                            routerLink="tables"
+                            [queryParams]="{instance: instance.name}">
+        Tables
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item *ngIf="showStreamsItem()"
+                            routerLink="streams"
+                            [queryParams]="{instance: instance.name}">
+        Streams
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="system"
+                            [queryParams]="{instance: instance.name}">
+        System
+      </app-sidebar-nav-item>
     </mat-nav-list>
   </mat-sidenav>
 
