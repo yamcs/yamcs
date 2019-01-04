@@ -10,6 +10,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.tctm.ccsds.CrcCciitCalculator;
 import org.yamcs.utils.CcsdsPacket;
 
 public class IssCommandPostprocessor implements CommandPostprocessor {

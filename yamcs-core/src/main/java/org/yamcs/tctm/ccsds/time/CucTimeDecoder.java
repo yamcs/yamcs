@@ -1,4 +1,4 @@
-package org.yamcs.tctm.ccsdstime;
+package org.yamcs.tctm.ccsds.time;
 
 import org.yamcs.utils.ByteSupplier;
 

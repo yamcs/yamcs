@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 import java.time.Instant;
 
 import org.junit.Test;
-import org.yamcs.tctm.ccsdstime.CucTimeDecoder;
+import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.utils.StringConverter;
 
 public class CucTimeDecoderTest {

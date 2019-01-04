@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 
 import org.junit.Test;
+import org.yamcs.tctm.ccsds.CrcCciitCalculator;
 
 public class CrcCciitCalculatorTest {
     @Test

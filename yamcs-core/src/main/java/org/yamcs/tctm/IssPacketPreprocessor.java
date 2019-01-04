@@ -11,6 +11,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.api.EventProducer;
 import org.yamcs.api.EventProducerFactory;
 import org.yamcs.archive.PacketWithTime;
+import org.yamcs.tctm.ccsds.CrcCciitCalculator;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.CcsdsPacket;
