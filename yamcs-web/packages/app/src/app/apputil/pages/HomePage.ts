@@ -63,6 +63,20 @@ export class HomePage implements AfterViewInit, OnDestroy {
     this.dataSource.filter = value.trim().toLowerCase();
   }
 
+  startInstance(instance: Instance) {
+    this.yamcs.yamcsClient.editInstance(instance.name, {
+      state: 'running',
+    }).catch(err => {
+      if (err.response) {
+        err.response.json().then((json: any) => {
+          alert(`Failed to start instance: ${json.msg}`);
+        });
+      } else {
+        alert(err);
+      }
+    });
+  }
+
   restartInstance(instance: Instance) {
     this.yamcs.yamcsClient.editInstance(instance.name, {
       state: 'restarted',

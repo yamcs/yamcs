@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { CreateInstancePage1 } from './apputil/pages/CreateInstancePage1';
+import { CreateInstancePage2 } from './apputil/pages/CreateInstancePage2';
 import { ForbiddenPage } from './apputil/pages/ForbiddenPage';
 import { HomePage } from './apputil/pages/HomePage';
 import { LoginPage } from './apputil/pages/LoginPage';
@@ -10,7 +12,7 @@ import { AuthGuard } from './core/guards/AuthGuard';
 import { UnselectInstanceGuard } from './core/guards/UnselectInstanceGuard';
 
 /*
- * Notes that the nested modules also have AuthGuards.
+ * Notice that nested modules also have AuthGuards.
  * These will fully execute before other guards in those modules.
  */
 
@@ -38,6 +40,17 @@ const routes: Routes = [
         path: 'system',
         loadChildren: 'src/app/system/SystemModule#SystemModule',
         canActivate: [AuthGuard],
+      },
+      {
+        path: 'create-instance',
+        pathMatch: 'full',
+        component: CreateInstancePage1,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
+      },
+      {
+        path: 'create-instance/:template',
+        component: CreateInstancePage2,
+        canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
         path: 'profile',

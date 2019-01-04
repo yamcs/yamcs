@@ -38,7 +38,18 @@ message YamcsInstance {
   // the missionDatabase and other fields may not be filled when this happens
   optional string failureCause = 9;
   optional string missionTime = 10;
-  map<string, string> tags = 12;
+  map<string, string> labels = 12;
+}
+
+message InstanceTemplate {
+  optional string name = 1;
+  repeated TemplateProperty property = 2;
+}
+
+message TemplateProperty {
+  optional string name = 1;
+  optional string description = 2;
+  optional bool required = 3; 
 }
 
 message ProcessorInfo {

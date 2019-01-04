@@ -1,7 +1,6 @@
 package org.yamcs.web.rest;
 
 import org.yamcs.ServiceWithConfig;
-import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
@@ -35,8 +34,7 @@ public class ServiceRestHandler extends RestHandler {
         }
 
         ListServiceInfoResponse.Builder responseb = ListServiceInfoResponse.newBuilder();
-        
- 
+
         if (global) {
             for (ServiceWithConfig serviceWithConfig : yamcsServer.getGlobalServices()) {
                 responseb.addService(ServiceHelper.toServiceInfo(serviceWithConfig, null, null));

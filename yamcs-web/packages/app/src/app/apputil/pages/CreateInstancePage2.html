@@ -1,0 +1,37 @@
+<mat-sidenav-container class="mat-typography">
+  <mat-sidenav mode="side" opened="true">
+    <mat-toolbar class="module-title">
+      <mat-toolbar-row>&nbsp;</mat-toolbar-row>
+    </mat-toolbar>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar class="main">
+      <mat-toolbar-row>
+        <a mat-icon-button routerLink=".." color="primary">
+          <mat-icon>arrow_back</mat-icon>
+        </a> Create an instance
+      </mat-toolbar-row>
+    </mat-toolbar>
+
+    <mat-toolbar class="sub">
+      <mat-toolbar-row>
+        <app-create-instance-wizard-step step="2"></app-create-instance-wizard-step>
+      </mat-toolbar-row>
+    </mat-toolbar>
+
+    <div class="panel-content ya-form">
+      <form [formGroup]="form" novalidate>
+        <label>
+          Instance name<br>
+          <input formControlName="name">
+        </label>
+      </form>
+      <p>&nbsp;</p>
+      <button type="submit" (click)="onConfirm()"
+              mat-raised-button
+              [disabled]="!form.valid"
+              color="primary">CREATE</button>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

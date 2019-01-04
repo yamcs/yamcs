@@ -107,7 +107,7 @@ public class InstanceRestHandler extends RestHandler {
             break;
         case "running":
             cf = CompletableFuture.supplyAsync(() -> {
-                log.info("Restarting the instance {}", instance);
+                log.info("Starting instance {}", instance);
                 try {
                     return yamcsServer.startInstance(instance);
                 } catch (IOException e) {
@@ -151,8 +151,9 @@ public class InstanceRestHandler extends RestHandler {
 
         CompletableFuture<YamcsServerInstance> cf = CompletableFuture.supplyAsync(() -> {
             try {
-                yamcsServer.createInstance(instanceName, request.getTemplate(), request.getTemplateArgsMap(),
-                        request.getTagsMap());
+                yamcsServer.createInstance(instanceName, request.getTemplate(),
+                        request.getTemplateArgsMap(),
+                        request.getLabelsMap());
                 return yamcsServer.startInstance(instanceName);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -186,8 +187,8 @@ public class InstanceRestHandler extends RestHandler {
             try {
                 pr = fp.parse();
                 pred = pred.and(getPredicate(pr));
-            } catch (ParseException|TokenMgrError e) {
-                throw new BadRequestException("Cannot parse the filter '"+filter+"': " + e.getMessage());
+            } catch (ParseException | TokenMgrError e) {
+                throw new BadRequestException("Cannot parse the filter '" + filter + "': " + e.getMessage());
             }
 
         }
@@ -196,42 +197,43 @@ public class InstanceRestHandler extends RestHandler {
 
     private Predicate<YamcsServerInstance> getPredicate(Result pr) throws HttpException {
 
-        if("state".equals(pr.key)) {
+        if ("state".equals(pr.key)) {
             try {
                 InstanceState state = InstanceState.valueOf(pr.value.toUpperCase());
-                switch(pr.op) {
+                switch (pr.op) {
                 case EQUAL:
-                    return ysi -> ysi.state()==state;
+                    return ysi -> ysi.state() == state;
                 case NOT_EQUAL:
-                    return ysi -> ysi.state()!=state;
+                    return ysi -> ysi.state() != state;
                 default:
-                    throw new IllegalStateException("Unknown operator "+pr.op);
+                    throw new IllegalStateException("Unknown operator " + pr.op);
                 }
             } catch (IllegalArgumentException e) {
-                throw new BadRequestException("Unknown state '"+pr.value+"'. Valid values are: "+Arrays.asList(InstanceState.values()));
+                throw new BadRequestException(
+                        "Unknown state '" + pr.value + "'. Valid values are: " + Arrays.asList(InstanceState.values()));
             }
-        } else if (pr.key.startsWith("tag:")) {
-            String tagKey = pr.key.substring(4);
+        } else if (pr.key.startsWith("label:")) {
+            String labelKey = pr.key.substring(4);
             return ysi -> {
-                Map<String, ?> tags = ysi.getTags();
-                if(tags==null) {
+                Map<String, ?> labels = ysi.getLabels();
+                if (labels == null) {
                     return false;
                 }
-                Object o = tags.get(tagKey);
-                if(o==null) {
+                Object o = labels.get(labelKey);
+                if (o == null) {
                     return false;
                 }
-                switch(pr.op) {
+                switch (pr.op) {
                 case EQUAL:
                     return pr.value.equals(o);
                 case NOT_EQUAL:
                     return !pr.value.equals(o);
                 default:
-                    throw new IllegalStateException("Unknown operator "+pr.op);
+                    throw new IllegalStateException("Unknown operator " + pr.op);
                 }
             };
         } else {
-            throw new BadRequestException("Unknown filter key '"+pr.key+"'");
+            throw new BadRequestException("Unknown filter key '" + pr.key + "'");
         }
     }
 }

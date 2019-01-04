@@ -1,6 +1,9 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/SharedModule';
 import { AppComponent } from './pages/AppComponent';
+import { CreateInstancePage1 } from './pages/CreateInstancePage1';
+import { CreateInstancePage2 } from './pages/CreateInstancePage2';
+import { CreateInstanceWizardStep } from './pages/CreateInstanceWizardStep';
 import { ForbiddenPage } from './pages/ForbiddenPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
@@ -10,6 +13,9 @@ import { ServerUnavailablePage } from './pages/ServerUnavailablePage';
 
 const apputilComponents = [
   AppComponent,
+  CreateInstancePage1,
+  CreateInstancePage2,
+  CreateInstanceWizardStep,
   ForbiddenPage,
   HomePage,
   LoginPage,

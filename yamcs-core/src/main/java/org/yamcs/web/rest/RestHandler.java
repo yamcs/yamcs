@@ -65,7 +65,7 @@ public abstract class RestHandler extends RouteHandler {
     private static final Logger log = LoggerFactory.getLogger(RestHandler.class);
 
     protected final YamcsServer yamcsServer = YamcsServer.getServer();
-    
+
     protected static void completeOK(RestRequest restRequest) {
         HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, OK);
         HttpUtil.setContentLength(httpResponse, 0);
@@ -180,6 +180,13 @@ public abstract class RestHandler extends RouteHandler {
             throw new NotFoundException(req, "No instance named '" + instance + "'");
         }
         return instance;
+    }
+
+    protected static String verifyInstanceTemplate(RestRequest req, String template) throws NotFoundException {
+        if (!YamcsServer.hasInstanceTemplate(template)) {
+            throw new NotFoundException(req, "No template named '" + template + "'");
+        }
+        return template;
     }
 
     protected static LinkInfo verifyLink(RestRequest req, String instance, String linkName) throws NotFoundException {

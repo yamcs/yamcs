@@ -109,6 +109,7 @@ public class Router extends SimpleChannelInboundHandler<FullHttpRequest> {
         this.offThreadExecutor = executor;
         registerRouteHandler(null, new ClientRestHandler());
         registerRouteHandler(null, new InstanceRestHandler());
+        registerRouteHandler(null, new TemplateRestHandler());
         registerRouteHandler(null, new LinkRestHandler());
         registerRouteHandler(null, new UserRestHandler());
         registerRouteHandler(null, new ServiceRestHandler());

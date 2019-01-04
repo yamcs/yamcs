@@ -44,7 +44,9 @@ public class YamcsToGpbAssembler {
         }
 
         TimeService timeService = YamcsServer.getTimeService(yamcsInstance.getName());
-        instanceb.setMissionTime(TimeEncoding.toString(timeService.getMissionTime()));
+        if (timeService != null) {
+            instanceb.setMissionTime(TimeEncoding.toString(timeService.getMissionTime()));
+        }
         return instanceb.build();
     }
 

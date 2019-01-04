@@ -169,7 +169,11 @@ message CreateInstanceRequest {
    optional string name = 1;
    optional string template = 2;
    map<string, string> templateArgs = 3;
-   map<string, string> tags = 4;  
+   map<string, string> labels = 4;
+}
+
+message ListInstanceTemplatesResponse {
+  repeated yamcsManagement.InstanceTemplate template = 1; 
 }
 
 message ListTagsResponse {

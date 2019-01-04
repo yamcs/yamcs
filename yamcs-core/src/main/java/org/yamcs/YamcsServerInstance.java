@@ -41,8 +41,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     List<ServiceWithConfig> serviceList;
     private XtceDb xtceDb;
 
-
-    Map<String, String> tags;
+    Map<String, String> labels;
     YConfiguration conf;
 
     YamcsServerInstance(String name) {
@@ -84,6 +83,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         awaitInitialized();
     }
 
+    @Override
     public void doInit() {
         try {
             loadTimeService();
@@ -229,33 +229,35 @@ public class YamcsServerInstance extends YamcsInstanceService {
         if (state == InstanceState.FAILED) {
             aib.setFailureCause(failureCause().toString());
         }
-        try {
-            MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
-            if (!conf.isList("mdb")) {
-                String configName = conf.getString("mdb");
-                mdb.setConfigName(configName);
-            }
-            XtceDb xtcedb = getXtceDb();
-            if (xtcedb != null) { // if the instance is in a failed state, it could be that it doesn't have a XtceDB
-                                  // (the failure might be due to the load of the XtceDb)
-                mdb.setName(xtcedb.getRootSpaceSystem().getName());
-                Header h = xtcedb.getRootSpaceSystem().getHeader();
-                if ((h != null) && (h.getVersion() != null)) {
-                    mdb.setVersion(h.getVersion());
+        if (conf != null) { // Can be null for an offline instance
+            try {
+                MissionDatabase.Builder mdb = MissionDatabase.newBuilder();
+                if (!conf.isList("mdb")) {
+                    String configName = conf.getString("mdb");
+                    mdb.setConfigName(configName);
                 }
+                XtceDb xtcedb = getXtceDb();
+                if (xtcedb != null) { // if the instance is in a failed state, it could be that it doesn't have a XtceDB
+                                      // (the failure might be due to the load of the XtceDb)
+                    mdb.setName(xtcedb.getRootSpaceSystem().getName());
+                    Header h = xtcedb.getRootSpaceSystem().getHeader();
+                    if ((h != null) && (h.getVersion() != null)) {
+                        mdb.setVersion(h.getVersion());
+                    }
+                }
+                aib.setMissionDatabase(mdb.build());
+            } catch (ConfigurationException | DatabaseLoadException e) {
+                log.warn("Got error when finding the mission database for instance {}", instanceName, e);
             }
-            aib.setMissionDatabase(mdb.build());
-        } catch (ConfigurationException | DatabaseLoadException e) {
-            log.warn("Got error when finding the mission database for instance {}", instanceName, e);
         }
         return aib.build();
     }
 
-    public void setTags(Map<String, String> tags) {
-        this.tags = tags;
+    public void setLabels(Map<String, String> labels) {
+        this.labels = labels;
     }
 
-    public Map<String, ?> getTags() {
-        return tags;
+    public Map<String, ?> getLabels() {
+        return labels;
     }
 }

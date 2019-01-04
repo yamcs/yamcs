@@ -12,9 +12,13 @@ import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,10 +28,12 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.management.ManagementService;
+import org.yamcs.protobuf.YamcsManagement.InstanceTemplate;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.spi.Plugin;
@@ -56,6 +62,8 @@ public class YamcsServer {
     private static final String SECRET_KEY = "secretKey";
 
     Set<Plugin> plugins = new HashSet<>();
+
+    Map<String, InstanceTemplate> instanceTemplates = new HashMap<>();
 
     // global services
     List<ServiceWithConfig> globalServiceList = null;
@@ -192,6 +200,10 @@ public class YamcsServer {
         return server.instances.containsKey(instance);
     }
 
+    public static boolean hasInstanceTemplate(String template) {
+        return server.instanceTemplates.containsKey(template);
+    }
+
     public static String getServerId() {
         return serverId;
     }
@@ -204,6 +216,25 @@ public class YamcsServer {
         for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
             staticlog.info("{} {}", plugin.getName(), plugin.getVersion());
             plugins.add(plugin);
+        }
+    }
+
+    private void discoverTemplates() throws IOException {
+        Path templatesDir = Paths.get("etc").resolve("instance-templates");
+        if (!Files.exists(templatesDir)) {
+            return;
+        }
+
+        try (Stream<Path> dirStream = Files.list(templatesDir)) {
+            dirStream.filter(Files::isDirectory).forEach(p -> {
+                if (Files.exists(p.resolve("template.yaml"))) {
+                    String name = p.getFileName().toString();
+                    InstanceTemplate template = InstanceTemplate.newBuilder()
+                            .setName(name)
+                            .build();
+                    server.instanceTemplates.put(name, template);
+                }
+            });
         }
     }
 
@@ -268,15 +299,15 @@ public class YamcsServer {
                 }
             }
             YamcsServerInstance ysi = createInstance(name, online ? getConf(name) : null);
-            File tagFile = new File(instanceDefDir + name + ".tags");
-            if (tagFile.exists()) {
+            File metadataFile = new File(instanceDefDir + name + ".metadata");
+            if (metadataFile.exists()) {
                 Yaml y = new Yaml();
-                Object o = y.load(tagFile.getAbsolutePath());
+                Object o = y.load(metadataFile.getAbsolutePath());
                 if (o instanceof Map<?, ?>) {
-                    ysi.setTags((Map<String, String>) o);
+                    ysi.setLabels((Map<String, String>) o);
                 } else {
                     staticlog.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
-                            tagFile.getAbsolutePath());
+                            metadataFile.getAbsolutePath());
                 }
             }
         }
@@ -302,6 +333,7 @@ public class YamcsServer {
         staticlog.info("yamcs {}, build {}", YamcsVersion.VERSION, YamcsVersion.REVISION);
 
         server.discoverPlugins();
+        server.discoverTemplates();
         server.createGlobalServicesAndInstances();
         server.startServices();
 
@@ -387,7 +419,7 @@ public class YamcsServer {
         XtceDbFactory.remove(instanceName);
         File f = new File(instanceDefDir + "yamcs." + instanceName + ".yaml");
         if (f.exists()) {
-            staticlog.debug("Renamming {} to {}.offline", f.getAbsolutePath(), f.getName());
+            staticlog.debug("Renaming {} to {}.offline", f.getAbsolutePath(), f.getName());
             f.renameTo(new File(instanceDefDir + "yamcs." + instanceName + ".yaml.offline"));
         }
 
@@ -395,8 +427,7 @@ public class YamcsServer {
     }
 
     /**
-     * Start the instance.
-     * If the instance is already started, do nothing.
+     * Start the instance. If the instance is already started, do nothing.
      * 
      * If the instance is FAILED, restart the instance
      * 
@@ -418,11 +449,11 @@ public class YamcsServer {
         } else if (ysi.state() == InstanceState.FAILED) {
             return restartYamcsInstance(instanceName);
         }
-        
+
         if (getNumOnlineInstances() >= maxOnlineInstances) {
             throw new LimitExceededException("Number of online instances already at the limit " + maxOnlineInstances);
         }
-        
+
         if (ysi.state() == InstanceState.OFFLINE) {
             File f = new File(instanceDefDir + "yamcs." + instanceName + ".yaml.offline");
             if (f.exists()) {
@@ -439,8 +470,7 @@ public class YamcsServer {
     }
 
     /**
-     * Creates a new yamcs instance.
-     * If conf is not null, the instance is also initialized (but not started)
+     * Creates a new yamcs instance. If conf is not null, the instance is also initialized (but not started)
      * 
      * If the instance already exists a ConfigurationException is thrown
      * 
@@ -477,17 +507,17 @@ public class YamcsServer {
      * @param name
      * @param template
      * @param templateArgs
-     * @param tags
+     * @param labels
      * @return
      */
     public synchronized YamcsServerInstance createInstance(String name, String template,
-            Map<String, String> templateArgs, Map<String, String> tags) {
+            Map<String, String> templateArgs, Map<String, String> labels) {
         if (instances.containsKey("name")) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }
         try {
             // TODO instantiate template
-            String tmplResource = "/yamcs." + template + ".template";
+            String tmplResource = "/instance-templates/" + template + "/template.yaml";
             InputStream is = YConfiguration.resolver.getConfigurationStream(tmplResource);
             byte[] buf = new byte[512];
             int n;
@@ -499,18 +529,18 @@ public class YamcsServer {
             }
             is.close();
             fos.close();
-            
-            String tagFile = instanceDefDir + "yamcs." + name + ".tags";
-            Yaml ytags = new Yaml();
-            Writer w = new BufferedWriter(new FileWriter(tagFile));
-            ytags.dump(tags, w);
+
+            String metadataFile = instanceDefDir + "yamcs." + name + ".metadata";
+            Yaml yaml = new Yaml();
+            Writer w = new BufferedWriter(new FileWriter(metadataFile));
+            yaml.dump(labels, w);
             w.close();
             FileInputStream fis = new FileInputStream(confFile);
             YConfiguration conf = new YConfiguration("yamcs." + name, fis, confFile);
             fis.close();
-            
-            YamcsServerInstance ysi =  createInstance(name, conf);
-            ysi.setTags(tags);
+
+            YamcsServerInstance ysi = createInstance(name, conf);
+            ysi.setLabels(labels);
             return ysi;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -557,6 +587,14 @@ public class YamcsServer {
 
     public YamcsServerInstance getInstance(String yamcsInstance) {
         return instances.get(yamcsInstance);
+    }
+
+    public static Set<InstanceTemplate> getInstanceTemplates() {
+        return new HashSet<>(server.instanceTemplates.values());
+    }
+
+    public InstanceTemplate getInstanceTemplate(String name) {
+        return instanceTemplates.get(name);
     }
 
     private static void printOptionsAndExit() {
