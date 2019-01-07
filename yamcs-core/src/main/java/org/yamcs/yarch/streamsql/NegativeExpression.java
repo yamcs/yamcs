@@ -1,5 +1,7 @@
 package org.yamcs.yarch.streamsql;
 
+import org.yamcs.utils.parser.ParseException;
+
 public class NegativeExpression extends Expression {
 
     public NegativeExpression(Expression expr) throws ParseException {

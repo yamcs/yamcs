@@ -33,6 +33,11 @@ import { Layout } from './layouts/Layout';
 import { RenameLayoutDialog } from './layouts/RenameLayoutDialog';
 import { MonitorRoutingModule, routingComponents } from './MonitorRoutingModule';
 import { DisplayTypePipe } from './pipes/DisplayTypePipe';
+import { CommandQueuesTable } from './processors/CommandQueuesTable';
+import { QueuedCommandsTable } from './processors/QueuedCommandsTable';
+import { TmStatsTable } from './processors/TmStatsTable';
+import { RecordComponent } from './table/RecordComponent';
+import { ShowEnumDialog } from './table/ShowEnumDialog';
 import { MonitorPageTemplate } from './template/MonitorPageTemplate';
 import { MonitorToolbar } from './template/MonitorToolbar';
 import { StartReplayDialog } from './template/StartReplayDialog';
@@ -48,6 +53,7 @@ const dialogComponents = [
   JumpToDialog,
   RenameDisplayDialog,
   RenameLayoutDialog,
+  ShowEnumDialog,
   StartReplayDialog,
 ];
 
@@ -86,14 +92,18 @@ const viewers = [
     pipes,
     viewers,
     AlarmDetail,
+    CommandQueuesTable,
     DisplayNavigator,
     Frame,
     EventSeverity,
     Layout,
     MonitorPageTemplate,
     MultipleParameterTable,
+    QueuedCommandsTable,
+    RecordComponent,
     ScrollingParameterTable,
     TimelineTooltip,
+    TmStatsTable,
   ],
   exports: [
     MonitorPageTemplate,

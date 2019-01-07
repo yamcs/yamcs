@@ -18,7 +18,7 @@ import org.yamcs.xtce.XtceDb;
 public class YamcsToGpbAssembler {
 
     public static MissionDatabase toMissionDatabase(RestRequest req, String instanceName, XtceDb mdb) {
-        YamcsServerInstance instance = YamcsServer.getInstance(instanceName);
+        YamcsServerInstance instance = YamcsServer.getServer().getInstance(instanceName);
         YamcsInstance instanceInfo = instance.getInstanceInfo();
         MissionDatabase.Builder b = MissionDatabase.newBuilder(instanceInfo.getMissionDatabase());
         SpaceSystem ss = mdb.getRootSpaceSystem();
@@ -33,7 +33,7 @@ public class YamcsToGpbAssembler {
 
         // Override MDB with a version that has URLs too
         if (yamcsInstance.hasMissionDatabase()) {
-            XtceDb mdb = YamcsServer.getInstance(yamcsInstance.getName()).getXtceDb();
+            XtceDb mdb = YamcsServer.getServer().getInstance(yamcsInstance.getName()).getXtceDb();
             if (mdb != null) {
                 instanceb.setMissionDatabase(YamcsToGpbAssembler.toMissionDatabase(req, yamcsInstance.getName(), mdb));
             }
@@ -44,7 +44,9 @@ public class YamcsToGpbAssembler {
         }
 
         TimeService timeService = YamcsServer.getTimeService(yamcsInstance.getName());
-        instanceb.setMissionTime(TimeEncoding.toString(timeService.getMissionTime()));
+        if (timeService != null) {
+            instanceb.setMissionTime(TimeEncoding.toString(timeService.getMissionTime()));
+        }
         return instanceb.build();
     }
 

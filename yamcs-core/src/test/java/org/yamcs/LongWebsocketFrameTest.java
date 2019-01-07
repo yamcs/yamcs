@@ -46,7 +46,7 @@ public class LongWebsocketFrameTest {
 
     @AfterClass
     public static void shutDownYamcs() throws Exception {
-        YamcsServer.shutDown();
+        YamcsServer.getServer().shutDown();
     }
 
     @Test

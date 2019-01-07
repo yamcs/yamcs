@@ -6,8 +6,13 @@ set -e
 # 2. Emit artifacts (yamcs, yamcs-simulation, yamcs-client) in various formats.
 #
 # By design (2) does not require any sort of compilation.
+#
+# Official releases should be done from a Debian-based machine because of use
+# of dpkg-deb.
 
 buildweb=1
+builddeb=1
+buildrpm=1
 sign=1
 
 all=1
@@ -23,6 +28,9 @@ for arg in "$@"; do
     --no-sign)
         sign=0
         ;;
+    --no-deb)
+        builddeb=0
+        ;;
     yamcs)
         all=0
         yamcs=1
@@ -36,7 +44,7 @@ for arg in "$@"; do
         yamcssimulation=1
         ;;
     *)
-        echo "Usage: $0 [--no-web] [--no-sign] [yamcs|yamcs-client|yamcs-simulation]..."
+        echo "Usage: $0 [--no-web] [--no-deb] [--no-sign] [yamcs|yamcs-client|yamcs-simulation]..."
         exit 1;
         ;;
     esac
@@ -91,15 +99,43 @@ mvn package -DskipTests
 rpmtopdir="$yamcshome/distribution/target/rpmbuild"
 mkdir -p $rpmtopdir/{RPMS,BUILD,SPECS,tmp}
 
+debtopdir="$yamcshome/distribution/target/debbuild"
+mkdir -p $debtopdir
+
 if [ $yamcs -eq 1 ]; then
     cp distribution/target/yamcs-$pomversion.tar.gz $yamcshome/distribution/target
-    rpmbuilddir="$rpmtopdir/BUILD/yamcs-$version-$release"
-    mkdir -p "$rpmbuilddir/opt/yamcs"
-    tar -xzf distribution/target/yamcs-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs"
-    mkdir -p "$rpmbuilddir/etc/init.d"
-    cp -a distribution/sysvinit/* "$rpmbuilddir/etc/init.d"
-    cat distribution/rpm/yamcs.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs.spec
-    rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs.spec"
+
+    if [ $buildrpm -eq 1 ]; then
+        rpmbuilddir="$rpmtopdir/BUILD/yamcs-$version-$release"
+        
+        mkdir -p "$rpmbuilddir/opt/yamcs"
+        tar -xzf distribution/target/yamcs-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/yamcs"
+        
+        mkdir -p "$rpmbuilddir/etc/init.d"
+        cp -a distribution/sysvinit/* "$rpmbuilddir/etc/init.d"
+        cat distribution/rpm/yamcs.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs.spec
+        
+        rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs.spec"
+    fi
+
+    if [ $builddeb -eq 1 ]; then
+        debbuilddir=$debtopdir/yamcs
+        
+        mkdir -p $debbuilddir/opt/yamcs
+        tar -xzf distribution/target/yamcs-$pomversion.tar.gz --strip-components=1 -C "$debbuilddir/opt/yamcs"
+        
+        mkdir -p "$debbuilddir/etc/init.d"
+        cp -a distribution/sysvinit/* "$debbuilddir/etc/init.d"
+        
+        mkdir $debbuilddir/DEBIAN
+        cp distribution/debian/yamcs/* $debbuilddir/DEBIAN
+        installedsize=`du -sk $debbuilddir | awk '{print $1;}'`
+        cat distribution/debian/yamcs/control | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" | sed -e "s/@@INSTALLEDSIZE@@/$installedsize/" > "$debbuilddir/DEBIAN/control"
+        
+        fakeroot dpkg-deb --build $debbuilddir
+        # dpkg-deb always writes the deb file in '..' of the builddir
+        mv $debtopdir/*.deb "$yamcshome/distribution/target/yamcs_$version"-"$release"_amd64.deb
+    fi
 fi
 
 if [ $yamcssimulation -eq 1 ]; then
@@ -120,13 +156,17 @@ fi
 cd "$yamcshome"
 mv distribution/target/rpmbuild/RPMS/noarch/* distribution/target/
 
-rm -rf $clonedir
-rm -rf $rpmtopdir
+
+rm -rf $clonedir $rpmtopdir $debtopdir
 
 if [ $sign -eq 1 ]; then
     rpmsign --key-id yamcs@spaceapplications.com --addsign distribution/target/*.rpm
+
+    if [ $builddeb -eq 1 ]; then
+        debsigs --sign=origin --default-key yamcs@spaceapplications.com distribution/target/*.deb
+    fi
 fi
 
 echo
 echo 'All done. Generated artifacts:'
-ls -lh `find distribution/target -type f -maxdepth 1`
+ls -lh `find distribution/target -maxdepth 1 -type f`

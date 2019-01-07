@@ -1,7 +1,6 @@
 package org.yamcs.web.rest;
 
 import org.yamcs.ServiceWithConfig;
-import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.protobuf.Rest.EditServiceRequest;
 import org.yamcs.protobuf.Rest.ListServiceInfoResponse;
@@ -35,14 +34,13 @@ public class ServiceRestHandler extends RestHandler {
         }
 
         ListServiceInfoResponse.Builder responseb = ListServiceInfoResponse.newBuilder();
-        
- 
+
         if (global) {
-            for (ServiceWithConfig serviceWithConfig : YamcsServer.getServer().getGlobalServices()) {
+            for (ServiceWithConfig serviceWithConfig : yamcsServer.getGlobalServices()) {
                 responseb.addService(ServiceHelper.toServiceInfo(serviceWithConfig, null, null));
             }
         } else {
-            YamcsServerInstance ysi = YamcsServer.getInstance(instance);
+            YamcsServerInstance ysi = yamcsServer.getInstance(instance);
             for (ServiceWithConfig serviceWithConfig : ysi.getServices()) {
                 responseb.addService(ServiceHelper.toServiceInfo(serviceWithConfig, instance, null));
             }
@@ -66,8 +64,7 @@ public class ServiceRestHandler extends RestHandler {
         }
         String serviceName = req.getRouteParam("name");
         if (global) {
-            YamcsServer server = YamcsServer.getServer();
-            ServiceWithConfig serviceWithConfig = server.getGlobalServiceWithConfig(serviceName);
+            ServiceWithConfig serviceWithConfig = yamcsServer.getGlobalServiceWithConfig(serviceName);
             if (serviceWithConfig == null) {
                 throw new NotFoundException(req);
             }
@@ -75,7 +72,7 @@ public class ServiceRestHandler extends RestHandler {
             ServiceInfo serviceInfo = ServiceHelper.toServiceInfo(serviceWithConfig, null, null);
             completeOK(req, serviceInfo);
         } else {
-            YamcsServerInstance ysi = YamcsServer.getInstance(instance);
+            YamcsServerInstance ysi = yamcsServer.getInstance(instance);
             ServiceWithConfig serviceWithConfig = ysi.getServiceWithConfig(serviceName);
             if (serviceWithConfig == null) {
                 throw new NotFoundException(req);
@@ -123,9 +120,9 @@ public class ServiceRestHandler extends RestHandler {
             case "stopped":
                 Service s;
                 if (global) {
-                    s = YamcsServer.getServer().getGlobalService(serviceName);
+                    s = yamcsServer.getGlobalService(serviceName);
                 } else {
-                    s = YamcsServer.getInstance(instance).getService(serviceName);
+                    s = yamcsServer.getInstance(instance).getService(serviceName);
                 }
                 if (s == null) {
                     throw new NotFoundException(req, "No service by name '" + serviceName + "'");
@@ -137,13 +134,12 @@ public class ServiceRestHandler extends RestHandler {
             case "running":
                 try {
                     if (global) {
-                        YamcsServer server = YamcsServer.getServer();
-                        ServiceWithConfig service = server.getGlobalServiceWithConfig(serviceName);
-                        server.startGlobalService(service.getName());
+                        ServiceWithConfig service = yamcsServer.getGlobalServiceWithConfig(serviceName);
+                        yamcsServer.startGlobalService(service.getName());
                     } else {
-                        ServiceWithConfig service = YamcsServer.getInstance(instance)
+                        ServiceWithConfig service = yamcsServer.getInstance(instance)
                                 .getServiceWithConfig(serviceName);
-                        YamcsServer.getInstance(instance).startService(service.getName());
+                        yamcsServer.getInstance(instance).startService(service.getName());
                     }
                     completeOK(req);
                 } catch (Exception e) {

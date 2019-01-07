@@ -23,7 +23,7 @@ import org.yamcs.management.ManagementService;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.streamsql.ExecutionContext;
-import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlParser;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
@@ -161,7 +161,7 @@ public class YarchDatabaseInstance {
         } else {
             log.info("Creating directory for db {}: {}", instanceName, dir.getAbsolutePath());
             if (!dir.mkdirs()) {
-                YamcsServer.getCrashHandler(instanceName).handleCrash("Archive", "Cannot create directory: " + dir);
+                YamcsServer.getServer().getCrashHandler(instanceName).handleCrash("Archive", "Cannot create directory: " + dir);
                 log.error("Cannot create directory: {}", dir);
             }
         }
@@ -235,7 +235,7 @@ public class YarchDatabaseInstance {
             fos.getFD().sync();
             w.close();
         } catch (IOException e) {
-            YamcsServer.getCrashHandler(instanceName).handleCrash("Archive",
+            YamcsServer.getServer().getCrashHandler(instanceName).handleCrash("Archive",
                     "Cannot write table definition to " + fn + " :" + e);
             log.error("Got exception when writing table definition to {} ", fn, e);
         }

@@ -52,6 +52,18 @@ export interface Instance {
   name: string;
   state: InstanceState;
   processor: Processor[];
+  labels?: { [key: string]: string };
+}
+
+export interface InstanceTemplate {
+  name: string;
+  variable: TemplateVariable[];
+}
+
+export interface TemplateVariable {
+  name: string;
+  description?: string;
+  required: boolean;
 }
 
 export interface ConnectionInfo {
@@ -246,7 +258,7 @@ export interface CommandQueueSubscriptionResponse {
 }
 
 export interface EditInstanceOptions {
-  state: 'stopped' | 'restarted';
+  state: 'stopped' | 'restarted' | 'running';
 }
 
 export interface EditCommandQueueOptions {
@@ -291,4 +303,11 @@ export interface CreateBucketRequest {
 export interface ListObjectsOptions {
   prefix?: string;
   delimiter?: string;
+}
+
+export interface CreateInstanceRequest {
+  name: string;
+  template: string;
+  templateArgs?: { [key: string]: string };
+  labels?: { [key: string]: string };
 }

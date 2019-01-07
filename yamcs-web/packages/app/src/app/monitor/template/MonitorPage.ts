@@ -5,6 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { AppConfig, APP_CONFIG, SidebarItem } from '../../core/config/AppConfig';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
+import { User } from '../../shared/User';
 
 @Component({
   templateUrl: './MonitorPage.html',
@@ -15,16 +16,20 @@ export class MonitorPage {
 
   instance$ = new BehaviorSubject<Instance | null>(null);
 
+  user: User;
+
   extraItems: SidebarItem[];
 
   constructor(
     yamcs: YamcsService,
     @Inject(APP_CONFIG) appConfig: AppConfig,
-    private authService: AuthService,
+    authService: AuthService,
     route: ActivatedRoute,
   ) {
     const monitorConfig = appConfig.monitor || {};
     this.extraItems = monitorConfig.extraItems || [];
+
+    this.user = authService.getUser()!;
 
     route.queryParams.subscribe(() => {
       this.instance$.next(yamcs.getInstance());
@@ -32,6 +37,24 @@ export class MonitorPage {
   }
 
   showEventsItem() {
-    return this.authService.getUser()!.hasSystemPrivilege('ReadEvents');
+    return this.user.hasSystemPrivilege('ReadEvents');
+  }
+
+  showServicesItem() {
+    return this.user.hasSystemPrivilege('ControlServices');
+  }
+
+  showTablesItem() {
+    return this.user.hasSystemPrivilege('ReadTables');
+  }
+
+  showStreamsItem() {
+    const objectPrivileges = this.user.getObjectPrivileges();
+    for (const priv of objectPrivileges) {
+      if (priv.type === 'Stream') {
+        return true;
+      }
+    }
+    return this.user.isSuperuser();
   }
 }

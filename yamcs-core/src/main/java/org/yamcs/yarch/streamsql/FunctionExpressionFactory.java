@@ -5,7 +5,7 @@ import java.util.List;
 import org.yamcs.yarch.streamsql.AggregateListExpression;
 import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.yarch.streamsql.FirstValExpression;
-import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.SumExpression;
 
 public class FunctionExpressionFactory {

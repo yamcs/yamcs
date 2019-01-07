@@ -7,7 +7,7 @@ import org.yamcs.yarch.FieldReturnCompiledExpression;
 import org.yamcs.yarch.ProtobufDataType;
 import org.yamcs.yarch.streamsql.Expression;
 import org.yamcs.yarch.streamsql.GenericStreamSqlException;
-import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 import com.google.protobuf.Descriptors.Descriptor;

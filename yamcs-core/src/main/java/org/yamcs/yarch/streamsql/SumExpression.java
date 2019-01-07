@@ -2,7 +2,7 @@ package org.yamcs.yarch.streamsql;
 
 import org.yamcs.yarch.streamsql.CompilableAggregateExpression;
 import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 

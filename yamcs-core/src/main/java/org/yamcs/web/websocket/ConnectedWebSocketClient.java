@@ -111,7 +111,7 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
             return;
         }
 
-        if (ysi.getState() == InstanceState.RUNNING) {
+        if (ysi.state() == InstanceState.RUNNING) {
             // this means that the instance has just re-started, need to move over to the new processor
             // currently we take the first processor (probably realtime).
             // maybe we should try to switch to one of the same name like the previous one
@@ -137,9 +137,9 @@ public class ConnectedWebSocketClient extends ConnectedClient implements Managem
         Processor processor = getProcessor();
         if (processor != null) {
             String instanceName = processor.getInstance();
-            YamcsServerInstance ysi = YamcsServer.getInstance(instanceName);
+            YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instanceName);
             YamcsInstance yi = YamcsInstance.newBuilder().setName(instanceName)
-                    .setState(ysi.getState()).build();
+                    .setState(ysi.state()).build();
             conninf.setInstance(yi);
             conninf.setProcessor(ManagementGpbHelper.toProcessorInfo(processor));
         }

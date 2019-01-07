@@ -14,7 +14,7 @@ BuildArch: noarch
 
 
 %description
-Yet another Mission Control System
+Yet another mission control system
 
 
 %install
@@ -23,13 +23,6 @@ cd %{name}-%{version}-%{release}
 mkdir -p %{buildroot}
 cp -r etc %{buildroot}
 cp -r opt %{buildroot}
-
-# Adjust the default location of the server logs
-logproperties=%{buildroot}/opt/yamcs/etc/logging.properties.sample
-sed -e 's/%h\/.yamcs\/log/\/opt\/yamcs\/log/g' $logproperties > $logproperties.tmp;
-mv $logproperties.tmp $logproperties
-
-rm %{buildroot}/%{prefix}/bin/*.bat
 
 
 %pre

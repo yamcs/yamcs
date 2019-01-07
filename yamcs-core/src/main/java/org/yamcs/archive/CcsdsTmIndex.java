@@ -41,7 +41,7 @@ import org.yamcs.yarch.rocksdb.Tablespace;
 import org.yamcs.yarch.rocksdb.YRDB;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
-import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
@@ -88,9 +88,7 @@ public class CcsdsTmIndex implements TmIndex {
         } catch (RocksDBException e) {
             throw new IOException("Failed to open rocksdb", e);
         }
-        YamcsServer yamcsServer = YamcsServer.getServer(); //can be null in unit tests
-        HttpServer httpServer = (yamcsServer == null) ? null
-                : (HttpServer) yamcsServer.getGlobalService(HttpServer.class.getName());
+        HttpServer httpServer = (HttpServer) YamcsServer.getServer().getGlobalService(HttpServer.class.getName());
         if (httpServer != null) {
             httpServer.registerRouteHandler(instance, new CcsdsTmIndexRestHandler());
         }

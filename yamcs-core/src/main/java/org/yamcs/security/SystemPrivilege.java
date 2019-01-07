@@ -30,6 +30,7 @@ public class SystemPrivilege {
     public static final SystemPrivilege ControlArchiving = new SystemPrivilege("ControlArchiving");
     public static final SystemPrivilege ControlLinks = new SystemPrivilege("ControlLinks");
     public static final SystemPrivilege ControlServices = new SystemPrivilege("ControlServices");
+    public static final SystemPrivilege CreateInstances = new SystemPrivilege("CreateInstances");
 
     /**
      * Allows to manage buckets of any kind
