@@ -45,11 +45,11 @@ public class InstancesIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCreateStop() throws Exception {
         CreateInstanceRequest cir = CreateInstanceRequest.newBuilder().setName("inst-test1").setTemplate("templ1")
-                .putLabels("tag1", "tagValue1").putLabels("tag2", "tagValue2").build();
+                .putLabels("label1", "labelValue1").putLabels("label2", "labelValue2").build();
 
         String resp = restClient.doRequest("/instances", HttpMethod.POST, toJson(cir)).get();
         assertTrue(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml").exists());
-        assertTrue(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.tags").exists());
+        assertTrue(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.metadata").exists());
         YamcsInstance yi = fromJson(resp, YamcsInstance.newBuilder()).build();
         assertEquals(InstanceState.RUNNING, yi.getState());
 
@@ -60,7 +60,7 @@ public class InstancesIntegrationTest extends AbstractIntegrationTest {
         assertFalse(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml").exists());
         assertTrue(new File("/tmp/yamcs-IntegrationTest-data/instance-def/yamcs.inst-test1.yaml.offline").exists());
 
-        resp = restClient.doRequest("/instances?filter=label:tag1%3DtagValue1", HttpMethod.GET, "").get();
+        resp = restClient.doRequest("/instances?filter=label:label1%3DlabelValue1", HttpMethod.GET, "").get();
         ListInstancesResponse lir = fromJson(resp, ListInstancesResponse.newBuilder()).build();
         assertEquals(1, lir.getInstanceCount());
         yi = lir.getInstance(0);
@@ -68,7 +68,7 @@ public class InstancesIntegrationTest extends AbstractIntegrationTest {
         assertEquals(InstanceState.OFFLINE, yi.getState());
 
         resp = restClient
-                .doRequest("/instances?filter=label:tag1%3DtagValue1&filter=state%3Drunning", HttpMethod.GET, "")
+                .doRequest("/instances?filter=label:label1%3DlabelValue1&filter=state%3Drunning", HttpMethod.GET, "")
                 .get();
         lir = fromJson(resp, ListInstancesResponse.newBuilder()).build();
         assertEquals(0, lir.getInstanceCount());

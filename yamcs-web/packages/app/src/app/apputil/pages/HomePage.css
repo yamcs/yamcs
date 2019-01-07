@@ -5,6 +5,10 @@ mat-toolbar.main {
   color: rgba(0, 0, 0, .654);
 }
 
+.selected {
+  background-color: #f0f4fd !important;
+}
+
 .spin {
   -webkit-animation: vs-spin 2s infinite linear;
   animation: vs-spin 2s infinite linear;

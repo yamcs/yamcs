@@ -213,7 +213,7 @@ public class InstanceRestHandler extends RestHandler {
                         "Unknown state '" + pr.value + "'. Valid values are: " + Arrays.asList(InstanceState.values()));
             }
         } else if (pr.key.startsWith("label:")) {
-            String labelKey = pr.key.substring(4);
+            String labelKey = pr.key.substring(6);
             return ysi -> {
                 Map<String, ?> labels = ysi.getLabels();
                 if (labels == null) {

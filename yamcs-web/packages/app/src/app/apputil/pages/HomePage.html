@@ -10,6 +10,30 @@
       <mat-icon>add_box</mat-icon>
       CREATE INSTANCE
     </a>
+    <a mat-button
+       color="primary"
+       *ngIf="mayControlServices()"
+       [disabled]="!isGroupStartEnabled()"
+       (click)="startSelectedInstances()">
+      <mat-icon>play_arrow</mat-icon>
+      START
+    </a>
+    <a mat-button
+       color="primary"
+       *ngIf="mayControlServices()"
+       [disabled]="!isGroupStopEnabled()"
+       (click)="stopSelectedInstances()">
+      <mat-icon>stop</mat-icon>
+      STOP
+    </a>
+    <a mat-button
+       color="primary"
+       *ngIf="mayControlServices()"
+       [disabled]="!isGroupRestartEnabled()"
+       (click)="restartSelectedInstances()">
+      <mat-icon>power_settings_new</mat-icon>
+      RESTART
+    </a>
   </app-main-toolbar>
 
   <div class="panel-content">
@@ -26,6 +50,18 @@
            matSortActive="name"
            matSortDirection="asc"
            matSortDisableClear>
+
+      <ng-container cdkColumnDef="select">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 40px; text-align: left">
+          <input type="checkbox" (change)="$event ? masterToggle() : null"
+                        [checked]="selection.hasValue() && isAllSelected()">
+        </th>
+        <td mat-cell *cdkCellDef="let row">
+          <input type="checkbox" (click)="$event.stopPropagation()"
+                        (change)="$event ? selection.toggle(row) : null"
+                        [checked]="selection.isSelected(row)">
+        </td>
+      </ng-container>
 
       <ng-container matColumnDef="status">
         <th mat-header-cell *matHeaderCellDef style="width: 32px"></th>
@@ -90,21 +126,22 @@
           <mat-menu #instanceMenu="matMenu" overlapTrigger="false" class="ya-menu">
             <button mat-menu-item
                     (click)="startInstance(instance)"
-                    [disabled]="instance.state === 'RUNNING'">
+                    [disabled]="instance.state !== 'OFFLINE'">
               Start
             </button>
             <button mat-menu-item
                     (click)="stopInstance(instance)"
-                    [disabled]="instance.state !== 'RUNNING'">
+                    [disabled]="instance.state === 'OFFLINE'">
               Stop
             </button>
             <button mat-menu-item
                     (click)="restartInstance(instance)"
-                    [disabled]="instance.state !== 'RUNNING'">
+                    [disabled]="instance.state === 'OFFLINE'">
               Restart
             </button>
           </mat-menu>
           <button mat-button [matMenuTriggerFor]="instanceMenu"
+                  (click)="$event.stopPropagation()"
                   *ngIf="mayControlServices()">
             <mat-icon>more_vert</mat-icon>
           </button>
@@ -112,7 +149,10 @@
       </ng-container>
 
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row
+          *cdkRowDef="let row; columns: displayedColumns;"
+          [class.selected]="selection.isSelected(row)"
+          (click)="toggleOne(row)"></tr>
     </table>
 
     <mat-paginator [pageSize]="100"
