@@ -1,12 +1,13 @@
 package org.yamcs;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.net.InetAddress;
@@ -34,11 +35,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.YamcsManagement.InstanceTemplate;
+import org.yamcs.protobuf.YamcsManagement.TemplateVariable;
 import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.security.CryptoUtils;
 import org.yamcs.spi.Plugin;
 import org.yamcs.time.RealtimeTimeService;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.TemplateUtil;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtceproc.XtceDbFactory;
 import org.yamcs.yarch.YarchDatabase;
@@ -229,10 +232,29 @@ public class YamcsServer {
             dirStream.filter(Files::isDirectory).forEach(p -> {
                 if (Files.exists(p.resolve("template.yaml"))) {
                     String name = p.getFileName().toString();
-                    InstanceTemplate template = InstanceTemplate.newBuilder()
-                            .setName(name)
-                            .build();
-                    server.instanceTemplates.put(name, template);
+                    InstanceTemplate.Builder templateb = InstanceTemplate.newBuilder()
+                            .setName(name);
+
+                    Path varFile = p.resolve("variables.yaml");
+                    if (Files.exists(varFile)) {
+                        try (InputStream in = new FileInputStream(varFile.toFile())) {
+                            @SuppressWarnings("unchecked")
+                            List<Map<String, Object>> varDefs = (List<Map<String, Object>>) new Yaml().load(in);
+                            for (Map<String, Object> varDef : varDefs) {
+                                TemplateVariable.Builder varb = TemplateVariable.newBuilder();
+                                varb.setName(YConfiguration.getString(varDef, "name"));
+                                varb.setRequired(YConfiguration.getBoolean(varDef, "required", true));
+                                if (varDef.containsKey("description")) {
+                                    varb.setDescription(YConfiguration.getString(varDef, "description"));
+                                }
+                                templateb.addVariable(varb);
+                            }
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    }
+
+                    server.instanceTemplates.put(name, templateb.build());
                 }
             });
         }
@@ -304,7 +326,13 @@ public class YamcsServer {
                 Yaml y = new Yaml();
                 Object o = y.load(metadataFile.getAbsolutePath());
                 if (o instanceof Map<?, ?>) {
-                    ysi.setLabels((Map<String, String>) o);
+                    Object labels = ((Map<String, Object>) o).get("labels");
+                    if (labels instanceof Map<?, ?>) {
+                        ysi.setLabels((Map<String, String>) labels);
+                    } else {
+                        staticlog.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
+                                metadataFile.getAbsolutePath());
+                    }
                 } else {
                     staticlog.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
                             metadataFile.getAbsolutePath());
@@ -516,25 +544,32 @@ public class YamcsServer {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }
         try {
-            // TODO instantiate template
             String tmplResource = "/instance-templates/" + template + "/template.yaml";
             InputStream is = YConfiguration.resolver.getConfigurationStream(tmplResource);
-            byte[] buf = new byte[512];
-            int n;
-            String confFile = instanceDefDir + "yamcs." + name + ".yaml";
 
-            FileOutputStream fos = new FileOutputStream(confFile);
-            while ((n = is.read(buf)) > 0) {
-                fos.write(buf, 0, n);
+            StringBuilder buf = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    buf.append(line).append("\n");
+                }
             }
-            is.close();
-            fos.close();
+            String source = buf.toString();
+            String processed = TemplateUtil.process(source, templateArgs);
+
+            String confFile = instanceDefDir + "yamcs." + name + ".yaml";
+            try (FileWriter writer = new FileWriter(confFile)) {
+                writer.write(processed);
+            }
 
             String metadataFile = instanceDefDir + "yamcs." + name + ".metadata";
             Yaml yaml = new Yaml();
-            Writer w = new BufferedWriter(new FileWriter(metadataFile));
-            yaml.dump(labels, w);
-            w.close();
+            try (Writer w = new BufferedWriter(new FileWriter(metadataFile))) {
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("templateArgs", templateArgs);
+                metadata.put("labels", labels);
+                yaml.dump(metadata, w);
+            }
             FileInputStream fis = new FileInputStream(confFile);
             YConfiguration conf = new YConfiguration("yamcs." + name, fis, confFile);
             fis.close();

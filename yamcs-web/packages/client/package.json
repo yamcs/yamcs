@@ -35,6 +35,6 @@
     "typescript": "~3.1.0"
   },
   "resolutions": {
-		"rollup": "^1.0.1"
-	}
+    "rollup": "^1.0.1"
+  }
 }

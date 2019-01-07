@@ -43,10 +43,10 @@ message YamcsInstance {
 
 message InstanceTemplate {
   optional string name = 1;
-  repeated TemplateProperty property = 2;
+  repeated TemplateVariable variable = 2;
 }
 
-message TemplateProperty {
+message TemplateVariable {
   optional string name = 1;
   optional string description = 2;
   optional bool required = 3; 

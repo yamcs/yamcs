@@ -20,12 +20,18 @@
       </mat-toolbar-row>
     </mat-toolbar>
 
-    <div class="panel-content ya-form">
+    <div *ngIf="template$ | async as template" class="panel-content ya-form">
       <form [formGroup]="form" novalidate>
         <label>
           Instance name<br>
           <input formControlName="name">
         </label>
+        <ng-container *ngIf="template.variable">
+          <label *ngFor="let v of template.variable">
+            {{ v.description || v.name }}<br>
+            <input [formControlName]="v.name">
+          </label>
+        </ng-container>
       </form>
       <p>&nbsp;</p>
       <button type="submit" (click)="onConfirm()"

@@ -3048,27 +3048,27 @@ public final class YamcsManagement {
         getNameBytes();
 
     /**
-     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
      */
-    java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateProperty> 
-        getPropertyList();
+    java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateVariable> 
+        getVariableList();
     /**
-     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
      */
-    org.yamcs.protobuf.YamcsManagement.TemplateProperty getProperty(int index);
+    org.yamcs.protobuf.YamcsManagement.TemplateVariable getVariable(int index);
     /**
-     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
      */
-    int getPropertyCount();
+    int getVariableCount();
     /**
-     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
      */
-    java.util.List<? extends org.yamcs.protobuf.YamcsManagement.TemplatePropertyOrBuilder> 
-        getPropertyOrBuilderList();
+    java.util.List<? extends org.yamcs.protobuf.YamcsManagement.TemplateVariableOrBuilder> 
+        getVariableOrBuilderList();
     /**
-     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
      */
-    org.yamcs.protobuf.YamcsManagement.TemplatePropertyOrBuilder getPropertyOrBuilder(
+    org.yamcs.protobuf.YamcsManagement.TemplateVariableOrBuilder getVariableOrBuilder(
         int index);
   }
   /**
@@ -3085,7 +3085,7 @@ public final class YamcsManagement {
     }
     private InstanceTemplate() {
       name_ = "";
-      property_ = java.util.Collections.emptyList();
+      variable_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -3120,11 +3120,11 @@ public final class YamcsManagement {
             }
             case 18: {
               if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                property_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.TemplateProperty>();
+                variable_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.TemplateVariable>();
                 mutable_bitField0_ |= 0x00000002;
               }
-              property_.add(
-                  input.readMessage(org.yamcs.protobuf.YamcsManagement.TemplateProperty.PARSER, extensionRegistry));
+              variable_.add(
+                  input.readMessage(org.yamcs.protobuf.YamcsManagement.TemplateVariable.PARSER, extensionRegistry));
               break;
             }
             default: {
@@ -3143,7 +3143,7 @@ public final class YamcsManagement {
             e).setUnfinishedMessage(this);
       } finally {
         if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-          property_ = java.util.Collections.unmodifiableList(property_);
+          variable_ = java.util.Collections.unmodifiableList(variable_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -3205,39 +3205,39 @@ public final class YamcsManagement {
       }
     }
 
-    public static final int PROPERTY_FIELD_NUMBER = 2;
-    private java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateProperty> property_;
+    public static final int VARIABLE_FIELD_NUMBER = 2;
+    private java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateVariable> variable_;
     /**
-     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
      */
-    public java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateProperty> getPropertyList() {
-      return property_;
+    public java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateVariable> getVariableList() {
+      return variable_;
     }
     /**
-     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
      */
-    public java.util.List<? extends org.yamcs.protobuf.YamcsManagement.TemplatePropertyOrBuilder> 
-        getPropertyOrBuilderList() {
-      return property_;
+    public java.util.List<? extends org.yamcs.protobuf.YamcsManagement.TemplateVariableOrBuilder> 
+        getVariableOrBuilderList() {
+      return variable_;
     }
     /**
-     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
      */
-    public int getPropertyCount() {
-      return property_.size();
+    public int getVariableCount() {
+      return variable_.size();
     }
     /**
-     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
      */
-    public org.yamcs.protobuf.YamcsManagement.TemplateProperty getProperty(int index) {
-      return property_.get(index);
+    public org.yamcs.protobuf.YamcsManagement.TemplateVariable getVariable(int index) {
+      return variable_.get(index);
     }
     /**
-     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+     * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
      */
-    public org.yamcs.protobuf.YamcsManagement.TemplatePropertyOrBuilder getPropertyOrBuilder(
+    public org.yamcs.protobuf.YamcsManagement.TemplateVariableOrBuilder getVariableOrBuilder(
         int index) {
-      return property_.get(index);
+      return variable_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -3257,8 +3257,8 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
       }
-      for (int i = 0; i < property_.size(); i++) {
-        output.writeMessage(2, property_.get(i));
+      for (int i = 0; i < variable_.size(); i++) {
+        output.writeMessage(2, variable_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -3272,9 +3272,9 @@ public final class YamcsManagement {
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
       }
-      for (int i = 0; i < property_.size(); i++) {
+      for (int i = 0; i < variable_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, property_.get(i));
+          .computeMessageSize(2, variable_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -3297,8 +3297,8 @@ public final class YamcsManagement {
         result = result && getName()
             .equals(other.getName());
       }
-      result = result && getPropertyList()
-          .equals(other.getPropertyList());
+      result = result && getVariableList()
+          .equals(other.getVariableList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -3314,9 +3314,9 @@ public final class YamcsManagement {
         hash = (37 * hash) + NAME_FIELD_NUMBER;
         hash = (53 * hash) + getName().hashCode();
       }
-      if (getPropertyCount() > 0) {
-        hash = (37 * hash) + PROPERTY_FIELD_NUMBER;
-        hash = (53 * hash) + getPropertyList().hashCode();
+      if (getVariableCount() > 0) {
+        hash = (37 * hash) + VARIABLE_FIELD_NUMBER;
+        hash = (53 * hash) + getVariableList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -3446,7 +3446,7 @@ public final class YamcsManagement {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
-          getPropertyFieldBuilder();
+          getVariableFieldBuilder();
         }
       }
       @java.lang.Override
@@ -3454,11 +3454,11 @@ public final class YamcsManagement {
         super.clear();
         name_ = "";
         bitField0_ = (bitField0_ & ~0x00000001);
-        if (propertyBuilder_ == null) {
-          property_ = java.util.Collections.emptyList();
+        if (variableBuilder_ == null) {
+          variable_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000002);
         } else {
-          propertyBuilder_.clear();
+          variableBuilder_.clear();
         }
         return this;
       }
@@ -3492,14 +3492,14 @@ public final class YamcsManagement {
           to_bitField0_ |= 0x00000001;
         }
         result.name_ = name_;
-        if (propertyBuilder_ == null) {
+        if (variableBuilder_ == null) {
           if (((bitField0_ & 0x00000002) == 0x00000002)) {
-            property_ = java.util.Collections.unmodifiableList(property_);
+            variable_ = java.util.Collections.unmodifiableList(variable_);
             bitField0_ = (bitField0_ & ~0x00000002);
           }
-          result.property_ = property_;
+          result.variable_ = variable_;
         } else {
-          result.property_ = propertyBuilder_.build();
+          result.variable_ = variableBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -3555,29 +3555,29 @@ public final class YamcsManagement {
           name_ = other.name_;
           onChanged();
         }
-        if (propertyBuilder_ == null) {
-          if (!other.property_.isEmpty()) {
-            if (property_.isEmpty()) {
-              property_ = other.property_;
+        if (variableBuilder_ == null) {
+          if (!other.variable_.isEmpty()) {
+            if (variable_.isEmpty()) {
+              variable_ = other.variable_;
               bitField0_ = (bitField0_ & ~0x00000002);
             } else {
-              ensurePropertyIsMutable();
-              property_.addAll(other.property_);
+              ensureVariableIsMutable();
+              variable_.addAll(other.variable_);
             }
             onChanged();
           }
         } else {
-          if (!other.property_.isEmpty()) {
-            if (propertyBuilder_.isEmpty()) {
-              propertyBuilder_.dispose();
-              propertyBuilder_ = null;
-              property_ = other.property_;
+          if (!other.variable_.isEmpty()) {
+            if (variableBuilder_.isEmpty()) {
+              variableBuilder_.dispose();
+              variableBuilder_ = null;
+              variable_ = other.variable_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              propertyBuilder_ = 
+              variableBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getPropertyFieldBuilder() : null;
+                   getVariableFieldBuilder() : null;
             } else {
-              propertyBuilder_.addAllMessages(other.property_);
+              variableBuilder_.addAllMessages(other.variable_);
             }
           }
         }
@@ -3687,244 +3687,244 @@ public final class YamcsManagement {
         return this;
       }
 
-      private java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateProperty> property_ =
+      private java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateVariable> variable_ =
         java.util.Collections.emptyList();
-      private void ensurePropertyIsMutable() {
+      private void ensureVariableIsMutable() {
         if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          property_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.TemplateProperty>(property_);
+          variable_ = new java.util.ArrayList<org.yamcs.protobuf.YamcsManagement.TemplateVariable>(variable_);
           bitField0_ |= 0x00000002;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.yamcs.protobuf.YamcsManagement.TemplateProperty, org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder, org.yamcs.protobuf.YamcsManagement.TemplatePropertyOrBuilder> propertyBuilder_;
+          org.yamcs.protobuf.YamcsManagement.TemplateVariable, org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder, org.yamcs.protobuf.YamcsManagement.TemplateVariableOrBuilder> variableBuilder_;
 
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateProperty> getPropertyList() {
-        if (propertyBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(property_);
+      public java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateVariable> getVariableList() {
+        if (variableBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(variable_);
         } else {
-          return propertyBuilder_.getMessageList();
+          return variableBuilder_.getMessageList();
         }
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public int getPropertyCount() {
-        if (propertyBuilder_ == null) {
-          return property_.size();
+      public int getVariableCount() {
+        if (variableBuilder_ == null) {
+          return variable_.size();
         } else {
-          return propertyBuilder_.getCount();
+          return variableBuilder_.getCount();
         }
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public org.yamcs.protobuf.YamcsManagement.TemplateProperty getProperty(int index) {
-        if (propertyBuilder_ == null) {
-          return property_.get(index);
+      public org.yamcs.protobuf.YamcsManagement.TemplateVariable getVariable(int index) {
+        if (variableBuilder_ == null) {
+          return variable_.get(index);
         } else {
-          return propertyBuilder_.getMessage(index);
+          return variableBuilder_.getMessage(index);
         }
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public Builder setProperty(
-          int index, org.yamcs.protobuf.YamcsManagement.TemplateProperty value) {
-        if (propertyBuilder_ == null) {
+      public Builder setVariable(
+          int index, org.yamcs.protobuf.YamcsManagement.TemplateVariable value) {
+        if (variableBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensurePropertyIsMutable();
-          property_.set(index, value);
+          ensureVariableIsMutable();
+          variable_.set(index, value);
           onChanged();
         } else {
-          propertyBuilder_.setMessage(index, value);
+          variableBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public Builder setProperty(
-          int index, org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder builderForValue) {
-        if (propertyBuilder_ == null) {
-          ensurePropertyIsMutable();
-          property_.set(index, builderForValue.build());
+      public Builder setVariable(
+          int index, org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder builderForValue) {
+        if (variableBuilder_ == null) {
+          ensureVariableIsMutable();
+          variable_.set(index, builderForValue.build());
           onChanged();
         } else {
-          propertyBuilder_.setMessage(index, builderForValue.build());
+          variableBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public Builder addProperty(org.yamcs.protobuf.YamcsManagement.TemplateProperty value) {
-        if (propertyBuilder_ == null) {
+      public Builder addVariable(org.yamcs.protobuf.YamcsManagement.TemplateVariable value) {
+        if (variableBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensurePropertyIsMutable();
-          property_.add(value);
+          ensureVariableIsMutable();
+          variable_.add(value);
           onChanged();
         } else {
-          propertyBuilder_.addMessage(value);
+          variableBuilder_.addMessage(value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public Builder addProperty(
-          int index, org.yamcs.protobuf.YamcsManagement.TemplateProperty value) {
-        if (propertyBuilder_ == null) {
+      public Builder addVariable(
+          int index, org.yamcs.protobuf.YamcsManagement.TemplateVariable value) {
+        if (variableBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensurePropertyIsMutable();
-          property_.add(index, value);
+          ensureVariableIsMutable();
+          variable_.add(index, value);
           onChanged();
         } else {
-          propertyBuilder_.addMessage(index, value);
+          variableBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public Builder addProperty(
-          org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder builderForValue) {
-        if (propertyBuilder_ == null) {
-          ensurePropertyIsMutable();
-          property_.add(builderForValue.build());
+      public Builder addVariable(
+          org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder builderForValue) {
+        if (variableBuilder_ == null) {
+          ensureVariableIsMutable();
+          variable_.add(builderForValue.build());
           onChanged();
         } else {
-          propertyBuilder_.addMessage(builderForValue.build());
+          variableBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public Builder addProperty(
-          int index, org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder builderForValue) {
-        if (propertyBuilder_ == null) {
-          ensurePropertyIsMutable();
-          property_.add(index, builderForValue.build());
+      public Builder addVariable(
+          int index, org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder builderForValue) {
+        if (variableBuilder_ == null) {
+          ensureVariableIsMutable();
+          variable_.add(index, builderForValue.build());
           onChanged();
         } else {
-          propertyBuilder_.addMessage(index, builderForValue.build());
+          variableBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public Builder addAllProperty(
-          java.lang.Iterable<? extends org.yamcs.protobuf.YamcsManagement.TemplateProperty> values) {
-        if (propertyBuilder_ == null) {
-          ensurePropertyIsMutable();
+      public Builder addAllVariable(
+          java.lang.Iterable<? extends org.yamcs.protobuf.YamcsManagement.TemplateVariable> values) {
+        if (variableBuilder_ == null) {
+          ensureVariableIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, property_);
+              values, variable_);
           onChanged();
         } else {
-          propertyBuilder_.addAllMessages(values);
+          variableBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public Builder clearProperty() {
-        if (propertyBuilder_ == null) {
-          property_ = java.util.Collections.emptyList();
+      public Builder clearVariable() {
+        if (variableBuilder_ == null) {
+          variable_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00000002);
           onChanged();
         } else {
-          propertyBuilder_.clear();
+          variableBuilder_.clear();
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public Builder removeProperty(int index) {
-        if (propertyBuilder_ == null) {
-          ensurePropertyIsMutable();
-          property_.remove(index);
+      public Builder removeVariable(int index) {
+        if (variableBuilder_ == null) {
+          ensureVariableIsMutable();
+          variable_.remove(index);
           onChanged();
         } else {
-          propertyBuilder_.remove(index);
+          variableBuilder_.remove(index);
         }
         return this;
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder getPropertyBuilder(
+      public org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder getVariableBuilder(
           int index) {
-        return getPropertyFieldBuilder().getBuilder(index);
+        return getVariableFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public org.yamcs.protobuf.YamcsManagement.TemplatePropertyOrBuilder getPropertyOrBuilder(
+      public org.yamcs.protobuf.YamcsManagement.TemplateVariableOrBuilder getVariableOrBuilder(
           int index) {
-        if (propertyBuilder_ == null) {
-          return property_.get(index);  } else {
-          return propertyBuilder_.getMessageOrBuilder(index);
+        if (variableBuilder_ == null) {
+          return variable_.get(index);  } else {
+          return variableBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public java.util.List<? extends org.yamcs.protobuf.YamcsManagement.TemplatePropertyOrBuilder> 
-           getPropertyOrBuilderList() {
-        if (propertyBuilder_ != null) {
-          return propertyBuilder_.getMessageOrBuilderList();
+      public java.util.List<? extends org.yamcs.protobuf.YamcsManagement.TemplateVariableOrBuilder> 
+           getVariableOrBuilderList() {
+        if (variableBuilder_ != null) {
+          return variableBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(property_);
+          return java.util.Collections.unmodifiableList(variable_);
         }
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder addPropertyBuilder() {
-        return getPropertyFieldBuilder().addBuilder(
-            org.yamcs.protobuf.YamcsManagement.TemplateProperty.getDefaultInstance());
+      public org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder addVariableBuilder() {
+        return getVariableFieldBuilder().addBuilder(
+            org.yamcs.protobuf.YamcsManagement.TemplateVariable.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder addPropertyBuilder(
+      public org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder addVariableBuilder(
           int index) {
-        return getPropertyFieldBuilder().addBuilder(
-            index, org.yamcs.protobuf.YamcsManagement.TemplateProperty.getDefaultInstance());
+        return getVariableFieldBuilder().addBuilder(
+            index, org.yamcs.protobuf.YamcsManagement.TemplateVariable.getDefaultInstance());
       }
       /**
-       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateProperty property = 2;</code>
+       * <code>repeated .yamcs.protobuf.yamcsManagement.TemplateVariable variable = 2;</code>
        */
-      public java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder> 
-           getPropertyBuilderList() {
-        return getPropertyFieldBuilder().getBuilderList();
+      public java.util.List<org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder> 
+           getVariableBuilderList() {
+        return getVariableFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          org.yamcs.protobuf.YamcsManagement.TemplateProperty, org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder, org.yamcs.protobuf.YamcsManagement.TemplatePropertyOrBuilder> 
-          getPropertyFieldBuilder() {
-        if (propertyBuilder_ == null) {
-          propertyBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.yamcs.protobuf.YamcsManagement.TemplateProperty, org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder, org.yamcs.protobuf.YamcsManagement.TemplatePropertyOrBuilder>(
-                  property_,
+          org.yamcs.protobuf.YamcsManagement.TemplateVariable, org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder, org.yamcs.protobuf.YamcsManagement.TemplateVariableOrBuilder> 
+          getVariableFieldBuilder() {
+        if (variableBuilder_ == null) {
+          variableBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              org.yamcs.protobuf.YamcsManagement.TemplateVariable, org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder, org.yamcs.protobuf.YamcsManagement.TemplateVariableOrBuilder>(
+                  variable_,
                   ((bitField0_ & 0x00000002) == 0x00000002),
                   getParentForChildren(),
                   isClean());
-          property_ = null;
+          variable_ = null;
         }
-        return propertyBuilder_;
+        return variableBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -3979,8 +3979,8 @@ public final class YamcsManagement {
 
   }
 
-  public interface TemplatePropertyOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.yamcsManagement.TemplateProperty)
+  public interface TemplateVariableOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:yamcs.protobuf.yamcsManagement.TemplateVariable)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -4021,18 +4021,18 @@ public final class YamcsManagement {
     boolean getRequired();
   }
   /**
-   * Protobuf type {@code yamcs.protobuf.yamcsManagement.TemplateProperty}
+   * Protobuf type {@code yamcs.protobuf.yamcsManagement.TemplateVariable}
    */
-  public  static final class TemplateProperty extends
+  public  static final class TemplateVariable extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:yamcs.protobuf.yamcsManagement.TemplateProperty)
-      TemplatePropertyOrBuilder {
+      // @@protoc_insertion_point(message_implements:yamcs.protobuf.yamcsManagement.TemplateVariable)
+      TemplateVariableOrBuilder {
   private static final long serialVersionUID = 0L;
-    // Use TemplateProperty.newBuilder() to construct.
-    private TemplateProperty(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+    // Use TemplateVariable.newBuilder() to construct.
+    private TemplateVariable(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private TemplateProperty() {
+    private TemplateVariable() {
       name_ = "";
       description_ = "";
       required_ = false;
@@ -4043,7 +4043,7 @@ public final class YamcsManagement {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private TemplateProperty(
+    private TemplateVariable(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -4100,15 +4100,15 @@ public final class YamcsManagement {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_TemplateProperty_descriptor;
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_TemplateVariable_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_TemplateProperty_fieldAccessorTable
+      return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_TemplateVariable_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              org.yamcs.protobuf.YamcsManagement.TemplateProperty.class, org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder.class);
+              org.yamcs.protobuf.YamcsManagement.TemplateVariable.class, org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder.class);
     }
 
     private int bitField0_;
@@ -4263,10 +4263,10 @@ public final class YamcsManagement {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.yamcs.protobuf.YamcsManagement.TemplateProperty)) {
+      if (!(obj instanceof org.yamcs.protobuf.YamcsManagement.TemplateVariable)) {
         return super.equals(obj);
       }
-      org.yamcs.protobuf.YamcsManagement.TemplateProperty other = (org.yamcs.protobuf.YamcsManagement.TemplateProperty) obj;
+      org.yamcs.protobuf.YamcsManagement.TemplateVariable other = (org.yamcs.protobuf.YamcsManagement.TemplateVariable) obj;
 
       boolean result = true;
       result = result && (hasName() == other.hasName());
@@ -4313,69 +4313,69 @@ public final class YamcsManagement {
       return hash;
     }
 
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseFrom(byte[] data)
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseDelimitedFrom(java.io.InputStream input)
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseDelimitedFrom(
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty parseFrom(
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -4388,7 +4388,7 @@ public final class YamcsManagement {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(org.yamcs.protobuf.YamcsManagement.TemplateProperty prototype) {
+    public static Builder newBuilder(org.yamcs.protobuf.YamcsManagement.TemplateVariable prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -4404,26 +4404,26 @@ public final class YamcsManagement {
       return builder;
     }
     /**
-     * Protobuf type {@code yamcs.protobuf.yamcsManagement.TemplateProperty}
+     * Protobuf type {@code yamcs.protobuf.yamcsManagement.TemplateVariable}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.yamcsManagement.TemplateProperty)
-        org.yamcs.protobuf.YamcsManagement.TemplatePropertyOrBuilder {
+        // @@protoc_insertion_point(builder_implements:yamcs.protobuf.yamcsManagement.TemplateVariable)
+        org.yamcs.protobuf.YamcsManagement.TemplateVariableOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_TemplateProperty_descriptor;
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_TemplateVariable_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_TemplateProperty_fieldAccessorTable
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_TemplateVariable_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                org.yamcs.protobuf.YamcsManagement.TemplateProperty.class, org.yamcs.protobuf.YamcsManagement.TemplateProperty.Builder.class);
+                org.yamcs.protobuf.YamcsManagement.TemplateVariable.class, org.yamcs.protobuf.YamcsManagement.TemplateVariable.Builder.class);
       }
 
-      // Construct using org.yamcs.protobuf.YamcsManagement.TemplateProperty.newBuilder()
+      // Construct using org.yamcs.protobuf.YamcsManagement.TemplateVariable.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -4453,17 +4453,17 @@ public final class YamcsManagement {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_TemplateProperty_descriptor;
+        return org.yamcs.protobuf.YamcsManagement.internal_static_yamcs_protobuf_yamcsManagement_TemplateVariable_descriptor;
       }
 
       @java.lang.Override
-      public org.yamcs.protobuf.YamcsManagement.TemplateProperty getDefaultInstanceForType() {
-        return org.yamcs.protobuf.YamcsManagement.TemplateProperty.getDefaultInstance();
+      public org.yamcs.protobuf.YamcsManagement.TemplateVariable getDefaultInstanceForType() {
+        return org.yamcs.protobuf.YamcsManagement.TemplateVariable.getDefaultInstance();
       }
 
       @java.lang.Override
-      public org.yamcs.protobuf.YamcsManagement.TemplateProperty build() {
-        org.yamcs.protobuf.YamcsManagement.TemplateProperty result = buildPartial();
+      public org.yamcs.protobuf.YamcsManagement.TemplateVariable build() {
+        org.yamcs.protobuf.YamcsManagement.TemplateVariable result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -4471,8 +4471,8 @@ public final class YamcsManagement {
       }
 
       @java.lang.Override
-      public org.yamcs.protobuf.YamcsManagement.TemplateProperty buildPartial() {
-        org.yamcs.protobuf.YamcsManagement.TemplateProperty result = new org.yamcs.protobuf.YamcsManagement.TemplateProperty(this);
+      public org.yamcs.protobuf.YamcsManagement.TemplateVariable buildPartial() {
+        org.yamcs.protobuf.YamcsManagement.TemplateVariable result = new org.yamcs.protobuf.YamcsManagement.TemplateVariable(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
@@ -4526,16 +4526,16 @@ public final class YamcsManagement {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof org.yamcs.protobuf.YamcsManagement.TemplateProperty) {
-          return mergeFrom((org.yamcs.protobuf.YamcsManagement.TemplateProperty)other);
+        if (other instanceof org.yamcs.protobuf.YamcsManagement.TemplateVariable) {
+          return mergeFrom((org.yamcs.protobuf.YamcsManagement.TemplateVariable)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.TemplateProperty other) {
-        if (other == org.yamcs.protobuf.YamcsManagement.TemplateProperty.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.yamcs.protobuf.YamcsManagement.TemplateVariable other) {
+        if (other == org.yamcs.protobuf.YamcsManagement.TemplateVariable.getDefaultInstance()) return this;
         if (other.hasName()) {
           bitField0_ |= 0x00000001;
           name_ = other.name_;
@@ -4564,11 +4564,11 @@ public final class YamcsManagement {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.yamcs.protobuf.YamcsManagement.TemplateProperty parsedMessage = null;
+        org.yamcs.protobuf.YamcsManagement.TemplateVariable parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.yamcs.protobuf.YamcsManagement.TemplateProperty) e.getUnfinishedMessage();
+          parsedMessage = (org.yamcs.protobuf.YamcsManagement.TemplateVariable) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -4775,41 +4775,41 @@ public final class YamcsManagement {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.yamcsManagement.TemplateProperty)
+      // @@protoc_insertion_point(builder_scope:yamcs.protobuf.yamcsManagement.TemplateVariable)
     }
 
-    // @@protoc_insertion_point(class_scope:yamcs.protobuf.yamcsManagement.TemplateProperty)
-    private static final org.yamcs.protobuf.YamcsManagement.TemplateProperty DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:yamcs.protobuf.yamcsManagement.TemplateVariable)
+    private static final org.yamcs.protobuf.YamcsManagement.TemplateVariable DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new org.yamcs.protobuf.YamcsManagement.TemplateProperty();
+      DEFAULT_INSTANCE = new org.yamcs.protobuf.YamcsManagement.TemplateVariable();
     }
 
-    public static org.yamcs.protobuf.YamcsManagement.TemplateProperty getDefaultInstance() {
+    public static org.yamcs.protobuf.YamcsManagement.TemplateVariable getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    @java.lang.Deprecated public static final com.google.protobuf.Parser<TemplateProperty>
-        PARSER = new com.google.protobuf.AbstractParser<TemplateProperty>() {
+    @java.lang.Deprecated public static final com.google.protobuf.Parser<TemplateVariable>
+        PARSER = new com.google.protobuf.AbstractParser<TemplateVariable>() {
       @java.lang.Override
-      public TemplateProperty parsePartialFrom(
+      public TemplateVariable parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new TemplateProperty(input, extensionRegistry);
+        return new TemplateVariable(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<TemplateProperty> parser() {
+    public static com.google.protobuf.Parser<TemplateVariable> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<TemplateProperty> getParserForType() {
+    public com.google.protobuf.Parser<TemplateVariable> getParserForType() {
       return PARSER;
     }
 
     @java.lang.Override
-    public org.yamcs.protobuf.YamcsManagement.TemplateProperty getDefaultInstanceForType() {
+    public org.yamcs.protobuf.YamcsManagement.TemplateVariable getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -21351,10 +21351,10 @@ public final class YamcsManagement {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_yamcs_protobuf_yamcsManagement_InstanceTemplate_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_yamcs_protobuf_yamcsManagement_TemplateProperty_descriptor;
+    internal_static_yamcs_protobuf_yamcsManagement_TemplateVariable_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_yamcs_protobuf_yamcsManagement_TemplateProperty_fieldAccessorTable;
+      internal_static_yamcs_protobuf_yamcsManagement_TemplateVariable_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_yamcs_protobuf_yamcsManagement_ProcessorInfo_descriptor;
   private static final 
@@ -21438,9 +21438,9 @@ public final class YamcsManagement {
       "State\022\013\n\007OFFLINE\020\000\022\020\n\014INITIALIZING\020\001\022\017\n\013" +
       "INITIALIZED\020\002\022\014\n\010STARTING\020\003\022\013\n\007RUNNING\020\004" +
       "\022\014\n\010STOPPING\020\005\022\n\n\006FAILED\020\006\"d\n\020InstanceTe" +
-      "mplate\022\014\n\004name\030\001 \001(\t\022B\n\010property\030\002 \003(\01320" +
+      "mplate\022\014\n\004name\030\001 \001(\t\022B\n\010variable\030\002 \003(\01320" +
       ".yamcs.protobuf.yamcsManagement.Template" +
-      "Property\"G\n\020TemplateProperty\022\014\n\004name\030\001 \001" +
+      "Variable\"G\n\020TemplateVariable\022\014\n\004name\030\001 \001" +
       "(\t\022\023\n\013description\030\002 \001(\t\022\020\n\010required\030\003 \001(" +
       "\010\"\250\003\n\rProcessorInfo\022\020\n\010instance\030\001 \001(\t\022\014\n" +
       "\004name\030\002 \001(\t\022\014\n\004type\030\003 \001(\t\022\014\n\004spec\030\004 \001(\t\022" +
@@ -21544,12 +21544,12 @@ public final class YamcsManagement {
     internal_static_yamcs_protobuf_yamcsManagement_InstanceTemplate_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_yamcs_protobuf_yamcsManagement_InstanceTemplate_descriptor,
-        new java.lang.String[] { "Name", "Property", });
-    internal_static_yamcs_protobuf_yamcsManagement_TemplateProperty_descriptor =
+        new java.lang.String[] { "Name", "Variable", });
+    internal_static_yamcs_protobuf_yamcsManagement_TemplateVariable_descriptor =
       getDescriptor().getMessageTypes().get(3);
-    internal_static_yamcs_protobuf_yamcsManagement_TemplateProperty_fieldAccessorTable = new
+    internal_static_yamcs_protobuf_yamcsManagement_TemplateVariable_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_yamcs_protobuf_yamcsManagement_TemplateProperty_descriptor,
+        internal_static_yamcs_protobuf_yamcsManagement_TemplateVariable_descriptor,
         new java.lang.String[] { "Name", "Description", "Required", });
     internal_static_yamcs_protobuf_yamcsManagement_ProcessorInfo_descriptor =
       getDescriptor().getMessageTypes().get(4);

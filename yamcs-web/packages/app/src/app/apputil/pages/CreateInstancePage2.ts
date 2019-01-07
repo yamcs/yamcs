@@ -3,6 +3,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InstanceTemplate } from '@yamcs/client';
+import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 
 
@@ -14,7 +15,7 @@ import { YamcsService } from '../../core/services/YamcsService';
 export class CreateInstancePage2 {
 
   form: FormGroup;
-  template: InstanceTemplate;
+  template$ = new BehaviorSubject<InstanceTemplate | null>(null);
 
   constructor(
     formBuilder: FormBuilder,
@@ -30,14 +31,30 @@ export class CreateInstancePage2 {
 
     const templateId = route.snapshot.paramMap.get('template')!;
     yamcs.yamcsClient.getInstanceTemplate(templateId).then(template => {
-      this.template = template;
+      this.template$.next(template);
+      for (const variable of template.variable || []) {
+        if (variable.required) {
+          this.form.addControl(variable.name, new FormControl('', [Validators.required]));
+        } else {
+          this.form.addControl(variable.name, new FormControl());
+        }
+      }
     });
   }
 
   onConfirm() {
+    const template = this.template$.value!;
+    const templateArgs: { [key: string]: string } = {};
+    for (const variable of template.variable || []) {
+      if (this.form.get(variable.name)!.value) {
+        templateArgs[variable.name] = this.form.get(variable.name)!.value;
+      }
+    }
+
     this.yamcs.yamcsClient.createInstance({
       name: this.form.get('name')!.value,
-      template: this.template.name,
+      template: template.name,
+      templateArgs,
     });
 
     // Don't wait for request response (only returns after the instance has fully started)
