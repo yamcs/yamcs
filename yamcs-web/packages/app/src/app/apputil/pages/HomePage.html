@@ -5,7 +5,8 @@
     &nbsp;&nbsp;&nbsp;&nbsp;
     <a mat-button
        color="primary"
-       routerLink="create-instance">
+       routerLink="create-instance"
+       *ngIf="mayCreateInstances()">
       <mat-icon>add_box</mat-icon>
       CREATE INSTANCE
     </a>
@@ -66,6 +67,13 @@
             {{ row.name }}
           </a>
           <span *ngIf="row.state === 'OFFLINE'">{{ row.name }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="labels">
+        <th mat-header-cell *cdkHeaderCellDef mat-sort-header style="width: 200px">Labels</th>
+        <td mat-cell *cdkCellDef="let row">
+          <app-labels [dict]="row.labels"></app-labels>
         </td>
       </ng-container>
 

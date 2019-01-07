@@ -41,6 +41,7 @@ import { TextAction } from './template/TextAction';
 import { ToolbarActions } from './template/ToolbarActions';
 import { Help } from './widgets/Help';
 import { Hex } from './widgets/Hex';
+import { Labels } from './widgets/Labels';
 import { ParameterLegend } from './widgets/ParameterLegend';
 import { ParameterPlot } from './widgets/ParameterPlot';
 import { ParameterSeries } from './widgets/ParameterSeries';
@@ -95,13 +96,14 @@ const sharedComponents = [
   Help,
   HelpDialog,
   Hex,
+  Labels,
+  ParameterLegend,
+  ParameterPlot,
+  ParameterSeries,
   ServiceState,
   ServicesTable,
   SidebarNavItem,
-  ParameterLegend,
-  ParameterPlot,
   SelectInstanceDialog,
-  ParameterSeries,
   Select,
   TabDetailIcon,
   TextAction,

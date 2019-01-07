@@ -320,22 +320,25 @@ public class YamcsServer {
                     continue;
                 }
             }
+
             YamcsServerInstance ysi = createInstance(name, online ? getConf(name) : null);
-            File metadataFile = new File(instanceDefDir + name + ".metadata");
+            File metadataFile = new File(instanceDefDir + "yamcs." + name + ".metadata");
             if (metadataFile.exists()) {
                 Yaml y = new Yaml();
-                Object o = y.load(metadataFile.getAbsolutePath());
-                if (o instanceof Map<?, ?>) {
-                    Object labels = ((Map<String, Object>) o).get("labels");
-                    if (labels instanceof Map<?, ?>) {
-                        ysi.setLabels((Map<String, String>) labels);
+                try (InputStream in = new FileInputStream(metadataFile)) {
+                    Object o = y.load(in);
+                    if (o instanceof Map<?, ?>) {
+                        Object labels = ((Map<String, Object>) o).get("labels");
+                        if (labels instanceof Map<?, ?>) {
+                            ysi.setLabels((Map<String, String>) labels);
+                        } else {
+                            staticlog.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
+                                    metadataFile.getAbsolutePath());
+                        }
                     } else {
                         staticlog.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
                                 metadataFile.getAbsolutePath());
                     }
-                } else {
-                    staticlog.warn("Unexpected data of type {} in {}, expected a map", o.getClass(),
-                            metadataFile.getAbsolutePath());
                 }
             }
         }

@@ -250,6 +250,9 @@ public class YamcsServerInstance extends YamcsInstanceService {
                 log.warn("Got error when finding the mission database for instance {}", instanceName, e);
             }
         }
+        if (labels != null) {
+            aib.putAllLabels(labels);
+        }
         return aib.build();
     }
 
@@ -257,7 +260,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
         this.labels = labels;
     }
 
-    public Map<String, ?> getLabels() {
+    public Map<String, String> getLabels() {
         return labels;
     }
 }

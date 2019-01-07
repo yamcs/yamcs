@@ -52,6 +52,7 @@ export interface Instance {
   name: string;
   state: InstanceState;
   processor: Processor[];
+  labels?: { [key: string]: string };
 }
 
 export interface InstanceTemplate {

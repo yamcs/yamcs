@@ -29,7 +29,8 @@ export class HomePage implements AfterViewInit, OnDestroy {
   displayedColumns = [
     'status',
     'name',
-    'state',
+    'labels',
+    // 'state',
     'actions',
   ];
 
@@ -107,6 +108,11 @@ export class HomePage implements AfterViewInit, OnDestroy {
 
   mayControlServices() {
     return this.authService.getUser()!.hasSystemPrivilege('ControlServices');
+  }
+
+  mayCreateInstances() {
+    const user = this.authService.getUser()!;
+    return user.hasSystemPrivilege('CreateInstances');
   }
 
   ngOnDestroy() {

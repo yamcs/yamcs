@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 public class TemplateUtil {
 
-    private static final Pattern VAR = Pattern.compile("\\{\\{\\s?(\\w+)\\s?\\}\\}");
+    private static final Pattern VAR = Pattern.compile("\\{\\{\\s?([\\w_]+)\\s?\\}\\}");
 
     /**
      * Processes a template source whereby <code>{{ var }}</code> references are substituded with the provided args.
