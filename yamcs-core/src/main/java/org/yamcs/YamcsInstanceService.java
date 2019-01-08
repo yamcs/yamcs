@@ -176,7 +176,7 @@ public abstract class YamcsInstanceService {
      * Implementing classes should invoke this method once their service has been initialized. 
      *
      * @throws IllegalStateException
-     *             if the service is not {@link State#STARTING}.
+     *             if the service is not {@link InstanceState#STARTING}.
      */
     protected final void notifyInitialized() {
         monitor.enter();
@@ -211,10 +211,10 @@ public abstract class YamcsInstanceService {
 
     /**
      * Implementing classes should invoke this method once their service has started. It will cause
-     * the service to transition from {@link State#STARTING} to {@link State#RUNNING}.
+     * the service to transition from {@link InstanceState#STARTING} to {@link InstanceState#RUNNING}.
      *
      * @throws IllegalStateException
-     *             if the service is not {@link State#STARTING}.
+     *             if the service is not {@link InstanceState#STARTING}.
      */
     protected final void notifyStarted() {
         monitor.enter();
@@ -249,11 +249,11 @@ public abstract class YamcsInstanceService {
 
     /**
      * Implementing classes should invoke this method once their service has stopped. It will cause
-     * the service to transition from {@link State#STOPPING} to {@link State#TERMINATED}.
+     * the service to transition from {@link InstanceState#STOPPING} to {@link InstanceState#OFFLINE}.
      *
      * @throws IllegalStateException
-     *             if the service is neither {@link State#STOPPING} nor
-     *             {@link State#RUNNING}.
+     *             if the service is neither {@link InstanceState#STOPPING} nor
+     *             {@link InstanceState#RUNNING}.
      */
     protected final void notifyStopped() {
         monitor.enter();
@@ -293,7 +293,7 @@ public abstract class YamcsInstanceService {
     }
 
     /**
-     * Invoke this method to transition the service to the {@link State#FAILED}. The service will
+     * Invoke this method to transition the service to the {@link InstanceState#FAILED}. The service will
      * <b>not be stopped</b> if it is running. Invoke this method when a service has failed critically
      * or otherwise cannot be started nor stopped.
      */
