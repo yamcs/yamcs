@@ -26,7 +26,7 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.YarchTestCase;
-import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public class RdbSelectTest extends YarchTestCase {

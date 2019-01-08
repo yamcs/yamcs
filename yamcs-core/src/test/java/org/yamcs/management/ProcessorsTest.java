@@ -49,7 +49,7 @@ public class ProcessorsTest {
     @AfterClass
     public static void afterClass() throws Exception {
         ManagementService.getInstance().shutdown();
-        YamcsServer.shutDown();
+        YamcsServer.getServer().shutDown();
     }
 
     @Test

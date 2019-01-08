@@ -179,8 +179,8 @@ public class ArchiveParameterRestHandler extends RestHandler {
         completeOK(req, ranges.build());
     }
 
-    private static ParameterArchive getParameterArchive(String instance) throws BadRequestException {
-        List<ParameterArchive> l = YamcsServer.getServices(instance, ParameterArchive.class);
+    private ParameterArchive getParameterArchive(String instance) throws BadRequestException {
+        List<ParameterArchive> l = yamcsServer.getServices(instance, ParameterArchive.class);
         if (l.isEmpty()) {
             throw new BadRequestException("ParameterArchive not configured for this instance");
         }

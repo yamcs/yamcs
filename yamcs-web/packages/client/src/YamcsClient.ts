@@ -3,8 +3,8 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { BucketsWrapper, ClientsWrapper, InstancesWrapper, ServicesWrapper } from './types/internal';
-import { AuthInfo, Bucket, ClientInfo, ClientSubscriptionResponse, CreateBucketRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
+import { BucketsWrapper, ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, ServicesWrapper } from './types/internal';
+import { AuthInfo, Bucket, ClientInfo, ClientSubscriptionResponse, CreateBucketRequest, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 export default class YamcsClient implements HttpHandler {
@@ -132,6 +132,17 @@ export default class YamcsClient implements HttpHandler {
     return wrapper.instance || [];
   }
 
+  async getInstanceTemplates() {
+    const response = await this.doFetch(`${this.apiUrl}/instance-templates`);
+    const wrapper = await response.json() as InstanceTemplatesWrapper;
+    return wrapper.template || [];
+  }
+
+  async getInstanceTemplate(name: string) {
+    const response = await this.doFetch(`${this.apiUrl}/instance-templates/${name}`);
+    return await response.json() as InstanceTemplate;
+  }
+
   async getInstance(name: string) {
     const response = await this.doFetch(`${this.apiUrl}/instances/${name}`);
     return await response.json() as Instance;
@@ -201,6 +212,15 @@ export default class YamcsClient implements HttpHandler {
       body,
       method: 'PATCH',
     });
+  }
+
+  async createInstance(options: CreateInstanceRequest) {
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(`${this.apiUrl}/instances`, {
+      body,
+      method: 'POST',
+    })
+    return await response.json() as Instance;
   }
 
   async createBucket(options: CreateBucketRequest) {

@@ -80,18 +80,15 @@ public abstract class AbstractIntegrationTest {
 
     @Before
     public void before() throws InterruptedException {
-
         if (SecurityStore.getInstance().isEnabled()) {
             ycp.setCredentials(adminUsername, adminPassword);
         }
-
         packetProvider = PacketProvider.instance;
         parameterProvider = ParameterProvider.instance;
         assertNotNull(packetProvider);
         assertNotNull(parameterProvider);
 
         wsListener = new MyWsListener();
-
         wsClient = new WebSocketClient(ycp, wsListener);
         wsClient.setUserAgent("it-junit");
         wsClient.connect();
@@ -154,7 +151,7 @@ public abstract class AbstractIntegrationTest {
 
     @AfterClass
     public static void shutDownYamcs() throws Exception {
-        YamcsServer.shutDown();
+        YamcsServer.getServer().shutDown();
     }
 
     <T extends Message> String toJson(T msg) throws IOException {

@@ -1,6 +1,6 @@
 import { Algorithm, Command, Container, Parameter, SpaceSystem } from './mdb';
 import { Alarm, CommandHistoryEntry, Event, IndexGroup, Range, Sample } from './monitoring';
-import { Bucket, ClientInfo, CommandQueue, Instance, Link, Processor, Record, Service, Stream, Table } from './system';
+import { Bucket, ClientInfo, CommandQueue, Instance, InstanceTemplate, Link, Processor, Record, Service, Stream, Table } from './system';
 
 
 
@@ -38,6 +38,10 @@ export interface ContainersWrapper {
 
 export interface InstancesWrapper {
   instance: Instance[];
+}
+
+export interface InstanceTemplatesWrapper {
+  template: InstanceTemplate[];
 }
 
 export interface LinksWrapper {

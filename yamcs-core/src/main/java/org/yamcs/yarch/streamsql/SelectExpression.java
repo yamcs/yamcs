@@ -16,6 +16,8 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
+import org.yamcs.utils.parser.ParseException;
+
 /**
  * Corresponds to a queries like "select 2*x, x+sum(y+3) from t[...] where x&gt;5 group by x" chain of data/processing
  * (D=Data, P=Processing, agg=aggregate):

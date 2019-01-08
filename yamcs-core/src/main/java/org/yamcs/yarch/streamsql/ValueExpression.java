@@ -5,10 +5,7 @@ import org.yamcs.yarch.CompiledExpression;
 import org.yamcs.yarch.ConstantValueCompiledExpression;
 import org.yamcs.yarch.DataType;
 
-import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.NotImplementedException;
-import org.yamcs.yarch.streamsql.ParseException;
-import org.yamcs.yarch.streamsql.StreamSqlException;
+import org.yamcs.utils.parser.ParseException;
 
 /**
  * This represents a constant value coming from some sql expression

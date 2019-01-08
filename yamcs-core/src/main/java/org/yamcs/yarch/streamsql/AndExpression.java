@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.DbReaderStream;
+import org.yamcs.utils.parser.ParseException;
 
 public class AndExpression extends Expression {
     public AndExpression(List<Expression> list) throws ParseException {

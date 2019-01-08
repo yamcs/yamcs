@@ -5,6 +5,9 @@
 options{
     STATIC=false ;
     IGNORE_CASE=true ;
+    //USER_CHAR_STREAM = false; //use the SimpleCharStream from the org.yamcs.utils.parser
+    
+    
 //  DEBUG_LOOKAHEAD= true ;
 //DEBUG_PARSER=true;
 }
@@ -20,6 +23,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
+import org.yamcs.utils.parser.Token;
+import org.yamcs.utils.parser.SimpleCharStream;
+import org.yamcs.utils.parser.ParseException;
 
 import org.yamcs.yarch.*;
 import org.yamcs.yarch.TableWriter.InsertMode;

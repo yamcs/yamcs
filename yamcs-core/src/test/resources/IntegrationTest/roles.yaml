@@ -21,6 +21,6 @@ Administrator:
   Command: [".*"]
   ChangeCalibrator: [".*"]
   System: ["ControlProcessor", "ModifyCommandHistory", "ControlCommandQueue", "Command", "GetMissionDatabase", 
-"ControlArchiving", "ControlServices", "ReadTables", "WriteTables",  "WriteEvents", "ChangeMissionDatabase"]
+"ControlArchiving", "ControlServices", "ReadTables", "WriteTables",  "WriteEvents", "ChangeMissionDatabase", "CreateInstances"]
 
 EmptyRole:

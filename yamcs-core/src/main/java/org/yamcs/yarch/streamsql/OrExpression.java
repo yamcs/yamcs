@@ -2,6 +2,7 @@ package org.yamcs.yarch.streamsql;
 
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.DbReaderStream;
+import org.yamcs.utils.parser.ParseException;
 
 public class OrExpression extends Expression {
 

@@ -5,12 +5,7 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.DbReaderStream;
 import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
-import org.yamcs.yarch.streamsql.ColumnExpression;
-import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.ParseException;
-import org.yamcs.yarch.streamsql.RelOp;
-import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.streamsql.ValueExpression;
+import org.yamcs.utils.parser.ParseException;
 /**
  * Expressions of type "x &gt; y"
  * @author nm

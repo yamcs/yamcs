@@ -1,5 +1,6 @@
 package org.yamcs.management;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,12 +38,14 @@ import org.yamcs.protobuf.YamcsManagement.LinkInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorInfo;
 import org.yamcs.protobuf.YamcsManagement.ProcessorManagementRequest;
 import org.yamcs.protobuf.YamcsManagement.Statistics;
+import org.yamcs.protobuf.YamcsManagement.YamcsInstance.InstanceState;
 import org.yamcs.tctm.Link;
 import org.yamcs.xtceproc.ProcessingStatistics;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.TableDefinition;
 
 import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  * Responsible for providing to interested listeners info related to creation/removal/update of:
@@ -495,34 +499,6 @@ public class ManagementService implements ProcessorListener {
         ys.addStateListener(instanceListener);
     }
 
-    /**
-     * Restarts a yamcs instance. It is not possible to restart an instance - so the old one is stopped and a new one is
-     * created and started.
-     * 
-     * @param instanceName
-     *            the name of the instance to be restarted
-     * @return completable that will complete after the instance has been restarted
-     */
-    public CompletableFuture<Void> restartInstance(String instanceName) {
-        YamcsServerInstance ysi = YamcsServer.getInstance(instanceName);
-        if (ysi == null) {
-            throw new IllegalArgumentException("No instance named '" + instanceName + "'");
-        }
-
-        return CompletableFuture.runAsync(() -> {
-            log.info("Restarting the instance {}", instanceName);
-            YamcsServer.restartYamcsInstance(instanceName);
-        });
-
-    }
-
-    public CompletableFuture<Void> stopInstance(String instanceName) {
-        YamcsServerInstance ys = YamcsServer.getInstance(instanceName);
-        if (ys == null) {
-            throw new IllegalArgumentException("No instance named '" + instanceName + "'");
-        }
-        return CompletableFuture.runAsync(() -> ys.stop());
-    }
 
     public void registerTable(String instance, TableDefinition tblDef) {
         tableStreamListeners.forEach(l -> l.tableRegistered(instance, tblDef));

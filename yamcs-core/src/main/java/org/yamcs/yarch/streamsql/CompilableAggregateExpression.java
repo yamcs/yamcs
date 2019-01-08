@@ -9,7 +9,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException.ErrCode;
 
 import org.yamcs.yarch.streamsql.AggregateExpression;
 import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public abstract class CompilableAggregateExpression extends AggregateExpression {

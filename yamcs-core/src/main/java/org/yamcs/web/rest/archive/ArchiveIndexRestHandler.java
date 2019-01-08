@@ -187,7 +187,7 @@ public class ArchiveIndexRestHandler extends RestHandler {
 
     private IndexServer verifyIndexServer(RestRequest req, String instance) throws HttpException {
         verifyInstance(req, instance);
-        List<IndexServer> services = YamcsServer.getServices(instance, IndexServer.class);
+        List<IndexServer> services = yamcsServer.getServices(instance, IndexServer.class);
         if (services.isEmpty()) {
             throw new BadRequestException("Index service not enabled for instance '" + instance + "'");
         } else {

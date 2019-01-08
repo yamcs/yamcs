@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.yamcs.yarch.streamsql.AddOp;
 import org.yamcs.yarch.streamsql.Expression;
-import org.yamcs.yarch.streamsql.ParseException;
+import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public class AdditiveExpression extends Expression {
