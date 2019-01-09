@@ -3,6 +3,7 @@ package org.yamcs.simulator;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.yamcs.ConfigurationException;
@@ -27,7 +28,7 @@ import org.yamcs.xtce.SpaceSystemLoader;
 /**
  * Generates a MDB used for performance testing.
  * 
- * For the moment it generates only int32 parameters
+ * It generates all unsigned integer parameters with the size in bits specified
  * 
  * @author nm
  *
@@ -36,12 +37,15 @@ public class PerfMdbLoader implements SpaceSystemLoader {
     int numPackets;
     int packetSize;
     int numParam;
+    int paramSizeInBits;
+
     static String PACKET_ID_PARA_NAME = "packet-id";
 
     public PerfMdbLoader(Map<String, Object> config) {
         numPackets = YConfiguration.getInt(config, "numPackets");
         packetSize = YConfiguration.getInt(config, "packetSize");
-        numParam = packetSize / 4;
+        paramSizeInBits = YConfiguration.getInt(config, "paramSizeInBits", 32);
+        numParam = packetSize * 8 / paramSizeInBits;
     }
 
     @Override
@@ -62,11 +66,12 @@ public class PerfMdbLoader implements SpaceSystemLoader {
     @Override
     public SpaceSystem load() throws ConfigurationException, DatabaseLoadException {
         SpaceSystem ss = new SpaceSystem("perf-data");
-        IntegerParameterType uint32 = new IntegerParameterType("uint32");
-        uint32.setSizeInBits(32);
-        IntegerDataEncoding ide = new IntegerDataEncoding(32);
-        uint32.setEncoding(ide);
-        ss.addParameterType(uint32);
+        
+        IntegerParameterType ptype = new IntegerParameterType("uint"+paramSizeInBits);
+        ptype.setSizeInBits(paramSizeInBits);
+        IntegerDataEncoding ide = new IntegerDataEncoding(paramSizeInBits);
+        ptype.setEncoding(ide);
+        ss.addParameterType(ptype);
         for (int j = 0; j < numPackets; j++) {
             int pktId = PerfPacketGenerator.PERF_TEST_PACKET_ID + j;
             SequenceContainer sc = new SequenceContainer("pkt_" + pktId);
@@ -78,9 +83,9 @@ public class PerfMdbLoader implements SpaceSystemLoader {
             });
             ss.addUnresolvedReference(unr);
             for (int i = 0; i < numParam; i++) {
-                Parameter p = new Parameter("p_"+pktId+"_uint_" + i);
-                p.setParameterType(uint32);
-                ParameterEntry pe = new ParameterEntry(128 + 32 * i, ReferenceLocationType.containerStart, p);
+                Parameter p = new Parameter("p_" + pktId + "_"+ptype.getName()+"_" + i);
+                p.setParameterType(ptype);
+                ParameterEntry pe = new ParameterEntry(128 + paramSizeInBits * i, ReferenceLocationType.containerStart, p);
                 sc.addEntry(pe);
                 ss.addParameter(p);
             }
@@ -102,7 +107,8 @@ public class PerfMdbLoader implements SpaceSystemLoader {
                 }
             }
         }
-        throw new ConfigurationException("Cannot find a parameter '"+PACKET_ID_PARA_NAME+"' in the container " + ccsds.getName());
+        throw new ConfigurationException(
+                "Cannot find a parameter '" + PACKET_ID_PARA_NAME + "' in the container " + ccsds.getName());
     }
 
 }
