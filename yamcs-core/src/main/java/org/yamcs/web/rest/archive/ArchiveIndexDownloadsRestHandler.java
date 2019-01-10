@@ -10,7 +10,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsException;
-import org.yamcs.YamcsServer;
 import org.yamcs.api.MediaType;
 import org.yamcs.archive.IndexRequestListener;
 import org.yamcs.archive.IndexServer;
@@ -301,7 +300,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
                     indexResult = newBuilder(indexResult.getType(), indexResult.getTableName());
                 }
             }
-          
+
         }
 
         private void bufferArchiveRecord(ArchiveRecord msg) {
@@ -312,7 +311,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
                     String json = JsonFormat.printer().print(msg);
                     bufOut.write(json.getBytes(StandardCharsets.UTF_8));
                 }
-                
+
                 if (buf.readableBytes() >= CHUNK_TRESHOLD) {
                     bufOut.close();
                     writeChunk();
@@ -343,7 +342,7 @@ public class ArchiveIndexDownloadsRestHandler extends RestHandler {
 
         private IndexResult.Builder newBuilder(String type, String tblName) {
             IndexResult.Builder b = IndexResult.newBuilder().setType(type);
-            if(tblName!=null) {
+            if (tblName != null) {
                 b.setTableName(tblName);
             }
             return b;
