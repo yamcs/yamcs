@@ -257,6 +257,10 @@ export interface CommandQueueSubscriptionResponse {
   commandQueue$: Observable<CommandQueue>;
 }
 
+export interface ListInstancesOptions {
+  filter?: string;
+}
+
 export interface EditInstanceOptions {
   state: 'stopped' | 'restarted' | 'running';
 }

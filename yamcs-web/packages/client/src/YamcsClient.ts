@@ -4,7 +4,7 @@ import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
 import { BucketsWrapper, ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, ServicesWrapper } from './types/internal';
-import { AuthInfo, Bucket, ClientInfo, ClientSubscriptionResponse, CreateBucketRequest, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
+import { AuthInfo, Bucket, ClientInfo, ClientSubscriptionResponse, CreateBucketRequest, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 export default class YamcsClient implements HttpHandler {
@@ -126,8 +126,9 @@ export default class YamcsClient implements HttpHandler {
     return await response.json() as UserInfo;
   }
 
-  async getInstances() {
-    const response = await this.doFetch(`${this.apiUrl}/instances`);
+  async getInstances(options: ListInstancesOptions = {}) {
+    const url = `${this.apiUrl}/instances`;
+    const response = await this.doFetch(url + this.queryString(options));
     const wrapper = await response.json() as InstancesWrapper;
     return wrapper.instance || [];
   }

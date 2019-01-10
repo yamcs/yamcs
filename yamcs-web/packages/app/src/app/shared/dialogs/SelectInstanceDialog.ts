@@ -22,7 +22,9 @@ export class SelectInstanceDialog implements AfterViewInit {
     private router: Router,
     private yamcs: YamcsService,
   ) {
-    this.instances$ = yamcs.yamcsClient.getInstances();
+    this.instances$ = yamcs.yamcsClient.getInstances({
+      filter: 'state=running',
+    });
   }
 
   ngAfterViewInit() {
