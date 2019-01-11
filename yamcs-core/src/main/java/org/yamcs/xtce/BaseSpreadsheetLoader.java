@@ -110,6 +110,7 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
             }
             WorkbookSettings ws = new WorkbookSettings();
             ws.setEncoding("Cp1252");
+            ws.setGCDisabled(true);
             workbook = Workbook.getWorkbook(ssFile, ws);
         } catch (BiffException | IOException e) {
             throw new DatabaseLoadException("Cannot open xls file: " + e.getMessage(), e);

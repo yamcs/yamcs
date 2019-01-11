@@ -204,6 +204,7 @@ public class V7Loader extends V7LoaderBase {
             }
             WorkbookSettings ws = new WorkbookSettings();
             ws.setEncoding("Cp1252");
+            ws.setGCDisabled(true);
             workbook = Workbook.getWorkbook(ssFile, ws);
         } catch (BiffException | IOException e) {
             throw new SpreadsheetLoadException(ctx, e);
