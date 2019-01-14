@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { Instance, ListObjectsOptions, ListObjectsResponse } from '@yamcs/client';
+import { Instance, ListObjectsOptions, ListObjectsResponse, StorageClient } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
@@ -27,6 +27,7 @@ export class DisplayFolderPage implements OnDestroy {
   selection = new SelectionModel<BrowseItem>(true, []);
 
   private routerSubscription: Subscription;
+  private storageClient: StorageClient;
 
   constructor(
     private dialog: MatDialog,
@@ -38,6 +39,7 @@ export class DisplayFolderPage implements OnDestroy {
   ) {
     title.setTitle('Displays - Yamcs');
     this.instance = yamcs.getInstance();
+    this.storageClient = yamcs.createStorageClient();
 
     this.loadCurrentFolder();
     this.routerSubscription = router.events.pipe(
@@ -55,7 +57,7 @@ export class DisplayFolderPage implements OnDestroy {
     if (routeSegments.length) {
       options.prefix = routeSegments.map(s => s.path).join('/') + '/';
     }
-    this.yamcs.getInstanceClient()!.listObjects('displays', options).then(dir => {
+    this.storageClient.listObjects(this.instance.name, 'displays', options).then(dir => {
       this.updateBrowsePath();
       this.changedir(dir);
     });
@@ -122,7 +124,7 @@ export class DisplayFolderPage implements OnDestroy {
     const findObjectPromises = [];
     for (const item of this.selection.selected) {
       if (item.folder) {
-        findObjectPromises.push(this.yamcs.getInstanceClient()!.listObjects('displays', {
+        findObjectPromises.push(this.storageClient.listObjects(this.instance.name, 'displays', {
           prefix: item.name,
         }).then(response => {
           const objects = response.object || [];
@@ -137,7 +139,7 @@ export class DisplayFolderPage implements OnDestroy {
       if (confirm(`You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`)) {
         const deletePromises = [];
         for (const object of deletableObjects) {
-          deletePromises.push(this.yamcs.getInstanceClient()!.deleteObject('displays', object));
+          deletePromises.push(this.storageClient.deleteObject(this.instance.name, 'displays', object));
         }
 
         Promise.all(deletePromises).then(() => {

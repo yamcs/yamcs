@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ConnectionInfo, Instance, InstanceClient, Processor, TimeInfo, YamcsClient } from '@yamcs/client';
+import { ConnectionInfo, Instance, InstanceClient, Processor, StorageClient, TimeInfo, YamcsClient } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 
@@ -108,6 +108,10 @@ export class YamcsService {
    */
   getInstanceClient() {
     return this.selectedInstance;
+  }
+
+  createStorageClient() {
+    return new StorageClient(this.yamcsClient);
   }
 
   /**

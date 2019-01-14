@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { Instance, StorageClient } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 
 @Component({
@@ -20,6 +21,9 @@ export class CreateDisplayDialog {
   @ViewChild('filename')
   filenameInput: ElementRef;
 
+  private instance: Instance;
+  private storageClient: StorageClient;
+
   constructor(
     private dialogRef: MatDialogRef<CreateDisplayDialog>,
     formBuilder: FormBuilder,
@@ -27,11 +31,14 @@ export class CreateDisplayDialog {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
     private changeDetector: ChangeDetectorRef,
   ) {
+    this.instance = yamcs.getInstance();
+    this.storageClient = yamcs.createStorageClient();
     this.typeForm = formBuilder.group({
       type: ['par', Validators.required],
     });
     this.filenameForm = formBuilder.group({
       path: [data.path, Validators.required],
+      scope: ['global', Validators.required],
       name: ['', [Validators.required, Validators.pattern(/.*\.par/i)]],
     });
   }
@@ -48,6 +55,7 @@ export class CreateDisplayDialog {
 
   save() {
     let path: string = this.filenameForm.get('path')!.value.trim();
+    const scope: string = this.filenameForm.get('scope')!.value.trim();
     const name: string = this.filenameForm.get('name')!.value.trim();
 
     // Full path should not have a leading slash
@@ -67,8 +75,14 @@ export class CreateDisplayDialog {
     const b = new Blob([JSON.stringify(display, undefined, 2)], {
       type: 'application/json'
     });
-    this.yamcs.getInstanceClient()!.uploadObject('displays', fullPath, b).then(() => {
-      this.dialogRef.close(fullPath);
-    });
+    if (scope === 'global') {
+      this.storageClient.uploadObject(this.instance.name, 'displays', fullPath, b).then(() => {
+        this.dialogRef.close(fullPath);
+      });
+    } else {
+      this.storageClient.uploadObject(this.instance.name, 'displays', fullPath, b).then(() => {
+        this.dialogRef.close(fullPath);
+      });
+    }
   }
 }

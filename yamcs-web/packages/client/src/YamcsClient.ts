@@ -3,8 +3,8 @@ import { HttpError } from './HttpError';
 import { HttpHandler } from './HttpHandler';
 import { HttpInterceptor } from './HttpInterceptor';
 import { InstanceClient } from './InstanceClient';
-import { BucketsWrapper, ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, ServicesWrapper } from './types/internal';
-import { AuthInfo, Bucket, ClientInfo, ClientSubscriptionResponse, CreateBucketRequest, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, ListObjectsOptions, ListObjectsResponse, Service, TokenResponse, UserInfo } from './types/system';
+import { ClientsWrapper, InstancesWrapper, InstanceTemplatesWrapper, ServicesWrapper } from './types/internal';
+import { AuthInfo, ClientInfo, ClientSubscriptionResponse, CreateInstanceRequest, EditClientRequest, EditInstanceOptions, GeneralInfo, Instance, InstanceSubscriptionResponse, InstanceTemplate, ListInstancesOptions, Service, TokenResponse, UserInfo } from './types/system';
 import { WebSocketClient } from './WebSocketClient';
 
 export default class YamcsClient implements HttpHandler {
@@ -222,58 +222,6 @@ export default class YamcsClient implements HttpHandler {
       method: 'POST',
     })
     return await response.json() as Instance;
-  }
-
-  async createBucket(options: CreateBucketRequest) {
-    const body = JSON.stringify(options);
-    const response = await this.doFetch(`${this.apiUrl}/buckets/_global`, {
-      body,
-      method: 'POST',
-    });
-    return await response.json() as Event;
-  }
-
-  async getBuckets(): Promise<Bucket[]> {
-    const response = await this.doFetch(`${this.apiUrl}/buckets/_global`);
-    const wrapper = await response.json() as BucketsWrapper;
-    return wrapper.bucket || [];
-  }
-
-  async deleteBucket(name: string) {
-    return await this.doFetch(`${this.apiUrl}/buckets/_global/${name}`, {
-      method: 'DELETE',
-    });
-  }
-
-  async listObjects(bucket: string, options: ListObjectsOptions = {}): Promise<ListObjectsResponse> {
-    const url = `${this.apiUrl}/buckets/_global/${bucket}` + this.queryString(options);
-    const response = await this.doFetch(url);
-    return await response.json() as ListObjectsResponse;
-  }
-
-  async getObject(bucket: string, name: string) {
-    return await this.doFetch(this.getObjectURL(bucket, name));
-  }
-
-  getObjectURL(bucket: string, name: string) {
-    return `${this.apiUrl}/buckets/_global/${bucket}/${name}`;
-  }
-
-  async uploadObject(bucket: string, name: string, value: Blob) {
-    const url = `${this.apiUrl}/buckets/_global/${bucket}`;
-    const formData = new FormData();
-    formData.set(name, value, name);
-    return await this.doFetch(url, {
-      method: 'POST',
-      body: formData,
-    });
-  }
-
-  async deleteObject(bucket: string, name: string) {
-    const url = `${this.apiUrl}/buckets/_global/${bucket}/${name}`;
-    return await this.doFetch(url, {
-      method: 'DELETE',
-    });
   }
 
   async getStaticText(path: string) {
