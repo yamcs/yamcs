@@ -1,7 +1,7 @@
+import { GrabEndEvent, GrabStartEvent, ViewportChangedEvent, ViewportChangeEvent, ViewportHoverEvent, WheelViewportEvent } from './events';
 import Point from './Point';
 import Timeline from './Timeline';
 import VDom from './VDom';
-import { GrabEndEvent, GrabStartEvent, ViewportChangeEvent, ViewportChangedEvent, ViewportHoverEvent, WheelViewportEvent } from './events';
 
 /**
  * Groups global DOM event listeners.
@@ -378,9 +378,9 @@ export default class EventHandling {
     // Mouse location x is fixated while zooming
     const mouseX = this.mousePosition(event).x;
     const hoverX = mouseX - this.translation.x;
-    if (event.wheelDelta > 0) {
+    if (event.deltaY > 0) {
       this.timeline.zoomIn(hoverX);
-    } else if (event.wheelDelta < 0) {
+    } else if (event.deltaY < 0) {
       this.timeline.zoomOut(hoverX);
     }
 

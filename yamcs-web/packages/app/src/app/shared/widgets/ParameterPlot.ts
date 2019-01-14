@@ -297,7 +297,7 @@ export class ParameterPlot implements AfterViewInit, OnDestroy {
           if (lastClickedGraph !== g) {
             return;
           }
-          const normal = event.detail ? event.detail * -1 : event.wheelDelta / 40;
+          const normal = event.detail ? event.detail * -1 : event.deltaY / 40;
           // For me the normalized value shows 0.075 for one click. If I took
           // that verbatim, it would be a 7.5%.
           const percentage = normal / 50;
