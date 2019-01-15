@@ -403,9 +403,11 @@ public class TimeEncoding {
     
     /**
      * Transforms protobuf Timestamp to instant.
-     * The conversion will do the "unsmearing" around the leap seconds and will also lose precision (nanoseconds to milliseconds)
+     * The conversion will do the "unsmearing" around the leap seconds and will also lose precision (nanoseconds to milliseconds).
      * 
-     * @param ts
+     * @see <a href="https://developers.google.com/time/smear">https://developers.google.com/time/smear</a>
+     * 
+     * @param ts - the timestamp to be converted
      * @return
      */
     public static long fromProtobufTimestamp(Timestamp ts) {
@@ -415,7 +417,9 @@ public class TimeEncoding {
     /**
      * Transforms the instant to protobuf timestamp performing the smearing around the leap seconds.
      * 
-     * @param ts
+     * @see <a href="https://developers.google.com/time/smear">https://developers.google.com/time/smear</a>
+     * 
+     * @param instant - the instant to be converted
      * @return
      */
     public static Timestamp toProtobufTimestamp(long instant) {
