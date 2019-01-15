@@ -6,6 +6,8 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.protobuf.Timestamp;
+
 /**
  *
  * This class provides times in terms of milliseconds since 1970TAI
@@ -308,7 +310,7 @@ public class TimeEncoding {
     }
     /**
      * Transforms UNIX time expressed in seconds and microseconds since 1970 to instant WARNING: this conversion will
-     * loose precision (microsecond to millisecond)
+     * lose precision (microsecond to millisecond)
      *
      * @param seconds
      * @param microseconds
@@ -319,6 +321,10 @@ public class TimeEncoding {
         return taiUtcConverter.unixToInstant(millisec);
     }
 
+    
+    
+    
+    
     /**
      * Transforms instant to UNIX time expressed in milliseconds since 1970
      * 
@@ -392,5 +398,27 @@ public class TimeEncoding {
     
     public static long fromJ2000Millisec(long j2000time) {
         return j2000time + J2000_EPOCH_YAMCS_EPOCH_DELTA;
+    }
+    
+    
+    /**
+     * Transforms protobuf Timestamp to instant.
+     * The conversion will do the "unsmearing" around the leap seconds and will also lose precision (nanoseconds to milliseconds)
+     * 
+     * @param ts
+     * @return
+     */
+    public static long fromProtobufTimestamp(Timestamp ts) {
+        return taiUtcConverter.protobufToInstant(ts);
+    }
+    
+    /**
+     * Transforms the instant to protobuf timestamp performing the smearing around the leap seconds.
+     * 
+     * @param ts
+     * @return
+     */
+    public static Timestamp toProtobufTimestamp(long instant) {
+        return taiUtcConverter.instantToProtobuf(instant);
     }
 }
