@@ -18,6 +18,7 @@ import { RenameDisplayDialog } from './displays/RenameDisplayDialog';
 import { ScriptViewer } from './displays/ScriptViewer';
 import { ScrollingParameterTable } from './displays/ScrollingParameterTable';
 import { TextViewer } from './displays/TextViewer';
+import { UploadFilesDialog } from './displays/UploadFilesDialog';
 import { UssDisplayViewer } from './displays/UssDisplayViewer';
 import { UssDisplayViewerControls } from './displays/UssDisplayViewerControls';
 import { ViewerControlsHost } from './displays/ViewerControlsHost';
@@ -55,6 +56,7 @@ const dialogComponents = [
   RenameLayoutDialog,
   ShowEnumDialog,
   StartReplayDialog,
+  UploadFilesDialog,
 ];
 
 const pipes = [

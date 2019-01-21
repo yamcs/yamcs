@@ -27,7 +27,7 @@ export class CreateDisplayDialog {
   constructor(
     private dialogRef: MatDialogRef<CreateDisplayDialog>,
     formBuilder: FormBuilder,
-    private yamcs: YamcsService,
+    yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
     private changeDetector: ChangeDetectorRef,
   ) {
@@ -76,7 +76,7 @@ export class CreateDisplayDialog {
       type: 'application/json'
     });
     if (scope === 'global') {
-      this.storageClient.uploadObject(this.instance.name, 'displays', fullPath, b).then(() => {
+      this.storageClient.uploadObject('_global', 'displays', fullPath, b).then(() => {
         this.dialogRef.close(fullPath);
       });
     } else {

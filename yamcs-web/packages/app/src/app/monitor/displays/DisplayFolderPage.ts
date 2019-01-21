@@ -10,6 +10,7 @@ import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CreateDisplayDialog } from './CreateDisplayDialog';
 import { RenameDisplayDialog } from './RenameDisplayDialog';
+import { UploadFilesDialog } from './UploadFilesDialog';
 
 @Component({
   templateUrl: './DisplayFolderPage.html',
@@ -22,7 +23,7 @@ export class DisplayFolderPage implements OnDestroy {
 
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
 
-  displayedColumns = ['select', 'name', 'type', 'modified', 'actions'];
+  displayedColumns = ['select', 'name', 'type', 'scope', 'modified', 'actions'];
   dataSource = new MatTableDataSource<BrowseItem>([]);
   selection = new SelectionModel<BrowseItem>(true, []);
 
@@ -119,6 +120,24 @@ export class DisplayFolderPage implements OnDestroy {
     });
   }
 
+  uploadFiles() {
+    let path = '';
+    for (const segment of this.route.snapshot.url) {
+      path += '/' + segment.path;
+    }
+    const dialogRef = this.dialog.open(UploadFilesDialog, {
+      width: '400px',
+      data: {
+        path: path || '/',
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadCurrentFolder();
+      }
+    });
+  }
+
   deleteSelectedDisplays() {
     const deletableObjects: string[] = [];
     const findObjectPromises = [];
@@ -161,6 +180,14 @@ export class DisplayFolderPage implements OnDestroy {
         this.loadCurrentFolder();
       }
     });
+  }
+
+  deleteFile(item: BrowseItem) {
+      if (confirm(`Are you sure you want to delete ${item.name}?`)) {
+        this.storageClient.deleteObject(this.instance.name, 'displays', item.name).then(() => {
+          this.loadCurrentFolder();
+        });
+      }
   }
 
   mayManageDisplays() {

@@ -13,6 +13,13 @@
     <button mat-button
             *ngIf="mayManageDisplays()"
             color="primary"
+            (click)="uploadFiles()">
+      <mat-icon>cloud_upload</mat-icon>
+      UPLOAD FILES
+    </button>
+    <button mat-button
+            *ngIf="mayManageDisplays()"
+            color="primary"
             (click)="deleteSelectedDisplays()"
             [disabled]="!selection.hasValue()">
       <mat-icon>delete</mat-icon>
@@ -88,6 +95,13 @@
         </td>
       </ng-container>
 
+      <ng-container cdkColumnDef="scope">
+        <th mat-header-cell *cdkHeaderCellDef style="width: 120px">Scope</th>
+        <td mat-cell *cdkCellDef="let item">
+          Instance
+        </td>
+      </ng-container>
+
       <ng-container cdkColumnDef="visibility">
         <th mat-header-cell *cdkHeaderCellDef style="width: 200px">Visibility</th>
         <td mat-cell *cdkCellDef="let item">
@@ -110,6 +124,10 @@
               <button mat-menu-item
                       (click)="renameFile(item)">
                 Rename
+              </button>
+              <button mat-menu-item
+                      (click)="deleteFile(item)">
+                Delete
               </button>
             </mat-menu>
             <button mat-button

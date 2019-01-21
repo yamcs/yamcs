@@ -12,6 +12,8 @@ export class MyDisplayCommunicator implements DisplayCommunicator {
   private storageClient: StorageClient;
 
   constructor(private yamcs: YamcsService, private router: Router) {
+    this.instance = yamcs.getInstance();
+    this.storageClient = yamcs.createStorageClient();
   }
 
   triggerParameterAction(id: NamedObjectId) {
