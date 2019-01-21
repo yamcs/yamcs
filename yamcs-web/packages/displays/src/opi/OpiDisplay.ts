@@ -93,7 +93,7 @@ export class OpiDisplay implements Display {
       for (const widgetNode of utils.findChildren(displayEl, 'widget')) {
         const widget = this.createWidget(widgetNode);
         if (widget) {
-          widget.tag = widget.parseAndDraw();
+          widget.tag = widget.drawWidget();
           this.addWidget(widget, rootEl);
         }
       }

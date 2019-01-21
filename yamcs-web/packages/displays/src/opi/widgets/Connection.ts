@@ -111,43 +111,43 @@ export class Connection {
     switch (term) {
       case 'LEFT':
         return {
-          x: widget.x,
-          y: widget.y + (widget.height / 2),
+          x: widget.holderX,
+          y: widget.holderY + (widget.holderHeight / 2),
         };
       case 'TOP':
         return {
-          x: widget.x + (widget.width / 2),
-          y: widget.y,
+          x: widget.holderX + (widget.holderWidth / 2),
+          y: widget.holderY,
         };
       case 'RIGHT':
         return {
-          x: widget.x + widget.width,
-          y: widget.y + (widget.height / 2),
+          x: widget.holderX + widget.holderWidth,
+          y: widget.holderY + (widget.holderHeight / 2),
         };
       case 'BOTTOM':
         return {
-          x: widget.x + (widget.width / 2),
-          y: widget.y + widget.height,
+          x: widget.holderX + (widget.holderWidth / 2),
+          y: widget.holderY + widget.holderHeight,
         };
       case 'TOP_LEFT':
         return {
-          x: widget.x,
-          y: widget.y,
+          x: widget.holderX,
+          y: widget.holderY,
         };
       case 'TOP_RIGHT':
         return {
-          x: widget.x + widget.width,
-          y: widget.y,
+          x: widget.holderX + widget.holderWidth,
+          y: widget.holderY,
         };
       case 'BOTTOM_LEFT':
         return {
-          x: widget.x,
-          y: widget.y + widget.height,
+          x: widget.holderX,
+          y: widget.holderY + widget.holderHeight,
         };
       case 'BOTTOM_RIGHT':
         return {
-          x: widget.x + widget.width,
-          y: widget.y + widget.height,
+          x: widget.holderX + widget.holderWidth,
+          y: widget.holderY + widget.holderHeight,
         };
       default:
         throw Error(`Unexpected term ${term}`);

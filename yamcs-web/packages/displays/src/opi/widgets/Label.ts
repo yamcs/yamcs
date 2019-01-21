@@ -4,19 +4,13 @@ import { AbstractWidget } from './AbstractWidget';
 
 export class Label extends AbstractWidget {
 
-  parseAndDraw() {
-    const g = new G({
-      class: 'label',
-      'data-name': this.name,
-    });
-
+  parseAndDraw(g: G) {
     const rect = new Rect({
       x: this.x,
       y: this.y,
       width: this.width,
       height: this.height,
       fill: this.backgroundColor.toString(),
-      ...this.borderStyle,
       'pointer-events': 'none',
     });
     if (this.transparent) {

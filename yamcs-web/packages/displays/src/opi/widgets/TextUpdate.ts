@@ -4,13 +4,11 @@ import { AbstractWidget } from './AbstractWidget';
 
 export class TextUpdate extends AbstractWidget {
 
-  parseAndDraw() {
-    const g = new G({
-      id: `${this.id}-group`,
+  parseAndDraw(g: G) {
+    const wrapperG = new G({
       transform: `translate(${this.x},${this.y})`,
-      class: 'text-update',
-      'data-name': this.name,
     });
+    g.addChild(wrapperG);
 
     const bgRect = new Rect({
       x: 0,
@@ -18,13 +16,11 @@ export class TextUpdate extends AbstractWidget {
       width: this.width,
       height: this.height,
       fill: this.backgroundColor,
-      ...this.borderStyle,
-      'shape-rendering': 'crispEdges',
     });
     if (this.transparent) {
       bgRect.setAttribute('fill-opacity', '0');
     }
-    g.addChild(bgRect);
+    wrapperG.addChild(bgRect);
 
     const fontFamily = this.textStyle['font-family'];
     const fontSize = this.textStyle['font-size'];
@@ -40,7 +36,7 @@ export class TextUpdate extends AbstractWidget {
       fill: this.foregroundColor,
     }, this.text);
 
-    g.addChild(text);
+    wrapperG.addChild(text);
 
     let x;
     const horizAlignment = utils.parseIntChild(this.node, 'horizontal_alignment');

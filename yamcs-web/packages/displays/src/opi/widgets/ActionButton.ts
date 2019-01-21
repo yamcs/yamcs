@@ -7,12 +7,8 @@ export class ActionButton extends AbstractWidget {
   brightStroke: Color;
   darkStroke: Color;
 
-  parseAndDraw() {
-    const g = new G({
-      class: 'action-button',
-      'data-name': this.name,
-      cursor: 'pointer',
-    });
+  parseAndDraw(g: G) {
+    g.setAttribute('cursor', 'pointer');
 
     const strokeWidth = 3;
     const boxWidth = this.width - strokeWidth;

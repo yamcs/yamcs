@@ -14,35 +14,11 @@ export class LED extends AbstractWidget {
   private states: State[] = [];
   private fallback?: State;
 
-  private holderBorder: number;
-
   private bulbColor: Color;
   private bulbBorderColor: Color;
   private bulbBorder: number;
-  private bulbWidth: number;
-  private bulbHeight: number;
 
-  parseAndDraw() {
-    const g = new G({
-      class: 'led',
-      'data-name': this.name,
-    });
-
-    const holder = new Rect({
-      ...this.borderStyle,
-      'pointer-events': 'none',
-      'fill-opacity': '0',
-    }).withBorderBox(this.x, this.y, this.width, this.height);
-
-    // This is a weird one. When there is no widget border the LED
-    // shrinks according to an inset of 2px. This only happens when
-    // the border is alarm-sensitive.
-    if (!holder.attributes['stroke'] && this.borderAlarmSensitive) {
-      holder.setAttribute('stroke-width', '2');
-    }
-
-    g.addChild(holder);
-
+  parseAndDraw(g: G) {
     const stateCount = utils.parseIntChild(this.node, 'state_count', 2);
     if (stateCount === 2) {
       const offColorNode = utils.findChild(this.node, 'off_color');
@@ -86,10 +62,6 @@ export class LED extends AbstractWidget {
       const bulbBorderColorNode = utils.findChild(this.node, 'bulb_border_color');
       this.bulbBorderColor = utils.parseColorChild(bulbBorderColorNode);
     }
-
-    this.holderBorder = Number(holder.attributes['stroke-width'] || 0);
-    this.bulbWidth = this.width - (2 * this.holderBorder);
-    this.bulbHeight = this.height - (2 * this.holderBorder);
 
     const squareLed = utils.parseBooleanChild(this.node, 'square_led');
 
@@ -137,10 +109,10 @@ export class LED extends AbstractWidget {
       stroke: this.bulbBorderColor.toString(),
       'stroke-width': this.bulbBorder,
     }).withBorderBox(
-      this.x + this.holderBorder + (this.bulbWidth / 2),
-      this.y + this.holderBorder + (this.bulbHeight / 2),
-      this.bulbWidth / 2,
-      this.bulbHeight / 2,
+      this.x + (this.width / 2),
+      this.y + (this.height / 2),
+      this.width / 2,
+      this.height / 2,
     );
     g.addChild(ellipseBg);
   }
@@ -167,36 +139,33 @@ export class LED extends AbstractWidget {
       new Stop({ offset: '100%', 'stop-color': this.bulbBorderColor, 'stop-opacity': '0', }),
     ));
 
-    const x = this.x + this.holderBorder;
-    const y = this.y + this.holderBorder;
-
     g.addChild(new Ellipse({
-      cx: x + (this.bulbWidth / 2),
-      cy: y + (this.bulbHeight / 2),
-      rx: this.bulbWidth / 2,
-      ry: this.bulbHeight / 2,
+      cx: this.x + (this.width / 2),
+      cy: this.y + (this.height / 2),
+      rx: this.width / 2,
+      ry: this.height / 2,
       fill: Color.WHITE,
     }));
     g.addChild(new Ellipse({
-      cx: x + (this.bulbWidth / 2),
-      cy: y + (this.bulbHeight / 2),
-      rx: this.bulbWidth / 2,
-      ry: this.bulbHeight / 2,
+      cx: this.x + (this.width / 2),
+      cy: this.y + (this.height / 2),
+      rx: this.width / 2,
+      ry: this.height / 2,
       fill: `url(#${this.id}-r-b)`,
     }));
 
-    const innerWidth = this.bulbWidth - (2 * this.bulbBorder);
-    const innerHeight = this.bulbHeight - (2 * this.bulbBorder);
+    const innerWidth = this.width - (2 * this.bulbBorder);
+    const innerHeight = this.height - (2 * this.bulbBorder);
     g.addChild(new Ellipse({
-      cx: x + (this.bulbWidth / 2),
-      cy: y + (this.bulbHeight / 2),
+      cx: this.x + (this.width / 2),
+      cy: this.y + (this.height / 2),
       rx: innerWidth / 2,
       ry: innerHeight / 2,
       fill: this.bulbColor,
     }));
     g.addChild(new Ellipse({
-      cx: x + (this.bulbWidth / 2),
-      cy: y + (this.bulbHeight / 2),
+      cx: this.x + (this.width / 2),
+      cy: this.y + (this.height / 2),
       rx: innerWidth / 2,
       ry: innerHeight / 2,
       fill: `url(#${this.id}-r)`,
@@ -208,9 +177,7 @@ export class LED extends AbstractWidget {
       fill: this.bulbColor,
       stroke: this.bulbBorderColor.toString(),
       'stroke-width': this.bulbBorder,
-    }).withBorderBox(
-      this.x + this.holderBorder, this.y + this.holderBorder, this.bulbWidth, this.bulbHeight
-    );
+    }).withBorderBox(this.x, this.y, this.width, this.height);
     g.addChild(squareBg);
   }
 
@@ -266,57 +233,54 @@ export class LED extends AbstractWidget {
       new Stop({ offset: '100%', 'stop-color': this.bulbColor, 'stop-opacity': '0', }),
     ));
 
-    const x = this.x + this.holderBorder;
-    const y = this.y + this.holderBorder;
-
     const borderBg = new Rect({
-      x,
-      y,
-      width: this.bulbWidth,
-      height: this.bulbHeight,
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
       fill: this.bulbBorderColor.toString(),
     });
     g.addChild(borderBg);
 
-    let points = `${x},${y}`;
-    points += ` ${x + this.bulbBorder},${y + this.bulbBorder}`;
-    points += ` ${x + this.bulbBorder},${y + this.bulbHeight - this.bulbBorder}`;
-    points += ` ${x},${y + this.bulbHeight}`;
+    let points = `${this.x},${this.y}`;
+    points += ` ${this.x + this.bulbBorder},${this.y + this.bulbBorder}`;
+    points += ` ${this.x + this.bulbBorder},${this.y + this.height - this.bulbBorder}`;
+    points += ` ${this.x},${this.y + this.height}`;
     g.addChild(new Polyline({ points, fill: `url(#${this.id}-sq-l)` }));
 
-    points = `${x},${y}`;
-    points += ` ${x + this.bulbBorder},${y + this.bulbBorder}`;
-    points += ` ${x + this.bulbWidth - this.bulbBorder},${y + this.bulbBorder}`;
-    points += ` ${x + this.bulbWidth},${y}`;
+    points = `${this.x},${this.y}`;
+    points += ` ${this.x + this.bulbBorder},${this.y + this.bulbBorder}`;
+    points += ` ${this.x + this.width - this.bulbBorder},${this.y + this.bulbBorder}`;
+    points += ` ${this.x + this.width},${this.y}`;
     g.addChild(new Polyline({ points, fill: `url(#${this.id}-sq-t)` }));
 
-    points = `${x + this.bulbWidth},${y}`;
-    points += ` ${x + this.bulbWidth - this.bulbBorder},${y + this.bulbBorder}`;
-    points += ` ${x + this.bulbWidth - this.bulbBorder},${y + this.bulbHeight - this.bulbBorder}`;
-    points += ` ${x + this.bulbWidth},${y + this.bulbHeight}`;
+    points = `${this.x + this.width},${this.y}`;
+    points += ` ${this.x + this.width - this.bulbBorder},${this.y + this.bulbBorder}`;
+    points += ` ${this.x + this.width - this.bulbBorder},${this.y + this.height - this.bulbBorder}`;
+    points += ` ${this.x + this.width},${this.y + this.height}`;
     g.addChild(new Polyline({ points, fill: `url(#${this.id}-sq-r)` }));
 
-    points = `${x},${y + this.bulbHeight}`;
-    points += ` ${x + this.bulbBorder},${y + this.bulbHeight - this.bulbBorder}`;
-    points += ` ${x + this.bulbWidth - this.bulbBorder},${y + this.bulbHeight - this.bulbBorder}`;
-    points += ` ${x + this.bulbWidth},${y + this.bulbHeight}`;
+    points = `${this.x},${this.y + this.height}`;
+    points += ` ${this.x + this.bulbBorder},${this.y + this.height - this.bulbBorder}`;
+    points += ` ${this.x + this.width - this.bulbBorder},${this.y + this.height - this.bulbBorder}`;
+    points += ` ${this.x + this.width},${this.y + this.height}`;
     g.addChild(new Polyline({ points, fill: `url(#${this.id}-sq-b)` }));
 
     // Bulb
     g.addChild(new Rect({
-      x: x + this.bulbBorder,
-      y: y + this.bulbBorder,
-      width: this.bulbWidth - (2 * this.bulbBorder),
-      height: this.bulbHeight - (2 * this.bulbBorder),
+      x: this.x + this.bulbBorder,
+      y: this.y + this.bulbBorder,
+      width: this.width - (2 * this.bulbBorder),
+      height: this.height - (2 * this.bulbBorder),
       fill: this.bulbColor,
     }));
 
     // Bulb gradient overlay
     g.addChild(new Rect({
-      x: x + this.bulbBorder,
-      y: y + this.bulbBorder,
-      width: this.bulbWidth - (2 * this.bulbBorder),
-      height: this.bulbHeight - (2 * this.bulbBorder),
+      x: this.x + this.bulbBorder,
+      y: this.y + this.bulbBorder,
+      width: this.width - (2 * this.bulbBorder),
+      height: this.height - (2 * this.bulbBorder),
       fill: `url(#${this.id}-sq)`,
     }));
   }
