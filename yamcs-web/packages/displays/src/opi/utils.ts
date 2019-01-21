@@ -135,10 +135,10 @@ export function parseBooleanChild(parentNode: Node, childNodeName: string, defau
  *
  * @throws when no such child was found and defaultValue was undefined.
  */
-export function parseColorChild(parentNode: Element, childNodeName: string, defaultValue?: Color) {
+export function parseColorChild(parentNode: Element, defaultValue?: Color) {
   for (let i = 0; i < parentNode.childNodes.length; i++) {
     const child = parentNode.childNodes[i] as Element;
-    if (child.nodeName === childNodeName) {
+    if (child.nodeName === 'color') {
       return parseColorNode(child);
     }
   }
@@ -146,7 +146,7 @@ export function parseColorChild(parentNode: Element, childNodeName: string, defa
   if (defaultValue !== undefined) {
     return defaultValue;
   } else {
-    throw new Error(`No child node named ${childNodeName} could be found`);
+    throw new Error(`No child node named 'color' could be found`);
   }
 }
 
@@ -155,6 +155,21 @@ export function parseColorNode(node: Element) {
   const g = parseIntAttribute(node, 'green');
   const b = parseIntAttribute(node, 'blue');
   return new Color(r, g, b);
+}
+
+export function parseTextStyle(node: Element) {
+  const fontNode = findChild(node, 'opifont.name');
+  const style: { [key: string]: any } = {
+    'font-family': parseStringAttribute(fontNode, 'fontName'),
+    'font-size': '' + parseIntAttribute(fontNode, 'height'),
+  };
+  const fontStyle = parseIntAttribute(fontNode, 'style');
+  if (fontStyle === 1) {
+    style['font-weight'] = 'bold';
+  } else if (fontStyle !== 0) {
+    console.warn(`Unsupported font style ${fontStyle}`);
+  }
+  return style;
 }
 
 export function parseStringAttribute(node: Element, attributeName: string) {

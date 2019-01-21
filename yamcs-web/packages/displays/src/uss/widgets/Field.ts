@@ -7,7 +7,6 @@ import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 import { sprintf } from './sprintf';
 
-
 const indicatorChars = 2;
 
 /**
