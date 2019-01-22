@@ -1,13 +1,9 @@
 import { G, Line, Polyline } from '../../tags';
 import { Color } from '../../uss/Color';
 import { OpiDisplay } from '../OpiDisplay';
+import { Point } from '../Point';
 import * as utils from '../utils';
 import { AbstractWidget } from '../widgets/AbstractWidget';
-
-interface Point {
-  x: number;
-  y: number;
-}
 
 export class Connection {
 

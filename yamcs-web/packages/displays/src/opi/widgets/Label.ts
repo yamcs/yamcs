@@ -1,10 +1,20 @@
 import { G, Rect, Text } from '../../tags';
+import { Font } from '../Font';
+import { OpiDisplay } from '../OpiDisplay';
 import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 
 export class Label extends AbstractWidget {
 
-  parseAndDraw(g: G) {
+  private font: Font;
+
+  constructor(node: Element, display: OpiDisplay) {
+    super(node, display);
+    const fontNode = utils.findChild(this.node, 'font');
+    this.font = utils.parseFontNode(fontNode);
+  }
+
+  draw(g: G) {
     const rect = new Rect({
       x: this.x,
       y: this.y,
@@ -22,7 +32,7 @@ export class Label extends AbstractWidget {
       x: this.x,
       y: this.y,
       'pointer-events': 'none',
-      ...this.textStyle,
+      ...this.font.getStyle(),
       fill: this.foregroundColor,
     }, this.text);
     g.addChild(text);
@@ -41,12 +51,7 @@ export class Label extends AbstractWidget {
     }
     text.setAttribute('x', String(x));
 
-    const fontSize = text.attributes['font-size'];
-    const fontFamily = text.attributes['font-family'];
-    const fontStyle = text.attributes['font-style'] || 'normal';
-    const fontWeight = text.attributes['font-weight'] || 'normal';
-
-    const fm = this.getFontMetrics(this.text, fontFamily, fontStyle, fontWeight, fontSize);
+    const fm = this.getFontMetrics(this.text, this.font);
 
     let y;
     const vertAlignment = utils.parseIntChild(this.node, 'vertical_alignment');
@@ -59,7 +64,5 @@ export class Label extends AbstractWidget {
     }
     text.setAttribute('dominant-baseline', 'middle');
     text.setAttribute('y', String(y));
-
-    return g;
   }
 }

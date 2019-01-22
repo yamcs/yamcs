@@ -1,5 +1,6 @@
 import { G, Rect, Tag } from '../../tags';
 import { Color } from '../Color';
+import { Font } from '../Font';
 import { OpiDisplay } from '../OpiDisplay';
 import * as utils from '../utils';
 
@@ -42,10 +43,9 @@ export abstract class AbstractWidget {
 
   backgroundColor: Color;
   foregroundColor: Color;
-  textStyle: { [key: string]: any };
+
   transparent: boolean;
   visible: boolean;
-  effect3d: boolean;
 
   svg: SVGSVGElement;
   childSequence = 0;
@@ -79,7 +79,7 @@ export abstract class AbstractWidget {
         this.inset = 2;
       }
     } else if (this.borderStyle === 1) { // Line
-      this.inset = 1;
+      this.inset = this.borderWidth;
     }
 
     // Shrink the availabe widget area
@@ -97,12 +97,8 @@ export abstract class AbstractWidget {
     const foregroundColorNode = utils.findChild(node, 'foreground_color');
     this.foregroundColor = utils.parseColorChild(foregroundColorNode);
 
-    const fontNode = utils.findChild(this.node, 'font');
-    this.textStyle = utils.parseTextStyle(fontNode);
-
     this.transparent = utils.parseBooleanChild(this.node, 'transparent', false);
     this.visible = utils.parseBooleanChild(this.node, 'visible');
-    this.effect3d = utils.parseBooleanChild(this.node, 'effect_3d', false);
 
     if (utils.hasChild(node, 'pv_name')) {
       this.pvName = utils.parseStringChild(node, 'pv_name');
@@ -112,7 +108,7 @@ export abstract class AbstractWidget {
   drawWidget() {
     const g = new G({
       id: this.id,
-      class: this.widgetType.replace(' ', '-'),
+      class: this.widgetType.replace(' ', '-').toLowerCase(),
       'data-name': this.name,
     });
 
@@ -140,11 +136,11 @@ export abstract class AbstractWidget {
 
     g.addChild(holder);
 
-    this.parseAndDraw(g);
+    this.draw(g);
     return g;
   }
 
-  abstract parseAndDraw(g: G): void;
+  abstract draw(g: G): void;
 
   /**
    * Hook to perform logic after this widget (or any other widget) was added to the DOM.
@@ -153,12 +149,13 @@ export abstract class AbstractWidget {
     // NOP
   }
 
-  protected getFontMetrics(text: string, fontFamily: string, fontStyle: string, fontWeight: string, fontSize: string) {
+  protected getFontMetrics(text: string, font: Font) {
+    const style = font.getStyle();
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    el.setAttribute('font-family', fontFamily);
-    el.setAttribute('font-style', fontStyle);
-    el.setAttribute('font-weight', fontWeight);
-    el.setAttribute('font-size', fontSize);
+    el.setAttribute('font-family', style['font-family']);
+    el.setAttribute('font-style', style['font-style'] || 'normal');
+    el.setAttribute('font-weight', style['font-weight'] || 'normal');
+    el.setAttribute('font-size', style['font-size']);
     el.appendChild(document.createTextNode(text));
     this.display.measurerSvg.appendChild(el);
     const bbox = el.getBBox();

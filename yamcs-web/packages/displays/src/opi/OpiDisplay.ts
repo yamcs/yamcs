@@ -7,11 +7,19 @@ import { Color } from './Color';
 import * as utils from './utils';
 import { AbstractWidget } from './widgets/AbstractWidget';
 import { ActionButton } from './widgets/ActionButton';
+import { Arc } from './widgets/Arc';
 import { Connection } from './widgets/Connection';
+import { Ellipse } from './widgets/Ellipse';
+import { GroupingContainer } from './widgets/GroupingContainer';
+import { Image } from './widgets/Image';
 import { Label } from './widgets/Label';
 import { LED } from './widgets/LED';
 import { LinkingContainer } from './widgets/LinkingContainer';
+import { Polygon } from './widgets/Polygon';
+import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
+import { RoundedRectangle } from './widgets/RoundedRectangle';
+import { TabbedContainer } from './widgets/TabbedContainer';
 import { TextUpdate } from './widgets/TextUpdate';
 
 export class OpiDisplay implements Display {
@@ -153,14 +161,30 @@ export class OpiDisplay implements Display {
     switch (typeId) {
       case 'org.csstudio.opibuilder.widgets.ActionButton':
         return new ActionButton(node, this);
+      case 'org.csstudio.opibuilder.widgets.arc':
+        return new Arc(node, this);
+      case 'org.csstudio.opibuilder.widgets.Ellipse':
+        return new Ellipse(node, this);
+      case 'org.csstudio.opibuilder.widgets.groupingContainer':
+        return new GroupingContainer(node, this);
+      case 'org.csstudio.opibuilder.widgets.Image':
+        return new Image(node, this);
       case 'org.csstudio.opibuilder.widgets.Label':
         return new Label(node, this);
       case 'org.csstudio.opibuilder.widgets.LED':
         return new LED(node, this);
       case 'org.csstudio.opibuilder.widgets.linkingContainer':
         return new LinkingContainer(node, this);
+      case 'org.csstudio.opibuilder.widgets.polygon':
+        return new Polygon(node, this);
+      case 'org.csstudio.opibuilder.widgets.polyline':
+        return new Polyline(node, this);
       case 'org.csstudio.opibuilder.widgets.Rectangle':
         return new Rectangle(node, this);
+      case 'org.csstudio.opibuilder.widgets.RoundedRectangle':
+        return new RoundedRectangle(node, this);
+      case 'org.csstudio.opibuilder.widgets.tab':
+        return new TabbedContainer(node, this);
       case 'org.csstudio.opibuilder.widgets.TextUpdate':
         return new TextUpdate(node, this);
       default:

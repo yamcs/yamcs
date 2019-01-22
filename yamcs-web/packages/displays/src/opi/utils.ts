@@ -1,4 +1,5 @@
 import { Color } from './Color';
+import { Font } from './Font';
 
 /**
  * Searches the given node for a direct child with the specified name.
@@ -157,19 +158,13 @@ export function parseColorNode(node: Element) {
   return new Color(r, g, b);
 }
 
-export function parseTextStyle(node: Element) {
+export function parseFontNode(node: Element) {
   const fontNode = findChild(node, 'opifont.name');
-  const style: { [key: string]: any } = {
-    'font-family': parseStringAttribute(fontNode, 'fontName'),
-    'font-size': '' + parseIntAttribute(fontNode, 'height'),
-  };
-  const fontStyle = parseIntAttribute(fontNode, 'style');
-  if (fontStyle === 1) {
-    style['font-weight'] = 'bold';
-  } else if (fontStyle !== 0) {
-    console.warn(`Unsupported font style ${fontStyle}`);
-  }
-  return style;
+  const name = parseStringAttribute(fontNode, 'fontName');
+  const height = parseIntAttribute(fontNode, 'height');
+  const style = parseIntAttribute(fontNode, 'style');
+  const pixels = parseBooleanAttribute(fontNode, 'pixels');
+  return new Font(name, height, style, pixels);
 }
 
 export function parseStringAttribute(node: Element, attributeName: string) {

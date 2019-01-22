@@ -7,6 +7,7 @@ export class ExternalImage extends AbstractWidget {
 
   parseAndDraw() {
     const pathname = utils.parseStringChild(this.node, 'Pathname');
+    const imageUrl = this.display.displayCommunicator.getObjectURL('displays', pathname);
 
     return new Image({
       x: this.x,
@@ -15,7 +16,7 @@ export class ExternalImage extends AbstractWidget {
       height: this.height,
       class: 'external-image',
       'data-name': this.name,
-      'xlink:href': `/static/${pathname}`
+      'xlink:href': imageUrl,
     });
   }
 

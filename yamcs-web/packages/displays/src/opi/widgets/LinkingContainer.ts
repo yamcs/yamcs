@@ -3,7 +3,7 @@ import { AbstractWidget } from './AbstractWidget';
 
 export class LinkingContainer extends AbstractWidget {
 
-  parseAndDraw(g: G) {
+  draw(g: G) {
     const rect = new Rect({
       x: this.x,
       y: this.y,
@@ -16,7 +16,5 @@ export class LinkingContainer extends AbstractWidget {
       rect.setAttribute('fill-opacity', '0');
     }
     g.addChild(rect);
-
-    return g;
   }
 }

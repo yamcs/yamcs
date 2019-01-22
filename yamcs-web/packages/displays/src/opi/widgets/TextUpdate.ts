@@ -1,10 +1,20 @@
 import { G, Rect, Text } from '../../tags';
+import { Font } from '../Font';
+import { OpiDisplay } from '../OpiDisplay';
 import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 
 export class TextUpdate extends AbstractWidget {
 
-  parseAndDraw(g: G) {
+  private font: Font;
+
+  constructor(node: Element, display: OpiDisplay) {
+    super(node, display);
+    const fontNode = utils.findChild(this.node, 'font');
+    this.font = utils.parseFontNode(fontNode);
+  }
+
+  draw(g: G) {
     const wrapperG = new G({
       transform: `translate(${this.x},${this.y})`,
     });
@@ -22,17 +32,13 @@ export class TextUpdate extends AbstractWidget {
     }
     wrapperG.addChild(bgRect);
 
-    const fontFamily = this.textStyle['font-family'];
-    const fontSize = this.textStyle['font-size'];
-    const fontStyle = this.textStyle['font-style'] || 'normal';
-    const fontWeight = this.textStyle['font-weight'] || 'normal';
-    const fm = this.getFontMetrics('i', fontFamily, fontStyle, fontWeight, fontSize);
+    const fm = this.getFontMetrics('i', this.font);
 
     const text = new Text({
       x: 0,
       y: 0,
       'pointer-events': 'none',
-      ...this.textStyle,
+      ...this.font.getStyle(),
       fill: this.foregroundColor,
     }, this.text);
 
@@ -63,7 +69,5 @@ export class TextUpdate extends AbstractWidget {
     }
     text.setAttribute('dominant-baseline', 'middle');
     text.setAttribute('y', String(y));
-
-    return g;
   }
 }

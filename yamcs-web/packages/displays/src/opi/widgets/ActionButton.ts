@@ -1,13 +1,24 @@
 import { G, Rect, Text, Tspan } from '../../tags';
 import { Color } from '../Color';
+import { Font } from '../Font';
+import { OpiDisplay } from '../OpiDisplay';
+import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 
 export class ActionButton extends AbstractWidget {
 
+  private font: Font;
+
   brightStroke: Color;
   darkStroke: Color;
 
-  parseAndDraw(g: G) {
+  constructor(node: Element, display: OpiDisplay) {
+    super(node, display);
+    const fontNode = utils.findChild(this.node, 'font');
+    this.font = utils.parseFontNode(fontNode);
+  }
+
+  draw(g: G) {
     g.setAttribute('cursor', 'pointer');
 
     const strokeWidth = 3;
@@ -47,7 +58,7 @@ export class ActionButton extends AbstractWidget {
       x: 0,
       y: 0,
       'pointer-events': 'none',
-      ...this.textStyle,
+      ...this.font.getStyle(),
       fill: this.foregroundColor,
     });
 
@@ -61,8 +72,6 @@ export class ActionButton extends AbstractWidget {
 
     textG.addChild(text);
     g.addChild(textG);
-
-    return g;
   }
 
   afterDomAttachment() {

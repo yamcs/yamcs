@@ -1,5 +1,6 @@
-import { Ellipse, G, LinearGradient, Polyline, Rect, Stop, Tag } from '../../tags';
+import { Ellipse, G, LinearGradient, Polyline, Rect, Stop } from '../../tags';
 import { Color } from '../Color';
+import { OpiDisplay } from '../OpiDisplay';
 import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 
@@ -11,6 +12,9 @@ interface State {
 
 export class LED extends AbstractWidget {
 
+  private squareLed: boolean;
+  private effect3d: boolean;
+
   private states: State[] = [];
   private fallback?: State;
 
@@ -18,7 +22,8 @@ export class LED extends AbstractWidget {
   private bulbBorderColor: Color;
   private bulbBorder: number;
 
-  parseAndDraw(g: G) {
+  constructor(node: Element, display: OpiDisplay) {
+    super(node, display);
     const stateCount = utils.parseIntChild(this.node, 'state_count', 2);
     if (stateCount === 2) {
       const offColorNode = utils.findChild(this.node, 'off_color');
@@ -63,30 +68,12 @@ export class LED extends AbstractWidget {
       this.bulbBorderColor = utils.parseColorChild(bulbBorderColorNode);
     }
 
-    const squareLed = utils.parseBooleanChild(this.node, 'square_led');
+    this.squareLed = utils.parseBooleanChild(this.node, 'square_led');
+    this.effect3d = utils.parseBooleanChild(this.node, 'effect_3d');
+  }
 
-    if (this.effect3d) {
-      this.display.defs.addChild(new Tag('linearGradient', {
-        id: `${this.id}-grad`,
-        x1: '0%',
-        y1: '0%',
-        x2: squareLed ? '0%' : '100%',
-        y2: '100%',
-      }).addChild(
-        new Tag('stop', {
-          offset: '-30%',
-          'stop-color': this.bulbColor,
-          'stop-opacity': '0'
-        }),
-        new Tag('stop', {
-          offset: '80%',
-          'stop-color': this.bulbColor,
-          'stop-opacity': '1',
-        })
-      ));
-    }
-
-    if (squareLed) {
+  draw(g: G) {
+    if (this.squareLed) {
       if (this.effect3d) {
         this.drawSquare3d(g);
       } else {
@@ -99,8 +86,6 @@ export class LED extends AbstractWidget {
         this.drawCirlce2d(g);
       }
     }
-
-    return g;
   }
 
   private drawCirlce2d(g: G) {
