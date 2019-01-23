@@ -1,3 +1,4 @@
+import { Value } from '@yamcs/client';
 import { Color } from './Color';
 import { Font } from './Font';
 
@@ -159,12 +160,23 @@ export function parseColorNode(node: Element) {
 }
 
 export function parseFontNode(node: Element) {
-  const fontNode = findChild(node, 'opifont.name');
-  const name = parseStringAttribute(fontNode, 'fontName');
-  const height = parseIntAttribute(fontNode, 'height');
-  const style = parseIntAttribute(fontNode, 'style');
-  const pixels = parseBooleanAttribute(fontNode, 'pixels');
-  return new Font(name, height, style, pixels);
+  if (hasChild(node, 'opifont.name')) {
+    const fontNode = findChild(node, 'opifont.name');
+    const name = parseStringAttribute(fontNode, 'fontName');
+    const height = parseIntAttribute(fontNode, 'height');
+    const style = parseIntAttribute(fontNode, 'style');
+    let pixels = false;
+    if (fontNode.hasAttribute('pixels')) {
+      pixels = parseBooleanAttribute(fontNode, 'pixels');
+    }
+    return new Font(name, height, style, pixels);
+  } else {
+    const fontNode = findChild(node, 'fontdata');
+    const name = parseStringAttribute(fontNode, 'fontName');
+    const height = parseIntAttribute(fontNode, 'height');
+    const style = parseIntAttribute(fontNode, 'style');
+    return new Font(name, height, style, false);
+  }
 }
 
 export function parseStringAttribute(node: Element, attributeName: string) {
@@ -191,5 +203,30 @@ export function parseBooleanAttribute(node: Element, attributeName: string) {
     throw new Error(`No attribute named ${attributeName}`);
   } else {
     return attr.textContent === 'true';
+  }
+}
+
+export function unwrapParameterValue(value: Value): any {
+  switch (value.type) {
+    case 'FLOAT':
+      return value.floatValue;
+    case 'DOUBLE':
+      return value.doubleValue;
+    case 'UINT32':
+      return value.uint32Value;
+    case 'SINT32':
+      return value.sint32Value;
+    case 'UINT64':
+      return value.uint64Value;
+    case 'SINT64':
+      return value.sint64Value;
+    case 'BOOLEAN':
+      return value.booleanValue;
+    case 'TIMESTAMP':
+      return value.timestampValue;
+    case 'BINARY':
+      return window.atob(value.binaryValue!);
+    case 'STRING':
+      return value.stringValue;
   }
 }

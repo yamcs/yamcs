@@ -106,7 +106,11 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
         ussDisplayViewer.display.digest();
       }, 500 /* update rate */);
     } else if (this.filename.toLowerCase().endsWith('.opi')) {
-      this.viewer = this.createViewer(OpiDisplayViewer);
+      const opiDisplayViewer = this.createViewer(OpiDisplayViewer);
+      this.viewer = opiDisplayViewer;
+      this.displayRefresher = window.setInterval(() => {
+        opiDisplayViewer.display.digest();
+      }, 500 /* update rate */);
     } else if (this.filename.toLowerCase().endsWith('.par')) {
       const parameterTableViewer = this.createViewer(ParameterTableViewer);
       const controls = this.createViewerControls(ParameterTableViewerControls);

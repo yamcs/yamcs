@@ -11,7 +11,7 @@ export class Image extends AbstractWidget {
   constructor(node: Element, display: OpiDisplay) {
     super(node, display);
     this.imageFile = utils.parseStringChild(node, 'image_file');
-    this.transparency = utils.parseBooleanChild(node, 'transparency');
+    this.transparency = utils.parseBooleanChild(node, 'transparency', true);
   }
 
   draw(g: G) {

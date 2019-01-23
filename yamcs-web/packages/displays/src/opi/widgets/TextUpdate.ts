@@ -1,3 +1,4 @@
+import { ParameterValue } from '@yamcs/client';
 import { G, Rect, Text } from '../../tags';
 import { Font } from '../Font';
 import { OpiDisplay } from '../OpiDisplay';
@@ -7,6 +8,9 @@ import { AbstractWidget } from './AbstractWidget';
 export class TextUpdate extends AbstractWidget {
 
   private font: Font;
+  private pval: ParameterValue;
+
+  private textEl: Element;
 
   constructor(node: Element, display: OpiDisplay) {
     super(node, display);
@@ -35,6 +39,7 @@ export class TextUpdate extends AbstractWidget {
     const fm = this.getFontMetrics('i', this.font);
 
     const text = new Text({
+      id: `${this.id}-text`,
       x: 0,
       y: 0,
       'pointer-events': 'none',
@@ -69,5 +74,20 @@ export class TextUpdate extends AbstractWidget {
     }
     text.setAttribute('dominant-baseline', 'middle');
     text.setAttribute('y', String(y));
+  }
+
+  afterDomAttachment() {
+    this.textEl = this.svg.getElementById(`${this.id}-text`);
+  }
+
+  onParameterValue(pval: ParameterValue) {
+    this.pval = pval;
+  }
+
+  digest() {
+    if (this.pval) {
+      const value = utils.unwrapParameterValue(this.pval.engValue);
+      this.textEl.textContent = value;
+    }
   }
 }

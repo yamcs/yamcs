@@ -25,6 +25,8 @@ import { TextUpdate } from './widgets/TextUpdate';
 export class OpiDisplay implements Display {
 
   private widgets: AbstractWidget[] = [];
+  private qualifiedNames = new Set<string>();
+  private widgetsByTrigger = new Map<string, AbstractWidget[]>();
 
   title: string;
   width: number;
@@ -193,8 +195,29 @@ export class OpiDisplay implements Display {
     }
   }
 
+  addWidget(widget: AbstractWidget, parent: Tag) {
+    parent.addChild(widget.tag);
+    this.widgets.push(widget);
+
+    if (widget.pvName) {
+      this.registerWidgetTriggers(widget.pvName, widget);
+      this.qualifiedNames.add(widget.pvName);
+    }
+  }
+
+  private registerWidgetTriggers(qualifiedName: string, widget: AbstractWidget) {
+    const widgets = this.widgetsByTrigger.get(qualifiedName);
+    if (widgets) {
+      widgets.push(widget);
+    } else {
+      this.widgetsByTrigger.set(qualifiedName, [widget]);
+      this.qualifiedNames.add(qualifiedName);
+    }
+  }
+
   getParameterIds() {
     const ids: NamedObjectId[] = [];
+    this.qualifiedNames.forEach(name => ids.push({ name }));
     return ids;
   }
 
@@ -206,14 +229,27 @@ export class OpiDisplay implements Display {
   }
 
   processParameterValues(pvals: ParameterValue[]) {
+    for (const widget of this.widgets) {
+      widget.onDelivery(pvals);
+    }
+    for (const pval of pvals) {
+      const widgets = this.widgetsByTrigger.get(pval.id.name);
+      if (widgets) {
+        for (const widget of widgets) {
+          widget.onParameterValue(pval);
+          widget.dirty = true;
+        }
+      }
+    }
   }
 
   digest() {
-  }
-
-  addWidget(widget: AbstractWidget, parent: Tag) {
-    parent.addChild(widget.tag);
-    this.widgets.push(widget);
+    for (const widget of this.widgets) {
+      if (widget.dirty) {
+        widget.digest();
+        widget.dirty = false;
+      }
+    }
   }
 
   findWidget(wuid: string) {

@@ -4,6 +4,11 @@ export class Color {
   static WHITE = new Color(255, 255, 255);
   static DARK_GRAY = new Color(150, 150, 150);
 
+  static BUTTON = new Color(239, 240, 241);
+  static BUTTON_DARKER = new Color(164, 168, 172);
+  static BUTTON_DARKEST = Color.BLACK;
+  static BUTTON_LIGHTEST = Color.WHITE;
+
   constructor(
     public red: number,
     public green: number,

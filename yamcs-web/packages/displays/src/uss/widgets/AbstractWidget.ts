@@ -27,7 +27,7 @@ export abstract class AbstractWidget {
   parameterBindings: ParameterBinding[];
   computationBindings: ComputationBinding[];
 
-  // Marks if the models was updated since the last UI render
+  // Marks if the model was updated since the last UI render
   dirty = false;
 
   svg: SVGSVGElement;
@@ -181,6 +181,7 @@ export abstract class AbstractWidget {
   }
 
   onDelivery(pvals: ParameterValue[]) {
+    // NOP
   }
 
   protected onBindingUpdate(binding: DataSourceBinding, sample: DataSourceSample) {
