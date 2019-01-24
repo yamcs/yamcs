@@ -28,7 +28,7 @@ public class IssPacketPreprocessor implements PacketPreprocessor {
     TimeService timeService;
     EventProducer eventProducer;
     ErrorDetectionWordCalculator errorDetectionCalculator;
-    static Map<Integer, AtomicInteger> seqCounts = new HashMap<Integer, AtomicInteger>();
+    private Map<Integer, AtomicInteger> seqCounts = new HashMap<Integer, AtomicInteger>();
 
     public IssPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, null);
