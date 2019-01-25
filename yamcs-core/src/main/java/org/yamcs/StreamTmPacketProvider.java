@@ -109,7 +109,7 @@ public class StreamTmPacketProvider extends AbstractService implements TmPacketP
             byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
             PacketWithTime pwrt = new PacketWithTime(rectime, gentime, seqCount, packet);
             lastPacketTime = gentime;
-            tmProcessor.processPacket(pwrt);
+            tmProcessor.processPacket(pwrt, rootContainer);
         }
 
         @Override
