@@ -511,10 +511,10 @@ public class YamcsServer {
      * @return the newly created instance
      * @throws IOException
      */
-    private synchronized YamcsServerInstance createInstance(String name, YConfiguration conf)
+    public synchronized YamcsServerInstance createInstance(String name, YConfiguration conf)
             throws IOException {
-        YamcsServerInstance ysi = instances.get(name);
-        if (instances.containsKey("name")) {
+        
+        if (instances.containsKey(name)) {
             throw new IllegalArgumentException(String.format("There already exists an instance named '%s'", name));
         }
 
@@ -523,7 +523,7 @@ public class YamcsServer {
         } else {
             staticlog.debug("Loading offline instance '{}'", name);
         }
-        ysi = new YamcsServerInstance(name);
+        YamcsServerInstance ysi = new YamcsServerInstance(name);
         instances.put(name, ysi);
         if (conf != null) {
             ysi.init(conf);
