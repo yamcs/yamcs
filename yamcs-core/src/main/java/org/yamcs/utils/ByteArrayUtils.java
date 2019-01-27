@@ -132,8 +132,17 @@ public class ByteArrayUtils {
                ((a[offset+3] & 0xFF)     );
     }
     
+    public static byte[] encodeShort(int x, byte[] a, int offset) {
+        a[offset] = (byte)(x >> 8);
+        a[offset+1] = (byte)(x);
+                
+        return a;
+        
+    }
     public static int decodeShort(byte[] a, int offset) {
         return ((a[offset] & 0xFF) <<8 ) +
                ((a[offset+1] & 0xFF)     );
     }
+
+    
 }

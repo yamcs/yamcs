@@ -207,5 +207,9 @@ public class CCSDSPacket {
         }
     }
 
+    public byte[] toByteArray() {
+        return buffer.array();
+    }
+
    
 }

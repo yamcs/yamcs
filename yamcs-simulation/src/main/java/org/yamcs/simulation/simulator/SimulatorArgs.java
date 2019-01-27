@@ -12,7 +12,10 @@ public class SimulatorArgs {
     
     @Parameter(names = "--tm-port")
     public Integer tmPort = 10015;
-    
+   
+    @Parameter(names = "--tm2-port")
+    public Integer tm2Port = 10016;
+   
     @Parameter(names = "--los-port")
     public int losPort = 10115;
 

@@ -15,7 +15,7 @@ public interface PacketInputStream {
     * 
     * @return the next packet read from the input stream.
     * 
-    * @exception EOFException if this input stream reaches the end before reading eight bytes.
+    * @exception EOFException if this input stream reaches the end.
     * @exception IOException an I/O error has occurred
     */
    public byte[] readPacket() throws IOException;

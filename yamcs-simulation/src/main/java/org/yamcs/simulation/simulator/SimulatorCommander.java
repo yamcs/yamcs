@@ -122,6 +122,10 @@ public class SimulatorCommander extends ProcessRunner {
         services.add(tmLink);
         simulator.setTmLink(tmLink);
 
+        TmTcLink tm2Link = new TmTcLink("TM2", simulator, runtimeOptions.tm2Port);
+        services.add(tm2Link);
+        simulator.setTm2Link(tm2Link);
+
         TmTcLink losLink = new TmTcLink("LOS", simulator, runtimeOptions.losPort);
         services.add(losLink);
         simulator.setLosLink(losLink);

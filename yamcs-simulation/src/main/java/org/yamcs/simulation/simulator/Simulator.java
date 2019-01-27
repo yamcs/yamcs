@@ -7,9 +7,12 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.tctm.ErrorDetectionWordCalculator;
+import org.yamcs.tctm.ccsds.CrcCciitCalculator;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
@@ -23,6 +26,7 @@ public class Simulator extends AbstractExecutionThreadService {
     static int DEFAULT_MAX_LENGTH = 65542;
     int maxLength = DEFAULT_MAX_LENGTH;
     private TmTcLink tmLink;
+    private TmTcLink tm2Link;
     private TmTcLink losLink;
 
     private boolean los;
@@ -46,6 +50,8 @@ public class Simulator extends AbstractExecutionThreadService {
 
     private BatteryCommand batteryCommand;
     int tmCycle = 0;     
+    AtomicInteger tm2SeqCount = new AtomicInteger(0);
+    ErrorDetectionWordCalculator edwc2 = new CrcCciitCalculator();
     
     public Simulator(File dataDir, int tmPort, int tcPort, int losPort) {
         losRecorder = new LosRecorder(dataDir);
@@ -58,6 +64,7 @@ public class Simulator extends AbstractExecutionThreadService {
 
     @Override
     public void run() {
+        int tm2trigger = 0;
         while (isRunning()) {
             try {
                 while(!pendingCommands.isEmpty()) { 
@@ -70,7 +77,11 @@ public class Simulator extends AbstractExecutionThreadService {
 
             try {
                 sendTm();
-                Thread.sleep(4000 / 20);
+                if(tm2trigger==0) {
+                    sendTm2();
+                }
+                tm2trigger = (tm2trigger+1)%5;
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 log.warn("Send TM interrupted.", e);
                 Thread.currentThread().interrupt();
@@ -119,7 +130,13 @@ public class Simulator extends AbstractExecutionThreadService {
         if(isLOS()) {
            losRecorder.record(packet);
         } else {
-            tmLink.sendPacket(packet);
+            tmLink.sendPacket(packet.toByteArray());
+        }
+    }
+
+    protected void transmitTM2(byte[] packet) {
+        if(!isLOS()) {
+            tm2Link.sendPacket(packet);
         }
     }
 
@@ -136,13 +153,13 @@ public class Simulator extends AbstractExecutionThreadService {
             while (dataStream.available() > 0) {
                 CCSDSPacket packet = readLosPacket(dataStream);
                 if (packet != null) {
-                    losLink.sendPacket(packet);
+                    losLink.sendPacket(packet.toByteArray());
                 }
             }
 
             // add packet notifying that the file has been downloaded entirely
             CCSDSPacket confirmationPacket = buildLosTransmittedRecordingPacket(filename);
-            tmLink.sendPacket(confirmationPacket);
+            tmLink.sendPacket(confirmationPacket.toByteArray());
         } catch (IOException e) {
             e.printStackTrace();
         } 
@@ -160,7 +177,7 @@ public class Simulator extends AbstractExecutionThreadService {
         losRecorder.deleteDump(filename);
         // add packet notifying that the file has been deleted
         CCSDSPacket confirmationPacket = buildLosDeletedRecordingPacket(filename);
-        tmLink.sendPacket(confirmationPacket);
+        tmLink.sendPacket(confirmationPacket.toByteArray());
     }
 
     private static CCSDSPacket buildLosDeletedRecordingPacket(String deletedRecordName) {
@@ -257,6 +274,29 @@ public class Simulator extends AbstractExecutionThreadService {
         }
     }
 
+    /**
+     * creates and sends a dummy packet with the following structure
+     * <ul>
+     * <li>size (2 bytes)</li>
+     * <li>unix timestamp in millisec(8 bytes)</li>
+     * <li>seq count(4 bytes)</li>
+     * <li>uint32</li>
+     * <li>64 bit float</li>
+     * <li>checksum (2 bytes)</li>
+     * </ul>
+     */
+    private void sendTm2() {
+        int n = 28;
+        ByteBuffer bb = ByteBuffer.allocate(n);
+        bb.putShort((short)(n-2));
+        bb.putLong(System.currentTimeMillis());
+        int seq = tm2SeqCount.getAndIncrement();
+        bb.putInt(seq);
+        bb.putInt(seq+1000);
+        bb.putDouble(Math.sin(seq/10.0));
+        bb.putShort((short)edwc2.compute(bb.array(), 0, n-2));
+        transmitTM2(bb.array());
+    }
     /**
      * runs in the main TM thread, executes commands from the queue (if any)
      */
@@ -397,6 +437,9 @@ public class Simulator extends AbstractExecutionThreadService {
         this.tmLink = tmLink;
     }
 
+    public void setTm2Link(TmTcLink tm2Link) {
+        this.tm2Link = tm2Link;
+    }
     public void processTc(CCSDSPacket tc) {
         tmLink.ackPacketSend(ackPacket(tc, 0, 0));
         try {

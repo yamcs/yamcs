@@ -33,6 +33,34 @@ dataLinks:
       stream: tm_realtime
       host: localhost
       port: 10015
+  - name: tm2_realtime
+    class: org.yamcs.tctm.TcpTmDataLink
+    args:
+      stream: tm2_realtime
+      host: localhost
+      port: 10016
+      # the packet input stream is responsible for chunking the stream into packets (this is not required for UDP links where one datagram = one packet)
+      # for historical reasons the default packet input stream (used for the tm_realtime link above) is CcsdsPacketInputStream which chunks the packets based on 
+      # CCSDS Space Packet definition (i.e. the packet length is in the 5th and 6th bytes of the primary header)
+      # the GenericPacketInputStream can be used to read any kind of packet where the length is encoded in big endian somewhere at the beginning of the packet
+      packetInputStreamClassName: org.yamcs.tctm.GenericPacketInputStream
+      packetInputStreamArgs: 
+        maxPacketLength: 1000  #max size of the packet 
+        lengthFieldOffset: 0   # where to read the length from 
+        lengthFieldLength: 2   # the number of the bytes that contain the packet length
+          # adjust the length read from the offset defined above by this number of bytes. 
+          # we use 2 here because the simulator sets the length of the packet without the lenght itself
+        lengthAdjustment: 2
+        initialBytesToStrip: 0 # number of bytes to remove from the beginning
+
+      # the packet preprocessor gets the packets read by the packet input stream defined above and extracts a timestamp and a sequence count from it
+      # for historical reasons the default packet preprocessor (used for the tm_realtime link above) is the IssPacketPreprocessor that reads packets 
+      # according to the ISS (International Space Station) definition
+      # The generic packet preprocessor reads a timestamp in number of milliseconds since 1970 as well as a 4 bytes sequence count 
+      packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+      packetPreprocessorArgs:
+        timestampOffset: 2 #where to read the 8 bytes timestamp offset from
+        seqCountOffset: 10 #where to read the 4 bytes sequence count from
   - name: tm_dump
     class: org.yamcs.tctm.TcpTmDataLink
     args:
@@ -80,6 +108,8 @@ mdb:
 streamConfig:
   tm:
     - name: "tm_realtime"
+    - name: "tm2_realtime"
+      rootContainer: "/YSS/SIMULATOR/tm2_container"
     - name: "tm_dump"
   cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
   event: ["events_realtime", "events_dump"]

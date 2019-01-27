@@ -7,16 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.YamcsServer;
-import org.yamcs.api.EventProducer;
-import org.yamcs.api.EventProducerFactory;
 import org.yamcs.archive.PacketWithTime;
-import org.yamcs.tctm.ErrorDetectionWordCalculator;
-import org.yamcs.tctm.PacketPreprocessor;
-import org.yamcs.tctm.ccsds.CrcCciitCalculator;
+import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.ccsds.time.CcsdsTimeDecoder;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
-import org.yamcs.time.TimeService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
@@ -28,40 +22,36 @@ import static org.yamcs.tctm.pus.Constants.*;
  * 
  * The header structure is:
  *
- * <pre>
- * Primary header (specified by CCSDS 133.0-B-1)
- * 
- * packet version number (3 bits)
- * packet type (1 bit)
- * secondary header flag (1 bit)
- * application process ID (11 bits)
- * sequence flags (2 bits)
- * packet sequence count (14 bits)
+ * <p>Primary header (specified by CCSDS 133.0-B-1)
+ * <ul>
+ * <li>packet version number (3 bits)</li>
+ * <li>packet type (1 bit)</li>
+ * <li>secondary header flag (1 bit)</li>
+ * <li>application process ID (11 bits)</li>
+ * <li>sequence flags (2 bits)</li>
+ * <li>packet sequence count (14 bits)</li>
+ *</ul>
  *
- * Secondary header (PUS specific)
+ *<p>Secondary header (PUS specific)
+ *<ul> 
+ * <li>TM packet PUS version number (4 bits)</li>
+ * <li>spacecraft time reference status (4 bits)</li>
+ * <li>service type ID (8 bits)</li>
+ * <li>message subtype ID (8 bits)</li>
+ * <li>message type counter (16 bits)</li>
+ * <li>destination ID (16 bits)</li>
+ * <li>time (absolute time) variable</li>
+ * <li>spare optional</li>
+ * </ul>
  * 
- * TM packet PUS version number (4 bits)
- * spacecraft time reference status (4 bits)
- * service type ID (8 bits)
- * message subtype ID (8 bits)
- * message type counter (16 bits)
- * destination ID (16 bits)
- * time (absolute time) variable
- * spare optional
- * </pre>
- * 
- * In this class we are interested in the time and the sequence count.
+ * <p>In this class we are interested in the time and the sequence count.
  *
  * @author nm
  *
  */
-public class PusPacketPreprocessor implements PacketPreprocessor {
+public class PusPacketPreprocessor extends AbstractPacketPreprocessor {
     final static Logger log = LoggerFactory.getLogger(PusPacketPreprocessor.class);
 
-    EventProducer eventProducer;
-    ErrorDetectionWordCalculator errorDetectionCalculator;
-    TimeService timeService;
-    
     //where to look for time in the telemetry
     int pktTimeOffset;
 
@@ -79,31 +69,10 @@ public class PusPacketPreprocessor implements PacketPreprocessor {
     }
 
     public PusPacketPreprocessor(String yamcsInstance, Map<String, Object> config) {
-        timeService = YamcsServer.getTimeService(yamcsInstance);
-        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
-        eventProducer.setRepeatedEventReduction(true, 10000);
-        eventProducer.setSource(this.getClass().getSimpleName());
-
-        configureErrorDetection(config);
+        super(yamcsInstance, config);
         configureTimeDecoder(config);
-
     }
 
-    void configureErrorDetection(Map<String, Object> config) {
-        if (config != null && config.containsKey(Constants.CONFIG_KEY_ERROR_DETECTION)) {
-            Map<String, Object> c = YConfiguration.getMap(config, Constants.CONFIG_KEY_ERROR_DETECTION);
-            String type = YConfiguration.getString(c, "type");
-            if ("CRC-16-CCIIT".equalsIgnoreCase(type)) {
-                errorDetectionCalculator = new CrcCciitCalculator(c);
-            } else {
-                throw new ConfigurationException(
-                        "Unknown errorDetectionWord type '" + type + "': supported types are 16-SUM and CRC-16-CCIIT");
-            }
-        } else {
-            errorDetectionCalculator = new CrcCciitCalculator();
-        }
-        log.debug("Using error detection {}", errorDetectionCalculator);
-    }
 
     void configureTimeDecoder(Map<String, Object> config) {
         if (config != null && config.containsKey(Constants.CONFIG_KEY_TIME_ENCODING)) {

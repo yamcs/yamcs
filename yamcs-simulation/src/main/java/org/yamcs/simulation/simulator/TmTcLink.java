@@ -32,7 +32,7 @@ public class TmTcLink extends AbstractExecutionThreadService {
     private int maxTcLength = Simulator.DEFAULT_MAX_LENGTH;
     private int MIN_TC_LENGTH = 16;
 
-    private BlockingQueue<CCSDSPacket> queue = new LinkedBlockingQueue<>(100);
+    private BlockingQueue<byte[]> queue = new LinkedBlockingQueue<>(100);
 
     public TmTcLink(String name, Simulator simulator, int port) {
         this.name = name;
@@ -40,7 +40,7 @@ public class TmTcLink extends AbstractExecutionThreadService {
         this.port = port;
     }
 
-    public void sendPacket(CCSDSPacket packet) {
+    public void sendPacket(byte[] packet) {
         try {
             if (connected) {
                 queue.put(packet);
@@ -60,9 +60,9 @@ public class TmTcLink extends AbstractExecutionThreadService {
                 continue;
             }
             try {
-                CCSDSPacket p = queue.poll(1, TimeUnit.SECONDS);
+                byte[] p = queue.poll(1, TimeUnit.SECONDS);
                 if (p != null) {
-                    p.writeTo(socket.getOutputStream());
+                    socket.getOutputStream().write(p);
                 }
             } catch (IOException e1) {
                 log.error("Error while sending " + name + " packet", e1);
