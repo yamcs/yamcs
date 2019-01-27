@@ -14,6 +14,7 @@ import org.yamcs.archive.PacketWithTime;
  * It is assumed that the (generation time, sequence count) uniquely identify the packet. 
  * <br><br>
  * The implementing classes need to have a constructor with one or two arguments:
+ * <ul>
  * <li>MyPackerPreprocessor (String yamcsInstance), or</li>
  * <li>MyPackerPreprocessor (String yamcsInstance, Map&lt;String, Object&gt; args)</li>
  * </ul>

@@ -47,9 +47,7 @@ import org.yamcs.utils.CcsdsPacket;
  * <li>16-SUM (default): running sum on each two bytes - the packet has to contain an even number of bytes</li>
  * <li>CRC-16-CCIIT: CRC with the generator polynomial x^16 + x^12 + x^5 + 1</li>
  * </ul>
- * <pre>
- * 
- * </pre>
+ *
  * @author nm
  *
  */
