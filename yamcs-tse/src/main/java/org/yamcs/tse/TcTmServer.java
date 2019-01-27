@@ -3,6 +3,7 @@ package org.yamcs.tse;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -43,7 +44,7 @@ public class TcTmServer extends AbstractService {
     private static final Logger log = LoggerFactory.getLogger(TcTmServer.class);
 
     private static final int MAX_FRAME_LENGTH = 1024 * 1024; // 1 MB
-    private static final Pattern ARGUMENT_REFERENCE = Pattern.compile("([^<]*)<(.*?)>([^>]*)");
+    private static final Pattern ARGUMENT_REFERENCE = Pattern.compile("([^<]*)<(.*?)>([^<>]*)");
     private static final Pattern PARAMETER_REFERENCE = Pattern.compile("([^`]*)`(.*?)`([^`]*)");
 
     private InstrumentController instrumentController;
@@ -89,16 +90,21 @@ public class TcTmServer extends AbstractService {
     }
 
     public void processTseCommand(ChannelHandlerContext ctx, TseCommand command) {
-        InstrumentDriver device = instrumentController.getInstrument(command.getInstrument());
+        InstrumentDriver instrument = instrumentController.getInstrument(command.getInstrument());
         boolean expectResponse = command.hasResponse();
 
         String commandString = replaceArguments(command.getCommand(), command);
-        ListenableFuture<String> f = instrumentController.queueCommand(device, commandString, expectResponse);
+        ListenableFuture<List<String>> f = instrumentController.queueCommand(instrument, commandString, expectResponse);
         f.addListener(() -> {
             try {
-                String response = f.get();
+                List<String> responses = f.get();
                 if (expectResponse) {
-                    parseResponse(ctx, command, response);
+                    if (instrument.getCommandSeparation() == null) {
+                        parseResponse(ctx, command, responses.get(0));
+                    } else { // Compound command where distinct responses were sent
+                        String response = String.join(";", responses);
+                        parseResponse(ctx, command, response);
+                    }
                 }
             } catch (ExecutionException e) {
                 log.error("Failed to execute command", e.getCause());

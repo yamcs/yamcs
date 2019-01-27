@@ -1,5 +1,6 @@
 package org.yamcs.tse;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -106,12 +107,12 @@ public class TelnetServerHandler extends SimpleChannelInboundHandler<String> {
         // TODO should probably make this configurable
         boolean expectResponse = cmd.contains("?") || cmd.contains("!");
 
-        ListenableFuture<String> f = instrumentController.queueCommand(currentInstrument, cmd, expectResponse);
+        ListenableFuture<List<String>> f = instrumentController.queueCommand(currentInstrument, cmd, expectResponse);
         f.addListener(() -> {
             try {
-                String result = f.get();
-                if (result != null) {
-                    ctx.write(printHex ? StringConverter.arrayToHexString(result.getBytes()) : result);
+                List<String> responses = f.get();
+                for (String response : responses) {
+                    ctx.write(printHex ? StringConverter.arrayToHexString(response.getBytes()) : response);
                     ctx.writeAndFlush("\r\n");
                 }
             } catch (ExecutionException e) {

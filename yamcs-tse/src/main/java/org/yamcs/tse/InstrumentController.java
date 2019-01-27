@@ -37,7 +37,8 @@ public class InstrumentController extends AbstractService {
         notifyStarted();
     }
 
-    public ListenableFuture<String> queueCommand(InstrumentDriver instrument, String command, boolean expectResponse) {
+    public ListenableFuture<List<String>> queueCommand(InstrumentDriver instrument, String command,
+            boolean expectResponse) {
         ListeningExecutorService exec = executorsByName.get(instrument.getName());
         return exec.submit(() -> instrument.command(command, expectResponse));
     }
