@@ -111,7 +111,7 @@ message ArchiveRecord {
 }
 
 message IndexResult {
-  required string instance = 1;
+  optional string instance = 1 [deprecated=true];
   repeated ArchiveRecord records = 2;
   //type can be histogram or completenss
   optional string type = 3;

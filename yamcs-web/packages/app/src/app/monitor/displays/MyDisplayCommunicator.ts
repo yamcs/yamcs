@@ -1,5 +1,5 @@
 import { Router } from '@angular/router';
-import { NamedObjectId } from '@yamcs/client';
+import { Instance, NamedObjectId, StorageClient } from '@yamcs/client';
 import { DisplayCommunicator } from '@yamcs/displays';
 import { YamcsService } from '../../core/services/YamcsService';
 
@@ -7,6 +7,9 @@ import { YamcsService } from '../../core/services/YamcsService';
  * Resolves resources by fetching them via the Yamcs API.
  */
 export class MyDisplayCommunicator implements DisplayCommunicator {
+
+  private instance: Instance;
+  private storageClient: StorageClient;
 
   constructor(private yamcs: YamcsService, private router: Router) {
   }
@@ -21,11 +24,11 @@ export class MyDisplayCommunicator implements DisplayCommunicator {
   }
 
   getObjectURL(bucketName: string, objectName: string) {
-    return this.yamcs.getInstanceClient()!.getObjectURL(bucketName, objectName);
+    return this.storageClient.getObjectURL(this.instance.name, bucketName, objectName);
   }
 
   async getObject(bucketName: string, objectName: string) {
-    return await this.yamcs.getInstanceClient()!.getObject(bucketName, objectName);
+    return await this.storageClient.getObject(this.instance.name, bucketName, objectName);
   }
 
   async getXMLObject(bucketName: string, objectName: string) {

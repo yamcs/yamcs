@@ -15,6 +15,10 @@ public class ResponseBuilder {
         this.responseTermination = responseTermination;
     }
 
+    public void append(int b) {
+        buf.write(b);
+    }
+
     public void append(byte[] b, int off, int len) {
         buf.write(b, off, len);
     }
@@ -28,8 +32,11 @@ public class ResponseBuilder {
     public String parseCompleteResponse() {
         if (buf.size() > 0) {
             String result = new String(buf.toByteArray(), encoding);
-            if (responseTermination != null && result.endsWith(responseTermination)) {
-                return result.substring(0, result.length() - responseTermination.length());
+            if (responseTermination != null) {
+                int idx = result.indexOf(responseTermination);
+                if (idx != -1) {
+                    return result.substring(0, idx);
+                }
             }
         }
         return null;

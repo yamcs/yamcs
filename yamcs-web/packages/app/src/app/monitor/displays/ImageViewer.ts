@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Instance, StorageClient } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { Viewer } from './Viewer';
 
@@ -24,11 +25,16 @@ export class ImageViewer implements Viewer {
 
   url: string;
 
-  constructor(private yamcs: YamcsService) {
+  private instance: Instance;
+  private storageClient: StorageClient;
+
+  constructor(yamcs: YamcsService) {
+    this.instance = yamcs.getInstance();
+    this.storageClient = yamcs.createStorageClient();
   }
 
   public init(objectName: string) {
-    this.url = this.yamcs.getInstanceClient()!.getObjectURL('displays', objectName);
+    this.url = this.storageClient.getObjectURL(this.instance.name, 'displays', objectName);
     return Promise.resolve();
   }
 

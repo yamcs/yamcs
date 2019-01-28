@@ -56,11 +56,11 @@ export class SidebarEvent implements TimelineEvent {
 export class WheelViewportEvent implements TimelineEvent {
 
   readonly target: EventTarget | null;
-  readonly wheelDelta: number;
+  readonly deltaY: number;
 
   constructor(originalEvent: WheelEvent) {
     this.target = originalEvent.target;
-    this.wheelDelta = originalEvent.wheelDelta;
+    this.deltaY = originalEvent.deltaY;
   }
 }
 

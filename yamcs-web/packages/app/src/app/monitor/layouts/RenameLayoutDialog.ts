@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { Instance, StorageClient } from '@yamcs/client';
 import { YamcsService } from '../../core/services/YamcsService';
 import { FilenamePipe } from '../../shared/pipes/FilenamePipe';
 
@@ -11,11 +12,13 @@ import { FilenamePipe } from '../../shared/pipes/FilenamePipe';
 export class RenameLayoutDialog {
 
   filenameForm: FormGroup;
+  instance: Instance;
+  storageClient: StorageClient;
 
   constructor(
     private dialogRef: MatDialogRef<RenameLayoutDialog>,
     formBuilder: FormBuilder,
-    private yamcs: YamcsService,
+    yamcs: YamcsService,
     filenamePipe: FilenamePipe,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
@@ -23,6 +26,9 @@ export class RenameLayoutDialog {
     this.filenameForm = formBuilder.group({
       name: [filename, [Validators.required]],
     });
+
+    this.instance = yamcs.getInstance();
+    this.storageClient = yamcs.createStorageClient();
   }
 
   async rename() {
@@ -32,12 +38,12 @@ export class RenameLayoutDialog {
       prefix = this.data.name.substring(0, idx + 1);
     }
 
-    const response = await this.yamcs.getInstanceClient()!.getObject(this.data.bucket, this.data.name);
+    const response = await this.storageClient.getObject(this.instance.name, this.data.bucket, this.data.name);
     const blob = await response.blob();
 
     const newObjectName = (prefix || '') + this.filenameForm.get('name')!.value;
-    await this.yamcs.getInstanceClient()!.uploadObject(this.data.bucket, newObjectName, blob);
-    await this.yamcs.getInstanceClient()!.deleteObject(this.data.bucket, this.data.name);
+    await this.storageClient.uploadObject(this.instance.name, this.data.bucket, newObjectName, blob);
+    await this.storageClient.deleteObject(this.instance.name, this.data.bucket, this.data.name);
     this.dialogRef.close(newObjectName);
   }
 }

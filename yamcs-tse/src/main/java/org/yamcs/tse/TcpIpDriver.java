@@ -29,10 +29,15 @@ public class TcpIpDriver extends InstrumentDriver {
 
     private Socket socket;
 
+    private int lastResponseTerminationCharacter;
+
     public TcpIpDriver(String name, Map<String, Object> args) {
         super(name, args);
         host = YConfiguration.getString(args, "host");
         port = YConfiguration.getInt(args, "port");
+        if (responseTermination != null) {
+            lastResponseTerminationCharacter = responseTermination.charAt(responseTermination.length() - 1);
+        }
     }
 
     @Override
@@ -66,6 +71,19 @@ public class TcpIpDriver extends InstrumentDriver {
 
     @Override
     public void write(String cmd) throws IOException {
+        // Ensure no reads are pending before we write. Has the drawback
+        // of delaying the write. Should probably revise this code to do
+        // NIO, or use another thread.
+        InputStream socketIn = socket.getInputStream();
+        try {
+            byte[] buf = new byte[4096];
+            while (socketIn.read(buf) > 0) {
+                // Discard
+            }
+        } catch (SocketTimeoutException e) {
+            // Ignore
+        }
+
         OutputStream out = socket.getOutputStream();
         out.write((cmd + "\n").getBytes(encoding));
         out.flush();
@@ -77,16 +95,17 @@ public class TcpIpDriver extends InstrumentDriver {
         long timeoutTime = time + responseTimeout;
 
         ResponseBuilder responseBuilder = new ResponseBuilder(encoding, getResponseTermination());
-        byte[] buf = new byte[4096];
         InputStream socketIn = socket.getInputStream();
         while (System.currentTimeMillis() < timeoutTime) {
             try {
-                int n = socketIn.read(buf);
-                if (n > 0) {
-                    responseBuilder.append(buf, 0, n);
-                    String response = responseBuilder.parseCompleteResponse();
-                    if (response != null) {
-                        return response;
+                int b = socketIn.read();
+                if (b > 0) {
+                    responseBuilder.append(b);
+                    if (b == lastResponseTerminationCharacter) {
+                        String response = responseBuilder.parseCompleteResponse();
+                        if (response != null) {
+                            return response;
+                        }
                     }
                 }
             } catch (SocketTimeoutException e) {

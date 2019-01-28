@@ -2,7 +2,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialog, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
-import { Instance, ObjectInfo } from '@yamcs/client';
+import { Instance, ObjectInfo, StorageClient } from '@yamcs/client';
 import { AuthService } from '../../core/services/AuthService';
 import { YamcsService } from '../../core/services/YamcsService';
 import { CreateLayoutDialog } from './CreateLayoutDialog';
@@ -21,6 +21,8 @@ export class LayoutsPage {
   dataSource = new MatTableDataSource<ObjectInfo>([]);
   selection = new SelectionModel<ObjectInfo>(true, []);
 
+  private storageClient: StorageClient;
+
   constructor(
     title: Title,
     private yamcs: YamcsService,
@@ -29,12 +31,13 @@ export class LayoutsPage {
   ) {
     title.setTitle('Layouts - Yamcs');
     this.instance = yamcs.getInstance();
+    this.storageClient = yamcs.createStorageClient();
     this.loadLayouts();
   }
 
   private loadLayouts() {
     const username = this.authService.getUser()!.getUsername();
-    this.yamcs.getInstanceClient()!.listObjects(`user.${username}`, {
+    this.storageClient.listObjects(this.instance.name, `user.${username}`, {
       prefix: 'layouts',
     }).then(response => {
       this.dataSource.data = response.object || [];
@@ -72,7 +75,7 @@ export class LayoutsPage {
     if (confirm('Are you sure you want to delete the selected layouts?')) {
       const deletePromises = [];
       for (const object of this.selection.selected) {
-        const promise = this.yamcs.getInstanceClient()!.deleteObject(bucket, object.name);
+        const promise = this.storageClient.deleteObject(this.instance.name, bucket, object.name);
         deletePromises.push(promise);
       }
 

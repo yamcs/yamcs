@@ -260,6 +260,7 @@ public class DataType {
             case LONG:
             case TIMESTAMP:
                 return Long.decode(s);
+            case STRING:
             case ENUM:
                 return s;
             }

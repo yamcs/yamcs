@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Instance } from '@yamcs/client';
+import { Instance, StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import * as screenfull from 'screenfull';
 import { AuthService } from '../../core/services/AuthService';
@@ -28,6 +28,8 @@ export class LayoutPage implements OnDestroy {
   fullscreen$ = new BehaviorSubject<boolean>(false);
   fullscreenListener: () => void;
 
+  private storageClient: StorageClient;
+
   constructor(
     route: ActivatedRoute,
     private yamcs: YamcsService,
@@ -36,6 +38,8 @@ export class LayoutPage implements OnDestroy {
     private authService: AuthService,
   ) {
     this.instance = yamcs.getInstance();
+    this.storageClient = yamcs.createStorageClient();
+
     this.layoutName = route.snapshot.paramMap.get('name')!;
     title.setTitle(this.layoutName + ' - Yamcs');
 
@@ -45,7 +49,7 @@ export class LayoutPage implements OnDestroy {
     this.layoutState$ = new Promise<LayoutState>((resolve, reject) => {
       const username = authService.getUser()!.getUsername();
       const objectName = 'layouts/' + this.layoutName;
-      yamcs.getInstanceClient()!.getObject(`user.${username}` /* FIXME */, objectName).then(response => {
+      this.storageClient.getObject(this.instance.name, `user.${username}` /* FIXME */, objectName).then(response => {
         response.json().then(layoutState => resolve(layoutState)).catch(err => reject(err));
       }).catch(err => reject(err));
     });
@@ -58,7 +62,7 @@ export class LayoutPage implements OnDestroy {
     const objectValue = new Blob([JSON.stringify(state, undefined, 2)], {
       type: 'application/json',
     });
-    this.yamcs.getInstanceClient()!.uploadObject(`user.${username}`, objectName, objectValue).then(() => {
+    this.storageClient.uploadObject(this.instance.name, `user.${username}`, objectName, objectValue).then(() => {
       this.dirty$.next(false);
     });
   }
@@ -67,7 +71,7 @@ export class LayoutPage implements OnDestroy {
     if (confirm('Do you want to permanently delete this layout?')) {
       const username = this.authService.getUser()!.getUsername();
       const objectName = `layouts/${this.layoutName}`;
-      this.yamcs.getInstanceClient()!.deleteObject(`user.${username}`, objectName).then(() => {
+      this.storageClient.deleteObject(this.instance.name, `user.${username}`, objectName).then(() => {
         this.router.navigateByUrl(`/monitor/layouts?instance=${this.instance.name}`);
       });
     }

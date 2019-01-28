@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ComponentFactoryResolver, ComponentRef, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewRef } from '@angular/core';
-import { ListObjectsOptions } from '@yamcs/client';
+import { Instance, ListObjectsOptions, StorageClient } from '@yamcs/client';
 import { BehaviorSubject } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DisplayFolder } from './DisplayFolder';
@@ -37,6 +37,9 @@ export class Layout implements OnInit, OnDestroy {
   showNavigator$: BehaviorSubject<boolean>;
   currentFolder$ = new BehaviorSubject<DisplayFolder | null>(null);
 
+  private instance: Instance;
+  private storageClient: StorageClient;
+
   private componentsById = new Map<string, ComponentRef<Frame>>();
 
   private synchronizer: number;
@@ -49,11 +52,14 @@ export class Layout implements OnInit, OnDestroy {
   constructor(
     private yamcs: YamcsService,
     private componentFactoryResolver: ComponentFactoryResolver,
-  ) {}
+  ) {
+    this.instance = yamcs.getInstance();
+    this.storageClient = yamcs.createStorageClient();
+  }
 
   ngOnInit() {
     this.showNavigator$ = new BehaviorSubject<boolean>(this.startWithOpenedNavigator);
-    this.yamcs.getInstanceClient()!.listObjects('displays', {
+    this.storageClient.listObjects(this.instance.name, 'displays', {
       delimiter: '/',
     }).then(response => {
       this.currentFolder$.next({
@@ -99,7 +105,7 @@ export class Layout implements OnInit, OnDestroy {
     if (path) {
       options.prefix = path;
     }
-    this.yamcs.getInstanceClient()!.listObjects('displays', options).then(response => {
+    this.storageClient.listObjects(this.instance.name, 'displays', options).then(response => {
       this.currentFolder$.next({
         location: path,
         prefixes: response.prefix || [],

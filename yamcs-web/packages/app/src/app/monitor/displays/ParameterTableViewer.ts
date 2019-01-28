@@ -1,7 +1,7 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material';
-import { Instance } from '@yamcs/client';
+import { Instance, StorageClient } from '@yamcs/client';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
 import { SelectParameterDialog } from '../../mdb/parameters/SelectParameterDialog';
@@ -22,6 +22,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   selection = new SelectionModel<string>(true, []);
 
   instance: Instance;
+  private storageClient: StorageClient;
 
   public model$ = new BehaviorSubject<ParameterTable | null>(null);
   buffer = new ParameterTableBuffer();
@@ -37,12 +38,14 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
     private yamcs: YamcsService,
     private changeDetector: ChangeDetectorRef,
     private dialog: MatDialog,
-  ) {}
+  ) {
+    this.storageClient = yamcs.createStorageClient();
+  }
 
   public init(objectName: string) {
     this.objectName = objectName;
     this.instance = this.yamcs.getInstance();
-    this.yamcs.getInstanceClient()!.getObject('displays', objectName).then(response => {
+    this.storageClient.getObject(this.instance.name, 'displays', objectName).then(response => {
       response.text().then(text => {
         const model: ParameterTable = JSON.parse(text);
         this.model$.next(model);
@@ -193,7 +196,7 @@ export class ParameterTableViewer implements Viewer, OnDestroy {
   save() {
     const model = this.model$.value!;
     const b = new Blob([JSON.stringify(model, undefined, 2)]);
-    return this.yamcs.getInstanceClient()!.uploadObject('displays', this.objectName, b).then(() => {
+    return this.storageClient.uploadObject(this.instance.name, 'displays', this.objectName, b).then(() => {
       this.hasUnsavedChanges$.next(false);
     });
   }

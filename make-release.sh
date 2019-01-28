@@ -88,7 +88,7 @@ cd $clonedir
 
 if [ $yamcs -eq 1 -a $buildweb -eq 1 ]; then
     cd yamcs-web
-    yarn install
+    yarn install --network-timeout 100000
     yarn build
     rm -rf `find . -maxdepth 3 -name node_modules`
     cd ..

@@ -390,11 +390,11 @@ public abstract class DataViewer extends NavigatorItem implements ActionListener
     @Override
     public void receiveArchiveRecords(Yamcs.IndexResult ir) {
         log.trace("receiveArchiveRecords. EDT? {} (should be false)", EventQueue.isDispatchThread());
-        if ("completeness".equals(ir.getType())) {
+        if ("COMPLETENESS".equals(ir.getType())) {
             if (dataView.indexBoxes.containsKey("completeness")) {
                 dataView.indexBoxes.get("completeness").receiveArchiveRecords(ir.getRecordsList());
             }
-        } else if ("histogram".equals(ir.getType())) {
+        } else if ("HISTOGRAM".equals(ir.getType())) {
             String tableName = ir.getTableName();
             if (dataView.indexBoxes.containsKey(tableName)) {
                 dataView.indexBoxes.get(tableName).receiveArchiveRecords(ir.getRecordsList());
