@@ -61,6 +61,8 @@ dataLinks:
       packetPreprocessorArgs:
         timestampOffset: 2 #where to read the 8 bytes timestamp offset from
         seqCountOffset: 10 #where to read the 4 bytes sequence count from
+        errorDetection: #last two bytes are used for the error detection
+                type: "CRC-16-CCIIT" 
   - name: tm_dump
     class: org.yamcs.tctm.TcpTmDataLink
     args:
