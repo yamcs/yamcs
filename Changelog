@@ -1,3 +1,8 @@
+Version 4.8.0 released 28-January-2019
+- allow to create instances on the fly from templates
+- added a generic packet input stream (for spliting tcp stream into packets)
+- added a generic packet preprocessor at reads timestamps in UNIX millisec format and sequence count from user defined offsets
+
 Version 4.7.3 released 26-November-2018
 - allow to online (i.e. without modifying the MDB) change calibrations and alarms for parameters part of a running processor
 - various bugfixes
