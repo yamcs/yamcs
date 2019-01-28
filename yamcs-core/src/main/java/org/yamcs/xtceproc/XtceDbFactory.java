@@ -503,6 +503,8 @@ public class XtceDbFactory {
             type = "org.yamcs.xtce.XtceLoader";
         } else if ("sheet".equals(type)) {
             type = "org.yamcs.xtce.SpreadsheetLoader";
+        } else if ("emptyNode".equalsIgnoreCase(type)) {
+            type = "org.yamcs.xtce.EmptyNodeLoader";
         }
         try {
             l = YObjectLoader.loadObject(type, args);
