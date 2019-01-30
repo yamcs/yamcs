@@ -23,6 +23,7 @@
   "rulesDirectory": [],
   "linterOptions": {
     "exclude": [
+      "src/opi/formulas/parser.ts",
       "src/uss/expressions/parser.ts"
     ]
   }

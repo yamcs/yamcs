@@ -1,0 +1,5 @@
+Test this with:
+
+    ts-node -O '{"module":"commonjs"}' src/opi/formulas/test.ts
+
+You may need to tweak the tsconfig a bit.

@@ -15,7 +15,8 @@
     "clean": "rm -rf dist/",
     "build": "tsc --module commonjs && rollup -c rollup.config.ts",
     "watch": "rollup -c rollup.config.ts -w",
-    "pegjs": "cd src/uss/expressions && pegjs --plugin ts-pegjs/src/tspegjs -o parser.ts grammar.pegjs"
+    "opi-pegjs": "cd src/opi/formulas && pegjs --plugin ts-pegjs/src/tspegjs -o parser.ts grammar.pegjs",
+    "uss-pegjs": "cd src/uss/expressions && pegjs --plugin ts-pegjs/src/tspegjs -o parser.ts grammar.pegjs"
   },
   "dependencies": {
     "@yamcs/client": "^1.0.0",
