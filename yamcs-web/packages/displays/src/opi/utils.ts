@@ -1,4 +1,5 @@
 import { Value } from '@yamcs/client';
+import { Box } from './Box';
 import { Color } from './Color';
 import { Font } from './Font';
 
@@ -229,4 +230,8 @@ export function unwrapParameterValue(value: Value): any {
     case 'STRING':
       return value.stringValue;
   }
+}
+
+export function outline(x: number, y: number, width: number, height: number, strokeWidth: number) {
+  return new Box(x, y, width, height).getOutline(strokeWidth);
 }

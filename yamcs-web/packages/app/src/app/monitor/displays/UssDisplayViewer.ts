@@ -1,34 +1,12 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Display, NavigationHandler, OpenDisplayCommandOptions, UssDisplay } from '@yamcs/displays';
+import { Display, NavigationHandler, UssDisplay } from '@yamcs/displays';
 import { Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
+import { DefaultNavigationHandler } from './DefaultNavigationHandler';
 import { MyDisplayCommunicator } from './MyDisplayCommunicator';
 import { Viewer } from './Viewer';
 
-/**
- * Simple nav handler that relocates the browser to the standalone display pages.
- */
-export class DefaultNavigationHandler implements NavigationHandler {
-
-  constructor(
-    private objectName: string,
-    private instance: string,
-    private router: Router,
-  ) {}
-
-  getBaseId() {
-    return this.objectName;
-  }
-
-  openDisplay(options: OpenDisplayCommandOptions) {
-    this.router.navigateByUrl(`/monitor/displays/files/${options.target}?instance=${this.instance}`);
-  }
-
-  closeDisplay() {
-    this.router.navigateByUrl(`/monitor/displays/browse?instance=${this.instance}`);
-  }
-}
 
 @Component({
   selector: 'app-uss-display-viewer',

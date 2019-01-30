@@ -24,6 +24,10 @@ export class Tag {
     this.attributes[name] = value;
   }
 
+  asMask(id: string) {
+    return new Mask({ id }).addChild(this);
+  }
+
   /**
    * Recursively transforms this tag and its children into DOM elements
    */
@@ -165,6 +169,12 @@ export class Line extends Tag {
 export class Marker extends Tag {
   constructor(attributes?: {}, innerText?: string) {
     super('marker', attributes, innerText);
+  }
+}
+
+export class Mask extends Tag {
+  constructor(attributes?: {}, innerText?: string) {
+    super('mask', attributes, innerText);
   }
 }
 

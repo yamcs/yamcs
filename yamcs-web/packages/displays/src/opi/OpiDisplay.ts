@@ -20,7 +20,24 @@ import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
 import { RoundedRectangle } from './widgets/RoundedRectangle';
 import { TabbedContainer } from './widgets/TabbedContainer';
+import { TextInput } from './widgets/TextInput';
 import { TextUpdate } from './widgets/TextUpdate';
+
+export const TYPE_ACTION_BUTTON = 'org.csstudio.opibuilder.widgets.ActionButton';
+export const TYPE_ARC = 'org.csstudio.opibuilder.widgets.arc';
+export const TYPE_ELLIPSE = 'org.csstudio.opibuilder.widgets.Ellipse';
+export const TYPE_GROUPING_CONTAINER = 'org.csstudio.opibuilder.widgets.groupingContainer';
+export const TYPE_IMAGE = 'org.csstudio.opibuilder.widgets.Image';
+export const TYPE_LABEL = 'org.csstudio.opibuilder.widgets.Label';
+export const TYPE_LED = 'org.csstudio.opibuilder.widgets.LED';
+export const TYPE_LINKING_CONTAINER = 'org.csstudio.opibuilder.widgets.linkingContainer';
+export const TYPE_POLYGON = 'org.csstudio.opibuilder.widgets.polygon';
+export const TYPE_POLYLINE = 'org.csstudio.opibuilder.widgets.polyline';
+export const TYPE_RECTANGLE = 'org.csstudio.opibuilder.widgets.Rectangle';
+export const TYPE_ROUNDED_RECTANGLE = 'org.csstudio.opibuilder.widgets.RoundedRectangle';
+export const TYPE_TABBED_CONTAINER = 'org.csstudio.opibuilder.widgets.tab';
+export const TYPE_TEXT_INPUT = 'org.csstudio.opibuilder.widgets.TextInput';
+export const TYPE_TEXT_UPDATE = 'org.csstudio.opibuilder.widgets.TextUpdate';
 
 export class OpiDisplay implements Display {
 
@@ -55,7 +72,23 @@ export class OpiDisplay implements Display {
     targetEl.appendChild(this.measurerSvg);
   }
 
-  parseAndDraw(id: string, grid = true) {
+  async parseAndDraw(id: string, grid = true) {
+    // Preload the Liberation font so that font metrics are correctly calculated.
+    // Probably can be done without external library in about 5 years from now.
+    // Follow browser support of this spec: https://www.w3.org/TR/css-font-loading-3/
+    const fontFace = 'Liberation Sans';
+    try { // Times out after 3 seconds
+      await Promise.all([
+        new FontFaceObserver(fontFace, { weight: 'normal', style: 'normal' }).load(),
+        new FontFaceObserver(fontFace, { weight: 'normal', style: 'italic' }).load(),
+        new FontFaceObserver(fontFace, { weight: 'bold', style: 'normal' }).load(),
+        new FontFaceObserver(fontFace, { weight: 'bold', style: 'italic' }).load(),
+      ]);
+    } catch {
+      // tslint:disable-next-line:no-console
+      console.warn(`Failed to load all font variants for '${fontFace}'. Font metric calculations may not be accurate.`);
+    }
+
     return this.displayCommunicator.getXMLObject('displays', id).then(doc => {
       const displayEl = doc.getElementsByTagName('display')[0];
 
@@ -161,33 +194,35 @@ export class OpiDisplay implements Display {
   createWidget(node: Element): AbstractWidget | undefined {
     const typeId = utils.parseStringAttribute(node, 'typeId');
     switch (typeId) {
-      case 'org.csstudio.opibuilder.widgets.ActionButton':
+      case TYPE_ACTION_BUTTON:
         return new ActionButton(node, this);
-      case 'org.csstudio.opibuilder.widgets.arc':
+      case TYPE_ARC:
         return new Arc(node, this);
-      case 'org.csstudio.opibuilder.widgets.Ellipse':
+      case TYPE_ELLIPSE:
         return new Ellipse(node, this);
-      case 'org.csstudio.opibuilder.widgets.groupingContainer':
+      case TYPE_GROUPING_CONTAINER:
         return new GroupingContainer(node, this);
-      case 'org.csstudio.opibuilder.widgets.Image':
+      case TYPE_IMAGE:
         return new Image(node, this);
-      case 'org.csstudio.opibuilder.widgets.Label':
+      case TYPE_LABEL:
         return new Label(node, this);
-      case 'org.csstudio.opibuilder.widgets.LED':
+      case TYPE_LED:
         return new LED(node, this);
-      case 'org.csstudio.opibuilder.widgets.linkingContainer':
+      case TYPE_LINKING_CONTAINER:
         return new LinkingContainer(node, this);
-      case 'org.csstudio.opibuilder.widgets.polygon':
+      case TYPE_POLYGON:
         return new Polygon(node, this);
-      case 'org.csstudio.opibuilder.widgets.polyline':
+      case TYPE_POLYLINE:
         return new Polyline(node, this);
-      case 'org.csstudio.opibuilder.widgets.Rectangle':
+      case TYPE_RECTANGLE:
         return new Rectangle(node, this);
-      case 'org.csstudio.opibuilder.widgets.RoundedRectangle':
+      case TYPE_ROUNDED_RECTANGLE:
         return new RoundedRectangle(node, this);
-      case 'org.csstudio.opibuilder.widgets.tab':
+      case TYPE_TABBED_CONTAINER:
         return new TabbedContainer(node, this);
-      case 'org.csstudio.opibuilder.widgets.TextUpdate':
+      case TYPE_TEXT_INPUT:
+        return new TextInput(node, this);
+      case TYPE_TEXT_UPDATE:
         return new TextUpdate(node, this);
       default:
         // tslint:disable-next-line:no-console

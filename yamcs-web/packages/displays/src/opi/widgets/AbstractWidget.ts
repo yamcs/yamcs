@@ -1,8 +1,9 @@
 import { ParameterValue } from '@yamcs/client';
-import { G, Line, Rect, Tag, Text } from '../../tags';
+import { G, Line, Mask, Rect, Tag, Text } from '../../tags';
+import { Action, OpenDisplayAction } from '../actions';
 import { Color } from '../Color';
 import { Font } from '../Font';
-import { OpiDisplay } from '../OpiDisplay';
+import { OpiDisplay, TYPE_RECTANGLE, TYPE_ROUNDED_RECTANGLE } from '../OpiDisplay';
 import * as utils from '../utils';
 
 let widgetSequence = 0;
@@ -36,7 +37,8 @@ export abstract class AbstractWidget {
   width: number;
   height: number;
 
-  widgetType: string;
+  typeId: string;
+  type: string;
   name: string;
   text: string;
 
@@ -51,6 +53,8 @@ export abstract class AbstractWidget {
   transparent: boolean;
   visible: boolean;
 
+  actions: Action[] = [];
+
   svg: SVGSVGElement;
   childSequence = 0;
 
@@ -63,7 +67,8 @@ export abstract class AbstractWidget {
     this.sequenceNumber = widgetSequence++;
     this.wuid = utils.parseStringChild(node, 'wuid');
     this.id = `w${this.sequenceNumber}`;
-    this.widgetType = utils.parseStringChild(node, 'widget_type');
+    this.typeId = utils.parseStringAttribute(node, 'typeId');
+    this.type = utils.parseStringChild(node, 'widget_type');
     this.name = utils.parseStringChild(node, 'name');
 
     this.holderX = utils.parseIntChild(node, 'x');
@@ -71,11 +76,11 @@ export abstract class AbstractWidget {
     this.holderWidth = utils.parseIntChild(node, 'width');
     this.holderHeight = utils.parseIntChild(node, 'height');
 
-    const borderColorNode = utils.findChild(this.node, 'border_color');
+    const borderColorNode = utils.findChild(node, 'border_color');
     this.borderColor = utils.parseColorChild(borderColorNode);
-    this.borderWidth = utils.parseIntChild(this.node, 'border_width');
-    this.borderStyle = utils.parseIntChild(this.node, 'border_style');
-    this.borderAlarmSensitive = utils.parseBooleanChild(this.node, 'border_alarm_sensitive', false);
+    this.borderWidth = utils.parseIntChild(node, 'border_width');
+    this.borderStyle = utils.parseIntChild(node, 'border_style');
+    this.borderAlarmSensitive = utils.parseBooleanChild(node, 'border_alarm_sensitive', false);
 
     this.insets = [0, 0, 0, 0];
     switch (this.borderStyle) {
@@ -112,7 +117,8 @@ export abstract class AbstractWidget {
         this.insets = [16, 16, 16, 16];
         break;
       case 14: // Round Rectangle Background
-        this.insets = [this.borderWidth, this.borderWidth, this.borderWidth, this.borderWidth];
+        const i = this.borderWidth * 2;
+        this.insets = [i, i, i, i];
         break;
     }
 
@@ -125,24 +131,44 @@ export abstract class AbstractWidget {
     this.text = utils.parseStringChild(node, 'text', '');
     this.text = this.text.split(' ').join('\u00a0'); // Preserve whitespace
 
-    const backgroundColorNode = utils.findChild(node, 'background_color');
-    this.backgroundColor = utils.parseColorChild(backgroundColorNode);
+    if (utils.hasChild(node, 'background_color')) {
+      const backgroundColorNode = utils.findChild(node, 'background_color');
+      this.backgroundColor = utils.parseColorChild(backgroundColorNode);
+    }
 
     const foregroundColorNode = utils.findChild(node, 'foreground_color');
     this.foregroundColor = utils.parseColorChild(foregroundColorNode);
 
-    this.transparent = utils.parseBooleanChild(this.node, 'transparent', false);
-    this.visible = utils.parseBooleanChild(this.node, 'visible');
+    this.transparent = utils.parseBooleanChild(node, 'transparent', false);
+    this.visible = utils.parseBooleanChild(node, 'visible');
 
     if (utils.hasChild(node, 'pv_name')) {
       this.pvName = utils.parseStringChild(node, 'pv_name');
+    }
+
+    if (utils.hasChild(node, 'actions')) {
+      const actionsNode = utils.findChild(node, 'actions');
+      for (const actionNode of utils.findChildren(actionsNode, 'action')) {
+        const actionType = utils.parseStringAttribute(actionNode, 'type');
+        if (actionType === 'OPEN_DISPLAY') {
+          const action: OpenDisplayAction = {
+            type: actionType,
+            path: utils.parseStringChild(actionNode, 'path'),
+            mode: utils.parseIntChild(actionNode, 'mode'),
+          };
+          this.actions.push(action);
+        } else {
+          console.warn(`Unsupported action type ${actionType}`);
+          this.actions.push({ type: actionType });
+        }
+      }
     }
   }
 
   drawWidget() {
     const g = new G({
       id: this.id,
-      class: this.widgetType.replace(' ', '-').toLowerCase(),
+      class: this.type.replace(' ', '-').toLowerCase(),
       'data-name': this.name,
     });
 
@@ -329,7 +355,7 @@ export abstract class AbstractWidget {
         }));
       }
       const fm = this.getFontMetrics(this.name, Font.ARIAL_11);
-      g.addChild(new Tag('mask', {
+      g.addChild(new Mask({
         id: `${this.id}-hide-title-stroke`,
       }).addChild(new Rect({
         x: this.holderX,
@@ -366,13 +392,18 @@ export abstract class AbstractWidget {
         fill: this.borderColor,
       }, this.name));
     } else if (this.borderStyle === 14) { // Round Rectangle Background
+      let fillOpacity = 1;
+      if (this.typeId === TYPE_RECTANGLE || this.typeId === TYPE_ROUNDED_RECTANGLE) {
+        fillOpacity = 0; // Then nested widget appears to decide
+      }
       g.addChild(new Rect({
         'pointer-events': 'none',
         fill: this.backgroundColor,
         stroke: this.borderColor,
         'stroke-width': this.borderWidth,
-        rx: 8,
-        ry: 8,
+        'fill-opacity': fillOpacity,
+        rx: 4,
+        ry: 4,
       }).withBorderBox(this.holderX, this.holderY, this.holderWidth, this.holderHeight));
     } else {
       console.warn(`Unsupported border style: ${this.borderStyle}`);

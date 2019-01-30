@@ -27,6 +27,7 @@
             "styles": [
               "src/styles/material-theme.scss",
               "src/styles/styles.css",
+              "../displays/src/opi/fonts/stylesheet.css",
               "../displays/src/uss/fonts/stylesheet.css",
               "node_modules/dygraphs/dist/dygraph.css",
               "node_modules/material-design-icons/iconfont/material-icons.css",

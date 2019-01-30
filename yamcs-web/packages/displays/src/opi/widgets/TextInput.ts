@@ -4,11 +4,10 @@ import { OpiDisplay } from '../OpiDisplay';
 import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 
-export class Label extends AbstractWidget {
+export class TextInput extends AbstractWidget {
 
   private font: Font;
   private horizAlignment: number;
-  private vertAlignment: number;
 
   constructor(node: Element, display: OpiDisplay) {
     super(node, display);
@@ -16,7 +15,6 @@ export class Label extends AbstractWidget {
     this.font = utils.parseFontNode(fontNode);
 
     this.horizAlignment = utils.parseIntChild(this.node, 'horizontal_alignment');
-    this.vertAlignment = utils.parseIntChild(this.node, 'vertical_alignment');
   }
 
   draw(g: G) {
@@ -76,15 +74,9 @@ export class Label extends AbstractWidget {
       x = this.x + (this.width - bbox.width);
     }
 
-    let y = this.y;
-    if (this.vertAlignment === 0) { // TOP
-      y = this.y;
-    } else if (this.vertAlignment === 1) { // MIDDLE
-      y = this.y + ((this.height - bbox.height) / 2);
-    } else if (this.vertAlignment === 2) { // BOTTOM
-      y = this.y + (this.height - bbox.height);
-    }
+    console.log('got text', this.text, 'horiz', this.horizAlignment, 'x from', this.x, 'to', x, gEl);
 
-    gEl.setAttribute('transform', `translate(${x} ${y})`);
+    const y = this.y + ((this.height - bbox.height) / 2);
+    gEl.setAttribute('transform', `translate(20 20)`);
   }
 }
