@@ -1,5 +1,5 @@
 import { Value } from '@yamcs/client';
-import { Box } from './Box';
+import { Bounds } from './Bounds';
 import { Color } from './Color';
 import { Font } from './Font';
 
@@ -232,6 +232,14 @@ export function unwrapParameterValue(value: Value): any {
   }
 }
 
-export function outline(x: number, y: number, width: number, height: number, strokeWidth: number) {
-  return new Box(x, y, width, height).getOutline(strokeWidth);
+export function outline(x: number, y: number, width: number, height: number, strokeWidth: number): Bounds {
+  const inset = Math.max(1, strokeWidth) / 2.0;
+  const inset1 = Math.floor(inset);
+  const inset2 = Math.ceil(inset);
+  return {
+    x: x + inset1,
+    y: y + inset1,
+    width: width - inset1 - inset2,
+    height: height - inset1 - inset2,
+  };
 }

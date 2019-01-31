@@ -1,14 +1,14 @@
-import { ParameterValue } from '@yamcs/client';
 import { G, Rect, Text } from '../../tags';
 import { Font } from '../Font';
 import { OpiDisplay } from '../OpiDisplay';
+import { PV } from '../PV';
 import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 
 export class TextUpdate extends AbstractWidget {
 
   private font: Font;
-  private pval: ParameterValue;
+  private pv: PV;
 
   private textEl: Element;
 
@@ -80,14 +80,13 @@ export class TextUpdate extends AbstractWidget {
     this.textEl = this.svg.getElementById(`${this.id}-text`);
   }
 
-  onParameterValue(pval: ParameterValue) {
-    this.pval = pval;
+  onPV(pv: PV) {
+    this.pv = pv;
   }
 
   digest() {
-    if (this.pval) {
-      const value = utils.unwrapParameterValue(this.pval.engValue);
-      this.textEl.textContent = value;
+    if (this.pv) {
+      this.textEl.textContent = this.pv.value;
     }
   }
 }

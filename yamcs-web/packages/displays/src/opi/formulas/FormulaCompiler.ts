@@ -7,7 +7,7 @@ export class FormulaCompiler {
   compile(formulaString: string) {
     const formula = parse(formulaString, {}) as ast.Formula;
     // console.log(JSON.stringify(formula, null, 2));
-    return new CompiledFormula(formula);
+    return new CompiledFormula(formulaString, formula);
   }
 
   execute(formulaString: string) {

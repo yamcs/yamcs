@@ -105,20 +105,16 @@ export class LED extends AbstractWidget {
   private drawCircle3d(g: G) {
     this.display.defs.addChild(new LinearGradient({
       id: `${this.id}-r-b`,
-      x1: '0%',
-      y1: '0%',
-      x2: '100%',
-      y2: '100%',
+      x1: '0%', y1: '0%',
+      x2: '100%', y2: '100%',
     }).addChild(
       new Stop({ offset: '0%', 'stop-color': this.bulbBorderColor, 'stop-opacity': '1' }),
       new Stop({ offset: '100%', 'stop-color': this.bulbBorderColor, 'stop-opacity': '0', }),
     ));
     this.display.defs.addChild(new LinearGradient({
       id: `${this.id}-r`,
-      x1: '0%',
-      y1: '0%',
-      x2: '100%',
-      y2: '100%',
+      x1: '0%', y1: '0%',
+      x2: '100%', y2: '100%',
     }).addChild(
       new Stop({ offset: '0%', 'stop-color': Color.WHITE, 'stop-opacity': '1' }),
       new Stop({ offset: '100%', 'stop-color': this.bulbBorderColor, 'stop-opacity': '0', }),
@@ -169,50 +165,40 @@ export class LED extends AbstractWidget {
   private drawSquare3d(g: G) {
     this.display.defs.addChild(new LinearGradient({
       id: `${this.id}-sq-l`,
-      x1: '0%',
-      y1: '0%',
-      x2: '100%',
-      y2: '0%',
+      x1: '0%', y1: '0%',
+      x2: '100%', y2: '0%',
     }).addChild(
       new Stop({ offset: '0%', 'stop-color': Color.BLACK, 'stop-opacity': '0.078' }),
       new Stop({ offset: '100%', 'stop-color': Color.BLACK, 'stop-opacity': '0.39', }),
     ));
     this.display.defs.addChild(new LinearGradient({
       id: `${this.id}-sq-t`,
-      x1: '0%',
-      y1: '0%',
-      x2: '0%',
-      y2: '100%',
+      x1: '0%', y1: '0%',
+      x2: '0%', y2: '100%',
     }).addChild(
       new Stop({ offset: '0%', 'stop-color': Color.BLACK, 'stop-opacity': '0.078' }),
       new Stop({ offset: '100%', 'stop-color': Color.BLACK, 'stop-opacity': '0.39', }),
     ));
     this.display.defs.addChild(new LinearGradient({
       id: `${this.id}-sq-r`,
-      x1: '0%',
-      y1: '0%',
-      x2: '100%',
-      y2: '0%',
+      x1: '0%', y1: '0%',
+      x2: '100%', y2: '0%',
     }).addChild(
       new Stop({ offset: '0%', 'stop-color': Color.WHITE, 'stop-opacity': '0.078' }),
       new Stop({ offset: '100%', 'stop-color': Color.WHITE, 'stop-opacity': '0.39', }),
     ));
     this.display.defs.addChild(new LinearGradient({
       id: `${this.id}-sq-b`,
-      x1: '0%',
-      y1: '0%',
-      x2: '0%',
-      y2: '100%',
+      x1: '0%', y1: '0%',
+      x2: '0%', y2: '100%',
     }).addChild(
       new Stop({ offset: '0%', 'stop-color': Color.WHITE, 'stop-opacity': '0.078' }),
       new Stop({ offset: '100%', 'stop-color': Color.WHITE, 'stop-opacity': '0.39', }),
     ));
     this.display.defs.addChild(new LinearGradient({
       id: `${this.id}-sq`,
-      x1: '0%',
-      y1: '0%',
-      x2: '100%',
-      y2: '100%',
+      x1: '0%', y1: '0%',
+      x2: '100%', y2: '100%',
     }).addChild(
       new Stop({ offset: '0%', 'stop-color': Color.WHITE, 'stop-opacity': '0.784' }),
       new Stop({ offset: '100%', 'stop-color': this.bulbColor, 'stop-opacity': '0', }),

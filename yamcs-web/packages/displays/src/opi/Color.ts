@@ -3,6 +3,7 @@ export class Color {
   static BLACK = new Color(0, 0, 0);
   static WHITE = new Color(255, 255, 255);
   static DARK_GRAY = new Color(150, 150, 150);
+  static GRAY = new Color(200, 200, 200);
 
   static BUTTON = new Color(239, 240, 241);
   static BUTTON_DARKER = new Color(164, 168, 172);

@@ -11,7 +11,7 @@ export class CompiledFormula {
 
   private parameterValues = new Map<string, DataSourceStatus>();
 
-  constructor(private formula: ast.Formula) {
+  constructor(public pvName: string, private formula: ast.Formula) {
   }
 
   updateDataSource(parameter: string, status: DataSourceStatus) {

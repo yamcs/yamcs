@@ -4,10 +4,13 @@ import { DisplayCommunicator } from '../DisplayCommunicator';
 import { NavigationHandler } from '../NavigationHandler';
 import { Defs, Pattern, Rect, Svg, Tag } from '../tags';
 import { Color } from './Color';
+import { CompiledFormula } from './formulas/CompiledFormula';
+import { FormulaCompiler } from './formulas/FormulaCompiler';
 import * as utils from './utils';
 import { AbstractWidget } from './widgets/AbstractWidget';
 import { ActionButton } from './widgets/ActionButton';
 import { Arc } from './widgets/Arc';
+import { BooleanSwitch } from './widgets/BooleanSwitch';
 import { Connection } from './widgets/Connection';
 import { Ellipse } from './widgets/Ellipse';
 import { GroupingContainer } from './widgets/GroupingContainer';
@@ -25,6 +28,7 @@ import { TextUpdate } from './widgets/TextUpdate';
 
 export const TYPE_ACTION_BUTTON = 'org.csstudio.opibuilder.widgets.ActionButton';
 export const TYPE_ARC = 'org.csstudio.opibuilder.widgets.arc';
+export const TYPE_BOOLEAN_SWITCH = 'org.csstudio.opibuilder.widgets.BoolSwitch';
 export const TYPE_ELLIPSE = 'org.csstudio.opibuilder.widgets.Ellipse';
 export const TYPE_GROUPING_CONTAINER = 'org.csstudio.opibuilder.widgets.groupingContainer';
 export const TYPE_IMAGE = 'org.csstudio.opibuilder.widgets.Image';
@@ -44,6 +48,9 @@ export class OpiDisplay implements Display {
   private widgets: AbstractWidget[] = [];
   private qualifiedNames = new Set<string>();
   private widgetsByTrigger = new Map<string, AbstractWidget[]>();
+
+  private formulas = new Map<string, CompiledFormula>();
+  private formulasByTrigger = new Map<string, CompiledFormula[]>();
 
   title: string;
   width: number;
@@ -198,6 +205,8 @@ export class OpiDisplay implements Display {
         return new ActionButton(node, this);
       case TYPE_ARC:
         return new Arc(node, this);
+      case TYPE_BOOLEAN_SWITCH:
+        return new BooleanSwitch(node, this);
       case TYPE_ELLIPSE:
         return new Ellipse(node, this);
       case TYPE_GROUPING_CONTAINER:
@@ -235,24 +244,55 @@ export class OpiDisplay implements Display {
     this.widgets.push(widget);
 
     if (widget.pvName) {
-      this.registerWidgetTriggers(widget.pvName, widget);
-      this.qualifiedNames.add(widget.pvName);
+      if (widget.pvName.startsWith('=')) {
+        let compiledFormula = this.formulas.get(widget.pvName);
+        if (!compiledFormula) {
+          const compiler = new FormulaCompiler();
+          compiledFormula = compiler.compile(widget.pvName);
+        }
+
+        // Incoming values first trigger a (possibly shared) formula.
+        // These formulas then trigger the widget.
+        this.registerWidgetTriggers(widget.pvName, widget);
+        for (const parameter of compiledFormula.getParameters()) {
+          this.registerFormulaTriggers(parameter, compiledFormula);
+          this.qualifiedNames.add(parameter);
+        }
+      } else if (widget.pvName.startsWith('sim://')) {
+        console.warn(`Ignoring PV ${widget.pvName}`);
+      } else if (widget.pvName.startsWith('loc://')) {
+        console.warn(`Ignoring PV ${widget.pvName}`);
+      } else if (widget.pvName.startsWith('sys://')) {
+        console.warn(`Ignoring PV ${widget.pvName}`);
+      } else {
+        this.registerWidgetTriggers(widget.pvName, widget);
+        this.qualifiedNames.add(widget.pvName);
+      }
     }
   }
 
-  private registerWidgetTriggers(qualifiedName: string, widget: AbstractWidget) {
-    const widgets = this.widgetsByTrigger.get(qualifiedName);
+  private registerWidgetTriggers(pvName: string, widget: AbstractWidget) {
+    const widgets = this.widgetsByTrigger.get(pvName);
     if (widgets) {
       widgets.push(widget);
     } else {
-      this.widgetsByTrigger.set(qualifiedName, [widget]);
-      this.qualifiedNames.add(qualifiedName);
+      this.widgetsByTrigger.set(pvName, [widget]);
+    }
+  }
+
+  private registerFormulaTriggers(qualifiedName: string, formula: CompiledFormula) {
+    const formulas = this.formulasByTrigger.get(qualifiedName);
+    if (formulas) {
+      formulas.push(formula);
+    } else {
+      this.formulasByTrigger.set(qualifiedName, [formula]);
     }
   }
 
   getParameterIds() {
     const ids: NamedObjectId[] = [];
     this.qualifiedNames.forEach(name => ids.push({ name }));
+    console.log('Do sub with', ids);
     return ids;
   }
 
@@ -267,13 +307,37 @@ export class OpiDisplay implements Display {
     for (const widget of this.widgets) {
       widget.onDelivery(pvals);
     }
+
     for (const pval of pvals) {
-      const widgets = this.widgetsByTrigger.get(pval.id.name);
-      if (widgets) {
-        for (const widget of widgets) {
-          widget.onParameterValue(pval);
-          widget.dirty = true;
+      const formulas = this.formulasByTrigger.get(pval.id.name);
+      if (formulas) {
+        const dirtyFormulas = [];
+        for (const formula of formulas) {
+          formula.updateDataSource(pval.id.name, {
+            value: utils.unwrapParameterValue(pval.engValue),
+            acquisitionStatus: null,
+          });
+          dirtyFormulas.push(formula);
         }
+
+        for (const formula of dirtyFormulas) {
+          const value = formula.execute();
+          this.markDirtyWidgets(formula.pvName, value);
+        }
+      }
+    }
+    for (const pval of pvals) {
+      const value = utils.unwrapParameterValue(pval.engValue);
+      this.markDirtyWidgets(pval.id.name, value);
+    }
+  }
+
+  private markDirtyWidgets(pvName: string, value: any) {
+    const widgets = this.widgetsByTrigger.get(pvName);
+    if (widgets) {
+      for (const widget of widgets) {
+        widget.onPV({ name: pvName, value });
+        widget.dirty = true;
       }
     }
   }

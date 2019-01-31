@@ -150,9 +150,8 @@ export class TabbedContainer extends AbstractWidget {
           }
         }
       }
-
-      g.addChild(tabAreaG);
     }
+    g.addChild(tabAreaG);
   }
 
   drawVerticalTabs(g: G) {
@@ -218,7 +217,7 @@ export class TabbedContainer extends AbstractWidget {
 
       tab.container = new G({
         id: `${this.id}-tabcontent-${i}`,
-        // style: `opacity: ${i === this.activeTab ? 1 : 0}`,
+        style: `opacity: ${i === this.activeTab ? 1 : 0}`,
       });
       const tabContent = new Rect({
         x: 0,
@@ -239,9 +238,8 @@ export class TabbedContainer extends AbstractWidget {
           }
         }
       }
-
-      g.addChild(tabAreaG);
     }
+    g.addChild(tabAreaG);
   }
 
   afterDomAttachment() {
@@ -250,8 +248,7 @@ export class TabbedContainer extends AbstractWidget {
       headerEl.addEventListener('click', () => {
         for (let j = 0; j < this.tabs.length; j++) {
           const el = this.svg.getElementById(`${this.id}-tabcontent-${j}`) as SVGGElement;
-          el.style.visibility = 'hidden';  //(this.tabs[i] === this.tabs[j]) ? '0' : '1';
-          console.log(el);
+          el.style.visibility = (this.tabs[i] === this.tabs[j]) ? 'visible' : 'hidden';
         }
       });
     }

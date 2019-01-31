@@ -74,9 +74,7 @@ export class TextInput extends AbstractWidget {
       x = this.x + (this.width - bbox.width);
     }
 
-    console.log('got text', this.text, 'horiz', this.horizAlignment, 'x from', this.x, 'to', x, gEl);
-
     const y = this.y + ((this.height - bbox.height) / 2);
-    gEl.setAttribute('transform', `translate(20 20)`);
+    gEl.setAttribute('transform', `translate(${x} ${y})`);
   }
 }

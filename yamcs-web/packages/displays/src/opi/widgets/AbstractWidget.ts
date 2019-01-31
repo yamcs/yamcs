@@ -4,6 +4,7 @@ import { Action, OpenDisplayAction } from '../actions';
 import { Color } from '../Color';
 import { Font } from '../Font';
 import { OpiDisplay, TYPE_RECTANGLE, TYPE_ROUNDED_RECTANGLE } from '../OpiDisplay';
+import { PV } from '../PV';
 import * as utils from '../utils';
 
 let widgetSequence = 0;
@@ -430,7 +431,7 @@ export abstract class AbstractWidget {
     // NOP
   }
 
-  onParameterValue(pval: ParameterValue) {
+  onPV(pv: PV) {
     // NOP
   }
 
