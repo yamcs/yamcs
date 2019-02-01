@@ -13,8 +13,6 @@ export class BooleanSwitch extends AbstractWidget {
   private offColor: Color;
   private offLabel: string;
 
-  private booleanValue = true;
-
   constructor(node: Element, display: OpiDisplay) {
     super(node, display);
     this.effect3d = utils.parseBooleanChild(this.node, 'effect_3d');
@@ -360,7 +358,6 @@ export class BooleanSwitch extends AbstractWidget {
     const barOff = this.svg.getElementById(`${this.id}-bar-false`) as SVGGElement;
 
     barOn.addEventListener('click', () => {
-      this.booleanValue = false;
       barOn.style.visibility = 'hidden';
       barOff.style.visibility = 'visible';
       if (this.effect3d) {
@@ -368,7 +365,6 @@ export class BooleanSwitch extends AbstractWidget {
       }
     });
     barOff.addEventListener('click', () => {
-      this.booleanValue = true;
       barOn.style.visibility = 'visible';
       barOff.style.visibility = 'hidden';
       if (this.effect3d) {

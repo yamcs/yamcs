@@ -4,12 +4,14 @@ import { DisplayCommunicator } from '../DisplayCommunicator';
 import { NavigationHandler } from '../NavigationHandler';
 import { Defs, Pattern, Rect, Svg, Tag } from '../tags';
 import { Color } from './Color';
+import * as constants from './constants';
 import { CompiledFormula } from './formulas/CompiledFormula';
 import { FormulaCompiler } from './formulas/FormulaCompiler';
 import * as utils from './utils';
 import { AbstractWidget } from './widgets/AbstractWidget';
 import { ActionButton } from './widgets/ActionButton';
 import { Arc } from './widgets/Arc';
+import { BooleanButton } from './widgets/BooleanButton';
 import { BooleanSwitch } from './widgets/BooleanSwitch';
 import { Connection } from './widgets/Connection';
 import { Ellipse } from './widgets/Ellipse';
@@ -25,23 +27,6 @@ import { RoundedRectangle } from './widgets/RoundedRectangle';
 import { TabbedContainer } from './widgets/TabbedContainer';
 import { TextInput } from './widgets/TextInput';
 import { TextUpdate } from './widgets/TextUpdate';
-
-export const TYPE_ACTION_BUTTON = 'org.csstudio.opibuilder.widgets.ActionButton';
-export const TYPE_ARC = 'org.csstudio.opibuilder.widgets.arc';
-export const TYPE_BOOLEAN_SWITCH = 'org.csstudio.opibuilder.widgets.BoolSwitch';
-export const TYPE_ELLIPSE = 'org.csstudio.opibuilder.widgets.Ellipse';
-export const TYPE_GROUPING_CONTAINER = 'org.csstudio.opibuilder.widgets.groupingContainer';
-export const TYPE_IMAGE = 'org.csstudio.opibuilder.widgets.Image';
-export const TYPE_LABEL = 'org.csstudio.opibuilder.widgets.Label';
-export const TYPE_LED = 'org.csstudio.opibuilder.widgets.LED';
-export const TYPE_LINKING_CONTAINER = 'org.csstudio.opibuilder.widgets.linkingContainer';
-export const TYPE_POLYGON = 'org.csstudio.opibuilder.widgets.polygon';
-export const TYPE_POLYLINE = 'org.csstudio.opibuilder.widgets.polyline';
-export const TYPE_RECTANGLE = 'org.csstudio.opibuilder.widgets.Rectangle';
-export const TYPE_ROUNDED_RECTANGLE = 'org.csstudio.opibuilder.widgets.RoundedRectangle';
-export const TYPE_TABBED_CONTAINER = 'org.csstudio.opibuilder.widgets.tab';
-export const TYPE_TEXT_INPUT = 'org.csstudio.opibuilder.widgets.TextInput';
-export const TYPE_TEXT_UPDATE = 'org.csstudio.opibuilder.widgets.TextUpdate';
 
 export class OpiDisplay implements Display {
 
@@ -201,37 +186,39 @@ export class OpiDisplay implements Display {
   createWidget(node: Element): AbstractWidget | undefined {
     const typeId = utils.parseStringAttribute(node, 'typeId');
     switch (typeId) {
-      case TYPE_ACTION_BUTTON:
+      case constants.TYPE_ACTION_BUTTON:
         return new ActionButton(node, this);
-      case TYPE_ARC:
+      case constants.TYPE_ARC:
         return new Arc(node, this);
-      case TYPE_BOOLEAN_SWITCH:
+      case constants.TYPE_BOOLEAN_BUTTON:
+        return new BooleanButton(node, this);
+      case constants.TYPE_BOOLEAN_SWITCH:
         return new BooleanSwitch(node, this);
-      case TYPE_ELLIPSE:
+      case constants.TYPE_ELLIPSE:
         return new Ellipse(node, this);
-      case TYPE_GROUPING_CONTAINER:
+      case constants.TYPE_GROUPING_CONTAINER:
         return new GroupingContainer(node, this);
-      case TYPE_IMAGE:
+      case constants.TYPE_IMAGE:
         return new Image(node, this);
-      case TYPE_LABEL:
+      case constants.TYPE_LABEL:
         return new Label(node, this);
-      case TYPE_LED:
+      case constants.TYPE_LED:
         return new LED(node, this);
-      case TYPE_LINKING_CONTAINER:
+      case constants.TYPE_LINKING_CONTAINER:
         return new LinkingContainer(node, this);
-      case TYPE_POLYGON:
+      case constants.TYPE_POLYGON:
         return new Polygon(node, this);
-      case TYPE_POLYLINE:
+      case constants.TYPE_POLYLINE:
         return new Polyline(node, this);
-      case TYPE_RECTANGLE:
+      case constants.TYPE_RECTANGLE:
         return new Rectangle(node, this);
-      case TYPE_ROUNDED_RECTANGLE:
+      case constants.TYPE_ROUNDED_RECTANGLE:
         return new RoundedRectangle(node, this);
-      case TYPE_TABBED_CONTAINER:
+      case constants.TYPE_TABBED_CONTAINER:
         return new TabbedContainer(node, this);
-      case TYPE_TEXT_INPUT:
+      case constants.TYPE_TEXT_INPUT:
         return new TextInput(node, this);
-      case TYPE_TEXT_UPDATE:
+      case constants.TYPE_TEXT_UPDATE:
         return new TextUpdate(node, this);
       default:
         // tslint:disable-next-line:no-console

@@ -2,8 +2,9 @@ import { ParameterValue } from '@yamcs/client';
 import { G, Line, Mask, Rect, Tag, Text } from '../../tags';
 import { Action, OpenDisplayAction } from '../actions';
 import { Color } from '../Color';
+import * as constants from '../constants';
 import { Font } from '../Font';
-import { OpiDisplay, TYPE_RECTANGLE, TYPE_ROUNDED_RECTANGLE } from '../OpiDisplay';
+import { OpiDisplay } from '../OpiDisplay';
 import { PV } from '../PV';
 import * as utils from '../utils';
 
@@ -394,7 +395,7 @@ export abstract class AbstractWidget {
       }, this.name));
     } else if (this.borderStyle === 14) { // Round Rectangle Background
       let fillOpacity = 1;
-      if (this.typeId === TYPE_RECTANGLE || this.typeId === TYPE_ROUNDED_RECTANGLE) {
+      if (this.typeId === constants.TYPE_RECTANGLE || this.typeId === constants.TYPE_ROUNDED_RECTANGLE) {
         fillOpacity = 0; // Then nested widget appears to decide
       }
       g.addChild(new Rect({
