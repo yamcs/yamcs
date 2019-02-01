@@ -243,3 +243,17 @@ export function outline(x: number, y: number, width: number, height: number, str
     height: height - inset1 - inset2,
   };
 }
+
+export function normalizePath(base: string, relPath: string) {
+  base = '/' + base;
+  let nUpLn;
+  let sDir = '';
+  const sPath = base.replace(/[^\/]*$/, relPath.replace(/(\/|^)(?:\.?\/+)+/g, '$1'));
+  let nStart = 0;
+  for (let nEnd; nEnd = sPath.indexOf('/../', nStart), nEnd > -1; nStart = nEnd + nUpLn) {
+    nUpLn = /^\/(?:\.\.\/)*/.exec(sPath.slice(nEnd))![0].length;
+    sDir = (sDir + sPath.substring(nStart, nEnd)).replace(
+      new RegExp('(?:\\\/+[^\\\/]*){0,' + ((nUpLn - 1) / 3) + '}$'), '/');
+  }
+  return (sDir + sPath.substr(nStart)).substr(1);
+}

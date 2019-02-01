@@ -57,7 +57,7 @@ export class OpiDisplayViewer implements Viewer, OnDestroy {
 
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     const displayCommunicator = new MyDisplayCommunicator(this.yamcs, this.router);
-    this.display = new OpiDisplay(this.navigationHandler, container, displayCommunicator);
+    this.display = new OpiDisplay(objectName, this.navigationHandler, container, displayCommunicator);
     return this.display.parseAndDraw(objectName).then(() => {
       const ids = this.display.getParameterIds();
       if (ids.length) {

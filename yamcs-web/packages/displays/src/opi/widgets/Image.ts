@@ -11,6 +11,9 @@ export class Image extends AbstractWidget {
   constructor(node: Element, display: OpiDisplay) {
     super(node, display);
     this.imageFile = utils.parseStringChild(node, 'image_file');
+    if (this.imageFile.startsWith('../')) {
+      this.imageFile = this.display.resolve(this.imageFile);
+    }
     this.transparency = utils.parseBooleanChild(node, 'transparency', true);
   }
 

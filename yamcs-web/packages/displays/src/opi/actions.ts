@@ -8,5 +8,7 @@ export interface OpenDisplayAction extends Action {
 }
 
 export interface ExecuteJavaScriptAction extends Action {
+  embedded: boolean;
   text?: string;
+  path?: string;
 }

@@ -48,6 +48,7 @@ export class OpiDisplay implements Display {
   measurerSvg: SVGSVGElement;
 
   constructor(
+    private id: string,
     readonly navigationHandler: NavigationHandler,
     private targetEl: HTMLDivElement,
     readonly displayCommunicator: DisplayCommunicator,
@@ -81,7 +82,7 @@ export class OpiDisplay implements Display {
       console.warn(`Failed to load all font variants for '${fontFace}'. Font metric calculations may not be accurate.`);
     }
 
-    return this.displayCommunicator.getXMLObject('displays', id).then(doc => {
+    return this.displayCommunicator.getXMLObject('displays', this.id).then(doc => {
       const displayEl = doc.getElementsByTagName('display')[0];
 
       this.title = utils.parseStringChild(displayEl, 'name', 'Untitled');
@@ -149,6 +150,15 @@ export class OpiDisplay implements Display {
         // widget.initializeBindings();
       }
     });
+  }
+
+  public resolve(path: string): string {
+    let currentFolder = '';
+    const idx = this.id.lastIndexOf('/');
+    if (idx !== -1) {
+      currentFolder = this.id.substring(0, idx);
+    }
+    return utils.normalizePath(currentFolder, path);
   }
 
   public getBackgroundColor() {

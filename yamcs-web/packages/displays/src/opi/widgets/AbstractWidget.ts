@@ -1,6 +1,6 @@
 import { ParameterValue } from '@yamcs/client';
 import { G, Line, Mask, Rect, Tag, Text } from '../../tags';
-import { Action, OpenDisplayAction } from '../actions';
+import { Action, ExecuteJavaScriptAction, OpenDisplayAction } from '../actions';
 import { Color } from '../Color';
 import * as constants from '../constants';
 import { Font } from '../Font';
@@ -158,6 +158,17 @@ export abstract class AbstractWidget {
             path: utils.parseStringChild(actionNode, 'path'),
             mode: utils.parseIntChild(actionNode, 'mode'),
           };
+          this.actions.push(action);
+        } else if (actionType === 'EXECUTE_JAVASCRIPT') {
+          const action: ExecuteJavaScriptAction = {
+            type: actionType,
+            embedded: utils.parseBooleanChild(actionNode, 'embedded'),
+          };
+          if (action.embedded) {
+            action.text = utils.parseStringChild(actionNode, 'scriptText');
+          } else {
+            action.path = utils.parseStringChild(actionNode, 'path');
+          }
           this.actions.push(action);
         } else {
           console.warn(`Unsupported action type ${actionType}`);

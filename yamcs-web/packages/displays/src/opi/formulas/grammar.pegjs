@@ -165,7 +165,7 @@ Arguments
   }
 
 ArgumentList
-  = head:CallExpression tail:(_ ',' _ CallExpression)* {
+  = head:Expression tail:(_ ',' _ Expression)* {
     return buildList(head, tail, 3);
   }
 

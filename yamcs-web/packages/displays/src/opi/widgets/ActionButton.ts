@@ -1,8 +1,9 @@
 import { G, Line, Rect, Text, Tspan } from '../../tags';
-import { OpenDisplayAction } from '../actions';
+import { ExecuteJavaScriptAction, OpenDisplayAction } from '../actions';
 import { Color } from '../Color';
 import { Font } from '../Font';
 import { OpiDisplay } from '../OpiDisplay';
+import { Script } from '../scripting/Script';
 import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 
@@ -140,8 +141,22 @@ export class ActionButton extends AbstractWidget {
         const handler = this.display.navigationHandler;
         if (handler) {
           handler.openDisplay({
-            target: openDisplayAction.path,
+            target: this.display.resolve(openDisplayAction.path),
             openInNewWindow: openDisplayAction.mode !== 0,
+          });
+        }
+      } else if (action.type === 'EXECUTE_JAVASCRIPT') {
+        const executeJavascriptAction = action as ExecuteJavaScriptAction;
+        if (executeJavascriptAction.embedded) {
+          const script = new Script(this.display, executeJavascriptAction.text!);
+          script.run();
+        } else {
+          const path = this.display.resolve(executeJavascriptAction.path!);
+          this.display.displayCommunicator.getObject('displays', path).then(response => {
+            response.text().then(text => {
+              const script = new Script(this.display, text);
+              script.run();
+            });
           });
         }
       }
