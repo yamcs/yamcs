@@ -6,6 +6,7 @@ import * as constants from '../constants';
 import { Font } from '../Font';
 import { OpiDisplay } from '../OpiDisplay';
 import { PV } from '../PV';
+import { Script } from '../scripting/Script';
 import * as utils from '../utils';
 
 let widgetSequence = 0;
@@ -65,6 +66,8 @@ export abstract class AbstractWidget {
   constructor(
     protected node: Element,
     protected display: OpiDisplay,
+    protected absoluteX: number,
+    protected absoluteY: number,
   ) {
     this.sequenceNumber = widgetSequence++;
     this.wuid = utils.parseStringChild(node, 'wuid');
@@ -156,8 +159,10 @@ export abstract class AbstractWidget {
           const action: OpenDisplayAction = {
             type: actionType,
             path: utils.parseStringChild(actionNode, 'path'),
-            mode: utils.parseIntChild(actionNode, 'mode'),
           };
+          if (utils.hasChild(actionNode, 'mode')) {
+            action['mode'] = utils.parseIntChild(actionNode, 'mode');
+          }
           this.actions.push(action);
         } else if (actionType === 'EXECUTE_JAVASCRIPT') {
           const action: ExecuteJavaScriptAction = {
@@ -445,6 +450,37 @@ export abstract class AbstractWidget {
 
   onPV(pv: PV) {
     // NOP
+  }
+
+  protected executeAction(index: number) {
+    if (index >= this.actions.length) {
+      return;
+    }
+    const action = this.actions[index];
+    if (action.type === 'OPEN_DISPLAY') {
+      const openDisplayAction = action as OpenDisplayAction;
+      const handler = this.display.navigationHandler;
+      if (handler) {
+        handler.openDisplay({
+          target: this.display.resolve(openDisplayAction.path),
+          openInNewWindow: openDisplayAction.mode !== 0,
+        });
+      }
+    } else if (action.type === 'EXECUTE_JAVASCRIPT') {
+      const executeJavascriptAction = action as ExecuteJavaScriptAction;
+      if (executeJavascriptAction.embedded) {
+        const script = new Script(this.display, executeJavascriptAction.text!);
+        script.run();
+      } else {
+        const path = this.display.resolve(executeJavascriptAction.path!);
+        this.display.displayCommunicator.getObject('displays', path).then(response => {
+          response.text().then(text => {
+            const script = new Script(this.display, text);
+            script.run();
+          });
+        });
+      }
+    }
   }
 
   protected getFontMetrics(text: string, font: Font) {

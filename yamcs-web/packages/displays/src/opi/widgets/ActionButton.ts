@@ -1,22 +1,28 @@
 import { G, Line, Rect, Text, Tspan } from '../../tags';
-import { ExecuteJavaScriptAction, OpenDisplayAction } from '../actions';
 import { Color } from '../Color';
 import { Font } from '../Font';
 import { OpiDisplay } from '../OpiDisplay';
-import { Script } from '../scripting/Script';
 import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 
 export class ActionButton extends AbstractWidget {
 
   private font: Font;
+  private toggleButton: boolean;
   private pushActionIndex: number;
+  private releaseActionIndex: number;
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  private toggled = false;
+
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     const fontNode = utils.findChild(this.node, 'font');
     this.font = utils.parseFontNode(fontNode);
+    this.toggleButton = utils.parseBooleanChild(node, 'toggle_button');
     this.pushActionIndex = utils.parseIntChild(node, 'push_action_index');
+    if (this.toggleButton) {
+      this.releaseActionIndex = utils.parseIntChild(node, 'release_action_index');
+    }
   }
 
   draw(g: G) {
@@ -134,65 +140,83 @@ export class ActionButton extends AbstractWidget {
       strokeEls[i] = this.svg.getElementById(`${this.id}-stroke-${i + 1}`) as SVGLineElement;
     }
 
-    buttonEl.addEventListener('click', () => {
-      const action = this.actions[this.pushActionIndex];
-      if (action.type === 'OPEN_DISPLAY') {
-        const openDisplayAction = action as OpenDisplayAction;
-        const handler = this.display.navigationHandler;
-        if (handler) {
-          handler.openDisplay({
-            target: this.display.resolve(openDisplayAction.path),
-            openInNewWindow: openDisplayAction.mode !== 0,
-          });
-        }
-      } else if (action.type === 'EXECUTE_JAVASCRIPT') {
-        const executeJavascriptAction = action as ExecuteJavaScriptAction;
-        if (executeJavascriptAction.embedded) {
-          const script = new Script(this.display, executeJavascriptAction.text!);
-          script.run();
-        } else {
-          const path = this.display.resolve(executeJavascriptAction.path!);
-          this.display.displayCommunicator.getObject('displays', path).then(response => {
-            response.text().then(text => {
-              const script = new Script(this.display, text);
-              script.run();
-            });
-          });
-        }
+    buttonEl.addEventListener('click', e => {
+      this.executeAction(this.toggled ? this.releaseActionIndex : this.pushActionIndex);
+      if (this.toggleButton) {
+        this.toggled = !this.toggled;
       }
+      e.preventDefault();
+      return false;
     });
-    buttonEl.addEventListener('mousedown', () => {
-      strokeEls[0].setAttribute('stroke', Color.BUTTON_LIGHTEST.toString());
-      strokeEls[1].setAttribute('stroke', Color.BUTTON_LIGHTEST.toString());
-      strokeEls[2].setAttribute('stroke', (this.backgroundColor || Color.BUTTON_LIGHTEST).toString());
-      strokeEls[3].setAttribute('stroke', (this.backgroundColor || Color.BUTTON_LIGHTEST).toString());
-      strokeEls[4].setAttribute('stroke', Color.BLACK.toString());
-      strokeEls[5].setAttribute('stroke', Color.BLACK.toString());
-      strokeEls[6].setAttribute('stroke', Color.BUTTON_DARKER.toString());
-      strokeEls[7].setAttribute('stroke', Color.BUTTON_DARKER.toString());
-      gEl.setAttribute('transform', `translate(${x + 1} ${y + 1})`);
+
+    buttonEl.addEventListener('mousedown', e => {
+      if (this.toggleButton) {
+        if (!this.toggled) {
+          this.push(gEl, strokeEls, x, y);
+        }
+      } else {
+        this.push(gEl, strokeEls, x, y);
+      }
+      e.preventDefault();
+      return false;
     });
-    buttonEl.addEventListener('mouseup', () => {
-      strokeEls[0].setAttribute('stroke', Color.BLACK.toString());
-      strokeEls[1].setAttribute('stroke', Color.BLACK.toString());
-      strokeEls[2].setAttribute('stroke', Color.BUTTON_DARKER.toString());
-      strokeEls[3].setAttribute('stroke', Color.BUTTON_DARKER.toString());
-      strokeEls[4].setAttribute('stroke', Color.BUTTON_LIGHTEST.toString());
-      strokeEls[5].setAttribute('stroke', Color.BUTTON_LIGHTEST.toString());
-      strokeEls[6].setAttribute('stroke', (this.backgroundColor || Color.BUTTON_LIGHTEST).toString());
-      strokeEls[7].setAttribute('stroke', (this.backgroundColor || Color.BUTTON_LIGHTEST).toString());
-      gEl.setAttribute('transform', `translate(${x} ${y})`);
+
+    // Prevent element selection
+    buttonEl.addEventListener('mousemove', e => {
+      e.preventDefault();
+      return false;
     });
-    buttonEl.addEventListener('mouseout', () => {
-      strokeEls[0].setAttribute('stroke', Color.BLACK.toString());
-      strokeEls[1].setAttribute('stroke', Color.BLACK.toString());
-      strokeEls[2].setAttribute('stroke', Color.BUTTON_DARKER.toString());
-      strokeEls[3].setAttribute('stroke', Color.BUTTON_DARKER.toString());
-      strokeEls[4].setAttribute('stroke', Color.BUTTON_LIGHTEST.toString());
-      strokeEls[5].setAttribute('stroke', Color.BUTTON_LIGHTEST.toString());
-      strokeEls[6].setAttribute('stroke', (this.backgroundColor || Color.BUTTON_LIGHTEST).toString());
-      strokeEls[7].setAttribute('stroke', (this.backgroundColor || Color.BUTTON_LIGHTEST).toString());
-      gEl.setAttribute('transform', `translate(${x} ${y})`);
+
+    buttonEl.addEventListener('mouseup', e => {
+      if (this.toggleButton) {
+        if (this.toggled) {
+          this.release(gEl, strokeEls, x, y);
+        }
+      } else {
+        this.release(gEl, strokeEls, x, y);
+      }
+      e.preventDefault();
+      return false;
+    });
+
+    buttonEl.addEventListener('mouseout', e => {
+      if (this.toggleButton) {
+        if (this.toggled) {
+          this.push(gEl, strokeEls, x, y);
+        } else {
+          this.release(gEl, strokeEls, x, y);
+        }
+      } else {
+        this.release(gEl, strokeEls, x, y);
+      }
+      e.preventDefault();
+      return false;
     });
   }
+
+  private push(gEl: Element, strokeEls: SVGLineElement[], x: number, y: number) {
+    strokeEls[0].setAttribute('stroke', Color.BUTTON_LIGHTEST.toString());
+    strokeEls[1].setAttribute('stroke', Color.BUTTON_LIGHTEST.toString());
+    strokeEls[2].setAttribute('stroke', (this.backgroundColor || Color.BUTTON_LIGHTEST).toString());
+    strokeEls[3].setAttribute('stroke', (this.backgroundColor || Color.BUTTON_LIGHTEST).toString());
+    strokeEls[4].setAttribute('stroke', Color.BLACK.toString());
+    strokeEls[5].setAttribute('stroke', Color.BLACK.toString());
+    strokeEls[6].setAttribute('stroke', Color.BUTTON_DARKER.toString());
+    strokeEls[7].setAttribute('stroke', Color.BUTTON_DARKER.toString());
+    gEl.setAttribute('transform', `translate(${x + 1} ${y + 1})`);
+  }
+
+  private release(gEl: Element, strokeEls: SVGLineElement[], x: number, y: number) {
+    strokeEls[0].setAttribute('stroke', Color.BLACK.toString());
+    strokeEls[1].setAttribute('stroke', Color.BLACK.toString());
+    strokeEls[2].setAttribute('stroke', Color.BUTTON_DARKER.toString());
+    strokeEls[3].setAttribute('stroke', Color.BUTTON_DARKER.toString());
+    strokeEls[4].setAttribute('stroke', Color.BUTTON_LIGHTEST.toString());
+    strokeEls[5].setAttribute('stroke', Color.BUTTON_LIGHTEST.toString());
+    strokeEls[6].setAttribute('stroke', (this.backgroundColor || Color.BUTTON_LIGHTEST).toString());
+    strokeEls[7].setAttribute('stroke', (this.backgroundColor || Color.BUTTON_LIGHTEST).toString());
+    gEl.setAttribute('transform', `translate(${x} ${y})`);
+  }
+
+
 }

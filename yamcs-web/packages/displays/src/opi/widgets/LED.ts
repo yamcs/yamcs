@@ -22,8 +22,8 @@ export class LED extends AbstractWidget {
   private bulbBorderColor: Color;
   private bulbBorder: number;
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     const stateCount = utils.parseIntChild(this.node, 'state_count', 2);
     if (stateCount === 2) {
       const offColorNode = utils.findChild(this.node, 'off_color');

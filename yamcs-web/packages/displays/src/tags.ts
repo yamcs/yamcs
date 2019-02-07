@@ -148,6 +148,12 @@ export class Ellipse extends Tag {
   }
 }
 
+export class ForeignObject extends Tag {
+  constructor(attributes?: {}, innerText?: string) {
+    super('foreignObject', attributes, innerText);
+  }
+}
+
 export class G extends Tag {
   constructor(attributes?: {}, innerText?: string) {
     super('g', attributes, innerText);

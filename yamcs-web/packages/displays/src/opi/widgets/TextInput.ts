@@ -9,8 +9,8 @@ export class TextInput extends AbstractWidget {
   private font: Font;
   private horizAlignment: number;
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     const fontNode = utils.findChild(this.node, 'font');
     this.font = utils.parseFontNode(fontNode);
 

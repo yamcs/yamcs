@@ -10,8 +10,8 @@ export class Arc extends AbstractWidget {
   private startAngle: number;
   private totalAngle: number;
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     this.alpha = utils.parseIntChild(node, 'alpha');
     this.startAngle = utils.parseIntChild(node, 'start_angle');
     this.totalAngle = utils.parseIntChild(node, 'total_angle');

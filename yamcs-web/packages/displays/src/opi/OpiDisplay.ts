@@ -15,11 +15,15 @@ import { BooleanButton } from './widgets/BooleanButton';
 import { BooleanSwitch } from './widgets/BooleanSwitch';
 import { Connection } from './widgets/Connection';
 import { Ellipse } from './widgets/Ellipse';
+import { Gauge } from './widgets/Gauge';
 import { GroupingContainer } from './widgets/GroupingContainer';
 import { Image } from './widgets/Image';
+import { ImageBooleanButton } from './widgets/ImageBooleanButton';
+import { ImageBooleanIndicator } from './widgets/ImageBooleanIndicator';
 import { Label } from './widgets/Label';
 import { LED } from './widgets/LED';
 import { LinkingContainer } from './widgets/LinkingContainer';
+import { Meter } from './widgets/Meter';
 import { Polygon } from './widgets/Polygon';
 import { Polyline } from './widgets/Polyline';
 import { Rectangle } from './widgets/Rectangle';
@@ -27,6 +31,7 @@ import { RoundedRectangle } from './widgets/RoundedRectangle';
 import { TabbedContainer } from './widgets/TabbedContainer';
 import { TextInput } from './widgets/TextInput';
 import { TextUpdate } from './widgets/TextUpdate';
+import { XYGraph } from './widgets/XYGraph';
 
 export class OpiDisplay implements Display {
 
@@ -127,7 +132,7 @@ export class OpiDisplay implements Display {
       }
 
       for (const widgetNode of utils.findChildren(displayEl, 'widget')) {
-        const widget = this.createWidget(widgetNode);
+        const widget = this.createWidget(widgetNode, 0, 0);
         if (widget) {
           widget.tag = widget.drawWidget();
           this.addWidget(widget, rootEl);
@@ -193,43 +198,53 @@ export class OpiDisplay implements Display {
     svg.addChild(style);
   }
 
-  createWidget(node: Element): AbstractWidget | undefined {
+  createWidget(node: Element, absoluteX: number, absoluteY: number): AbstractWidget | undefined {
     const typeId = utils.parseStringAttribute(node, 'typeId');
     switch (typeId) {
       case constants.TYPE_ACTION_BUTTON:
-        return new ActionButton(node, this);
+        return new ActionButton(node, this, absoluteX, absoluteY);
       case constants.TYPE_ARC:
-        return new Arc(node, this);
+        return new Arc(node, this, absoluteX, absoluteY);
       case constants.TYPE_BOOLEAN_BUTTON:
-        return new BooleanButton(node, this);
+        return new BooleanButton(node, this, absoluteX, absoluteY);
       case constants.TYPE_BOOLEAN_SWITCH:
-        return new BooleanSwitch(node, this);
+        return new BooleanSwitch(node, this, absoluteX, absoluteY);
       case constants.TYPE_ELLIPSE:
-        return new Ellipse(node, this);
+        return new Ellipse(node, this, absoluteX, absoluteY);
+      case constants.TYPE_GAUGE:
+        return new Gauge(node, this, absoluteX, absoluteY);
       case constants.TYPE_GROUPING_CONTAINER:
-        return new GroupingContainer(node, this);
+        return new GroupingContainer(node, this, absoluteX, absoluteY);
       case constants.TYPE_IMAGE:
-        return new Image(node, this);
+        return new Image(node, this, absoluteX, absoluteY);
+      case constants.TYPE_IMAGE_BOOLEAN_BUTTON:
+        return new ImageBooleanButton(node, this, absoluteX, absoluteY);
+      case constants.TYPE_IMAGE_BOOLEAN_INDICATOR:
+        return new ImageBooleanIndicator(node, this, absoluteX, absoluteY);
       case constants.TYPE_LABEL:
-        return new Label(node, this);
+        return new Label(node, this, absoluteX, absoluteY);
       case constants.TYPE_LED:
-        return new LED(node, this);
+        return new LED(node, this, absoluteX, absoluteY);
       case constants.TYPE_LINKING_CONTAINER:
-        return new LinkingContainer(node, this);
+        return new LinkingContainer(node, this, absoluteX, absoluteY);
+      case constants.TYPE_METER:
+        return new Meter(node, this, absoluteX, absoluteY);
       case constants.TYPE_POLYGON:
-        return new Polygon(node, this);
+        return new Polygon(node, this, absoluteX, absoluteY);
       case constants.TYPE_POLYLINE:
-        return new Polyline(node, this);
+        return new Polyline(node, this, absoluteX, absoluteY);
       case constants.TYPE_RECTANGLE:
-        return new Rectangle(node, this);
+        return new Rectangle(node, this, absoluteX, absoluteY);
       case constants.TYPE_ROUNDED_RECTANGLE:
-        return new RoundedRectangle(node, this);
+        return new RoundedRectangle(node, this, absoluteX, absoluteY);
       case constants.TYPE_TABBED_CONTAINER:
-        return new TabbedContainer(node, this);
+        return new TabbedContainer(node, this, absoluteX, absoluteY);
       case constants.TYPE_TEXT_INPUT:
-        return new TextInput(node, this);
+        return new TextInput(node, this, absoluteX, absoluteY);
       case constants.TYPE_TEXT_UPDATE:
-        return new TextUpdate(node, this);
+        return new TextUpdate(node, this, absoluteX, absoluteY);
+      case constants.TYPE_XY_GRAPH:
+        return new XYGraph(node, this, absoluteX, absoluteY);
       default:
         // tslint:disable-next-line:no-console
         console.warn(`Unsupported widget type: ${typeId}`);

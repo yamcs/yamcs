@@ -26,8 +26,8 @@ export class TabbedContainer extends AbstractWidget {
   private horizontalTabs: boolean;
   private tabs: Tab[] = [];
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     this.minimumTabHeight = utils.parseIntChild(node, 'minimum_tab_height');
     this.activeTab = utils.parseIntChild(node, 'active_tab');
     this.horizontalTabs = utils.parseBooleanChild(node, 'horizontal_tabs');
@@ -143,7 +143,7 @@ export class TabbedContainer extends AbstractWidget {
 
       for (const widgetNode of utils.findChildren(this.node, 'widget')) {
         if (utils.parseStringChild(widgetNode, 'name') === tab.title) {
-          const widget = this.display.createWidget(widgetNode);
+          const widget = this.display.createWidget(widgetNode, this.absoluteX + this.x, this.absoluteY + this.y);
           if (widget) {
             widget.tag = widget.drawWidget();
             this.display.addWidget(widget, tab.container);
@@ -231,7 +231,9 @@ export class TabbedContainer extends AbstractWidget {
 
       for (const widgetNode of utils.findChildren(this.node, 'widget')) {
         if (utils.parseStringChild(widgetNode, 'name') === tab.title) {
-          const widget = this.display.createWidget(widgetNode);
+          const offsetX = this.absoluteX + this.x;
+          const offsetY = this.absoluteY + this.y + this.minimumTabHeight;
+          const widget = this.display.createWidget(widgetNode, offsetX, offsetY);
           if (widget) {
             widget.tag = widget.drawWidget();
             this.display.addWidget(widget, tab.container);

@@ -12,8 +12,8 @@ export class Polyline extends AbstractWidget {
   private horizontalFill: boolean;
   private points: Point[] = [];
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     this.alpha = utils.parseIntChild(node, 'alpha');
     this.lineWidth = utils.parseIntChild(node, 'line_width');
     this.fillLevel = utils.parseFloatChild(node, 'fill_level');
@@ -39,7 +39,6 @@ export class Polyline extends AbstractWidget {
       points += ` ${this.points[i].x},${this.points[i].y}`;
     }
 
-    this.fillLevel = 70;
     let fillY = this.y;
     let fillWidth = this.width;
     let fillHeight = this.height;

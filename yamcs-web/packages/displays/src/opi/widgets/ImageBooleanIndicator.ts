@@ -3,17 +3,16 @@ import { OpiDisplay } from '../OpiDisplay';
 import * as utils from '../utils';
 import { AbstractWidget } from './AbstractWidget';
 
-export class Image extends AbstractWidget {
+export class ImageBooleanIndicator extends AbstractWidget {
 
-  private imageFile: string;
+  private onImage: string;
+  private offImage: string;
   private transparency: boolean;
 
   constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
     super(node, display, absoluteX, absoluteY);
-    this.imageFile = utils.parseStringChild(node, 'image_file');
-    if (this.imageFile.startsWith('../')) {
-      this.imageFile = this.display.resolve(this.imageFile);
-    }
+    this.onImage = this.display.resolve(utils.parseStringChild(node, 'on_image'));
+    this.offImage = this.display.resolve(utils.parseStringChild(node, 'off_image'));
     this.transparency = utils.parseBooleanChild(node, 'transparency', true);
   }
 
@@ -25,16 +24,29 @@ export class Image extends AbstractWidget {
         width: this.width,
         height: this.height,
         fill: this.backgroundColor,
+        'pointer-events': 'none',
       }));
     }
 
-    const imageUrl = this.display.displayCommunicator.getObjectURL('displays', this.imageFile);
+    const onImageUrl = this.display.displayCommunicator.getObjectURL('displays', this.onImage);
     g.addChild(new ImageTag({
+      id: `${this.id}-on`,
       x: this.x,
       y: this.y,
       width: this.width,
       height: this.height,
-      'xlink:href': imageUrl,
+      'xlink:href': onImageUrl,
+      'opacity': 0,
+    }));
+
+    const offImageUrl = this.display.displayCommunicator.getObjectURL('displays', this.offImage);
+    g.addChild(new ImageTag({
+      id: `${this.id}-off`,
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+      'xlink:href': offImageUrl,
     }));
   }
 }

@@ -4,7 +4,7 @@ export interface Action {
 
 export interface OpenDisplayAction extends Action {
   path: string;
-  mode: number;
+  mode?: number;
 }
 
 export interface ExecuteJavaScriptAction extends Action {

@@ -12,8 +12,8 @@ export class TextUpdate extends AbstractWidget {
 
   private textEl: Element;
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     const fontNode = utils.findChild(this.node, 'font');
     this.font = utils.parseFontNode(fontNode);
   }

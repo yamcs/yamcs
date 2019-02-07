@@ -19,8 +19,8 @@ export class BooleanButton extends AbstractWidget {
   private offLabel: string;
   private font: Font;
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     this.squareButton = utils.parseBooleanChild(this.node, 'square_button');
     this.showLed = utils.parseBooleanChild(this.node, 'show_led');
     this.showBooleanLabel = utils.parseBooleanChild(this.node, 'show_boolean_label');

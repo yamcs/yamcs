@@ -15,8 +15,8 @@ export class Ellipse extends AbstractWidget {
   private backgroundGradientStartColor: Color;
   private gradient: boolean;
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     this.alpha = utils.parseIntChild(node, 'alpha');
     this.lineWidth = utils.parseIntChild(node, 'line_width');
     this.fillLevel = utils.parseFloatChild(node, 'fill_level');

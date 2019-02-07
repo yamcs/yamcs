@@ -18,8 +18,8 @@ export class Rectangle extends AbstractWidget {
   protected cornerWidth = 0;
   protected cornerHeight = 0;
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     this.alpha = utils.parseIntChild(node, 'alpha');
     this.lineWidth = utils.parseIntChild(node, 'line_width');
     this.fillLevel = utils.parseFloatChild(node, 'fill_level');

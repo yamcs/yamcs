@@ -13,8 +13,8 @@ export class BooleanSwitch extends AbstractWidget {
   private offColor: Color;
   private offLabel: string;
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     this.effect3d = utils.parseBooleanChild(this.node, 'effect_3d');
     const onColorNode = utils.findChild(this.node, 'on_color');
     this.onColor = utils.parseColorChild(onColorNode);

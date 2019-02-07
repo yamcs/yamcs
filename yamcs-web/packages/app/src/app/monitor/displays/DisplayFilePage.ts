@@ -45,6 +45,8 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
   filename: string;
   folderLink: string;
 
+  private prevFilename: string;
+
   fullscreenSupported$ = new BehaviorSubject<boolean>(false);
   fullscreen$ = new BehaviorSubject<boolean>(false);
   fullscreenListener: () => void;
@@ -92,11 +94,13 @@ export class DisplayFilePage implements AfterViewInit, OnDestroy {
     this.title.setTitle(this.filename + ' - Yamcs');
 
     if (reloadViewer) {
-      this.ngAfterViewInit();
+      console.log('force reload');
+      ///this.ngAfterViewInit();
     }
   }
 
   ngAfterViewInit() {
+    console.log('initing....');
     if (this.filename.toLowerCase().endsWith('.uss')) {
       const ussDisplayViewer = this.createViewer(UssDisplayViewer);
       const controls = this.createViewerControls(UssDisplayViewerControls);

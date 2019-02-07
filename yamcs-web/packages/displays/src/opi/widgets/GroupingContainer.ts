@@ -22,7 +22,7 @@ export class GroupingContainer extends AbstractWidget {
     }
     wrapperG.addChild(rect);
     for (const widgetNode of utils.findChildren(this.node, 'widget')) {
-      const widget = this.display.createWidget(widgetNode);
+      const widget = this.display.createWidget(widgetNode, this.absoluteX + this.x, this.absoluteY + this.y);
       if (widget) {
         widget.tag = widget.drawWidget();
         this.display.addWidget(widget, wrapperG);

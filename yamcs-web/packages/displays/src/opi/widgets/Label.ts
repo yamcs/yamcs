@@ -10,8 +10,8 @@ export class Label extends AbstractWidget {
   private horizAlignment: number;
   private vertAlignment: number;
 
-  constructor(node: Element, display: OpiDisplay) {
-    super(node, display);
+  constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
+    super(node, display, absoluteX, absoluteY);
     const fontNode = utils.findChild(this.node, 'font');
     this.font = utils.parseFontNode(fontNode);
 
@@ -63,6 +63,11 @@ export class Label extends AbstractWidget {
 
   afterDomAttachment() {
     const textEl = this.svg.getElementById(`${this.id}-text`) as SVGTextElement;
+    console.log('Search for ', this);
+    if (!textEl) {
+      console.log('OOPS', this);
+      return;
+    }
     const bbox = textEl.getBBox();
 
     const gEl = this.svg.getElementById(`${this.id}-textg`) as SVGGElement;
