@@ -1,6 +1,7 @@
 package org.yamcs.api.ws;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -111,9 +112,9 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     }
 
     private void processFrame(BinaryWebSocketFrame frame) {
-        try {
+        try (InputStream in = new ByteBufInputStream(frame.content())) {
             WebSocketServerMessage message = WebSocketServerMessage.newBuilder()
-                    .mergeFrom(new ByteBufInputStream(frame.content())).build();
+                    .mergeFrom(in).build();
             switch (message.getType()) {
             case REPLY:
                 processReplyData(message.getReply());
