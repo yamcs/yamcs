@@ -34,6 +34,7 @@
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
             ],
             "scripts": [
+              "node_modules/systemjs/dist/system.js",
               "node_modules/fontfaceobserver/fontfaceobserver.standalone.js"
             ]
           },
