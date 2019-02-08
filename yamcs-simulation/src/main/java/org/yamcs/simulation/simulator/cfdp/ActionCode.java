@@ -48,6 +48,10 @@ public enum ActionCode {
     }
 
     public static ActionCode readActionCode(ByteBuffer buffer) {
-        return ActionCode.fromCode(buffer.get() >> 4);
+        return readActionCode(buffer.get());
+    }
+
+    public static ActionCode readActionCode(byte b) {
+        return ActionCode.fromCode(b >> 4);
     }
 }
