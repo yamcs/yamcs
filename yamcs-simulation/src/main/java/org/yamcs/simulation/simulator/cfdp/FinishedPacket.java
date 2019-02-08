@@ -1,7 +1,9 @@
 package org.yamcs.simulation.simulator.cfdp;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
@@ -14,8 +16,8 @@ public class FinishedPacket extends Packet {
     private boolean generatedByEndSystem;
     private boolean dataComplete;
     private FileStatus fileStatus;
-    private byte[] faultLocation;
-    private FileStoreResponse[] FilestoreResponses;
+    private TLV faultLocation;
+    private List<FileStoreResponse> filestoreResponses = new ArrayList<FileStoreResponse>();;
 
     public enum FileStatus {
         DeliberatelyDiscarded(0),
@@ -52,16 +54,16 @@ public class FinishedPacket extends Packet {
         this.dataComplete = !Utils.getBitOfByte(temp, 6);
         this.fileStatus = FileStatus.fromCode(temp & 0x03);
 
-        long fileChecksum = Utils.getUnsignedInt(buffer);
-        long fileSize = Utils.getUnsignedShort(buffer);
-
-        if (conditionCode != ConditionCode.NoError
-                && conditionCode != ConditionCode.Reserved) {
-            TLV temp = TLV.readTLV(buffer);
-            if (temp.getType() == 0x06) {
-                faultLocation = temp.getValue();
-            } else {
-                // TODO
+        while (buffer.get() != buffer.limit()) {
+            TLV tempTLV = TLV.readTLV(buffer);
+            switch (tempTLV.getType()) {
+            case 1:
+                this.filestoreResponses.add(FileStoreResponse.fromTLV(tempTLV));
+                break;
+            case 6:
+                this.faultLocation = tempTLV;
+                break;
+            default: // TODO
             }
         }
     }

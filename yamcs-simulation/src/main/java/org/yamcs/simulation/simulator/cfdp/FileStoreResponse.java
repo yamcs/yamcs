@@ -42,12 +42,16 @@ public class FileStoreResponse {
         return this.FilestoreMessage;
     }
 
-    public static FileStoreResponse readFileStoreResponse(ByteBuffer buffer) {
+    private static FileStoreResponse readFileStoreResponse(ByteBuffer buffer) {
         byte b = buffer.get();
         ActionCode c = ActionCode.readActionCode(b);
         StatusCode s = StatusCode.readStatusCode(b);
         return (c.hasSecondFileName()
                 ? new FileStoreResponse(c, s, LV.readLV(buffer), LV.readLV(buffer), LV.readLV(buffer))
                 : new FileStoreResponse(c, s, LV.readLV(buffer), LV.readLV(buffer)));
+    }
+
+    public static FileStoreResponse fromTLV(TLV tlv) {
+        return readFileStoreResponse(ByteBuffer.wrap(tlv.getValue()));
     }
 }

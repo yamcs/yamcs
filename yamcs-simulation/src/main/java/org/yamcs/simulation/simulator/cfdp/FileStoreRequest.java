@@ -29,10 +29,14 @@ public class FileStoreRequest {
         return this.secondFileName;
     }
 
-    public static FileStoreRequest readFileStoreRequest(ByteBuffer buffer) {
+    private static FileStoreRequest readFileStoreRequest(ByteBuffer buffer) {
         ActionCode c = ActionCode.readActionCode(buffer);
         return (c.hasSecondFileName()
                 ? new FileStoreRequest(c, LV.readLV(buffer), LV.readLV(buffer))
                 : new FileStoreRequest(c, LV.readLV(buffer)));
+    }
+
+    public static FileStoreRequest fromTLV(TLV tlv) {
+        return readFileStoreRequest(ByteBuffer.wrap(tlv.getValue()));
     }
 }

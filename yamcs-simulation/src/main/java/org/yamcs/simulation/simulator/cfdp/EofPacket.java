@@ -9,7 +9,7 @@ public class EofPacket extends Packet {
     private ConditionCode conditionCode;
     private long fileChecksum;
     private long fileSize;
-    private byte[] faultLocation;
+    private TLV faultLocation;
 
     public EofPacket(ByteBuffer buffer, Header header) {
         this.header = header;
@@ -21,12 +21,7 @@ public class EofPacket extends Packet {
 
         if (conditionCode != ConditionCode.NoError
                 && conditionCode != ConditionCode.Reserved) {
-            TLV temp = TLV.readTLV(buffer);
-            if (temp.getType() == 0x06) {
-                faultLocation = temp.getValue();
-            } else {
-                // TODO
-            }
+            this.faultLocation = TLV.readTLV(buffer);
         }
     }
 
