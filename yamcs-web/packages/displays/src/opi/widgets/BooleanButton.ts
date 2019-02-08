@@ -8,6 +8,10 @@ import { AbstractWidget } from './AbstractWidget';
 
 export class BooleanButton extends AbstractWidget {
 
+  private toggleButton: boolean;
+  private pushActionIndex: number;
+  private releaseActionIndex: number;
+
   private squareButton: boolean;
   private showLed: boolean;
   private showBooleanLabel: boolean;
@@ -18,6 +22,17 @@ export class BooleanButton extends AbstractWidget {
   private offColor: Color;
   private offLabel: string;
   private font: Font;
+
+  private toggled = false;
+
+  private buttonEl: SVGElement;
+  private ledEl: SVGElement;
+  private ledOverlayEl: SVGElement;
+  private labelEl: SVGElement;
+  private squareBorder1: SVGElement;
+  private squareBorder2: SVGElement;
+  private squareBorder3: SVGElement;
+  private squareBorder4: SVGElement;
 
   constructor(node: Element, display: OpiDisplay, absoluteX: number, absoluteY: number) {
     super(node, display, absoluteX, absoluteY);
@@ -33,6 +48,11 @@ export class BooleanButton extends AbstractWidget {
     this.offLabel = utils.parseStringChild(this.node, 'off_label');
     const fontNode = utils.findChild(this.node, 'font');
     this.font = utils.parseFontNode(fontNode);
+    this.toggleButton = utils.parseBooleanChild(node, 'toggle_button');
+    this.pushActionIndex = utils.parseIntChild(node, 'push_action_index');
+    if (this.toggleButton) {
+      this.releaseActionIndex = utils.parseIntChild(node, 'released_action_index');
+    }
   }
 
   draw(g: G) {
@@ -45,31 +65,32 @@ export class BooleanButton extends AbstractWidget {
         width: this.width,
         height: this.height,
         fill: Color.DARK_GRAY,
+        cursor: 'pointer',
       }));
       if (this.effect3d) {
         let points = `${this.x},${this.y}`;
         points += ` ${this.x + 2},${this.y + 2}`;
         points += ` ${this.x + 2},${this.y + this.height - 2}`;
         points += ` ${this.x},${this.y + this.height}`;
-        g.addChild(new Polyline({ points, fill: 'white' }));
+        g.addChild(new Polyline({ id: `${this.id}-pl1`, points, fill: Color.WHITE }));
 
         points = `${this.x},${this.y}`;
         points += ` ${this.x + 2},${this.y + 2}`;
         points += ` ${this.x + this.width - 2},${this.y + 2}`;
         points += ` ${this.x + this.width},${this.y}`;
-        g.addChild(new Polyline({ points, fill: 'white' }));
+        g.addChild(new Polyline({ id: `${this.id}-pl2`, points, fill: Color.WHITE }));
 
         points = `${this.x + this.width},${this.y}`;
         points += ` ${this.x + this.width - 2},${this.y + 2}`;
         points += ` ${this.x + this.width - 2},${this.y + this.height - 2}`;
         points += ` ${this.x + this.width},${this.y + this.height}`;
-        g.addChild(new Polyline({ points, fill: Color.DARK_GRAY }));
+        g.addChild(new Polyline({ id: `${this.id}-pl3`, points, fill: Color.DARK_GRAY }));
 
         points = `${this.x},${this.y + this.height}`;
         points += ` ${this.x + 2},${this.y + this.height - 2}`;
         points += ` ${this.x + this.width - 2},${this.y + this.height - 2}`;
         points += ` ${this.x + this.width},${this.y + this.height}`;
-        g.addChild(new Polyline({ points, fill: Color.DARK_GRAY }));
+        g.addChild(new Polyline({ id: `${this.id}-pl4`, points, fill: Color.DARK_GRAY }));
       }
       g.addChild(new Rect({
         x: this.x + 2,
@@ -77,6 +98,7 @@ export class BooleanButton extends AbstractWidget {
         width: this.width - 2 - 2,
         height: this.height - 2 - 2,
         fill: this.backgroundColor,
+        'pointer-events': 'none',
       }));
     } else {
       if (this.effect3d) {
@@ -114,6 +136,7 @@ export class BooleanButton extends AbstractWidget {
           rx: this.width / 2,
           ry: this.height / 2,
           fill: `url(#${this.id}-ellipse-bg-g-disabled)`,
+          cursor: 'pointer',
         }));
       } else {
         g.addChild(new Ellipse({
@@ -123,6 +146,7 @@ export class BooleanButton extends AbstractWidget {
           rx: this.width / 2,
           ry: this.height / 2,
           fill: Color.DARK_GRAY,
+          cursor: 'pointer',
         }));
       }
       g.addChild(new Ellipse({
@@ -131,6 +155,7 @@ export class BooleanButton extends AbstractWidget {
         rx: (this.width / 2) - 2,
         ry: (this.height / 2) - 2,
         fill: this.backgroundColor,
+        'pointer-events': 'none',
       }));
     }
 
@@ -143,6 +168,7 @@ export class BooleanButton extends AbstractWidget {
 
     if (this.showBooleanLabel) {
       g.addChild(new Text({
+        id: `${this.id}-label`,
         x: this.x + (this.width / 2),
         y: this.y + (this.height / 2),
         'pointer-events': 'none',
@@ -175,11 +201,13 @@ export class BooleanButton extends AbstractWidget {
         height: diameter
       };
       g.addChild(new Ellipse({
+        id: `${this.id}-led`,
         cx: ledArea.x + (ledArea.width / 2),
         cy: ledArea.y + (ledArea.height / 2),
         rx: ledArea.width / 2,
         ry: ledArea.height / 2,
         fill: this.offColor,
+        'pointer-events': 'none',
       }));
       if (this.effect3d) {
         this.display.defs.addChild(new LinearGradient({
@@ -188,7 +216,7 @@ export class BooleanButton extends AbstractWidget {
           x2: '100%', y2: '100%',
         }).addChild(
           new Stop({ offset: '0%', 'stop-color': Color.WHITE, 'stop-opacity': '1' }),
-          new Stop({ offset: '100%', 'stop-color': this.offColor, 'stop-opacity': '0', }),
+          new Stop({ id: `${this.id}-led-stop`, offset: '100%', 'stop-color': this.offColor, 'stop-opacity': '0', }),
         ));
         g.addChild(new Ellipse({
           cx: ledArea.x + (ledArea.width / 2),
@@ -196,6 +224,7 @@ export class BooleanButton extends AbstractWidget {
           rx: ledArea.width / 2,
           ry: ledArea.height / 2,
           fill: `url(#${this.id}-led-g)`,
+          'pointer-events': 'none',
         }));
       }
     }
@@ -222,11 +251,13 @@ export class BooleanButton extends AbstractWidget {
         height: diameter
       };
       g.addChild(new Ellipse({
+        id: `${this.id}-led`,
         cx: ledArea.x + (ledArea.width / 2),
         cy: ledArea.y + (ledArea.height / 2),
         rx: ledArea.width / 2,
         ry: ledArea.height / 2,
         fill: this.offColor,
+        'pointer-events': 'none',
       }));
       if (this.effect3d) {
         this.display.defs.addChild(new LinearGradient({
@@ -235,7 +266,7 @@ export class BooleanButton extends AbstractWidget {
           x2: '100%', y2: '100%',
         }).addChild(
           new Stop({ offset: '0%', 'stop-color': Color.WHITE, 'stop-opacity': '1' }),
-          new Stop({ offset: '100%', 'stop-color': this.offColor, 'stop-opacity': '0', }),
+          new Stop({ id: `${this.id}-led-stop`, offset: '100%', 'stop-color': this.offColor, 'stop-opacity': '0', }),
         ));
         g.addChild(new Ellipse({
           cx: ledArea.x + (ledArea.width / 2),
@@ -243,15 +274,129 @@ export class BooleanButton extends AbstractWidget {
           rx: ledArea.width / 2,
           ry: ledArea.height / 2,
           fill: `url(#${this.id}-led-g)`,
+          'pointer-events': 'none',
         }));
       }
     }
   }
 
   afterDomAttachment() {
-    const buttonEl = this.svg.getElementById(`${this.id}-button`) as SVGElement;
-    buttonEl.addEventListener('click', () => {
+    this.buttonEl = this.svg.getElementById(`${this.id}-button`) as SVGElement;
+    this.ledEl = this.svg.getElementById(`${this.id}-led`) as SVGElement;
+    this.ledOverlayEl = this.svg.getElementById(`${this.id}-led-stop`) as SVGElement;
+    this.labelEl = this.svg.getElementById(`${this.id}-label`) as SVGElement;
+    this.squareBorder1 = this.svg.getElementById(`${this.id}-pl1`) as SVGElement;
+    this.squareBorder2 = this.svg.getElementById(`${this.id}-pl2`) as SVGElement;
+    this.squareBorder3 = this.svg.getElementById(`${this.id}-pl3`) as SVGElement;
+    this.squareBorder4 = this.svg.getElementById(`${this.id}-pl4`) as SVGElement;
 
+    this.buttonEl.addEventListener('click', e => {
+      this.executeAction(this.toggled ? this.releaseActionIndex : this.pushActionIndex);
+      if (this.toggleButton) {
+        this.toggled = !this.toggled;
+      }
+      e.preventDefault();
+      return false;
     });
+
+    this.buttonEl.addEventListener('mousedown', e => {
+      if (this.toggleButton) {
+        if (!this.toggled) {
+          this.push();
+        }
+      } else {
+        this.push();
+      }
+      e.preventDefault();
+      return false;
+    });
+
+    // Prevent element selection
+    this.buttonEl.addEventListener('mousemove', e => {
+      e.preventDefault();
+      return false;
+    });
+
+    this.buttonEl.addEventListener('mouseup', e => {
+      if (this.toggleButton) {
+        if (this.toggled) {
+          this.release();
+        }
+      } else {
+        this.release();
+      }
+      e.preventDefault();
+      return false;
+    });
+
+    this.buttonEl.addEventListener('mouseout', e => {
+      if (this.toggleButton) {
+        if (this.toggled) {
+          this.push();
+        } else {
+          this.release();
+        }
+      } else {
+        this.release();
+      }
+      e.preventDefault();
+      return false;
+    });
+  }
+
+  private push() {
+    if (this.ledEl) {
+      this.ledEl.setAttribute('fill', this.onColor.toString());
+    }
+    if (this.ledOverlayEl) {
+      this.ledOverlayEl.setAttribute('stop-color', this.onColor.toString());
+    }
+    if (this.labelEl) {
+      this.labelEl.innerHTML = this.onLabel;
+    }
+    if (this.squareButton) {
+      if (this.effect3d) {
+        this.squareBorder1.setAttribute('fill', Color.DARK_GRAY.toString());
+        this.squareBorder2.setAttribute('fill', Color.DARK_GRAY.toString());
+        this.squareBorder3.setAttribute('fill', Color.WHITE.toString());
+        this.squareBorder4.setAttribute('fill', Color.WHITE.toString());
+      } else {
+        this.buttonEl.setAttribute('fill', Color.WHITE.toString());
+      }
+    } else {
+      if (this.effect3d) {
+        this.buttonEl.setAttribute('fill', `url(#${this.id}-ellipse-bg-g-enabled)`);
+      } else {
+        this.buttonEl.setAttribute('fill', Color.WHITE.toString());
+      }
+    }
+  }
+
+  private release() {
+    if (this.ledEl) {
+      this.ledEl.setAttribute('fill', this.offColor.toString());
+    }
+    if (this.ledOverlayEl) {
+      this.ledOverlayEl.setAttribute('stop-color', this.offColor.toString());
+    }
+    if (this.labelEl) {
+      this.labelEl.innerHTML = this.offLabel;
+    }
+    if (this.squareButton) {
+      if (this.effect3d) {
+        this.squareBorder1.setAttribute('fill', Color.WHITE.toString());
+        this.squareBorder2.setAttribute('fill', Color.WHITE.toString());
+        this.squareBorder3.setAttribute('fill', Color.DARK_GRAY.toString());
+        this.squareBorder4.setAttribute('fill', Color.DARK_GRAY.toString());
+      } else {
+        this.buttonEl.setAttribute('fill', Color.DARK_GRAY.toString());
+      }
+    } else {
+      if (this.effect3d) {
+        this.buttonEl.setAttribute('fill', `url(#${this.id}-ellipse-bg-g-disabled)`);
+      } else {
+        this.buttonEl.setAttribute('fill', Color.DARK_GRAY.toString());
+      }
+    }
   }
 }

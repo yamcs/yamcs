@@ -1,7 +1,6 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { Compiler, CompilerFactory, COMPILER_OPTIONS, NgModule } from '@angular/core';
+import { Compiler, CompilerFactory, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { JitCompilerFactory } from '@angular/platform-browser-dynamic';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './AppRoutingModule';
 import { AppUtilModule } from './apputil/AppUtilModule';
@@ -31,7 +30,7 @@ export function createCompiler(fn: CompilerFactory): Compiler {
       provide: APP_CONFIG,
       useValue: {},
     },
-    {
+    /*{
       provide: COMPILER_OPTIONS,
       useValue: {},
       multi: true
@@ -45,7 +44,7 @@ export function createCompiler(fn: CompilerFactory): Compiler {
       provide: Compiler, // The JIT compiler is used for dynamic modules
       useFactory: createCompiler,
       deps: [CompilerFactory]
-    }
+    }*/
   ],
   exports: [
     BrowserModule,

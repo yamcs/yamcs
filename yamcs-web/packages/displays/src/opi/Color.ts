@@ -21,6 +21,13 @@ export class Color {
     return new Color(this.red, this.green, this.blue, alpha);
   }
 
+  mixWith(color: Color, weight: number) {
+    const r = Math.floor(this.red * weight + color.red * (1 - weight));
+    const g = Math.floor(this.green * weight + color.green * (1 - weight));
+    const b = Math.floor(this.blue * weight + color.blue * (1 - weight));
+    return new Color(r, g, b);
+  }
+
   brighter() {
     let r = this.red;
     let g = this.green;
