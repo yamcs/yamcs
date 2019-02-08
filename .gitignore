@@ -12,6 +12,8 @@ bin/
 target/
 server.lock
 make-live-devel-local.sh
+testDispose/
 *.xtce.consistency_date
 *.xtce.serialized
 *.log
+.DS_store
