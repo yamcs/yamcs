@@ -17,7 +17,7 @@ public class FinishedPacket extends Packet {
     private boolean dataComplete;
     private FileStatus fileStatus;
     private TLV faultLocation;
-    private List<FileStoreResponse> filestoreResponses = new ArrayList<FileStoreResponse>();;
+    private List<FileStoreResponse> filestoreResponses = new ArrayList<FileStoreResponse>();
 
     public enum FileStatus {
         DeliberatelyDiscarded(0),
@@ -54,7 +54,7 @@ public class FinishedPacket extends Packet {
         this.dataComplete = !Utils.getBitOfByte(temp, 6);
         this.fileStatus = FileStatus.fromCode(temp & 0x03);
 
-        while (buffer.get() != buffer.limit()) {
+        while (buffer.hasRemaining()) {
             TLV tempTLV = TLV.readTLV(buffer);
             switch (tempTLV.getType()) {
             case 1:
