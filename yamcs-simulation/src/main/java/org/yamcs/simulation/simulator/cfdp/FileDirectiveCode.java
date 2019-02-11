@@ -12,7 +12,7 @@ public enum FileDirectiveCode {
     Finished(0x05),
     ACK(0x06),
     Metadata(0x07),
-    NACK(0x08),
+    NAK(0x08),
     Prompt(0x09),
     KeepAlive(0x0C);
 

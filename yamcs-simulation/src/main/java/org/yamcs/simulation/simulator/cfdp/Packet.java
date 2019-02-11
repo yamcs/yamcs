@@ -43,29 +43,21 @@ public class Packet {
                 return new EofPacket(buffer, header);
             case Finished:
                 return new FinishedPacket(buffer, header);
-            /* case Finished:
-                readFinishedPdu();
-                break;
             case ACK:
-                readAckPdu();
-                break;
+                return new AckPacket(buffer, header);
             case Metadata:
-                readMetadataPdu();
-                break;
-            case NACK:
-                readNackPdu();
-                break;
+                return new MetadataPacket(buffer, header);
+            case NAK:
+                return new NakPacket(buffer, header);
             case Prompt:
-                readPromptPdu();
-                break;
+                return new PromptPacket(buffer, header);
             case KeepAlive:
-                readKeepAlivePdu();
-                break;*/
+                return new KeepAlivePacket(buffer, header);
             default:
                 break;
             }
         } else {
-            // readFileDataPdu();
+            return new FileDataPacket(buffer, header);
         }
         return null;
     }
