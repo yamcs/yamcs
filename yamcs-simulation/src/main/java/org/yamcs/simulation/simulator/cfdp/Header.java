@@ -101,4 +101,19 @@ public class Header {
         destinationId = Utils.getUnsignedLongFromBuffer(buffer, entityIdLength);
     }
 
+    protected void writeToBuffer(ByteBuffer buffer) {
+        byte b = (byte) ((Utils.boolToByte(!fileDirective) << 4) |
+                (Utils.boolToByte(towardsSender) << 3) |
+                (Utils.boolToByte(!acknowledged) << 2) |
+                (Utils.boolToByte(withCrc) << 1));
+        buffer.put(b);
+        buffer.putShort((short) dataLength);
+        b = (byte) ((entityIdLength - 1 << 4) |
+                (sequenceNumberLength - 1));
+        buffer.put(b);
+        buffer.put(Utils.longToBytes(sourceId, entityIdLength));
+        buffer.put(Utils.longToBytes(sequenceNr, sequenceNumberLength));
+        buffer.put(Utils.longToBytes(destinationId, entityIdLength));
+    }
+
 }

@@ -8,36 +8,36 @@ import com.google.common.collect.Maps;
 
 public enum ConditionCode {
 
-    NoError(0x00),
-    AckLimitReached(0x01),
-    KeepAliveReached(0x02),
-    InvalidTransmissionMode(0x03),
-    FilestoreRejection(0x04),
-    FileChecksumFailure(0x05),
-    FileSizeError(0x06),
-    NakLimitReached(0x07),
-    InactivityDetected(0x08),
-    InvalidFileStructure(0x09),
-    CheckLimitReached(0x0A),
-    SuspendRequestReceived(0x0E),
-    CancelRequestReceived(0x0F),
-    Reserved(0x0B);
+    NoError((byte) 0x00),
+    AckLimitReached((byte) 0x01),
+    KeepAliveReached((byte) 0x02),
+    InvalidTransmissionMode((byte) 0x03),
+    FilestoreRejection((byte) 0x04),
+    FileChecksumFailure((byte) 0x05),
+    FileSizeError((byte) 0x06),
+    NakLimitReached((byte) 0x07),
+    InactivityDetected((byte) 0x08),
+    InvalidFileStructure((byte) 0x09),
+    CheckLimitReached((byte) 0x0A),
+    SuspendRequestReceived((byte) 0x0E),
+    CancelRequestReceived((byte) 0x0F),
+    Reserved((byte) 0x0B);
 
-    private int code;
+    private byte code;
 
-    public static final Map<Integer, ConditionCode> Lookup = Maps.uniqueIndex(
+    public static final Map<Byte, ConditionCode> Lookup = Maps.uniqueIndex(
             Arrays.asList(ConditionCode.values()),
             ConditionCode::getCode);
 
-    private ConditionCode(int code) {
+    private ConditionCode(byte code) {
         this.code = code;
     }
 
-    public int getCode() {
+    public byte getCode() {
         return code;
     }
 
-    private static ConditionCode fromCode(int code) {
+    private static ConditionCode fromCode(byte code) {
         if (Lookup.containsKey(code)) {
             return Lookup.get(code);
         } else {
@@ -50,7 +50,10 @@ public enum ConditionCode {
     }
 
     public static ConditionCode readConditionCode(byte b) {
-        return ConditionCode.fromCode(b >> 4);
+        return ConditionCode.fromCode((byte) (b >> 4));
     }
 
+    public void writeAsByteToBuffer(ByteBuffer buffer) {
+        buffer.put((byte) (getCode() << 4));
+    }
 }

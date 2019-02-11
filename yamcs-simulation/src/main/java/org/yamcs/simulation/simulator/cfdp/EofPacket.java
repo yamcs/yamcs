@@ -7,7 +7,7 @@ public class EofPacket extends Packet {
     private ConditionCode conditionCode;
     private long fileChecksum;
     private long fileSize;
-    private TLV faultLocation;
+    private TLV faultLocation = null;
 
     public EofPacket(ByteBuffer buffer, Header header) {
         super(buffer, header);
@@ -19,6 +19,17 @@ public class EofPacket extends Packet {
         if (conditionCode != ConditionCode.NoError
                 && conditionCode != ConditionCode.Reserved) {
             this.faultLocation = TLV.readTLV(buffer);
+        }
+    }
+
+    @Override
+    protected void writeCFDPPacket(ByteBuffer buffer) {
+        super.writeCFDPPacket(buffer);
+        this.conditionCode.writeAsByteToBuffer(buffer);
+        Utils.writeUnsignedInt(buffer, this.fileChecksum);
+        Utils.writeUnsignedInt(buffer, this.fileSize);
+        if (this.faultLocation != null) {
+            faultLocation.writeToBuffer(buffer);
         }
     }
 

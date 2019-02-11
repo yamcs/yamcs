@@ -35,6 +35,10 @@ public class Packet {
         this.buffer = buffer;
     }
 
+    private Header getHeader() {
+        return this.header;
+    }
+
     public static Packet getCFDPPacket(ByteBuffer buffer) {
         Header header = new Header(buffer);
         if (header.isFileDirective()) {
@@ -60,6 +64,11 @@ public class Packet {
             return new FileDataPacket(buffer, header);
         }
         return null;
+    }
+
+    // the buffer is assumed to be at the correct position
+    protected void writeCFDPPacket(ByteBuffer buffer) {
+        getHeader().writeToBuffer(buffer);
     }
 
     /*  public CFDPPacket(boolean fileDirective, boolean towardsSender, boolean acknowledged, boolean withCrc,
@@ -104,21 +113,4 @@ public class Packet {
     }
     */
 
-    /* private void putHeader() {
-        byte b = (byte) ((Utils.boolToByte(!fileDirective) << 4) |
-                (Utils.boolToByte(towardsSender) << 3) |
-                (Utils.boolToByte(!acknowledged) << 2) |
-                (Utils.boolToByte(withCrc) << 1));
-        buffer.put(0, b);
-        buffer.putShort(1, (short) dataLength);
-        b = (byte) ((entityIdLength << 4) |
-                (sequenceNumberLength));
-        buffer.put(3, b);
-        buffer.position(4);
-        buffer.put(Utils.longToBytes(sourceId, entityIdLength));
-        buffer.position(4 + entityIdLength);
-        buffer.put(Utils.longToBytes(sequenceNr, sequenceNumberLength));
-        buffer.position(4 + entityIdLength + sequenceNumberLength);
-        buffer.put(Utils.longToBytes(destinationId, entityIdLength));
-    }*/
 }

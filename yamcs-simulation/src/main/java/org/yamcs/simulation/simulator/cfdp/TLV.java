@@ -3,11 +3,11 @@ package org.yamcs.simulation.simulator.cfdp;
 import java.nio.ByteBuffer;
 
 public class TLV {
-    private short type;
+    private byte type;
     private short length;
     private byte[] value;
 
-    public TLV(short type, short length, byte[] value) {
+    public TLV(byte type, short length, byte[] value) {
         this.type = type;
         this.length = length;
         this.value = value;
@@ -31,5 +31,11 @@ public class TLV {
         byte[] value = new byte[length];
         buffer.get(value);
         return new TLV(type, length, value);
+    }
+
+    public void writeToBuffer(ByteBuffer buffer) {
+        buffer.put(this.getValue());
+        Utils.writeUnsignedByte(buffer, this.length);
+        buffer.put(this.value);
     }
 }

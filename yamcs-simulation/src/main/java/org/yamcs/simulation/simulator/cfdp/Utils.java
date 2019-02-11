@@ -19,6 +19,13 @@ public class Utils {
     }
 
     /*
+     * write the given short as an unsigned byte to the given buffer at its current position
+     */
+    public static void writeUnsignedByte(ByteBuffer buffer, short input) {
+        buffer.put((byte) (input & 0xff));
+    }
+
+    /*
      * get an unsigned short value from an input buffer, at its current position
      * A short has range -2ˆ15+1 to 2ˆ15-1, while we want 0 to 2ˆ16-1, the mask and int cast takes care of this
      */
@@ -26,12 +33,19 @@ public class Utils {
         return buffer.getShort() & 0xffff;
     }
 
-    /*
-     * get an unsigned int value from an input buffer, at its current position
-     * A short has range -2ˆ31+1 to 2ˆ31-1, while we want 0 to 2ˆ32-1, the mask and int cast takes care of this
+    /**
+     * get an unsigned int value from an input buffer, at its current position A short has range -2ˆ31+1 to 2ˆ31-1,
+     * while we want 0 to 2ˆ32-1, the mask and int cast takes care of this
      */
     public static long getUnsignedInt(ByteBuffer buffer) {
         return buffer.getInt() & 0xffffffff;
+    }
+
+    /**
+     * Write the given long as an unsigned int to the given buffer at its current position
+     */
+    public static void writeUnsignedInt(ByteBuffer buffer, long input) {
+        buffer.putInt((int) (input & 0xffffffff));
     }
 
     /*
