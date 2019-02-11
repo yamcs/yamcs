@@ -45,8 +45,7 @@ public class FinishedPacket extends Packet {
     }
 
     public FinishedPacket(ByteBuffer buffer, Header header) {
-        this.header = header;
-        this.buffer = buffer;
+        super(buffer, header);
 
         byte temp = buffer.get();
         this.conditionCode = ConditionCode.readConditionCode(temp);

@@ -14,8 +14,7 @@ public class NakPacket extends Packet {
     private List<SegmentRequest> segmentRequests = new ArrayList<SegmentRequest>();
 
     public NakPacket(ByteBuffer buffer, Header header) {
-        this.header = header;
-        this.buffer = buffer;
+        super(buffer, header);
 
         this.scopeStart = Utils.getUnsignedInt(buffer);
         this.scopeEnd = Utils.getUnsignedInt(buffer);

@@ -8,9 +8,6 @@ import com.google.common.collect.Maps;
 
 public class AckPacket extends Packet {
 
-    private Header header;
-    private ByteBuffer buffer;
-
     private FileDirectiveCode directiveCode;
     private FileDirectiveSubtypeCode directiveSubtypeCode;
     private ConditionCode conditionCode;
@@ -75,8 +72,7 @@ public class AckPacket extends Packet {
     }
 
     public AckPacket(ByteBuffer buffer, Header header) {
-        this.header = header;
-        this.buffer = buffer;
+        super(buffer, header);
 
         byte temp = buffer.get();
         this.directiveCode = FileDirectiveCode.readFileDirectiveCode(temp);

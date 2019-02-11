@@ -12,8 +12,7 @@ public class EofPacket extends Packet {
     private TLV faultLocation;
 
     public EofPacket(ByteBuffer buffer, Header header) {
-        this.header = header;
-        this.buffer = buffer;
+        super(buffer, header);
 
         this.conditionCode = ConditionCode.readConditionCode(buffer);
         this.fileChecksum = Utils.getUnsignedInt(buffer);

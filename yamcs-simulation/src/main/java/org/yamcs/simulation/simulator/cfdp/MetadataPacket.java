@@ -18,8 +18,7 @@ public class MetadataPacket extends Packet {
     private TLV flowLabel;
 
     public MetadataPacket(ByteBuffer buffer, Header header) {
-        this.header = header;
-        this.buffer = buffer;
+        super(buffer, header);
 
         byte temp = buffer.get();
         this.segmentationControl = (temp & 0x01) == 1;

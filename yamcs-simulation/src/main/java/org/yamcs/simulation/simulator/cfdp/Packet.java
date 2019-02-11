@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 public class Packet {
 
     protected ByteBuffer buffer;
+    protected Header header;
 
     private Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -27,6 +28,11 @@ public class Packet {
         public byte[] getValue() {
             return value;
         }
+    }
+
+    protected Packet(ByteBuffer buffer, Header header) {
+        this.header = header;
+        this.buffer = buffer;
     }
 
     public static Packet getCFDPPacket(ByteBuffer buffer) {
