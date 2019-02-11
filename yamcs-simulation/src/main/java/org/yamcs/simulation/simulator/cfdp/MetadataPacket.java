@@ -6,8 +6,6 @@ import java.util.List;
 
 public class MetadataPacket extends Packet {
 
-    private Header header;
-    private ByteBuffer buffer;
     private boolean segmentationControl;
     private long fileSize;
     private LV sourceFileName;

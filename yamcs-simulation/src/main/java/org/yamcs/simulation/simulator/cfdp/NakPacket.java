@@ -6,9 +6,6 @@ import java.util.List;
 
 public class NakPacket extends Packet {
 
-    private Header header;
-    private ByteBuffer buffer;
-
     private long scopeStart;
     private long scopeEnd;
     private List<SegmentRequest> segmentRequests = new ArrayList<SegmentRequest>();

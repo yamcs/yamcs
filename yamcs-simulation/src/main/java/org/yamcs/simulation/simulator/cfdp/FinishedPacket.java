@@ -10,8 +10,6 @@ import com.google.common.collect.Maps;
 
 public class FinishedPacket extends Packet {
 
-    private Header header;
-    private ByteBuffer buffer;
     private ConditionCode conditionCode;
     private boolean generatedByEndSystem;
     private boolean dataComplete;

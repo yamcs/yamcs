@@ -4,8 +4,6 @@ import java.nio.ByteBuffer;
 
 public class EofPacket extends Packet {
 
-    private Header header;
-    private ByteBuffer buffer;
     private ConditionCode conditionCode;
     private long fileChecksum;
     private long fileSize;

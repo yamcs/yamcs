@@ -4,9 +4,6 @@ import java.nio.ByteBuffer;
 
 public class PromptPacket extends Packet {
 
-    private Header header;
-    private ByteBuffer buffer;
-
     // 0 = NAK
     // 1 = Keep Alive
     private boolean responseRequired;
