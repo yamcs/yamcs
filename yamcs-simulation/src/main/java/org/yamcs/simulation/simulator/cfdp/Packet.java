@@ -32,7 +32,7 @@ public class Packet {
     public static Packet getCFDPPacket(ByteBuffer buffer) {
         Header header = new Header(buffer);
         if (header.isFileDirective()) {
-            switch (FileDirectiveCode.readConditionCode(buffer)) {
+            switch (FileDirectiveCode.readFileDirectiveCode(buffer)) {
             case EOF:
                 return new EofPacket(buffer, header);
             case Finished:

@@ -38,7 +38,12 @@ public enum FileDirectiveCode {
         }
     }
 
-    public static FileDirectiveCode readConditionCode(ByteBuffer buffer) {
-        return FileDirectiveCode.fromCode(buffer.get());
+    public static FileDirectiveCode readFileDirectiveCode(ByteBuffer buffer) {
+        return readFileDirectiveCode(buffer.get());
     }
+
+    public static FileDirectiveCode readFileDirectiveCode(byte b) {
+        return FileDirectiveCode.fromCode(b >> 4);
+    }
+
 }
