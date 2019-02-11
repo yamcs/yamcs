@@ -23,7 +23,7 @@ public class MetadataPacket extends Packet {
 
         byte temp = buffer.get();
         this.segmentationControl = (temp & 0x01) == 1;
-        this.fileSize = Utils.getUnsignedShort(buffer);
+        this.fileSize = Utils.getUnsignedInt(buffer);
         this.sourceFileName = LV.readLV(buffer);
         this.destinationFileName = LV.readLV(buffer);
 
