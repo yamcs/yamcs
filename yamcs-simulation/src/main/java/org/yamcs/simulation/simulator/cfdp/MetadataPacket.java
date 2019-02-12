@@ -43,4 +43,17 @@ public class MetadataPacket extends Packet {
         }
     }
 
+    @Override
+    protected void writeCFDPPacket(ByteBuffer buffer) {
+        super.writeCFDPPacket(buffer);
+        buffer.put((byte) ((segmentationControl ? 1 : 0) << 7));
+        Utils.writeUnsignedInt(buffer, fileSize);
+        sourceFileName.writeToBuffer(buffer);
+        destinationFileName.writeToBuffer(buffer);
+        filestoreRequests.forEach(x -> x.toTLV().writeToBuffer(buffer));
+        messagesToUser.forEach(x -> x.toTLV().writeToBuffer(buffer));
+        faultHandlerOverrides.forEach(x -> x.toTLV().writeToBuffer(buffer));
+        flowLabel.writeToBuffer(buffer);
+    }
+
 }

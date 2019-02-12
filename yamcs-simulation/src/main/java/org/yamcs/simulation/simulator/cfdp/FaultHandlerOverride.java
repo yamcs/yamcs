@@ -1,6 +1,9 @@
 package org.yamcs.simulation.simulator.cfdp;
 
 public class FaultHandlerOverride {
+
+    public static byte TYPE = 0x04;
+
     private ConditionCode conditionCode;
     private HandlerCode handlerCode;
 
@@ -20,5 +23,11 @@ public class FaultHandlerOverride {
     public static FaultHandlerOverride fromTLV(TLV tlv) {
         byte b = tlv.getValue()[0];
         return new FaultHandlerOverride(ConditionCode.readConditionCode(b), HandlerCode.readHandlerCode(b));
+    }
+
+    public TLV toTLV() {
+        return new TLV(FaultHandlerOverride.TYPE,
+                new byte[] { (byte) (getConditionCode().getCode() << 4
+                        | getHandlerCode().getCode()) });
     }
 }

@@ -3,16 +3,10 @@ package org.yamcs.simulation.simulator.cfdp;
 import java.nio.ByteBuffer;
 
 public class LV {
-    private short length;
     private byte[] value;
 
-    public LV(short length, byte[] value) {
-        this.length = length;
+    public LV(byte[] value) {
         this.value = value;
-    }
-
-    public short getLength() {
-        return length;
     }
 
     public byte[] getValue() {
@@ -20,9 +14,13 @@ public class LV {
     }
 
     public static LV readLV(ByteBuffer buffer) {
-        short length = Utils.getUnsignedByte(buffer);
-        byte[] value = new byte[length];
+        byte[] value = new byte[Utils.getUnsignedByte(buffer)];
         buffer.get(value);
-        return new LV(length, value);
+        return new LV(value);
+    }
+
+    public void writeToBuffer(ByteBuffer buffer) {
+        Utils.writeUnsignedByte(buffer, (short) this.getValue().length);
+        buffer.put(this.getValue());
     }
 }

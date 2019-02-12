@@ -11,7 +11,7 @@ public class TLV {
         this.value = value;
     }
 
-    public short getType() {
+    public byte getType() {
         return type;
     }
 
@@ -27,8 +27,8 @@ public class TLV {
     }
 
     public void writeToBuffer(ByteBuffer buffer) {
-        buffer.put(this.getValue());
+        buffer.put(this.getType());
         Utils.writeUnsignedByte(buffer, (short) this.getValue().length);
-        buffer.put(this.value);
+        buffer.put(this.getValue());
     }
 }

@@ -44,11 +44,13 @@ public class FinishedPacket extends Packet {
 
     public FinishedPacket(ByteBuffer buffer, Header header) {
         super(buffer, header);
+
         byte temp = buffer.get();
         this.conditionCode = ConditionCode.readConditionCode(temp);
         this.generatedByEndSystem = Utils.getBitOfByte(temp, 5);
         this.dataComplete = !Utils.getBitOfByte(temp, 6);
         this.fileStatus = FileStatus.fromCode((byte) (temp & 0x03));
+
         while (buffer.hasRemaining()) {
             TLV tempTLV = TLV.readTLV(buffer);
             switch (tempTLV.getType()) {
@@ -71,9 +73,7 @@ public class FinishedPacket extends Packet {
         temp |= ((this.dataComplete ? 0 : 1) << 2);
         temp |= ((this.fileStatus.getCode() & 0x03));
         buffer.put(temp);
-        for (FileStoreResponse filestoreResponse : filestoreResponses) {
-            filestoreResponse.toTLV().writeToBuffer(buffer);
-        }
+        this.filestoreResponses.forEach(x -> x.toTLV().writeToBuffer(buffer));
         if (faultLocation != null) {
             faultLocation.writeToBuffer(buffer);
         }
