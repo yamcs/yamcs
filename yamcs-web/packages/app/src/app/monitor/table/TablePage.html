@@ -1,9 +1,9 @@
-<app-monitor-page *ngIf="table$ | async as table">
-  <app-monitor-toolbar>
+<app-instance-page *ngIf="table$ | async as table">
+  <app-instance-toolbar>
     <a mat-icon-button routerLink=".." [queryParams]="{instance: instance.name}" color="primary">
       <mat-icon>arrow_back</mat-icon>
     </a> Tables / {{ table.name }}
-  </app-monitor-toolbar>
+  </app-instance-toolbar>
 
   <nav mat-tab-nav-bar>
     <a mat-tab-link
@@ -34,4 +34,4 @@
   <div class="outlet-wrapper">
     <router-outlet></router-outlet>
   </div>
-</app-monitor-page>
+</app-instance-page>

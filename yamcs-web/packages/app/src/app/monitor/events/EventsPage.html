@@ -1,5 +1,5 @@
-<app-monitor-page>
-  <app-monitor-toolbar>
+<app-instance-page>
+  <app-instance-toolbar>
     Events
     &nbsp;&nbsp;&nbsp;&nbsp;
     <button mat-button
@@ -32,7 +32,7 @@
             (click)="stopStreaming()">
       <mat-icon>pause</mat-icon>
     </button>
-  </app-monitor-toolbar>
+  </app-instance-toolbar>
 
   <div class="panel-content" *ngIf="dataSource">
     <form [formGroup]="filter">
@@ -177,4 +177,4 @@
       <span style="flex: 1 1 auto"></span>
     </mat-toolbar>
   </div>
-</app-monitor-page>
+</app-instance-page>

@@ -1,5 +1,5 @@
-<app-monitor-page>
-  <app-monitor-toolbar>
+<app-instance-page>
+  <app-instance-toolbar>
     Displays
 
     &nbsp;&nbsp;&nbsp;
@@ -25,7 +25,7 @@
       <mat-icon>delete</mat-icon>
       DELETE
     </button>
-  </app-monitor-toolbar>
+  </app-instance-toolbar>
 
   <div class="panel-content">
     <ng-container *ngIf="breadcrumb$ | async as breadcrumb">
@@ -151,4 +151,4 @@
       <app-empty-message>Empty directory.</app-empty-message>
     </ng-template>
   </div>
-</app-monitor-page>
+</app-instance-page>

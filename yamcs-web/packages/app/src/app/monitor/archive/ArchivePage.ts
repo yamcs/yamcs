@@ -10,7 +10,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { PreferenceStore } from '../../core/services/PreferenceStore';
 import { YamcsService } from '../../core/services/YamcsService';
 import { DateTimePipe } from '../../shared/pipes/DateTimePipe';
-import { StartReplayDialog } from '../template/StartReplayDialog';
+import { StartReplayDialog } from '../../shared/template/StartReplayDialog';
 import { DownloadDumpDialog } from './DownloadDumpDialog';
 import { JumpToDialog } from './JumpToDialog';
 import { TimelineTooltip } from './TimelineTooltip';

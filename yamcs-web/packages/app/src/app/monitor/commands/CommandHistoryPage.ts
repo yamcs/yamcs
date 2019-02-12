@@ -7,11 +7,11 @@ import { CommandHistoryDataSource } from './CommandHistoryDataSource';
 
 
 @Component({
-  templateUrl: './CommandingPage.html',
-  styleUrls: ['./CommandingPage.css'],
+  templateUrl: './CommandHistoryPage.html',
+  styleUrls: ['./CommandHistoryPage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommandingPage implements OnInit {
+export class CommandHistoryPage implements OnInit {
 
   instance: Instance;
 
@@ -29,7 +29,7 @@ export class CommandingPage implements OnInit {
   dataSource: CommandHistoryDataSource;
 
   constructor(private yamcs: YamcsService, title: Title) {
-    title.setTitle('Commanding - Yamcs');
+    title.setTitle('Command History - Yamcs');
     this.instance = yamcs.getInstance();
   }
 

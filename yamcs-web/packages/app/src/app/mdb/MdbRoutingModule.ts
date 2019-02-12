@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { AuthGuard } from '../core/guards/AuthGuard';
 import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayGetMissionDatabaseGuard } from '../core/guards/MayGetMissionDatabaseGuard';
+import { InstancePage } from '../shared/template/InstancePage';
 import { AlgorithmPage } from './algorithms/AlgorithmPage';
 import { AlgorithmsPage } from './algorithms/AlgorithmsPage';
 import { CommandPage } from './commands/CommandPage';
@@ -12,8 +13,8 @@ import { ContainersPage } from './containers/ContainersPage';
 import { ParameterChartTab } from './parameters/ParameterChartTab';
 import { ParameterDataTab } from './parameters/ParameterDataTab';
 import { ParameterPage } from './parameters/ParameterPage';
-import { ParameterSummaryTab } from './parameters/ParameterSummaryTab';
 import { ParametersPage } from './parameters/ParametersPage';
+import { ParameterSummaryTab } from './parameters/ParameterSummaryTab';
 import { SpaceSystemAlgorithmsTab } from './space-system-detail/SpaceSystemAlgorithmsTab';
 import { SpaceSystemChangelogTab } from './space-system-detail/SpaceSystemChangelogTab';
 import { SpaceSystemCommandsTab } from './space-system-detail/SpaceSystemCommandsTab';
@@ -21,14 +22,13 @@ import { SpaceSystemContainersTab } from './space-system-detail/SpaceSystemConta
 import { SpaceSystemPage } from './space-system-detail/SpaceSystemPage';
 import { SpaceSystemParametersTab } from './space-system-detail/SpaceSystemParametersTab';
 import { SpaceSystemsPage } from './space-systems/SpaceSystemsPage';
-import { MdbPage } from './template/MdbPage';
 
 
 const routes = [{
   path: '',
   canActivate: [AuthGuard, InstanceExistsGuard, MayGetMissionDatabaseGuard],
   canActivateChild: [AuthGuard, MayGetMissionDatabaseGuard],
-  component: MdbPage,
+  component: InstancePage,
   children: [{
     path: '',
     pathMatch: 'full',
@@ -128,7 +128,6 @@ export const routingComponents = [
   CommandPage,
   ContainersPage,
   ContainerPage,
-  MdbPage,
   ParametersPage,
   ParameterPage,
   ParameterDataTab,

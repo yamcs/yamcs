@@ -20,7 +20,7 @@
     "rxjs": "^6.1.0"
   },
   "devDependencies": {
-    "@types/node": "^10.3.3",
+    "@types/node": "^11.9.0",
     "rollup": "^1.0.1",
     "rollup-plugin-commonjs": "^9.0.0",
     "rollup-plugin-node-resolve": "^4.0.0",

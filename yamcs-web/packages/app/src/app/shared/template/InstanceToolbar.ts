@@ -6,12 +6,12 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { StartReplayDialog } from './StartReplayDialog';
 
 @Component({
-  selector: 'app-monitor-toolbar',
-  templateUrl: './MonitorToolbar.html',
-  styleUrls: ['./MonitorToolbar.css'],
+  selector: 'app-instance-toolbar',
+  templateUrl: './InstanceToolbar.html',
+  styleUrls: ['./InstanceToolbar.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MonitorToolbar implements OnDestroy {
+export class InstanceToolbar implements OnDestroy {
 
   processor$ = new BehaviorSubject<Processor | null>(null);
   processorSubscription: Subscription;

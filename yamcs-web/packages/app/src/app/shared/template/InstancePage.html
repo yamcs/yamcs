@@ -1,0 +1,145 @@
+<mat-sidenav-container class="mat-typography" *ngIf="instance$ | async as instance">
+  <mat-sidenav mode="side" opened="true">
+    <mat-toolbar class="module-title">
+      <mat-toolbar-row>
+      </mat-toolbar-row>
+    </mat-toolbar>
+
+    <mat-nav-list dense>
+      <mat-list-item class="nav-item-group" (click)="monitoringExpanded = !monitoringExpanded">
+        <mat-icon>widgets</mat-icon>
+        Monitoring
+        <span style="flex: 1 1 auto"></span>
+        <mat-icon *ngIf="monitoringExpanded">keyboard_arrow_up</mat-icon>
+        <mat-icon *ngIf="!monitoringExpanded">keyboard_arrow_down</mat-icon>
+      </mat-list-item>
+      <div *ngIf="monitoringExpanded" class="nav-item-group-items">
+        <app-sidebar-nav-item routerLink="/monitor/displays"
+                              [queryParams]="{instance: instance.name}">
+          Displays
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item routerLink="/monitor/layouts"
+                              [queryParams]="{instance: instance.name}">
+          Layouts
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item *ngIf="showEventsItem()"
+                              routerLink="/monitor/events"
+                              [queryParams]="{instance: instance.name}">
+          Events
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item routerLink="/monitor/alarms"
+                              [queryParams]="{instance: instance.name}">
+          Alarms
+        </app-sidebar-nav-item>
+      </div>
+
+      <mat-list-item class="nav-item-group" (click)="commandingExpanded = !commandingExpanded">
+        <mat-icon>rss_feed</mat-icon>
+        Commanding
+        <span style="flex: 1 1 auto"></span>
+        <mat-icon *ngIf="commandingExpanded">keyboard_arrow_up</mat-icon>
+        <mat-icon *ngIf="!commandingExpanded">keyboard_arrow_down</mat-icon>
+      </mat-list-item>
+      <div *ngIf="commandingExpanded" class="nav-item-group-items">
+        <app-sidebar-nav-item routerLink="/monitor/command-history"
+                              [queryParams]="{instance: instance.name}">
+          Command History
+        </app-sidebar-nav-item>
+      </div>
+
+      <mat-list-item class="nav-item-group" (click)="mdbExpanded = !mdbExpanded">
+        <mat-icon>book</mat-icon>
+        MDB
+        <span style="flex: 1 1 auto"></span>
+        <mat-icon *ngIf="mdbExpanded">keyboard_arrow_up</mat-icon>
+        <mat-icon *ngIf="!mdbExpanded">keyboard_arrow_down</mat-icon>
+      </mat-list-item>
+      <div *ngIf="mdbExpanded" class="nav-item-group-items">
+        <app-sidebar-nav-item routerLink="/mdb/space-systems"
+                              [queryParams]="{instance: instance.name}">
+          Space Systems
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item routerLink="/mdb/parameters"
+                              [queryParams]="{instance: instance.name}">
+          Parameters
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item routerLink="/mdb/containers"
+                              [queryParams]="{instance: instance.name}">
+          Containers
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item routerLink="/mdb/commands"
+                              [queryParams]="{instance: instance.name}">
+          Commands
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item routerLink="/mdb/algorithms"
+                              [queryParams]="{instance: instance.name}">
+          Algorithms
+        </app-sidebar-nav-item>
+      </div>
+
+      <app-sidebar-nav-item routerLink="/monitor/archive"
+                            [queryParams]="{instance: instance.name}">
+        TM Archive
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item *ngFor="let extraItem of extraItems"
+                            [routerLink]="['/monitor', extraItem.routerLink]"
+                            [queryParams]="{instance: instance.name}">
+        {{ extraItem.label }}
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="/monitor/links"
+                            [queryParams]="{instance: instance.name}">
+        Links
+      </app-sidebar-nav-item>
+
+      <app-sidebar-nav-item routerLink="/monitor/processors"
+                            [queryParams]="{instance: instance.name}">
+        Processors
+      </app-sidebar-nav-item>
+
+      <mat-list-item class="nav-item-group" (click)="systemExpanded = !systemExpanded">
+        <mat-icon>memory</mat-icon>
+        System
+        <span style="flex: 1 1 auto"></span>
+        <mat-icon *ngIf="systemExpanded">keyboard_arrow_up</mat-icon>
+        <mat-icon *ngIf="!systemExpanded">keyboard_arrow_down</mat-icon>
+      </mat-list-item>
+      <div *ngIf="systemExpanded" class="nav-item-group-items">
+        <app-sidebar-nav-item *ngIf="showServicesItem()"
+                              routerLink="/monitor/services"
+                              [queryParams]="{instance: instance.name}">
+          Services
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item *ngIf="showTablesItem()"
+                              routerLink="/monitor/tables"
+                              [queryParams]="{instance: instance.name}">
+          Tables
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item *ngIf="showStreamsItem()"
+                              routerLink="/monitor/streams"
+                              [queryParams]="{instance: instance.name}">
+          Streams
+        </app-sidebar-nav-item>
+
+        <app-sidebar-nav-item routerLink="/monitor/jvm"
+                              [queryParams]="{instance: instance.name}">
+          JVM
+        </app-sidebar-nav-item>
+      </div>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

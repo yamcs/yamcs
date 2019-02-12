@@ -32,9 +32,13 @@ import { DetailToolbar } from './template/DetailToolbar';
 import { Dots } from './template/Dots';
 import { EmptyMessage } from './template/EmptyMessage';
 import { Expirable } from './template/Expirable';
+import { InstancePage } from './template/InstancePage';
+import { InstancePageTemplate } from './template/InstancePageTemplate';
+import { InstanceToolbar } from './template/InstanceToolbar';
 import { Select } from './template/Select';
 import { SidebarNavItem } from './template/SidebarNavItem';
 import { YaSimpleTableComponent } from './template/SimpleTableDirective';
+import { StartReplayDialog } from './template/StartReplayDialog';
 import { TabDetailIcon } from './template/TabDetailIcon';
 import { YaTableComponent } from './template/TableDirective';
 import { TextAction } from './template/TextAction';
@@ -96,6 +100,9 @@ const sharedComponents = [
   Help,
   HelpDialog,
   Hex,
+  InstancePage,
+  InstancePageTemplate,
+  InstanceToolbar,
   Labels,
   ParameterLegend,
   ParameterPlot,
@@ -105,6 +112,7 @@ const sharedComponents = [
   SidebarNavItem,
   SelectInstanceDialog,
   Select,
+  StartReplayDialog,
   TabDetailIcon,
   TextAction,
   TimestampTracker,
@@ -157,6 +165,7 @@ const guards = [
   entryComponents: [
     HelpDialog,
     SelectInstanceDialog,
+    StartReplayDialog,
   ],
   providers: [
     guards,

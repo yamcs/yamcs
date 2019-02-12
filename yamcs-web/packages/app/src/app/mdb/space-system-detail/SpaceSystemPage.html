@@ -1,7 +1,7 @@
-<app-mdb-page *ngIf="spaceSystem$ | async as spaceSystem">
-  <app-mdb-toolbar>
+<app-instance-page *ngIf="spaceSystem$ | async as spaceSystem">
+  <app-instance-toolbar>
     {{ qualifiedName }}
-  </app-mdb-toolbar>
+  </app-instance-toolbar>
 
   <nav mat-tab-nav-bar>
     <a mat-tab-link
@@ -52,4 +52,4 @@
       </div>
     </div>
   </div>
-</app-mdb-page>
+</app-instance-page>

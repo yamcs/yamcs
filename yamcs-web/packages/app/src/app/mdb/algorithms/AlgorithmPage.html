@@ -1,5 +1,5 @@
-<app-mdb-page *ngIf="algorithm$ | async as algorithm">
-  <app-mdb-toolbar>
+<app-instance-page *ngIf="algorithm$ | async as algorithm">
+  <app-instance-toolbar>
     <ng-container *ngFor="let alias of algorithm.alias">
       <ng-container *ngIf="algorithm.qualifiedName.startsWith(alias.namespace)">
         <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'algorithms']"
@@ -9,7 +9,7 @@
         </a>/{{ alias.name }}
       </ng-container>
     </ng-container>
-  </app-mdb-toolbar>
+  </app-instance-toolbar>
 
   <div class="panel-content">
     <app-algorithm-detail [instance]="instance"
@@ -17,4 +17,4 @@
                           [readonly]="true">
     </app-algorithm-detail>
   </div>
-</app-mdb-page>
+</app-instance-page>

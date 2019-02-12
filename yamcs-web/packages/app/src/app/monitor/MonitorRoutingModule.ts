@@ -5,9 +5,10 @@ import { InstanceExistsGuard } from '../core/guards/InstanceExistsGuard';
 import { MayControlServicesGuard } from '../core/guards/MayControlServicesGuard';
 import { MayReadEventsGuard } from '../core/guards/MayReadEventsGuard';
 import { MayReadTablesGuard } from '../core/guards/MayReadTablesGuard';
+import { InstancePage } from '../shared/template/InstancePage';
 import { AlarmsPage } from './alarms/AlarmsPage';
 import { ArchivePage } from './archive/ArchivePage';
-import { CommandingPage } from './commands/CommandingPage';
+import { CommandHistoryPage } from './commands/CommandHistoryPage';
 import { DisplayFilePage } from './displays/DisplayFilePage';
 import { DisplayFilePageDirtyGuard } from './displays/DisplayFilePageDirtyGuard';
 import { DisplayFolderPage } from './displays/DisplayFolderPage';
@@ -15,6 +16,7 @@ import { DisplayPage } from './displays/DisplayPage';
 import { DisplaysPage } from './displays/DisplaysPage';
 import { EventsPage } from './events/EventsPage';
 import { ExtensionPage } from './ext/ExtensionPage';
+import { JvmPage } from './jvm/JvmPage';
 import { LayoutPage } from './layouts/LayoutPage';
 import { LayoutsPage } from './layouts/LayoutsPage';
 import { LinksPage } from './links/LinksPage';
@@ -28,14 +30,11 @@ import { StreamColumnsTab } from './stream/StreamColumnsTab';
 import { StreamPage } from './stream/StreamPage';
 import { StreamScriptTab } from './stream/StreamScriptTab';
 import { StreamsPage } from './streams/StreamsPage';
-import { SystemPage } from './system/SystemPage';
 import { TableDataTab } from './table/TableDataTab';
 import { TableInfoTab } from './table/TableInfoTab';
 import { TablePage } from './table/TablePage';
 import { TableScriptTab } from './table/TableScriptTab';
 import { TablesPage } from './tables/TablesPage';
-import { MonitorPage } from './template/MonitorPage';
-import { MonitorToolbar } from './template/MonitorToolbar';
 
 
 const routes: Routes = [
@@ -44,7 +43,7 @@ const routes: Routes = [
     canActivate: [AuthGuard, InstanceExistsGuard],
     canActivateChild: [AuthGuard],
     runGuardsAndResolvers: 'always',  // See DisplaysPage.ts for documentation
-    component: MonitorPage,
+    component: InstancePage,
     children: [
       {
         path: '',
@@ -60,8 +59,8 @@ const routes: Routes = [
         component: ArchivePage,
       },
       {
-        path: 'commanding',
-        component: CommandingPage,
+        path: 'command-history',
+        component: CommandHistoryPage,
       },
       {
         path: 'displays',
@@ -185,8 +184,8 @@ const routes: Routes = [
         canActivate: [MayControlServicesGuard],
       },
       {
-        path: 'system',
-        component: SystemPage,
+        path: 'jvm',
+        component: JvmPage,
         canActivate: [AuthGuard],
       },
       {
@@ -209,18 +208,17 @@ export class MonitorRoutingModule { }
 export const routingComponents = [
   AlarmsPage,
   ArchivePage,
-  CommandingPage,
+  CommandHistoryPage,
   DisplaysPage,
   DisplayFilePage,
   DisplayFolderPage,
   DisplayPage,
   EventsPage,
   ExtensionPage,
+  JvmPage,
   LayoutsPage,
   LayoutPage,
   LinksPage,
-  MonitorPage,
-  MonitorToolbar,
   ProcessorsPage,
   ProcessorPage,
   ProcessorServicesTab,
@@ -231,7 +229,6 @@ export const routingComponents = [
   StreamPage,
   StreamColumnsTab,
   StreamScriptTab,
-  SystemPage,
   TablesPage,
   TablePage,
   TableInfoTab,

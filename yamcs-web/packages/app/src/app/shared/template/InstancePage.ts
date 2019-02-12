@@ -8,17 +8,22 @@ import { YamcsService } from '../../core/services/YamcsService';
 import { User } from '../../shared/User';
 
 @Component({
-  templateUrl: './MonitorPage.html',
-  styleUrls: ['./MonitorPage.css'],
+  templateUrl: './InstancePage.html',
+  styleUrls: ['./InstancePage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MonitorPage {
+export class InstancePage {
 
   instance$ = new BehaviorSubject<Instance | null>(null);
 
   user: User;
 
   extraItems: SidebarItem[];
+
+  monitoringExpanded = false;
+  commandingExpanded = false;
+  mdbExpanded = false;
+  systemExpanded = false;
 
   constructor(
     yamcs: YamcsService,

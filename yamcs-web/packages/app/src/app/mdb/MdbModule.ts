@@ -22,8 +22,6 @@ import { SetParameterDialog } from './parameters/SetParameterDialog';
 import { SeverityMeter } from './parameters/SeverityMeter';
 import { Thickness } from './parameters/Thickness';
 import { PolynomialPipe } from './pipes/PolynomialPipe';
-import { MdbPageTemplate } from './template/MdbPageTemplate';
-import { MdbToolbar } from './template/MdbToolbar';
 
 const pipes = [
   PolynomialPipe,
@@ -55,8 +53,6 @@ const dialogComponents = [
     CommandDetail,
     ContainersTable,
     ContainerDetail,
-    MdbPageTemplate,
-    MdbToolbar,
     ParametersTable,
     ParameterCalibration,
     ParameterDetail,

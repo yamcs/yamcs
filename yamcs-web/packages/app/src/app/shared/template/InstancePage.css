@@ -8,7 +8,7 @@ mat-sidenav-container {
 }
 
 mat-sidenav {
-  width: 200px;
+  width: 250px;
   background-color: #fafafa;
   border-right: 1px solid #d3d3d3;
 }
@@ -18,4 +18,8 @@ mat-toolbar {
   border-bottom: 1px solid #d3d3d3;
   box-sizing: content-box;
   color: rgba(0, 0, 0, .654);
+}
+
+.nav-item-group-items {
+  margin-left: 20px;
 }

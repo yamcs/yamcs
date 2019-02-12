@@ -39,9 +39,6 @@ import { QueuedCommandsTable } from './processors/QueuedCommandsTable';
 import { TmStatsTable } from './processors/TmStatsTable';
 import { RecordComponent } from './table/RecordComponent';
 import { ShowEnumDialog } from './table/ShowEnumDialog';
-import { MonitorPageTemplate } from './template/MonitorPageTemplate';
-import { MonitorToolbar } from './template/MonitorToolbar';
-import { StartReplayDialog } from './template/StartReplayDialog';
 
 const dialogComponents = [
   AcknowledgeAlarmDialog,
@@ -55,7 +52,6 @@ const dialogComponents = [
   RenameDisplayDialog,
   RenameLayoutDialog,
   ShowEnumDialog,
-  StartReplayDialog,
   UploadFilesDialog,
 ];
 
@@ -99,17 +95,12 @@ const viewers = [
     Frame,
     EventSeverity,
     Layout,
-    MonitorPageTemplate,
     MultipleParameterTable,
     QueuedCommandsTable,
     RecordComponent,
     ScrollingParameterTable,
     TimelineTooltip,
     TmStatsTable,
-  ],
-  exports: [
-    MonitorPageTemplate,
-    MonitorToolbar,
   ],
   entryComponents: [
     dialogComponents,

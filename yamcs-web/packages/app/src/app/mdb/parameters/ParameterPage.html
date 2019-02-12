@@ -1,5 +1,5 @@
-<app-mdb-page *ngIf="parameter$ | async as parameter">
-  <app-mdb-toolbar>
+<app-instance-page *ngIf="parameter$ | async as parameter">
+  <app-instance-toolbar>
     <ng-container *ngFor="let alias of parameter.alias">
       <ng-container *ngIf="parameter.qualifiedName.startsWith(alias.namespace)">
         <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'parameters']"
@@ -17,7 +17,7 @@
       <mat-icon>edit</mat-icon>
       SET VALUE
     </button>
-  </app-mdb-toolbar>
+  </app-instance-toolbar>
 
   <nav mat-tab-nav-bar>
     <a mat-tab-link
@@ -46,4 +46,4 @@
   <div class="tab-content-wrapper" [class.noscroll]="rlb.isActive">
     <router-outlet></router-outlet>
   </div>
-</app-mdb-page>
+</app-instance-page>

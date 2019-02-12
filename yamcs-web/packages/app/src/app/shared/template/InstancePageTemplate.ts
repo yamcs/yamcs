@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-monitor-page',
-  templateUrl: './MonitorPageTemplate.html',
-  styleUrls: ['./MonitorPageTemplate.css'],
+  selector: 'app-instance-page',
+  templateUrl: './InstancePageTemplate.html',
+  styleUrls: ['./InstancePageTemplate.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MonitorPageTemplate {
+export class InstancePageTemplate {
 
   @Input()
   noscroll = false;

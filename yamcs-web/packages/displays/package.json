@@ -26,7 +26,7 @@
   "devDependencies": {
     "@types/jasmine": "^3.3.5",
     "@types/jasminewd2": "~2.0.2",
-    "@types/node": "^10.3.3",
+    "@types/node": "^11.9.0",
     "@types/pegjs": "^0.10.0",
     "jasmine-core": "^3.1.0",
     "jasmine-spec-reporter": "~4.2.1",

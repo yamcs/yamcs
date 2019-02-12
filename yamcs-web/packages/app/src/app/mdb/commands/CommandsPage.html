@@ -1,5 +1,5 @@
-<app-mdb-page>
-  <app-mdb-toolbar>Commands</app-mdb-toolbar>
+<app-instance-page>
+  <app-instance-toolbar>Commands</app-instance-toolbar>
 
   <ng-container *ngIf="commands$ | async as commands">
     <div class="panel-content" *ngIf="commands.length; else empty">
@@ -13,4 +13,4 @@
       </div>
     </ng-template>
   </ng-container>
-</app-mdb-page>
+</app-instance-page>

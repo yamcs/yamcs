@@ -1,5 +1,5 @@
-<app-mdb-page>
-  <app-mdb-toolbar>Parameters</app-mdb-toolbar>
+<app-instance-page>
+  <app-instance-toolbar>Parameters</app-instance-toolbar>
 
   <ng-container *ngIf="parameters$ | async as parameters">
     <div class="panel-content" *ngIf="parameters.length; else empty">
@@ -13,4 +13,4 @@
       </div>
     </ng-template>
   </ng-container>
-</app-mdb-page>
+</app-instance-page>

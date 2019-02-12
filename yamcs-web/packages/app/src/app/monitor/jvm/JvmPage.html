@@ -1,5 +1,5 @@
-<app-monitor-page *ngIf="info$ | async as info">
-  <app-monitor-toolbar>System</app-monitor-toolbar>
+<app-instance-page *ngIf="info$ | async as info">
+  <app-instance-toolbar>JVM</app-instance-toolbar>
 
   <div class="panel-content">
     <div style="float: left; width: 50%">
@@ -41,4 +41,4 @@
 
     <div style="clear: both"></div>
   </div>
-</app-monitor-page>
+</app-instance-page>

@@ -1,5 +1,5 @@
-<app-mdb-page *ngIf="command$ | async as command">
-  <app-mdb-toolbar>
+<app-instance-page *ngIf="command$ | async as command">
+  <app-instance-toolbar>
     <ng-container *ngFor="let alias of command.alias">
       <ng-container *ngIf="command.qualifiedName.startsWith(alias.namespace)">
         <a [routerLink]="['/mdb/space-systems/', alias.namespace, 'commands']"
@@ -17,11 +17,11 @@
       <mat-icon>rss_feed</mat-icon>
       ISSUE COMMAND
     </button>
-  </app-mdb-toolbar>
+  </app-instance-toolbar>
 
   <div class="panel-content">
     <app-command-detail [instance]="instance"
                         [command]="command">
     </app-command-detail>
   </div>
-</app-mdb-page>
+</app-instance-page>
