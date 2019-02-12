@@ -7,30 +7,30 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 
 public enum FileDirectiveCode {
-    Reserved(0x00),
-    EOF(0x04),
-    Finished(0x05),
-    ACK(0x06),
-    Metadata(0x07),
-    NAK(0x08),
-    Prompt(0x09),
-    KeepAlive(0x0C);
+    Reserved((byte) 0x00),
+    EOF((byte) 0x04),
+    Finished((byte) 0x05),
+    ACK((byte) 0x06),
+    Metadata((byte) 0x07),
+    NAK((byte) 0x08),
+    Prompt((byte) 0x09),
+    KeepAlive((byte) 0x0C);
 
-    private int code;
+    private byte code;
 
-    public static final Map<Integer, FileDirectiveCode> Lookup = Maps.uniqueIndex(
+    public static final Map<Byte, FileDirectiveCode> Lookup = Maps.uniqueIndex(
             Arrays.asList(FileDirectiveCode.values()),
             FileDirectiveCode::getCode);
 
-    private FileDirectiveCode(int code) {
+    private FileDirectiveCode(byte code) {
         this.code = code;
     }
 
-    public int getCode() {
+    public byte getCode() {
         return code;
     }
 
-    private static FileDirectiveCode fromCode(int code) {
+    private static FileDirectiveCode fromCode(byte code) {
         if (Lookup.containsKey(code)) {
             return Lookup.get(code);
         } else {
@@ -43,7 +43,7 @@ public enum FileDirectiveCode {
     }
 
     public static FileDirectiveCode readFileDirectiveCode(byte b) {
-        return FileDirectiveCode.fromCode(b >> 4);
+        return FileDirectiveCode.fromCode((byte) (b >> 4));
     }
 
 }

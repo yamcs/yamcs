@@ -44,13 +44,11 @@ public class FinishedPacket extends Packet {
 
     public FinishedPacket(ByteBuffer buffer, Header header) {
         super(buffer, header);
-
         byte temp = buffer.get();
         this.conditionCode = ConditionCode.readConditionCode(temp);
         this.generatedByEndSystem = Utils.getBitOfByte(temp, 5);
         this.dataComplete = !Utils.getBitOfByte(temp, 6);
         this.fileStatus = FileStatus.fromCode((byte) (temp & 0x03));
-
         while (buffer.hasRemaining()) {
             TLV tempTLV = TLV.readTLV(buffer);
             switch (tempTLV.getType()) {

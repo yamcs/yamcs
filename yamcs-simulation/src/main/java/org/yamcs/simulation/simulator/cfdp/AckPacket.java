@@ -14,70 +14,75 @@ public class AckPacket extends Packet {
     private TransactionStatus transactionStatus;
 
     public enum TransactionStatus {
-        Undefined(0),
-        Active(1),
-        Terminated(2),
-        Unrecognized(3);
+        Undefined((byte) 0x00),
+        Active((byte) 0x01),
+        Terminated((byte) 0x02),
+        Unrecognized((byte) 0x03);
 
-        private int status;
+        private byte status;
 
-        public static final Map<Integer, TransactionStatus> Lookup = Maps.uniqueIndex(
+        public static final Map<Byte, TransactionStatus> Lookup = Maps.uniqueIndex(
                 Arrays.asList(TransactionStatus.values()),
                 TransactionStatus::getStatus);
 
-        private TransactionStatus(int status) {
+        private TransactionStatus(byte status) {
             this.status = status;
         }
 
-        public int getStatus() {
+        public byte getStatus() {
             return status;
         }
 
-        private static TransactionStatus fromStatus(int status) {
+        private static TransactionStatus fromStatus(byte status) {
             return Lookup.get(status);
         }
 
         public static TransactionStatus readTransactionStatus(byte b) {
-            return TransactionStatus.fromStatus(b & 0x03);
+            return TransactionStatus.fromStatus((byte) (b & 0x03));
         }
 
     }
 
     public enum FileDirectiveSubtypeCode {
-        FinishedByWaypoint(0),
-        FinishedByEndSystem(1),
-        Other(0);
+        FinishedByWaypoint((byte) 0x00),
+        FinishedByEndSystem((byte) 0x01),
+        Other((byte) 0x00);
 
-        private int code;
+        private byte code;
 
-        public static final Map<Integer, FileDirectiveSubtypeCode> Lookup = Maps.uniqueIndex(
+        public static final Map<Byte, FileDirectiveSubtypeCode> Lookup = Maps.uniqueIndex(
                 Arrays.asList(FileDirectiveSubtypeCode.values()),
                 FileDirectiveSubtypeCode::getCode);
 
-        private FileDirectiveSubtypeCode(int code) {
+        private FileDirectiveSubtypeCode(byte code) {
             this.code = code;
         }
 
-        public int getCode() {
+        public byte getCode() {
             return code;
         }
 
-        private static FileDirectiveSubtypeCode fromCode(int code) {
+        private static FileDirectiveSubtypeCode fromCode(byte code) {
             return Lookup.get(code);
         }
 
         public static FileDirectiveSubtypeCode readSubtypeCode(byte b) {
-            return FileDirectiveSubtypeCode.fromCode(b & 0x0f);
+            return FileDirectiveSubtypeCode.fromCode((byte) (b & 0x0f));
         }
     }
 
     public AckPacket(ByteBuffer buffer, Header header) {
         super(buffer, header);
-
         byte temp = buffer.get();
         this.directiveCode = FileDirectiveCode.readFileDirectiveCode(temp);
         this.directiveSubtypeCode = FileDirectiveSubtypeCode.readSubtypeCode(temp);
-        temp = buffer.get();
-        this.conditionCode = ConditionCode.readConditionCode(temp);
+        this.conditionCode = ConditionCode.readConditionCode(buffer.get());
+    }
+
+    @Override
+    protected void writeCFDPPacket(ByteBuffer buffer) {
+        super.writeCFDPPacket(buffer);
+        buffer.put((byte) (this.directiveCode.getCode() << 4 | this.directiveSubtypeCode.getCode()));
+        buffer.put((byte) (this.conditionCode.getCode() << 4 | this.transactionStatus.getStatus()));
     }
 }
