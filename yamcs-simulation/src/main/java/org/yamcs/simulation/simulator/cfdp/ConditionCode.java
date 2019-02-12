@@ -56,4 +56,5 @@ public enum ConditionCode {
     public void writeAsByteToBuffer(ByteBuffer buffer) {
         buffer.put((byte) (getCode() << 4));
     }
+
 }

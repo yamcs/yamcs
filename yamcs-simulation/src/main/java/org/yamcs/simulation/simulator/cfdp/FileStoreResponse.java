@@ -3,11 +3,14 @@ package org.yamcs.simulation.simulator.cfdp;
 import java.nio.ByteBuffer;
 
 public class FileStoreResponse {
+
+    public static byte TYPE = 0x01;
+
     private ActionCode actionCode;
     private StatusCode statusCode;
     private LV firstFileName;
     private LV secondFileName;
-    private LV FilestoreMessage;
+    private LV filestoreMessage;
 
     public FileStoreResponse(ActionCode actionCode, StatusCode statusCode, LV firstFileName, LV secondFileName,
             LV filestoreMessage) {
@@ -15,7 +18,7 @@ public class FileStoreResponse {
         this.statusCode = statusCode;
         this.firstFileName = firstFileName;
         this.secondFileName = secondFileName;
-        this.FilestoreMessage = filestoreMessage;
+        this.filestoreMessage = filestoreMessage;
     }
 
     public FileStoreResponse(ActionCode actionCode, StatusCode statusCode, LV firstFileName, LV filestoreMessage) {
@@ -39,9 +42,10 @@ public class FileStoreResponse {
     }
 
     public LV getFilestoreMessage() {
-        return this.FilestoreMessage;
+        return this.filestoreMessage;
     }
 
+    // TODO, merge this with fromTLV
     private static FileStoreResponse readFileStoreResponse(ByteBuffer buffer) {
         byte b = buffer.get();
         ActionCode c = ActionCode.readActionCode(b);
@@ -54,4 +58,21 @@ public class FileStoreResponse {
     public static FileStoreResponse fromTLV(TLV tlv) {
         return readFileStoreResponse(ByteBuffer.wrap(tlv.getValue()));
     }
+
+    public TLV toTLV() {
+        return new TLV(FileStoreResponse.TYPE,
+                ByteBuffer
+                        .allocate(1
+                                + firstFileName.getValue().length
+                                + secondFileName.getValue().length
+                                + filestoreMessage.getValue().length)
+                        .put((byte) ((actionCode.getCode() << 4)
+                                | statusCode.getCode()))
+                        .put(firstFileName.getValue())
+                        .put(secondFileName.getValue())
+                        .put(filestoreMessage.getValue())
+                        .array());
+
+    }
+
 }

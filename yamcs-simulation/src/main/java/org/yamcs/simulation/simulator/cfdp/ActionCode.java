@@ -8,29 +8,29 @@ import com.google.common.collect.Maps;
 
 public enum ActionCode {
 
-    CreateFile(0, false),
-    DeleteFile(1, false),
-    RenameFile(2, true),
-    AppendFile(3, true),
-    ReplaceFile(4, true),
-    CreateDirectory(5, false),
-    RemoveDirectory(6, false),
-    DenyFile(7, false),
-    DenyDirectory(8, false);
+    CreateFile((byte) (0x00), false),
+    DeleteFile((byte) (0x01), false),
+    RenameFile((byte) (0x02), true),
+    AppendFile((byte) (0x03), true),
+    ReplaceFile((byte) (0x04), true),
+    CreateDirectory((byte) (0x05), false),
+    RemoveDirectory((byte) (0x06), false),
+    DenyFile((byte) (0x07), false),
+    DenyDirectory((byte) (0x08), false);
 
-    private int code;
+    private byte code;
     private boolean secondFileNamePresent;
 
-    public static final Map<Integer, ActionCode> Lookup = Maps.uniqueIndex(
+    public static final Map<Byte, ActionCode> Lookup = Maps.uniqueIndex(
             Arrays.asList(ActionCode.values()),
             ActionCode::getCode);
 
-    private ActionCode(int code, boolean secondFileNamePresent) {
+    private ActionCode(byte code, boolean secondFileNamePresent) {
         this.code = code;
         this.secondFileNamePresent = secondFileNamePresent;
     }
 
-    public int getCode() {
+    public byte getCode() {
         return this.code;
     }
 
@@ -38,7 +38,7 @@ public enum ActionCode {
         return this.secondFileNamePresent;
     }
 
-    private static ActionCode fromCode(int code) {
+    private static ActionCode fromCode(byte code) {
         if (Lookup.containsKey(code)) {
             return Lookup.get(code);
         } else {
@@ -52,6 +52,6 @@ public enum ActionCode {
     }
 
     public static ActionCode readActionCode(byte b) {
-        return ActionCode.fromCode(b >> 4);
+        return ActionCode.fromCode((byte) (b >> 4));
     }
 }

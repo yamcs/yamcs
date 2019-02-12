@@ -3,6 +3,9 @@ package org.yamcs.simulation.simulator.cfdp;
 import java.nio.ByteBuffer;
 
 public class FileStoreRequest {
+
+    public static byte TYPE = 0x00;
+
     private ActionCode actionCode;
     private LV firstFileName;
     private LV secondFileName;
@@ -29,6 +32,7 @@ public class FileStoreRequest {
         return this.secondFileName;
     }
 
+    // TODO merge this with fromTLV
     private static FileStoreRequest readFileStoreRequest(ByteBuffer buffer) {
         ActionCode c = ActionCode.readActionCode(buffer);
         return (c.hasSecondFileName()
@@ -38,5 +42,18 @@ public class FileStoreRequest {
 
     public static FileStoreRequest fromTLV(TLV tlv) {
         return readFileStoreRequest(ByteBuffer.wrap(tlv.getValue()));
+    }
+
+    public TLV toTLV() {
+        return new TLV(FileStoreRequest.TYPE,
+                ByteBuffer
+                        .allocate(1
+                                + firstFileName.getValue().length
+                                + secondFileName.getValue().length)
+                        .put((byte) (actionCode.getCode() << 4))
+                        .put(firstFileName.getValue())
+                        .put(secondFileName.getValue())
+                        .array());
+
     }
 }

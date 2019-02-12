@@ -4,21 +4,15 @@ import java.nio.ByteBuffer;
 
 public class TLV {
     private byte type;
-    private short length;
     private byte[] value;
 
-    public TLV(byte type, short length, byte[] value) {
+    public TLV(byte type, byte[] value) {
         this.type = type;
-        this.length = length;
         this.value = value;
     }
 
     public short getType() {
         return type;
-    }
-
-    public short getLength() {
-        return length;
     }
 
     public byte[] getValue() {
@@ -27,15 +21,14 @@ public class TLV {
 
     public static TLV readTLV(ByteBuffer buffer) {
         byte type = buffer.get();
-        short length = Utils.getUnsignedByte(buffer);
-        byte[] value = new byte[length];
+        byte[] value = new byte[Utils.getUnsignedByte(buffer)]; // get length from buffer
         buffer.get(value);
-        return new TLV(type, length, value);
+        return new TLV(type, value);
     }
 
     public void writeToBuffer(ByteBuffer buffer) {
         buffer.put(this.getValue());
-        Utils.writeUnsignedByte(buffer, this.length);
+        Utils.writeUnsignedByte(buffer, (short) this.getValue().length);
         buffer.put(this.value);
     }
 }

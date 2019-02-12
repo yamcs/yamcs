@@ -8,36 +8,36 @@ import com.google.common.collect.Maps;
 
 public enum StatusCode {
 
-    Successful(0x00),
-    CreateNotAllowed(0x01),
-    NotPerformed(0x0f),
-    FileDoesNotExist(0x01),
-    DeleteNotAllowed(0x02),
-    OldFileNameDoesNotExist(0x01),
-    NewFileNameAlreadyExists(0x02),
-    RenameNotAllowed(0x03),
-    FileName1DoesNotExist(0x01),
-    FileName2DoesNotExist(0x02),
-    AppendNotAllowed(0x03),
-    ReplaceNotAllowed(0x03),
-    DirectoryCannotBeCreated(0x01),
-    DirectoryDoesNotExist(0x01);
+    Successful((byte) 0x00),
+    CreateNotAllowed((byte) 0x01),
+    NotPerformed((byte) 0x0f),
+    FileDoesNotExist((byte) 0x01),
+    DeleteNotAllowed((byte) 0x02),
+    OldFileNameDoesNotExist((byte) 0x01),
+    NewFileNameAlreadyExists((byte) 0x02),
+    RenameNotAllowed((byte) 0x03),
+    FileName1DoesNotExist((byte) 0x01),
+    FileName2DoesNotExist((byte) 0x02),
+    AppendNotAllowed((byte) 0x03),
+    ReplaceNotAllowed((byte) 0x03),
+    DirectoryCannotBeCreated((byte) 0x01),
+    DirectoryDoesNotExist((byte) 0x01);
 
-    private int code;
+    private byte code;
 
-    public static final Map<Integer, StatusCode> Lookup = Maps.uniqueIndex(
+    public static final Map<Byte, StatusCode> Lookup = Maps.uniqueIndex(
             Arrays.asList(StatusCode.values()),
             StatusCode::getCode);
 
-    private StatusCode(int code) {
+    private StatusCode(byte code) {
         this.code = code;
     }
 
-    public int getCode() {
+    public byte getCode() {
         return this.code;
     }
 
-    private static StatusCode fromCode(int code) {
+    private static StatusCode fromCode(byte code) {
         if (Lookup.containsKey(code)) {
             return Lookup.get(code);
         } else {
@@ -51,6 +51,6 @@ public enum StatusCode {
     }
 
     public static StatusCode readStatusCode(byte b) {
-        return StatusCode.fromCode(b & 0x0f);
+        return StatusCode.fromCode((byte) (b & 0x0f));
     }
 }
