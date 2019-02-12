@@ -12,4 +12,10 @@ public class KeepAlivePacket extends Packet {
         this.progress = Utils.getUnsignedInt(buffer);
     }
 
+    @Override
+    protected void writeCFDPPacket(ByteBuffer buffer) {
+        super.writeCFDPPacket(buffer);
+        Utils.writeUnsignedInt(buffer, progress);
+    }
+
 }
