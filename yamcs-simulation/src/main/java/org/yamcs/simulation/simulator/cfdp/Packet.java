@@ -72,7 +72,7 @@ public abstract class Packet {
             toReturn = new FileDataPacket(buffer, header);
         }
         if (toReturn != null && header.withCrc()) {
-            if (!crcValid(toReturn)) {
+            if (!toReturn.crcValid()) {
                 log.error("invalid crc");
             }
         }
@@ -87,7 +87,7 @@ public abstract class Packet {
         }
     }
 
-    private boolean crcValid(Packet packet) {
+    private boolean crcValid() {
         // TODO implement
         return true;
     }
