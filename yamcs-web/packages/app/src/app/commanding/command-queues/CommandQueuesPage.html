@@ -1,6 +1,6 @@
-<div class="panel-content">
-  <h2>
-    Queues
+<app-instance-page>
+  <app-instance-toolbar>
+    Command Queues
     <app-help>
       A command queue can be in three states:
       <dl>
@@ -14,15 +14,19 @@
         <dd>The queue does not accept commands. Any attempt to issue a command linked to a disabled queue will fail immediately.</dd>
       </dl>
     </app-help>
-  </h2>
-  <app-command-queues-table [cqueues$]="cqueues$"></app-command-queues-table>
+  </app-instance-toolbar>
 
-  <p>&nbsp;</p>
-  <h2>Queued commands</h2>
-  <app-queued-commands-table *ngIf="hasEntries(); else empty"
-                             [cqueues$]="cqueues$">
-  </app-queued-commands-table>
-  <ng-template #empty>
-    All command queues are empty.
-  </ng-template>
-</div>
+  <div class="panel-content">
+    <app-command-queues-table [cqueues$]="cqueues$"></app-command-queues-table>
+
+    <p>&nbsp;</p>
+    <h2>Queued commands</h2>
+    <app-queued-commands-table *ngIf="hasEntries(); else empty"
+                                [cqueues$]="cqueues$">
+    </app-queued-commands-table>
+    <ng-template #empty>
+      All command queues are empty.
+    </ng-template>
+  </div>
+
+</app-instance-page>

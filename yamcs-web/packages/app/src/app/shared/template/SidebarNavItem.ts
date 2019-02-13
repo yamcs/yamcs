@@ -16,4 +16,7 @@ export class SidebarNavItem {
 
   @Input()
   exact = false;
+
+  @Input()
+  subitem = false;
 }

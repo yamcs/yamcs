@@ -1,29 +1,24 @@
-import { Component, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { TmStatistics } from '@yamcs/client';
-
-import { ActivatedRoute } from '@angular/router';
-
-import { YamcsService } from '../../core/services/YamcsService';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { BehaviorSubject ,  Subscription } from 'rxjs';
+import { YamcsService } from '../core/services/YamcsService';
 
 @Component({
-  templateUrl: './ProcessorTMTab.html',
+  templateUrl: './InstanceHomePage.html',
+  styleUrls: ['./InstanceHomePage.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProcessorTMTab implements OnDestroy {
+export class InstanceHomePage implements OnDestroy {
 
   tmstats$ = new BehaviorSubject<TmStatistics[]>([]);
   tmstatsSubscription: Subscription;
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService) {
-    const parent = route.snapshot.parent!;
-    const name = parent.paramMap.get('name')!;
-
+  constructor(yamcs: YamcsService) {
+    const processor = yamcs.getProcessor();
     yamcs.getInstanceClient()!.getProcessorStatistics().then(response => {
       response.statistics$.pipe(
-        filter(stats => stats.yProcessorName === name),
+        filter(stats => stats.yProcessorName === processor.name),
         map(stats => stats.tmstats || []),
       ).subscribe(tmstats => {
         this.tmstats$.next(tmstats);

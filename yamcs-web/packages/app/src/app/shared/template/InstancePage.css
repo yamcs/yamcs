@@ -20,6 +20,22 @@ mat-toolbar {
   color: rgba(0, 0, 0, .654);
 }
 
+.nav-item-group {
+  color: rgba(0, 0, 0, .654);
+}
+
+.nav-item-group.active {
+  background-color: rgba(0, 0, 0, .04);
+}
+
 .nav-item-group-items {
-  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.item-icon {
+  padding-right: 16px;
+}
+
+.nav-item-group-items {
+  border-radius: 4px;
 }

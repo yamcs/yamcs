@@ -1,0 +1,39 @@
+<app-instance-page>
+  <app-instance-toolbar>Home</app-instance-toolbar>
+
+  <div class="panel-content">
+    <div style="float: left; width: 80%">
+      <mat-card>
+        <mat-card-subtitle>Links</mat-card-subtitle>
+      </mat-card>
+    </div>
+    <div style="float: right; width: 20%">
+      <mat-card style="margin-left: 8px">
+        Yamcs v4.x.x
+      </mat-card>
+    </div>
+    <div style="clear: both"></div>
+
+    <div style="float: left; width: 80%">
+      <mat-card>
+        <mat-card-subtitle>TM Statistics</mat-card-subtitle>
+        <mat-card-content>
+          <app-tmstats-table [tmstats$]="tmstats$"></app-tmstats-table>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div style="float: right; width: 20%">
+      <mat-card style="margin-left: 8px">
+        <mat-card-subtitle>MDB</mat-card-subtitle>
+        <mat-card-content>
+          x parameters
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button>MDB Overview</button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+    <div style="clear: both"></div>
+
+  </div>
+</app-instance-page>

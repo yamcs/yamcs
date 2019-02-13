@@ -61,6 +61,26 @@ const routes: Routes = [
         canActivate: [AuthGuard, UnselectInstanceGuard],
       },
       {
+        path: 'archive',
+        loadChildren: 'src/app/archive/ArchiveModule#ArchiveModule',
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'commanding',
+        loadChildren: 'src/app/commanding/CommandingModule#CommandingModule',
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'instance',
+        loadChildren: 'src/app/instancehome/InstanceHomeModule#InstanceHomeModule',
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'links',
+        loadChildren: 'src/app/links/LinksModule#LinksModule',
+        canActivate: [AuthGuard],
+      },
+      {
         path: 'monitor',
         loadChildren: 'src/app/monitor/MonitorModule#MonitorModule',
         canActivate: [AuthGuard],
@@ -68,6 +88,11 @@ const routes: Routes = [
       {
         path: 'mdb',
         loadChildren: 'src/app/mdb/MdbModule#MdbModule',
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'system',
+        loadChildren: 'src/app/system/SystemModule#SystemModule',
         canActivate: [AuthGuard],
       },
       {

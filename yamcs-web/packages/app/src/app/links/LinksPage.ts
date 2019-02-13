@@ -3,8 +3,8 @@ import { MatSort, MatTableDataSource } from '@angular/material';
 import { Title } from '@angular/platform-browser';
 import { Link, LinkEvent } from '@yamcs/client';
 import { Subscription } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { YamcsService } from '../../core/services/YamcsService';
+import { AuthService } from '../core/services/AuthService';
+import { YamcsService } from '../core/services/YamcsService';
 
 
 

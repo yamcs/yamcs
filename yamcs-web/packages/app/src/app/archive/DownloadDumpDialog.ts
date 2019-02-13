@@ -1,9 +1,9 @@
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Component, Inject } from '@angular/core';
-import { Validators, FormGroup, FormBuilder } from '@angular/forms';
-import { subtractDuration } from '../../shared/utils';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { BehaviorSubject } from 'rxjs';
-import { YamcsService } from '../../core/services/YamcsService';
+import { YamcsService } from '../core/services/YamcsService';
+import { subtractDuration } from '../shared/utils';
 
 @Component({
   selector: 'app-download-dump-dialog',

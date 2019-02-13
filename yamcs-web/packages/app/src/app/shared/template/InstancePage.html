@@ -6,86 +6,109 @@
     </mat-toolbar>
 
     <mat-nav-list dense>
-      <mat-list-item class="nav-item-group" (click)="monitoringExpanded = !monitoringExpanded">
-        <mat-icon>widgets</mat-icon>
+      <app-sidebar-nav-item routerLink="/instance"
+                            [queryParams]="{instance: instance.name}">
+        <mat-icon class="item-icon">home</mat-icon>
+        Home
+      </app-sidebar-nav-item>
+      <app-sidebar-nav-item routerLink="/links"
+                            [queryParams]="{instance: instance.name}">
+        <mat-icon class="item-icon">swap_horiz</mat-icon>
+        Links
+      </app-sidebar-nav-item>
+      <mat-list-item class="nav-item-group"
+                     [class.active]="monitoringActive"
+                     (click)="toggleMonitoringGroup()">
+        <mat-icon class="item-icon">dashboard</mat-icon>
         Monitoring
-        <span style="flex: 1 1 auto"></span>
-        <mat-icon *ngIf="monitoringExpanded">keyboard_arrow_up</mat-icon>
-        <mat-icon *ngIf="!monitoringExpanded">keyboard_arrow_down</mat-icon>
       </mat-list-item>
       <div *ngIf="monitoringExpanded" class="nav-item-group-items">
         <app-sidebar-nav-item routerLink="/monitor/displays"
-                              [queryParams]="{instance: instance.name}">
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Displays
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item routerLink="/monitor/layouts"
-                              [queryParams]="{instance: instance.name}">
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Layouts
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item *ngIf="showEventsItem()"
                               routerLink="/monitor/events"
-                              [queryParams]="{instance: instance.name}">
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Events
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item routerLink="/monitor/alarms"
-                              [queryParams]="{instance: instance.name}">
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Alarms
         </app-sidebar-nav-item>
       </div>
 
-      <mat-list-item class="nav-item-group" (click)="commandingExpanded = !commandingExpanded">
-        <mat-icon>rss_feed</mat-icon>
+      <mat-list-item class="nav-item-group"
+                     [class.active]="commandingActive"
+                     (click)="toggleCommandingGroup()">
+        <mat-icon class="item-icon">rss_feed</mat-icon>
         Commanding
-        <span style="flex: 1 1 auto"></span>
-        <mat-icon *ngIf="commandingExpanded">keyboard_arrow_up</mat-icon>
-        <mat-icon *ngIf="!commandingExpanded">keyboard_arrow_down</mat-icon>
       </mat-list-item>
       <div *ngIf="commandingExpanded" class="nav-item-group-items">
-        <app-sidebar-nav-item routerLink="/monitor/command-history"
-                              [queryParams]="{instance: instance.name}">
+        <app-sidebar-nav-item routerLink="/commanding/command-history"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Command History
+        </app-sidebar-nav-item>
+        <app-sidebar-nav-item routerLink="/commanding/command-queues"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
+          Command Queues
         </app-sidebar-nav-item>
       </div>
 
-      <mat-list-item class="nav-item-group" (click)="mdbExpanded = !mdbExpanded">
-        <mat-icon>book</mat-icon>
+      <mat-list-item class="nav-item-group"
+                     [class.active]="mdbActive"
+                     (click)="toggleMdbGroup()">
+        <mat-icon class="item-icon">book</mat-icon>
         MDB
-        <span style="flex: 1 1 auto"></span>
-        <mat-icon *ngIf="mdbExpanded">keyboard_arrow_up</mat-icon>
-        <mat-icon *ngIf="!mdbExpanded">keyboard_arrow_down</mat-icon>
       </mat-list-item>
       <div *ngIf="mdbExpanded" class="nav-item-group-items">
         <app-sidebar-nav-item routerLink="/mdb/space-systems"
-                              [queryParams]="{instance: instance.name}">
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Space Systems
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item routerLink="/mdb/parameters"
-                              [queryParams]="{instance: instance.name}">
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Parameters
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item routerLink="/mdb/containers"
-                              [queryParams]="{instance: instance.name}">
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Containers
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item routerLink="/mdb/commands"
-                              [queryParams]="{instance: instance.name}">
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Commands
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item routerLink="/mdb/algorithms"
-                              [queryParams]="{instance: instance.name}">
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Algorithms
         </app-sidebar-nav-item>
       </div>
 
-      <app-sidebar-nav-item routerLink="/monitor/archive"
+      <app-sidebar-nav-item routerLink="/archive"
                             [queryParams]="{instance: instance.name}">
+        <mat-icon class="item-icon">view_list</mat-icon>
         TM Archive
       </app-sidebar-nav-item>
 
@@ -95,44 +118,37 @@
         {{ extraItem.label }}
       </app-sidebar-nav-item>
 
-      <app-sidebar-nav-item routerLink="/monitor/links"
-                            [queryParams]="{instance: instance.name}">
-        Links
-      </app-sidebar-nav-item>
-
-      <app-sidebar-nav-item routerLink="/monitor/processors"
-                            [queryParams]="{instance: instance.name}">
-        Processors
-      </app-sidebar-nav-item>
-
-      <mat-list-item class="nav-item-group" (click)="systemExpanded = !systemExpanded">
-        <mat-icon>memory</mat-icon>
+      <mat-list-item class="nav-item-group"
+                     [class.active]="systemActive"
+                     (click)="toggleSystemGroup()">
+        <mat-icon class="item-icon">memory</mat-icon>
         System
-        <span style="flex: 1 1 auto"></span>
-        <mat-icon *ngIf="systemExpanded">keyboard_arrow_up</mat-icon>
-        <mat-icon *ngIf="!systemExpanded">keyboard_arrow_down</mat-icon>
       </mat-list-item>
       <div *ngIf="systemExpanded" class="nav-item-group-items">
         <app-sidebar-nav-item *ngIf="showServicesItem()"
-                              routerLink="/monitor/services"
-                              [queryParams]="{instance: instance.name}">
+                              routerLink="/system/services"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Services
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item *ngIf="showTablesItem()"
-                              routerLink="/monitor/tables"
-                              [queryParams]="{instance: instance.name}">
+                              routerLink="/system/tables"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Tables
         </app-sidebar-nav-item>
 
         <app-sidebar-nav-item *ngIf="showStreamsItem()"
-                              routerLink="/monitor/streams"
-                              [queryParams]="{instance: instance.name}">
+                              routerLink="/system/streams"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           Streams
         </app-sidebar-nav-item>
 
-        <app-sidebar-nav-item routerLink="/monitor/jvm"
-                              [queryParams]="{instance: instance.name}">
+        <app-sidebar-nav-item routerLink="/system/jvm"
+                              [queryParams]="{instance: instance.name}"
+                              [subitem]="true">
           JVM
         </app-sidebar-nav-item>
       </div>

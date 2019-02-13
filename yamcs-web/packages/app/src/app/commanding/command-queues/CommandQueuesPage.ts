@@ -1,17 +1,13 @@
-import { Component, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { CommandQueue } from '@yamcs/client';
-
-import { ActivatedRoute } from '@angular/router';
-
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { YamcsService } from '../../core/services/YamcsService';
-import { BehaviorSubject ,  Subscription } from 'rxjs';
 
 @Component({
-  templateUrl: './ProcessorTCTab.html',
+  templateUrl: './CommandQueuesPage.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProcessorTCTab implements OnDestroy {
+export class CommandQueuesPage implements OnDestroy {
 
   cqueues$ = new BehaviorSubject<CommandQueue[]>([]);
   cqueueSubscription: Subscription;
@@ -19,21 +15,20 @@ export class ProcessorTCTab implements OnDestroy {
   // Regroup WebSocket updates (which are for 1 queue at a time)
   private cqueueByName: { [key: string]: CommandQueue } = {};
 
-  constructor(route: ActivatedRoute, yamcs: YamcsService) {
-    const parent = route.snapshot.parent!;
-    const processorName = parent.paramMap.get('name')!;
+  constructor(yamcs: YamcsService) {
+    const processor = yamcs.getProcessor();
     const instanceClient = yamcs.getInstanceClient()!;
 
     // Single shot (websocket also provides an initial update,
     // but only first time we navigate to this page)
-    instanceClient.getCommandQueues(processorName).then(cqueues => {
+    instanceClient.getCommandQueues(processor.name).then(cqueues => {
       for (const cqueue of cqueues) {
         this.cqueueByName[cqueue.name] = cqueue;
       }
       this.emitChange();
     });
 
-    instanceClient.getCommandQueueUpdates(processorName).then(response => {
+    instanceClient.getCommandQueueUpdates(processor.name).then(response => {
       this.cqueueSubscription = response.commandQueue$.subscribe(cqueue => {
         this.cqueueByName[cqueue.name] = cqueue;
         this.emitChange();
