@@ -23,7 +23,6 @@ public class NakPacket extends Packet {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        super.writeCFDPPacket(buffer);
         Utils.writeUnsignedInt(buffer, scopeStart);
         Utils.writeUnsignedInt(buffer, scopeEnd);
         segmentRequests.forEach(x -> x.writeToBuffer(buffer));

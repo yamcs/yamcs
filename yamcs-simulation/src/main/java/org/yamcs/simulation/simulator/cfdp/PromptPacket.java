@@ -16,7 +16,6 @@ public class PromptPacket extends Packet {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        super.writeCFDPPacket(buffer);
         buffer.put((byte) ((responseRequired ? 1 : 0) << 7));
     }
 

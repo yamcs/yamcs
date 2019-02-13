@@ -24,7 +24,6 @@ public class EofPacket extends Packet {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        super.writeCFDPPacket(buffer);
         this.conditionCode.writeAsByteToBuffer(buffer);
         Utils.writeUnsignedInt(buffer, this.fileChecksum);
         Utils.writeUnsignedInt(buffer, this.fileSize);

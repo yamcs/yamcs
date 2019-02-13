@@ -67,7 +67,6 @@ public class FinishedPacket extends Packet {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        super.writeCFDPPacket(buffer);
         byte temp = (byte) ((this.conditionCode.getCode() << 4));
         temp |= ((this.generatedByEndSystem ? 1 : 0) << 3);
         temp |= ((this.dataComplete ? 0 : 1) << 2);

@@ -81,7 +81,6 @@ public class AckPacket extends Packet {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        super.writeCFDPPacket(buffer);
         buffer.put((byte) (this.directiveCode.getCode() << 4 | this.directiveSubtypeCode.getCode()));
         buffer.put((byte) (this.conditionCode.getCode() << 4 | this.transactionStatus.getStatus()));
     }

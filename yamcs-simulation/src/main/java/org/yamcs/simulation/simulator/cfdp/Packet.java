@@ -5,12 +5,12 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Packet {
+public abstract class Packet {
 
     protected ByteBuffer buffer;
     protected Header header;
 
-    private Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    private static Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
     private class LV {
         private short length;
@@ -41,34 +41,64 @@ public class Packet {
 
     public static Packet getCFDPPacket(ByteBuffer buffer) {
         Header header = new Header(buffer);
+        Packet toReturn = null;
         if (header.isFileDirective()) {
             switch (FileDirectiveCode.readFileDirectiveCode(buffer)) {
             case EOF:
-                return new EofPacket(buffer, header);
+                toReturn = new EofPacket(buffer, header);
+                break;
             case Finished:
-                return new FinishedPacket(buffer, header);
+                toReturn = new FinishedPacket(buffer, header);
+                break;
             case ACK:
-                return new AckPacket(buffer, header);
+                toReturn = new AckPacket(buffer, header);
+                break;
             case Metadata:
-                return new MetadataPacket(buffer, header);
+                toReturn = new MetadataPacket(buffer, header);
+                break;
             case NAK:
-                return new NakPacket(buffer, header);
+                toReturn = new NakPacket(buffer, header);
+                break;
             case Prompt:
-                return new PromptPacket(buffer, header);
+                toReturn = new PromptPacket(buffer, header);
+                break;
             case KeepAlive:
-                return new KeepAlivePacket(buffer, header);
+                toReturn = new KeepAlivePacket(buffer, header);
+                break;
             default:
                 break;
             }
         } else {
-            return new FileDataPacket(buffer, header);
+            toReturn = new FileDataPacket(buffer, header);
         }
-        return null;
+        if (toReturn != null && header.withCrc()) {
+            if (!crcValid(toReturn)) {
+                log.error("invalid crc");
+            }
+        }
+        return toReturn;
+    }
+
+    public void writePacket(ByteBuffer buffer) {
+        getHeader().writeToBuffer(buffer);
+        writeCFDPPacket(buffer);
+        if (getHeader().withCrc()) {
+            calculateAndAddCrc(buffer);
+        }
+    }
+
+    private boolean crcValid(Packet packet) {
+        // TODO implement
+        return true;
     }
 
     // the buffer is assumed to be at the correct position
-    protected void writeCFDPPacket(ByteBuffer buffer) {
-        getHeader().writeToBuffer(buffer);
+    protected abstract void writeCFDPPacket(ByteBuffer buffer);
+
+    private void calculateAndAddCrc(ByteBuffer buffer) {
+        // TODO implement correctly; note that also the header.datalength field should depend on the presence/absence of
+        // the CRC
+        buffer.put((byte) 0x00).put((byte) 0x00);
     }
 
     /*  public CFDPPacket(boolean fileDirective, boolean towardsSender, boolean acknowledged, boolean withCrc,

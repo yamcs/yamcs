@@ -18,7 +18,6 @@ public class FileDataPacket extends Packet {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        super.writeCFDPPacket(buffer);
         Utils.writeUnsignedInt(buffer, offset);
         buffer.put(filedata);
     }

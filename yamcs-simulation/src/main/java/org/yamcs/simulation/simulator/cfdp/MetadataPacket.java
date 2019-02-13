@@ -45,7 +45,6 @@ public class MetadataPacket extends Packet {
 
     @Override
     protected void writeCFDPPacket(ByteBuffer buffer) {
-        super.writeCFDPPacket(buffer);
         buffer.put((byte) ((segmentationControl ? 1 : 0) << 7));
         Utils.writeUnsignedInt(buffer, fileSize);
         sourceFileName.writeToBuffer(buffer);

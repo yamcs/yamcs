@@ -81,6 +81,10 @@ public class Header {
         return fileDirective;
     }
 
+    public boolean withCrc() {
+        return withCrc;
+    }
+
     /*
      * Reads the header of the incoming buffer, which is assumed to be a complete PDU
      * Afterwards puts the buffer position right after the header 
