@@ -10,7 +10,7 @@ public abstract class Packet {
     protected ByteBuffer buffer;
     protected Header header;
 
-    private static Logger log = LoggerFactory.getLogger(this.getClass().getName());
+    private static Logger log = LoggerFactory.getLogger("Packet");
 
     private class LV {
         private short length;
